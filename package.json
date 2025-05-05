@@ -1,0 +1,32 @@
+{
+    "name": "lazervault",
+    "version": "1.0.0",
+    "description": "LazerVault Frontend",
+    "main": "lib/main.dart",
+    "scripts": {
+        "build": "flutter build",
+        "start": "flutter run",
+        "dev": "flutter run -d emulator-5554",
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "analyze": "flutter analyze",
+        "generate:proto": "export PATH=\"$PATH\":\"$HOME/.pub-cache/bin\" && ./generate_proto.sh",
+        "upgrade:deps": "flutter pub upgrade --major-versions", 
+        "deep:clean": "flutter clean && rm -rf .dart_tool/ build/ && rm -rf ios/Pods ios/Podfile.lock && flutter pub get && flutter clean && flutter pub get && flutter pub run build_runner build",
+        "splash:generate": "flutter pub run flutter_native_splash:create"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "flutter": "^3.10.0",
+        "grpc": "^1.56.0",
+        "protobuf": "^3.20.3",
+        "protoc-gen-dart": "^2.15.0",
+        "grpc-web": "^2.1.0",
+        "grpc-web-generator": "^0.2.0",
+        "googleapis": "^11.0.0"
+    },
+    "devDependencies": {
+        "protoc-gen-dart": "^2.15.0"
+    }
+}

@@ -1,0 +1,941 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
+import 'package:flutter_tts/flutter_tts.dart';
+import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
+import 'package:lazervault/src/features/funds/cubit/withdrawal_cubit.dart';
+import 'package:lazervault/src/features/funds/cubit/withdrawal_state.dart';
+
+class WithdrawFundsScreen extends StatefulWidget {
+  final Map<String, dynamic> selectedCard;
+  const WithdrawFundsScreen({
+    super.key,
+    required this.selectedCard,
+  });
+
+  @override
+  State<WithdrawFundsScreen> createState() => _WithdrawFundsScreenState();
+}
+
+class _WithdrawFundsScreenState extends State<WithdrawFundsScreen> {
+  final TextEditingController _amountController = TextEditingController();
+  final FlutterTts _flutterTts = FlutterTts();
+  final stt.SpeechToText _speech = stt.SpeechToText();
+  String _selectedBank = '';
+  bool _isProcessing = false;
+  bool _isListening = false;
+  String _recognizedText = '';
+  bool _isVoiceEnabled = false;
+  bool _wasSelectedFromBottomSheet = false;
+
+  final List<Map<String, dynamic>> _banks = [
+    {
+      'name': 'Barclays',
+      'icon': Icons.account_balance,
+      'color': Colors.blue,
+      'accountNumber': '**** 1234',
+      'accountType': 'Current Account'
+    },
+    {
+      'name': 'HSBC UK',
+      'icon': Icons.account_balance,
+      'color': Colors.red,
+      'accountNumber': '**** 5678',
+      'accountType': 'Premier Account'
+    },
+    {
+      'name': 'NatWest',
+      'icon': Icons.account_balance,
+      'color': Colors.green,
+      'accountNumber': '**** 9012',
+      'accountType': 'Reward Account'
+    },
+    {
+      'name': 'Lloyds Bank',
+      'icon': Icons.account_balance,
+      'color': Colors.orange,
+      'accountNumber': '**** 3456',
+      'accountType': 'Club Account'
+    },
+    {
+      'name': 'Santander UK',
+      'icon': Icons.account_balance,
+      'color': Colors.purple,
+      'accountNumber': '**** 7890',
+      'accountType': '123 Account'
+    },
+    {
+      'name': 'Royal Bank of Scotland',
+      'icon': Icons.account_balance,
+      'color': Colors.teal,
+      'accountNumber': '**** 2345',
+      'accountType': 'Select Account'
+    },
+    {
+      'name': 'Standard Chartered',
+      'icon': Icons.account_balance,
+      'color': Colors.indigo,
+      'accountNumber': '**** 6789',
+      'accountType': 'Premium Account'
+    },
+    {
+      'name': 'Metro Bank',
+      'icon': Icons.account_balance,
+      'color': Colors.pink,
+      'accountNumber': '**** 0123',
+      'accountType': 'Instant Account'
+    },
+  ];
+
+  List<Map<String, dynamic>> get _displayedBanks {
+    if (_selectedBank.isEmpty) return _banks.take(4).toList();
+    final selectedBank =
+        _banks.firstWhere((bank) => bank['name'] == _selectedBank);
+    final List<Map<String, dynamic>> reorderedBanks = [selectedBank];
+    reorderedBanks
+        .addAll(_banks.where((bank) => bank['name'] != _selectedBank).take(3));
+    return reorderedBanks;
+  }
+
+  void _selectBank(String bankName, {bool fromBottomSheet = false}) {
+    setState(() {
+      _selectedBank = bankName;
+      _wasSelectedFromBottomSheet = fromBottomSheet;
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeSpeech();
+  }
+
+  Future<void> _initializeSpeech() async {
+    await _speech.initialize();
+    await _flutterTts.setLanguage('en-GB');
+    await _flutterTts.setPitch(1.0);
+  }
+
+  void _startListening() async {
+    if (!_isListening) {
+      bool available = await _speech.initialize();
+      if (available) {
+        setState(() => _isListening = true);
+        _speech.listen(
+          onResult: (result) {
+            setState(() {
+              _recognizedText = result.recognizedWords;
+              _processVoiceCommand(_recognizedText);
+            });
+          },
+        );
+      }
+    }
+  }
+
+  void _stopListening() {
+    _speech.stop();
+    setState(() => _isListening = false);
+  }
+
+  void _processVoiceCommand(String command) {
+    command = command.toLowerCase();
+    for (var bank in _banks) {
+      if (command.contains(bank['name'].toLowerCase())) {
+        setState(() => _selectedBank = bank['name']);
+        _speakResponse('Selected ${bank['name']}');
+        break;
+      }
+    }
+    final amountMatch = RegExp(r'\d+').firstMatch(command);
+    if (amountMatch != null) {
+      final amount = amountMatch.group(0);
+      setState(() => _amountController.text = amount!);
+      _speakResponse('Amount set to £$amount');
+    }
+  }
+
+  Future<void> _speakResponse(String text) async {
+    await _flutterTts.speak(text);
+  }
+
+  void _refreshAccountBalances(BuildContext context) {
+    try {
+      // Get the current authentication state to retrieve user info
+      final authState = context.read<AuthenticationCubit>().state;
+      if (authState is AuthenticationSuccess) {
+        final userId = authState.profile.user.id;
+        final accessToken = authState.profile.session.accessToken;
+        
+        print('Refreshing account summaries after successful withdrawal');
+        
+        // First, refresh the locally created AccountCardsSummaryCubit
+        // This ensures we have fresh data if needed on this screen
+        try {
+          // Only try to access the cubit if it's available (we're in the MultiBlocProvider context)
+          if (context.mounted) {
+            try {
+              // Safe access to the cubit
+              final localCubit = BlocProvider.of<AccountCardsSummaryCubit>(context, listen: false);
+              localCubit.fetchAccountSummaries(
+                userId: userId,
+                accessToken: accessToken,
+              );
+              print('Successfully refreshed local AccountCardsSummaryCubit');
+            } catch (e) {
+              // This will catch the case where the cubit isn't available
+              print('Local AccountCardsSummaryCubit not found: $e');
+            }
+          }
+        } catch (e) {
+          print('Error refreshing local cubit: $e');
+        }
+        
+        // Since AccountCardsSummaryCubit is now a singleton, this will update 
+        // the data used by all screens that use it
+        try {
+          final dashboardCubit = serviceLocator<AccountCardsSummaryCubit>();
+          dashboardCubit.fetchAccountSummaries(
+            userId: userId,
+            accessToken: accessToken,
+          );
+          print('Successfully refreshed AccountCardsSummaryCubit singleton instance');
+        } catch (e) {
+          print('Error refreshing singleton cubit instance: $e');
+        }
+      }
+    } catch (e) {
+      print('Error during account refresh: $e');
+    }
+  }
+
+  void _showAllBanksBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF1A1A1A),
+      isScrollControlled: true,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+      ),
+      builder: (context) => Container(
+        height: MediaQuery.of(context).size.height * 0.7,
+        padding: EdgeInsets.all(24.w),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Select Bank Account',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 20.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close, color: Colors.white),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ],
+            ),
+            SizedBox(height: 16.h),
+            Expanded(
+              child: ListView.builder(
+                itemCount: _banks.length,
+                itemBuilder: (context, index) {
+                  final bank = _banks[index];
+                  final isSelected = _selectedBank == bank['name'];
+                  return Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () {
+                        _selectBank(bank['name'], fromBottomSheet: true);
+                        Navigator.pop(context);
+                      },
+                      borderRadius: BorderRadius.circular(12.r),
+                      child: Container(
+                        margin: EdgeInsets.only(bottom: 8.h),
+                        padding: EdgeInsets.all(16.w),
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? bank['color'].withOpacity(0.1)
+                              : Colors.white.withOpacity(0.05),
+                          borderRadius: BorderRadius.circular(12.r),
+                          border: Border.all(
+                            color: isSelected
+                                ? bank['color']
+                                : Colors.white.withOpacity(0.1),
+                            width: isSelected ? 2 : 1,
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: EdgeInsets.all(8.w),
+                              decoration: BoxDecoration(
+                                color: bank['color'].withOpacity(0.1),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                bank['icon'],
+                                color: bank['color'],
+                                size: 24.sp,
+                              ),
+                            ),
+                            SizedBox(width: 16.w),
+                            Expanded(
+                              child: Text(
+                                bank['name'],
+                                style: TextStyle(
+                                  color:
+                                      isSelected ? bank['color'] : Colors.white,
+                                  fontSize: 16.sp,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                            if (isSelected)
+                              Container(
+                                padding: EdgeInsets.all(4.w),
+                                decoration: BoxDecoration(
+                                  color: bank['color'],
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(
+                                  Icons.check,
+                                  color: Colors.white,
+                                  size: 16.sp,
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Get selected bank details with null safety
+    Map<String, dynamic>? selectedBankDetails;
+    if (_selectedBank.isNotEmpty) {
+      try {
+        selectedBankDetails = _banks.firstWhere(
+          (bank) => bank['name'] == _selectedBank,
+          orElse: () => {},
+        );
+      } catch (e) {
+        selectedBankDetails = null;
+      }
+    }
+
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (_) => serviceLocator<WithdrawalCubit>()),
+        // Create a new instance of AccountCardsSummaryCubit to use for refreshing account data
+        BlocProvider(create: (_) => serviceLocator<AccountCardsSummaryCubit>()),
+      ],
+      child: BlocConsumer<AuthenticationCubit, AuthenticationState>(
+        listener: (context, authState) {
+          if (authState is! AuthenticationSuccess) {
+            Get.snackbar('Authentication Error', 'You need to be logged in to make a withdrawal.', 
+              snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: Colors.red.withOpacity(0.7),
+              colorText: Colors.white
+            );
+          }
+        },
+        builder: (authContext, authState) {
+          return BlocConsumer<WithdrawalCubit, WithdrawalState>(
+            listener: (context, state) {
+              if (state is WithdrawalLoading) {
+                setState(() => _isProcessing = true);
+              } else {
+                setState(() => _isProcessing = false);
+              }
+
+              if (state is WithdrawalSuccess) {
+                Get.snackbar(
+                  'Withdrawal Initiated',
+                  'Your withdrawal request has been successfully initiated.',
+                  snackPosition: SnackPosition.BOTTOM,
+                  backgroundColor: Colors.green.withOpacity(0.7),
+                  colorText: Colors.white,
+                  duration: const Duration(seconds: 3),
+                );
+                
+                _refreshAccountBalances(context);
+                
+                // Navigate back after a short delay
+                Future.delayed(const Duration(seconds: 2), () {
+                  if (Navigator.canPop(context)) {
+                    Navigator.pop(context);
+                  }
+                });
+              } else if (state is WithdrawalFailure) {
+                Get.snackbar(
+                  'Withdrawal Failed',
+                  state.message,
+                  snackPosition: SnackPosition.BOTTOM,
+                  backgroundColor: Colors.red.withOpacity(0.7),
+                  colorText: Colors.white,
+                  duration: const Duration(seconds: 3),
+                );
+              }
+            },
+            builder: (context, state) {
+              return Scaffold(
+                backgroundColor: const Color(0xFF1A1A1A),
+                appBar: AppBar(
+                  backgroundColor: Colors.transparent,
+                  elevation: 0,
+                  leading: IconButton(
+                    icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                  title: Text(
+                    'Withdraw Funds',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  actions: [
+                    IconButton(
+                      icon: Icon(
+                        _isVoiceEnabled ? Icons.mic : Icons.mic_off,
+                        color: _isVoiceEnabled ? const Color(0xFF3498DB) : Colors.white,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _isVoiceEnabled = !_isVoiceEnabled;
+                          if (_isVoiceEnabled) {
+                            _startListening();
+                          } else {
+                            _stopListening();
+                          }
+                        });
+                      },
+                    ),
+                  ],
+                ),
+                body: SingleChildScrollView(
+                  child: Padding(
+                    padding: EdgeInsets.all(24.w),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Balance Card
+                        Container(
+                          padding: EdgeInsets.all(24.w),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.05),
+                            borderRadius: BorderRadius.circular(16.r),
+                            border: Border.all(
+                              color: Colors.white.withOpacity(0.1),
+                            ),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    widget.selectedCard['accountType'] as String,
+                                    style: TextStyle(
+                                      color: Colors.white.withOpacity(0.7),
+                                      fontSize: 14.sp,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  Container(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 12.w,
+                                      vertical: 6.h,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: widget.selectedCard['isUp']
+                                          ? Colors.green.withOpacity(0.2)
+                                          : Colors.red.withOpacity(0.2),
+                                      borderRadius: BorderRadius.circular(20.r),
+                                    ),
+                                    child: Text(
+                                      widget.selectedCard['trend'],
+                                      style: TextStyle(
+                                        color: widget.selectedCard['isUp']
+                                            ? Colors.green[300]
+                                            : Colors.red[300],
+                                        fontSize: 12.sp,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(height: 8.h),
+                              Text(
+                                "£${widget.selectedCard['balance'].toStringAsFixed(2)}",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 32.sp,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              SizedBox(height: 16.h),
+                              Row(
+                                children: [
+                                  Container(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 12.w,
+                                      vertical: 6.h,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(20.r),
+                                    ),
+                                    child: Text(
+                                      widget.selectedCard['accountNumber'] as String,
+                                      style: TextStyle(
+                                        color: Colors.white.withOpacity(0.7),
+                                        fontSize: 12.sp,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        SizedBox(height: 24.h),
+
+                        // Voice Command Status
+                        if (_isVoiceEnabled)
+                          Container(
+                            padding: EdgeInsets.all(16.w),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF3498DB).withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(16.r),
+                              border: Border.all(
+                                color: const Color(0xFF3498DB),
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.mic,
+                                  color: const Color(0xFF3498DB),
+                                  size: 24.sp,
+                                ),
+                                SizedBox(width: 12.w),
+                                Expanded(
+                                  child: Text(
+                                    _isListening
+                                        ? 'Listening...'
+                                        : 'Voice commands enabled. Try saying "Select Barclays" or "Withdraw 500 pounds"',
+                                    style: TextStyle(
+                                      color: const Color(0xFF3498DB),
+                                      fontSize: 14.sp,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        SizedBox(height: 24.h),
+
+                        // Bank Selection
+                        Text(
+                          'Withdraw to',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        SizedBox(height: 16.h),
+                        Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: _showAllBanksBottomSheet,
+                            borderRadius: BorderRadius.circular(12.r),
+                            child: Container(
+                              padding: EdgeInsets.all(16.w),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.05),
+                                borderRadius: BorderRadius.circular(12.r),
+                                border: Border.all(
+                                  color: Colors.white.withOpacity(0.1),
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.account_balance,
+                                    color: Colors.white.withOpacity(0.7),
+                                    size: 24.sp,
+                                  ),
+                                  SizedBox(width: 16.w),
+                                  Expanded(
+                                    child: Text(
+                                      _selectedBank.isEmpty
+                                          ? 'Select Bank Account'
+                                          : _selectedBank,
+                                      style: TextStyle(
+                                        color: _selectedBank.isEmpty
+                                            ? Colors.white.withOpacity(0.5)
+                                            : Colors.white,
+                                        fontSize: 16.sp,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
+                                  Icon(
+                                    Icons.arrow_forward_ios,
+                                    color: Colors.white.withOpacity(0.7),
+                                    size: 16.sp,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        // Selected Bank Details Card
+                        if (selectedBankDetails != null &&
+                            selectedBankDetails.isNotEmpty) ...[
+                          SizedBox(height: 24.h),
+                          Container(
+                            padding: EdgeInsets.all(20.w),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  (selectedBankDetails['color'] as Color)
+                                      .withOpacity(0.2),
+                                  (selectedBankDetails['color'] as Color)
+                                      .withOpacity(0.1),
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(16.r),
+                              border: Border.all(
+                                color: (selectedBankDetails['color'] as Color)
+                                    .withOpacity(0.3),
+                              ),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Container(
+                                      padding: EdgeInsets.all(8.w),
+                                      decoration: BoxDecoration(
+                                        color: (selectedBankDetails['color'] as Color)
+                                            .withOpacity(0.2),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Icon(
+                                        selectedBankDetails['icon'] as IconData,
+                                        color: selectedBankDetails['color'] as Color,
+                                        size: 24.sp,
+                                      ),
+                                    ),
+                                    SizedBox(width: 16.w),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            selectedBankDetails['name'] as String,
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 18.sp,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                          SizedBox(height: 4.h),
+                                          Text(
+                                            selectedBankDetails['accountType'] as String,
+                                            style: TextStyle(
+                                              color: Colors.white.withOpacity(0.7),
+                                              fontSize: 14.sp,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: 20.h),
+                                Container(
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 16.w,
+                                    vertical: 12.h,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(12.r),
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        'Account Number',
+                                        style: TextStyle(
+                                          color: Colors.white.withOpacity(0.7),
+                                          fontSize: 14.sp,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                      Text(
+                                        selectedBankDetails['accountNumber'] as String,
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 16.sp,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                        SizedBox(height: 32.h),
+
+                        // Amount Input
+                        Text(
+                          'Amount',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        SizedBox(height: 16.h),
+                        Container(
+                          padding: EdgeInsets.all(16.w),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.05),
+                            borderRadius: BorderRadius.circular(12.r),
+                            border: Border.all(
+                              color: Colors.white.withOpacity(0.1),
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              Text(
+                                '£',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 24.sp,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              SizedBox(width: 8.w),
+                              Expanded(
+                                child: TextField(
+                                  controller: _amountController,
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 24.sp,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                  keyboardType: TextInputType.number,
+                                  decoration: InputDecoration(
+                                    border: InputBorder.none,
+                                    hintText: '0.00',
+                                    hintStyle: TextStyle(
+                                      color: Colors.white.withOpacity(0.3),
+                                      fontSize: 24.sp,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        SizedBox(height: 24.h),
+
+                        // Quick Amounts
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            _buildQuickAmountButton('£100'),
+                            _buildQuickAmountButton('£500'),
+                            _buildQuickAmountButton('£1000'),
+                            _buildQuickAmountButton('£2000'),
+                          ],
+                        ),
+                        SizedBox(height: 32.h),
+
+                        // Withdraw Button
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed:
+                                _selectedBank.isEmpty || _amountController.text.isEmpty
+                                    ? null
+                                    : () => _handleWithdraw(context),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF3498DB),
+                              foregroundColor: Colors.white,
+                              padding: EdgeInsets.symmetric(vertical: 16.h),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12.r),
+                              ),
+                              elevation: 0,
+                            ),
+                            child: _isProcessing
+                                ? SizedBox(
+                                    height: 20.h,
+                                    width: 20.w,
+                                    child: const CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      valueColor:
+                                          AlwaysStoppedAnimation<Color>(Colors.white),
+                                    ),
+                                  )
+                                : Text(
+                                    'Withdraw',
+                                    style: TextStyle(
+                                      fontSize: 16.sp,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildQuickAmountButton(String amount) {
+    return GestureDetector(
+      onTap: () {
+        setState(() => _amountController.text = amount.replaceAll('£', ''));
+      },
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.05),
+          borderRadius: BorderRadius.circular(8.r),
+          border: Border.all(
+            color: Colors.white.withOpacity(0.1),
+          ),
+        ),
+        child: Text(
+          amount,
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 14.sp,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _handleWithdraw(BuildContext buildContext) {
+    FocusScope.of(buildContext).unfocus();
+
+    if (_selectedBank.isEmpty) {
+      Get.snackbar('Error', 'Please select a target bank.', snackPosition: SnackPosition.BOTTOM);
+      return;
+    }
+    final amount = double.tryParse(_amountController.text);
+    if (amount == null || amount <= 0) {
+      Get.snackbar('Error', 'Please enter a valid positive amount.', snackPosition: SnackPosition.BOTTOM);
+      return;
+    }
+
+    int? sourceAccountId;
+    try {
+      if (widget.selectedCard['id'] is int) {
+        sourceAccountId = widget.selectedCard['id'];
+      } else if (widget.selectedCard['id'] is String) {
+        sourceAccountId = int.tryParse(widget.selectedCard['id'] as String);
+      }
+    } catch (e) {
+      print('Error parsing account ID: $e');
+    }
+
+    if (sourceAccountId == null) {
+      Get.snackbar('Error', 'Invalid account information. Please try again.', snackPosition: SnackPosition.BOTTOM);
+      return;
+    }
+
+    final currency = widget.selectedCard['currency'] as String? ?? 'GBP';
+    
+    final selectedBankInfo = _banks.firstWhere(
+      (bank) => bank['name'] == _selectedBank,
+      orElse: () => {},
+    );
+    
+    if (selectedBankInfo.isEmpty) {
+      Get.snackbar('Error', 'Bank information not found. Please select a different bank.', snackPosition: SnackPosition.BOTTOM);
+      return;
+    }
+    
+    final targetAccountNumber = selectedBankInfo['accountNumber'] as String;
+
+    final authState = context.read<AuthenticationCubit>().state;
+    String? accessToken;
+    
+    if (authState is AuthenticationSuccess) {
+      accessToken = authState.profile.session.accessToken;
+    } else {
+      Get.snackbar('Authentication Error', 'You need to be logged in to make a withdrawal.', 
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.withOpacity(0.7),
+        colorText: Colors.white
+      );
+      return;
+    }
+
+    buildContext.read<WithdrawalCubit>().initiateWithdrawal(
+      sourceAccountId: sourceAccountId,
+      amount: amount,
+      currency: currency,
+      targetBankName: _selectedBank,
+      targetAccountNumber: targetAccountNumber,
+      accessToken: accessToken,
+    );
+  }
+
+  @override
+  void dispose() {
+    _amountController.dispose();
+    _flutterTts.stop();
+    _speech.cancel();
+    super.dispose();
+  }
+} 

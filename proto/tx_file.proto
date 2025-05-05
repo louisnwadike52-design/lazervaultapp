@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package pb;
+
+option go_package = "lazervaultGo/pb";
+
+import "google/api/annotations.proto"; // Import for HTTP annotations
+
+// Defines the service for getting transaction file URLs/Paths.
+service TxFileService {
+  // Retrieves the pre-generated Signed URL for the user's transaction data file.
+  rpc GetUserTxFileUrl(GetUserTxFileUrlRequest) returns (GetUserTxFileUrlResponse) {
+    option (google.api.http) = {
+      get: "/v1/users/txfile/url" // Changed path back to /url
+    };
+  }
+}
+
+// Request message for GetUserTxFileUrl
+message GetUserTxFileUrlRequest {
+  // User ID is implicitly determined from the authentication context (token).
+}
+
+// Response message for GetUserTxFileUrl
+message GetUserTxFileUrlResponse {
+  // The Public HTTPS URL to the transaction file.
+  // Requires the GCS object to be publicly readable.
+  string public_file_url = 1;
+} 

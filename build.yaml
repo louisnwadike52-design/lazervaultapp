@@ -1,0 +1,13 @@
+targets:
+  $default:
+    builders:
+      protobuf:
+        generate_for:
+          include:
+            - lib/src/**/*.proto
+        options:
+          protoc_plugins:
+            - name: dart
+              output: lib/src/generated
+            - name: grpc
+              output: lib/src/generated 

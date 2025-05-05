@@ -1,0 +1,371 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
+import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
+import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_cubit.dart';
+import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_state.dart';
+import 'package:lazervault/src/features/widgets/common/back_navigator.dart';
+import 'package:lazervault/src/features/recipients/presentation/widgets/recipient_chips_builder.dart';
+import 'package:lazervault/src/features/recipients/presentation/widgets/recipients.dart';
+import 'package:lazervault/src/features/recipients/data/models/recipient_model.dart';
+import 'package:lazervault/src/features/authentication/domain/entities/profile_entity.dart';
+import 'package:lazervault/src/features/authentication/domain/entities/session_entity.dart';
+
+class SelectRecipients extends StatefulWidget {
+  const SelectRecipients({super.key});
+
+  @override
+  State<SelectRecipients> createState() => _SelectRecipientsState();
+}
+
+class _SelectRecipientsState extends State<SelectRecipients> {
+  String? _getAccessTokenFromState(AuthenticationState authState) {
+    if (authState is AuthenticationSuccess) {
+      return authState.profile.session.accessToken;
+    }
+    return null;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // Check initial authentication state
+    final authState = context.read<AuthenticationCubit>().state;
+    final accessToken = _getAccessTokenFromState(authState);
+    if (accessToken != null) {
+      // If already authenticated, fetch recipients immediately
+      context.read<RecipientCubit>().getRecipients(accessToken: accessToken);
+    }
+    // The listener below will handle cases where auth happens later.
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocConsumer<AuthenticationCubit, AuthenticationState>(
+      listener: (context, authState) {
+        // Handle side-effects based on Authentication state
+        final accessToken = _getAccessTokenFromState(authState);
+        if (accessToken == null) {
+          Get.snackbar('Authentication Error', 'You need to be logged in.',
+              snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: Colors.red.withOpacity(0.7),
+              colorText: Colors.white);
+        } else {
+          // authState is AuthenticationSuccess
+          // Trigger fetch if needed (handles auth happening while screen is visible)
+          final recipientState = context.read<RecipientCubit>().state;
+          if (recipientState is RecipientInitial) {
+            // Pass the retrieved token
+            context
+                .read<RecipientCubit>()
+                .getRecipients(accessToken: accessToken);
+          }
+        }
+      },
+      builder: (context, authState) {
+        // Build UI based on Authentication state
+        // Check if token exists in builder as well for robustness
+        final currentToken = _getAccessTokenFromState(authState);
+        if (currentToken != null) {
+          // User is authenticated, show the recipient UI
+          return BlocConsumer<RecipientCubit, RecipientState>(
+            listener: (context, recipientState) {
+              // Add listener for RecipientState changes if needed
+              print(
+                  "SelectRecipients Recipient Listener: Received state -> $recipientState");
+            },
+            builder: (context, recipientState) {
+              // Build UI based on Recipient state
+              return Stack(children: [
+                // Top Purple Section with Gradient
+                Container(
+                  height: Get.height * 0.35,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Color.fromARGB(255, 78, 3, 208),
+                        Color.fromARGB(255, 95, 20, 225),
+                      ],
+                    ),
+                  ),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+                  child: SafeArea(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Header with Back Button
+                        Row(
+                          children: [
+                            BackNavigator(),
+                            Expanded(
+                              child: Text(
+                                'Select Recipient',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 20.sp,
+                                  fontWeight: FontWeight.w600,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ),
+                            SizedBox(width: 40.w),
+                          ],
+                        ),
+                        SizedBox(height: 24.h),
+
+                        // Search Bar and Voice Command
+                        Container(
+                          height: 48.h,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.15),
+                            borderRadius: BorderRadius.circular(24),
+                            border: Border.all(
+                              color: Colors.white.withOpacity(0.2),
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: TextField(
+                                  decoration: InputDecoration(
+                                    hintText:
+                                        'Search by name or account number',
+                                    hintStyle: TextStyle(
+                                      color: Colors.white.withOpacity(0.7),
+                                      fontSize: 14.sp,
+                                    ),
+                                    prefixIcon: Icon(
+                                      Icons.search,
+                                      color: Colors.white.withOpacity(0.7),
+                                      size: 20,
+                                    ),
+                                    border: InputBorder.none,
+                                    contentPadding: EdgeInsets.symmetric(
+                                      horizontal: 16.w,
+                                      vertical: 12.h,
+                                    ),
+                                  ),
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 14.sp,
+                                  ),
+                                ),
+                              ),
+                              Container(
+                                margin: EdgeInsets.only(right: 4.w),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.2),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: IconButton(
+                                  onPressed: () {
+                                    // Implement voice command
+                                  },
+                                  icon: Icon(Icons.mic,
+                                      color: Colors.white, size: 20),
+                                  constraints: BoxConstraints(
+                                    minWidth: 40.w,
+                                    minHeight: 40.w,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                // Main Content Section
+                Container(
+                  margin: EdgeInsets.only(top: Get.height * 0.22),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius:
+                        BorderRadius.vertical(top: Radius.circular(32)),
+                  ),
+                  child: Column(
+                    children: [
+                      // Quick Actions Strip
+                      Container(
+                        padding: EdgeInsets.symmetric(vertical: 16.h),
+                        decoration: BoxDecoration(
+                          border: Border(
+                            bottom: BorderSide(
+                              color: Colors.grey[100]!,
+                              width: 1,
+                            ),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            _buildQuickAction(
+                              icon: Icons.qr_code_scanner_outlined,
+                              label: 'Scan QR',
+                              onTap: () {},
+                            ),
+                            _buildQuickAction(
+                              icon: Icons.person_add_outlined,
+                              label: 'Add User',
+                              onTap: () => Get.toNamed(AppRoutes.addRecipient),
+                            ),
+                            _buildQuickAction(
+                              icon: Icons.schedule_outlined,
+                              label: 'Schedule',
+                              onTap: () {},
+                            ),
+                            _buildQuickAction(
+                              icon: Icons.group_outlined,
+                              label: 'Split Bills',
+                              onTap: () {},
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // Recipients List Section
+                      Expanded(
+                        child: _buildRecipientsList(recipientState),
+                      ),
+                    ],
+                  ),
+                ),
+              ]);
+            },
+          );
+        } else {
+          // User is not authenticated, show placeholder/loading
+          return const Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(height: 16),
+                Text("Waiting for authentication..."),
+              ],
+            ),
+          );
+        }
+      },
+    );
+  }
+
+  Widget _buildRecipientsList(RecipientState state) {
+    // Handle Initial State explicitly
+    if (state is RecipientInitial) {
+      // Show nothing or a specific initialization message before loading starts
+      return const Center(child: Text('Initializing recipient list...'));
+    }
+
+    if (state is RecipientLoading) {
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    }
+
+    if (state is RecipientError) {
+      // Handle specific auth error from RecipientCubit
+      if (state.message == 'User not authenticated') {
+        return Center(
+          child: Text(
+            'Authentication error. Please login again.',
+            style: TextStyle(color: Colors.red, fontSize: 16.sp),
+          ),
+        );
+      } else {
+        // Display general recipient errors
+        return Center(
+          child: Text(
+            'Error loading recipients: ${state.message}', // Add context to error
+            style: TextStyle(color: Colors.red, fontSize: 16.sp),
+            textAlign: TextAlign.center, // Center align error text
+          ),
+        );
+      }
+    }
+
+    if (state is RecipientLoaded) {
+      // Handle case where recipients list is empty
+      if (state.recipients.isEmpty) {
+        return const Center(
+            child: Text('No previous recipients')); // User requested text
+      }
+      // Build the UI for displaying the list
+      return SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Frequent Section
+            Padding(
+              padding: EdgeInsets.all(16.w),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  RecipientChipsBuilder(recipients: state.recipients),
+                ],
+              ),
+            ),
+
+            // All Recipients Section
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Recipients(recipients: state.recipients),
+              ],
+            ),
+          ],
+        ),
+      );
+    }
+
+    // Fallback for any other unhandled state (should ideally not be reached)
+    return const Center(child: Text('An unexpected error occurred.'));
+  }
+
+  Widget _buildQuickAction({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: EdgeInsets.all(12.w),
+            decoration: BoxDecoration(
+              color: Color.fromARGB(255, 78, 3, 208).withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              icon,
+              color: Color.fromARGB(255, 78, 3, 208),
+              size: 24,
+            ),
+          ),
+          SizedBox(height: 8.h),
+          Text(
+            label,
+            style: TextStyle(
+              color: Colors.black87,
+              fontSize: 12.sp,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
