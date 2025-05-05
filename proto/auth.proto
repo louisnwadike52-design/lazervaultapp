@@ -1,0 +1,305 @@
+syntax = "proto3";
+
+package pb;
+option go_package = "lazervaultGolang/pb";
+
+import "google/api/annotations.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+import "common.proto";
+
+option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+    info: {
+        title: "LazerVault API"
+        version: "1.0"
+        description: "LazerVault Authentication API"
+    }
+    schemes: HTTP
+    schemes: HTTPS
+    consumes: "application/json"
+    produces: "application/json"
+};
+
+
+message LoginRequest {
+  string email = 1;
+  string password = 2;
+}
+
+
+message LoginResponse {
+  Data data = 1;
+  bool success = 2;
+  string msg = 3;
+}
+
+message RefreshTokenRequest {
+  string refresh_token = 1;
+}
+
+message RefreshTokenResponse {
+  Data data = 1;
+  bool success = 2;     
+  string msg = 3;
+}   
+
+message LogoutRequest {
+  string session_id = 1;
+}
+
+message LogoutResponse {
+  bool success = 1;
+  string msg = 2;
+}
+
+// --- Email Verification Messages ---
+
+// Request to send a verification email to the authenticated user.
+// No parameters needed as user is identified via auth token.
+message RequestEmailVerificationRequest {}
+
+// Response for requesting email verification.
+message RequestEmailVerificationResponse {
+  bool success = 1; // Indicates if the request was accepted (email sending enqueued)
+  string msg = 2;   // User-facing message (e.g., "Verification email sent")
+}
+
+// Request to verify an email using a received code.
+message VerifyEmailRequest {
+  option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
+    json_schema: {
+      required: ["verification_code"]
+    }
+  };
+  string verification_code = 1; // The verification code sent to the user's email
+}
+
+// Response for verifying an email.
+message VerifyEmailResponse {
+  bool success = 1; // Indicates if the email was successfully verified
+  string msg = 2;   // User-facing message (e.g., "Email verified successfully")
+}
+
+// --- End Email Verification Messages ---
+
+// --- Password Reset Messages (Email/Token Based) ---
+
+// Request to initiate password reset process via email.
+message RequestPasswordResetRequest {
+  option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
+    json_schema: {
+      required: ["email"]
+    }
+  };
+  // User provides their email to initiate reset.
+  string email = 1;
+}
+
+// Response for requesting password reset.
+message RequestPasswordResetResponse {
+  bool success = 1;
+  string msg = 2; // e.g., "Password reset instructions sent to your email."
+}
+
+// Request to reset password using the email token.
+message ResetPasswordRequest {
+ option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
+    json_schema: {
+      required: ["email", "token", "new_password"]
+    }
+  };
+  string email = 1;        // Email used in the initial request
+  string token = 2;        // The reset token received via email
+  string new_password = 3; // The desired new password
+}
+
+// Response for resetting password.
+message ResetPasswordResponse {
+  bool success = 1;
+  string msg = 2; // e.g., "Password reset successfully."
+}
+
+// --- End Password Reset Messages ---
+
+// --- Social Sign-In Messages ---
+message SignInWithGoogleRequest {
+  option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
+    json_schema: {
+      required: ["id_token"]
+    }
+  };
+  // The ID token received from Google Sign-In on the client.
+  string id_token = 1;
+}
+
+message SignInWithAppleRequest {
+  option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
+    json_schema: {
+      required: ["identity_token", "user_identifier"]
+      // Optional: Include email and name if you want the client to send them
+      // when first available from Apple. The backend should prioritize
+      // verification via identity_token.
+    }
+  };
+  // The identity token received from Sign in with Apple on the client.
+  string identity_token = 1;
+  // The unique user identifier received from Apple.
+  string user_identifier = 2;
+  // Optional: Email provided by Apple (usually only on first sign-in).
+  string email = 3;
+  // Optional: Given name provided by Apple.
+  string given_name = 4;
+  // Optional: Family name provided by Apple.
+  string family_name = 5;
+}
+
+// We can reuse LoginResponse for social sign-in success.
+
+// --- End Social Sign-In Messages ---
+
+// --- PIN Verification ---
+message VerifyPinRequest {
+  option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
+    json_schema: {
+      required: ["pin"]
+    }
+  };
+  string pin = 1; // The 4-digit transaction PIN entered by the user
+}
+
+message VerifyPinResponse {
+  bool success = 1; // Indicates if the PIN was correct
+  string msg = 2;   // e.g., "PIN verified successfully."
+}
+
+// Service Definition
+service AuthService {
+  rpc Login(LoginRequest) returns (LoginResponse) {
+    option (google.api.http) = {
+      post: "/v1/auth/login"
+      body: "*"
+    };
+  }
+rpc RefreshToken(RefreshTokenRequest) returns (RefreshTokenResponse) {
+    option (google.api.http) = {
+      post: "/v1/auth/refresh-token"
+      body: "*"
+    };
+  }
+  rpc Logout(LogoutRequest) returns (LogoutResponse) {
+    option (google.api.http) = {
+      post: "/v1/auth/logout"
+      body: "*"
+    };
+  }
+
+  // --- Email Verification RPCs ---
+
+  // Request sending a verification email to the authenticated user.
+  rpc RequestEmailVerification(RequestEmailVerificationRequest) returns (RequestEmailVerificationResponse) {
+    option (google.api.http) = {
+      post: "/v1/auth/request-verification-email"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Request Email Verification"
+      description: "Initiates the process to send a verification email to the authenticated user's registered email address."
+      tags: ["Auth"]
+      security: {
+        security_requirement: {
+          key: "bearer" value: {}
+        }
+      }
+    };
+  }
+
+  // Verify the user's email address using a verification code.
+  rpc VerifyEmail(VerifyEmailRequest) returns (VerifyEmailResponse) {
+    option (google.api.http) = {
+      post: "/v1/auth/verify-email"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Verify Email"
+      description: "Verifies the user's email address using the provided verification code."
+      tags: ["Auth"]
+      // No explicit security requirement here, as the code itself implies user action.
+      // However, the backend service MUST validate the code properly.
+    };
+  }
+
+  // --- End Email Verification RPCs ---
+
+  // --- Password Reset RPCs (Email/Token Based) ---
+
+  // Initiate password reset by sending an email token.
+  rpc RequestPasswordReset(RequestPasswordResetRequest) returns (RequestPasswordResetResponse) {
+    option (google.api.http) = {
+      post: "/v1/auth/request-password-reset"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Request Password Reset (Email)"
+      description: "Initiates the password reset process by sending an email with a reset link/token to the user's registered email address."
+      tags: ["Auth"]
+    };
+  }
+
+  // Reset the user's password using the email token.
+  rpc ResetPassword(ResetPasswordRequest) returns (ResetPasswordResponse) {
+    option (google.api.http) = {
+      post: "/v1/auth/reset-password"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Reset Password (Email Token)"
+      description: "Resets the user's password after verifying the email and the reset token received via email."
+      tags: ["Auth"]
+    };
+  }
+
+  // --- End Password Reset RPCs ---
+
+  // --- Social Sign-In RPCs ---
+  rpc SignInWithGoogle(SignInWithGoogleRequest) returns (LoginResponse) {
+     option (google.api.http) = {
+       post: "/v1/auth/google/signin"
+       body: "*"
+     };
+     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+       summary: "Sign In/Up with Google"
+       description: "Authenticates a user using a Google ID token. Creates an account if one doesn't exist for the Google user."
+       tags: ["Auth"]
+     };
+  }
+
+  rpc SignInWithApple(SignInWithAppleRequest) returns (LoginResponse) {
+     option (google.api.http) = {
+       post: "/v1/auth/apple/signin"
+       body: "*"
+     };
+     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+       summary: "Sign In/Up with Apple"
+       description: "Authenticates a user using Apple credentials. Creates an account if one doesn't exist for the Apple user."
+       tags: ["Auth"]
+     };
+  }
+  // --- End Social Sign-In RPCs ---
+
+  // Verify the user's transaction PIN.
+  rpc VerifyPin(VerifyPinRequest) returns (VerifyPinResponse) {
+    option (google.api.http) = {
+      post: "/v1/auth/verify-pin"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Verify Transaction PIN"
+      description: "Verifies the authenticated user's transaction PIN."
+      tags: ["Auth"]
+      security: { // Requires authentication
+        security_requirement: {
+          key: "bearer" value: {}
+        }
+      }
+    };
+  }
+} 

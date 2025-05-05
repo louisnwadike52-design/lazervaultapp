@@ -1,0 +1,47 @@
+abstract class AppRoutes {
+  static const String root = '/';
+  static const String onboarding = '/onboarding';
+  static const String dashboard = '/dashboard';
+  static const String home = '/home';
+  static const String newCard = '/new-card';
+  static const String cameraScan = '/camera-scan';
+  static const String uploadImage = '/upload-image';
+  static const String selectRecipient = '/select-recipient';
+  static const String addRecipient = '/add-recipient';
+  static const String requestFunds = '/request-funds';
+  static const String sendFunds = '/send-funds';
+  static const String initiateSendFunds = '/initiate-send-funds';
+  static const String transferProof = '/transfer-proof';
+  static const String inputPin = '/input-pin';
+  static const String sendFundReceipt = '/send-funds-receipts';
+  static const String reviewFundsTransfer = '/review-funds-transfer';
+  static const String payElectricityBill = '/pay-electricity-bill';
+  static const String flights = '/flights';
+  static const String reviewElectricityBillDetails =
+      '/validate-electricity-bill-details';
+  static const String transferFunds = '/transfer-funds';
+  static const String crypto = '/crypto';
+  static const String stocks = '/stocks';
+  static const String transactionHistory = '/transaction-history';
+  static const String reviewTransferFunds = '/review-transfer-funds';
+  static const String profileSettings = '/profile-settings';
+  static const String languages = '/profile-settings/languages';
+  static const String myAccount = '/profile-settings/my-account';
+  static const String setFingerPrint = '/profile-settings/set-fingerprint';
+  static const String changePin = '/profile-settings/change-pin';
+  static const String depositFunds = '/profile-settings/deposit-funds';
+  static const String withdrawFunds = '/profile-settings/withdraw-funds';
+  static const String cbCurrencyExchange = '/profile-settings/cb-currency-exchange';
+  static const String signUp = '/auth/sign-up';
+  static const String signIn = '/auth/sign-in';
+  static const String emailSignIn = '/auth/email-sign-in';
+  static const String otpVerification = '/auth/otp-verification';
+  static const String enableBiometricAccess = '/auth/enable-biometric-access';
+  static const String passwordRecovery = '/auth/password-recovery';
+  static const String createNewPassword = '/auth/create-new-password';
+  static const String selectCountry = '/auth/select-country';
+  static const String facialBiometricVerification =
+      '/auth/facial-biometric-verification';
+  static const String faceScan = '/auth/face-scan';
+  static const String proofOfResidence = '/auth/proof-of-residence';
+}

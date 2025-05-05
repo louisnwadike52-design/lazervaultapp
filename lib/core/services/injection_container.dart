@@ -1,0 +1,347 @@
+import 'package:get_it/get_it.dart';
+import 'package:grpc/grpc.dart';
+import 'package:http/http.dart' as http;
+import 'package:lazervault/core/types/electricity_bill_details.dart';
+import 'package:lazervault/core/types/recipient.dart' as core_recipient;
+import 'package:lazervault/core/types/transaction.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
+import 'package:lazervault/src/features/authentication/data/repositories/auth_repository.dart';
+import 'package:lazervault/src/features/authentication/domain/entities/user.dart';
+import 'package:lazervault/src/features/authentication/domain/repositories/i_auth_repository.dart';
+import 'package:lazervault/src/features/authentication/domain/usecases/login_usecase.dart';
+import 'package:lazervault/src/features/authentication/domain/usecases/sign_in_with_apple_usecase.dart';
+import 'package:lazervault/src/features/authentication/domain/usecases/sign_in_with_google_usecase.dart';
+import 'package:lazervault/src/features/authentication/domain/usecases/sign_up_usecase.dart';
+import 'package:lazervault/src/features/authentication/presentation/views/email_sign_in_screen.dart';
+import 'package:lazervault/src/features/funds/cubit/withdrawal_cubit.dart';
+import 'package:lazervault/src/features/recipients/data/models/recipient_model.dart';
+import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_cubit.dart';
+import 'package:lazervault/src/features/recipients/domain/usecases/add_recipient_usecase.dart';
+import 'package:lazervault/src/features/recipients/domain/usecases/get_recipients_usecase.dart';
+import 'package:lazervault/src/features/recipients/domain/usecases/toggle_favorite_usecase.dart';
+import 'package:lazervault/src/features/funds/cubit/deposit_cubit.dart';
+import 'package:lazervault/src/features/funds/data/repositories/withdrawal_repository_impl.dart';
+import 'package:lazervault/src/features/funds/domain/repositories/i_withdrawal_repository.dart';
+import 'package:lazervault/src/features/funds/presentation/view/withdraw_funds_screen.dart';
+import 'package:lazervault/src/features/recipients/data/repositories/recipient_repository_impl.dart';
+import 'package:lazervault/src/features/recipients/domain/repositories/i_recipient_repository.dart';
+import 'package:lazervault/src/features/recipients/presentation/view/add_recipient_screen.dart';
+import 'package:lazervault/src/generated/recipient.pbgrpc.dart';
+import 'package:lazervault/src/generated/transfer.pbgrpc.dart' hide TransferTransaction;
+import 'package:lazervault/src/generated/user.pbgrpc.dart';
+import 'package:lazervault/src/generated/auth.pbgrpc.dart';
+import 'package:lazervault/src/generated/deposit.pbgrpc.dart';
+import 'package:lazervault/src/features/presentation/views/cb_currency_exchange/cb_currency_exchange_screen.dart';
+import 'package:lazervault/src/features/presentation/views/change_pin_screen.dart';
+import 'package:lazervault/src/features/presentation/views/create_new_password_screen.dart';
+import 'package:lazervault/src/features/presentation/views/crypto/crypto_screen.dart';
+import 'package:lazervault/src/features/presentation/views/enable_biometric_access_screen.dart';
+import 'package:lazervault/src/features/presentation/views/face_scan_screen.dart';
+import 'package:lazervault/src/features/presentation/views/facial_biometric_verification_screen.dart';
+import 'package:lazervault/src/features/presentation/views/flights/flights_screen.dart';
+import 'package:lazervault/src/features/funds/presentation/view/deposit_funds_screen.dart';
+import 'package:lazervault/src/features/funds/presentation/view/send_funds/initiate_send_funds_screen.dart';
+import 'package:lazervault/src/features/presentation/views/languages_screen.dart';
+import 'package:lazervault/src/features/presentation/views/my_account_screen.dart';
+import 'package:lazervault/src/features/presentation/views/otp_verification_screen.dart';
+import 'package:lazervault/src/features/presentation/views/password_recovery_screen.dart';
+import 'package:lazervault/src/features/presentation/views/profile_settings_screen.dart';
+import 'package:lazervault/src/features/presentation/views/review_electricity_bills_screen.dart';
+import 'package:lazervault/src/features/presentation/views/camera_scan_screen.dart';
+import 'package:lazervault/src/features/presentation/views/dashboard/dashboard_screen.dart';
+import 'package:lazervault/src/features/presentation/views/dashboard/transaction_history_screen.dart';
+import 'package:lazervault/src/features/presentation/views/input_pin_screen.dart';
+import 'package:lazervault/src/features/presentation/views/new_card_screen.dart';
+import 'package:lazervault/src/features/presentation/views/pay_electricity_bill_screen.dart';
+import 'package:lazervault/src/features/presentation/views/request_funds_screen.dart';
+import 'package:lazervault/src/features/presentation/views/review_funds_transfer_screen.dart';
+import 'package:lazervault/src/features/presentation/views/review_transfer_funds_screen.dart';
+import 'package:lazervault/src/features/presentation/views/select_country_screen.dart';
+import 'package:lazervault/src/features/recipients/presentation/view/select_recipient_screen.dart';
+import 'package:lazervault/src/features/presentation/views/send_fund_receipt_screen.dart';
+import 'package:lazervault/src/features/presentation/views/send_fund_screen.dart';
+import 'package:lazervault/src/features/funds/presentation/view/send_funds/transfer_proof_screen.dart';
+import 'package:lazervault/src/features/presentation/views/set_fingerprint_screen.dart';
+import 'package:lazervault/src/features/authentication/presentation/views/passcode_sign_in_screen.dart';
+import 'package:lazervault/src/features/authentication/presentation/views/sign_up_screen.dart';
+import 'package:lazervault/src/features/presentation/views/stocks/stocks_screen.dart';
+import 'package:lazervault/src/features/presentation/views/transfer_funds_screen.dart';
+import 'package:lazervault/src/features/presentation/views/upload_image_scren.dart';
+import 'package:lazervault/src/generated/withdraw.pbgrpc.dart';
+
+import 'package:lazervault/src/features/funds/data/datasources/transfer_remote_data_source.dart';
+import 'package:lazervault/src/features/funds/data/repositories/transfer_repository_impl.dart';
+import 'package:lazervault/src/features/funds/domain/repositories/i_transfer_repository.dart';
+import 'package:lazervault/src/features/funds/domain/usecases/initiate_transfer_usecase.dart';
+import 'package:lazervault/src/features/funds/cubit/transfer_cubit.dart';
+
+import '../../src/features/authentication/data/datasources/authentication_remote_data_source.dart';
+import '../../src/features/presentation/views/onboarding_screen.dart';
+import '../../src/features/presentation/views/splash_screen.dart';
+import 'package:lazervault/src/features/funds/data/repositories/deposit_repository_impl.dart';
+import 'package:lazervault/src/features/funds/domain/repositories/i_deposit_repository.dart';
+import 'package:lazervault/src/features/funds/domain/usecases/initiate_deposit_usecase.dart';
+import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
+import 'package:lazervault/src/features/account_cards_summary/data/repositories/account_summary_repository_impl.dart';
+import 'package:lazervault/src/features/account_cards_summary/domain/repositories/i_account_summary_repository.dart';
+import 'package:lazervault/src/features/account_cards_summary/domain/usecases/get_account_summaries_usecase.dart';
+import 'package:lazervault/src/generated/account.pbgrpc.dart';
+import 'package:lazervault/src/generated/recipient.pbgrpc.dart';
+import 'package:lazervault/src/features/funds/domain/usecases/initiate_withdrawal_usecase.dart';
+
+// AI Chat Imports
+import 'package:lazervault/src/generated/ai_chat.pbgrpc.dart';
+import 'package:lazervault/src/features/ai_chats/data/datasources/grpc_ai_chat_service.dart';
+import 'package:lazervault/src/features/ai_chats/data/repository/ai_chat_repository_impl.dart';
+import 'package:lazervault/src/features/ai_chats/domain/repositories/i_ai_chat_repository.dart';
+import 'package:lazervault/src/features/ai_chats/domain/usecases/process_ai_chat_usecase.dart';
+import 'package:lazervault/src/features/ai_chats/cubit/ai_chat_cubit.dart';
+import 'package:lazervault/src/features/ai_chats/domain/usecases/get_ai_chat_history_usecase.dart';
+// End AI Chat Imports
+
+final serviceLocator = GetIt.instance;
+
+Future<void> init() async {
+  // ================== External / gRPC / HTTP ==================
+  serviceLocator.registerLazySingleton(http.Client.new);
+
+  serviceLocator.registerLazySingleton<ClientChannel>(() {
+    const host = '10.0.2.2';
+    const port = 7007;
+    print("Creating gRPC Channel to $host:$port");
+    return ClientChannel(
+      host,
+      port: port,
+      options: const ChannelOptions(
+        credentials: ChannelCredentials.insecure(),
+      ),
+    );
+  });
+
+  // Register gRPC Clients
+  serviceLocator.registerLazySingleton<UserServiceClient>(
+    () => UserServiceClient(serviceLocator<ClientChannel>()),
+  );
+  serviceLocator.registerLazySingleton<AuthServiceClient>(
+    () => AuthServiceClient(serviceLocator<ClientChannel>()),
+  );
+  serviceLocator.registerLazySingleton<DepositServiceClient>(
+    () => DepositServiceClient(serviceLocator<ClientChannel>()),
+  );
+  serviceLocator.registerLazySingleton<AccountServiceClient>(
+    () => AccountServiceClient(serviceLocator<ClientChannel>()),
+  );
+  serviceLocator.registerLazySingleton<RecipientServiceClient>(
+    () => RecipientServiceClient(serviceLocator<ClientChannel>()),
+  );
+  serviceLocator.registerLazySingleton<WithdrawServiceClient>(
+    () => WithdrawServiceClient(serviceLocator<ClientChannel>()),
+  );
+  serviceLocator.registerLazySingleton<TransferServiceClient>(
+    () => TransferServiceClient(serviceLocator<ClientChannel>()),
+  );
+  // Add AI Chat Client
+  serviceLocator.registerLazySingleton<AIChatServiceClient>(
+    () => AIChatServiceClient(serviceLocator<ClientChannel>()),
+  );
+
+
+  // ================== Feature: Authentication ==================
+
+  // Data Sources
+  serviceLocator.registerLazySingleton<AuthenticationRemoteDataSource>(
+      () => AuthenticationRemoteDataSourceImpl(serviceLocator<http.Client>()));
+
+  // Repositories
+  serviceLocator.registerLazySingleton<IAuthRepository>(
+      () => AuthRepositoryImpl(
+          userServiceClient: serviceLocator<UserServiceClient>(),
+          authServiceClient: serviceLocator<AuthServiceClient>(),
+        ));
+
+  // Use Cases
+  serviceLocator.registerLazySingleton(() => SignUpUseCase(serviceLocator<IAuthRepository>()));
+  serviceLocator.registerLazySingleton(() => LoginUseCase(serviceLocator<IAuthRepository>()));
+  serviceLocator.registerLazySingleton(() => SignInWithGoogleUseCase(serviceLocator<IAuthRepository>()));
+  serviceLocator.registerLazySingleton(() => SignInWithAppleUseCase(serviceLocator<IAuthRepository>()));
+
+  // Blocs/Cubits
+  serviceLocator.registerFactory(() => AuthenticationCubit(
+        login: serviceLocator<LoginUseCase>(),
+        signUp: serviceLocator<SignUpUseCase>(),
+        signInWithGoogle: serviceLocator<SignInWithGoogleUseCase>(),
+        signInWithApple: serviceLocator<SignInWithAppleUseCase>(),
+      ));
+
+
+  // ================== Feature: Account Cards Summary ==================
+
+  // Repositories
+  serviceLocator.registerLazySingleton<IAccountSummaryRepository>(
+      () => AccountSummaryRepositoryImpl(serviceLocator<AccountServiceClient>()));
+
+  // Use Cases
+  serviceLocator.registerLazySingleton(() => GetAccountSummariesUseCase(serviceLocator<IAccountSummaryRepository>()));
+
+  // Blocs/Cubits
+  serviceLocator.registerLazySingleton(() => AccountCardsSummaryCubit(serviceLocator<GetAccountSummariesUseCase>()));
+
+
+  // ================== Feature: Recipients ==================
+
+  // Repositories
+  serviceLocator.registerLazySingleton<IRecipientRepository>(
+    () => RecipientRepositoryImpl(serviceLocator<RecipientServiceClient>()),
+  );
+
+  // Use Cases
+  serviceLocator.registerLazySingleton(() => GetRecipientsUseCase(serviceLocator<IRecipientRepository>()));
+  serviceLocator.registerLazySingleton(() => AddRecipientUseCase(serviceLocator<IRecipientRepository>()));
+  serviceLocator.registerLazySingleton(() => ToggleFavoriteUseCase(serviceLocator<IRecipientRepository>()));
+
+  // Blocs/Cubits
+  serviceLocator.registerFactory(() => RecipientCubit(
+    getRecipientsUseCase: serviceLocator<GetRecipientsUseCase>(),
+    addRecipientUseCase: serviceLocator<AddRecipientUseCase>(),
+    toggleFavoriteUseCase: serviceLocator<ToggleFavoriteUseCase>(),
+  ));
+
+
+  // ================== Feature: Funds (Deposit) ==================
+
+  // Repositories
+  serviceLocator.registerLazySingleton<IDepositRepository>(
+      () => DepositRepositoryImpl(serviceLocator<DepositServiceClient>()));
+
+  // Use Cases
+  serviceLocator.registerLazySingleton(() => InitiateDepositUseCase(serviceLocator<IDepositRepository>()));
+
+  // Blocs/Cubits
+  serviceLocator.registerFactory(() => DepositCubit(serviceLocator<InitiateDepositUseCase>()));
+
+
+  // ================== Feature: Funds (Withdrawal) ==================
+
+  // Repositories
+  serviceLocator.registerLazySingleton<IWithdrawalRepository>(
+      () => WithdrawalRepositoryImpl(serviceLocator<WithdrawServiceClient>()));
+
+  // Use Cases
+  serviceLocator.registerLazySingleton(() => InitiateWithdrawalUseCase(serviceLocator<IWithdrawalRepository>()));
+
+  // Blocs/Cubits
+   serviceLocator.registerFactory(() => WithdrawalCubit(serviceLocator<InitiateWithdrawalUseCase>()));
+
+
+  // ================== Feature: Funds (Transfer) ==================
+
+  // Data Sources
+  serviceLocator.registerLazySingleton<ITransferRemoteDataSource>(
+    () => TransferRemoteDataSourceImpl(serviceLocator<TransferServiceClient>()),
+  );
+
+  // Repositories
+  serviceLocator.registerLazySingleton<ITransferRepository>(
+    () => TransferRepositoryImpl(remoteDataSource: serviceLocator<ITransferRemoteDataSource>()),
+  );
+
+  // Use Cases
+  serviceLocator.registerLazySingleton(() => InitiateTransferUseCase(serviceLocator<ITransferRepository>()));
+
+  // Blocs/Cubits
+  serviceLocator.registerFactory(() => TransferCubit(
+    initiateTransferUseCase: serviceLocator<InitiateTransferUseCase>(),
+  ));
+
+
+  // ================== Feature: AI Chat ==================
+
+  // Data Sources
+  serviceLocator.registerLazySingleton<IAiChatDataSource>(
+    () => GrpcAiChatDataSource(client: serviceLocator<AIChatServiceClient>()),
+  );
+
+  // Repositories
+  serviceLocator.registerLazySingleton<IAiChatRepository>(
+    () => AiChatRepositoryImpl(dataSource: serviceLocator<IAiChatDataSource>()),
+  );
+
+  // Use Cases
+  serviceLocator.registerLazySingleton(() => ProcessChatUseCase(serviceLocator<IAiChatRepository>()));
+  serviceLocator.registerLazySingleton(() => GetAIChatHistoryUseCase(serviceLocator<IAiChatRepository>()));
+
+  // Blocs/Cubits
+  // Register as Factory because it depends on another Cubit (Auth)
+  serviceLocator.registerFactory(() => AIChatCubit(
+        processChatUseCase: serviceLocator<ProcessChatUseCase>(),
+        getAIChatHistoryUseCase: serviceLocator<GetAIChatHistoryUseCase>(),
+      ));
+
+
+  // ================== Screens / Presentation ==================
+  serviceLocator
+      ..registerFactory(() => OnboardingScreen())
+      ..registerFactory(() => SplashScreen())
+      ..registerFactory(() => DashboardScreen())
+      ..registerFactory(() => NewCardScreen())
+      ..registerFactory(() => CameraScanScreen())
+      ..registerFactory(() => UploadImageScreen())
+      ..registerFactory(() => SelectRecipientScreen())
+      ..registerFactory(() => AddRecipientScreen())
+      ..registerFactory(() => RequestFundsScreen())
+      ..registerFactoryParam<InputPinScreen, User, void>(
+          (recipient, _) => InputPinScreen(recipient: recipient))
+      ..registerFactory(() => PayElectricityBillScreen())
+      ..registerFactory(() => ProfileSettingsScreen())
+      ..registerFactory(() => LanguagesScreen())
+      ..registerFactory(() => MyAccountScreen())
+      ..registerFactory(() => SetFingerPrintScreen())
+      ..registerFactory(() => ChangePinScreen())
+      ..registerFactory(() => SignUpScreen())
+      ..registerFactory(() => EmailSignInScreen())
+      ..registerFactory(() => PasscodeSignInScreen())
+      ..registerFactory(() => OTPVerificationScreen())
+      ..registerFactory(() => EnableBiometricAccessScreen())
+      ..registerFactory(() => PasswordRecoveryScreen())
+      ..registerFactory(() => CreateNewPasswordScreen())
+      ..registerFactory(() => SelectCountryScreen())
+      ..registerFactory(() => FacialBiometricVerificationScreen())
+      ..registerFactory(() => FaceScanScreen())
+      ..registerFactory(() => TransactionHistoryScreen())
+      ..registerFactory(() => FlightsScreen())
+      ..registerFactory(() => CryptoScreen())
+      ..registerFactory(() => StocksScreen())
+      ..registerFactory(() => CBCurrencyExchangeScreen())
+      ..registerFactoryParam<ReviewFundsTransferScreen, core_recipient.Recipient, void>(
+          (recipient, _) => ReviewFundsTransferScreen(recipient: recipient))
+      ..registerFactoryParam<InitiateSendFundsScreen, RecipientModel, void>(
+          (recipient, _) => InitiateSendFundsScreen(recipient:  recipient))
+      ..registerFactoryParam<SendFundScreen, User, void>(
+          (recipient, _) => SendFundScreen(recipient: recipient))
+      ..registerFactoryParam<TransferProofScreen, Map<String, dynamic>, void>(
+          (transferDetails, _) => TransferProofScreen(transferDetails: transferDetails))
+      ..registerFactoryParam<SendFundReceiptScreen, Transaction, void>(
+          (transaction, _) => SendFundReceiptScreen(transaction: transaction))
+      ..registerFactoryParam<ReviewElectricityBillsScreen, ElectricityBillDetails,
+              void>(
+          (electricityBillDetails, _) => ReviewElectricityBillsScreen(
+              electricityBillDetails: electricityBillDetails))
+      ..registerFactoryParam<TransferFundsScreen, User, TransferTransaction>(
+        (user, transaction) =>
+            TransferFundsScreen(user: user, transaction: transaction),
+      )
+      ..registerFactoryParam<ReviewTransferFundsScreen, User,
+          TransferTransaction>(
+        (user, transaction) =>
+            ReviewTransferFundsScreen(user: user, transaction: transaction),
+      )
+      ..registerFactoryParam<DepositFundsScreen, Map<String, dynamic>, void>(
+        (selectedCard, _) => DepositFundsScreen(selectedCard: selectedCard),
+      )
+      ..registerFactoryParam<WithdrawFundsScreen, Map<String, dynamic>, void>(
+        (selectedCard, _) => WithdrawFundsScreen(selectedCard: selectedCard),
+      );
+
+
+  print("Dependency Injection Initialized with Hierarchical Order");
+}

@@ -1,0 +1,9 @@
+flutter pub add flutter_screenutil // for screen scale ratio responsiveness provider for fontsize, width, heights etc. 
+
+when performing asynchronous call in a function that uses context in a widget, always make sure to check `if(mounted)` // if widget is still mounted
+
+install protoc compiler using brew in the os 
+install global dard plugin for flutter 
+>  dart pub global activate protoc_plugin
+then: 
+>  export PATH="$PATH":"$HOME/.pub-cache/bin"
