@@ -1148,41 +1148,13 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Quick Recipients',
-                    style: GoogleFonts.inter(
-                      color: Colors.white,
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  SizedBox(height: 4.h),
-                  Row(
-                    children: [
-                      _buildCurrencyFlag(_selectedFromCurrency, size: 16),
-                      SizedBox(width: 4.w),
-                      Icon(
-                        Icons.arrow_forward,
-                        color: Colors.grey[400],
-                        size: 12.sp,
-                      ),
-                      SizedBox(width: 4.w),
-                      _buildCurrencyFlag(_selectedToCurrency, size: 16),
-                      SizedBox(width: 8.w),
-                      Text(
-                        '$_selectedFromCurrency → $_selectedToCurrency',
-                        style: GoogleFonts.inter(
-                          color: Colors.grey[400],
-                          fontSize: 10.sp,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+              Text(
+                'Quick Recipients',
+                style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
               Row(
                 children: [
@@ -1206,7 +1178,7 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
                       borderRadius: BorderRadius.circular(8.r),
                     ),
                     child: IconButton(
-                      onPressed: _showAddRecipientBottomSheet,
+                      onPressed: _showReceiverDetailsBottomSheet,
                       icon: Icon(
                         Icons.add,
                         color: Colors.blue,
@@ -1229,17 +1201,17 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
           height: 70.h,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
-            padding: EdgeInsets.symmetric(horizontal: 16.w),
+            padding: EdgeInsets.only(left: 16.w, right: 16.w, top: 4.h),
             itemCount: _savedRecipients.length + 1, // +1 for "Add New" card
             itemBuilder: (context, index) {
-              // Show "Add New" card as the last item
-              if (index == _savedRecipients.length) {
+              // Show "Add New" card as the first item
+              if (index == 0) {
                 return Container(
                   margin: EdgeInsets.only(right: 12.w),
                   child: Material(
                     color: Colors.transparent,
                     child: InkWell(
-                      onTap: _showAddRecipientBottomSheet,
+                      onTap: _showReceiverDetailsBottomSheet,
                       borderRadius: BorderRadius.circular(25.r),
                       child: Container(
                         padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
@@ -1284,93 +1256,163 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
                 );
               }
               
-              final recipient = _savedRecipients[index];
+              final recipient = _savedRecipients[index - 1]; // Adjust index since "Add New" is first
+              final isSelected = _selectedRecipient != null && _selectedRecipient!['id'] == recipient['id'];
+              
               return Container(
                 margin: EdgeInsets.only(right: 12.w),
-                child: Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: () => _selectQuickRecipient(recipient),
-                    borderRadius: BorderRadius.circular(12.r),
-                    child: Container(
-                      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.05),
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: () => _selectQuickRecipient(recipient),
                         borderRadius: BorderRadius.circular(25.r),
-                        border: Border.all(
-                          color: recipient['isFrequent'] 
-                              ? Colors.orange.withValues(alpha: 0.5)
-                              : Colors.white.withValues(alpha: 0.1),
-                          width: recipient['isFrequent'] ? 2 : 1,
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            width: 40.w,
-                            height: 40.h,
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  Colors.blue[700]!,
-                                  Colors.blue[500]!,
-                                ],
-                              ),
-                              shape: BoxShape.circle,
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                          decoration: BoxDecoration(
+                            color: isSelected 
+                                ? Colors.green.withValues(alpha: 0.15)
+                                : Colors.white.withValues(alpha: 0.05),
+                            borderRadius: BorderRadius.circular(25.r),
+                            border: Border.all(
+                              color: isSelected
+                                  ? Colors.green.withValues(alpha: 0.6)
+                                  : recipient['isFrequent'] 
+                                      ? Colors.orange.withValues(alpha: 0.5)
+                                      : Colors.white.withValues(alpha: 0.1),
+                              width: isSelected ? 2.5 : (recipient['isFrequent'] ? 2 : 1),
                             ),
-                            child: Center(
-                              child: Text(
-                                recipient['name'][0].toUpperCase(),
-                                style: GoogleFonts.inter(
-                                  color: Colors.white,
-                                  fontSize: 16.sp,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                            boxShadow: isSelected ? [
+                              BoxShadow(
+                                color: Colors.green.withValues(alpha: 0.3),
+                                blurRadius: 8,
+                                offset: Offset(0, 2),
                               ),
-                            ),
+                            ] : null,
                           ),
-                          SizedBox(width: 8.w),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.center,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
                             children: [
-                              Text(
-                                recipient['name'].split(' ')[0],
-                                style: GoogleFonts.inter(
-                                  color: Colors.white,
-                                  fontSize: 12.sp,
-                                  fontWeight: FontWeight.w600,
+                              Container(
+                                width: 40.w,
+                                height: 40.h,
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: isSelected ? [
+                                      Colors.green[700]!,
+                                      Colors.green[500]!,
+                                    ] : [
+                                      Colors.blue[700]!,
+                                      Colors.blue[500]!,
+                                    ],
+                                  ),
+                                  shape: BoxShape.circle,
+                                  border: isSelected ? Border.all(
+                                    color: Colors.white,
+                                    width: 2,
+                                  ) : null,
+                                ),
+                                child: Center(
+                                  child: isSelected 
+                                      ? Icon(
+                                          Icons.check,
+                                          color: Colors.white,
+                                          size: 20.sp,
+                                        )
+                                      : Text(
+                                          recipient['name'][0].toUpperCase(),
+                                          style: GoogleFonts.inter(
+                                            color: Colors.white,
+                                            fontSize: 16.sp,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
                                 ),
                               ),
-                              Row(
+                              SizedBox(width: 8.w),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Text(
-                                    recipient['currency'],
+                                    recipient['name'].split(' ')[0],
                                     style: GoogleFonts.inter(
-                                      color: Colors.grey[400],
-                                      fontSize: 10.sp,
+                                      color: Colors.white,
+                                      fontSize: 12.sp,
+                                      fontWeight: FontWeight.w600,
                                     ),
                                   ),
-                                  if (recipient['isFrequent']) ...[
-                                    SizedBox(width: 4.w),
-                                    Container(
-                                      width: 4.w,
-                                      height: 4.h,
-                                      decoration: BoxDecoration(
-                                        color: Colors.orange,
-                                        shape: BoxShape.circle,
+                                  Row(
+                                    children: [
+                                      Text(
+                                        recipient['currency'],
+                                        style: GoogleFonts.inter(
+                                          color: Colors.grey[400],
+                                          fontSize: 10.sp,
+                                        ),
                                       ),
-                                    ),
-                                  ],
+                                      if (recipient['isFrequent']) ...[
+                                        SizedBox(width: 4.w),
+                                        Container(
+                                          width: 4.w,
+                                          height: 4.h,
+                                          decoration: BoxDecoration(
+                                            color: Colors.orange,
+                                            shape: BoxShape.circle,
+                                          ),
+                                        ),
+                                      ],
+                                    ],
+                                  ),
                                 ],
                               ),
+                              SizedBox(width: 20.w), // Add space for the badge
                             ],
                           ),
-                        ],
+                        ),
                       ),
                     ),
-                  ),
+                    // Currency exchange badge at top right corner
+                    Positioned(
+                      top: -6.h,
+                      right: -6.w,
+                      child: Container(
+                        padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 3.h),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.8),
+                          borderRadius: BorderRadius.circular(12.r),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.3),
+                            width: 1,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.3),
+                              blurRadius: 8,
+                              offset: Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            _buildCurrencyFlag(_selectedFromCurrency, size: 14),
+                            SizedBox(width: 3.w),
+                            Icon(
+                              Icons.arrow_forward,
+                              color: Colors.white,
+                              size: 10.sp,
+                            ),
+                            SizedBox(width: 3.w),
+                            _buildCurrencyFlag(recipient['currency'], size: 14),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               );
             },
@@ -1394,116 +1436,7 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
     _convertCurrency();
   }
 
-  void _showAddRecipientBottomSheet() {
-    // Clear the controllers for new recipient
-    _receiverNameController.clear();
-    _receiverAccountController.clear();
-    _receiverBankController.clear();
-    _receiverSwiftController.clear();
-    
-    Get.bottomSheet(
-      Container(
-        padding: EdgeInsets.all(20.w),
-        decoration: BoxDecoration(
-          color: Colors.grey[900],
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              width: 40.w,
-              height: 4.h,
-              margin: EdgeInsets.only(bottom: 20.h),
-              decoration: BoxDecoration(
-                color: Colors.grey[700],
-                borderRadius: BorderRadius.circular(2.r),
-              ),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Add New Recipient',
-                  style: GoogleFonts.inter(
-                    color: Colors.white,
-                    fontSize: 20.sp,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                IconButton(
-                  icon: Icon(Icons.close, color: Colors.white, size: 24.sp),
-                  onPressed: () => Get.back(),
-                ),
-              ],
-            ),
-            SizedBox(height: 16.h),
-            _buildReceiverInputField(
-              'Full Name',
-              _receiverNameController,
-              TextInputType.name,
-            ),
-            SizedBox(height: 12.h),
-            _buildReceiverInputField(
-              'Account Number',
-              _receiverAccountController,
-              TextInputType.number,
-            ),
-            SizedBox(height: 12.h),
-            _buildReceiverInputField(
-              'Bank Name',
-              _receiverBankController,
-              TextInputType.text,
-            ),
-            SizedBox(height: 12.h),
-            _buildReceiverInputField(
-              'SWIFT/BIC Code',
-              _receiverSwiftController,
-              TextInputType.text,
-            ),
-            SizedBox(height: 12.h),
-            _buildCurrencyDropdown(),
-            SizedBox(height: 24.h),
-            Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Colors.blue[700]!, Colors.blue[500]!],
-                ),
-                borderRadius: BorderRadius.circular(16.r),
-              ),
-              child: SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _addNewRecipient,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.transparent,
-                    elevation: 0,
-                    padding: EdgeInsets.symmetric(vertical: 16.h),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16.r),
-                    ),
-                  ),
-                  child: Text(
-                    'Add Recipient',
-                    style: GoogleFonts.inter(
-                      color: Colors.white,
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            SizedBox(height: 16.h),
-          ],
-        ),
-      ),
-      isScrollControlled: true,
-      enableDrag: true,
-      backgroundColor: Colors.transparent,
-    );
-  }
+
 
   Widget _buildCurrencyDropdown() {
     return Column(
@@ -1606,52 +1539,7 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
     );
   }
 
-  void _addNewRecipient() {
-    if (_receiverNameController.text.isEmpty ||
-        _receiverAccountController.text.isEmpty ||
-        _receiverBankController.text.isEmpty ||
-        _receiverSwiftController.text.isEmpty) {
-      Get.snackbar(
-        'Error',
-        'Please fill in all recipient details',
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
-      return;
-    }
 
-    // Create new recipient
-    final newRecipient = {
-      'id': DateTime.now().millisecondsSinceEpoch.toString(),
-      'name': _receiverNameController.text,
-      'email': '${_receiverNameController.text.toLowerCase().replaceAll(' ', '.')}@email.com',
-      'account': _receiverAccountController.text,
-      'bank': _receiverBankController.text,
-      'swift': _receiverSwiftController.text,
-      'country': _allCurrencies[_selectedToCurrency]?['country'] ?? 'Unknown',
-      'currency': _selectedToCurrency,
-      'isFrequent': false,
-      'lastUsed': DateTime.now(),
-    };
-
-    // Add to saved recipients list
-    setState(() {
-      _savedRecipients.insert(0, newRecipient);
-      _selectedRecipient = newRecipient;
-    });
-
-    Get.back(); // Close bottom sheet
-
-    Get.snackbar(
-      'Success',
-      'Recipient added successfully',
-      backgroundColor: Colors.green.withValues(alpha: 0.8),
-      colorText: Colors.white,
-      duration: const Duration(seconds: 2),
-    );
-
-    _convertCurrency();
-  }
 
   Widget _buildSelectedRecipient() {
     if (_selectedRecipient == null) return const SizedBox.shrink();
@@ -1881,47 +1769,119 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
             ),
           ),
           child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                width: 40.w,
-                height: 40.h,
-                decoration: BoxDecoration(
-                  color: Colors.green.withValues(alpha: 0.2),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.check_circle,
-                  color: Colors.green,
-                  size: 20.sp,
-                ),
-              ),
-              SizedBox(width: 12.w),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
+              Row(
+                children: [
+                  Container(
+                    width: 40.w,
+                    height: 40.h,
+                    decoration: BoxDecoration(
+                      color: Colors.green.withValues(alpha: 0.2),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.check_circle,
+                      color: Colors.green,
+                      size: 20.sp,
+                    ),
+                  ),
+                  SizedBox(width: 12.w),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _buildCurrencyFlag(transaction['from'], size: 20),
-                        SizedBox(width: 4.w),
+                        Row(
+                          children: [
+                            _buildCurrencyFlag(transaction['from'], size: 20),
+                            SizedBox(width: 4.w),
+                            Text(
+                              transaction['from'],
+                              style: GoogleFonts.inter(
+                                color: Colors.white,
+                                fontSize: 14.sp,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            SizedBox(width: 8.w),
+                            Icon(Icons.arrow_forward, color: Colors.grey[400], size: 16.sp),
+                            SizedBox(width: 8.w),
+                            _buildCurrencyFlag(transaction['to'], size: 20),
+                            SizedBox(width: 4.w),
+                            Text(
+                              transaction['to'],
+                              style: GoogleFonts.inter(
+                                color: Colors.white,
+                                fontSize: 14.sp,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 4.h),
                         Text(
-                          transaction['from'],
+                          transaction['date'],
                           style: GoogleFonts.inter(
-                            color: Colors.white,
-                            fontSize: 14.sp,
+                            color: Colors.grey[400],
+                            fontSize: 12.sp,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        '${_getCurrencySymbol(transaction['from'])}${transaction['amount']}',
+                        style: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      SizedBox(height: 4.h),
+                      Container(
+                        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
+                        decoration: BoxDecoration(
+                          color: Colors.green.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(8.r),
+                        ),
+                        child: Text(
+                          transaction['status'],
+                          style: GoogleFonts.inter(
+                            color: Colors.green,
+                            fontSize: 10.sp,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
-                        SizedBox(width: 8.w),
-                        Icon(Icons.arrow_forward, color: Colors.grey[400], size: 16.sp),
-                        SizedBox(width: 8.w),
-                        _buildCurrencyFlag(transaction['to'], size: 20),
-                        SizedBox(width: 4.w),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              SizedBox(height: 12.h),
+              Container(
+                padding: EdgeInsets.all(12.w),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.05),
+                  borderRadius: BorderRadius.circular(8.r),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
                         Text(
-                          transaction['to'],
+                          'You Received',
+                          style: GoogleFonts.inter(
+                            color: Colors.grey[400],
+                            fontSize: 10.sp,
+                          ),
+                        ),
+                        Text(
+                          '${_getCurrencySymbol(transaction['to'])}${transaction['converted']}',
                           style: GoogleFonts.inter(
                             color: Colors.white,
                             fontSize: 14.sp,
@@ -1930,102 +1890,47 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
                         ),
                       ],
                     ),
-                    SizedBox(height: 4.h),
-                    Text(
-                      transaction['date'],
-                      style: GoogleFonts.inter(
-                        color: Colors.grey[400],
-                        fontSize: 12.sp,
-                      ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          'Exchange Rate',
+                          style: GoogleFonts.inter(
+                            color: Colors.grey[400],
+                            fontSize: 10.sp,
+                          ),
+                        ),
+                        Text(
+                          '${transaction['rate']}',
+                          style: GoogleFonts.inter(
+                            color: Colors.white,
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
               ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    '${_getCurrencySymbol(transaction['from'])}${transaction['amount']}',
-                    style: GoogleFonts.inter(
-                      color: Colors.white,
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w600,
-                    ),
+              SizedBox(height: 8.h),
+              // Clickable arrow below the "You Received" section
+              Align(
+                alignment: Alignment.centerRight,
+                child: Container(
+                  padding: EdgeInsets.all(4.w),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(6.r),
                   ),
-                  SizedBox(height: 4.h),
-                  Container(
-                    padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
-                    decoration: BoxDecoration(
-                      color: Colors.green.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(8.r),
-                    ),
-                    child: Text(
-                      transaction['status'],
-                      style: GoogleFonts.inter(
-                        color: Colors.green,
-                        fontSize: 10.sp,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+                  child: Icon(
+                    Icons.arrow_forward,
+                    color: Colors.grey[400],
+                    size: 16.sp,
                   ),
-                ],
+                ),
               ),
             ],
-          ),
-          SizedBox(height: 12.h),
-          Container(
-            padding: EdgeInsets.all(12.w),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.05),
-              borderRadius: BorderRadius.circular(8.r),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'You Received',
-                      style: GoogleFonts.inter(
-                        color: Colors.grey[400],
-                        fontSize: 10.sp,
-                      ),
-                    ),
-                    Text(
-                      '${_getCurrencySymbol(transaction['to'])}${transaction['converted']}',
-                      style: GoogleFonts.inter(
-                        color: Colors.white,
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      'Exchange Rate',
-                      style: GoogleFonts.inter(
-                        color: Colors.grey[400],
-                        fontSize: 10.sp,
-                      ),
-                    ),
-                    Text(
-                      '${transaction['rate']}',
-                      style: GoogleFonts.inter(
-                        color: Colors.white,
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
           ),
         ),
       ),
@@ -2067,6 +1972,14 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
   }
 
   void _showReceiverDetailsBottomSheet() {
+    // Clear the controllers for new recipient if no recipient is selected
+    if (_selectedRecipient == null) {
+      _receiverNameController.clear();
+      _receiverAccountController.clear();
+      _receiverBankController.clear();
+      _receiverSwiftController.clear();
+    }
+    
     Get.bottomSheet(
       Container(
         padding: EdgeInsets.all(20.w),
@@ -2128,6 +2041,8 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
               _receiverSwiftController,
               TextInputType.text,
             ),
+            SizedBox(height: 12.h),
+            _buildCurrencyDropdown(),
             SizedBox(height: 24.h),
             Container(
               decoration: BoxDecoration(
@@ -2233,11 +2148,26 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
 
     setState(() {
       _selectedRecipient = {
+        'id': DateTime.now().millisecondsSinceEpoch.toString(),
         'name': _receiverNameController.text,
         'account': _receiverAccountController.text,
         'bank': _receiverBankController.text,
         'swift': _receiverSwiftController.text,
+        'currency': _selectedToCurrency,
+        'country': _allCurrencies[_selectedToCurrency]?['country'] ?? 'Unknown',
+        'email': '${_receiverNameController.text.toLowerCase().replaceAll(' ', '.')}@email.com',
+        'isFrequent': false,
+        'lastUsed': DateTime.now(),
       };
+      
+      // Add to saved recipients list if not already there
+      final existingIndex = _savedRecipients.indexWhere((r) => 
+          r['name'] == _receiverNameController.text && 
+          r['account'] == _receiverAccountController.text);
+      
+      if (existingIndex == -1) {
+        _savedRecipients.insert(0, _selectedRecipient!);
+      }
     });
 
     Get.back(); // Close bottom sheet
