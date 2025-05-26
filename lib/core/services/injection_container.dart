@@ -26,6 +26,7 @@ import 'package:lazervault/src/features/funds/presentation/view/withdraw_funds_s
 import 'package:lazervault/src/features/recipients/data/repositories/recipient_repository_impl.dart';
 import 'package:lazervault/src/features/recipients/domain/repositories/i_recipient_repository.dart';
 import 'package:lazervault/src/features/recipients/presentation/view/add_recipient_screen.dart';
+import 'package:lazervault/src/features/voice_session/cubit/voice_session_cubit.dart';
 import 'package:lazervault/src/generated/recipient.pbgrpc.dart';
 import 'package:lazervault/src/generated/transfer.pbgrpc.dart' hide TransferTransaction;
 import 'package:lazervault/src/generated/user.pbgrpc.dart';
@@ -99,21 +100,42 @@ import 'package:lazervault/src/features/ai_chats/cubit/ai_chat_cubit.dart';
 import 'package:lazervault/src/features/ai_chats/domain/usecases/get_ai_chat_history_usecase.dart';
 // End AI Chat Imports
 
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
+// Gift Cards Imports
+import 'package:lazervault/src/features/gift_cards/data/datasources/gift_card_remote_data_source.dart';
+import 'package:lazervault/src/features/gift_cards/data/repositories/gift_card_repository_impl.dart';
+import 'package:lazervault/src/features/gift_cards/domain/repositories/i_gift_card_repository.dart';
+import 'package:lazervault/src/features/gift_cards/domain/usecases/get_gift_card_brands_usecase.dart';
+import 'package:lazervault/src/features/gift_cards/domain/usecases/purchase_gift_card_usecase.dart';
+import 'package:lazervault/src/features/gift_cards/domain/usecases/get_user_gift_cards_usecase.dart';
+import 'package:lazervault/src/features/gift_cards/cubit/gift_card_cubit.dart';
+import 'package:lazervault/src/features/gift_cards/presentation/view/gift_cards_screen.dart';
+// End Gift Cards Imports
+
 final serviceLocator = GetIt.instance;
 
 Future<void> init() async {
+  // Load environment variables
+  await dotenv.load();
+
   // ================== External / gRPC / HTTP ==================
   serviceLocator.registerLazySingleton(http.Client.new);
 
   serviceLocator.registerLazySingleton<ClientChannel>(() {
-    const host = '10.0.2.2';
-    const port = 7007;
-    print("Creating gRPC Channel to $host:$port");
+    final host = dotenv.env['GRPC_API_HOST'] ?? (throw Exception('GRPC_API_HOST environment variable is not set. For Android emulator, use http://10.0.2.2:7878')); 
+    final port = int.parse(dotenv.env['GRPC_API_PORT'] ?? (throw Exception('GRPC_API_PORT environment variable is not set')));
+    
+    // Extract host without protocol
+    final uri = Uri.parse(host);
+    final cleanHost = uri.host;
+    
+    print("Creating gRPC Channel to $cleanHost:$port");
     return ClientChannel(
-      host,
+      cleanHost,
       port: port,
       options: const ChannelOptions(
-        credentials: ChannelCredentials.insecure(),
+        credentials: ChannelCredentials.insecure(), // Use insecure credentials for localhost
       ),
     );
   });
@@ -140,7 +162,6 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton<TransferServiceClient>(
     () => TransferServiceClient(serviceLocator<ClientChannel>()),
   );
-  // Add AI Chat Client
   serviceLocator.registerLazySingleton<AIChatServiceClient>(
     () => AIChatServiceClient(serviceLocator<ClientChannel>()),
   );
@@ -278,6 +299,27 @@ Future<void> init() async {
       ));
 
 
+  // ================== Feature: Gift Cards ==================
+
+  // Data Sources
+  serviceLocator.registerLazySingleton<IGiftCardRemoteDataSource>(
+    () => GiftCardRemoteDataSourceImpl(),
+  );
+
+  // Repositories
+  serviceLocator.registerLazySingleton<IGiftCardRepository>(
+    () => GiftCardRepositoryImpl(remoteDataSource: serviceLocator<IGiftCardRemoteDataSource>()),
+  );
+
+  // Use Cases
+  serviceLocator.registerLazySingleton(() => GetGiftCardBrandsUseCase(serviceLocator<IGiftCardRepository>()));
+  serviceLocator.registerLazySingleton(() => PurchaseGiftCardUseCase(serviceLocator<IGiftCardRepository>()));
+  serviceLocator.registerLazySingleton(() => GetUserGiftCardsUseCase(serviceLocator<IGiftCardRepository>()));
+
+  // Blocs/Cubits
+  serviceLocator.registerFactory(() => GiftCardCubit());
+
+
   // ================== Screens / Presentation ==================
   serviceLocator
       ..registerFactory(() => OnboardingScreen())
@@ -312,6 +354,7 @@ Future<void> init() async {
       ..registerFactory(() => CryptoScreen())
       ..registerFactory(() => StocksScreen())
       ..registerFactory(() => CBCurrencyExchangeScreen())
+      ..registerFactory(() => GiftCardsScreen())
       ..registerFactoryParam<ReviewFundsTransferScreen, core_recipient.Recipient, void>(
           (recipient, _) => ReviewFundsTransferScreen(recipient: recipient))
       ..registerFactoryParam<InitiateSendFundsScreen, RecipientModel, void>(
@@ -342,6 +385,13 @@ Future<void> init() async {
         (selectedCard, _) => WithdrawFundsScreen(selectedCard: selectedCard),
       );
 
+  // Make sure AuthenticationCubit is registered first, e.g.:
+  // serviceLocator.registerLazySingleton(() => AuthenticationCubit(...));
+
+  // Then, register VoiceSessionCubit and inject AuthenticationCubit:
+  serviceLocator.registerLazySingleton<VoiceSessionCubit>(
+    () => VoiceSessionCubit(),
+  );
 
   print("Dependency Injection Initialized with Hierarchical Order");
 }

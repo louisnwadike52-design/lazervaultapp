@@ -217,3 +217,43 @@ final $typed_data.Uint8List getRecipientResponseDescriptor = $convert.base64Deco
     'ChRHZXRSZWNpcGllbnRSZXNwb25zZRIrCglyZWNpcGllbnQYASABKAsyDS5wYi5SZWNpcGllbn'
     'RSCXJlY2lwaWVudA==');
 
+@$core.Deprecated('Use foundRecipientResultDescriptor instead')
+const FoundRecipientResult$json = {
+  '1': 'FoundRecipientResult',
+  '2': [
+    {'1': 'recipient_id', '3': 1, '4': 1, '5': 9, '10': 'recipientId'},
+    {'1': 'name', '3': 2, '4': 1, '5': 9, '10': 'name'},
+  ],
+};
+
+/// Descriptor for `FoundRecipientResult`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List foundRecipientResultDescriptor = $convert.base64Decode(
+    'ChRGb3VuZFJlY2lwaWVudFJlc3VsdBIhCgxyZWNpcGllbnRfaWQYASABKAlSC3JlY2lwaWVudE'
+    'lkEhIKBG5hbWUYAiABKAlSBG5hbWU=');
+
+@$core.Deprecated('Use getSimilarRecipientsByNameRequestDescriptor instead')
+const GetSimilarRecipientsByNameRequest$json = {
+  '1': 'GetSimilarRecipientsByNameRequest',
+  '2': [
+    {'1': 'name', '3': 1, '4': 1, '5': 9, '10': 'name'},
+  ],
+};
+
+/// Descriptor for `GetSimilarRecipientsByNameRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getSimilarRecipientsByNameRequestDescriptor = $convert.base64Decode(
+    'CiFHZXRTaW1pbGFyUmVjaXBpZW50c0J5TmFtZVJlcXVlc3QSEgoEbmFtZRgBIAEoCVIEbmFtZQ'
+    '==');
+
+@$core.Deprecated('Use getSimilarRecipientsByNameResponseDescriptor instead')
+const GetSimilarRecipientsByNameResponse$json = {
+  '1': 'GetSimilarRecipientsByNameResponse',
+  '2': [
+    {'1': 'found_recipients', '3': 1, '4': 3, '5': 11, '6': '.pb.FoundRecipientResult', '10': 'foundRecipients'},
+  ],
+};
+
+/// Descriptor for `GetSimilarRecipientsByNameResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getSimilarRecipientsByNameResponseDescriptor = $convert.base64Decode(
+    'CiJHZXRTaW1pbGFyUmVjaXBpZW50c0J5TmFtZVJlc3BvbnNlEkMKEGZvdW5kX3JlY2lwaWVudH'
+    'MYASADKAsyGC5wYi5Gb3VuZFJlY2lwaWVudFJlc3VsdFIPZm91bmRSZWNpcGllbnRz');
+

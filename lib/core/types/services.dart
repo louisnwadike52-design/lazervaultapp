@@ -1,4 +1,5 @@
-enum AppServiceName {
+enum 
+AppServiceName {
   sendFunds('Send'),
   receiveFunds('Receive'),
   sendCrypto('Send Crypto'),
@@ -10,7 +11,8 @@ enum AppServiceName {
   bills('Bills'),
   flights('Flights'),
   crypto('Crypto'),
-  exchange('Exchange');
+  exchange('Exchange'),
+  giftCards('Gift Cards');
 
   final String displayName;
 
@@ -36,7 +38,8 @@ enum AppServiceImg {
   flights('assets/images/wallet.png'),
   crypto('assets/images/wallet.png'),
   stocks('assets/images/wallet.png'),
-  exchange('assets/images/wallet.png');
+  exchange('assets/images/wallet.png'),
+  giftCards('assets/images/wallet.png');  
 
   final String uri;
 

@@ -33,6 +33,9 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
         serviceImg: AppServiceImg.exchange),
     const AppService(
         serviceName: AppServiceName.crypto, serviceImg: AppServiceImg.crypto),
+    const AppService(
+        serviceName: AppServiceName.giftCards,
+        serviceImg: AppServiceImg.giftCards),
   ];
 
   @override

@@ -12,7 +12,8 @@
         "generate:proto": "export PATH=\"$PATH\":\"$HOME/.pub-cache/bin\" && ./generate_proto.sh",
         "upgrade:deps": "flutter pub upgrade --major-versions", 
         "deep:clean": "flutter clean && rm -rf .dart_tool/ build/ && rm -rf ios/Pods ios/Podfile.lock && flutter pub get && flutter clean && flutter pub get && flutter pub run build_runner build",
-        "splash:generate": "flutter pub run flutter_native_splash:create"
+        "splash:generate": "flutter pub run flutter_native_splash:create",
+        "build:ios": "flutter build ipa --export-method app-store"
     },
     "keywords": [],
     "author": "",

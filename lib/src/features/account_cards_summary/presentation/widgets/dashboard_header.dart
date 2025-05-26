@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:lazervault/core/data/app_data.dart';
 import 'package:lazervault/src/features/authentication/domain/entities/user.dart';
 import 'package:lazervault/src/features/presentation/views/notification_screen.dart';
+import 'package:lazervault/src/features/voice_session/widgets/voice_command_sheet.dart';
 import 'package:lazervault/src/features/widgets/universal_image_loader.dart';
 
 class DashboardHeader extends StatelessWidget {
@@ -98,8 +99,9 @@ class DashboardHeader extends StatelessWidget {
         onPressed: () {
           if (icon == Icons.notifications_outlined) {
             _showNotifications(context);
+          } else if (icon == Icons.mic_rounded) {
+            _showVoiceCommandSheet(context);
           }
-          // Add action for mic if needed
         },
         padding: EdgeInsets.zero, 
         constraints: const BoxConstraints(), 
@@ -144,6 +146,21 @@ class DashboardHeader extends StatelessWidget {
       enterBottomSheetDuration: const Duration(milliseconds: 300),
       exitBottomSheetDuration: const Duration(milliseconds: 200),
       backgroundColor: Colors.transparent,
+    );
+  }
+
+  void _showVoiceCommandSheet(BuildContext context) {
+    Get.bottomSheet(
+      FractionallySizedBox(
+        heightFactor: 0.85,
+        child: VoiceCommandSheet(),
+      ),
+      isScrollControlled: true,
+      enableDrag: true,
+      isDismissible: true,
+      backgroundColor: Colors.transparent,
+      enterBottomSheetDuration: const Duration(milliseconds: 300),
+      exitBottomSheetDuration: const Duration(milliseconds: 200),
     );
   }
 } 

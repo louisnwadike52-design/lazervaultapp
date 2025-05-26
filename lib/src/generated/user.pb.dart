@@ -13,7 +13,7 @@ import 'dart:core' as $core;
 
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'common.pb.dart' as $16;
+import 'common.pb.dart' as $17;
 
 export 'package:protobuf/protobuf.dart' show GeneratedMessageGenericExtensions;
 
@@ -141,7 +141,7 @@ class CreateUserResponse extends $pb.GeneratedMessage {
   factory CreateUserResponse({
     $core.bool? success,
     $core.String? message,
-    $16.Data? data,
+    $17.Data? data,
   }) {
     final $result = create();
     if (success != null) {
@@ -162,7 +162,7 @@ class CreateUserResponse extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreateUserResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
     ..aOB(1, _omitFieldNames ? '' : 'success')
     ..aOS(2, _omitFieldNames ? '' : 'message')
-    ..aOM<$16.Data>(3, _omitFieldNames ? '' : 'data', subBuilder: $16.Data.create)
+    ..aOM<$17.Data>(3, _omitFieldNames ? '' : 'data', subBuilder: $17.Data.create)
     ..hasRequiredFields = false
   ;
 
@@ -206,15 +206,15 @@ class CreateUserResponse extends $pb.GeneratedMessage {
   void clearMessage() => $_clearField(2);
 
   @$pb.TagNumber(3)
-  $16.Data get data => $_getN(2);
+  $17.Data get data => $_getN(2);
   @$pb.TagNumber(3)
-  set data($16.Data v) { $_setField(3, v); }
+  set data($17.Data v) { $_setField(3, v); }
   @$pb.TagNumber(3)
   $core.bool hasData() => $_has(2);
   @$pb.TagNumber(3)
   void clearData() => $_clearField(3);
   @$pb.TagNumber(3)
-  $16.Data ensureData() => $_ensure(2);
+  $17.Data ensureData() => $_ensure(2);
 }
 
 

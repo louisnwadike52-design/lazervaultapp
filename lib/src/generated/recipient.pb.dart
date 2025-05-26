@@ -14,8 +14,8 @@ import 'dart:core' as $core;
 import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'google/protobuf/timestamp.pb.dart' as $15;
-import 'google/protobuf/wrappers.pb.dart' as $17;
+import 'google/protobuf/timestamp.pb.dart' as $16;
+import 'google/protobuf/wrappers.pb.dart' as $18;
 
 export 'package:protobuf/protobuf.dart' show GeneratedMessageGenericExtensions;
 
@@ -32,8 +32,8 @@ class Recipient extends $pb.GeneratedMessage {
     $core.String? sortCode,
     $core.String? bankName,
     $core.String? countryCode,
-    $15.Timestamp? createdAt,
-    $15.Timestamp? updatedAt,
+    $16.Timestamp? createdAt,
+    $16.Timestamp? updatedAt,
   }) {
     final $result = create();
     if (id != null) {
@@ -89,8 +89,8 @@ class Recipient extends $pb.GeneratedMessage {
     ..aOS(8, _omitFieldNames ? '' : 'sortCode')
     ..aOS(9, _omitFieldNames ? '' : 'bankName')
     ..aOS(10, _omitFieldNames ? '' : 'countryCode')
-    ..aOM<$15.Timestamp>(11, _omitFieldNames ? '' : 'createdAt', subBuilder: $15.Timestamp.create)
-    ..aOM<$15.Timestamp>(12, _omitFieldNames ? '' : 'updatedAt', subBuilder: $15.Timestamp.create)
+    ..aOM<$16.Timestamp>(11, _omitFieldNames ? '' : 'createdAt', subBuilder: $16.Timestamp.create)
+    ..aOM<$16.Timestamp>(12, _omitFieldNames ? '' : 'updatedAt', subBuilder: $16.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -208,26 +208,26 @@ class Recipient extends $pb.GeneratedMessage {
   void clearCountryCode() => $_clearField(10);
 
   @$pb.TagNumber(11)
-  $15.Timestamp get createdAt => $_getN(10);
+  $16.Timestamp get createdAt => $_getN(10);
   @$pb.TagNumber(11)
-  set createdAt($15.Timestamp v) { $_setField(11, v); }
+  set createdAt($16.Timestamp v) { $_setField(11, v); }
   @$pb.TagNumber(11)
   $core.bool hasCreatedAt() => $_has(10);
   @$pb.TagNumber(11)
   void clearCreatedAt() => $_clearField(11);
   @$pb.TagNumber(11)
-  $15.Timestamp ensureCreatedAt() => $_ensure(10);
+  $16.Timestamp ensureCreatedAt() => $_ensure(10);
 
   @$pb.TagNumber(12)
-  $15.Timestamp get updatedAt => $_getN(11);
+  $16.Timestamp get updatedAt => $_getN(11);
   @$pb.TagNumber(12)
-  set updatedAt($15.Timestamp v) { $_setField(12, v); }
+  set updatedAt($16.Timestamp v) { $_setField(12, v); }
   @$pb.TagNumber(12)
   $core.bool hasUpdatedAt() => $_has(11);
   @$pb.TagNumber(12)
   void clearUpdatedAt() => $_clearField(12);
   @$pb.TagNumber(12)
-  $15.Timestamp ensureUpdatedAt() => $_ensure(11);
+  $16.Timestamp ensureUpdatedAt() => $_ensure(11);
 }
 
 class CreateRecipientRequest extends $pb.GeneratedMessage {
@@ -510,12 +510,12 @@ class ListRecipientsResponse extends $pb.GeneratedMessage {
 class UpdateRecipientRequest extends $pb.GeneratedMessage {
   factory UpdateRecipientRequest({
     $fixnum.Int64? recipientId,
-    $17.StringValue? name,
-    $17.BoolValue? isFavorite,
-    $17.StringValue? accountNumber,
-    $17.StringValue? sortCode,
-    $17.StringValue? bankName,
-    $17.StringValue? countryCode,
+    $18.StringValue? name,
+    $18.BoolValue? isFavorite,
+    $18.StringValue? accountNumber,
+    $18.StringValue? sortCode,
+    $18.StringValue? bankName,
+    $18.StringValue? countryCode,
   }) {
     final $result = create();
     if (recipientId != null) {
@@ -547,12 +547,12 @@ class UpdateRecipientRequest extends $pb.GeneratedMessage {
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UpdateRecipientRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
     ..a<$fixnum.Int64>(1, _omitFieldNames ? '' : 'recipientId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..aOM<$17.StringValue>(2, _omitFieldNames ? '' : 'name', subBuilder: $17.StringValue.create)
-    ..aOM<$17.BoolValue>(3, _omitFieldNames ? '' : 'isFavorite', subBuilder: $17.BoolValue.create)
-    ..aOM<$17.StringValue>(4, _omitFieldNames ? '' : 'accountNumber', subBuilder: $17.StringValue.create)
-    ..aOM<$17.StringValue>(5, _omitFieldNames ? '' : 'sortCode', subBuilder: $17.StringValue.create)
-    ..aOM<$17.StringValue>(6, _omitFieldNames ? '' : 'bankName', subBuilder: $17.StringValue.create)
-    ..aOM<$17.StringValue>(7, _omitFieldNames ? '' : 'countryCode', subBuilder: $17.StringValue.create)
+    ..aOM<$18.StringValue>(2, _omitFieldNames ? '' : 'name', subBuilder: $18.StringValue.create)
+    ..aOM<$18.BoolValue>(3, _omitFieldNames ? '' : 'isFavorite', subBuilder: $18.BoolValue.create)
+    ..aOM<$18.StringValue>(4, _omitFieldNames ? '' : 'accountNumber', subBuilder: $18.StringValue.create)
+    ..aOM<$18.StringValue>(5, _omitFieldNames ? '' : 'sortCode', subBuilder: $18.StringValue.create)
+    ..aOM<$18.StringValue>(6, _omitFieldNames ? '' : 'bankName', subBuilder: $18.StringValue.create)
+    ..aOM<$18.StringValue>(7, _omitFieldNames ? '' : 'countryCode', subBuilder: $18.StringValue.create)
     ..hasRequiredFields = false
   ;
 
@@ -589,70 +589,70 @@ class UpdateRecipientRequest extends $pb.GeneratedMessage {
   /// Optional fields to update. Use wrappers to distinguish between
   /// setting a field to its default value (e.g., false, "") and not updating it.
   @$pb.TagNumber(2)
-  $17.StringValue get name => $_getN(1);
+  $18.StringValue get name => $_getN(1);
   @$pb.TagNumber(2)
-  set name($17.StringValue v) { $_setField(2, v); }
+  set name($18.StringValue v) { $_setField(2, v); }
   @$pb.TagNumber(2)
   $core.bool hasName() => $_has(1);
   @$pb.TagNumber(2)
   void clearName() => $_clearField(2);
   @$pb.TagNumber(2)
-  $17.StringValue ensureName() => $_ensure(1);
+  $18.StringValue ensureName() => $_ensure(1);
 
   @$pb.TagNumber(3)
-  $17.BoolValue get isFavorite => $_getN(2);
+  $18.BoolValue get isFavorite => $_getN(2);
   @$pb.TagNumber(3)
-  set isFavorite($17.BoolValue v) { $_setField(3, v); }
+  set isFavorite($18.BoolValue v) { $_setField(3, v); }
   @$pb.TagNumber(3)
   $core.bool hasIsFavorite() => $_has(2);
   @$pb.TagNumber(3)
   void clearIsFavorite() => $_clearField(3);
   @$pb.TagNumber(3)
-  $17.BoolValue ensureIsFavorite() => $_ensure(2);
+  $18.BoolValue ensureIsFavorite() => $_ensure(2);
 
   @$pb.TagNumber(4)
-  $17.StringValue get accountNumber => $_getN(3);
+  $18.StringValue get accountNumber => $_getN(3);
   @$pb.TagNumber(4)
-  set accountNumber($17.StringValue v) { $_setField(4, v); }
+  set accountNumber($18.StringValue v) { $_setField(4, v); }
   @$pb.TagNumber(4)
   $core.bool hasAccountNumber() => $_has(3);
   @$pb.TagNumber(4)
   void clearAccountNumber() => $_clearField(4);
   @$pb.TagNumber(4)
-  $17.StringValue ensureAccountNumber() => $_ensure(3);
+  $18.StringValue ensureAccountNumber() => $_ensure(3);
 
   @$pb.TagNumber(5)
-  $17.StringValue get sortCode => $_getN(4);
+  $18.StringValue get sortCode => $_getN(4);
   @$pb.TagNumber(5)
-  set sortCode($17.StringValue v) { $_setField(5, v); }
+  set sortCode($18.StringValue v) { $_setField(5, v); }
   @$pb.TagNumber(5)
   $core.bool hasSortCode() => $_has(4);
   @$pb.TagNumber(5)
   void clearSortCode() => $_clearField(5);
   @$pb.TagNumber(5)
-  $17.StringValue ensureSortCode() => $_ensure(4);
+  $18.StringValue ensureSortCode() => $_ensure(4);
 
   @$pb.TagNumber(6)
-  $17.StringValue get bankName => $_getN(5);
+  $18.StringValue get bankName => $_getN(5);
   @$pb.TagNumber(6)
-  set bankName($17.StringValue v) { $_setField(6, v); }
+  set bankName($18.StringValue v) { $_setField(6, v); }
   @$pb.TagNumber(6)
   $core.bool hasBankName() => $_has(5);
   @$pb.TagNumber(6)
   void clearBankName() => $_clearField(6);
   @$pb.TagNumber(6)
-  $17.StringValue ensureBankName() => $_ensure(5);
+  $18.StringValue ensureBankName() => $_ensure(5);
 
   @$pb.TagNumber(7)
-  $17.StringValue get countryCode => $_getN(6);
+  $18.StringValue get countryCode => $_getN(6);
   @$pb.TagNumber(7)
-  set countryCode($17.StringValue v) { $_setField(7, v); }
+  set countryCode($18.StringValue v) { $_setField(7, v); }
   @$pb.TagNumber(7)
   $core.bool hasCountryCode() => $_has(6);
   @$pb.TagNumber(7)
   void clearCountryCode() => $_clearField(7);
   @$pb.TagNumber(7)
-  $17.StringValue ensureCountryCode() => $_ensure(6);
+  $18.StringValue ensureCountryCode() => $_ensure(6);
 }
 
 class UpdateRecipientResponse extends $pb.GeneratedMessage {
@@ -907,6 +907,165 @@ class GetRecipientResponse extends $pb.GeneratedMessage {
   void clearRecipient() => $_clearField(1);
   @$pb.TagNumber(1)
   Recipient ensureRecipient() => $_ensure(0);
+}
+
+/// Renamed from SimilarRecipientUser and fields adjusted
+class FoundRecipientResult extends $pb.GeneratedMessage {
+  factory FoundRecipientResult({
+    $core.String? recipientId,
+    $core.String? name,
+  }) {
+    final $result = create();
+    if (recipientId != null) {
+      $result.recipientId = recipientId;
+    }
+    if (name != null) {
+      $result.name = name;
+    }
+    return $result;
+  }
+  FoundRecipientResult._() : super();
+  factory FoundRecipientResult.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory FoundRecipientResult.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'FoundRecipientResult', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'recipientId')
+    ..aOS(2, _omitFieldNames ? '' : 'name')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  FoundRecipientResult clone() => FoundRecipientResult()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  FoundRecipientResult copyWith(void Function(FoundRecipientResult) updates) => super.copyWith((message) => updates(message as FoundRecipientResult)) as FoundRecipientResult;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static FoundRecipientResult create() => FoundRecipientResult._();
+  FoundRecipientResult createEmptyInstance() => create();
+  static $pb.PbList<FoundRecipientResult> createRepeated() => $pb.PbList<FoundRecipientResult>();
+  @$core.pragma('dart2js:noInline')
+  static FoundRecipientResult getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<FoundRecipientResult>(create);
+  static FoundRecipientResult? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get recipientId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set recipientId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasRecipientId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearRecipientId() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get name => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set name($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasName() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearName() => $_clearField(2);
+}
+
+class GetSimilarRecipientsByNameRequest extends $pb.GeneratedMessage {
+  factory GetSimilarRecipientsByNameRequest({
+    $core.String? name,
+  }) {
+    final $result = create();
+    if (name != null) {
+      $result.name = name;
+    }
+    return $result;
+  }
+  GetSimilarRecipientsByNameRequest._() : super();
+  factory GetSimilarRecipientsByNameRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetSimilarRecipientsByNameRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetSimilarRecipientsByNameRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'name')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetSimilarRecipientsByNameRequest clone() => GetSimilarRecipientsByNameRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetSimilarRecipientsByNameRequest copyWith(void Function(GetSimilarRecipientsByNameRequest) updates) => super.copyWith((message) => updates(message as GetSimilarRecipientsByNameRequest)) as GetSimilarRecipientsByNameRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetSimilarRecipientsByNameRequest create() => GetSimilarRecipientsByNameRequest._();
+  GetSimilarRecipientsByNameRequest createEmptyInstance() => create();
+  static $pb.PbList<GetSimilarRecipientsByNameRequest> createRepeated() => $pb.PbList<GetSimilarRecipientsByNameRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetSimilarRecipientsByNameRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetSimilarRecipientsByNameRequest>(create);
+  static GetSimilarRecipientsByNameRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get name => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set name($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasName() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearName() => $_clearField(1);
+}
+
+class GetSimilarRecipientsByNameResponse extends $pb.GeneratedMessage {
+  factory GetSimilarRecipientsByNameResponse({
+    $core.Iterable<FoundRecipientResult>? foundRecipients,
+  }) {
+    final $result = create();
+    if (foundRecipients != null) {
+      $result.foundRecipients.addAll(foundRecipients);
+    }
+    return $result;
+  }
+  GetSimilarRecipientsByNameResponse._() : super();
+  factory GetSimilarRecipientsByNameResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetSimilarRecipientsByNameResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetSimilarRecipientsByNameResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..pc<FoundRecipientResult>(1, _omitFieldNames ? '' : 'foundRecipients', $pb.PbFieldType.PM, subBuilder: FoundRecipientResult.create)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetSimilarRecipientsByNameResponse clone() => GetSimilarRecipientsByNameResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetSimilarRecipientsByNameResponse copyWith(void Function(GetSimilarRecipientsByNameResponse) updates) => super.copyWith((message) => updates(message as GetSimilarRecipientsByNameResponse)) as GetSimilarRecipientsByNameResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetSimilarRecipientsByNameResponse create() => GetSimilarRecipientsByNameResponse._();
+  GetSimilarRecipientsByNameResponse createEmptyInstance() => create();
+  static $pb.PbList<GetSimilarRecipientsByNameResponse> createRepeated() => $pb.PbList<GetSimilarRecipientsByNameResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetSimilarRecipientsByNameResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetSimilarRecipientsByNameResponse>(create);
+  static GetSimilarRecipientsByNameResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $pb.PbList<FoundRecipientResult> get foundRecipients => $_getList(0);
 }
 
 

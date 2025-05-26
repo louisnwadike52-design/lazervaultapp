@@ -14,7 +14,7 @@ import 'dart:core' as $core;
 import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'google/protobuf/timestamp.pb.dart' as $15;
+import 'google/protobuf/timestamp.pb.dart' as $16;
 
 export 'package:protobuf/protobuf.dart' show GeneratedMessageGenericExtensions;
 
@@ -29,8 +29,8 @@ class User extends $pb.GeneratedMessage {
     $core.String? role,
     $core.bool? verified,
     $core.bool? isEmailVerified,
-    $15.Timestamp? createdAt,
-    $15.Timestamp? updatedAt,
+    $16.Timestamp? createdAt,
+    $16.Timestamp? updatedAt,
   }) {
     final $result = create();
     if (id != null) {
@@ -78,8 +78,8 @@ class User extends $pb.GeneratedMessage {
     ..aOS(6, _omitFieldNames ? '' : 'role')
     ..aOB(7, _omitFieldNames ? '' : 'verified')
     ..aOB(8, _omitFieldNames ? '' : 'isEmailVerified')
-    ..aOM<$15.Timestamp>(9, _omitFieldNames ? '' : 'createdAt', subBuilder: $15.Timestamp.create)
-    ..aOM<$15.Timestamp>(10, _omitFieldNames ? '' : 'updatedAt', subBuilder: $15.Timestamp.create)
+    ..aOM<$16.Timestamp>(9, _omitFieldNames ? '' : 'createdAt', subBuilder: $16.Timestamp.create)
+    ..aOM<$16.Timestamp>(10, _omitFieldNames ? '' : 'updatedAt', subBuilder: $16.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -177,26 +177,26 @@ class User extends $pb.GeneratedMessage {
   void clearIsEmailVerified() => $_clearField(8);
 
   @$pb.TagNumber(9)
-  $15.Timestamp get createdAt => $_getN(8);
+  $16.Timestamp get createdAt => $_getN(8);
   @$pb.TagNumber(9)
-  set createdAt($15.Timestamp v) { $_setField(9, v); }
+  set createdAt($16.Timestamp v) { $_setField(9, v); }
   @$pb.TagNumber(9)
   $core.bool hasCreatedAt() => $_has(8);
   @$pb.TagNumber(9)
   void clearCreatedAt() => $_clearField(9);
   @$pb.TagNumber(9)
-  $15.Timestamp ensureCreatedAt() => $_ensure(8);
+  $16.Timestamp ensureCreatedAt() => $_ensure(8);
 
   @$pb.TagNumber(10)
-  $15.Timestamp get updatedAt => $_getN(9);
+  $16.Timestamp get updatedAt => $_getN(9);
   @$pb.TagNumber(10)
-  set updatedAt($15.Timestamp v) { $_setField(10, v); }
+  set updatedAt($16.Timestamp v) { $_setField(10, v); }
   @$pb.TagNumber(10)
   $core.bool hasUpdatedAt() => $_has(9);
   @$pb.TagNumber(10)
   void clearUpdatedAt() => $_clearField(10);
   @$pb.TagNumber(10)
-  $15.Timestamp ensureUpdatedAt() => $_ensure(9);
+  $16.Timestamp ensureUpdatedAt() => $_ensure(9);
 }
 
 class Data extends $pb.GeneratedMessage {
@@ -273,8 +273,8 @@ class Session extends $pb.GeneratedMessage {
     $fixnum.Int64? userId,
     $core.String? accessToken,
     $core.String? refreshToken,
-    $15.Timestamp? accessTokenExpiresAt,
-    $15.Timestamp? refreshTokenExpiresAt,
+    $16.Timestamp? accessTokenExpiresAt,
+    $16.Timestamp? refreshTokenExpiresAt,
   }) {
     final $result = create();
     if (id != null) {
@@ -306,8 +306,8 @@ class Session extends $pb.GeneratedMessage {
     ..a<$fixnum.Int64>(2, _omitFieldNames ? '' : 'userId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..aOS(3, _omitFieldNames ? '' : 'accessToken')
     ..aOS(4, _omitFieldNames ? '' : 'refreshToken')
-    ..aOM<$15.Timestamp>(5, _omitFieldNames ? '' : 'accessTokenExpiresAt', subBuilder: $15.Timestamp.create)
-    ..aOM<$15.Timestamp>(6, _omitFieldNames ? '' : 'refreshTokenExpiresAt', subBuilder: $15.Timestamp.create)
+    ..aOM<$16.Timestamp>(5, _omitFieldNames ? '' : 'accessTokenExpiresAt', subBuilder: $16.Timestamp.create)
+    ..aOM<$16.Timestamp>(6, _omitFieldNames ? '' : 'refreshTokenExpiresAt', subBuilder: $16.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -369,26 +369,26 @@ class Session extends $pb.GeneratedMessage {
   void clearRefreshToken() => $_clearField(4);
 
   @$pb.TagNumber(5)
-  $15.Timestamp get accessTokenExpiresAt => $_getN(4);
+  $16.Timestamp get accessTokenExpiresAt => $_getN(4);
   @$pb.TagNumber(5)
-  set accessTokenExpiresAt($15.Timestamp v) { $_setField(5, v); }
+  set accessTokenExpiresAt($16.Timestamp v) { $_setField(5, v); }
   @$pb.TagNumber(5)
   $core.bool hasAccessTokenExpiresAt() => $_has(4);
   @$pb.TagNumber(5)
   void clearAccessTokenExpiresAt() => $_clearField(5);
   @$pb.TagNumber(5)
-  $15.Timestamp ensureAccessTokenExpiresAt() => $_ensure(4);
+  $16.Timestamp ensureAccessTokenExpiresAt() => $_ensure(4);
 
   @$pb.TagNumber(6)
-  $15.Timestamp get refreshTokenExpiresAt => $_getN(5);
+  $16.Timestamp get refreshTokenExpiresAt => $_getN(5);
   @$pb.TagNumber(6)
-  set refreshTokenExpiresAt($15.Timestamp v) { $_setField(6, v); }
+  set refreshTokenExpiresAt($16.Timestamp v) { $_setField(6, v); }
   @$pb.TagNumber(6)
   $core.bool hasRefreshTokenExpiresAt() => $_has(5);
   @$pb.TagNumber(6)
   void clearRefreshTokenExpiresAt() => $_clearField(6);
   @$pb.TagNumber(6)
-  $15.Timestamp ensureRefreshTokenExpiresAt() => $_ensure(5);
+  $16.Timestamp ensureRefreshTokenExpiresAt() => $_ensure(5);
 }
 
 

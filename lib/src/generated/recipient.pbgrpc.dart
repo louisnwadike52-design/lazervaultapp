@@ -41,6 +41,10 @@ class RecipientServiceClient extends $grpc.Client {
       '/pb.RecipientService/GetRecipient',
       ($10.GetRecipientRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) => $10.GetRecipientResponse.fromBuffer(value));
+  static final _$getSimilarRecipientsByName = $grpc.ClientMethod<$10.GetSimilarRecipientsByNameRequest, $10.GetSimilarRecipientsByNameResponse>(
+      '/pb.RecipientService/GetSimilarRecipientsByName',
+      ($10.GetSimilarRecipientsByNameRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $10.GetSimilarRecipientsByNameResponse.fromBuffer(value));
 
   RecipientServiceClient($grpc.ClientChannel channel,
       {$grpc.CallOptions? options,
@@ -66,6 +70,10 @@ class RecipientServiceClient extends $grpc.Client {
 
   $grpc.ResponseFuture<$10.GetRecipientResponse> getRecipient($10.GetRecipientRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getRecipient, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$10.GetSimilarRecipientsByNameResponse> getSimilarRecipientsByName($10.GetSimilarRecipientsByNameRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getSimilarRecipientsByName, request, options: options);
   }
 }
 
@@ -109,6 +117,13 @@ abstract class RecipientServiceBase extends $grpc.Service {
         false,
         ($core.List<$core.int> value) => $10.GetRecipientRequest.fromBuffer(value),
         ($10.GetRecipientResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$10.GetSimilarRecipientsByNameRequest, $10.GetSimilarRecipientsByNameResponse>(
+        'GetSimilarRecipientsByName',
+        getSimilarRecipientsByName_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $10.GetSimilarRecipientsByNameRequest.fromBuffer(value),
+        ($10.GetSimilarRecipientsByNameResponse value) => value.writeToBuffer()));
   }
 
   $async.Future<$10.CreateRecipientResponse> createRecipient_Pre($grpc.ServiceCall $call, $async.Future<$10.CreateRecipientRequest> $request) async {
@@ -131,9 +146,14 @@ abstract class RecipientServiceBase extends $grpc.Service {
     return getRecipient($call, await $request);
   }
 
+  $async.Future<$10.GetSimilarRecipientsByNameResponse> getSimilarRecipientsByName_Pre($grpc.ServiceCall $call, $async.Future<$10.GetSimilarRecipientsByNameRequest> $request) async {
+    return getSimilarRecipientsByName($call, await $request);
+  }
+
   $async.Future<$10.CreateRecipientResponse> createRecipient($grpc.ServiceCall call, $10.CreateRecipientRequest request);
   $async.Future<$10.ListRecipientsResponse> listRecipients($grpc.ServiceCall call, $10.ListRecipientsRequest request);
   $async.Future<$10.UpdateRecipientResponse> updateRecipient($grpc.ServiceCall call, $10.UpdateRecipientRequest request);
   $async.Future<$10.DeleteRecipientResponse> deleteRecipient($grpc.ServiceCall call, $10.DeleteRecipientRequest request);
   $async.Future<$10.GetRecipientResponse> getRecipient($grpc.ServiceCall call, $10.GetRecipientRequest request);
+  $async.Future<$10.GetSimilarRecipientsByNameResponse> getSimilarRecipientsByName($grpc.ServiceCall call, $10.GetSimilarRecipientsByNameRequest request);
 }
