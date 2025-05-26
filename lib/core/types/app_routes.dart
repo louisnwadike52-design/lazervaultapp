@@ -32,6 +32,7 @@ abstract class AppRoutes {
   static const String depositFunds = '/profile-settings/deposit-funds';
   static const String withdrawFunds = '/profile-settings/withdraw-funds';
   static const String cbCurrencyExchange = '/profile-settings/cb-currency-exchange';
+  static const String currencyDeposit = '/currency-deposit';
   static const String currencyExchange = '/currency-exchange';
   static const String addCurrencyRecipient = '/currency-exchange/add-recipient';
   static const String currencyRecipientList = '/currency-exchange/recipients';

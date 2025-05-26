@@ -6,6 +6,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/voice_session/widgets/voice_command_sheet.dart';
+import 'package:lazervault/src/features/presentation/views/cb_currency_exchange/currency_deposit_screen.dart';
 
 class CBCurrencyExchangeScreen extends StatefulWidget {
   const CBCurrencyExchangeScreen({super.key});
@@ -579,22 +580,64 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
                                 ),
                               ],
                             ),
-                            if (isActive)
-                              Container(
-                                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha: 0.2),
-                                  borderRadius: BorderRadius.circular(12.r),
-                                ),
-                                child: Text(
-                                  'ACTIVE',
-                                  style: GoogleFonts.inter(
-                                    color: Colors.white,
-                                    fontSize: 10.sp,
-                                    fontWeight: FontWeight.w600,
+                            Column(
+                              children: [
+                                if (isActive)
+                                  Container(
+                                    padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withValues(alpha: 0.2),
+                                      borderRadius: BorderRadius.circular(12.r),
+                                    ),
+                                    child: Text(
+                                      'ACTIVE',
+                                      style: GoogleFonts.inter(
+                                        color: Colors.white,
+                                        fontSize: 10.sp,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                SizedBox(height: 4.h),
+                                Material(
+                                  color: Colors.transparent,
+                                  child: InkWell(
+                                    onTap: () => _showDepositScreen(card['code']),
+                                    borderRadius: BorderRadius.circular(8.r),
+                                    child: Container(
+                                      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                                      decoration: BoxDecoration(
+                                        color: Colors.green.withValues(alpha: 0.2),
+                                        borderRadius: BorderRadius.circular(8.r),
+                                        border: Border.all(
+                                          color: Colors.green.withValues(alpha: 0.5),
+                                          width: 1,
+                                        ),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(
+                                            Icons.add,
+                                            color: Colors.green,
+                                            size: 12.sp,
+                                          ),
+                                          SizedBox(width: 2.w),
+                                          Text(
+                                            'Deposit',
+                                            style: GoogleFonts.inter(
+                                              color: Colors.green,
+                                              fontSize: 9.sp,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
                                   ),
                                 ),
-                              ),
+                              ],
+                            ),
                           ],
                         ),
                         SizedBox(height: 8.h),
@@ -2786,5 +2829,9 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
       duration: const Duration(seconds: 2),
       icon: Icon(Icons.download_done, color: Colors.white),
     );
+  }
+
+  void _showDepositScreen(String currencyCode) {
+    Get.toNamed(AppRoutes.currencyDeposit, arguments: currencyCode);
   }
 }
