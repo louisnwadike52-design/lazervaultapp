@@ -1037,12 +1037,12 @@ class _InitiateSendFundsState extends State<InitiateSendFunds> {
               duration: const Duration(seconds: 3),
             );
 
-            // Navigate to proof screen WITH details
+            // Navigate to processing screen WITH details
             Future.delayed(const Duration(seconds: 1), () {
-              print('Listener: Navigating to TransferProof...'); // Debug print
+              print('Listener: Navigating to TransferProcessing...'); // Debug print
               if (mounted) {
                 // Ensure widget is still mounted before navigating
-                Get.offAllNamed(AppRoutes.transferProof,
+                Get.offAllNamed(AppRoutes.transferProcessing,
                     arguments:
                         transferDetails); // This should dismiss the dialog
               }

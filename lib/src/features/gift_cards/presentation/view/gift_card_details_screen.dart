@@ -673,6 +673,77 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
               ),
             ),
           ),
+          SizedBox(height: 16.h),
+          // Sell options for active gift cards
+          Row(
+            children: [
+              Expanded(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.orange.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(16.r),
+                    border: Border.all(
+                      color: Colors.orange.withOpacity(0.3),
+                      width: 1,
+                    ),
+                  ),
+                  child: ElevatedButton.icon(
+                    onPressed: () => Get.toNamed(AppRoutes.sellToContact, arguments: widget.giftCard),
+                    icon: Icon(Icons.sell_rounded, size: 18.sp),
+                    label: Text(
+                      'Sell to Contact',
+                      style: GoogleFonts.inter(
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.transparent,
+                      shadowColor: Colors.transparent,
+                      foregroundColor: Colors.orange,
+                      padding: EdgeInsets.symmetric(vertical: 16.h),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16.r),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(width: 16.w),
+              Expanded(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.purple.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(16.r),
+                    border: Border.all(
+                      color: Colors.purple.withOpacity(0.3),
+                      width: 1,
+                    ),
+                  ),
+                  child: ElevatedButton.icon(
+                    onPressed: () => Get.toNamed(AppRoutes.quickSell, arguments: widget.giftCard),
+                    icon: Icon(Icons.flash_on_rounded, size: 18.sp),
+                    label: Text(
+                      'Quick Sell',
+                      style: GoogleFonts.inter(
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.transparent,
+                      shadowColor: Colors.transparent,
+                      foregroundColor: Colors.purple,
+                      padding: EdgeInsets.symmetric(vertical: 16.h),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16.r),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
           SizedBox(height: 20.h),
         ],
         Row(

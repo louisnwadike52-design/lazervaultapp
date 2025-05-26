@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart'; // Import for date formatting
+import 'package:intl/intl.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/types/app_routes.dart';
-// import 'package:lazervault/src/features/authentication/domain/entities/user.dart'; // No longer needed directly
-import 'package:lazervault/src/features/widgets/common/back_navigator.dart';
 import 'dart:math';
-import 'package:lazervault/src/features/widgets/universal_image_loader.dart';
 
 class TransferProof extends StatefulWidget {
-  // final User recipient; // Replaced by details map
   final Map<String, dynamic> transferDetails;
   const TransferProof({super.key, required this.transferDetails});
 
@@ -18,219 +15,773 @@ class TransferProof extends StatefulWidget {
 }
 
 class _TransferProofState extends State<TransferProof>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
+    with TickerProviderStateMixin {
+  late AnimationController _animationController;
+  late AnimationController _checkAnimationController;
+  late Animation<double> _fadeAnimation;
   late Animation<double> _scaleAnimation;
-  late Animation<double> _opacityAnimation;
-  late Animation<double> _starRotationAnimation;
+  late Animation<double> _checkAnimation;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      duration: Duration(milliseconds: 1500),
+    _setupAnimations();
+  }
+
+  void _setupAnimations() {
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 1000),
       vsync: this,
     );
-
+    
+    _checkAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 800),
+      vsync: this,
+    );
+    
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
+    );
+    
     _scaleAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: Interval(0.0, 0.6, curve: Curves.elasticOut),
-      ),
+      CurvedAnimation(parent: _animationController, curve: Curves.elasticOut),
     );
-
-    _opacityAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: Interval(0.4, 0.8, curve: Curves.easeIn),
-      ),
+    
+    _checkAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _checkAnimationController, curve: Curves.easeInOut),
     );
-
-    _starRotationAnimation = Tween<double>(begin: 0.0, end: 2 * pi).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: Interval(0.3, 1.0, curve: Curves.easeInOutBack),
-      ),
-    );
-
-    _controller.forward();
+    
+    _animationController.forward();
+    Future.delayed(const Duration(milliseconds: 500), () {
+      _checkAnimationController.forward();
+    });
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _animationController.dispose();
+    _checkAnimationController.dispose();
     super.dispose();
+  }
+
+  void _viewReceipt() {
+    final double amount = widget.transferDetails['amount'] as double? ?? 0.0;
+    final double fee = widget.transferDetails['fee'] as double? ?? 0.0;
+    final double totalAmount = widget.transferDetails['totalAmount'] as double? ?? 0.0;
+    final String recipientName = widget.transferDetails['recipientName'] as String? ?? 'Recipient';
+    final String recipientAccount = widget.transferDetails['recipientAccountMasked'] as String? ?? 'N/A';
+    final String sourceAccount = widget.transferDetails['sourceAccountInfo'] as String? ?? 'N/A';
+    final String transferId = widget.transferDetails['transferId']?.toString() ?? 'N/A';
+    final DateTime timestamp = widget.transferDetails['timestamp'] as DateTime? ?? DateTime.now();
+    final String status = widget.transferDetails['status'] as String? ?? 'completed';
+    
+    Get.bottomSheet(
+      Container(
+        height: Get.height * 0.8,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              const Color(0xFF1A1A3E),
+              const Color(0xFF0F0F23),
+            ],
+          ),
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(20.r),
+            topRight: Radius.circular(20.r),
+          ),
+          border: Border.all(color: Colors.blue.withValues(alpha: 0.3), width: 1),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.blue.withValues(alpha: 0.2),
+              blurRadius: 20,
+              offset: const Offset(0, -8),
+              spreadRadius: 0,
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            // Handle bar
+            Container(
+              margin: EdgeInsets.only(top: 12.h),
+              width: 40.w,
+              height: 4.h,
+              decoration: BoxDecoration(
+                color: Colors.grey[600],
+                borderRadius: BorderRadius.circular(2.r),
+              ),
+            ),
+            
+            // Header
+            Padding(
+              padding: EdgeInsets.all(20.w),
+              child: Row(
+                children: [
+                  Container(
+                    padding: EdgeInsets.all(8.w),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [Colors.blue[600]!, Colors.blue[400]!],
+                      ),
+                      borderRadius: BorderRadius.circular(8.r),
+                    ),
+                    child: Icon(Icons.receipt_long, color: Colors.white, size: 20.sp),
+                  ),
+                  SizedBox(width: 12.w),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Transfer Receipt',
+                          style: GoogleFonts.inter(
+                            color: Colors.white,
+                            fontSize: 18.sp,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        Text(
+                          'Transaction #$transferId',
+                          style: GoogleFonts.inter(
+                            color: Colors.grey[400],
+                            fontSize: 12.sp,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () => _downloadReceipt(transferId, amount, recipientName, timestamp),
+                    child: Container(
+                      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [Colors.green[600]!, Colors.green[400]!],
+                        ),
+                        borderRadius: BorderRadius.circular(12.r),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.green.withValues(alpha: 0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.download, color: Colors.white, size: 16.sp),
+                          SizedBox(width: 6.w),
+                          Text(
+                            'Download',
+                            style: GoogleFonts.inter(
+                              color: Colors.white,
+                              fontSize: 12.sp,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            
+            // Content
+            Expanded(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20.w),
+                child: SingleChildScrollView(
+                  child: Container(
+                    padding: EdgeInsets.all(16.w),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.05),
+                      borderRadius: BorderRadius.circular(12.r),
+                      border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                    ),
+                    child: Column(
+                      children: [
+                        _buildReceiptRow('Amount Sent', '\$${amount.toStringAsFixed(2)}'),
+                        _buildReceiptRow('Transfer Fee', '\$${fee.toStringAsFixed(2)}'),
+                        Divider(color: Colors.white.withValues(alpha: 0.2), height: 20.h),
+                        _buildReceiptRow('Total Amount', '\$${totalAmount.toStringAsFixed(2)}', isHighlighted: true),
+                        SizedBox(height: 16.h),
+                        _buildReceiptRow('Recipient', recipientName),
+                        _buildReceiptRow('Recipient Account', recipientAccount),
+                        _buildReceiptRow('Source Account', sourceAccount),
+                        _buildReceiptRow('Transfer ID', transferId),
+                        _buildReceiptRow('Date & Time', DateFormat('d MMM yyyy, HH:mm').format(timestamp)),
+                        _buildReceiptRow('Status', status.toUpperCase(), isHighlighted: true),
+                        _buildReceiptRow('Processing Time', 'Instant'),
+                        _buildReceiptRow('Network', 'Internal Transfer'),
+                        _buildReceiptRow('Reference', 'REF${timestamp.millisecondsSinceEpoch.toString().substring(6)}'),
+                        SizedBox(height: 20.h),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+      isDismissible: true,
+      enableDrag: true,
+      isScrollControlled: true,
+    );
+  }
+
+  Widget _buildReceiptRow(String label, String value, {bool isHighlighted = false}) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: 6.h),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: GoogleFonts.inter(
+              color: Colors.white.withValues(alpha: 0.8),
+              fontSize: 12.sp,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          Text(
+            value,
+            style: GoogleFonts.inter(
+              color: isHighlighted ? Colors.green[300] : Colors.white,
+              fontSize: 12.sp,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _downloadReceipt(String transferId, double amount, String recipientName, DateTime timestamp) {
+    // Close the current bottom sheet
+    Get.back();
+    
+    // Simulate receipt generation and download
+    Future.delayed(const Duration(milliseconds: 500), () {
+      // Generate receipt content
+      final receiptContent = _generateReceiptContent(transferId, amount, recipientName, timestamp);
+      
+      // In a real app, you would save this to device storage or share it
+      // For now, we'll show a success message
+      Get.snackbar(
+        '',
+        '',
+        titleText: Container(),
+        messageText: Container(
+          padding: EdgeInsets.all(16.w),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.green[700]!, Colors.green[500]!],
+            ),
+            borderRadius: BorderRadius.circular(12.r),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.green.withValues(alpha: 0.3),
+                blurRadius: 12,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: EdgeInsets.all(8.w),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(8.r),
+                ),
+                child: Icon(Icons.check_circle, color: Colors.white, size: 20.sp),
+              ),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Receipt Downloaded Successfully',
+                      style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    Text(
+                      'Receipt_$transferId.pdf saved to Downloads',
+                      style: GoogleFonts.inter(
+                        color: Colors.white.withValues(alpha: 0.9),
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        backgroundColor: Colors.transparent,
+        duration: const Duration(seconds: 3),
+        margin: EdgeInsets.only(
+          top: Get.height * 0.1,
+          left: 16.w,
+          right: 16.w,
+        ),
+        borderRadius: 12.r,
+        snackPosition: SnackPosition.TOP,
+      );
+    });
+  }
+
+  String _generateReceiptContent(String transferId, double amount, String recipientName, DateTime timestamp) {
+    // Generate receipt content (in a real app, this would create a PDF or formatted document)
+    return '''
+    TRANSFER RECEIPT
+    ================
+    
+    Transfer ID: $transferId
+    Amount: \$${amount.toStringAsFixed(2)}
+    Recipient: $recipientName
+    Date: ${DateFormat('d MMM yyyy, HH:mm').format(timestamp)}
+    Status: Completed
+    
+    Thank you for using LazerVault!
+    ''';
+  }
+
+  void _makeAnotherTransfer() {
+    Get.offAllNamed(AppRoutes.selectRecipient);
   }
 
   @override
   Widget build(BuildContext context) {
     // Extract data from the map with default values
     final double amount = widget.transferDetails['amount'] as double? ?? 0.0;
-    final String recipientName =
-        widget.transferDetails['recipientName'] as String? ?? 'Recipient';
-    // final double totalAmount = widget.transferDetails['totalAmount'] as double? ?? amount;
-    // Extract timestamp and format it
-    final DateTime timestamp =
-        widget.transferDetails['timestamp'] as DateTime? ?? DateTime.now();
-    final String formattedTimestamp =
-        DateFormat('d MMM yyyy, HH:mm').format(timestamp);
+    final String recipientName = widget.transferDetails['recipientName'] as String? ?? 'Recipient';
+    final DateTime timestamp = widget.transferDetails['timestamp'] as DateTime? ?? DateTime.now();
+    final String transferId = widget.transferDetails['transferId']?.toString() ?? 'N/A';
+    final String status = widget.transferDetails['status'] as String? ?? 'completed';
 
+    return Scaffold(
+      backgroundColor: const Color(0xFF0F0F23),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              const Color(0xFF1A1A3E),
+              const Color(0xFF0F0F23),
+              const Color(0xFF0A0A1A),
+            ],
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
+            children: [
+              _buildHeader(),
+              Expanded(
+                child: FadeTransition(
+                  opacity: _fadeAnimation,
+                  child: Padding(
+                    padding: EdgeInsets.all(24.w),
+                    child: Column(
+                      children: [
+                        SizedBox(height: 10.h),
+                        _buildSuccessIcon(),
+                        SizedBox(height: 8.h),
+                        _buildSuccessMessage(recipientName),
+                        SizedBox(height: 12.h),
+                        _buildTransferSummary(amount),
+                        SizedBox(height: 16.h),
+                        _buildTransactionDetails(transferId, timestamp, status, recipientName),
+                        SizedBox(height: 16.h),
+                        _buildActionButtons(),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeader() {
     return Container(
-      padding: EdgeInsets.only(left: 16.w),
+      padding: EdgeInsets.all(16.w),
+      child: Row(
+        children: [
+          Container(
+            height: 40.h,
+            width: 40.w,
+            decoration: BoxDecoration(
+              color: Colors.grey[900],
+              borderRadius: BorderRadius.circular(12.r),
+            ),
+            child: IconButton(
+              onPressed: () => Get.offAllNamed(AppRoutes.dashboard),
+              icon: Icon(
+                Icons.arrow_back,
+                color: Colors.white,
+                size: 20.sp,
+              ),
+            ),
+          ),
+          SizedBox(width: 16.w),
+          Expanded(
+            child: Text(
+              'Transfer Receipt',
+              style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 20.sp,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSuccessIcon() {
+    return ScaleTransition(
+      scale: _scaleAnimation,
+      child: Container(
+        width: 50.w,
+        height: 50.h,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.green[600]!, Colors.green[400]!],
+          ),
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.green.withValues(alpha: 0.3),
+              blurRadius: 12,
+              offset: const Offset(0, 6),
+              spreadRadius: 0,
+            ),
+          ],
+        ),
+        child: AnimatedBuilder(
+          animation: _checkAnimation,
+          builder: (context, child) {
+            return CustomPaint(
+              painter: CheckmarkPainter(_checkAnimation.value),
+              child: Container(),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSuccessMessage(String recipientName) {
+    return Column(
+      children: [
+        Text(
+          'Transfer Successful!',
+          style: GoogleFonts.inter(
+            color: Colors.white,
+            fontSize: 18.sp,
+            fontWeight: FontWeight.w800,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        SizedBox(height: 4.h),
+        Text(
+          'Your transfer to $recipientName has been initiated',
+          style: GoogleFonts.inter(
+            color: Colors.grey[400],
+            fontSize: 11.sp,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTransferSummary(double amount) {
+    return Container(
+      padding: EdgeInsets.all(12.w),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Color(0xFF6C3CE9), // Consider using colors based on status or theme
-            Color(0xFF6835E5),
+            Colors.green.withValues(alpha: 0.15),
+            Colors.green.withValues(alpha: 0.05),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.send, color: Colors.green, size: 20.sp),
+              SizedBox(width: 8.w),
+              Text(
+                'USD',
+                style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 8.h),
+          Text(
+            '\$${amount.toStringAsFixed(2)}',
+            style: GoogleFonts.inter(
+              color: Colors.white,
+              fontSize: 22.sp,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          SizedBox(height: 4.h),
+          Text(
+            'Successfully transferred',
+            style: GoogleFonts.inter(
+              color: Colors.grey[400],
+              fontSize: 10.sp,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTransactionDetails(String transferId, DateTime timestamp, String status, String recipientName) {
+    return Flexible(
+      child: Container(
+        padding: EdgeInsets.all(16.w),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.05),
+          borderRadius: BorderRadius.circular(16.r),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Transaction Details',
+              style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 16.sp,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            SizedBox(height: 12.h),
+            Flexible(
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    _buildDetailRow('Transfer ID', transferId),
+                    _buildDetailRow('Recipient', recipientName),
+                    _buildDetailRow('Date & Time', DateFormat('d MMM yyyy, HH:mm').format(timestamp)),
+                    _buildDetailRow('Status', status.toUpperCase(), isHighlighted: true),
+                    _buildDetailRow('Currency', 'US Dollar (USD)'),
+                    _buildDetailRow('Processing Time', 'Instant'),
+                    _buildDetailRow('Fee', 'Free'),
+                    _buildDetailRow('Reference', 'REF${timestamp.millisecondsSinceEpoch.toString().substring(6)}'),
+                    _buildDetailRow('Network', 'Internal Transfer'),
+                    _buildDetailRow('Type', 'Peer-to-Peer Transfer'),
+                  ],
+                ),
+              ),
+            ),
           ],
         ),
       ),
-      child: Scaffold(
-        // Use Scaffold for better structure (AppBar, Body)
-        backgroundColor:
-            Colors.transparent, // Make Scaffold background transparent
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          leading: BackNavigator(
-              onPressed: () => Get.offAllNamed(AppRoutes.dashboard)),
-          title: const Text('Transfer Receipt',
-              style:
-                  TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
-          centerTitle: true,
-        ),
-        body: SafeArea(
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 24.w),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                SizedBox(height: 20.h), // Space from AppBar
-                // Animated Success Icon
-                ScaleTransition(
-                  scale: _scaleAnimation,
-                  child: UniversalImageLoader(
-                    imagePath:
-                        'assets/images/transfer-successful.png', // Keep using the success image
-                    width: 180.w, // Adjusted size slightly
-                    height: 180.h,
-                  ),
-                ),
-                SizedBox(height: 30.h),
+    );
+  }
 
-                // Success Text
-                FadeTransition(
-                  opacity: _opacityAnimation,
-                  child: Column(
+  Widget _buildDetailRow(String label, String value, {bool isHighlighted = false}) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: 12.h),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            flex: 2,
+            child: Text(
+              label,
+              style: GoogleFonts.inter(
+                color: Colors.grey[400],
+                fontSize: 14.sp,
+              ),
+            ),
+          ),
+          SizedBox(width: 16.w),
+          Expanded(
+            flex: 3,
+            child: Text(
+              value,
+              style: GoogleFonts.inter(
+                color: isHighlighted ? Colors.green[400] : Colors.white,
+                fontSize: 14.sp,
+                fontWeight: isHighlighted ? FontWeight.w700 : FontWeight.w500,
+              ),
+              textAlign: TextAlign.right,
+              overflow: TextOverflow.ellipsis,
+              maxLines: 2,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActionButtons() {
+    return Column(
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(colors: [Colors.blue[700]!, Colors.blue[500]!]),
+                  borderRadius: BorderRadius.circular(16.r),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.blue.withValues(alpha: 0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: ElevatedButton(
+                  onPressed: _viewReceipt,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.transparent,
+                    elevation: 0,
+                    padding: EdgeInsets.symmetric(vertical: 14.h),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16.r),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
+                      Icon(
+                        Icons.receipt_long,
+                        color: Colors.white,
+                        size: 18.sp,
+                      ),
+                      SizedBox(width: 6.w),
                       Text(
-                        'Transfer Successful!', // More emphatic title
-                        style: TextStyle(
+                        'View Receipt',
+                        style: GoogleFonts.inter(
                           color: Colors.white,
-                          fontSize: 26.sp, // Slightly larger
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                      SizedBox(height: 12.h),
-                      Text(
-                        // Use dynamic recipient name
-                        'Your transfer to $recipientName has been initiated.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.white.withOpacity(0.85),
-                          fontSize: 15.sp, // Slightly larger
-                          height: 1.4,
-                        ),
-                      ),
-                      SizedBox(height: 8.h),
-                      Text(
-                        'Time: $formattedTimestamp', // Display formatted timestamp
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.white.withOpacity(0.7),
-                          fontSize: 13.sp,
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ],
                   ),
                 ),
-                SizedBox(height: 30.h),
-
-                // Amount Container - Now shows dynamic amount
-                FadeTransition(
-                  opacity: _opacityAnimation,
-                  child: Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 32.w,
-                      vertical: 16.h,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.25), // Slightly darker
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Text(
-                      // Format the dynamic amount
-                      NumberFormat.currency(symbol: '£', decimalDigits: 2)
-                          .format(amount),
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 30.sp, // Slightly larger
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                  ),
-                ),
-
-                const Spacer(), // Pushes the button to the bottom
-
-                // Button Container
-                Padding(
-                  padding:
-                      EdgeInsets.only(bottom: 24.h), // Padding at the bottom
-                  child: FadeTransition(
-                    opacity: _opacityAnimation,
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        // TODO: Implement actual receipt download logic
-                        onPressed: () {
-                          Get.snackbar(
-                              'Info', 'Receipt download not implemented yet.',
-                              snackPosition: SnackPosition.BOTTOM);
-                          // Example: Get.find<ReceiptService>().downloadReceipt(widget.transferDetails);
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Color(0xFF1ED69E), // Existing color
-                          foregroundColor:
-                              Color(0xFF0A3D2E), // Darker text for contrast
-                          padding: EdgeInsets.symmetric(vertical: 16.h),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(24),
-                          ),
-                          elevation: 5,
-                          shadowColor: Colors.black.withOpacity(0.3),
-                        ),
-                        child: Text(
-                          'Download Receipt',
-                          style: TextStyle(
-                            fontSize: 16.sp,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ], // children of Column
+              ),
             ),
-          ),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: TextButton(
+                onPressed: _makeAnotherTransfer,
+                style: TextButton.styleFrom(
+                  padding: EdgeInsets.symmetric(vertical: 14.h),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16.r),
+                    side: BorderSide(color: Colors.white.withValues(alpha: 0.2)),
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.add_circle_outline,
+                      color: Colors.white.withValues(alpha: 0.8),
+                      size: 18.sp,
+                    ),
+                    SizedBox(width: 6.w),
+                    Text(
+                      'New Transfer',
+                      style: GoogleFonts.inter(
+                        color: Colors.white.withValues(alpha: 0.8),
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
-      ),
+      ],
     );
+  }
+}
+
+class CheckmarkPainter extends CustomPainter {
+  final double progress;
+
+  CheckmarkPainter(this.progress);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.white
+      ..strokeWidth = 4.0
+      ..strokeCap = StrokeCap.round
+      ..style = PaintingStyle.stroke;
+
+    final center = Offset(size.width / 2, size.height / 2);
+    final checkPath = Path();
+    
+    // Define checkmark points
+    final startPoint = Offset(center.dx - 15, center.dy);
+    final middlePoint = Offset(center.dx - 5, center.dy + 10);
+    final endPoint = Offset(center.dx + 15, center.dy - 10);
+
+    if (progress <= 0.5) {
+      // First half: draw line from start to middle
+      final currentProgress = progress * 2;
+      final currentPoint = Offset.lerp(startPoint, middlePoint, currentProgress)!;
+      checkPath.moveTo(startPoint.dx, startPoint.dy);
+      checkPath.lineTo(currentPoint.dx, currentPoint.dy);
+    } else {
+      // Second half: draw line from middle to end
+      final currentProgress = (progress - 0.5) * 2;
+      final currentPoint = Offset.lerp(middlePoint, endPoint, currentProgress)!;
+      checkPath.moveTo(startPoint.dx, startPoint.dy);
+      checkPath.lineTo(middlePoint.dx, middlePoint.dy);
+      checkPath.lineTo(currentPoint.dx, currentPoint.dy);
+    }
+
+    canvas.drawPath(checkPath, paint);
+  }
+
+  @override
+  bool shouldRepaint(CheckmarkPainter oldDelegate) {
+    return oldDelegate.progress != progress;
   }
 }

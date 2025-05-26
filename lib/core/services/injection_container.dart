@@ -112,6 +112,10 @@ import 'package:lazervault/src/features/gift_cards/domain/usecases/purchase_gift
 import 'package:lazervault/src/features/gift_cards/domain/usecases/get_user_gift_cards_usecase.dart';
 import 'package:lazervault/src/features/gift_cards/cubit/gift_card_cubit.dart';
 import 'package:lazervault/src/features/gift_cards/presentation/view/gift_cards_screen.dart';
+import 'package:lazervault/src/features/gift_cards/presentation/view/my_gift_cards_screen.dart';
+import 'package:lazervault/src/features/gift_cards/presentation/view/sell_to_contact_screen.dart';
+import 'package:lazervault/src/features/gift_cards/presentation/view/saved_recipients_screen.dart';
+import 'package:lazervault/src/features/gift_cards/presentation/view/quick_sell_screen.dart';
 // End Gift Cards Imports
 
 final serviceLocator = GetIt.instance;
@@ -358,6 +362,10 @@ Future<void> init() async {
       ..registerFactoryParam<CurrencyDepositScreen, String, void>(
           (currencyCode, _) => CurrencyDepositScreen(currencyCode: currencyCode))
       ..registerFactory(() => GiftCardsScreen())
+      ..registerFactory(() => MyGiftCardsScreen())
+      ..registerFactory(() => SellToContactScreen())
+      ..registerFactory(() => SavedRecipientsScreen())
+      ..registerFactory(() => QuickSellScreen())
       ..registerFactoryParam<ReviewFundsTransferScreen, core_recipient.Recipient, void>(
           (recipient, _) => ReviewFundsTransferScreen(recipient: recipient))
       ..registerFactoryParam<InitiateSendFundsScreen, RecipientModel, void>(
