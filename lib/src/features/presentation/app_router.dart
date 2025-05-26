@@ -14,6 +14,7 @@ import 'package:lazervault/src/features/gift_cards/presentation/view/redeem_gift
 import 'package:lazervault/src/features/gift_cards/domain/entities/gift_card_entity.dart';
 import 'package:lazervault/src/features/gift_cards/cubit/gift_card_cubit.dart';
 import 'package:lazervault/src/features/presentation/views/cb_currency_exchange/cb_currency_exchange_screen.dart';
+import 'package:lazervault/src/features/presentation/views/cb_currency_exchange/currency_deposit_screen.dart';
 import 'package:lazervault/src/features/presentation/views/change_pin_screen.dart';
 import 'package:lazervault/src/features/presentation/views/create_new_password_screen.dart';
 import 'package:lazervault/src/features/presentation/views/crypto/crypto_screen.dart';
@@ -326,6 +327,14 @@ class AppRouter {
       name: AppRoutes.cbCurrencyExchange,
       page: () => serviceLocator<CBCurrencyExchangeScreen>(),
       transition: Transition.leftToRightWithFade,
+    ),
+    GetPage(
+      name: AppRoutes.currencyDeposit,
+      page: () {
+        final currencyCode = Get.arguments as String;
+        return serviceLocator<CurrencyDepositScreen>(param1: currencyCode);
+      },
+      transition: Transition.rightToLeft,
     ),
     GetPage(
       name: AppRoutes.purchaseGiftCard,

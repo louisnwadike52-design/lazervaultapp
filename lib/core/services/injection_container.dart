@@ -33,6 +33,7 @@ import 'package:lazervault/src/generated/user.pbgrpc.dart';
 import 'package:lazervault/src/generated/auth.pbgrpc.dart';
 import 'package:lazervault/src/generated/deposit.pbgrpc.dart';
 import 'package:lazervault/src/features/presentation/views/cb_currency_exchange/cb_currency_exchange_screen.dart';
+import 'package:lazervault/src/features/presentation/views/cb_currency_exchange/currency_deposit_screen.dart';
 import 'package:lazervault/src/features/presentation/views/change_pin_screen.dart';
 import 'package:lazervault/src/features/presentation/views/create_new_password_screen.dart';
 import 'package:lazervault/src/features/presentation/views/crypto/crypto_screen.dart';
@@ -354,6 +355,8 @@ Future<void> init() async {
       ..registerFactory(() => CryptoScreen())
       ..registerFactory(() => StocksScreen())
       ..registerFactory(() => CBCurrencyExchangeScreen())
+      ..registerFactoryParam<CurrencyDepositScreen, String, void>(
+          (currencyCode, _) => CurrencyDepositScreen(currencyCode: currencyCode))
       ..registerFactory(() => GiftCardsScreen())
       ..registerFactoryParam<ReviewFundsTransferScreen, core_recipient.Recipient, void>(
           (recipient, _) => ReviewFundsTransferScreen(recipient: recipient))
