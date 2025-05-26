@@ -11,10 +11,22 @@ import 'package:lazervault/src/features/gift_cards/presentation/view/gift_cards_
 import 'package:lazervault/src/features/gift_cards/presentation/view/purchase_gift_card_screen.dart';
 import 'package:lazervault/src/features/gift_cards/presentation/view/gift_card_details_screen.dart';
 import 'package:lazervault/src/features/gift_cards/presentation/view/redeem_gift_card_screen.dart';
+import 'package:lazervault/src/features/gift_cards/presentation/view/my_gift_cards_screen.dart';
+import 'package:lazervault/src/features/gift_cards/presentation/view/sell_to_contact_screen.dart';
+import 'package:lazervault/src/features/gift_cards/presentation/view/saved_recipients_screen.dart';
+import 'package:lazervault/src/features/gift_cards/presentation/view/quick_sell_screen.dart';
 import 'package:lazervault/src/features/gift_cards/domain/entities/gift_card_entity.dart';
 import 'package:lazervault/src/features/gift_cards/cubit/gift_card_cubit.dart';
 import 'package:lazervault/src/features/presentation/views/cb_currency_exchange/cb_currency_exchange_screen.dart';
 import 'package:lazervault/src/features/presentation/views/cb_currency_exchange/currency_deposit_screen.dart';
+import 'package:lazervault/src/features/presentation/views/cb_currency_exchange/international_transfer_start_screen.dart';
+import 'package:lazervault/src/features/presentation/views/cb_currency_exchange/international_transfer_amount_screen.dart';
+import 'package:lazervault/src/features/presentation/views/cb_currency_exchange/international_transfer_recipient_screen.dart';
+import 'package:lazervault/src/features/presentation/views/cb_currency_exchange/international_transfer_review_screen.dart';
+import 'package:lazervault/src/features/presentation/views/deposit/deposit_method_selection_screen.dart';
+import 'package:lazervault/src/features/presentation/views/deposit/deposit_amount_screen.dart';
+import 'package:lazervault/src/features/presentation/views/deposit/deposit_review_screen.dart';
+import 'package:lazervault/src/features/presentation/views/deposit/deposit_success_screen.dart';
 import 'package:lazervault/src/features/presentation/views/change_pin_screen.dart';
 import 'package:lazervault/src/features/presentation/views/create_new_password_screen.dart';
 import 'package:lazervault/src/features/presentation/views/crypto/crypto_screen.dart';
@@ -47,6 +59,7 @@ import 'package:lazervault/src/features/recipients/presentation/view/select_reci
 import 'package:lazervault/src/features/presentation/views/send_fund_receipt_screen.dart';
 import 'package:lazervault/src/features/presentation/views/send_fund_screen.dart';
 import 'package:lazervault/src/features/funds/presentation/view/send_funds/transfer_proof_screen.dart';
+import 'package:lazervault/src/features/funds/presentation/view/send_funds/transfer_processing_screen.dart';
 import 'package:lazervault/src/features/presentation/views/set_fingerprint_screen.dart';
 import 'package:lazervault/src/features/authentication/presentation/views/passcode_sign_in_screen.dart';
 import 'package:lazervault/src/features/authentication/presentation/views/sign_up_screen.dart';
@@ -246,6 +259,11 @@ class AppRouter {
       transition: Transition.rightToLeft,
     ),
     GetPage(
+      name: AppRoutes.transferProcessing,
+      page: () => const TransferProcessingScreen(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
       name: AppRoutes.transferProof,
       page: () {
         final transferDetails = Get.arguments as Map<String, dynamic>? ?? {};
@@ -364,6 +382,78 @@ class AppRouter {
           child: RedeemGiftCardScreen(giftCard: giftCard),
         );
       },
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.myGiftCards,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<GiftCardCubit>(),
+        child: serviceLocator<MyGiftCardsScreen>(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.sellToContact,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<GiftCardCubit>(),
+        child: serviceLocator<SellToContactScreen>(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.savedRecipients,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<GiftCardCubit>(),
+        child: serviceLocator<SavedRecipientsScreen>(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.quickSell,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<GiftCardCubit>(),
+        child: serviceLocator<QuickSellScreen>(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.internationalTransferStart,
+      page: () => const InternationalTransferStartScreen(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.internationalTransferAmount,
+      page: () => const InternationalTransferAmountScreen(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.internationalTransferRecipient,
+      page: () => const InternationalTransferRecipientScreen(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.internationalTransferReview,
+      page: () => const InternationalTransferReviewScreen(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.depositMethodSelection,
+      page: () => const DepositMethodSelectionScreen(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.depositAmount,
+      page: () => const DepositAmountScreen(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.depositReview,
+      page: () => const DepositReviewScreen(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.depositSuccess,
+      page: () => const DepositSuccessScreen(),
       transition: Transition.rightToLeft,
     ),
   ];

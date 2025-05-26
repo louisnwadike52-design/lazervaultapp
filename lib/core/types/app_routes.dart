@@ -11,6 +11,7 @@ abstract class AppRoutes {
   static const String requestFunds = '/request-funds';
   static const String sendFunds = '/send-funds';
   static const String initiateSendFunds = '/initiate-send-funds';
+  static const String transferProcessing = '/transfer-processing';
   static const String transferProof = '/transfer-proof';
   static const String inputPin = '/input-pin';
   static const String sendFundReceipt = '/send-funds-receipts';
@@ -39,6 +40,21 @@ abstract class AppRoutes {
   static const String currencyTransactionHistory = '/currency-exchange/history';
   static const String rateCalculator = '/currency-exchange/calculator';
   static const String contactSelection = '/currency-exchange/contacts';
+  
+  // International Transfer Flow Routes
+  static const String internationalTransferStart = '/international-transfer/start';
+  static const String internationalTransferAmount = '/international-transfer/amount';
+  static const String internationalTransferRecipient = '/international-transfer/recipient';
+  static const String internationalTransferReview = '/international-transfer/review';
+  static const String internationalTransferConfirm = '/international-transfer/confirm';
+  static const String internationalTransferSuccess = '/international-transfer/success';
+  
+  // Deposit Flow Routes
+  static const String depositMethodSelection = '/deposit/method-selection';
+  static const String depositAmount = '/deposit/amount';
+  static const String depositReview = '/deposit/review';
+  static const String depositSuccess = '/deposit/success';
+  
   static const String signUp = '/auth/sign-up';
   static const String signIn = '/auth/sign-in';
   static const String emailSignIn = '/auth/email-sign-in';

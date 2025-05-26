@@ -269,10 +269,17 @@ class _DashboardCardSummaryState extends State<DashboardCardSummary> {
                                     "Deposit",
                                     Icons.add_rounded,
                                     onTap: () {
-                                      Get.toNamed(AppRoutes.depositFunds,
+                                      // Navigate to the new comprehensive deposit system
+                                      Get.toNamed(AppRoutes.depositMethodSelection,
                                           arguments: {
-                                            'selectedCard':
-                                                accounts[_currentIndex],
+                                            'currency': {
+                                              'code': accounts[_currentIndex]['currency'],
+                                              'name': '${accounts[_currentIndex]['currency']} Account',
+                                              'symbol': accounts[_currentIndex]['currency'] == 'GBP' ? '£' : '\$',
+                                              'balance': accounts[_currentIndex]['balance'],
+                                              'flag': 'https://flagcdn.com/w320/gb.png',
+                                            },
+                                            'selectedCard': accounts[_currentIndex],
                                           });
                                     },
                                   ),

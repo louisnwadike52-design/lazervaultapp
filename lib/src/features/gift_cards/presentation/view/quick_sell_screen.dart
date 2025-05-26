@@ -106,7 +106,7 @@ class _QuickSellScreenState extends State<QuickSellScreen> {
     ];
 
     return Container(
-      height: 100.h,
+      height: 110.h,
       margin: EdgeInsets.symmetric(vertical: 16.h),
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
@@ -144,19 +144,20 @@ class _QuickSellScreenState extends State<QuickSellScreen> {
             });
           },
           child: Padding(
-            padding: EdgeInsets.all(12.w),
+            padding: EdgeInsets.all(8.w),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
-                  width: 40.w,
-                  height: 40.w,
+                  width: 32.w,
+                  height: 32.w,
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(8.r),
+                    borderRadius: BorderRadius.circular(6.r),
                   ),
                   child: ClipRRect(
-                    borderRadius: BorderRadius.circular(8.r),
+                    borderRadius: BorderRadius.circular(6.r),
                     child: CachedNetworkImage(
                       imageUrl: card['logo'],
                       fit: BoxFit.contain,
@@ -165,7 +166,7 @@ class _QuickSellScreenState extends State<QuickSellScreen> {
                         child: Icon(
                           Icons.image_rounded,
                           color: Colors.grey[400],
-                          size: 20.sp,
+                          size: 16.sp,
                         ),
                       ),
                       errorWidget: (context, url, error) => Container(
@@ -173,28 +174,35 @@ class _QuickSellScreenState extends State<QuickSellScreen> {
                         child: Icon(
                           Icons.card_giftcard_rounded,
                           color: Colors.grey[400],
-                          size: 20.sp,
+                          size: 16.sp,
                         ),
                       ),
                     ),
                   ),
                 ),
-                SizedBox(height: 8.h),
-                Text(
-                  card['brand'],
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 12.sp,
-                    fontWeight: FontWeight.w600,
+                SizedBox(height: 6.h),
+                Flexible(
+                  child: Text(
+                    card['brand'],
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 11.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
                 ),
-                Text(
-                  '\$${card['amount'].toStringAsFixed(2)}',
-                  style: TextStyle(
-                    color: Colors.grey[400],
-                    fontSize: 10.sp,
+                SizedBox(height: 2.h),
+                Flexible(
+                  child: Text(
+                    '\$${card['amount'].toStringAsFixed(2)}',
+                    style: TextStyle(
+                      color: Colors.grey[400],
+                      fontSize: 9.sp,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ],
@@ -282,6 +290,7 @@ class _QuickSellScreenState extends State<QuickSellScreen> {
               ),
             ),
           ),
+          SizedBox(height: 24.h), // Add bottom padding to prevent overflow
         ],
       ),
     );

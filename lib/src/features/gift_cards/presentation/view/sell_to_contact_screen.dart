@@ -3,7 +3,11 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../core/types/app_routes.dart';
+import '../../cubit/gift_card_cubit.dart';
+import '../../cubit/gift_card_state.dart';
+import '../../domain/entities/gift_card_entity.dart';
 
 class SellToContactScreen extends StatefulWidget {
   const SellToContactScreen({super.key});
@@ -14,11 +18,27 @@ class SellToContactScreen extends StatefulWidget {
 
 class _SellToContactScreenState extends State<SellToContactScreen> {
   final TextEditingController _searchController = TextEditingController();
-  String _selectedGiftCard = '';
+  final TextEditingController _priceController = TextEditingController();
+  GiftCard? _selectedGiftCard;
+  String _selectedContact = '';
+
+  @override
+  void initState() {
+    super.initState();
+    // Get gift card from arguments if passed
+    final giftCard = Get.arguments as GiftCard?;
+    if (giftCard != null) {
+      _selectedGiftCard = giftCard;
+      _priceController.text = (giftCard.amount * 0.9).toStringAsFixed(2); // 90% of original value
+    }
+    // Load user's gift cards
+    context.read<GiftCardCubit>().loadMyGiftCards();
+  }
 
   @override
   void dispose() {
     _searchController.dispose();
+    _priceController.dispose();
     super.dispose();
   }
 
@@ -39,15 +59,38 @@ class _SellToContactScreenState extends State<SellToContactScreen> {
           ),
         ),
         child: SafeArea(
-          child: Column(
-            children: [
-              _buildHeader(),
-              _buildSearchBar(),
-              _buildGiftCardSelector(),
-              Expanded(
-                child: _buildContactsList(),
-              ),
-            ],
+          child: BlocListener<GiftCardCubit, GiftCardState>(
+            listener: (context, state) {
+              if (state is GiftCardSold) {
+                Get.snackbar(
+                  'Success',
+                  'Gift card sold successfully!',
+                  snackPosition: SnackPosition.TOP,
+                  backgroundColor: Colors.green,
+                  colorText: Colors.white,
+                  duration: const Duration(seconds: 3),
+                );
+              } else if (state is GiftCardSellError) {
+                Get.snackbar(
+                  'Error',
+                  'Failed to sell gift card: ${state.message}',
+                  snackPosition: SnackPosition.TOP,
+                  backgroundColor: Colors.red,
+                  colorText: Colors.white,
+                  duration: const Duration(seconds: 3),
+                );
+              }
+            },
+            child: Column(
+              children: [
+                _buildHeader(),
+                _buildSearchBar(),
+                _buildGiftCardSelector(),
+                Expanded(
+                  child: _buildContactsList(),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -127,37 +170,47 @@ class _SellToContactScreenState extends State<SellToContactScreen> {
   }
 
   Widget _buildGiftCardSelector() {
-    // TODO: Replace with actual gift cards from cubit
-    final List<Map<String, dynamic>> mockGiftCards = [
-      {
-        'brand': 'Amazon',
-        'logo': 'https://example.com/amazon.png',
-        'amount': 100.00,
-      },
-      {
-        'brand': 'Netflix',
-        'logo': 'https://example.com/netflix.png',
-        'amount': 29.99,
-      },
-    ];
-
     return Container(
-      height: 100.h,
+      height: 110.h,
       margin: EdgeInsets.symmetric(vertical: 16.h),
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        padding: EdgeInsets.symmetric(horizontal: 16.w),
-        itemCount: mockGiftCards.length,
-        itemBuilder: (context, index) {
-          final card = mockGiftCards[index];
-          return _buildGiftCardOption(card);
+      child: BlocBuilder<GiftCardCubit, GiftCardState>(
+        builder: (context, state) {
+          if (state is GiftCardLoading) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (state is MyGiftCardsLoaded) {
+            final activeCards = state.giftCards.where((card) => 
+              card.status == GiftCardStatus.active && !card.isRedeemed).toList();
+            
+            if (activeCards.isEmpty) {
+              return Center(
+                child: Text(
+                  'No active gift cards available',
+                  style: TextStyle(
+                    color: Colors.grey[400],
+                    fontSize: 16.sp,
+                  ),
+                ),
+              );
+            }
+            
+            return ListView.builder(
+              scrollDirection: Axis.horizontal,
+              padding: EdgeInsets.symmetric(horizontal: 16.w),
+              itemCount: activeCards.length,
+              itemBuilder: (context, index) {
+                final card = activeCards[index];
+                return _buildGiftCardOption(card);
+              },
+            );
+          }
+          return const SizedBox.shrink();
         },
       ),
     );
   }
 
-  Widget _buildGiftCardOption(Map<String, dynamic> card) {
-    final isSelected = _selectedGiftCard == card['brand'];
+  Widget _buildGiftCardOption(GiftCard card) {
+    final isSelected = _selectedGiftCard?.id == card.id;
     return Container(
       width: 120.w,
       margin: EdgeInsets.only(right: 12.w),
@@ -173,30 +226,34 @@ class _SellToContactScreenState extends State<SellToContactScreen> {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(16.r),
-          onTap: () => setState(() => _selectedGiftCard = card['brand']),
+          onTap: () => setState(() {
+            _selectedGiftCard = card;
+            _priceController.text = (card.amount * 0.9).toStringAsFixed(2);
+          }),
           child: Padding(
-            padding: EdgeInsets.all(12.w),
+            padding: EdgeInsets.all(8.w),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
-                  width: 40.w,
-                  height: 40.w,
+                  width: 32.w,
+                  height: 32.w,
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(8.r),
+                    borderRadius: BorderRadius.circular(6.r),
                   ),
                   child: ClipRRect(
-                    borderRadius: BorderRadius.circular(8.r),
+                    borderRadius: BorderRadius.circular(6.r),
                     child: CachedNetworkImage(
-                      imageUrl: card['logo'],
+                      imageUrl: card.logoUrl,
                       fit: BoxFit.contain,
                       placeholder: (context, url) => Container(
                         color: Colors.grey[200],
                         child: Icon(
                           Icons.image_rounded,
                           color: Colors.grey[400],
-                          size: 20.sp,
+                          size: 16.sp,
                         ),
                       ),
                       errorWidget: (context, url, error) => Container(
@@ -204,28 +261,35 @@ class _SellToContactScreenState extends State<SellToContactScreen> {
                         child: Icon(
                           Icons.card_giftcard_rounded,
                           color: Colors.grey[400],
-                          size: 20.sp,
+                          size: 16.sp,
                         ),
                       ),
                     ),
                   ),
                 ),
-                SizedBox(height: 8.h),
-                Text(
-                  card['brand'],
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 12.sp,
-                    fontWeight: FontWeight.w600,
+                SizedBox(height: 6.h),
+                Flexible(
+                  child: Text(
+                    card.brandName,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 11.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
                 ),
-                Text(
-                  '\$${card['amount'].toStringAsFixed(2)}',
-                  style: TextStyle(
-                    color: Colors.grey[400],
-                    fontSize: 10.sp,
+                SizedBox(height: 2.h),
+                Flexible(
+                  child: Text(
+                    '\$${card.amount.toStringAsFixed(2)}',
+                    style: TextStyle(
+                      color: Colors.grey[400],
+                      fontSize: 9.sp,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ],
@@ -278,7 +342,7 @@ class _SellToContactScreenState extends State<SellToContactScreen> {
         child: InkWell(
           borderRadius: BorderRadius.circular(16.r),
           onTap: () {
-            if (_selectedGiftCard.isNotEmpty) {
+            if (_selectedGiftCard != null) {
               // TODO: Show confirmation dialog
               _showConfirmationDialog(contact);
             } else {
@@ -374,7 +438,7 @@ class _SellToContactScreenState extends State<SellToContactScreen> {
               ),
               SizedBox(height: 16.h),
               Text(
-                'Are you sure you want to sell your $_selectedGiftCard gift card to ${contact['name']}?',
+                'Are you sure you want to sell your ${_selectedGiftCard?.brandName ?? 'selected'} gift card to ${contact['name']}?',
                 style: TextStyle(
                   color: Colors.grey[400],
                   fontSize: 16.sp,
@@ -408,15 +472,16 @@ class _SellToContactScreenState extends State<SellToContactScreen> {
                   Expanded(
                     child: ElevatedButton(
                       onPressed: () {
-                        // TODO: Process the sale
+                        if (_selectedGiftCard != null) {
+                          context.read<GiftCardCubit>().sellGiftCardToContact(
+                            giftCardId: _selectedGiftCard!.id,
+                            contactName: contact['name'],
+                            contactEmail: contact['phone'], // Using phone as email for demo
+                            price: double.tryParse(_priceController.text) ?? _selectedGiftCard!.amount * 0.9,
+                          );
+                        }
                         Get.back();
                         Get.back();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Gift card sale initiated'),
-                            backgroundColor: Colors.green,
-                          ),
-                        );
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blue,
