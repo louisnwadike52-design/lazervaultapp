@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
-import 'package:lazervault/src/features/widgets/common/back_navigator.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:shimmer/shimmer.dart';
+import 'package:get/get.dart';
+import 'package:lazervault/src/features/voice_session/widgets/voice_command_sheet.dart';
 
 class Stocks extends StatefulWidget {
   const Stocks({super.key});
@@ -10,7 +14,11 @@ class Stocks extends StatefulWidget {
   State<Stocks> createState() => _StocksState();
 }
 
-class _StocksState extends State<Stocks> {
+class _StocksState extends State<Stocks> with TickerProviderStateMixin {
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
+  late Animation<double> _scaleAnimation;
+  
   final List<String> timeFrames = ['1D', '1W', '1M', '3M', '1Y', 'All'];
   int selectedTimeFrame = 0;
   bool isWatchlist = true;
@@ -91,50 +99,62 @@ class _StocksState extends State<Stocks> {
   String? _error;
 
   @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 800),
+      vsync: this,
+    );
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
+    );
+    _scaleAnimation = Tween<double>(begin: 0.8, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.elasticOut),
+    );
+    _animationController.forward();
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(
-          color: Color.fromARGB(255, 129, 73, 226),
-        ),
-      );
+      return _buildLoadingState();
     }
 
     if (_error != null) {
       return _buildErrorState(_error!);
     }
 
-    return DefaultTabController(
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            const Color(0xFF1A1A3E),
+            const Color(0xFF0F0F23),
+            const Color(0xFF0A0A1A),
+          ],
+        ),
+      ),
+      child: Column(
+        children: [
+          // Main content
+          Expanded(
+            child: DefaultTabController(
       length: 4,
       child: Column(
         children: [
-          // Portfolio Summary Card
-          _buildPortfolioCard(),
-
-          // Tab Bar
-          TabBar(
-            onTap: (index) => setState(() => selectedTab = index),
-            indicatorColor: primaryPurple,
-            indicatorWeight: 3,
-            labelStyle: TextStyle(
-              fontSize: 16.sp,
-              fontWeight: FontWeight.w600,
-            ),
-            unselectedLabelStyle: TextStyle(
-              fontSize: 16.sp,
-              fontWeight: FontWeight.normal,
-            ),
-            tabs: [
-              Tab(text: 'Stocks'),
-              Tab(text: 'Crypto'),
-              Tab(text: 'ETFs'),
-              Tab(text: 'News'),
-            ],
-            labelColor: Colors.white,
-            unselectedLabelColor: Colors.white60,
-          ),
-
-          // Main Content
+                  _buildModernHeader(),
+                  _buildPortfolioSummaryCard(),
+                  _buildQuickActions(),
+                  SizedBox(height: 16.h),
+                  _buildTabBar(),
           Expanded(
             child: TabBarView(
               children: [
@@ -143,6 +163,10 @@ class _StocksState extends State<Stocks> {
                 _buildComingSoonTab('ETFs'),
                 _buildNewsTab(),
               ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -150,157 +174,501 @@ class _StocksState extends State<Stocks> {
     );
   }
 
-  Widget _buildPortfolioCard() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildModernHeader() {
+    return Container(
+      padding: EdgeInsets.fromLTRB(16.w, MediaQuery.of(context).padding.top + 16.h, 16.w, 16.h),
+      child: FadeTransition(
+        opacity: _fadeAnimation,
+        child: ScaleTransition(
+          scale: _scaleAnimation,
+          child: Row(
       children: [
-        BackNavigator(),
         Container(
-          margin: EdgeInsets.all(16.r),
-          padding: EdgeInsets.all(20.r),
+                height: 40.h,
+                width: 40.w,
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Color.fromARGB(255, 129, 73, 226),
-                Color.fromARGB(255, 33, 11, 111),
-              ],
-            ),
-            borderRadius: BorderRadius.circular(16.r),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Your Portfolio',
-                    style: TextStyle(
-                      color: Colors.white60,
-                      fontSize: 16.sp,
-                    ),
+                  color: Colors.grey[900],
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                child: IconButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  icon: Icon(
+                    Icons.arrow_back,
+                    color: Colors.white,
+                    size: 20.sp,
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.more_horiz, color: Colors.white),
-                    onPressed: () {},
-                  ),
-                ],
-              ),
-              SizedBox(height: 8.h),
-              Text(
-                '\$${NumberFormat('#,##0.00').format(portfolioData['totalValue'])}',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 32.sp,
-                  fontWeight: FontWeight.bold,
                 ),
               ),
-              SizedBox(height: 16.h),
-              Row(
-                children: [
-                  _buildPortfolioMetric(
-                    'Today',
-                    portfolioData['todayChange'],
-                    portfolioData['todayPercentage'],
+              SizedBox(width: 16.w),
+              Expanded(
+                child: Container(
+                  height: 40.h,
+                  padding: EdgeInsets.symmetric(horizontal: 16.w),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[900],
+                    borderRadius: BorderRadius.circular(12.r),
                   ),
-                  SizedBox(width: 24.w),
-                  _buildPortfolioMetric(
-                    'Total Return',
-                    portfolioData['totalReturn'],
-                    portfolioData['totalReturnPercentage'],
+                  child: Row(
+                    children: [
+                      Icon(Icons.search, color: Colors.grey[400], size: 20.sp),
+                      SizedBox(width: 8.w),
+                      Text(
+                        'Search stocks...',
+                        style: TextStyle(
+                          color: Colors.grey[400],
+                          fontSize: 14.sp,
+                        ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
+              ),
+              SizedBox(width: 12.w),
+              Container(
+                height: 40.h,
+                width: 40.w,
+                decoration: BoxDecoration(
+                  color: Colors.grey[900],
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                child: IconButton(
+                  icon: Icon(Icons.mic_rounded, 
+                    color: Colors.blue, size: 20.sp),
+                  onPressed: () => _showVoiceAgentSheet(),
+                ),
+              ),
+              SizedBox(width: 12.w),
+              Container(
+                height: 40.h,
+                width: 40.w,
+                decoration: BoxDecoration(
+                  color: Colors.grey[900],
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                child: IconButton(
+                  icon: Icon(Icons.notifications_outlined, 
+                    color: Colors.white, size: 20.sp),
+                  onPressed: () {},
+                ),
               ),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  void _showVoiceAgentSheet() {
+    final stocksSuggestions = [
+      'Check my portfolio balance',
+      'Show recent stock performance',
+      'Buy Apple stock',
+      'Sell Tesla shares',
+      'Show market trends',
+      'Check NVIDIA price',
+      'Set price alert',
+      'View my watchlist',
+    ];
+    
+    Get.bottomSheet(
+      FractionallySizedBox(
+        heightFactor: 0.85,
+        child: VoiceCommandSheet(suggestions: stocksSuggestions),
+      ),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+    );
+  }
+
+  Widget _buildPortfolioSummaryCard() {
+    return Container(
+      margin: EdgeInsets.fromLTRB(16.w, 0, 16.w, 16.h),
+      padding: EdgeInsets.all(20.w),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+            const Color(0xFF2C3E50),
+            const Color(0xFF3498DB),
+              ],
+            ),
+        borderRadius: BorderRadius.circular(24.r),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.blue.withOpacity(0.2),
+            blurRadius: 20,
+            offset: Offset(0, 10),
+          ),
+        ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+          Text(
+            'Portfolio Value',
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.7),
+              fontSize: 14.sp,
+            ),
+          ),
+          SizedBox(height: 8.h),
+          Row(
+                children: [
+                  Text(
+                '\$${NumberFormat('#,##0.00').format(portfolioData['totalValue'])}',
+                    style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 32.sp,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: -1,
+                    ),
+                  ),
+              SizedBox(width: 12.w),
+              Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: 10.w,
+                  vertical: 6.h,
+                ),
+                decoration: BoxDecoration(
+                  color: portfolioData['todayPercentage'] >= 0 
+                      ? Colors.green.withOpacity(0.2)
+                      : Colors.red.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(20.r),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      portfolioData['todayPercentage'] >= 0 
+                          ? Icons.arrow_upward_rounded
+                          : Icons.arrow_downward_rounded,
+                      color: portfolioData['todayPercentage'] >= 0 
+                          ? Colors.green
+                          : Colors.red,
+                      size: 16.sp,
+                    ),
+                    SizedBox(width: 4.w),
+                    Text(
+                      '${portfolioData['todayPercentage'].toStringAsFixed(2)}%',
+                      style: TextStyle(
+                        color: portfolioData['todayPercentage'] >= 0 
+                            ? Colors.green
+                            : Colors.red,
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                  ),
+                ],
+              ),
+              ),
+            ],
+          ),
+          SizedBox(height: 24.h),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _buildPortfolioStat('Today\'s Change', 
+                '\$${NumberFormat('#,##0.00').format(portfolioData['todayChange'])}'),
+              _buildPortfolioStat('Total Return', 
+                '\$${NumberFormat('#,##0.00').format(portfolioData['totalReturn'])}'),
+              _buildPortfolioStat('Holdings', '12'),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPortfolioStat(String label, String value) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+              Text(
+          label,
+          style: TextStyle(
+            color: Colors.white.withOpacity(0.7),
+            fontSize: 12.sp,
+          ),
+        ),
+        SizedBox(height: 4.h),
+        Text(
+          value,
+                style: TextStyle(
+                  color: Colors.white,
+            fontSize: 14.sp,
+            fontWeight: FontWeight.w600,
+                ),
+              ),
       ],
+    );
+  }
+
+  Widget _buildQuickActions() {
+    return Container(
+      height: 48.h,
+      margin: EdgeInsets.symmetric(horizontal: 16.w),
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+                children: [
+          _buildQuickActionButton(
+            'Buy Stock',
+            Icons.add_circle_outline,
+            Colors.green,
+            () => _showBuyStockDialog(),
+          ),
+          SizedBox(width: 12.w),
+          _buildQuickActionButton(
+            'Sell Stock',
+            Icons.remove_circle_outline,
+            Colors.red,
+            () => _showSellStockDialog(),
+          ),
+          SizedBox(width: 12.w),
+          _buildQuickActionButton(
+            'Watchlist',
+            Icons.visibility_outlined,
+            Colors.blue,
+            () => _toggleWatchlist(),
+                  ),
+          SizedBox(width: 12.w),
+          _buildQuickActionButton(
+            'Analysis',
+            Icons.analytics_outlined,
+            Colors.purple,
+            () => _showAnalysis(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQuickActionButton(
+    String label,
+    IconData icon,
+    Color color,
+    VoidCallback onTap,
+  ) {
+    return Container(
+      width: 120.w,
+      height: 48.h,
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(
+          color: color.withOpacity(0.2),
+          width: 1,
+        ),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12.r),
+          onTap: onTap,
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 12.w),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(icon, color: color, size: 18.sp),
+                SizedBox(width: 6.w),
+                Flexible(
+                  child: Text(
+                    label,
+                    style: TextStyle(
+                      color: color,
+                      fontSize: 12.sp,
+                      fontWeight: FontWeight.w600,
+                  ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                  ),
+              ),
+            ],
+          ),
+        ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTabBar() {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 16.w),
+      decoration: BoxDecoration(
+        color: Colors.grey[900],
+        borderRadius: BorderRadius.circular(12.r),
+      ),
+      child: TabBar(
+        onTap: (index) => setState(() => selectedTab = index),
+        indicator: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Colors.blue[700]!,
+              Colors.blue[500]!,
+            ],
+          ),
+          borderRadius: BorderRadius.circular(8.r),
+        ),
+        indicatorSize: TabBarIndicatorSize.tab,
+        labelStyle: GoogleFonts.inter(
+          fontSize: 14.sp,
+          fontWeight: FontWeight.w600,
+        ),
+        unselectedLabelStyle: GoogleFonts.inter(
+          fontSize: 14.sp,
+          fontWeight: FontWeight.w500,
+        ),
+        tabs: [
+          Tab(text: 'Stocks'),
+          Tab(text: 'Crypto'),
+          Tab(text: 'ETFs'),
+          Tab(text: 'News'),
+        ],
+        labelColor: Colors.white,
+        unselectedLabelColor: Colors.grey[400],
+        dividerColor: Colors.transparent,
+      ),
     );
   }
 
   Widget _buildStocksTab() {
     return RefreshIndicator(
-      color: primaryPurple,
-      backgroundColor: cardBackgroundColor,
+      color: Colors.blue,
+      backgroundColor: Colors.grey[900],
       onRefresh: () async {
-        // Simulate refresh
         await Future.delayed(const Duration(seconds: 1));
-        setState(() {
-          // Refresh data
-        });
+        setState(() {});
       },
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         child: Column(
           children: [
-            // Market Movers Section
-            _buildSection(
-              'Top Movers',
-              _buildTopMovers(),
-            ),
-
-            // Sectors Performance
-            _buildSection(
-              'Sectors Performance',
-              _buildSectorsPerformance(),
-            ),
-
-            // Watchlist/Portfolio Toggle
-            _buildWatchlistToggle(),
-
-            // Stocks List
-            _buildStocksList(),
-
-            // Add bottom padding
             SizedBox(height: 16.h),
+            _buildSection('Top Movers', _buildTopMovers()),
+            _buildSection('Sectors Performance', _buildSectorsPerformance()),
+            _buildWatchlistToggle(),
+            _buildStocksList(),
+            SizedBox(height: 100.h), // Space for FAB
           ],
         ),
       ),
     );
   }
 
+  Widget _buildSection(String title, Widget child) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: EdgeInsets.all(16.r),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                title,
+                style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              TextButton.icon(
+                onPressed: () {},
+                icon: Icon(
+                  Icons.arrow_forward_ios,
+                  color: Colors.blue,
+                  size: 16.r,
+                ),
+                label: Text(
+                  'See All',
+                  style: GoogleFonts.inter(
+                    color: Colors.blue,
+                    fontSize: 14.sp,
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+        child,
+      ],
+    );
+  }
+
   Widget _buildTopMovers() {
     return SizedBox(
-      height: 100.h,
+      height: 120.h,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
+        padding: EdgeInsets.symmetric(horizontal: 16.w),
         itemCount: topMovers.length,
         itemBuilder: (context, index) {
           final mover = topMovers[index];
           final isPositive = mover['change'] > 0;
 
           return Container(
-            width: 120.w,
+            width: 140.w,
             margin: EdgeInsets.only(right: 12.w),
-            padding: EdgeInsets.all(12.r),
+            padding: EdgeInsets.all(16.r),
             decoration: BoxDecoration(
-              color: const Color.fromARGB(255, 33, 11, 111),
-              borderRadius: BorderRadius.circular(12.r),
+              color: Colors.grey[900],
+              borderRadius: BorderRadius.circular(16.r),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.1),
+                width: 1,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.2),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
+                Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
                 Text(
                   mover['symbol'],
-                  style: TextStyle(
+                      style: GoogleFonts.inter(
                     color: Colors.white,
                     fontSize: 16.sp,
                     fontWeight: FontWeight.bold,
                   ),
+                    ),
+                    Container(
+                      padding: EdgeInsets.all(4.r),
+                      decoration: BoxDecoration(
+                        color: isPositive 
+                            ? Colors.green.withOpacity(0.2)
+                            : Colors.red.withOpacity(0.2),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        isPositive ? Icons.trending_up : Icons.trending_down,
+                        color: isPositive ? Colors.green : Colors.red,
+                        size: 16.sp,
+                      ),
+                    ),
+                  ],
                 ),
                 Text(
                   '\$${mover['price']}',
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 14.sp,
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
                 Text(
                   '${isPositive ? '+' : ''}${mover['change']}%',
-                  style: TextStyle(
+                  style: GoogleFonts.inter(
                     color: isPositive ? Colors.green : Colors.red,
                     fontSize: 14.sp,
                     fontWeight: FontWeight.bold,
@@ -319,11 +687,15 @@ class _StocksState extends State<Stocks> {
       children: sectors.map((sector) {
         final isPositive = sector['change'] > 0;
         return Container(
-          margin: EdgeInsets.only(bottom: 8.h),
-          padding: EdgeInsets.all(12.r),
+          margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
+          padding: EdgeInsets.all(16.r),
           decoration: BoxDecoration(
-            color: const Color.fromARGB(255, 33, 11, 111),
-            borderRadius: BorderRadius.circular(8.r),
+            color: Colors.grey[900],
+            borderRadius: BorderRadius.circular(12.r),
+            border: Border.all(
+              color: Colors.white.withOpacity(0.1),
+              width: 1,
+            ),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -338,22 +710,32 @@ class _StocksState extends State<Stocks> {
                       shape: BoxShape.circle,
                     ),
                   ),
-                  SizedBox(width: 8.w),
+                  SizedBox(width: 12.w),
                   Text(
                     sector['name'],
-                    style: TextStyle(
+                    style: GoogleFonts.inter(
                       color: Colors.white,
-                      fontSize: 14.sp,
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ],
               ),
-              Text(
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                decoration: BoxDecoration(
+                  color: isPositive 
+                      ? Colors.green.withOpacity(0.2)
+                      : Colors.red.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(8.r),
+                ),
+                child: Text(
                 '${isPositive ? '+' : ''}${sector['change']}%',
-                style: TextStyle(
+                  style: GoogleFonts.inter(
                   color: isPositive ? Colors.green : Colors.red,
                   fontSize: 14.sp,
                   fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ],
@@ -363,139 +745,34 @@ class _StocksState extends State<Stocks> {
     );
   }
 
-  Widget _buildNewsTab() {
-    return ListView.builder(
-      itemCount: newsItems.length,
-      itemBuilder: (context, index) {
-        final news = newsItems[index];
-        return Container(
-          margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-          padding: EdgeInsets.all(12.r),
-          decoration: BoxDecoration(
-            color: const Color.fromARGB(255, 33, 11, 111),
-            borderRadius: BorderRadius.circular(12.r),
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 60.w,
-                height: 60.h,
-                decoration: BoxDecoration(
-                  color: Colors.grey[800],
-                  borderRadius: BorderRadius.circular(8.r),
-                ),
-                // You would normally use Image.network or Image.asset here
-                child: Center(
-                  child: Text(
-                    news['relatedSymbol'],
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(width: 12.w),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      news['title'],
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w500,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    SizedBox(height: 4.h),
-                    Row(
-                      children: [
-                        Text(
-                          news['source'],
-                          style: TextStyle(
-                            color: Colors.white60,
-                            fontSize: 12.sp,
-                          ),
-                        ),
-                        SizedBox(width: 8.w),
-                        Text(
-                          '•',
-                          style: TextStyle(
-                            color: Colors.white60,
-                            fontSize: 12.sp,
-                          ),
-                        ),
-                        SizedBox(width: 8.w),
-                        Text(
-                          news['time'],
-                          style: TextStyle(
-                            color: Colors.white60,
-                            fontSize: 12.sp,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildComingSoonTab(String feature) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.upcoming,
-            size: 48.r,
-            color: Colors.white60,
-          ),
-          SizedBox(height: 16.h),
-          Text(
-            '$feature Coming Soon',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 20.sp,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          SizedBox(height: 8.h),
-          Text(
-            "We're working on bringing you the best $feature trading experience",
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Colors.white60,
-              fontSize: 14.sp,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildWatchlistToggle() {
-    return Padding(
-      padding: EdgeInsets.all(16.r),
+        return Container(
+      margin: EdgeInsets.all(16.r),
+          decoration: BoxDecoration(
+        color: Colors.grey[900],
+            borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.1),
+          width: 1,
+                          ),
+                        ),
       child: Row(
         children: [
           Expanded(
             child: GestureDetector(
               onTap: () => setState(() => isWatchlist = true),
-              child: Container(
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
                 padding: EdgeInsets.symmetric(vertical: 12.h),
                 decoration: BoxDecoration(
-                  color: isWatchlist
-                      ? const Color.fromARGB(255, 129, 73, 226)
-                      : const Color.fromARGB(255, 33, 11, 111),
+                  gradient: isWatchlist
+                      ? LinearGradient(
+                          colors: [
+                            Colors.blue[700]!,
+                            Colors.blue[500]!,
+                          ],
+                        )
+                      : null,
                   borderRadius: BorderRadius.horizontal(
                     left: Radius.circular(8.r),
                   ),
@@ -503,10 +780,10 @@ class _StocksState extends State<Stocks> {
                 child: Text(
                   'Watchlist',
                   textAlign: TextAlign.center,
-                  style: TextStyle(
+                  style: GoogleFonts.inter(
                     color: Colors.white,
-                    fontWeight:
-                        isWatchlist ? FontWeight.bold : FontWeight.normal,
+                    fontWeight: isWatchlist ? FontWeight.w600 : FontWeight.w500,
+                    fontSize: 14.sp,
                   ),
                 ),
               ),
@@ -515,12 +792,18 @@ class _StocksState extends State<Stocks> {
           Expanded(
             child: GestureDetector(
               onTap: () => setState(() => isWatchlist = false),
-              child: Container(
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
                 padding: EdgeInsets.symmetric(vertical: 12.h),
                 decoration: BoxDecoration(
-                  color: !isWatchlist
-                      ? const Color.fromARGB(255, 129, 73, 226)
-                      : const Color.fromARGB(255, 33, 11, 111),
+                  gradient: !isWatchlist
+                      ? LinearGradient(
+                          colors: [
+                            Colors.blue[700]!,
+                            Colors.blue[500]!,
+                          ],
+                        )
+                      : null,
                   borderRadius: BorderRadius.horizontal(
                     right: Radius.circular(8.r),
                   ),
@@ -528,10 +811,10 @@ class _StocksState extends State<Stocks> {
                 child: Text(
                   'Portfolio',
                   textAlign: TextAlign.center,
-                  style: TextStyle(
+                  style: GoogleFonts.inter(
                     color: Colors.white,
-                    fontWeight:
-                        !isWatchlist ? FontWeight.bold : FontWeight.normal,
+                    fontWeight: !isWatchlist ? FontWeight.w600 : FontWeight.w500,
+                    fontSize: 14.sp,
                   ),
                 ),
               ),
@@ -543,7 +826,6 @@ class _StocksState extends State<Stocks> {
   }
 
   Widget _buildStocksList() {
-    // Sample stock data
     final List<Map<String, dynamic>> stocks = [
       {
         'symbol': 'AAPL',
@@ -590,84 +872,234 @@ class _StocksState extends State<Stocks> {
       physics: const NeverScrollableScrollPhysics(),
       itemBuilder: (context, index) {
         final stock = stocks[index];
-        return AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
+        return _buildModernStockCard(stock, index);
+      },
+    );
+  }
+
+  Widget _buildModernStockCard(Map<String, dynamic> stock, int index) {
+    return FadeTransition(
+      opacity: _fadeAnimation,
+      child: AnimatedContainer(
+        duration: Duration(milliseconds: 600 + (index * 100)),
+        curve: Curves.easeOut,
           margin: EdgeInsets.only(bottom: 12.h),
-          padding: EdgeInsets.all(16.r),
           decoration: BoxDecoration(
-            color: cardBackgroundColor,
-            borderRadius: BorderRadius.circular(12.r),
+          color: Colors.grey[900],
+          borderRadius: BorderRadius.circular(16.r),
+          border: Border.all(
+            color: Colors.white.withOpacity(0.1),
+            width: 1,
+          ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withOpacity(0.2),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
             ],
           ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(16.r),
+            onTap: () => _showStockDetails(stock),
+            child: Padding(
+              padding: EdgeInsets.all(16.w),
           child: Row(
             children: [
+                  // Stock Logo/Symbol
+                  Container(
+                    width: 48.w,
+                    height: 48.h,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.blue[700]!,
+                          Colors.blue[500]!,
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                    child: Center(
+                      child: Text(
+                        stock['symbol'].substring(0, 2),
+                        style: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 12.w),
+                  
               // Stock Info
               Expanded(
-                flex: 2,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       stock['symbol'],
-                      style: TextStyle(
+                          style: GoogleFonts.inter(
                         color: Colors.white,
-                        fontSize: 18.sp,
+                            fontSize: 16.sp,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     SizedBox(height: 4.h),
                     Text(
                       stock['name'],
-                      style: TextStyle(
-                        color: Colors.white60,
-                        fontSize: 14.sp,
+                          style: GoogleFonts.inter(
+                            color: Colors.grey[400],
+                            fontSize: 12.sp,
                       ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),
               ),
 
-              // Mini Chart (placeholder)
-              Expanded(
-                flex: 2,
-                child: SizedBox(
-                  height: 40.h,
+                  // Mini Chart
+                  SizedBox(
+                    width: 60.w,
+                    height: 30.h,
                   child: CustomPaint(
                     painter: MiniChartPainter(
                       points: stock['chart'],
                       isUp: stock['isUp'],
-                    ),
                   ),
                 ),
               ),
+                  
+                  SizedBox(width: 12.w),
 
               // Price Info
-              Expanded(
-                flex: 2,
-                child: Column(
+                  Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
                       '\$${stock['price'].toStringAsFixed(2)}',
-                      style: TextStyle(
+                        style: GoogleFonts.inter(
                         color: Colors.white,
                         fontSize: 16.sp,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     SizedBox(height: 4.h),
-                    Text(
+                      Container(
+                        padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                        decoration: BoxDecoration(
+                          color: stock['isUp'] 
+                              ? Colors.green.withOpacity(0.2)
+                              : Colors.red.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(4.r),
+                        ),
+                        child: Text(
                       '${stock['isUp'] ? '+' : ''}${stock['changePercentage'].toStringAsFixed(2)}%',
-                      style: TextStyle(
+                          style: GoogleFonts.inter(
                         color: stock['isUp'] ? Colors.green : Colors.red,
-                        fontSize: 14.sp,
+                            fontSize: 12.sp,
+                            fontWeight: FontWeight.w600,
+                          ),
                       ),
+                    ),
+                  ],
+                ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNewsTab() {
+    return ListView.builder(
+      padding: EdgeInsets.all(16.w),
+      itemCount: newsItems.length,
+      itemBuilder: (context, index) {
+        final news = newsItems[index];
+        return Container(
+          margin: EdgeInsets.only(bottom: 16.h),
+          padding: EdgeInsets.all(16.r),
+          decoration: BoxDecoration(
+            color: Colors.grey[900],
+            borderRadius: BorderRadius.circular(16.r),
+            border: Border.all(
+              color: Colors.white.withOpacity(0.1),
+              width: 1,
+            ),
+          ),
+          child: Row(
+      children: [
+              Container(
+                width: 60.w,
+                height: 60.h,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.blue[700]!,
+                      Colors.blue[500]!,
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                child: Center(
+                  child: Text(
+                    news['relatedSymbol'],
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+            fontSize: 14.sp,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+          ),
+        ),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+        Text(
+                      news['title'],
+                      style: GoogleFonts.inter(
+            color: Colors.white,
+            fontSize: 16.sp,
+                        fontWeight: FontWeight.w600,
+          ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+        ),
+                    SizedBox(height: 8.h),
+                    Row(
+                      children: [
+        Text(
+                          news['source'],
+                          style: GoogleFonts.inter(
+                            color: Colors.grey[400],
+                            fontSize: 12.sp,
+                          ),
+                        ),
+                        SizedBox(width: 8.w),
+                        Text(
+                          '•',
+                          style: GoogleFonts.inter(
+                            color: Colors.grey[400],
+                            fontSize: 12.sp,
+                          ),
+                        ),
+                        SizedBox(width: 8.w),
+                        Text(
+                          news['time'],
+                          style: GoogleFonts.inter(
+                            color: Colors.grey[400],
+                            fontSize: 12.sp,
+          ),
+        ),
+      ],
                     ),
                   ],
                 ),
@@ -679,110 +1111,195 @@ class _StocksState extends State<Stocks> {
     );
   }
 
-  Widget _buildPortfolioMetric(String label, double value, double percentage) {
-    final isPositive = percentage >= 0;
-    return Column(
+  Widget _buildComingSoonTab(String feature) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Text(
-          label,
-          style: TextStyle(
-            color: Colors.white60,
-            fontSize: 14.sp,
+          Container(
+            padding: EdgeInsets.all(24.w),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(24.r),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.2),
+                width: 1,
+              ),
+            ),
+            child: Icon(
+              Icons.upcoming,
+              size: 48.r,
+              color: Colors.white.withOpacity(0.6),
+            ),
           ),
-        ),
-        SizedBox(height: 4.h),
-        Text(
-          '\$${NumberFormat('#,##0.00').format(value)}',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 16.sp,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        Text(
-          '${isPositive ? '+' : ''}$percentage%',
-          style: TextStyle(
-            color: isPositive ? Colors.green : Colors.red,
-            fontSize: 14.sp,
-          ),
-        ),
-      ],
-    );
-  }
-
-  // Add this helper widget for section headers
-  Widget _buildSection(String title, Widget child) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: EdgeInsets.all(16.r),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
+          SizedBox(height: 16.h),
               Text(
-                title,
-                style: TextStyle(
+            '$feature Coming Soon',
+            style: GoogleFonts.inter(
                   color: Colors.white,
-                  fontSize: 18.sp,
-                  fontWeight: FontWeight.w600,
+              fontSize: 20.sp,
+              fontWeight: FontWeight.bold,
                 ),
               ),
-              TextButton.icon(
-                onPressed: () {},
-                icon: Icon(
-                  Icons.arrow_forward_ios,
-                  color: const Color.fromARGB(255, 129, 73, 226),
-                  size: 16.r,
-                ),
-                label: Text(
-                  'See All',
-                  style: TextStyle(
-                    color: const Color.fromARGB(255, 129, 73, 226),
+          SizedBox(height: 8.h),
+          Text(
+            "We're working on bringing you the best $feature trading experience",
+            textAlign: TextAlign.center,
+            style: GoogleFonts.inter(
+              color: Colors.white.withOpacity(0.7),
                     fontSize: 14.sp,
                   ),
                 ),
-              ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLoadingState() {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            const Color(0xFF1A1A3E),
+            const Color(0xFF0F0F23),
+            const Color(0xFF0A0A1A),
             ],
           ),
         ),
-        child,
+      child: Column(
+        children: [
+          // Main content
+          _buildModernHeader(),
+          Expanded(
+            child: ListView.builder(
+              padding: EdgeInsets.all(16.w),
+              itemCount: 6,
+              itemBuilder: (context, index) {
+                return Shimmer.fromColors(
+                  baseColor: Colors.white.withOpacity(0.1),
+                  highlightColor: Colors.white.withOpacity(0.2),
+                  child: Container(
+                    height: 80.h,
+                    margin: EdgeInsets.only(bottom: 12.h),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(16.r),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
       ],
+      ),
     );
   }
 
   Widget _buildErrorState(String message) {
-    return Center(
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            const Color(0xFF1A1A3E),
+            const Color(0xFF0F0F23),
+            const Color(0xFF0A0A1A),
+          ],
+        ),
+      ),
+      child: Column(
+        children: [
+          // Main content
+          _buildModernHeader(),
+          Expanded(
+            child: Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.error_outline,
-            size: 48.r,
-            color: Colors.red[400],
+                  Container(
+                    padding: EdgeInsets.all(24.w),
+                    decoration: BoxDecoration(
+                      color: Colors.red.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(24.r),
+                      border: Border.all(
+                        color: Colors.red.withOpacity(0.2),
+                        width: 1,
+                      ),
+                    ),
+                    child: Icon(
+                      Icons.error_outline_rounded,
+                      size: 48.sp,
+                      color: Colors.red.shade400,
+                    ),
           ),
           SizedBox(height: 16.h),
           Text(
-            message,
-            style: TextStyle(
+                    'Something went wrong',
+                    style: GoogleFonts.inter(
+                      fontSize: 20.sp,
+                      fontWeight: FontWeight.w700,
               color: Colors.white,
-              fontSize: 16.sp,
+                    ),
+                  ),
+                  SizedBox(height: 8.h),
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 32.w),
+                    child: Text(
+                      message,
+                      style: GoogleFonts.inter(
+                        fontSize: 14.sp,
+                        color: Colors.white.withOpacity(0.7),
+                        fontWeight: FontWeight.w400,
             ),
             textAlign: TextAlign.center,
           ),
-          SizedBox(height: 16.h),
-          TextButton(
+                  ),
+                  SizedBox(height: 24.h),
+                  Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.blue[700]!,
+                          Colors.blue[500]!,
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(12.r),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.blue.withOpacity(0.3),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: ElevatedButton(
             onPressed: () {
               setState(() {
                 _error = null;
-                // Retry loading data
               });
             },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.transparent,
+                        shadowColor: Colors.transparent,
+                        padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12.r),
+                        ),
+                      ),
             child: Text(
-              'Retry',
-              style: TextStyle(
-                color: primaryPurple,
-                fontSize: 16.sp,
+                        'Try Again',
+                        style: GoogleFonts.inter(
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -791,16 +1308,64 @@ class _StocksState extends State<Stocks> {
     );
   }
 
-  String _formatNumber(double value) {
-    if (value >= 1000000000) {
-      return '${(value / 1000000000).toStringAsFixed(1)}B';
-    } else if (value >= 1000000) {
-      return '${(value / 1000000).toStringAsFixed(1)}M';
-    } else if (value >= 1000) {
-      return '${(value / 1000).toStringAsFixed(1)}K';
-    }
-    return value.toStringAsFixed(2);
+
+
+  // Action methods
+  void _showBuyStockDialog() {
+    Get.snackbar(
+      'Buy Stock',
+      'Buy stock feature coming soon!',
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: Colors.green.withOpacity(0.8),
+      colorText: Colors.white,
+      borderRadius: 12.r,
+      margin: EdgeInsets.all(16.w),
+    );
   }
+
+  void _showSellStockDialog() {
+    Get.snackbar(
+      'Sell Stock',
+      'Sell stock feature coming soon!',
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: Colors.red.withOpacity(0.8),
+      colorText: Colors.white,
+      borderRadius: 12.r,
+      margin: EdgeInsets.all(16.w),
+    );
+  }
+
+  void _toggleWatchlist() {
+    setState(() {
+      isWatchlist = !isWatchlist;
+    });
+  }
+
+  void _showAnalysis() {
+    Get.snackbar(
+      'Analysis',
+      'Stock analysis feature coming soon!',
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: Colors.purple.withOpacity(0.8),
+      colorText: Colors.white,
+      borderRadius: 12.r,
+      margin: EdgeInsets.all(16.w),
+    );
+  }
+
+  void _showStockDetails(Map<String, dynamic> stock) {
+    Get.snackbar(
+      stock['symbol'],
+      'Stock details for ${stock['name']} coming soon!',
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: Colors.blue.withOpacity(0.8),
+      colorText: Colors.white,
+      borderRadius: 12.r,
+      margin: EdgeInsets.all(16.w),
+    );
+  }
+
+
 }
 
 // Custom painter for mini chart
@@ -822,6 +1387,8 @@ class MiniChartPainter extends CustomPainter {
     final max = points.reduce((a, b) => a > b ? a : b);
     final min = points.reduce((a, b) => a < b ? a : b);
     final range = max - min;
+
+    if (range == 0) return;
 
     path.moveTo(0, size.height * (1 - (points[0] - min) / range));
 

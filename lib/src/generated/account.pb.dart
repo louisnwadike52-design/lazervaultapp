@@ -14,7 +14,7 @@ import 'dart:core' as $core;
 import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'google/protobuf/timestamp.pb.dart' as $15;
+import 'google/protobuf/timestamp.pb.dart' as $16;
 
 export 'package:protobuf/protobuf.dart' show GeneratedMessageGenericExtensions;
 
@@ -27,8 +27,8 @@ class Account extends $pb.GeneratedMessage {
     $core.double? balance,
     $core.String? accountNumber,
     $core.bool? isActive,
-    $15.Timestamp? createdAt,
-    $15.Timestamp? updatedAt,
+    $16.Timestamp? createdAt,
+    $16.Timestamp? updatedAt,
   }) {
     final $result = create();
     if (id != null) {
@@ -68,8 +68,8 @@ class Account extends $pb.GeneratedMessage {
     ..a<$core.double>(4, _omitFieldNames ? '' : 'balance', $pb.PbFieldType.OD)
     ..aOS(5, _omitFieldNames ? '' : 'accountNumber')
     ..aOB(6, _omitFieldNames ? '' : 'isActive')
-    ..aOM<$15.Timestamp>(7, _omitFieldNames ? '' : 'createdAt', subBuilder: $15.Timestamp.create)
-    ..aOM<$15.Timestamp>(8, _omitFieldNames ? '' : 'updatedAt', subBuilder: $15.Timestamp.create)
+    ..aOM<$16.Timestamp>(7, _omitFieldNames ? '' : 'createdAt', subBuilder: $16.Timestamp.create)
+    ..aOM<$16.Timestamp>(8, _omitFieldNames ? '' : 'updatedAt', subBuilder: $16.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -149,26 +149,26 @@ class Account extends $pb.GeneratedMessage {
   void clearIsActive() => $_clearField(6);
 
   @$pb.TagNumber(7)
-  $15.Timestamp get createdAt => $_getN(6);
+  $16.Timestamp get createdAt => $_getN(6);
   @$pb.TagNumber(7)
-  set createdAt($15.Timestamp v) { $_setField(7, v); }
+  set createdAt($16.Timestamp v) { $_setField(7, v); }
   @$pb.TagNumber(7)
   $core.bool hasCreatedAt() => $_has(6);
   @$pb.TagNumber(7)
   void clearCreatedAt() => $_clearField(7);
   @$pb.TagNumber(7)
-  $15.Timestamp ensureCreatedAt() => $_ensure(6);
+  $16.Timestamp ensureCreatedAt() => $_ensure(6);
 
   @$pb.TagNumber(8)
-  $15.Timestamp get updatedAt => $_getN(7);
+  $16.Timestamp get updatedAt => $_getN(7);
   @$pb.TagNumber(8)
-  set updatedAt($15.Timestamp v) { $_setField(8, v); }
+  set updatedAt($16.Timestamp v) { $_setField(8, v); }
   @$pb.TagNumber(8)
   $core.bool hasUpdatedAt() => $_has(7);
   @$pb.TagNumber(8)
   void clearUpdatedAt() => $_clearField(8);
   @$pb.TagNumber(8)
-  $15.Timestamp ensureUpdatedAt() => $_ensure(7);
+  $16.Timestamp ensureUpdatedAt() => $_ensure(7);
 }
 
 /// Request message for creating a new account.
@@ -521,8 +521,8 @@ class AccountDetails extends $pb.GeneratedMessage {
     $core.String? accountNumber,
     $core.String? iban,
     $core.String? bicSwift,
-    $15.Timestamp? createdAt,
-    $15.Timestamp? updatedAt,
+    $16.Timestamp? createdAt,
+    $16.Timestamp? updatedAt,
   }) {
     final $result = create();
     if (id != null) {
@@ -602,8 +602,8 @@ class AccountDetails extends $pb.GeneratedMessage {
     ..aOS(15, _omitFieldNames ? '' : 'accountNumber')
     ..aOS(16, _omitFieldNames ? '' : 'iban')
     ..aOS(17, _omitFieldNames ? '' : 'bicSwift')
-    ..aOM<$15.Timestamp>(18, _omitFieldNames ? '' : 'createdAt', subBuilder: $15.Timestamp.create)
-    ..aOM<$15.Timestamp>(19, _omitFieldNames ? '' : 'updatedAt', subBuilder: $15.Timestamp.create)
+    ..aOM<$16.Timestamp>(18, _omitFieldNames ? '' : 'createdAt', subBuilder: $16.Timestamp.create)
+    ..aOM<$16.Timestamp>(19, _omitFieldNames ? '' : 'updatedAt', subBuilder: $16.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -773,26 +773,26 @@ class AccountDetails extends $pb.GeneratedMessage {
   void clearBicSwift() => $_clearField(17);
 
   @$pb.TagNumber(18)
-  $15.Timestamp get createdAt => $_getN(16);
+  $16.Timestamp get createdAt => $_getN(16);
   @$pb.TagNumber(18)
-  set createdAt($15.Timestamp v) { $_setField(18, v); }
+  set createdAt($16.Timestamp v) { $_setField(18, v); }
   @$pb.TagNumber(18)
   $core.bool hasCreatedAt() => $_has(16);
   @$pb.TagNumber(18)
   void clearCreatedAt() => $_clearField(18);
   @$pb.TagNumber(18)
-  $15.Timestamp ensureCreatedAt() => $_ensure(16);
+  $16.Timestamp ensureCreatedAt() => $_ensure(16);
 
   @$pb.TagNumber(19)
-  $15.Timestamp get updatedAt => $_getN(17);
+  $16.Timestamp get updatedAt => $_getN(17);
   @$pb.TagNumber(19)
-  set updatedAt($15.Timestamp v) { $_setField(19, v); }
+  set updatedAt($16.Timestamp v) { $_setField(19, v); }
   @$pb.TagNumber(19)
   $core.bool hasUpdatedAt() => $_has(17);
   @$pb.TagNumber(19)
   void clearUpdatedAt() => $_clearField(19);
   @$pb.TagNumber(19)
-  $15.Timestamp ensureUpdatedAt() => $_ensure(17);
+  $16.Timestamp ensureUpdatedAt() => $_ensure(17);
 }
 
 /// SecuritySettings: Used for updating security flags

@@ -13,7 +13,7 @@ import 'dart:core' as $core;
 
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'common.pb.dart' as $16;
+import 'common.pb.dart' as $17;
 
 export 'package:protobuf/protobuf.dart' show GeneratedMessageGenericExtensions;
 
@@ -83,7 +83,7 @@ class LoginRequest extends $pb.GeneratedMessage {
 
 class LoginResponse extends $pb.GeneratedMessage {
   factory LoginResponse({
-    $16.Data? data,
+    $17.Data? data,
     $core.bool? success,
     $core.String? msg,
   }) {
@@ -104,7 +104,7 @@ class LoginResponse extends $pb.GeneratedMessage {
   factory LoginResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'LoginResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<$16.Data>(1, _omitFieldNames ? '' : 'data', subBuilder: $16.Data.create)
+    ..aOM<$17.Data>(1, _omitFieldNames ? '' : 'data', subBuilder: $17.Data.create)
     ..aOB(2, _omitFieldNames ? '' : 'success')
     ..aOS(3, _omitFieldNames ? '' : 'msg')
     ..hasRequiredFields = false
@@ -132,15 +132,15 @@ class LoginResponse extends $pb.GeneratedMessage {
   static LoginResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $16.Data get data => $_getN(0);
+  $17.Data get data => $_getN(0);
   @$pb.TagNumber(1)
-  set data($16.Data v) { $_setField(1, v); }
+  set data($17.Data v) { $_setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasData() => $_has(0);
   @$pb.TagNumber(1)
   void clearData() => $_clearField(1);
   @$pb.TagNumber(1)
-  $16.Data ensureData() => $_ensure(0);
+  $17.Data ensureData() => $_ensure(0);
 
   @$pb.TagNumber(2)
   $core.bool get success => $_getBF(1);
@@ -213,7 +213,7 @@ class RefreshTokenRequest extends $pb.GeneratedMessage {
 
 class RefreshTokenResponse extends $pb.GeneratedMessage {
   factory RefreshTokenResponse({
-    $16.Data? data,
+    $17.Data? data,
     $core.bool? success,
     $core.String? msg,
   }) {
@@ -234,7 +234,7 @@ class RefreshTokenResponse extends $pb.GeneratedMessage {
   factory RefreshTokenResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'RefreshTokenResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<$16.Data>(1, _omitFieldNames ? '' : 'data', subBuilder: $16.Data.create)
+    ..aOM<$17.Data>(1, _omitFieldNames ? '' : 'data', subBuilder: $17.Data.create)
     ..aOB(2, _omitFieldNames ? '' : 'success')
     ..aOS(3, _omitFieldNames ? '' : 'msg')
     ..hasRequiredFields = false
@@ -262,15 +262,15 @@ class RefreshTokenResponse extends $pb.GeneratedMessage {
   static RefreshTokenResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $16.Data get data => $_getN(0);
+  $17.Data get data => $_getN(0);
   @$pb.TagNumber(1)
-  set data($16.Data v) { $_setField(1, v); }
+  set data($17.Data v) { $_setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasData() => $_has(0);
   @$pb.TagNumber(1)
   void clearData() => $_clearField(1);
   @$pb.TagNumber(1)
-  $16.Data ensureData() => $_ensure(0);
+  $17.Data ensureData() => $_ensure(0);
 
   @$pb.TagNumber(2)
   $core.bool get success => $_getBF(1);

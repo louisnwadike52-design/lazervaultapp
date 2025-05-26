@@ -32,6 +32,12 @@ abstract class AppRoutes {
   static const String depositFunds = '/profile-settings/deposit-funds';
   static const String withdrawFunds = '/profile-settings/withdraw-funds';
   static const String cbCurrencyExchange = '/profile-settings/cb-currency-exchange';
+  static const String currencyExchange = '/currency-exchange';
+  static const String addCurrencyRecipient = '/currency-exchange/add-recipient';
+  static const String currencyRecipientList = '/currency-exchange/recipients';
+  static const String currencyTransactionHistory = '/currency-exchange/history';
+  static const String rateCalculator = '/currency-exchange/calculator';
+  static const String contactSelection = '/currency-exchange/contacts';
   static const String signUp = '/auth/sign-up';
   static const String signIn = '/auth/sign-in';
   static const String emailSignIn = '/auth/email-sign-in';
@@ -44,4 +50,12 @@ abstract class AppRoutes {
       '/auth/facial-biometric-verification';
   static const String faceScan = '/auth/face-scan';
   static const String proofOfResidence = '/auth/proof-of-residence';
+  static const String giftCards = '/gift-cards';
+  static const String purchaseGiftCard = '/gift-cards/purchase';
+  static const String giftCardDetails = '/gift-card-details';
+  static const String redeemGiftCard = '/gift-cards/redeem';
+  static const String myGiftCards = '/gift-cards/my-cards';
+  static const String sellToContact = '/gift-cards/sell/contact';
+  static const String savedRecipients = '/gift-cards/sell/recipients';
+  static const String quickSell = '/gift-cards/sell/quick';
 }

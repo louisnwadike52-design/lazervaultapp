@@ -14,7 +14,7 @@ import 'dart:core' as $core;
 import 'package:protobuf/protobuf.dart' as $pb;
 
 import 'exchange.pbenum.dart';
-import 'google/protobuf/timestamp.pb.dart' as $15;
+import 'google/protobuf/timestamp.pb.dart' as $16;
 
 export 'package:protobuf/protobuf.dart' show GeneratedMessageGenericExtensions;
 
@@ -91,7 +91,7 @@ class GetExchangeRateResponse extends $pb.GeneratedMessage {
     $core.String? fromCurrency,
     $core.String? toCurrency,
     $core.double? rate,
-    $15.Timestamp? timestamp,
+    $16.Timestamp? timestamp,
   }) {
     final $result = create();
     if (fromCurrency != null) {
@@ -116,7 +116,7 @@ class GetExchangeRateResponse extends $pb.GeneratedMessage {
     ..aOS(1, _omitFieldNames ? '' : 'fromCurrency')
     ..aOS(2, _omitFieldNames ? '' : 'toCurrency')
     ..a<$core.double>(3, _omitFieldNames ? '' : 'rate', $pb.PbFieldType.OD)
-    ..aOM<$15.Timestamp>(4, _omitFieldNames ? '' : 'timestamp', subBuilder: $15.Timestamp.create)
+    ..aOM<$16.Timestamp>(4, _omitFieldNames ? '' : 'timestamp', subBuilder: $16.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -169,15 +169,15 @@ class GetExchangeRateResponse extends $pb.GeneratedMessage {
   void clearRate() => $_clearField(3);
 
   @$pb.TagNumber(4)
-  $15.Timestamp get timestamp => $_getN(3);
+  $16.Timestamp get timestamp => $_getN(3);
   @$pb.TagNumber(4)
-  set timestamp($15.Timestamp v) { $_setField(4, v); }
+  set timestamp($16.Timestamp v) { $_setField(4, v); }
   @$pb.TagNumber(4)
   $core.bool hasTimestamp() => $_has(3);
   @$pb.TagNumber(4)
   void clearTimestamp() => $_clearField(4);
   @$pb.TagNumber(4)
-  $15.Timestamp ensureTimestamp() => $_ensure(3);
+  $16.Timestamp ensureTimestamp() => $_ensure(3);
 }
 
 /// Represents receiver details for an international transfer
@@ -381,8 +381,8 @@ class ExchangeTransaction extends $pb.GeneratedMessage {
     $core.double? fees,
     ReceiverDetails? receiverDetails,
     ExchangeStatus? status,
-    $15.Timestamp? createdAt,
-    $15.Timestamp? updatedAt,
+    $16.Timestamp? createdAt,
+    $16.Timestamp? updatedAt,
   }) {
     final $result = create();
     if (transactionId != null) {
@@ -438,8 +438,8 @@ class ExchangeTransaction extends $pb.GeneratedMessage {
     ..a<$core.double>(8, _omitFieldNames ? '' : 'fees', $pb.PbFieldType.OD)
     ..aOM<ReceiverDetails>(9, _omitFieldNames ? '' : 'receiverDetails', subBuilder: ReceiverDetails.create)
     ..e<ExchangeStatus>(10, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: ExchangeStatus.PENDING, valueOf: ExchangeStatus.valueOf, enumValues: ExchangeStatus.values)
-    ..aOM<$15.Timestamp>(11, _omitFieldNames ? '' : 'createdAt', subBuilder: $15.Timestamp.create)
-    ..aOM<$15.Timestamp>(12, _omitFieldNames ? '' : 'updatedAt', subBuilder: $15.Timestamp.create)
+    ..aOM<$16.Timestamp>(11, _omitFieldNames ? '' : 'createdAt', subBuilder: $16.Timestamp.create)
+    ..aOM<$16.Timestamp>(12, _omitFieldNames ? '' : 'updatedAt', subBuilder: $16.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -557,26 +557,26 @@ class ExchangeTransaction extends $pb.GeneratedMessage {
   void clearStatus() => $_clearField(10);
 
   @$pb.TagNumber(11)
-  $15.Timestamp get createdAt => $_getN(10);
+  $16.Timestamp get createdAt => $_getN(10);
   @$pb.TagNumber(11)
-  set createdAt($15.Timestamp v) { $_setField(11, v); }
+  set createdAt($16.Timestamp v) { $_setField(11, v); }
   @$pb.TagNumber(11)
   $core.bool hasCreatedAt() => $_has(10);
   @$pb.TagNumber(11)
   void clearCreatedAt() => $_clearField(11);
   @$pb.TagNumber(11)
-  $15.Timestamp ensureCreatedAt() => $_ensure(10);
+  $16.Timestamp ensureCreatedAt() => $_ensure(10);
 
   @$pb.TagNumber(12)
-  $15.Timestamp get updatedAt => $_getN(11);
+  $16.Timestamp get updatedAt => $_getN(11);
   @$pb.TagNumber(12)
-  set updatedAt($15.Timestamp v) { $_setField(12, v); }
+  set updatedAt($16.Timestamp v) { $_setField(12, v); }
   @$pb.TagNumber(12)
   $core.bool hasUpdatedAt() => $_has(11);
   @$pb.TagNumber(12)
   void clearUpdatedAt() => $_clearField(12);
   @$pb.TagNumber(12)
-  $15.Timestamp ensureUpdatedAt() => $_ensure(11);
+  $16.Timestamp ensureUpdatedAt() => $_ensure(11);
 }
 
 /// Response after initiating a transfer

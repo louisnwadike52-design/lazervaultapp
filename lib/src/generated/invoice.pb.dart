@@ -13,7 +13,7 @@ import 'dart:core' as $core;
 
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'google/protobuf/timestamp.pb.dart' as $15;
+import 'google/protobuf/timestamp.pb.dart' as $16;
 import 'invoice.pbenum.dart';
 
 export 'package:protobuf/protobuf.dart' show GeneratedMessageGenericExtensions;
@@ -218,12 +218,12 @@ class Invoice extends $pb.GeneratedMessage {
     $core.double? tax,
     $core.double? totalAmount,
     $core.String? currencyCode,
-    $15.Timestamp? issueDate,
-    $15.Timestamp? dueDate,
+    $16.Timestamp? issueDate,
+    $16.Timestamp? dueDate,
     InvoiceStatus? status,
     $core.String? notes,
-    $15.Timestamp? createdAt,
-    $15.Timestamp? updatedAt,
+    $16.Timestamp? createdAt,
+    $16.Timestamp? updatedAt,
   }) {
     final $result = create();
     if (invoiceId != null) {
@@ -287,12 +287,12 @@ class Invoice extends $pb.GeneratedMessage {
     ..a<$core.double>(7, _omitFieldNames ? '' : 'tax', $pb.PbFieldType.OD)
     ..a<$core.double>(8, _omitFieldNames ? '' : 'totalAmount', $pb.PbFieldType.OD)
     ..aOS(9, _omitFieldNames ? '' : 'currencyCode')
-    ..aOM<$15.Timestamp>(10, _omitFieldNames ? '' : 'issueDate', subBuilder: $15.Timestamp.create)
-    ..aOM<$15.Timestamp>(11, _omitFieldNames ? '' : 'dueDate', subBuilder: $15.Timestamp.create)
+    ..aOM<$16.Timestamp>(10, _omitFieldNames ? '' : 'issueDate', subBuilder: $16.Timestamp.create)
+    ..aOM<$16.Timestamp>(11, _omitFieldNames ? '' : 'dueDate', subBuilder: $16.Timestamp.create)
     ..e<InvoiceStatus>(12, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: InvoiceStatus.DRAFT, valueOf: InvoiceStatus.valueOf, enumValues: InvoiceStatus.values)
     ..aOS(13, _omitFieldNames ? '' : 'notes')
-    ..aOM<$15.Timestamp>(14, _omitFieldNames ? '' : 'createdAt', subBuilder: $15.Timestamp.create)
-    ..aOM<$15.Timestamp>(15, _omitFieldNames ? '' : 'updatedAt', subBuilder: $15.Timestamp.create)
+    ..aOM<$16.Timestamp>(14, _omitFieldNames ? '' : 'createdAt', subBuilder: $16.Timestamp.create)
+    ..aOM<$16.Timestamp>(15, _omitFieldNames ? '' : 'updatedAt', subBuilder: $16.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -395,26 +395,26 @@ class Invoice extends $pb.GeneratedMessage {
   void clearCurrencyCode() => $_clearField(9);
 
   @$pb.TagNumber(10)
-  $15.Timestamp get issueDate => $_getN(9);
+  $16.Timestamp get issueDate => $_getN(9);
   @$pb.TagNumber(10)
-  set issueDate($15.Timestamp v) { $_setField(10, v); }
+  set issueDate($16.Timestamp v) { $_setField(10, v); }
   @$pb.TagNumber(10)
   $core.bool hasIssueDate() => $_has(9);
   @$pb.TagNumber(10)
   void clearIssueDate() => $_clearField(10);
   @$pb.TagNumber(10)
-  $15.Timestamp ensureIssueDate() => $_ensure(9);
+  $16.Timestamp ensureIssueDate() => $_ensure(9);
 
   @$pb.TagNumber(11)
-  $15.Timestamp get dueDate => $_getN(10);
+  $16.Timestamp get dueDate => $_getN(10);
   @$pb.TagNumber(11)
-  set dueDate($15.Timestamp v) { $_setField(11, v); }
+  set dueDate($16.Timestamp v) { $_setField(11, v); }
   @$pb.TagNumber(11)
   $core.bool hasDueDate() => $_has(10);
   @$pb.TagNumber(11)
   void clearDueDate() => $_clearField(11);
   @$pb.TagNumber(11)
-  $15.Timestamp ensureDueDate() => $_ensure(10);
+  $16.Timestamp ensureDueDate() => $_ensure(10);
 
   @$pb.TagNumber(12)
   InvoiceStatus get status => $_getN(11);
@@ -435,26 +435,26 @@ class Invoice extends $pb.GeneratedMessage {
   void clearNotes() => $_clearField(13);
 
   @$pb.TagNumber(14)
-  $15.Timestamp get createdAt => $_getN(13);
+  $16.Timestamp get createdAt => $_getN(13);
   @$pb.TagNumber(14)
-  set createdAt($15.Timestamp v) { $_setField(14, v); }
+  set createdAt($16.Timestamp v) { $_setField(14, v); }
   @$pb.TagNumber(14)
   $core.bool hasCreatedAt() => $_has(13);
   @$pb.TagNumber(14)
   void clearCreatedAt() => $_clearField(14);
   @$pb.TagNumber(14)
-  $15.Timestamp ensureCreatedAt() => $_ensure(13);
+  $16.Timestamp ensureCreatedAt() => $_ensure(13);
 
   @$pb.TagNumber(15)
-  $15.Timestamp get updatedAt => $_getN(14);
+  $16.Timestamp get updatedAt => $_getN(14);
   @$pb.TagNumber(15)
-  set updatedAt($15.Timestamp v) { $_setField(15, v); }
+  set updatedAt($16.Timestamp v) { $_setField(15, v); }
   @$pb.TagNumber(15)
   $core.bool hasUpdatedAt() => $_has(14);
   @$pb.TagNumber(15)
   void clearUpdatedAt() => $_clearField(15);
   @$pb.TagNumber(15)
-  $15.Timestamp ensureUpdatedAt() => $_ensure(14);
+  $16.Timestamp ensureUpdatedAt() => $_ensure(14);
 }
 
 /// Request to create a new invoice
@@ -464,7 +464,7 @@ class CreateInvoiceRequest extends $pb.GeneratedMessage {
     $core.Iterable<InvoiceItem>? items,
     $core.double? tax,
     $core.String? currencyCode,
-    $15.Timestamp? dueDate,
+    $16.Timestamp? dueDate,
     $core.String? notes,
   }) {
     final $result = create();
@@ -497,7 +497,7 @@ class CreateInvoiceRequest extends $pb.GeneratedMessage {
     ..pc<InvoiceItem>(3, _omitFieldNames ? '' : 'items', $pb.PbFieldType.PM, subBuilder: InvoiceItem.create)
     ..a<$core.double>(4, _omitFieldNames ? '' : 'tax', $pb.PbFieldType.OD)
     ..aOS(5, _omitFieldNames ? '' : 'currencyCode')
-    ..aOM<$15.Timestamp>(6, _omitFieldNames ? '' : 'dueDate', subBuilder: $15.Timestamp.create)
+    ..aOM<$16.Timestamp>(6, _omitFieldNames ? '' : 'dueDate', subBuilder: $16.Timestamp.create)
     ..aOS(7, _omitFieldNames ? '' : 'notes')
     ..hasRequiredFields = false
   ;
@@ -558,15 +558,15 @@ class CreateInvoiceRequest extends $pb.GeneratedMessage {
   void clearCurrencyCode() => $_clearField(5);
 
   @$pb.TagNumber(6)
-  $15.Timestamp get dueDate => $_getN(4);
+  $16.Timestamp get dueDate => $_getN(4);
   @$pb.TagNumber(6)
-  set dueDate($15.Timestamp v) { $_setField(6, v); }
+  set dueDate($16.Timestamp v) { $_setField(6, v); }
   @$pb.TagNumber(6)
   $core.bool hasDueDate() => $_has(4);
   @$pb.TagNumber(6)
   void clearDueDate() => $_clearField(6);
   @$pb.TagNumber(6)
-  $15.Timestamp ensureDueDate() => $_ensure(4);
+  $16.Timestamp ensureDueDate() => $_ensure(4);
 
   @$pb.TagNumber(7)
   $core.String get notes => $_getSZ(5);

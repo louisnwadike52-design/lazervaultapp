@@ -7,6 +7,12 @@ import 'package:lazervault/core/types/transaction.dart';
 import 'package:lazervault/src/features/authentication/domain/entities/user.dart';
 import 'package:lazervault/src/features/authentication/presentation/views/email_sign_in_screen.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/transfer_proof.dart';
+import 'package:lazervault/src/features/gift_cards/presentation/view/gift_cards_screen.dart';
+import 'package:lazervault/src/features/gift_cards/presentation/view/purchase_gift_card_screen.dart';
+import 'package:lazervault/src/features/gift_cards/presentation/view/gift_card_details_screen.dart';
+import 'package:lazervault/src/features/gift_cards/presentation/view/redeem_gift_card_screen.dart';
+import 'package:lazervault/src/features/gift_cards/domain/entities/gift_card_entity.dart';
+import 'package:lazervault/src/features/gift_cards/cubit/gift_card_cubit.dart';
 import 'package:lazervault/src/features/presentation/views/cb_currency_exchange/cb_currency_exchange_screen.dart';
 import 'package:lazervault/src/features/presentation/views/change_pin_screen.dart';
 import 'package:lazervault/src/features/presentation/views/create_new_password_screen.dart';
@@ -93,6 +99,14 @@ class AppRouter {
     GetPage(
       name: AppRoutes.stocks,
       page: () => serviceLocator<StocksScreen>(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.giftCards,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<GiftCardCubit>(),
+        child: serviceLocator<GiftCardsScreen>(),
+      ),
       transition: Transition.rightToLeft,
     ),
     GetPage(
@@ -312,6 +326,36 @@ class AppRouter {
       name: AppRoutes.cbCurrencyExchange,
       page: () => serviceLocator<CBCurrencyExchangeScreen>(),
       transition: Transition.leftToRightWithFade,
+    ),
+    GetPage(
+      name: AppRoutes.purchaseGiftCard,
+      page: () {
+        final brand = Get.arguments as GiftCardBrand;
+        return BlocProvider(
+          create: (_) => serviceLocator<GiftCardCubit>(),
+          child: PurchaseGiftCardScreen(brand: brand),
+        );
+      },
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.giftCardDetails,
+      page: () {
+        final giftCard = Get.arguments as GiftCard;
+        return GiftCardDetailsScreen(giftCard: giftCard);
+      },
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.redeemGiftCard,
+      page: () {
+        final giftCard = Get.arguments as GiftCard?;
+        return BlocProvider(
+          create: (_) => serviceLocator<GiftCardCubit>(),
+          child: RedeemGiftCardScreen(giftCard: giftCard),
+        );
+      },
+      transition: Transition.rightToLeft,
     ),
   ];
 }

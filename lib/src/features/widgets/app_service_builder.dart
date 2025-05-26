@@ -67,6 +67,9 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
           },
         );
         break;
+      case AppServiceName.giftCards:
+        Get.toNamed(AppRoutes.giftCards);
+        break;
       case AppServiceName.sendFunds:
       default:
         Get.toNamed(AppRoutes.selectRecipient);

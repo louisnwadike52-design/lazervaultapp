@@ -14,7 +14,7 @@ import 'dart:core' as $core;
 import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'google/protobuf/timestamp.pb.dart' as $15;
+import 'google/protobuf/timestamp.pb.dart' as $16;
 
 export 'package:protobuf/protobuf.dart' show GeneratedMessageGenericExtensions;
 
@@ -29,8 +29,8 @@ class AccountCard extends $pb.GeneratedMessage {
     $core.String? cardExpiry,
     $core.bool? isActive,
     $core.bool? isDefault,
-    $15.Timestamp? createdAt,
-    $15.Timestamp? updatedAt,
+    $16.Timestamp? createdAt,
+    $16.Timestamp? updatedAt,
     $core.String? cardType,
   }) {
     final $result = create();
@@ -82,8 +82,8 @@ class AccountCard extends $pb.GeneratedMessage {
     ..aOS(6, _omitFieldNames ? '' : 'cardExpiry')
     ..aOB(7, _omitFieldNames ? '' : 'isActive')
     ..aOB(8, _omitFieldNames ? '' : 'isDefault')
-    ..aOM<$15.Timestamp>(9, _omitFieldNames ? '' : 'createdAt', subBuilder: $15.Timestamp.create)
-    ..aOM<$15.Timestamp>(10, _omitFieldNames ? '' : 'updatedAt', subBuilder: $15.Timestamp.create)
+    ..aOM<$16.Timestamp>(9, _omitFieldNames ? '' : 'createdAt', subBuilder: $16.Timestamp.create)
+    ..aOM<$16.Timestamp>(10, _omitFieldNames ? '' : 'updatedAt', subBuilder: $16.Timestamp.create)
     ..aOS(11, _omitFieldNames ? '' : 'cardType')
     ..hasRequiredFields = false
   ;
@@ -182,26 +182,26 @@ class AccountCard extends $pb.GeneratedMessage {
   void clearIsDefault() => $_clearField(8);
 
   @$pb.TagNumber(9)
-  $15.Timestamp get createdAt => $_getN(8);
+  $16.Timestamp get createdAt => $_getN(8);
   @$pb.TagNumber(9)
-  set createdAt($15.Timestamp v) { $_setField(9, v); }
+  set createdAt($16.Timestamp v) { $_setField(9, v); }
   @$pb.TagNumber(9)
   $core.bool hasCreatedAt() => $_has(8);
   @$pb.TagNumber(9)
   void clearCreatedAt() => $_clearField(9);
   @$pb.TagNumber(9)
-  $15.Timestamp ensureCreatedAt() => $_ensure(8);
+  $16.Timestamp ensureCreatedAt() => $_ensure(8);
 
   @$pb.TagNumber(10)
-  $15.Timestamp get updatedAt => $_getN(9);
+  $16.Timestamp get updatedAt => $_getN(9);
   @$pb.TagNumber(10)
-  set updatedAt($15.Timestamp v) { $_setField(10, v); }
+  set updatedAt($16.Timestamp v) { $_setField(10, v); }
   @$pb.TagNumber(10)
   $core.bool hasUpdatedAt() => $_has(9);
   @$pb.TagNumber(10)
   void clearUpdatedAt() => $_clearField(10);
   @$pb.TagNumber(10)
-  $15.Timestamp ensureUpdatedAt() => $_ensure(9);
+  $16.Timestamp ensureUpdatedAt() => $_ensure(9);
 
   @$pb.TagNumber(11)
   $core.String get cardType => $_getSZ(10);
