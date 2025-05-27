@@ -66,6 +66,10 @@ import 'package:lazervault/src/features/authentication/presentation/views/sign_u
 import 'package:lazervault/src/features/presentation/views/stocks/stocks_screen.dart';
 import 'package:lazervault/src/features/stocks/presentation/view/stocks_screen.dart' as StockFeature;
 import 'package:lazervault/src/features/stocks/presentation/view/stock_details_screen.dart';
+import 'package:lazervault/src/features/stocks/presentation/view/stock_trade_amount_screen.dart';
+import 'package:lazervault/src/features/stocks/presentation/view/stock_trade_payment_screen.dart';
+import 'package:lazervault/src/features/stocks/presentation/view/stock_trade_review_screen.dart';
+import 'package:lazervault/src/features/stocks/presentation/view/stock_trade_receipt_screen.dart';
 import 'package:lazervault/src/features/stocks/cubit/stock_cubit.dart';
 import 'package:lazervault/src/features/stocks/domain/entities/stock_entity.dart';
 import 'package:lazervault/src/features/presentation/views/transfer_funds_screen.dart';
@@ -118,7 +122,7 @@ class AppRouter {
       name: AppRoutes.stocks,
       page: () => BlocProvider(
         create: (_) => serviceLocator<StockCubit>(),
-        child: const StockFeature.StocksScreen(),
+        child: serviceLocator<StockFeature.StocksScreen>(),
       ),
       transition: Transition.rightToLeft,
     ),
@@ -469,8 +473,8 @@ class AppRouter {
       page: () {
         final stock = Get.arguments as Stock;
         return BlocProvider(
-          create: (_) => serviceLocator<StockCubit>(),
-          child: StockDetailsScreen(stock: stock),
+          create: (_) => serviceLocator<StockCubit>()..loadStockDetails(stock.symbol),
+          child: serviceLocator<StockDetailsScreen>(param1: stock),
         );
       },
       transition: Transition.rightToLeft,
@@ -478,40 +482,80 @@ class AppRouter {
     GetPage(
       name: AppRoutes.stockTrade,
       page: () => BlocProvider(
-        create: (_) => serviceLocator<StockCubit>(),
-        child: const StockFeature.StocksScreen(), // Will show trade dialog
+        create: (_) => serviceLocator<StockCubit>()..loadStocks(),
+        child: serviceLocator<StockFeature.StocksScreen>(), // Will show trade dialog
       ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.stockTradeAmount,
+      page: () {
+        return BlocProvider(
+          create: (_) => serviceLocator<StockCubit>(),
+          child: serviceLocator<StockTradeAmountScreen>(),
+        );
+      },
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.stockTradePayment,
+      page: () {
+        return BlocProvider(
+          create: (_) => serviceLocator<StockCubit>(),
+          child: serviceLocator<StockTradePaymentScreen>(),
+        );
+      },
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.stockTradeReview,
+      page: () {
+        return BlocProvider(
+          create: (_) => serviceLocator<StockCubit>(),
+          child: serviceLocator<StockTradeReviewScreen>(),
+        );
+      },
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.stockTradeReceipt,
+      page: () {
+        return BlocProvider(
+          create: (_) => serviceLocator<StockCubit>(),
+          child: serviceLocator<StockTradeReceiptScreen>(),
+        );
+      },
       transition: Transition.rightToLeft,
     ),
     GetPage(
       name: AppRoutes.stockPortfolio,
       page: () => BlocProvider(
-        create: (_) => serviceLocator<StockCubit>(),
-        child: const StockFeature.StocksScreen(), // Will show portfolio tab
+        create: (_) => serviceLocator<StockCubit>()..loadPortfolio(),
+        child: serviceLocator<StockFeature.StocksScreen>(), // Will show portfolio tab
       ),
       transition: Transition.rightToLeft,
     ),
     GetPage(
       name: AppRoutes.stockWatchlist,
       page: () => BlocProvider(
-        create: (_) => serviceLocator<StockCubit>(),
-        child: const StockFeature.StocksScreen(), // Will show watchlist tab
+        create: (_) => serviceLocator<StockCubit>()..loadWatchlists(),
+        child: serviceLocator<StockFeature.StocksScreen>(), // Will show watchlist tab
       ),
       transition: Transition.rightToLeft,
     ),
     GetPage(
       name: AppRoutes.stockOrders,
       page: () => BlocProvider(
-        create: (_) => serviceLocator<StockCubit>(),
-        child: const StockFeature.StocksScreen(), // Will show orders tab
+        create: (_) => serviceLocator<StockCubit>()..loadOrders(),
+        child: serviceLocator<StockFeature.StocksScreen>(), // Will show orders tab
       ),
       transition: Transition.rightToLeft,
     ),
     GetPage(
       name: AppRoutes.stockNews,
       page: () => BlocProvider(
-        create: (_) => serviceLocator<StockCubit>(),
-        child: const StockFeature.StocksScreen(), // Will show news tab
+        create: (_) => serviceLocator<StockCubit>()..loadMarketNews(),
+        child: serviceLocator<StockFeature.StocksScreen>(), // Will show news tab
       ),
       transition: Transition.rightToLeft,
     ),

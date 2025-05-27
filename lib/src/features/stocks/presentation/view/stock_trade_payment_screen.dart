@@ -1,11 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
-import '../../cubit/stock_cubit.dart';
-import '../../cubit/stock_state.dart';
 import '../../domain/entities/stock_entity.dart';
 import '../../../../../core/types/app_routes.dart';
 
@@ -316,10 +312,10 @@ class _StockTradePaymentScreenState extends State<StockTradePaymentScreen>
               Container(
                 width: 50.w,
                 height: 50.h,
-                decoration: BoxDecoration(
-                  color: Colors.blue.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(12.r),
-                ),
+                              decoration: BoxDecoration(
+                color: Colors.blue.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(12.r),
+              ),
                 child: Center(
                   child: Text(
                     _selectedStock?.symbol.substring(0, 2) ?? 'ST',
@@ -462,7 +458,7 @@ class _StockTradePaymentScreenState extends State<StockTradePaymentScreen>
           ),
         ),
         SizedBox(height: 16.h),
-        ..._accounts.map((account) => _buildAccountCard(account)).toList(),
+        ..._accounts.map((account) => _buildAccountCard(account)),
       ],
     );
   }
@@ -477,7 +473,7 @@ class _StockTradePaymentScreenState extends State<StockTradePaymentScreen>
         margin: EdgeInsets.only(bottom: 12.h),
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.blue.withOpacity(0.1) : Colors.grey[900],
+          color: isSelected ? Colors.blue.withValues(alpha: 0.1) : Colors.grey[900],
           borderRadius: BorderRadius.circular(12.r),
           border: Border.all(
             color: isSelected ? Colors.blue : Colors.grey[800]!,
@@ -490,7 +486,7 @@ class _StockTradePaymentScreenState extends State<StockTradePaymentScreen>
               width: 40.w,
               height: 40.h,
               decoration: BoxDecoration(
-                color: Colors.blue.withOpacity(0.2),
+                color: Colors.blue.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(8.r),
               ),
               child: Icon(
@@ -570,7 +566,7 @@ class _StockTradePaymentScreenState extends State<StockTradePaymentScreen>
           ),
         ),
         SizedBox(height: 16.h),
-        ..._cryptoWallets.map((wallet) => _buildCryptoCard(wallet)).toList(),
+        ..._cryptoWallets.map((wallet) => _buildCryptoCard(wallet)),
       ],
     );
   }
@@ -585,7 +581,7 @@ class _StockTradePaymentScreenState extends State<StockTradePaymentScreen>
         margin: EdgeInsets.only(bottom: 12.h),
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.blue.withOpacity(0.1) : Colors.grey[900],
+          color: isSelected ? Colors.blue.withValues(alpha: 0.1) : Colors.grey[900],
           borderRadius: BorderRadius.circular(12.r),
           border: Border.all(
             color: isSelected ? Colors.blue : Colors.grey[800]!,
@@ -598,7 +594,7 @@ class _StockTradePaymentScreenState extends State<StockTradePaymentScreen>
               width: 40.w,
               height: 40.h,
               decoration: BoxDecoration(
-                color: wallet['color'].withOpacity(0.2),
+                color: wallet['color'].withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(8.r),
               ),
               child: Center(
@@ -683,7 +679,7 @@ class _StockTradePaymentScreenState extends State<StockTradePaymentScreen>
           ),
         ),
         SizedBox(height: 16.h),
-        ..._internationalWallets.map((wallet) => _buildInternationalCard(wallet)).toList(),
+        ..._internationalWallets.map((wallet) => _buildInternationalCard(wallet)),
       ],
     );
   }
@@ -698,7 +694,7 @@ class _StockTradePaymentScreenState extends State<StockTradePaymentScreen>
         margin: EdgeInsets.only(bottom: 12.h),
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.blue.withOpacity(0.1) : Colors.grey[900],
+          color: isSelected ? Colors.blue.withValues(alpha: 0.1) : Colors.grey[900],
           borderRadius: BorderRadius.circular(12.r),
           border: Border.all(
             color: isSelected ? Colors.blue : Colors.grey[800]!,
@@ -711,7 +707,7 @@ class _StockTradePaymentScreenState extends State<StockTradePaymentScreen>
               width: 40.w,
               height: 40.h,
               decoration: BoxDecoration(
-                color: Colors.green.withOpacity(0.2),
+                color: Colors.green.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(8.r),
               ),
               child: Center(

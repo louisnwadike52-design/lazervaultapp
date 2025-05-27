@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
-
+import 'package:get/get.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../cubit/stock_cubit.dart';
 import '../../cubit/stock_state.dart';
 import '../../domain/entities/stock_entity.dart';
+import '../../../../../core/types/app_routes.dart';
 
 
 class StockDetailsScreen extends StatefulWidget {
@@ -246,31 +247,41 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      '\$${widget.stock.currentPrice.toStringAsFixed(2)}',
-                      style: GoogleFonts.inter(
-                        color: Colors.white,
-                        fontSize: 32.sp,
-                        fontWeight: FontWeight.w700,
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        '\$${widget.stock.currentPrice.toStringAsFixed(2)}',
+                        style: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontSize: 32.sp,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ),
-                    Row(
+                    SizedBox(height: 4.h),
+                    Wrap(
+                      spacing: 8.w,
+                      runSpacing: 4.h,
                       children: [
-                        Icon(
-                          widget.stock.isPositive ? Icons.trending_up : Icons.trending_down,
-                          color: widget.stock.isPositive ? Colors.green : Colors.red,
-                          size: 16.sp,
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              widget.stock.isPositive ? Icons.trending_up : Icons.trending_down,
+                              color: widget.stock.isPositive ? Colors.green : Colors.red,
+                              size: 16.sp,
+                            ),
+                            SizedBox(width: 4.w),
+                            Text(
+                              '${widget.stock.isPositive ? '+' : ''}\$${widget.stock.change.toStringAsFixed(2)}',
+                              style: GoogleFonts.inter(
+                                color: widget.stock.isPositive ? Colors.green : Colors.red,
+                                fontSize: 14.sp,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
                         ),
-                        SizedBox(width: 4.w),
-                        Text(
-                          '${widget.stock.isPositive ? '+' : ''}\$${widget.stock.change.toStringAsFixed(2)}',
-                          style: GoogleFonts.inter(
-                            color: widget.stock.isPositive ? Colors.green : Colors.red,
-                            fontSize: 14.sp,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        SizedBox(width: 8.w),
                         Container(
                           padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
                           decoration: BoxDecoration(
@@ -324,20 +335,28 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
       ),
       child: Column(
         children: [
-          Text(
-            label,
-            style: GoogleFonts.inter(
-              color: Colors.grey[400],
-              fontSize: 12.sp,
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              label,
+              style: GoogleFonts.inter(
+                color: Colors.grey[400],
+                fontSize: 12.sp,
+              ),
+              textAlign: TextAlign.center,
             ),
           ),
           SizedBox(height: 4.h),
-          Text(
-            value,
-            style: GoogleFonts.inter(
-              color: Colors.white,
-              fontSize: 14.sp,
-              fontWeight: FontWeight.w600,
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              value,
+              style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w600,
+              ),
+              textAlign: TextAlign.center,
             ),
           ),
         ],
@@ -359,48 +378,55 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
         children: [
           Row(
             children: [
-              Text(
-                'Price Chart',
-                style: GoogleFonts.inter(
-                  color: Colors.white,
-                  fontSize: 18.sp,
-                  fontWeight: FontWeight.w600,
+              Expanded(
+                child: Text(
+                  'Price Chart',
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
-              Spacer(),
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.grey[800],
-                  borderRadius: BorderRadius.circular(8.r),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: _timeframes.map((timeframe) {
-                    final isSelected = _selectedTimeframe == timeframe;
-                    return GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          _selectedTimeframe = timeframe;
-                        });
-                        context.read<StockCubit>().loadStockDetails(widget.stock.symbol);
-                      },
-                      child: Container(
-                        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-                        decoration: BoxDecoration(
-                          color: isSelected ? Colors.blue : Colors.transparent,
-                          borderRadius: BorderRadius.circular(8.r),
-                        ),
-                        child: Text(
-                          timeframe,
-                          style: GoogleFonts.inter(
-                            color: isSelected ? Colors.white : Colors.grey[400],
-                            fontSize: 12.sp,
-                            fontWeight: FontWeight.w500,
+              SizedBox(width: 8.w),
+              Flexible(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.grey[800],
+                    borderRadius: BorderRadius.circular(8.r),
+                  ),
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: _timeframes.map((timeframe) {
+                        final isSelected = _selectedTimeframe == timeframe;
+                        return GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _selectedTimeframe = timeframe;
+                            });
+                            context.read<StockCubit>().loadStockDetails(widget.stock.symbol);
+                          },
+                          child: Container(
+                            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                            decoration: BoxDecoration(
+                              color: isSelected ? Colors.blue : Colors.transparent,
+                              borderRadius: BorderRadius.circular(8.r),
+                            ),
+                            child: Text(
+                              timeframe,
+                              style: GoogleFonts.inter(
+                                color: isSelected ? Colors.white : Colors.grey[400],
+                                fontSize: 12.sp,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
                           ),
-                        ),
-                      ),
-                    );
-                  }).toList(),
+                        );
+                      }).toList(),
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -603,7 +629,10 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
                 ],
               ),
               child: ElevatedButton(
-                onPressed: () => _showTradeDialog(OrderSide.buy),
+                onPressed: () => Get.toNamed(AppRoutes.stockTradeAmount, arguments: {
+                  'stock': widget.stock,
+                  'tradeType': 'buy',
+                }),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.transparent,
                   elevation: 0,
@@ -651,7 +680,10 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
                 ],
               ),
               child: ElevatedButton(
-                onPressed: () => _showTradeDialog(OrderSide.sell),
+                onPressed: () => Get.toNamed(AppRoutes.stockTradeAmount, arguments: {
+                  'stock': widget.stock,
+                  'tradeType': 'sell',
+                }),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.transparent,
                   elevation: 0,

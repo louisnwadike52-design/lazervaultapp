@@ -41,26 +41,32 @@ class StockCubit extends Cubit<StockState> {
       
       result.fold(
         (failure) => emit(StockError(failure.message)),
-        (stocks) => emit(StockLoaded(stocks)),
+        (stocks) => emit(StockLoaded(stocks, sector: sector)),
       );
     } catch (e) {
       emit(StockError('Failed to load stocks: ${e.toString()}'));
     }
   }
 
-  Future<void> loadStockDetails(String symbol) async {
+  Future<void> loadStockDetails(String symbol, {String timeframe = '1M'}) async {
     try {
       emit(StockDetailsLoading());
       
       final stockResult = await repository.getStockDetails(symbol);
-      final priceHistoryResult = await repository.getStockPriceHistory(symbol, '1M');
+      final priceHistoryResult = await repository.getStockPriceHistory(symbol, timeframe);
+      final analysisResult = await repository.getStockAnalysis(symbol);
       
       stockResult.fold(
         (failure) => emit(StockDetailsError(failure.message)),
         (stock) {
           priceHistoryResult.fold(
             (failure) => emit(StockDetailsError(failure.message)),
-            (priceHistory) => emit(StockDetailsLoaded(stock, priceHistory)),
+            (priceHistory) {
+              analysisResult.fold(
+                (failure) => emit(StockDetailsLoaded(stock, priceHistory)),
+                (analysis) => emit(StockDetailsLoaded(stock, priceHistory, analysis: analysis)),
+              );
+            },
           );
         },
       );
@@ -72,17 +78,17 @@ class StockCubit extends Cubit<StockState> {
   Future<void> searchStocks(String query) async {
     try {
       if (query.isEmpty) {
-        emit(StockSearchResults([], query));
+        emit(StockSearchLoaded([], query));
         return;
       }
       
-      emit(StockSearching());
+      emit(StockSearchLoading());
       
       final result = await repository.searchStocks(query);
       
       result.fold(
         (failure) => emit(StockSearchError(failure.message)),
-        (stocks) => emit(StockSearchResults(stocks, query)),
+        (stocks) => emit(StockSearchLoaded(stocks, query)),
       );
     } catch (e) {
       emit(StockSearchError('Failed to search stocks: ${e.toString()}'));
@@ -122,38 +128,16 @@ class StockCubit extends Cubit<StockState> {
 
   Future<void> loadHoldings() async {
     try {
-      emit(StockLoading());
+      emit(HoldingsLoading());
       
       final result = await repository.getHoldings();
       
       result.fold(
-        (failure) => emit(StockError(failure.message)),
-        (holdings) {
-          // Convert holdings to stocks for display
-          final stocks = holdings.map((holding) => Stock(
-            symbol: holding.symbol,
-            name: holding.name,
-            currentPrice: holding.currentPrice,
-            previousClose: holding.currentPrice - holding.dayChange,
-            change: holding.dayChange,
-            changePercent: holding.dayChangePercent,
-            dayHigh: holding.currentPrice + 5.0, // Mock data
-            dayLow: holding.currentPrice - 5.0, // Mock data
-            volume: 1000000, // Mock data
-            marketCap: 1000000000, // Mock data
-            peRatio: 25.0, // Mock data
-            dividendYield: 2.0, // Mock data
-            sector: 'Technology', // Mock data
-            industry: 'Software', // Mock data
-            logoUrl: 'https://logo.clearbit.com/${holding.symbol.toLowerCase()}.com',
-            priceHistory: [], // Empty for now
-            lastUpdated: DateTime.now(),
-          )).toList();
-          emit(StockLoaded(stocks));
-        },
+        (failure) => emit(HoldingsError(failure.message)),
+        (holdings) => emit(HoldingsLoaded(holdings)),
       );
     } catch (e) {
-      emit(StockError('Failed to load holdings: ${e.toString()}'));
+      emit(HoldingsError('Failed to load holdings: ${e.toString()}'));
     }
   }
 
@@ -164,6 +148,7 @@ class StockCubit extends Cubit<StockState> {
     required OrderSide side,
     required int quantity,
     double? price,
+    String? notes,
   }) async {
     try {
       emit(OrderPlacing());
@@ -231,11 +216,11 @@ class StockCubit extends Cubit<StockState> {
     }
   }
 
-  Future<void> createWatchlist(String name) async {
+  Future<void> createWatchlist(String name, List<String> symbols) async {
     try {
       emit(WatchlistCreating());
       
-      final result = await repository.createWatchlist(name);
+      final result = await repository.createWatchlist(name, symbols);
       
       result.fold(
         (failure) => emit(WatchlistsError(failure.message)),
@@ -246,10 +231,38 @@ class StockCubit extends Cubit<StockState> {
     }
   }
 
-  Future<void> addToWatchlist(String watchlistId, String symbol) async {
+  Future<void> updateWatchlist(String watchlistId, String name, List<String> symbols) async {
     try {
       emit(WatchlistUpdating());
       
+      final result = await repository.updateWatchlist(watchlistId, name, symbols);
+      
+      result.fold(
+        (failure) => emit(WatchlistsError(failure.message)),
+        (watchlist) => emit(WatchlistUpdated(watchlist)),
+      );
+    } catch (e) {
+      emit(WatchlistsError('Failed to update watchlist: ${e.toString()}'));
+    }
+  }
+
+  Future<void> deleteWatchlist(String watchlistId) async {
+    try {
+      emit(WatchlistDeleting());
+      
+      final result = await repository.deleteWatchlist(watchlistId);
+      
+      result.fold(
+        (failure) => emit(WatchlistsError(failure.message)),
+        (_) => emit(WatchlistDeleted(watchlistId)),
+      );
+    } catch (e) {
+      emit(WatchlistsError('Failed to delete watchlist: ${e.toString()}'));
+    }
+  }
+
+  Future<void> addToWatchlist(String watchlistId, String symbol) async {
+    try {
       final result = await repository.addToWatchlist(watchlistId, symbol);
       
       result.fold(
@@ -263,8 +276,6 @@ class StockCubit extends Cubit<StockState> {
 
   Future<void> removeFromWatchlist(String watchlistId, String symbol) async {
     try {
-      emit(WatchlistUpdating());
-      
       final result = await repository.removeFromWatchlist(watchlistId, symbol);
       
       result.fold(
@@ -276,34 +287,12 @@ class StockCubit extends Cubit<StockState> {
     }
   }
 
-  Future<void> deleteWatchlist(String watchlistId) async {
-    try {
-      emit(WatchlistUpdating());
-      
-      final result = await repository.deleteWatchlist(watchlistId);
-      
-      result.fold(
-        (failure) => emit(WatchlistsError(failure.message)),
-        (_) {
-          // Reload watchlists after deletion
-          loadWatchlists();
-        },
-      );
-    } catch (e) {
-      emit(WatchlistsError('Failed to delete watchlist: ${e.toString()}'));
-    }
-  }
-
   // Market Data Methods
-  Future<void> loadMarketNews({String? symbol, int page = 1, int limit = 20}) async {
+  Future<void> loadMarketNews({NewsCategory? category, List<String>? symbols}) async {
     try {
       emit(MarketNewsLoading());
       
-      final result = await repository.getMarketNews(
-        symbol: symbol,
-        page: page,
-        limit: limit,
-      );
+      final result = await repository.getMarketNews(category: category, symbols: symbols);
       
       result.fold(
         (failure) => emit(MarketNewsError(failure.message)),
@@ -321,11 +310,11 @@ class StockCubit extends Cubit<StockState> {
       final result = await repository.getMarketIndices();
       
       result.fold(
-        (failure) => emit(StockError(failure.message)),
+        (failure) => emit(MarketIndicesError(failure.message)),
         (indices) => emit(MarketIndicesLoaded(indices)),
       );
     } catch (e) {
-      emit(StockError('Failed to load market indices: ${e.toString()}'));
+      emit(MarketIndicesError('Failed to load market indices: ${e.toString()}'));
     }
   }
 
@@ -336,20 +325,229 @@ class StockCubit extends Cubit<StockState> {
       final result = await repository.getSectorPerformance();
       
       result.fold(
-        (failure) => emit(StockError(failure.message)),
+        (failure) => emit(SectorPerformanceError(failure.message)),
         (sectors) => emit(SectorPerformanceLoaded(sectors)),
       );
     } catch (e) {
-      emit(StockError('Failed to load sector performance: ${e.toString()}'));
+      emit(SectorPerformanceError('Failed to load sector performance: ${e.toString()}'));
+    }
+  }
+
+  // Alert Methods
+  Future<void> loadAlerts() async {
+    try {
+      emit(AlertsLoading());
+      
+      final result = await repository.getAlerts();
+      
+      result.fold(
+        (failure) => emit(AlertsError(failure.message)),
+        (alerts) => emit(AlertsLoaded(alerts)),
+      );
+    } catch (e) {
+      emit(AlertsError('Failed to load alerts: ${e.toString()}'));
+    }
+  }
+
+  Future<void> createAlert({
+    required String symbol,
+    required AlertType type,
+    required double targetValue,
+    required AlertCondition condition,
+  }) async {
+    try {
+      emit(AlertCreating());
+      
+      final result = await repository.createAlert(
+        symbol: symbol,
+        type: type,
+        targetValue: targetValue,
+        condition: condition,
+      );
+      
+      result.fold(
+        (failure) => emit(AlertsError(failure.message)),
+        (alert) => emit(AlertCreated(alert)),
+      );
+    } catch (e) {
+      emit(AlertsError('Failed to create alert: ${e.toString()}'));
+    }
+  }
+
+  Future<void> updateAlert(String alertId, {
+    AlertType? type,
+    double? targetValue,
+    AlertCondition? condition,
+    bool? isActive,
+  }) async {
+    try {
+      emit(AlertUpdating());
+      
+      final result = await repository.updateAlert(
+        alertId,
+        type: type,
+        targetValue: targetValue,
+        condition: condition,
+        isActive: isActive,
+      );
+      
+      result.fold(
+        (failure) => emit(AlertsError(failure.message)),
+        (alert) => emit(AlertUpdated(alert)),
+      );
+    } catch (e) {
+      emit(AlertsError('Failed to update alert: ${e.toString()}'));
+    }
+  }
+
+  Future<void> deleteAlert(String alertId) async {
+    try {
+      emit(AlertDeleting());
+      
+      final result = await repository.deleteAlert(alertId);
+      
+      result.fold(
+        (failure) => emit(AlertsError(failure.message)),
+        (_) => emit(AlertDeleted(alertId)),
+      );
+    } catch (e) {
+      emit(AlertsError('Failed to delete alert: ${e.toString()}'));
+    }
+  }
+
+  // Trading Session Methods
+  Future<void> loadTradingSession() async {
+    try {
+      emit(TradingSessionLoading());
+      
+      final result = await repository.getCurrentTradingSession();
+      
+      result.fold(
+        (failure) => emit(TradingSessionError(failure.message)),
+        (session) => emit(TradingSessionLoaded(session)),
+      );
+    } catch (e) {
+      emit(TradingSessionError('Failed to load trading session: ${e.toString()}'));
+    }
+  }
+
+  Future<void> startTradingSession(double startingBalance) async {
+    try {
+      emit(TradingSessionStarting());
+      
+      final result = await repository.startTradingSession(startingBalance);
+      
+      result.fold(
+        (failure) => emit(TradingSessionError(failure.message)),
+        (session) => emit(TradingSessionStarted(session)),
+      );
+    } catch (e) {
+      emit(TradingSessionError('Failed to start trading session: ${e.toString()}'));
+    }
+  }
+
+  Future<void> endTradingSession(String sessionId) async {
+    try {
+      emit(TradingSessionEnding());
+      
+      final result = await repository.endTradingSession(sessionId);
+      
+      result.fold(
+        (failure) => emit(TradingSessionError(failure.message)),
+        (session) => emit(TradingSessionEnded(session)),
+      );
+    } catch (e) {
+      emit(TradingSessionError('Failed to end trading session: ${e.toString()}'));
+    }
+  }
+
+  // Analysis Methods
+  Future<void> loadStockAnalysis(String symbol) async {
+    try {
+      emit(AnalysisLoading());
+      
+      final result = await repository.getStockAnalysis(symbol);
+      
+      result.fold(
+        (failure) => emit(AnalysisError(failure.message)),
+        (analysis) => emit(AnalysisLoaded(analysis)),
+      );
+    } catch (e) {
+      emit(AnalysisError('Failed to load stock analysis: ${e.toString()}'));
+    }
+  }
+
+  // Options Methods
+  Future<void> loadOptions(String underlyingSymbol, {DateTime? expirationDate}) async {
+    try {
+      emit(OptionsLoading());
+      
+      final result = await repository.getOptions(underlyingSymbol, expirationDate: expirationDate);
+      
+      result.fold(
+        (failure) => emit(OptionsError(failure.message)),
+        (options) => emit(OptionsLoaded(options)),
+      );
+    } catch (e) {
+      emit(OptionsError('Failed to load options: ${e.toString()}'));
+    }
+  }
+
+  // Dashboard Methods
+  Future<void> loadDashboard() async {
+    try {
+      emit(StockLoading());
+      
+      // Load all dashboard data concurrently
+      final futures = await Future.wait([
+        getStocksUseCase(limit: 10).then((result) => result.fold((l) => <Stock>[], (r) => r)),
+        getPortfolioUseCase().then((result) => result.fold((l) => null, (r) => r)),
+        repository.getMarketIndices().then((result) => result.fold((l) => <String, double>{}, (r) => r)),
+        repository.getMarketNews(category: NewsCategory.market).then((result) => result.fold((l) => <MarketNews>[], (r) => r)),
+        repository.getSectorPerformance().then((result) => result.fold((l) => <SectorPerformance>[], (r) => r)),
+      ]);
+
+      final stocks = futures[0] as List<Stock>;
+      final portfolio = futures[1] as Portfolio?;
+      final indices = futures[2] as Map<String, double>;
+      final news = futures[3] as List<MarketNews>;
+      final sectors = futures[4] as List<SectorPerformance>;
+
+      emit(StockDashboardLoaded(
+        stocks: stocks,
+        portfolio: portfolio,
+        indices: indices,
+        news: news,
+        sectors: sectors,
+      ));
+    } catch (e) {
+      emit(StockError('Failed to load dashboard: ${e.toString()}'));
     }
   }
 
   // Utility Methods
-  void resetState() {
-    emit(StockInitial());
+  Future<void> refreshData() async {
+    final currentState = state;
+    if (currentState is StockLoaded) {
+      await loadStocks(sector: currentState.sector);
+    } else if (currentState is PortfolioLoaded) {
+      await loadPortfolio();
+    } else if (currentState is WatchlistsLoaded) {
+      await loadWatchlists();
+    } else if (currentState is OrdersLoaded) {
+      await loadOrders();
+    } else if (currentState is MarketNewsLoaded) {
+      await loadMarketNews();
+    } else {
+      await loadDashboard();
+    }
   }
 
   void clearSearch() {
-    emit(StockSearchResults([], ''));
+    emit(StockSearchLoaded([], ''));
+  }
+
+  void resetToInitial() {
+    emit(StockInitial());
   }
 } 

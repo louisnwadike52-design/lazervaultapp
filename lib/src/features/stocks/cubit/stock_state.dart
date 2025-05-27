@@ -14,11 +14,12 @@ class StockLoading extends StockState {}
 
 class StockLoaded extends StockState {
   final List<Stock> stocks;
+  final String? sector;
 
-  const StockLoaded(this.stocks);
+  const StockLoaded(this.stocks, {this.sector});
 
   @override
-  List<Object?> get props => [stocks];
+  List<Object?> get props => [stocks, sector];
 }
 
 class StockError extends StockState {
@@ -51,17 +52,39 @@ class PortfolioError extends StockState {
   List<Object?> get props => [message];
 }
 
+// Holdings States
+class HoldingsLoading extends StockState {}
+
+class HoldingsLoaded extends StockState {
+  final List<StockHolding> holdings;
+
+  const HoldingsLoaded(this.holdings);
+
+  @override
+  List<Object?> get props => [holdings];
+}
+
+class HoldingsError extends StockState {
+  final String message;
+
+  const HoldingsError(this.message);
+
+  @override
+  List<Object?> get props => [message];
+}
+
 // Stock Details States
 class StockDetailsLoading extends StockState {}
 
 class StockDetailsLoaded extends StockState {
   final Stock stock;
   final List<StockPrice> priceHistory;
+  final StockAnalysis? analysis;
 
-  const StockDetailsLoaded(this.stock, this.priceHistory);
+  const StockDetailsLoaded(this.stock, this.priceHistory, {this.analysis});
 
   @override
-  List<Object?> get props => [stock, priceHistory];
+  List<Object?> get props => [stock, priceHistory, analysis];
 }
 
 class StockDetailsError extends StockState {
@@ -159,6 +182,17 @@ class WatchlistUpdated extends StockState {
   List<Object?> get props => [watchlist];
 }
 
+class WatchlistDeleting extends StockState {}
+
+class WatchlistDeleted extends StockState {
+  final String watchlistId;
+
+  const WatchlistDeleted(this.watchlistId);
+
+  @override
+  List<Object?> get props => [watchlistId];
+}
+
 // Market Data States
 class MarketNewsLoading extends StockState {}
 
@@ -191,10 +225,19 @@ class MarketIndicesLoaded extends StockState {
   List<Object?> get props => [indices];
 }
 
+class MarketIndicesError extends StockState {
+  final String message;
+
+  const MarketIndicesError(this.message);
+
+  @override
+  List<Object?> get props => [message];
+}
+
 class SectorPerformanceLoading extends StockState {}
 
 class SectorPerformanceLoaded extends StockState {
-  final List<Map<String, dynamic>> sectors;
+  final List<SectorPerformance> sectors;
 
   const SectorPerformanceLoaded(this.sectors);
 
@@ -202,17 +245,165 @@ class SectorPerformanceLoaded extends StockState {
   List<Object?> get props => [sectors];
 }
 
-// Search States
-class StockSearching extends StockState {}
+class SectorPerformanceError extends StockState {
+  final String message;
 
-class StockSearchResults extends StockState {
-  final List<Stock> results;
-  final String query;
-
-  const StockSearchResults(this.results, this.query);
+  const SectorPerformanceError(this.message);
 
   @override
-  List<Object?> get props => [results, query];
+  List<Object?> get props => [message];
+}
+
+// Alert States
+class AlertsLoading extends StockState {}
+
+class AlertsLoaded extends StockState {
+  final List<StockAlert> alerts;
+
+  const AlertsLoaded(this.alerts);
+
+  @override
+  List<Object?> get props => [alerts];
+}
+
+class AlertsError extends StockState {
+  final String message;
+
+  const AlertsError(this.message);
+
+  @override
+  List<Object?> get props => [message];
+}
+
+class AlertCreating extends StockState {}
+
+class AlertCreated extends StockState {
+  final StockAlert alert;
+
+  const AlertCreated(this.alert);
+
+  @override
+  List<Object?> get props => [alert];
+}
+
+class AlertUpdating extends StockState {}
+
+class AlertUpdated extends StockState {
+  final StockAlert alert;
+
+  const AlertUpdated(this.alert);
+
+  @override
+  List<Object?> get props => [alert];
+}
+
+class AlertDeleting extends StockState {}
+
+class AlertDeleted extends StockState {
+  final String alertId;
+
+  const AlertDeleted(this.alertId);
+
+  @override
+  List<Object?> get props => [alertId];
+}
+
+// Trading Session States
+class TradingSessionLoading extends StockState {}
+
+class TradingSessionLoaded extends StockState {
+  final TradingSession session;
+
+  const TradingSessionLoaded(this.session);
+
+  @override
+  List<Object?> get props => [session];
+}
+
+class TradingSessionError extends StockState {
+  final String message;
+
+  const TradingSessionError(this.message);
+
+  @override
+  List<Object?> get props => [message];
+}
+
+class TradingSessionStarting extends StockState {}
+
+class TradingSessionStarted extends StockState {
+  final TradingSession session;
+
+  const TradingSessionStarted(this.session);
+
+  @override
+  List<Object?> get props => [session];
+}
+
+class TradingSessionEnding extends StockState {}
+
+class TradingSessionEnded extends StockState {
+  final TradingSession session;
+
+  const TradingSessionEnded(this.session);
+
+  @override
+  List<Object?> get props => [session];
+}
+
+// Analysis States
+class AnalysisLoading extends StockState {}
+
+class AnalysisLoaded extends StockState {
+  final StockAnalysis analysis;
+
+  const AnalysisLoaded(this.analysis);
+
+  @override
+  List<Object?> get props => [analysis];
+}
+
+class AnalysisError extends StockState {
+  final String message;
+
+  const AnalysisError(this.message);
+
+  @override
+  List<Object?> get props => [message];
+}
+
+// Options States
+class OptionsLoading extends StockState {}
+
+class OptionsLoaded extends StockState {
+  final List<OptionContract> options;
+
+  const OptionsLoaded(this.options);
+
+  @override
+  List<Object?> get props => [options];
+}
+
+class OptionsError extends StockState {
+  final String message;
+
+  const OptionsError(this.message);
+
+  @override
+  List<Object?> get props => [message];
+}
+
+// Search States
+class StockSearchLoading extends StockState {}
+
+class StockSearchLoaded extends StockState {
+  final List<Stock> searchResults;
+  final String query;
+
+  const StockSearchLoaded(this.searchResults, this.query);
+
+  @override
+  List<Object?> get props => [searchResults, query];
 }
 
 class StockSearchError extends StockState {
@@ -222,4 +413,24 @@ class StockSearchError extends StockState {
 
   @override
   List<Object?> get props => [message];
+}
+
+// Combined State for Complex UI
+class StockDashboardLoaded extends StockState {
+  final List<Stock> stocks;
+  final Portfolio? portfolio;
+  final Map<String, double> indices;
+  final List<MarketNews> news;
+  final List<SectorPerformance> sectors;
+
+  const StockDashboardLoaded({
+    required this.stocks,
+    this.portfolio,
+    required this.indices,
+    required this.news,
+    required this.sectors,
+  });
+
+  @override
+  List<Object?> get props => [stocks, portfolio, indices, news, sectors];
 } 

@@ -25,9 +25,6 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
       case AppServiceName.payElectricityBill:
         Get.toNamed(AppRoutes.payElectricityBill);
         break;
-      case AppServiceName.flights:
-        Get.toNamed(AppRoutes.flights);
-        break;
       case AppServiceName.crypto:
         Get.toNamed(AppRoutes.crypto);
         break;
