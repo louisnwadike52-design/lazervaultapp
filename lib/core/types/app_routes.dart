@@ -79,6 +79,10 @@ abstract class AppRoutes {
   // Stock Exchange Routes
   static const String stockDetails = '/stocks/details';
   static const String stockTrade = '/stocks/trade';
+  static const String stockTradeAmount = '/stocks/trade/amount';
+  static const String stockTradePayment = '/stocks/trade/payment';
+  static const String stockTradeReview = '/stocks/trade/review';
+  static const String stockTradeReceipt = '/stocks/trade/receipt';
   static const String stockPortfolio = '/stocks/portfolio';
   static const String stockWatchlist = '/stocks/watchlist';
   static const String stockOrders = '/stocks/orders';

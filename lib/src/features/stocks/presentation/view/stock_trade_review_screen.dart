@@ -1,11 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
-import '../../cubit/stock_cubit.dart';
-import '../../cubit/stock_state.dart';
 import '../../domain/entities/stock_entity.dart';
 import '../../../../../core/types/app_routes.dart';
 
@@ -31,7 +27,7 @@ class _StockTradeReviewScreenState extends State<StockTradeReviewScreen>
   double _fees = 0.0;
   double _estimatedTotal = 0.0;
   String _paymentMethod = '';
-  String _paymentId = '';
+
   Map<String, dynamic> _paymentDetails = {};
   
   bool _isProcessing = false;
@@ -54,7 +50,6 @@ class _StockTradeReviewScreenState extends State<StockTradeReviewScreen>
     _fees = args['fees'] ?? 0.0;
     _estimatedTotal = args['estimatedTotal'] ?? 0.0;
     _paymentMethod = args['paymentMethod'] ?? '';
-    _paymentId = args['paymentId'] ?? '';
     _paymentDetails = args['paymentDetails'] ?? {};
   }
 
@@ -115,43 +110,21 @@ class _StockTradeReviewScreenState extends State<StockTradeReviewScreen>
   }
 
   void _viewReceipt() {
-    _showReceiptBottomSheet();
+    Get.toNamed(AppRoutes.stockTradeReceipt, arguments: {
+      'stock': _selectedStock,
+      'tradeType': _tradeType,
+      'amount': _amount,
+      'shares': _shares,
+      'fees': _fees,
+      'total': _estimatedTotal,
+      'transactionId': _transactionId,
+      'transactionDate': DateTime.now(),
+      'paymentMethod': _paymentMethod,
+      'paymentDetails': _paymentDetails,
+    });
   }
 
-  void _showReceiptBottomSheet() {
-    Get.bottomSheet(
-      Container(
-        height: Get.height * 0.8,
-        decoration: BoxDecoration(
-          color: const Color(0xFF1A1A3E),
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(24.r),
-            topRight: Radius.circular(24.r),
-          ),
-        ),
-        child: Column(
-          children: [
-            Container(
-              margin: EdgeInsets.only(top: 12.h),
-              width: 40.w,
-              height: 4.h,
-              decoration: BoxDecoration(
-                color: Colors.grey[600],
-                borderRadius: BorderRadius.circular(2.r),
-              ),
-            ),
-            Expanded(
-              child: SingleChildScrollView(
-                padding: EdgeInsets.all(24.w),
-                child: _buildReceiptContent(),
-              ),
-            ),
-          ],
-        ),
-      ),
-      isScrollControlled: true,
-    );
-  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -311,7 +284,7 @@ class _StockTradeReviewScreenState extends State<StockTradeReviewScreen>
           ),
           SizedBox(height: 16.h),
           Text(
-            'Please wait while we execute your ${_tradeType} order\nfor ${_selectedStock?.symbol ?? 'stock'}',
+            'Please wait while we execute your $_tradeType order\nfor ${_selectedStock?.symbol ?? 'stock'}',
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(
               color: Colors.grey[400],
@@ -369,7 +342,7 @@ class _StockTradeReviewScreenState extends State<StockTradeReviewScreen>
           ),
           SizedBox(height: 16.h),
           Text(
-            'Your ${_tradeType} order for $_shares shares of ${_selectedStock?.symbol ?? 'stock'} has been completed.',
+            'Your $_tradeType order for $_shares shares of ${_selectedStock?.symbol ?? 'stock'} has been completed.',
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(
               color: Colors.grey[400],
@@ -467,7 +440,7 @@ class _StockTradeReviewScreenState extends State<StockTradeReviewScreen>
                 width: 50.w,
                 height: 50.h,
                 decoration: BoxDecoration(
-                  color: Colors.blue.withOpacity(0.2),
+                  color: Colors.blue.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12.r),
                 ),
                 child: Center(
@@ -565,7 +538,7 @@ class _StockTradeReviewScreenState extends State<StockTradeReviewScreen>
                 width: 40.w,
                 height: 40.h,
                 decoration: BoxDecoration(
-                  color: _getPaymentMethodColor().withOpacity(0.2),
+                  color: _getPaymentMethodColor().withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(8.r),
                 ),
                 child: Icon(
@@ -648,13 +621,13 @@ class _StockTradeReviewScreenState extends State<StockTradeReviewScreen>
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Colors.green.withOpacity(0.2),
-            Colors.teal.withOpacity(0.2),
+            Colors.green.withValues(alpha: 0.2),
+            Colors.teal.withValues(alpha: 0.2),
           ],
         ),
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(
-          color: Colors.green.withOpacity(0.3),
+                      color: Colors.green.withValues(alpha: 0.3),
           width: 1,
         ),
       ),
@@ -671,95 +644,7 @@ class _StockTradeReviewScreenState extends State<StockTradeReviewScreen>
     );
   }
 
-  Widget _buildReceiptContent() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Center(
-          child: Text(
-            'Trade Receipt',
-            style: GoogleFonts.inter(
-              color: Colors.white,
-              fontSize: 24.sp,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ),
-        SizedBox(height: 32.h),
-        _buildReceiptSection('Transaction Details', [
-          _buildReceiptRow('Transaction ID', _transactionId),
-          _buildReceiptRow('Date & Time', DateTime.now().toString()),
-          _buildReceiptRow('Status', 'Completed'),
-        ]),
-        SizedBox(height: 24.h),
-        _buildReceiptSection('Trade Details', [
-          _buildReceiptRow('Stock Symbol', _selectedStock?.symbol ?? 'N/A'),
-          _buildReceiptRow('Company Name', _selectedStock?.name ?? 'N/A'),
-          _buildReceiptRow('Order Type', _tradeType.capitalizeFirst ?? _tradeType),
-          _buildReceiptRow('Shares', _shares.toString()),
-          _buildReceiptRow('Price per Share', '\$${_selectedStock?.currentPrice.toStringAsFixed(2) ?? '0.00'}'),
-        ]),
-        SizedBox(height: 24.h),
-        _buildReceiptSection('Payment Summary', [
-          _buildReceiptRow('Trade Amount', '\$${_amount.toStringAsFixed(2)}'),
-          _buildReceiptRow('Trading Fee', '\$${_fees.toStringAsFixed(2)}'),
-          _buildReceiptRow('Total ${_tradeType == 'buy' ? 'Cost' : 'Proceeds'}', '\$${_estimatedTotal.toStringAsFixed(2)}', isTotal: true),
-        ]),
-      ],
-    );
-  }
 
-  Widget _buildReceiptSection(String title, List<Widget> children) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: GoogleFonts.inter(
-            color: Colors.white,
-            fontSize: 18.sp,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        SizedBox(height: 12.h),
-        Container(
-          padding: EdgeInsets.all(16.w),
-          decoration: BoxDecoration(
-            color: Colors.grey[900],
-            borderRadius: BorderRadius.circular(12.r),
-          ),
-          child: Column(children: children),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildReceiptRow(String label, String value, {bool isTotal = false}) {
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: 8.h),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            label,
-            style: GoogleFonts.inter(
-              color: isTotal ? Colors.white : Colors.grey[400],
-              fontSize: isTotal ? 16.sp : 14.sp,
-              fontWeight: isTotal ? FontWeight.w600 : FontWeight.w400,
-            ),
-          ),
-          Text(
-            value,
-            style: GoogleFonts.inter(
-              color: Colors.white,
-              fontSize: isTotal ? 16.sp : 14.sp,
-              fontWeight: isTotal ? FontWeight.w600 : FontWeight.w500,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildDetailRow(String label, String value) {
     return Padding(

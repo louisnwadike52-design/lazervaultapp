@@ -41,7 +41,9 @@ abstract class IStockRemoteDataSource {
   
   Future<List<WatchlistModel>> getWatchlists();
   
-  Future<WatchlistModel> createWatchlist(String name);
+  Future<WatchlistModel> createWatchlist(String name, List<String> symbols);
+  
+  Future<WatchlistModel> updateWatchlist(String watchlistId, String name, List<String> symbols);
   
   Future<WatchlistModel> addToWatchlist(String watchlistId, String symbol);
   
@@ -50,14 +52,67 @@ abstract class IStockRemoteDataSource {
   Future<void> deleteWatchlist(String watchlistId);
   
   Future<List<MarketNewsModel>> getMarketNews({
-    String? symbol,
+    NewsCategory? category,
+    List<String>? symbols,
     int page = 1,
     int limit = 20,
   });
   
   Future<Map<String, double>> getMarketIndices();
   
-  Future<List<Map<String, dynamic>>> getSectorPerformance();
+  Future<List<SectorPerformanceModel>> getSectorPerformance();
+  
+  // Alerts
+  Future<List<StockAlertModel>> getAlerts();
+  
+  Future<StockAlertModel> createAlert({
+    required String symbol,
+    required AlertType type,
+    required double targetValue,
+    required AlertCondition condition,
+  });
+  
+  Future<StockAlertModel> updateAlert(
+    String alertId, {
+    AlertType? type,
+    double? targetValue,
+    AlertCondition? condition,
+    bool? isActive,
+  });
+  
+  Future<void> deleteAlert(String alertId);
+  
+  // Analysis
+  Future<StockAnalysisModel> getStockAnalysis(String symbol);
+  
+  // Trading Sessions
+  Future<TradingSessionModel> getCurrentTradingSession();
+  
+  Future<TradingSessionModel> startTradingSession(double startingBalance);
+  
+  Future<TradingSessionModel> endTradingSession(String sessionId);
+  
+  Future<List<TradingSessionModel>> getTradingSessionHistory();
+  
+  // Options
+  Future<List<OptionContractModel>> getOptions(
+    String underlyingSymbol, {
+    DateTime? expirationDate,
+    OptionType? type,
+  });
+  
+  Future<OptionContractModel> getOptionDetails(String optionSymbol);
+  
+  // Advanced Features
+  Future<List<StockModel>> getRecommendations();
+  
+  Future<List<StockModel>> getTrendingStocks();
+  
+  Future<Map<String, dynamic>> getMarketStatus();
+  
+  Future<List<StockModel>> getEarningsCalendar({DateTime? date});
+  
+  Future<List<StockModel>> getDividendCalendar({DateTime? date});
 }
 
 class StockRemoteDataSourceImpl implements IStockRemoteDataSource {
@@ -91,6 +146,14 @@ class StockRemoteDataSourceImpl implements IStockRemoteDataSource {
         logoUrl: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg',
         priceHistory: _generateMockPriceHistory('AAPL'),
         lastUpdated: DateTime.now(),
+        weekHigh52: 180.00,
+        weekLow52: 150.00,
+        avgVolume: 50000000,
+        beta: 1.2,
+        eps: 6.15,
+        description: 'Apple Inc. designs, manufactures, and markets smartphones, personal computers, tablets, wearables, and accessories worldwide.',
+        exchange: 'NASDAQ',
+        currency: 'USD',
       ),
       StockModel(
         symbol: 'GOOGL',
@@ -110,6 +173,14 @@ class StockRemoteDataSourceImpl implements IStockRemoteDataSource {
         logoUrl: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg',
         priceHistory: _generateMockPriceHistory('GOOGL'),
         lastUpdated: DateTime.now(),
+        weekHigh52: 145.00,
+        weekLow52: 120.00,
+        avgVolume: 25000000,
+        beta: 1.1,
+        eps: 5.80,
+        description: 'Alphabet Inc. provides online advertising services in the United States, Europe, the Middle East, Africa, the Asia-Pacific, Canada, and Latin America.',
+        exchange: 'NASDAQ',
+        currency: 'USD',
       ),
       StockModel(
         symbol: 'MSFT',
@@ -129,6 +200,14 @@ class StockRemoteDataSourceImpl implements IStockRemoteDataSource {
         logoUrl: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/microsoftsqlserver/microsoftsqlserver-plain.svg',
         priceHistory: _generateMockPriceHistory('MSFT'),
         lastUpdated: DateTime.now(),
+        weekHigh52: 385.00,
+        weekLow52: 320.00,
+        avgVolume: 20000000,
+        beta: 0.9,
+        eps: 11.05,
+        description: 'Microsoft Corporation develops, licenses, and supports software, services, devices, and solutions worldwide.',
+        exchange: 'NASDAQ',
+        currency: 'USD',
       ),
       StockModel(
         symbol: 'TSLA',
@@ -148,6 +227,14 @@ class StockRemoteDataSourceImpl implements IStockRemoteDataSource {
         logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/b/bb/Tesla_T_symbol.svg',
         priceHistory: _generateMockPriceHistory('TSLA'),
         lastUpdated: DateTime.now(),
+        weekHigh52: 280.00,
+        weekLow52: 200.00,
+        avgVolume: 70000000,
+        beta: 2.0,
+        eps: 3.62,
+        description: 'Tesla, Inc. designs, develops, manufactures, leases, and sells electric vehicles, and energy generation and storage systems.',
+        exchange: 'NASDAQ',
+        currency: 'USD',
       ),
       StockModel(
         symbol: 'NVDA',
@@ -167,6 +254,14 @@ class StockRemoteDataSourceImpl implements IStockRemoteDataSource {
         logoUrl: 'https://upload.wikimedia.org/wikipedia/sco/2/21/Nvidia_logo.svg',
         priceHistory: _generateMockPriceHistory('NVDA'),
         lastUpdated: DateTime.now(),
+        weekHigh52: 500.00,
+        weekLow52: 400.00,
+        avgVolume: 35000000,
+        beta: 1.7,
+        eps: 7.00,
+        description: 'NVIDIA Corporation operates as a computing company in the United States, Taiwan, China, Hong Kong, and internationally.',
+        exchange: 'NASDAQ',
+        currency: 'USD',
       ),
     ];
   }
@@ -226,6 +321,8 @@ class StockRemoteDataSourceImpl implements IStockRemoteDataSource {
       dayChangePercent: dayChangePercent,
       holdings: holdings,
       lastUpdated: DateTime.now(),
+      availableCash: 50000.0,
+      totalInvested: totalCost,
     );
   }
 
@@ -246,6 +343,7 @@ class StockRemoteDataSourceImpl implements IStockRemoteDataSource {
         dayChange: 96.50,
         dayChangePercent: 1.11,
         purchaseDate: DateTime.now().subtract(const Duration(days: 90)),
+        logoUrl: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg',
       ),
       StockHoldingModel(
         symbol: 'GOOGL',
@@ -259,6 +357,7 @@ class StockRemoteDataSourceImpl implements IStockRemoteDataSource {
         dayChange: -46.00,
         dayChangePercent: -1.31,
         purchaseDate: DateTime.now().subtract(const Duration(days: 60)),
+        logoUrl: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg',
       ),
       StockHoldingModel(
         symbol: 'MSFT',
@@ -272,6 +371,7 @@ class StockRemoteDataSourceImpl implements IStockRemoteDataSource {
         dayChange: 109.50,
         dayChangePercent: 0.97,
         purchaseDate: DateTime.now().subtract(const Duration(days: 120)),
+        logoUrl: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/microsoftsqlserver/microsoftsqlserver-plain.svg',
       ),
     ];
   }
@@ -376,14 +476,27 @@ class StockRemoteDataSourceImpl implements IStockRemoteDataSource {
   }
 
   @override
-  Future<WatchlistModel> createWatchlist(String name) async {
+  Future<WatchlistModel> createWatchlist(String name, List<String> symbols) async {
     await Future.delayed(const Duration(milliseconds: 300));
     
     return WatchlistModel(
       id: 'watchlist_${DateTime.now().millisecondsSinceEpoch}',
       name: name,
-      symbols: [],
+      symbols: symbols,
       createdAt: DateTime.now(),
+      lastUpdated: DateTime.now(),
+    );
+  }
+
+  @override
+  Future<WatchlistModel> updateWatchlist(String watchlistId, String name, List<String> symbols) async {
+    await Future.delayed(const Duration(milliseconds: 300));
+    
+    return WatchlistModel(
+      id: watchlistId,
+      name: name,
+      symbols: symbols,
+      createdAt: DateTime.now().subtract(const Duration(days: 30)),
       lastUpdated: DateTime.now(),
     );
   }
@@ -421,7 +534,8 @@ class StockRemoteDataSourceImpl implements IStockRemoteDataSource {
 
   @override
   Future<List<MarketNewsModel>> getMarketNews({
-    String? symbol,
+    NewsCategory? category,
+    List<String>? symbols,
     int page = 1,
     int limit = 20,
   }) async {
@@ -438,6 +552,8 @@ class StockRemoteDataSourceImpl implements IStockRemoteDataSource {
         relatedSymbols: ['AAPL'],
         publishedAt: DateTime.now().subtract(const Duration(hours: 2)),
         url: 'https://apple.com/newsroom',
+        category: NewsCategory.earnings,
+        readTime: 5,
       ),
       MarketNewsModel(
         id: 'news_2',
@@ -449,6 +565,8 @@ class StockRemoteDataSourceImpl implements IStockRemoteDataSource {
         relatedSymbols: ['TSLA'],
         publishedAt: DateTime.now().subtract(const Duration(hours: 4)),
         url: 'https://tesla.com/blog',
+        category: NewsCategory.market,
+        readTime: 3,
       ),
     ];
   }
@@ -466,16 +584,354 @@ class StockRemoteDataSourceImpl implements IStockRemoteDataSource {
   }
 
   @override
-  Future<List<Map<String, dynamic>>> getSectorPerformance() async {
+  Future<List<SectorPerformanceModel>> getSectorPerformance() async {
     await Future.delayed(const Duration(milliseconds: 300));
     
     return [
-      {'name': 'Technology', 'change': 2.34, 'color': 0xFF2196F3},
-      {'name': 'Healthcare', 'change': -1.23, 'color': 0xFF9C27B0},
-      {'name': 'Finance', 'change': 0.87, 'color': 0xFF4CAF50},
-      {'name': 'Energy', 'change': -2.45, 'color': 0xFFFF9800},
-      {'name': 'Consumer Discretionary', 'change': 1.56, 'color': 0xFFE91E63},
+      SectorPerformanceModel(
+        sector: 'Technology',
+        change: 2.34,
+        changePercent: 1.5,
+        marketCap: 15000000000000,
+        topStocks: ['AAPL', 'MSFT', 'GOOGL'],
+      ),
+      SectorPerformanceModel(
+        sector: 'Healthcare',
+        change: -1.23,
+        changePercent: -0.8,
+        marketCap: 8000000000000,
+        topStocks: ['JNJ', 'PFE', 'UNH'],
+      ),
+      SectorPerformanceModel(
+        sector: 'Finance',
+        change: 0.87,
+        changePercent: 0.6,
+        marketCap: 12000000000000,
+        topStocks: ['JPM', 'BAC', 'WFC'],
+      ),
+      SectorPerformanceModel(
+        sector: 'Energy',
+        change: -2.45,
+        changePercent: -1.8,
+        marketCap: 5000000000000,
+        topStocks: ['XOM', 'CVX', 'COP'],
+      ),
+      SectorPerformanceModel(
+        sector: 'Consumer Discretionary',
+        change: 1.56,
+        changePercent: 1.2,
+        marketCap: 9000000000000,
+        topStocks: ['AMZN', 'TSLA', 'HD'],
+      ),
     ];
+  }
+
+  @override
+  Future<List<StockAlertModel>> getAlerts() async {
+    await Future.delayed(const Duration(milliseconds: 300));
+    
+    return [
+      StockAlertModel(
+        id: 'alert_1',
+        symbol: 'AAPL',
+        type: AlertType.price,
+        targetValue: 180.00,
+        condition: AlertCondition.above,
+        isActive: true,
+        createdAt: DateTime.now().subtract(const Duration(days: 5)),
+      ),
+      StockAlertModel(
+        id: 'alert_2',
+        symbol: 'GOOGL',
+        type: AlertType.volume,
+        targetValue: 20000000,
+        condition: AlertCondition.above,
+        isActive: true,
+        createdAt: DateTime.now().subtract(const Duration(days: 3)),
+      ),
+    ];
+  }
+
+  @override
+  Future<StockAlertModel> createAlert({
+    required String symbol,
+    required AlertType type,
+    required double targetValue,
+    required AlertCondition condition,
+  }) async {
+    await Future.delayed(const Duration(milliseconds: 300));
+    
+    return StockAlertModel(
+      id: 'alert_${DateTime.now().millisecondsSinceEpoch}',
+      symbol: symbol,
+      type: type,
+      targetValue: targetValue,
+      condition: condition,
+      isActive: true,
+      createdAt: DateTime.now(),
+    );
+  }
+
+  @override
+  Future<StockAlertModel> updateAlert(
+    String alertId, {
+    AlertType? type,
+    double? targetValue,
+    AlertCondition? condition,
+    bool? isActive,
+  }) async {
+    await Future.delayed(const Duration(milliseconds: 300));
+    
+    return StockAlertModel(
+      id: alertId,
+      symbol: 'AAPL',
+      type: type ?? AlertType.price,
+      targetValue: targetValue ?? 180.00,
+      condition: condition ?? AlertCondition.above,
+      isActive: isActive ?? true,
+      createdAt: DateTime.now().subtract(const Duration(days: 5)),
+    );
+  }
+
+  @override
+  Future<void> deleteAlert(String alertId) async {
+    await Future.delayed(const Duration(milliseconds: 200));
+  }
+
+  @override
+  Future<StockAnalysisModel> getStockAnalysis(String symbol) async {
+    await Future.delayed(const Duration(milliseconds: 300));
+    
+    return StockAnalysisModel(
+      symbol: symbol,
+      rating: AnalysisRating.buy,
+      targetPrice: 200.0,
+      stopLoss: 150.0,
+      summary: 'This stock has a strong upward trend and is recommended for purchase.',
+      technicalIndicators: [
+        TechnicalIndicatorModel(
+          name: 'RSI',
+          value: 65.5,
+          signal: 'Buy',
+          description: 'Relative Strength Index indicates bullish momentum',
+        ),
+        TechnicalIndicatorModel(
+          name: 'MACD',
+          value: 2.3,
+          signal: 'Buy',
+          description: 'Moving Average Convergence Divergence shows positive trend',
+        ),
+      ],
+      fundamentalMetrics: [
+        FundamentalMetricModel(
+          name: 'P/E Ratio',
+          value: 28.5,
+          unit: 'x',
+          description: 'Price to Earnings ratio',
+        ),
+        FundamentalMetricModel(
+          name: 'ROE',
+          value: 15.2,
+          unit: '%',
+          description: 'Return on Equity',
+        ),
+      ],
+      lastUpdated: DateTime.now(),
+    );
+  }
+
+  @override
+  Future<TradingSessionModel> getCurrentTradingSession() async {
+    await Future.delayed(const Duration(milliseconds: 300));
+    
+    return TradingSessionModel(
+      id: 'session_1',
+      userId: 'user_123',
+      startTime: DateTime.now().subtract(const Duration(hours: 1)),
+      endTime: DateTime.now().add(const Duration(hours: 3)),
+      startingBalance: 100000.00,
+      currentBalance: 105000.00,
+      totalPnL: 5000.00,
+      totalTrades: 15,
+      winningTrades: 10,
+      losingTrades: 5,
+      orders: [],
+    );
+  }
+
+  @override
+  Future<TradingSessionModel> startTradingSession(double startingBalance) async {
+    await Future.delayed(const Duration(milliseconds: 300));
+    
+    return TradingSessionModel(
+      id: 'session_${DateTime.now().millisecondsSinceEpoch}',
+      userId: 'user_123',
+      startTime: DateTime.now(),
+      endTime: DateTime.now().add(const Duration(hours: 4)),
+      startingBalance: startingBalance,
+      currentBalance: startingBalance,
+      totalPnL: 0.00,
+      totalTrades: 0,
+      winningTrades: 0,
+      losingTrades: 0,
+      orders: [],
+    );
+  }
+
+  @override
+  Future<TradingSessionModel> endTradingSession(String sessionId) async {
+    await Future.delayed(const Duration(milliseconds: 300));
+    
+    return TradingSessionModel(
+      id: sessionId,
+      userId: 'user_123',
+      startTime: DateTime.now().subtract(const Duration(hours: 4)),
+      endTime: DateTime.now(),
+      startingBalance: 100000.00,
+      currentBalance: 105000.00,
+      totalPnL: 5000.00,
+      totalTrades: 15,
+      winningTrades: 10,
+      losingTrades: 5,
+      orders: [],
+    );
+  }
+
+  @override
+  Future<List<TradingSessionModel>> getTradingSessionHistory() async {
+    await Future.delayed(const Duration(milliseconds: 300));
+    
+    return [
+      TradingSessionModel(
+        id: 'session_1',
+        userId: 'user_123',
+        startTime: DateTime.now().subtract(const Duration(days: 1)),
+        endTime: DateTime.now().subtract(const Duration(days: 1, hours: -4)),
+        startingBalance: 100000.00,
+        currentBalance: 105000.00,
+        totalPnL: 5000.00,
+        totalTrades: 15,
+        winningTrades: 10,
+        losingTrades: 5,
+        orders: [],
+      ),
+      TradingSessionModel(
+        id: 'session_2',
+        userId: 'user_123',
+        startTime: DateTime.now().subtract(const Duration(days: 2)),
+        endTime: DateTime.now().subtract(const Duration(days: 2, hours: -3)),
+        startingBalance: 100000.00,
+        currentBalance: 102000.00,
+        totalPnL: 2000.00,
+        totalTrades: 8,
+        winningTrades: 6,
+        losingTrades: 2,
+        orders: [],
+      ),
+    ];
+  }
+
+  @override
+  Future<List<OptionContractModel>> getOptions(
+    String underlyingSymbol, {
+    DateTime? expirationDate,
+    OptionType? type,
+  }) async {
+    await Future.delayed(const Duration(milliseconds: 300));
+    
+    return [
+      OptionContractModel(
+        symbol: 'AAPL_CALL_20240615_180',
+        underlyingSymbol: 'AAPL',
+        type: OptionType.call,
+        strikePrice: 180.00,
+        expirationDate: DateTime(2024, 6, 15),
+        premium: 5.00,
+        impliedVolatility: 0.25,
+        delta: 0.65,
+        gamma: 0.03,
+        theta: -0.05,
+        vega: 0.15,
+        openInterest: 1500,
+        volume: 250,
+      ),
+      OptionContractModel(
+        symbol: 'AAPL_PUT_20240615_180',
+        underlyingSymbol: 'AAPL',
+        type: OptionType.put,
+        strikePrice: 180.00,
+        expirationDate: DateTime(2024, 6, 15),
+        premium: 3.00,
+        impliedVolatility: 0.22,
+        delta: -0.35,
+        gamma: 0.03,
+        theta: -0.04,
+        vega: 0.12,
+        openInterest: 1200,
+        volume: 180,
+      ),
+    ];
+  }
+
+  @override
+  Future<OptionContractModel> getOptionDetails(String optionSymbol) async {
+    await Future.delayed(const Duration(milliseconds: 300));
+    
+    return OptionContractModel(
+      symbol: optionSymbol,
+      underlyingSymbol: 'AAPL',
+      type: OptionType.call,
+      strikePrice: 180.00,
+      expirationDate: DateTime(2024, 6, 15),
+      premium: 5.00,
+      impliedVolatility: 0.25,
+      delta: 0.65,
+      gamma: 0.03,
+      theta: -0.05,
+      vega: 0.15,
+      openInterest: 1500,
+      volume: 250,
+    );
+  }
+
+  @override
+  Future<List<StockModel>> getRecommendations() async {
+    await Future.delayed(const Duration(milliseconds: 300));
+    final stocks = await getStocks();
+    return stocks.take(2).toList();
+  }
+
+  @override
+  Future<List<StockModel>> getTrendingStocks() async {
+    await Future.delayed(const Duration(milliseconds: 300));
+    final stocks = await getStocks();
+    return stocks.take(2).toList();
+  }
+
+  @override
+  Future<Map<String, dynamic>> getMarketStatus() async {
+    await Future.delayed(const Duration(milliseconds: 300));
+    
+    return {
+      'marketOpen': true,
+      'tradingSession': 'session_1',
+      'sessionStartTime': DateTime.now().subtract(const Duration(hours: 1)),
+      'sessionEndTime': DateTime.now().add(const Duration(hours: 3)),
+    };
+  }
+
+  @override
+  Future<List<StockModel>> getEarningsCalendar({DateTime? date}) async {
+    await Future.delayed(const Duration(milliseconds: 300));
+    final stocks = await getStocks();
+    return [stocks.first];
+  }
+
+  @override
+  Future<List<StockModel>> getDividendCalendar({DateTime? date}) async {
+    await Future.delayed(const Duration(milliseconds: 300));
+    final stocks = await getStocks();
+    return [stocks.first];
   }
 
   List<StockPriceModel> _generateMockPriceHistory(String symbol) {

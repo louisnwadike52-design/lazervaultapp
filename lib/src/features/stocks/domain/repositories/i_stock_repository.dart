@@ -46,7 +46,9 @@ abstract class IStockRepository {
   // Watchlist
   Future<Either<Failure, List<Watchlist>>> getWatchlists();
   
-  Future<Either<Failure, Watchlist>> createWatchlist(String name);
+  Future<Either<Failure, Watchlist>> createWatchlist(String name, List<String> symbols);
+  
+  Future<Either<Failure, Watchlist>> updateWatchlist(String watchlistId, String name, List<String> symbols);
   
   Future<Either<Failure, Watchlist>> addToWatchlist(String watchlistId, String symbol);
   
@@ -56,12 +58,65 @@ abstract class IStockRepository {
   
   // Market Data
   Future<Either<Failure, List<MarketNews>>> getMarketNews({
-    String? symbol,
+    NewsCategory? category,
+    List<String>? symbols,
     int page = 1,
     int limit = 20,
   });
   
   Future<Either<Failure, Map<String, double>>> getMarketIndices();
   
-  Future<Either<Failure, List<Map<String, dynamic>>>> getSectorPerformance();
+  Future<Either<Failure, List<SectorPerformance>>> getSectorPerformance();
+  
+  // Alerts
+  Future<Either<Failure, List<StockAlert>>> getAlerts();
+  
+  Future<Either<Failure, StockAlert>> createAlert({
+    required String symbol,
+    required AlertType type,
+    required double targetValue,
+    required AlertCondition condition,
+  });
+  
+  Future<Either<Failure, StockAlert>> updateAlert(
+    String alertId, {
+    AlertType? type,
+    double? targetValue,
+    AlertCondition? condition,
+    bool? isActive,
+  });
+  
+  Future<Either<Failure, void>> deleteAlert(String alertId);
+  
+  // Analysis
+  Future<Either<Failure, StockAnalysis>> getStockAnalysis(String symbol);
+  
+  // Trading Sessions
+  Future<Either<Failure, TradingSession>> getCurrentTradingSession();
+  
+  Future<Either<Failure, TradingSession>> startTradingSession(double startingBalance);
+  
+  Future<Either<Failure, TradingSession>> endTradingSession(String sessionId);
+  
+  Future<Either<Failure, List<TradingSession>>> getTradingSessionHistory();
+  
+  // Options
+  Future<Either<Failure, List<OptionContract>>> getOptions(
+    String underlyingSymbol, {
+    DateTime? expirationDate,
+    OptionType? type,
+  });
+  
+  Future<Either<Failure, OptionContract>> getOptionDetails(String optionSymbol);
+  
+  // Advanced Features
+  Future<Either<Failure, List<Stock>>> getRecommendations();
+  
+  Future<Either<Failure, List<Stock>>> getTrendingStocks();
+  
+  Future<Either<Failure, Map<String, dynamic>>> getMarketStatus();
+  
+  Future<Either<Failure, List<Stock>>> getEarningsCalendar({DateTime? date});
+  
+  Future<Either<Failure, List<Stock>>> getDividendCalendar({DateTime? date});
 } 

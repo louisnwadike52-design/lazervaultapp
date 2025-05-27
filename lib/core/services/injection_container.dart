@@ -127,6 +127,13 @@ import 'package:lazervault/src/features/stocks/domain/usecases/get_portfolio_use
 import 'package:lazervault/src/features/stocks/domain/usecases/place_order_usecase.dart';
 import 'package:lazervault/src/features/stocks/domain/usecases/get_watchlists_usecase.dart';
 import 'package:lazervault/src/features/stocks/cubit/stock_cubit.dart';
+import 'package:lazervault/src/features/stocks/presentation/view/stocks_screen.dart' as StockFeature;
+import 'package:lazervault/src/features/stocks/presentation/view/stock_details_screen.dart';
+import 'package:lazervault/src/features/stocks/presentation/view/stock_trade_amount_screen.dart';
+import 'package:lazervault/src/features/stocks/presentation/view/stock_trade_payment_screen.dart';
+import 'package:lazervault/src/features/stocks/presentation/view/stock_trade_review_screen.dart';
+import 'package:lazervault/src/features/stocks/presentation/view/stock_trade_receipt_screen.dart';
+import 'package:lazervault/src/features/stocks/domain/entities/stock_entity.dart';
 // End Stocks Imports
 
 final serviceLocator = GetIt.instance;
@@ -405,6 +412,13 @@ Future<void> init() async {
       ..registerFactory(() => SellToContactScreen())
       ..registerFactory(() => SavedRecipientsScreen())
       ..registerFactory(() => QuickSellScreen())
+      ..registerFactory(() => StockFeature.StocksScreen())
+      ..registerFactoryParam<StockDetailsScreen, Stock, void>(
+          (stock, _) => StockDetailsScreen(stock: stock))
+      ..registerFactory(() => StockTradeAmountScreen())
+      ..registerFactory(() => StockTradePaymentScreen())
+      ..registerFactory(() => StockTradeReviewScreen())
+      ..registerFactory(() => StockTradeReceiptScreen())
       ..registerFactoryParam<ReviewFundsTransferScreen, core_recipient.Recipient, void>(
           (recipient, _) => ReviewFundsTransferScreen(recipient: recipient))
       ..registerFactoryParam<InitiateSendFundsScreen, RecipientModel, void>(
