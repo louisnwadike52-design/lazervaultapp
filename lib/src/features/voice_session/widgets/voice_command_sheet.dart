@@ -112,12 +112,12 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
           child: Column(
             children: [
               Container(
-                width: 40.w,
-                height: 4.h,
+                  width: 40.w,
+                  height: 4.h,
                 margin: EdgeInsets.symmetric(vertical: 12.h),
-                decoration: BoxDecoration(
+                  decoration: BoxDecoration(
                   color: Colors.grey[700],
-                  borderRadius: BorderRadius.circular(2.r),
+                    borderRadius: BorderRadius.circular(2.r),
                 ),
               ),
               SizedBox(height: 20.h),
@@ -550,7 +550,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
-            Icons.mic_rounded,
+        Icons.mic_rounded,
             color: Colors.blue.withOpacity(0.7),
             size: 14.sp,
           ),
@@ -558,7 +558,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
           Text(
             suggestion,
             style: TextStyle(
-              color: Colors.white.withOpacity(0.9),
+        color: Colors.white.withOpacity(0.9),
               fontSize: 13.sp,
               fontWeight: FontWeight.w500,
             ),

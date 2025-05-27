@@ -64,6 +64,10 @@ import 'package:lazervault/src/features/presentation/views/set_fingerprint_scree
 import 'package:lazervault/src/features/authentication/presentation/views/passcode_sign_in_screen.dart';
 import 'package:lazervault/src/features/authentication/presentation/views/sign_up_screen.dart';
 import 'package:lazervault/src/features/presentation/views/stocks/stocks_screen.dart';
+import 'package:lazervault/src/features/stocks/presentation/view/stocks_screen.dart' as StockFeature;
+import 'package:lazervault/src/features/stocks/presentation/view/stock_details_screen.dart';
+import 'package:lazervault/src/features/stocks/cubit/stock_cubit.dart';
+import 'package:lazervault/src/features/stocks/domain/entities/stock_entity.dart';
 import 'package:lazervault/src/features/presentation/views/transfer_funds_screen.dart';
 import 'package:lazervault/src/features/presentation/views/upload_image_scren.dart';
 import '../../../core/services/injection_container.dart';
@@ -112,7 +116,10 @@ class AppRouter {
     ),
     GetPage(
       name: AppRoutes.stocks,
-      page: () => serviceLocator<StocksScreen>(),
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<StockCubit>(),
+        child: const StockFeature.StocksScreen(),
+      ),
       transition: Transition.rightToLeft,
     ),
     GetPage(
@@ -454,6 +461,58 @@ class AppRouter {
     GetPage(
       name: AppRoutes.depositSuccess,
       page: () => const DepositSuccessScreen(),
+      transition: Transition.rightToLeft,
+    ),
+    // Stock Exchange Routes
+    GetPage(
+      name: AppRoutes.stockDetails,
+      page: () {
+        final stock = Get.arguments as Stock;
+        return BlocProvider(
+          create: (_) => serviceLocator<StockCubit>(),
+          child: StockDetailsScreen(stock: stock),
+        );
+      },
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.stockTrade,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<StockCubit>(),
+        child: const StockFeature.StocksScreen(), // Will show trade dialog
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.stockPortfolio,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<StockCubit>(),
+        child: const StockFeature.StocksScreen(), // Will show portfolio tab
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.stockWatchlist,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<StockCubit>(),
+        child: const StockFeature.StocksScreen(), // Will show watchlist tab
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.stockOrders,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<StockCubit>(),
+        child: const StockFeature.StocksScreen(), // Will show orders tab
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.stockNews,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<StockCubit>(),
+        child: const StockFeature.StocksScreen(), // Will show news tab
+      ),
       transition: Transition.rightToLeft,
     ),
   ];

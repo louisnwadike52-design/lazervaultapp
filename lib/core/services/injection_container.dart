@@ -118,6 +118,17 @@ import 'package:lazervault/src/features/gift_cards/presentation/view/saved_recip
 import 'package:lazervault/src/features/gift_cards/presentation/view/quick_sell_screen.dart';
 // End Gift Cards Imports
 
+// Stocks Imports
+import 'package:lazervault/src/features/stocks/data/datasources/stock_remote_data_source.dart';
+import 'package:lazervault/src/features/stocks/data/repositories/stock_repository_impl.dart';
+import 'package:lazervault/src/features/stocks/domain/repositories/i_stock_repository.dart';
+import 'package:lazervault/src/features/stocks/domain/usecases/get_stocks_usecase.dart';
+import 'package:lazervault/src/features/stocks/domain/usecases/get_portfolio_usecase.dart';
+import 'package:lazervault/src/features/stocks/domain/usecases/place_order_usecase.dart';
+import 'package:lazervault/src/features/stocks/domain/usecases/get_watchlists_usecase.dart';
+import 'package:lazervault/src/features/stocks/cubit/stock_cubit.dart';
+// End Stocks Imports
+
 final serviceLocator = GetIt.instance;
 
 Future<void> init() async {
@@ -323,6 +334,34 @@ Future<void> init() async {
 
   // Blocs/Cubits
   serviceLocator.registerFactory(() => GiftCardCubit());
+
+
+  // ================== Feature: Stocks ==================
+
+  // Data Sources
+  serviceLocator.registerLazySingleton<IStockRemoteDataSource>(
+    () => StockRemoteDataSourceImpl(),
+  );
+
+  // Repositories
+  serviceLocator.registerLazySingleton<IStockRepository>(
+    () => StockRepositoryImpl(remoteDataSource: serviceLocator<IStockRemoteDataSource>()),
+  );
+
+  // Use Cases
+  serviceLocator.registerLazySingleton(() => GetStocksUseCase(serviceLocator<IStockRepository>()));
+  serviceLocator.registerLazySingleton(() => GetPortfolioUseCase(serviceLocator<IStockRepository>()));
+  serviceLocator.registerLazySingleton(() => PlaceOrderUseCase(serviceLocator<IStockRepository>()));
+  serviceLocator.registerLazySingleton(() => GetWatchlistsUseCase(serviceLocator<IStockRepository>()));
+
+  // Blocs/Cubits
+  serviceLocator.registerFactory(() => StockCubit(
+    getStocksUseCase: serviceLocator<GetStocksUseCase>(),
+    getPortfolioUseCase: serviceLocator<GetPortfolioUseCase>(),
+    placeOrderUseCase: serviceLocator<PlaceOrderUseCase>(),
+    getWatchlistsUseCase: serviceLocator<GetWatchlistsUseCase>(),
+    repository: serviceLocator<IStockRepository>(),
+      ));
 
 
   // ================== Screens / Presentation ==================

@@ -42,7 +42,7 @@ class _TransferProofState extends State<TransferProof>
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
     );
-    
+
     _scaleAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.elasticOut),
     );
@@ -529,11 +529,11 @@ class _TransferProofState extends State<TransferProof>
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
       ),
-      child: Column(
+            child: Column(
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
               Icon(Icons.send, color: Colors.green, size: 20.sp),
               SizedBox(width: 8.w),
               Text(
@@ -578,19 +578,19 @@ class _TransferProofState extends State<TransferProof>
           borderRadius: BorderRadius.circular(16.r),
           border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
         ),
-        child: Column(
+                  child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
+                    children: [
+                      Text(
               'Transaction Details',
               style: GoogleFonts.inter(
-                color: Colors.white,
+                          color: Colors.white,
                 fontSize: 16.sp,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            SizedBox(height: 12.h),
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      SizedBox(height: 12.h),
             Flexible(
               child: SingleChildScrollView(
                 child: Column(
