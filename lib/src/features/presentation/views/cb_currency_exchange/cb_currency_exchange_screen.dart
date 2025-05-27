@@ -318,13 +318,13 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
         heightFactor: 0.8,
         child: Container(
           padding: EdgeInsets.all(20.w),
-          decoration: BoxDecoration(
+        decoration: BoxDecoration(
             color: Colors.grey[900],
             borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
               Container(
                 width: 40.w,
                 height: 4.h,
@@ -334,24 +334,24 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
                   borderRadius: BorderRadius.circular(2.r),
                 ),
               ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
                     'All Recipients',
                     style: GoogleFonts.inter(
-                      color: Colors.white,
-                      fontSize: 20.sp,
+                    color: Colors.white,
+                    fontSize: 20.sp,
                       fontWeight: FontWeight.w700,
-                    ),
                   ),
-                  IconButton(
+                ),
+                IconButton(
                     icon: Icon(Icons.close, color: Colors.white, size: 24.sp),
-                    onPressed: () => Get.back(),
-                  ),
-                ],
-              ),
-              SizedBox(height: 16.h),
+                  onPressed: () => Get.back(),
+                ),
+              ],
+            ),
+            SizedBox(height: 16.h),
               Expanded(
                 child: ListView.builder(
                   itemCount: _savedRecipients.length,
@@ -391,7 +391,7 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
                     ? Colors.orange.withValues(alpha: 0.3)
                     : Colors.white.withValues(alpha: 0.1),
                 width: recipient['isFrequent'] ? 2 : 1,
-              ),
+            ),
             ),
             child: Row(
               children: [
@@ -417,9 +417,9 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
                                 colors: [Colors.blue[700]!, Colors.blue[500]!],
                               ),
                               shape: BoxShape.circle,
-                            ),
+                  ),
                             child: Center(
-                              child: Text(
+                child: Text(
                                 recipient['name'][0].toUpperCase(),
                                 style: GoogleFonts.inter(
                                   color: Colors.white,
@@ -460,19 +460,19 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
                             child: Text(
                               recipient['name'],
                               style: GoogleFonts.inter(
-                                color: Colors.white,
-                                fontSize: 16.sp,
+                    color: Colors.white,
+                    fontSize: 16.sp,
                                 fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
+                  ),
+                ),
+              ),
                           if (recipient['isFrequent'])
                             Container(
                               padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
                               decoration: BoxDecoration(
                                 color: Colors.orange.withValues(alpha: 0.2),
                                 borderRadius: BorderRadius.circular(6.r),
-                              ),
+      ),
                               child: Text(
                                 'FREQUENT',
                                 style: GoogleFonts.inter(
@@ -529,7 +529,7 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
             borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
           ),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
                 width: 40.w,
@@ -542,8 +542,8 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
+      children: [
+        Text(
                     'All Transactions',
                     style: GoogleFonts.inter(
                       color: Colors.white,
@@ -556,7 +556,7 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
                     onPressed: () => Get.back(),
                   ),
                 ],
-              ),
+        ),
               SizedBox(height: 16.h),
               Expanded(
                 child: ListView.builder(
@@ -622,7 +622,7 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
                         Text(
                           transaction['from'],
                           style: GoogleFonts.inter(
-                            color: Colors.white,
+              color: Colors.white,
                             fontSize: 12.sp,
                             fontWeight: FontWeight.w600,
                           ),
@@ -648,9 +648,9 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
                       style: GoogleFonts.inter(
                         color: Colors.grey[400],
                         fontSize: 10.sp,
-                      ),
-                    ),
-                  ],
+          ),
+        ),
+      ],
                 ),
               ),
               Column(
@@ -686,7 +686,7 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
         ),
       ),
     );
-  }
+    }
 
   void _showTransactionDetails(Map<String, dynamic> transaction) {
     Get.bottomSheet(
@@ -708,7 +708,7 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
                 decoration: BoxDecoration(
                   color: Colors.grey[700],
                   borderRadius: BorderRadius.circular(2.r),
-                ),
+        ),
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -716,11 +716,11 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
                   Text(
                     'Transaction Details',
                     style: GoogleFonts.inter(
-                      color: Colors.white,
-                      fontSize: 20.sp,
+            color: Colors.white,
+            fontSize: 20.sp,
                       fontWeight: FontWeight.w700,
-                    ),
-                  ),
+          ),
+        ),
                   IconButton(
                     icon: Icon(Icons.close, color: Colors.white, size: 24.sp),
                     onPressed: () => Get.back(),
@@ -731,8 +731,8 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
               Expanded(
                 child: SingleChildScrollView(
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
                       // Transaction Status
                       Container(
                         padding: EdgeInsets.all(16.w),
@@ -791,7 +791,7 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
                                 Column(
                                   children: [
                                     _buildCurrencyFlag(transaction['from'], size: 32),
-                                    SizedBox(height: 8.h),
+            SizedBox(height: 8.h),
                                     Text(
                                       transaction['from'],
                                       style: GoogleFonts.inter(
@@ -816,7 +816,7 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
                                 Column(
                                   children: [
                                     _buildCurrencyFlag(transaction['to'], size: 32),
-                                    SizedBox(height: 8.h),
+            SizedBox(height: 8.h),
                                     Text(
                                       transaction['to'],
                                       style: GoogleFonts.inter(
@@ -837,7 +837,7 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
                                 ),
                               ],
                             ),
-                            SizedBox(height: 16.h),
+            SizedBox(height: 16.h),
                             Container(
                               padding: EdgeInsets.all(12.w),
                               decoration: BoxDecoration(
@@ -847,11 +847,11 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Text(
+            Text(
                                     'Exchange Rate: ${transaction['rate']}',
                                     style: GoogleFonts.inter(
                                       color: Colors.blue,
-                                      fontSize: 14.sp,
+                fontSize: 14.sp,
                                       fontWeight: FontWeight.w600,
                                     ),
                                   ),
@@ -859,8 +859,8 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
                               ),
                             ),
                           ],
-                        ),
-                      ),
+              ),
+            ),
                       SizedBox(height: 24.h),
                       
                       // Transaction Details
@@ -873,8 +873,8 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
                       _buildDetailRow('Total Received', '${_getCurrencySymbol(transaction['to'])}${transaction['converted']}'),
                       
                       SizedBox(height: 32.h),
-                    ],
-                  ),
+          ],
+        ),
                 ),
               ),
               
@@ -886,22 +886,22 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(16.r),
-                      ),
+            ),
                       child: ElevatedButton.icon(
                         onPressed: () => _downloadReceipt(transaction),
-                        style: ElevatedButton.styleFrom(
+            style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.transparent,
                           elevation: 0,
                           padding: EdgeInsets.symmetric(vertical: 16.h),
-                          shape: RoundedRectangleBorder(
+              shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16.r),
-                          ),
-                        ),
+              ),
+            ),
                         icon: Icon(Icons.download, color: Colors.white, size: 20.sp),
                         label: Text(
                           'Receipt',
                           style: GoogleFonts.inter(
-                            color: Colors.white,
+                color: Colors.white,
                             fontSize: 14.sp,
                             fontWeight: FontWeight.w600,
                           ),
@@ -940,11 +940,11 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
                             fontWeight: FontWeight.w600,
                           ),
                         ),
-                      ),
-                    ),
-                  ),
-                ],
               ),
+            ),
+          ),
+        ],
+      ),
               SizedBox(height: 16.h),
             ],
           ),
@@ -1042,9 +1042,9 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
             Container(
               height: 40.h,
               width: 40.w,
-              decoration: BoxDecoration(
+      decoration: BoxDecoration(
                 color: Colors.grey[900],
-                borderRadius: BorderRadius.circular(12.r),
+        borderRadius: BorderRadius.circular(12.r),
               ),
                           child: IconButton(
               onPressed: () => Get.offAllNamed(AppRoutes.dashboard),
@@ -1053,14 +1053,14 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
                 color: Colors.white,
                 size: 20.sp,
               ),
-            ),
-            ),
+        ),
+      ),
             SizedBox(width: 16.w),
             Expanded(
               child: Text(
                 'International Payment',
                 style: GoogleFonts.inter(
-                  color: Colors.white,
+          color: Colors.white,
                   fontSize: 20.sp,
                   fontWeight: FontWeight.w700,
                 ),
@@ -1150,9 +1150,9 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
                 SizedBox(width: 20.w),
                 Expanded(
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
                         'Start New International Transfer',
                         style: GoogleFonts.inter(
                           color: Colors.white,
@@ -1165,9 +1165,9 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
                         'Send money worldwide with competitive rates',
                         style: GoogleFonts.inter(
                           color: Colors.white.withValues(alpha: 0.8),
-                          fontSize: 14.sp,
-                        ),
-                      ),
+            fontSize: 14.sp,
+          ),
+        ),
                     ],
                   ),
                 ),
@@ -1192,16 +1192,16 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
         children: [
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 16.w),
-            child: Row(
-              children: [
-                Text(
+          child: Row(
+            children: [
+              Text(
                   'Live Exchange Rates',
                   style: GoogleFonts.inter(
-                    color: Colors.white,
+                  color: Colors.white,
                     fontSize: 20.sp,
                     fontWeight: FontWeight.w700,
-                  ),
                 ),
+              ),
                 SizedBox(width: 12.w),
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
@@ -1220,12 +1220,12 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
                           color: Colors.green,
                           fontSize: 12.sp,
                           fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
                 ),
-              ],
+              ),
+            ],
+          ),
+        ),
+      ],
             ),
           ),
           SizedBox(height: 16.h),
@@ -1240,41 +1240,41 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
                 final currency = entry.value;
                 final code = entry.key;
                 
-                return Container(
+    return Container(
                   width: 160.w,
                   margin: EdgeInsets.only(right: 16.w),
                   padding: EdgeInsets.all(20.w),
-                  decoration: BoxDecoration(
+      decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.05),
                     borderRadius: BorderRadius.circular(20.r),
-                    border: Border.all(
+        border: Border.all(
                       color: Colors.white.withValues(alpha: 0.1),
-                    ),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
                           _buildCurrencyFlag(code, size: 28),
                           SizedBox(width: 12.w),
-                          Text(
+              Text(
                             code,
                             style: GoogleFonts.inter(
-                              color: Colors.white,
-                              fontSize: 16.sp,
+                  color: Colors.white,
+                  fontSize: 16.sp,
                               fontWeight: FontWeight.w700,
-                            ),
-                          ),
+                ),
+              ),
                         ],
                       ),
                       SizedBox(height: 8.h),
-                      Text(
+              Text(
                         currency['name'],
                         style: GoogleFonts.inter(
                           color: Colors.grey[400],
-                          fontSize: 12.sp,
-                        ),
+                  fontSize: 12.sp,
+                ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -1292,10 +1292,10 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
                         style: GoogleFonts.inter(
                           color: Colors.grey[500],
                           fontSize: 10.sp,
-                        ),
-                      ),
-                    ],
-                  ),
+                ),
+              ),
+            ],
+          ),
                 );
               },
             ),
@@ -1330,7 +1330,7 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
                   'View All',
                   style: GoogleFonts.inter(
                     color: Colors.blue,
-                    fontSize: 14.sp,
+                  fontSize: 14.sp,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -1366,7 +1366,7 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
                         ),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
+            children: [
                             Container(
                               width: 60.w,
                               height: 60.h,
@@ -1377,7 +1377,7 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
                               child: Icon(Icons.add, color: Colors.blue, size: 28.sp),
                             ),
                             SizedBox(height: 16.h),
-                            Text(
+              Text(
                               'Add New\nRecipient',
                               textAlign: TextAlign.center,
                               style: GoogleFonts.inter(
@@ -1448,7 +1448,7 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
                     ? Colors.orange.withValues(alpha: 0.4)
                     : Colors.white.withValues(alpha: 0.15),
                 width: recipient['isFrequent'] ? 2 : 1,
-              ),
+                ),
               boxShadow: [
                 BoxShadow(
                   color: recipient['isFrequent']
@@ -1467,7 +1467,7 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Avatar with star indicator
-                    Container(
+              Container(
                       width: 70.w,
                       height: 70.h,
                       child: Stack(
@@ -1479,7 +1479,7 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
                             child: Container(
                               width: 50.w,
                               height: 50.h,
-                              decoration: BoxDecoration(
+                decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 boxShadow: [
                                   BoxShadow(
@@ -1505,15 +1505,15 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
                                       shape: BoxShape.circle,
                                     ),
                                     child: Center(
-                                      child: Text(
+                child: Text(
                                         recipient['name'][0].toUpperCase(),
                                         style: GoogleFonts.inter(
                                           color: Colors.white,
                                           fontSize: 20.sp,
                                           fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                    ),
+                  ),
+                ),
+              ),
                                   ),
                                 ),
                               ),
@@ -1605,8 +1605,8 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
                               fontWeight: FontWeight.w600,
                             ),
                             overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
+                ),
+              ),
                         SizedBox(width: 4.w),
                         Flexible(
                           flex: 3,
@@ -1620,8 +1620,8 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
                               _buildCurrencyFlag(recipient['currency'], size: 14),
                             ],
                           ),
-                        ),
-                      ],
+          ),
+        ],
                     ),
                   ],
                 ),
@@ -1667,13 +1667,13 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
               Text(
                 'Recent Transactions',
                 style: GoogleFonts.inter(
-                  color: Colors.white,
-                  fontSize: 20.sp,
+            color: Colors.white,
+            fontSize: 20.sp,
                   fontWeight: FontWeight.w700,
-                ),
-              ),
+          ),
+        ),
               TextButton(
-                onPressed: () {
+            onPressed: () {
                   _showAllTransactions();
                 },
                 child: Text(
@@ -1684,9 +1684,9 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-              ),
-            ],
           ),
+        ],
+      ),
         ),
         SizedBox(height: 16.h),
         ListView.builder(
@@ -1744,18 +1744,18 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
               Row(
                 children: [
                   // Left side - Status icon
-                  Container(
+              Container(
                     width: 50.w,
                     height: 50.h,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
-                        colors: [
+                    colors: [
                           Colors.green.withValues(alpha: 0.3),
                           Colors.green.withValues(alpha: 0.15),
-                        ],
-                      ),
+                    ],
+                  ),
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
@@ -1770,14 +1770,14 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
                       color: Colors.green,
                       size: 24.sp,
                     ),
-                  ),
+                ),
                   SizedBox(width: 16.w),
                   
                   // Middle - Transaction details with overflow protection
                   Expanded(
-                    child: Column(
+                child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
+                  children: [
                         SizedBox(
                           width: double.infinity,
                           child: Text(
@@ -1798,13 +1798,13 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
                             '${_getCurrencySymbol(transaction['from'])}${transaction['amount']} → ${_getCurrencySymbol(transaction['to'])}${transaction['converted']}',
                             style: GoogleFonts.inter(
                               color: Colors.grey[400],
-                              fontSize: 14.sp,
+                        fontSize: 14.sp,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        SizedBox(height: 8.h),
+                      ),
+                    ),
+                    SizedBox(height: 8.h),
                         Row(
                           children: [
                             Flexible(
@@ -1815,8 +1815,8 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
                                   fontSize: 12.sp,
                                 ),
                                 overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
+                ),
+              ),
                             SizedBox(width: 8.w),
                             Container(
                               padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
@@ -1826,7 +1826,7 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
                                     Colors.green.withValues(alpha: 0.3),
                                     Colors.green.withValues(alpha: 0.2),
                                   ],
-                                ),
+                  ),
                                 borderRadius: BorderRadius.circular(8.r),
                                 border: Border.all(
                                   color: Colors.green.withValues(alpha: 0.4),
@@ -1840,14 +1840,14 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
                                   fontSize: 10.sp,
                                   fontWeight: FontWeight.w700,
                                 ),
-                              ),
+                    ),
                             ),
                           ],
-                        ),
-                      ],
-                    ),
                   ),
-                  
+                ],
+              ),
+                  ),
+
                   // Right side - Currency flags with enhanced styling
                   Container(
                     padding: EdgeInsets.all(8.w),
@@ -1901,16 +1901,16 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
                           decoration: BoxDecoration(
                             color: Colors.blue.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(6.r),
-                          ),
-                          child: Text(
+                  ),
+                  child: Text(
                             'Rate: ${transaction['rate']}',
                             style: GoogleFonts.inter(
                               color: Colors.blue,
                               fontSize: 10.sp,
                               fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
+                    ),
+                  ),
+                ),
                       ],
                     ),
                   ),
@@ -1932,7 +1932,7 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
                         color: Colors.blue.withValues(alpha: 0.3),
                         blurRadius: 4,
                         offset: Offset(0, 2),
-                      ),
+              ),
                     ],
                   ),
                   child: Icon(Icons.touch_app, color: Colors.white, size: 12.sp),

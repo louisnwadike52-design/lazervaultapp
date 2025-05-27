@@ -75,4 +75,12 @@ abstract class AppRoutes {
   static const String sellToContact = '/gift-cards/sell/contact';
   static const String savedRecipients = '/gift-cards/sell/recipients';
   static const String quickSell = '/gift-cards/sell/quick';
+  
+  // Stock Exchange Routes
+  static const String stockDetails = '/stocks/details';
+  static const String stockTrade = '/stocks/trade';
+  static const String stockPortfolio = '/stocks/portfolio';
+  static const String stockWatchlist = '/stocks/watchlist';
+  static const String stockOrders = '/stocks/orders';
+  static const String stockNews = '/stocks/news';
 }

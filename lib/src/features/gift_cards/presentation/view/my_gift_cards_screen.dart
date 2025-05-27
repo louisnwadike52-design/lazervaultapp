@@ -77,25 +77,25 @@ class _MyGiftCardsScreenState extends State<MyGiftCardsScreen> with TickerProvid
         child: SafeArea(
           child: FadeTransition(
             opacity: _fadeAnimation,
-            child: Column(
-              children: [
-                _buildHeader(),
-                _buildTabBar(),
-                Expanded(
-                  child: BlocBuilder<GiftCardCubit, GiftCardState>(
-                    builder: (context, state) {
-                      if (state is GiftCardLoading) {
+          child: Column(
+            children: [
+              _buildHeader(),
+              _buildTabBar(),
+              Expanded(
+                child: BlocBuilder<GiftCardCubit, GiftCardState>(
+                  builder: (context, state) {
+                    if (state is GiftCardLoading) {
                         return _buildLoadingView();
-                      } else if (state is GiftCardError) {
+                    } else if (state is GiftCardError) {
                         return _buildErrorView(state.message);
-                      } else if (state is MyGiftCardsLoaded) {
-                        return _buildGiftCardList(state.giftCards);
-                      }
+                    } else if (state is MyGiftCardsLoaded) {
+                      return _buildGiftCardList(state.giftCards);
+                    }
                       return _buildEmptyView();
-                    },
-                  ),
+                  },
                 ),
-              ],
+              ),
+            ],
             ),
           ),
         ),
@@ -108,8 +108,8 @@ class _MyGiftCardsScreenState extends State<MyGiftCardsScreen> with TickerProvid
       padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 16.h),
       child: ScaleTransition(
         scale: _scaleAnimation,
-        child: Row(
-          children: [
+      child: Row(
+        children: [
             Container(
               height: 40.h,
               width: 40.w,
@@ -122,7 +122,7 @@ class _MyGiftCardsScreenState extends State<MyGiftCardsScreen> with TickerProvid
                 ),
               ),
               child: IconButton(
-                onPressed: () => Get.back(),
+            onPressed: () => Get.back(),
                 icon: Icon(
                   Icons.arrow_back,
                   color: Colors.white,
@@ -133,11 +133,11 @@ class _MyGiftCardsScreenState extends State<MyGiftCardsScreen> with TickerProvid
             SizedBox(width: 16.w),
             Expanded(
               child: Text(
-                'My Gift Cards',
+            'My Gift Cards',
                 style: GoogleFonts.inter(
-                  fontSize: 24.sp,
+              fontSize: 24.sp,
                   fontWeight: FontWeight.w700,
-                  color: Colors.white,
+              color: Colors.white,
                   letterSpacing: -0.5,
                 ),
               ),
@@ -157,9 +157,9 @@ class _MyGiftCardsScreenState extends State<MyGiftCardsScreen> with TickerProvid
                 icon: Icon(Icons.more_vert_rounded, 
                   color: Colors.white, size: 20.sp),
                 onPressed: () {},
-              ),
             ),
-          ],
+          ),
+        ],
         ),
       ),
     );
@@ -259,7 +259,7 @@ class _MyGiftCardsScreenState extends State<MyGiftCardsScreen> with TickerProvid
             ),
             SizedBox(height: 16.h),
             Text(
-              'No ${_getStatusText(_selectedTabIndex)} gift cards',
+          'No ${_getStatusText(_selectedTabIndex)} gift cards',
               style: GoogleFonts.inter(
                 fontSize: 18.sp,
                 fontWeight: FontWeight.w700,
@@ -299,31 +299,31 @@ class _MyGiftCardsScreenState extends State<MyGiftCardsScreen> with TickerProvid
     return FadeTransition(
       opacity: _fadeAnimation,
       child: Container(
-        margin: EdgeInsets.only(bottom: 16.h),
-        decoration: BoxDecoration(
+      margin: EdgeInsets.only(bottom: 16.h),
+      decoration: BoxDecoration(
           color: Colors.grey[900],
           borderRadius: BorderRadius.circular(20.r),
           border: Border.all(
             color: Colors.white.withOpacity(0.1),
             width: 1,
           ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.2),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
               blurRadius: 16,
               offset: const Offset(0, 8),
-            ),
-          ],
-        ),
+          ),
+        ],
+      ),
         child: Material(
           color: Colors.transparent,
           child: InkWell(
             borderRadius: BorderRadius.circular(20.r),
             onTap: () => Get.toNamed(AppRoutes.giftCardDetails, arguments: card),
-            child: Padding(
+      child: Padding(
               padding: EdgeInsets.all(20.w),
-              child: Row(
-                children: [
+        child: Row(
+          children: [
                   Container(
                     width: 64.w,
                     height: 64.w,
@@ -340,10 +340,10 @@ class _MyGiftCardsScreenState extends State<MyGiftCardsScreen> with TickerProvid
                     ),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(16.r),
-                      child: CachedNetworkImage(
-                        imageUrl: card.logoUrl,
+              child: CachedNetworkImage(
+                imageUrl: card.logoUrl,
                         fit: BoxFit.contain,
-                        placeholder: (context, url) => Container(
+                placeholder: (context, url) => Container(
                           decoration: BoxDecoration(
                             color: Colors.grey.shade100,
                             borderRadius: BorderRadius.circular(16.r),
@@ -352,9 +352,9 @@ class _MyGiftCardsScreenState extends State<MyGiftCardsScreen> with TickerProvid
                             Icons.image_rounded,
                             color: Colors.grey.shade400,
                             size: 24.sp,
-                          ),
-                        ),
-                        errorWidget: (context, url, error) => Container(
+                  ),
+                ),
+                errorWidget: (context, url, error) => Container(
                           decoration: BoxDecoration(
                             color: Colors.grey.shade100,
                             borderRadius: BorderRadius.circular(16.r),
@@ -365,36 +365,36 @@ class _MyGiftCardsScreenState extends State<MyGiftCardsScreen> with TickerProvid
                             size: 24.sp,
                           ),
                         ),
-                      ),
-                    ),
-                  ),
-                  SizedBox(width: 16.w),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          card.brandName,
+                ),
+              ),
+            ),
+            SizedBox(width: 16.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    card.brandName,
                           style: GoogleFonts.inter(
-                            fontSize: 18.sp,
+                      fontSize: 18.sp,
                             fontWeight: FontWeight.w700,
-                            color: Colors.white,
-                          ),
+                      color: Colors.white,
+                    ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                        ),
+                  ),
                         SizedBox(height: 6.h),
-                        Text(
-                          '\$${card.amount.toStringAsFixed(2)}',
+                  Text(
+                    '\$${card.amount.toStringAsFixed(2)}',
                           style: GoogleFonts.inter(
-                            fontSize: 16.sp,
+                      fontSize: 16.sp,
                             fontWeight: FontWeight.w600,
                             color: Colors.blue[400],
-                          ),
-                        ),
-                        SizedBox(height: 4.h),
-                        Text(
-                          'Expires: ${_formatDate(card.expiryDate)}',
+                    ),
+                  ),
+                  SizedBox(height: 4.h),
+                  Text(
+                    'Expires: ${_formatDate(card.expiryDate)}',
                           style: GoogleFonts.inter(
                             fontSize: 12.sp,
                             color: Colors.grey[400],
@@ -529,8 +529,8 @@ class _MyGiftCardsScreenState extends State<MyGiftCardsScreen> with TickerProvid
             ),
           ),
           SizedBox(height: 24.h),
-          Container(
-            decoration: BoxDecoration(
+            Container(
+              decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
                   Colors.blue[700]!,
@@ -627,9 +627,9 @@ class _MyGiftCardsScreenState extends State<MyGiftCardsScreen> with TickerProvid
                   color: Colors.blue.withOpacity(0.3),
                   blurRadius: 12,
                   offset: const Offset(0, 4),
-                ),
-              ],
             ),
+          ],
+        ),
             child: ElevatedButton(
               onPressed: () {
                 Get.toNamed(AppRoutes.giftCards);
