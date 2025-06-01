@@ -28,8 +28,8 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
       case AppServiceName.crypto:
         Get.toNamed(AppRoutes.crypto);
         break;
-      case AppServiceName.stocks:
-        Get.toNamed(AppRoutes.stocks);
+      case AppServiceName.invest:
+        Get.toNamed(AppRoutes.investments);
         break;
       case AppServiceName.exchange:
         Get.toNamed(AppRoutes.cbCurrencyExchange);
@@ -125,12 +125,7 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
                 shape: BoxShape.circle,
               ),
               child: Center(
-                child: Image.asset(
-                  widget.appService.serviceImg.uri,
-                  height: 24.h,
-                  width: 24.w,
-                  color: Color.fromARGB(255, 78, 3, 208),
-                ),
+                child: _buildServiceIcon(),
               ),
             ),
             SizedBox(height: 12.h),
@@ -159,6 +154,42 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildServiceIcon() {
+    IconData iconData;
+    switch (widget.appService.serviceName) {
+      case AppServiceName.sendFunds:
+        iconData = Icons.send;
+        break;
+      case AppServiceName.requestFunds:
+        iconData = Icons.request_quote;
+        break;
+      case AppServiceName.transferFunds:
+        iconData = Icons.swap_horiz;
+        break;
+      case AppServiceName.payElectricityBill:
+        iconData = Icons.receipt;
+        break;
+      case AppServiceName.invest:
+        iconData = Icons.trending_up;
+        break;
+      case AppServiceName.exchange:
+        iconData = Icons.currency_exchange;
+        break;
+      case AppServiceName.crypto:
+        iconData = Icons.currency_bitcoin;
+        break;
+      case AppServiceName.giftCards:
+        iconData = Icons.card_giftcard;
+        break;
+    }
+
+    return Icon(
+      iconData,
+      size: 24.sp,
+      color: Color.fromARGB(255, 78, 3, 208),
     );
   }
 }

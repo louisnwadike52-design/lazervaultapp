@@ -236,7 +236,7 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
                 borderRadius: BorderRadius.circular(12.r),
               ),
               child: IconButton(
-                onPressed: () => Get.offAllNamed('/dashboard'),
+                onPressed: () => Get.offAllNamed(AppRoutes.investments),
                 icon: Icon(
                   Icons.arrow_back,
                   color: Colors.white,
@@ -250,7 +250,7 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Stock Exchange',
+                    'Stocks',
                     style: GoogleFonts.inter(
                       color: Colors.white,
                       fontSize: 24.sp,

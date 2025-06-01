@@ -1,22 +1,35 @@
-enum 
-AppServiceName {
-  sendFunds('Send'),
-  receiveFunds('Receive'),
-  sendCrypto('Send Crypto'),
-  receiveCrypto('Crypto'),
-  requestFunds('Request'),
-  transferFunds('Transfer'),
-  payElectricityBill('Electricity'),
-  stocks('Stocks'),
-  bills('Bills'),
-  flights('Flights'),
-  crypto('Crypto'),
-  exchange('Exchange'),
-  giftCards('Gift Cards');
+enum AppServiceName {
+  sendFunds,
+  requestFunds,
+  transferFunds,
+  payElectricityBill,
+  invest,
+  exchange,
+  crypto,
+  giftCards,
+}
 
-  final String displayName;
-
-  const AppServiceName(this.displayName);
+extension AppServiceNameExtension on AppServiceName {
+  String get displayName {
+    switch (this) {
+      case AppServiceName.sendFunds:
+        return 'Send Funds';
+      case AppServiceName.requestFunds:
+        return 'Request Funds';
+      case AppServiceName.transferFunds:
+        return 'Transfer Funds';
+      case AppServiceName.payElectricityBill:
+        return 'Pay Bills';
+      case AppServiceName.invest:
+        return 'Invest';
+      case AppServiceName.exchange:
+        return 'Exchange';
+      case AppServiceName.crypto:
+        return 'Crypto';
+      case AppServiceName.giftCards:
+        return 'Gift Cards';
+    }
+  }
 }
 
 final List<String> imagePaths = [
@@ -27,23 +40,37 @@ final List<String> imagePaths = [
 ];
 
 enum AppServiceImg {
-  sendFunds('assets/images/money-receive.png'),
-  receiveFunds('assets/images/money-send.png'),
-  sendCrypto('assets/images/receive-square.png'),
-  receiveCrypto('assets/images/wallet.png'),
-  requestFunds('assets/images/wallet.png'),
-  transferFunds('assets/images/wallet.png'),
-  bills('assets/images/wallet.png'),
-  payElectricityBill('assets/images/wallet.png'),
-  flights('assets/images/wallet.png'),
-  crypto('assets/images/wallet.png'),
-  stocks('assets/images/wallet.png'),
-  exchange('assets/images/wallet.png'),
-  giftCards('assets/images/wallet.png');  
+  sendFunds,
+  requestFunds,
+  transferFunds,
+  payElectricityBill,
+  invest,
+  exchange,
+  crypto,
+  giftCards,
+}
 
-  final String uri;
-
-  const AppServiceImg(this.uri);
+extension AppServiceImgExtension on AppServiceImg {
+  String get uri {
+    switch (this) {
+      case AppServiceImg.sendFunds:
+        return 'assets/images/money-send.png';
+      case AppServiceImg.requestFunds:
+        return 'assets/images/money-receive.png';
+      case AppServiceImg.transferFunds:
+        return 'assets/images/wallet.png';
+      case AppServiceImg.payElectricityBill:
+        return 'assets/images/receive-square.png';
+      case AppServiceImg.invest:
+        return 'assets/images/trending-up.png';
+      case AppServiceImg.exchange:
+        return 'assets/images/exchange.png';
+      case AppServiceImg.crypto:
+        return 'assets/images/crypto.png';
+      case AppServiceImg.giftCards:
+        return 'assets/images/gift-cards.png';
+    }
+  }
 }
 
 enum NotificationType { success, error, info, warning }

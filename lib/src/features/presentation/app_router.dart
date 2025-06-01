@@ -81,6 +81,7 @@ import 'package:lazervault/src/features/funds/cubit/deposit_cubit.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_cubit.dart';
 import 'package:lazervault/src/features/funds/cubit/transfer_cubit.dart';
 import 'package:lazervault/src/features/stocks/presentation/view/stock_chart_details_screen.dart';
+import '../investments/presentation/view/investments_screen.dart';
 
 class AppRouter {
   static final routes = [
@@ -122,9 +123,14 @@ class AppRouter {
     GetPage(
       name: AppRoutes.stocks,
       page: () => BlocProvider(
-        create: (_) => serviceLocator<StockCubit>(),
+        create: (context) => serviceLocator<StockCubit>(),
         child: serviceLocator<StockFeature.StocksScreen>(),
       ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.investments,
+      page: () => serviceLocator<InvestmentsScreen>(),
       transition: Transition.rightToLeft,
     ),
     GetPage(

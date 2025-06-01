@@ -14,14 +14,14 @@ final List<NotificationService> notifications = [
   ),
   NotificationService(
     appService: const AppService(
-        serviceName: AppServiceName.receiveFunds,
-        serviceImg: AppServiceImg.receiveFunds),
+        serviceName: AppServiceName.requestFunds,
+        serviceImg: AppServiceImg.requestFunds),
     title: 'Sent money successfully',
     subTitle: "Money transfer successfully to Account No: 2003898497975797",
     date: DateTime.parse('2023-01-01'),
   ),
   NotificationService(
-    appService: AppService(
+    appService: const AppService(
         serviceName: AppServiceName.requestFunds,
         serviceImg: AppServiceImg.requestFunds),
     title: 'Received Money Successfully',
@@ -30,24 +30,24 @@ final List<NotificationService> notifications = [
   ),
   NotificationService(
     appService: const AppService(
-        serviceName: AppServiceName.receiveCrypto,
-        serviceImg: AppServiceImg.receiveCrypto),
+        serviceName: AppServiceName.crypto,
+        serviceImg: AppServiceImg.crypto),
     title: 'Sent money successfully',
     subTitle: "Money transfer successfully to Account No: 2003898497975797",
     date: DateTime.parse('2023-01-01'),
   ),
   NotificationService(
     appService: const AppService(
-        serviceName: AppServiceName.receiveCrypto,
-        serviceImg: AppServiceImg.receiveCrypto),
+        serviceName: AppServiceName.crypto,
+        serviceImg: AppServiceImg.crypto),
     title: 'Sent money successfully',
     subTitle: "Money transfer successfully to Account No: 2003898497975797",
     date: DateTime.parse('2023-01-01'),
   ),
   NotificationService(
     appService: const AppService(
-        serviceName: AppServiceName.receiveCrypto,
-        serviceImg: AppServiceImg.receiveCrypto),
+        serviceName: AppServiceName.crypto,
+        serviceImg: AppServiceImg.crypto),
     title: 'Sent money successfully',
     subTitle: "Money transfer successfully to Account No: 2003898497975797",
     date: DateTime.parse('2023-01-01'),
