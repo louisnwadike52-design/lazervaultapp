@@ -80,6 +80,7 @@ import 'package:lazervault/src/features/funds/cubit/withdrawal_cubit.dart';
 import 'package:lazervault/src/features/funds/cubit/deposit_cubit.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_cubit.dart';
 import 'package:lazervault/src/features/funds/cubit/transfer_cubit.dart';
+import 'package:lazervault/src/features/stocks/presentation/view/stock_chart_details_screen.dart';
 
 class AppRouter {
   static final routes = [
@@ -557,6 +558,17 @@ class AppRouter {
         create: (_) => serviceLocator<StockCubit>()..loadMarketNews(),
         child: serviceLocator<StockFeature.StocksScreen>(), // Will show news tab
       ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.stockChartDetails,
+      page: () {
+        final stock = Get.arguments as Stock;
+        return BlocProvider(
+          create: (_) => serviceLocator<StockCubit>()..loadStockDetails(stock.symbol),
+          child: serviceLocator<StockChartDetailsScreen>(param1: stock),
+        );
+      },
       transition: Transition.rightToLeft,
     ),
   ];
