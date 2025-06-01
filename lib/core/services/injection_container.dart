@@ -134,6 +134,7 @@ import 'package:lazervault/src/features/stocks/presentation/view/stock_trade_pay
 import 'package:lazervault/src/features/stocks/presentation/view/stock_trade_review_screen.dart';
 import 'package:lazervault/src/features/stocks/presentation/view/stock_trade_receipt_screen.dart';
 import 'package:lazervault/src/features/stocks/domain/entities/stock_entity.dart';
+import 'package:lazervault/src/features/stocks/presentation/view/stock_chart_details_screen.dart';
 // End Stocks Imports
 
 final serviceLocator = GetIt.instance;
@@ -447,7 +448,9 @@ Future<void> init() async {
       )
       ..registerFactoryParam<WithdrawFundsScreen, Map<String, dynamic>, void>(
         (selectedCard, _) => WithdrawFundsScreen(selectedCard: selectedCard),
-      );
+      )
+      ..registerFactoryParam<StockChartDetailsScreen, Stock, void>(
+          (stock, _) => StockChartDetailsScreen(stock: stock));
 
   // Make sure AuthenticationCubit is registered first, e.g.:
   // serviceLocator.registerLazySingleton(() => AuthenticationCubit(...));

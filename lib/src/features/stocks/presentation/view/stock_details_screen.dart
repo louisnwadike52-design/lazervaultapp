@@ -9,7 +9,10 @@ import '../../cubit/stock_cubit.dart';
 import '../../cubit/stock_state.dart';
 import '../../domain/entities/stock_entity.dart';
 import '../../../../../core/types/app_routes.dart';
-
+import '../widgets/technical_indicators_bottom_sheet.dart';
+import '../widgets/analyst_ratings_section.dart';
+import '../widgets/stock_events_section.dart';
+import '../widgets/advanced_chart_widget.dart';
 
 class StockDetailsScreen extends StatefulWidget {
   final Stock stock;
@@ -21,18 +24,26 @@ class StockDetailsScreen extends StatefulWidget {
 }
 
 class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProviderStateMixin {
+  late TabController _tabController;
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
-  late Animation<double> _slideAnimation;
   
-  final List<String> _timeframes = ['1D', '1W', '1M', '3M', '1Y', 'ALL'];
+  final List<String> _timeframes = ['1D', '1W', '1M', '3M', '6M', '1Y', '5Y', 'Max'];
   String _selectedTimeframe = '1M';
   bool _isInWatchlist = false;
+  bool _showIndicators = false;
+  
+  // Technical Indicators
+  List<String> _selectedIndicators = [];
+  final List<String> _availableIndicators = [
+    'SMA', 'EMA', 'MACD', 'RSI', 'Bollinger Bands', 'Volume', 'Stochastic'
+  ];
 
   @override
   void initState() {
     super.initState();
     _setupAnimations();
+    _setupTabController();
     _loadStockDetails();
   }
 
@@ -46,20 +57,23 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
       CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
     );
     
-    _slideAnimation = Tween<double>(begin: 30.0, end: 0.0).animate(
-      CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
-    );
-    
     _animationController.forward();
+  }
+
+  void _setupTabController() {
+    _tabController = TabController(length: 3, vsync: this);
   }
 
   void _loadStockDetails() {
     context.read<StockCubit>().loadStockDetails(widget.stock.symbol);
+    context.read<StockCubit>().loadAnalystRatings(widget.stock.symbol);
+    context.read<StockCubit>().loadStockEvents(widget.stock.symbol);
   }
 
   @override
   void dispose() {
     _animationController.dispose();
+    _tabController.dispose();
     super.dispose();
   }
 
@@ -83,17 +97,15 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
           child: Column(
             children: [
               _buildHeader(),
+              _buildTabBar(),
               Expanded(
-                child: SingleChildScrollView(
-                  child: Column(
+                child: TabBarView(
+                  controller: _tabController,
                     children: [
-                      _buildStockInfo(),
-                      _buildPriceChart(),
-                      _buildStockMetrics(),
-                      _buildActionButtons(),
-                      _buildCompanyInfo(),
+                    _buildOverviewTab(),
+                    _buildFinancialsTab(),
+                    _buildNewsTab(),
                     ],
-                  ),
                 ),
               ),
             ],
@@ -119,17 +131,44 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
               ),
               child: IconButton(
                 onPressed: () => Navigator.of(context).pop(),
-                icon: Icon(
-                  Icons.arrow_back,
-                  color: Colors.white,
-                  size: 20.sp,
-                ),
+                icon: Icon(Icons.arrow_back, color: Colors.white, size: 20.sp),
               ),
             ),
             SizedBox(width: 16.w),
+            Container(
+              width: 40.w,
+              height: 40.h,
+              decoration: BoxDecoration(
+                  color: Colors.white,
+                borderRadius: BorderRadius.circular(50.r),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(50.r),
+                child: CachedNetworkImage(
+                  imageUrl: widget.stock.logoUrl,
+                  fit: BoxFit.contain,
+                  errorWidget: (context, url, error) => Container(
+                    color: Colors.red,
+                    child: Center(
+                      child: Text(
+                        widget.stock.symbol[0],
+                        style: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontSize: 18.sp,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(width: 12.w),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
                 children: [
                   Text(
                     widget.stock.symbol,
@@ -139,49 +178,40 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
                       fontWeight: FontWeight.w700,
                     ),
                   ),
+                      SizedBox(width: 8.w),
                   Text(
-                    widget.stock.name,
+                        '• ${widget.stock.name}',
                     style: GoogleFonts.inter(
                       color: Colors.grey[400],
-                      fontSize: 12.sp,
+                          fontSize: 14.sp,
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
-            ),
-            Container(
-              height: 40.h,
-              width: 40.w,
-              decoration: BoxDecoration(
-                color: _isInWatchlist ? Colors.blue : Colors.grey[900],
-                borderRadius: BorderRadius.circular(12.r),
+                  Text(
+                    widget.stock.industry,
+                    style: GoogleFonts.inter(
+                      color: Colors.grey[500],
+                      fontSize: 12.sp,
+                    ),
+                  ),
+                ],
               ),
-              child: IconButton(
+              ),
+            IconButton(
                 onPressed: _toggleWatchlist,
                 icon: Icon(
-                  _isInWatchlist ? Icons.star : Icons.star_border,
+                _isInWatchlist ? Icons.notifications : Icons.notifications_outlined,
                   color: Colors.white,
-                  size: 20.sp,
+                size: 24.sp,
                 ),
               ),
-            ),
-            SizedBox(width: 8.w),
-            Container(
-              height: 40.h,
-              width: 40.w,
-              decoration: BoxDecoration(
-                color: Colors.grey[900],
-                borderRadius: BorderRadius.circular(12.r),
-              ),
-              child: IconButton(
-                onPressed: () => _showShareDialog(),
+            IconButton(
+              onPressed: _toggleWatchlist,
                 icon: Icon(
-                  Icons.share,
+                _isInWatchlist ? Icons.star : Icons.star_outline,
                   color: Colors.white,
-                  size: 20.sp,
-                ),
+                size: 24.sp,
               ),
             ),
           ],
@@ -190,66 +220,57 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
     );
   }
 
-  Widget _buildStockInfo() {
+  Widget _buildTabBar() {
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 16.w),
-      padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            widget.stock.isPositive 
-                ? Colors.green.withValues(alpha: 0.2) 
-                : Colors.red.withValues(alpha: 0.2),
-            Colors.blue.withValues(alpha: 0.2),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+        color: const Color(0xFF2A2A3E).withValues(alpha: 0.8),
+        borderRadius: BorderRadius.circular(12.r),
       ),
+      child: TabBar(
+        controller: _tabController,
+        indicator: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(8.r),
+        ),
+        labelColor: Colors.white,
+        unselectedLabelColor: Colors.grey[400],
+        labelStyle: GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.w600),
+        unselectedLabelStyle: GoogleFonts.inter(fontSize: 14.sp),
+        indicatorPadding: EdgeInsets.all(4.w),
+        dividerColor: Colors.transparent,
+        tabs: const [
+          Tab(text: 'Overview'),
+          Tab(text: 'Financials'),
+          Tab(text: 'News'),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOverviewTab() {
+    return SingleChildScrollView(
       child: Column(
         children: [
-          Row(
-            children: [
-              Container(
-                width: 60.w,
-                height: 60.h,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16.r),
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(16.r),
-                  child: CachedNetworkImage(
-                    imageUrl: widget.stock.logoUrl,
-                    fit: BoxFit.contain,
-                    placeholder: (context, url) => Container(
-                      color: Colors.grey[200],
-                      child: Icon(Icons.business, color: Colors.grey[600]),
-                    ),
-                    errorWidget: (context, url, error) => Container(
-                      color: Colors.grey[200],
-                      child: Center(
-                        child: Text(
-                          widget.stock.symbol[0],
-                          style: GoogleFonts.inter(
-                            color: Colors.grey[600],
-                            fontSize: 24.sp,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(width: 16.w),
-              Expanded(
+          _buildPriceHeader(),
+          _buildAdvancedChart(),
+          _buildActionButtons(),
+          _buildAnalystRatingsSection(),
+          _buildStatsSection(),
+          _buildEventsSection(),
+          _buildCompanyAboutSection(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPriceHeader() {
+    return Container(
+      padding: EdgeInsets.all(16.w),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Text(
+          Text(
                         '\$${widget.stock.currentPrice.toStringAsFixed(2)}',
                         style: GoogleFonts.inter(
                           color: Colors.white,
@@ -257,17 +278,11 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
                           fontWeight: FontWeight.w700,
                         ),
                       ),
-                    ),
-                    SizedBox(height: 4.h),
-                    Wrap(
-                      spacing: 8.w,
-                      runSpacing: 4.h,
-                      children: [
+          SizedBox(height: 8.h),
                         Row(
-                          mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(
-                              widget.stock.isPositive ? Icons.trending_up : Icons.trending_down,
+                widget.stock.isPositive ? Icons.arrow_upward : Icons.arrow_downward,
                               color: widget.stock.isPositive ? Colors.green : Colors.red,
                               size: 16.sp,
                             ),
@@ -276,14 +291,13 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
                               '${widget.stock.isPositive ? '+' : ''}\$${widget.stock.change.toStringAsFixed(2)}',
                               style: GoogleFonts.inter(
                                 color: widget.stock.isPositive ? Colors.green : Colors.red,
-                                fontSize: 14.sp,
+                  fontSize: 16.sp,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
-                          ],
-                        ),
+              SizedBox(width: 8.w),
                         Container(
-                          padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
+                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                           decoration: BoxDecoration(
                             color: widget.stock.isPositive 
                                 ? Colors.green.withValues(alpha: 0.2)
@@ -291,7 +305,7 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
                             borderRadius: BorderRadius.circular(8.r),
                           ),
                           child: Text(
-                            '${widget.stock.isPositive ? '+' : ''}${widget.stock.changePercent.toStringAsFixed(2)}%',
+                  '${widget.stock.changePercent >= 0 ? '+' : ''}${widget.stock.changePercent.toStringAsFixed(2)}%',
                             style: GoogleFonts.inter(
                               color: widget.stock.isPositive ? Colors.green : Colors.red,
                               fontSize: 12.sp,
@@ -299,77 +313,148 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
                             ),
                           ),
                         ),
+              SizedBox(width: 8.w),
+              Text(
+                '• Past 5 years',
+                style: GoogleFonts.inter(
+                  color: Colors.grey[400],
+                  fontSize: 12.sp,
+                          ),
+                        ),
                       ],
+                    ),
+          SizedBox(height: 12.h),
+          Text(
+            'Market closed. Opens again at Jun 2 at 2:30 PM',
+            style: GoogleFonts.inter(
+              color: Colors.grey[400],
+              fontSize: 14.sp,
+                ),
                     ),
                   ],
                 ),
-              ),
-            ],
-          ),
-          SizedBox(height: 20.h),
-          Row(
-            children: [
-              Expanded(
-                child: _buildQuickStat('Day High', '\$${widget.stock.dayHigh.toStringAsFixed(2)}'),
-              ),
-              Expanded(
-                child: _buildQuickStat('Day Low', '\$${widget.stock.dayLow.toStringAsFixed(2)}'),
-              ),
-              Expanded(
-                child: _buildQuickStat('Volume', _formatVolume(widget.stock.volume)),
-              ),
-            ],
-          ),
-        ],
-      ),
     );
   }
 
-  Widget _buildQuickStat(String label, String value) {
+  Widget _buildAdvancedChart() {
     return Container(
-      padding: EdgeInsets.all(12.w),
-      margin: EdgeInsets.symmetric(horizontal: 4.w),
+      margin: EdgeInsets.symmetric(horizontal: 16.w),
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(12.r),
+        color: const Color(0xFF2A2A3E).withValues(alpha: 0.8),
+        borderRadius: BorderRadius.circular(20.r),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(
         children: [
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Text(
-              label,
-              style: GoogleFonts.inter(
-                color: Colors.grey[400],
-                fontSize: 12.sp,
-              ),
-              textAlign: TextAlign.center,
-            ),
+          BlocBuilder<StockCubit, StockState>(
+            builder: (context, state) {
+              if (state is StockDetailsLoaded) {
+                return AdvancedChartWidget(
+                  priceHistory: state.priceHistory,
+                  stock: state.stock,
+                  selectedIndicators: _selectedIndicators,
+                  timeframe: _selectedTimeframe,
+                );
+              }
+              return Container(
+                height: 300.h,
+                child: Center(child: CircularProgressIndicator(color: Colors.blue)),
+              );
+            },
           ),
-          SizedBox(height: 4.h),
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Text(
-              value,
-              style: GoogleFonts.inter(
-                color: Colors.white,
-                fontSize: 14.sp,
-                fontWeight: FontWeight.w600,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ),
+          SizedBox(height: 16.h),
+          _buildTimeframeSelector(),
+          SizedBox(height: 12.h),
+          _buildIndicatorControls(),
         ],
       ),
     );
   }
 
-  Widget _buildPriceChart() {
+  Widget _buildTimeframeSelector() {
+    return Container(
+      height: 40.h,
+      decoration: BoxDecoration(
+        color: Colors.grey[800],
+        borderRadius: BorderRadius.circular(20.r),
+      ),
+      child: Row(
+        children: _timeframes.map((timeframe) {
+          final isSelected = _selectedTimeframe == timeframe;
+          return Expanded(
+            child: GestureDetector(
+              onTap: () {
+                setState(() {
+                  _selectedTimeframe = timeframe;
+                });
+                _loadStockDetails();
+              },
+              child: Container(
+                margin: EdgeInsets.all(2.w),
+                decoration: BoxDecoration(
+                  color: isSelected ? Colors.white : Colors.transparent,
+                  borderRadius: BorderRadius.circular(18.r),
+                ),
+                child: Center(
+                  child: Text(
+                    timeframe,
+                    style: GoogleFonts.inter(
+                      color: isSelected ? Colors.black : Colors.grey[400],
+                      fontSize: 12.sp,
+                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildIndicatorControls() {
+    return Row(
+            children: [
+              Expanded(
+          child: Text(
+            'Data displayed is indicative only. Actual execution price may vary.',
+            style: GoogleFonts.inter(
+              color: Colors.grey[500],
+              fontSize: 11.sp,
+            ),
+          ),
+              ),
+        IconButton(
+          onPressed: () => _showIndicatorSelector(),
+          icon: Icon(
+            Icons.analytics_outlined,
+            color: Colors.white,
+            size: 24.sp,
+          ),
+              ),
+      ],
+    );
+  }
+
+  Widget _buildAnalystRatingsSection() {
+    return BlocBuilder<StockCubit, StockState>(
+      builder: (context, state) {
+        return AnalystRatingsSection(
+          stock: widget.stock,
+          onSeeAll: () => Get.toNamed('/analyst-details', arguments: widget.stock),
+        );
+      },
+    );
+  }
+
+  Widget _buildStatsSection() {
     return Container(
       margin: EdgeInsets.all(16.w),
-      padding: EdgeInsets.all(16.w),
+      padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF2D2D2D),
+        color: const Color(0xFF2A2A3E).withValues(alpha: 0.8),
         borderRadius: BorderRadius.circular(20.r),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
@@ -378,163 +463,82 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
         children: [
           Row(
             children: [
-              Expanded(
-                child: Text(
-                  'Price Chart',
-                  style: GoogleFonts.inter(
-                    color: Colors.white,
-                    fontSize: 18.sp,
-                    fontWeight: FontWeight.w600,
-                  ),
+              Text(
+                'Stats',
+                style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
-              SizedBox(width: 8.w),
-              Flexible(
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.grey[800],
-                    borderRadius: BorderRadius.circular(8.r),
-                  ),
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: _timeframes.map((timeframe) {
-                        final isSelected = _selectedTimeframe == timeframe;
-                        return GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              _selectedTimeframe = timeframe;
-                            });
-                            context.read<StockCubit>().loadStockDetails(widget.stock.symbol);
-                          },
-                          child: Container(
-                            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-                            decoration: BoxDecoration(
-                              color: isSelected ? Colors.blue : Colors.transparent,
-                              borderRadius: BorderRadius.circular(8.r),
-                            ),
-                            child: Text(
-                              timeframe,
-                              style: GoogleFonts.inter(
-                                color: isSelected ? Colors.white : Colors.grey[400],
-                                fontSize: 12.sp,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                    ),
+              Spacer(),
+              GestureDetector(
+                onTap: () => Get.toNamed('/stock-stats', arguments: widget.stock),
+            child: Text(
+                  'See all',
+                  style: GoogleFonts.inter(
+                    color: Colors.green,
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
             ],
           ),
           SizedBox(height: 20.h),
-          BlocBuilder<StockCubit, StockState>(
-            builder: (context, state) {
-              if (state is StockDetailsLoaded) {
-                return _buildChart(state.priceHistory);
-              } else if (state is StockDetailsLoading) {
-                return Container(
-                  height: 200.h,
-                  child: Center(
-                    child: CircularProgressIndicator(color: Colors.blue),
-                  ),
-                );
-              }
-              return Container(
-                height: 200.h,
-                child: Center(
-                  child: Text(
-                    'Chart data unavailable',
-                    style: GoogleFonts.inter(color: Colors.grey[400]),
-                  ),
-                ),
-              );
-            },
+          _buildStatItem('Market cap', _formatMarketCap(widget.stock.marketCap)),
+          _buildStatItem('PE Ratio', widget.stock.peRatio.toStringAsFixed(2)),
+          _buildStatItem('EPS', '\$${widget.stock.eps.toStringAsFixed(2)}'),
+          _buildStatItem('Dividend yield', '${widget.stock.dividendYield.toStringAsFixed(2)}%'),
+          _buildStatItem('Beta (5Y monthly)', widget.stock.beta.toStringAsFixed(2)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatItem(String label, String value) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: 16.h),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+              label,
+              style: GoogleFonts.inter(
+                color: Colors.grey[400],
+              fontSize: 14.sp,
+              ),
+          ),
+          Text(
+              value,
+              style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w600,
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildChart(List<StockPrice> priceHistory) {
-    if (priceHistory.isEmpty) {
-      return Container(
-        height: 200.h,
-        child: Center(
-          child: Text(
-            'No chart data available',
-            style: GoogleFonts.inter(color: Colors.grey[400]),
-          ),
-        ),
-      );
-    }
-
-    final spots = priceHistory.asMap().entries.map((entry) {
-      return FlSpot(entry.key.toDouble(), entry.value.close);
-    }).toList();
-
-    return Container(
-      height: 200.h,
-      child: LineChart(
-        LineChartData(
-          gridData: FlGridData(
-            show: true,
-            drawVerticalLine: false,
-            horizontalInterval: 10,
-            getDrawingHorizontalLine: (value) {
-              return FlLine(
-                color: Colors.grey.withValues(alpha: 0.2),
-                strokeWidth: 1,
-              );
-            },
-          ),
-          titlesData: FlTitlesData(
-            show: false,
-          ),
-          borderData: FlBorderData(show: false),
-          lineBarsData: [
-            LineChartBarData(
-              spots: spots,
-              isCurved: true,
-              gradient: LinearGradient(
-                colors: [
-                  widget.stock.isPositive ? Colors.green : Colors.red,
-                  widget.stock.isPositive ? Colors.green.withValues(alpha: 0.3) : Colors.red.withValues(alpha: 0.3),
-                ],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-              ),
-              barWidth: 3,
-              isStrokeCapRound: true,
-              dotData: FlDotData(show: false),
-              belowBarData: BarAreaData(
-                show: true,
-                gradient: LinearGradient(
-                  colors: [
-                    widget.stock.isPositive ? Colors.green.withValues(alpha: 0.3) : Colors.red.withValues(alpha: 0.3),
-                    widget.stock.isPositive ? Colors.green.withValues(alpha: 0.1) : Colors.red.withValues(alpha: 0.1),
-                  ],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
+  Widget _buildEventsSection() {
+    return BlocBuilder<StockCubit, StockState>(
+      builder: (context, state) {
+        return StockEventsSection(
+          stock: widget.stock,
+          onSeeAll: () => Get.toNamed('/stock-events', arguments: widget.stock),
+        );
+      },
     );
   }
 
-  Widget _buildStockMetrics() {
+  Widget _buildCompanyAboutSection() {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 16.w),
+      margin: EdgeInsets.all(16.w),
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF2D2D2D),
+        color: const Color(0xFF2A2A3E).withValues(alpha: 0.8),
         borderRadius: BorderRadius.circular(20.r),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
@@ -542,33 +546,274 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Key Metrics',
+            'About ${widget.stock.name}',
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 18.sp,
+              fontWeight: FontWeight.w700,
+                ),
+              ),
+          SizedBox(height: 16.h),
+          Text(
+            widget.stock.description,
+            style: GoogleFonts.inter(
+              color: Colors.grey[300],
+              fontSize: 14.sp,
+              height: 1.5,
+            ),
+          ),
+          SizedBox(height: 20.h),
+          _buildCompanyDetailsGrid(),
+          SizedBox(height: 20.h),
+          _buildKeyExecutives(),
+          SizedBox(height: 20.h),
+          _buildBusinessSegments(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCompanyDetailsGrid() {
+    return Column(
+      children: [
+        Row(
+          children: [
+            Expanded(child: _buildDetailItem('Founded', '1976')),
+            SizedBox(width: 16.w),
+            Expanded(child: _buildDetailItem('Headquarters', 'Cupertino, CA')),
+          ],
+        ),
+        SizedBox(height: 12.h),
+        Row(
+          children: [
+            Expanded(child: _buildDetailItem('Employees', '164,000+')),
+            SizedBox(width: 16.w),
+            Expanded(child: _buildDetailItem('CEO', 'Tim Cook')),
+          ],
+        ),
+        SizedBox(height: 12.h),
+        Row(
+          children: [
+            Expanded(child: _buildDetailItem('Exchange', 'NASDAQ')),
+            SizedBox(width: 16.w),
+            Expanded(child: _buildDetailItem('Website', 'apple.com')),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDetailItem(String label, String value) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: GoogleFonts.inter(
+            color: Colors.grey[400],
+            fontSize: 12.sp,
+          ),
+                            ),
+        SizedBox(height: 4.h),
+        Text(
+          value,
+                              style: GoogleFonts.inter(
+            color: Colors.white,
+            fontSize: 14.sp,
+            fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+    );
+  }
+
+  Widget _buildKeyExecutives() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Key Executives',
+          style: GoogleFonts.inter(
+            color: Colors.white,
+            fontSize: 16.sp,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        SizedBox(height: 12.h),
+        _buildExecutiveItem('Tim Cook', 'Chief Executive Officer'),
+        _buildExecutiveItem('Luca Maestri', 'Chief Financial Officer'),
+        _buildExecutiveItem('Katherine Adams', 'General Counsel'),
+        _buildExecutiveItem('Deirdre O\'Brien', 'Senior VP, Retail + People'),
+      ],
+    );
+  }
+
+  Widget _buildExecutiveItem(String name, String position) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: 8.h),
+      child: Row(
+        children: [
+          Container(
+            width: 32.w,
+            height: 32.h,
+            decoration: BoxDecoration(
+              color: Colors.grey[700],
+              borderRadius: BorderRadius.circular(16.r),
+                  ),
+            child: Icon(Icons.person, color: Colors.white, size: 16.sp),
+          ),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  name,
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                Text(
+                  position,
+                  style: GoogleFonts.inter(
+                    color: Colors.grey[400],
+                    fontSize: 12.sp,
+                ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBusinessSegments() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Business Segments',
+          style: GoogleFonts.inter(
+            color: Colors.white,
+            fontSize: 16.sp,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        SizedBox(height: 12.h),
+        _buildSegmentItem('iPhone', '52.4%', 'Primary revenue driver'),
+        _buildSegmentItem('Services', '22.3%', 'App Store, iCloud, Apple Pay'),
+        _buildSegmentItem('Mac', '10.4%', 'Desktop and laptop computers'),
+        _buildSegmentItem('iPad', '8.8%', 'Tablet computers'),
+        _buildSegmentItem('Wearables', '6.1%', 'Apple Watch, AirPods'),
+      ],
+    );
+  }
+
+  Widget _buildSegmentItem(String segment, String percentage, String description) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: 12.h),
+      child: Row(
+        children: [
+          Container(
+            width: 40.w,
+            padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+            decoration: BoxDecoration(
+              color: Colors.blue.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(8.r),
+            ),
+            child: Text(
+              percentage,
+              style: GoogleFonts.inter(
+                color: Colors.blue,
+                fontSize: 11.sp,
+                fontWeight: FontWeight.w600,
+              ),
+              textAlign: TextAlign.center,
+              ),
+          ),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  segment,
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                Text(
+                  description,
+                  style: GoogleFonts.inter(
+                    color: Colors.grey[400],
+                    fontSize: 12.sp,
+              ),
+            ),
+          ],
+        ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFinancialsTab() {
+    return SingleChildScrollView(
+      padding: EdgeInsets.all(16.w),
+      child: Column(
+        children: [
+          _buildFinancialSummary(),
+          SizedBox(height: 16.h),
+          _buildIncomeStatement(),
+          SizedBox(height: 16.h),
+          _buildBalanceSheet(),
+          SizedBox(height: 16.h),
+          _buildCashFlow(),
+          SizedBox(height: 16.h),
+          _buildFinancialRatios(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFinancialSummary() {
+    return Container(
+      padding: EdgeInsets.all(20.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFF2A2A3E).withValues(alpha: 0.8),
+        borderRadius: BorderRadius.circular(20.r),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Financial Summary (TTM)',
             style: GoogleFonts.inter(
               color: Colors.white,
               fontSize: 18.sp,
-              fontWeight: FontWeight.w600,
+              fontWeight: FontWeight.w700,
             ),
+          ),
+          SizedBox(height: 20.h),
+          Row(
+            children: [
+              Expanded(child: _buildFinancialMetric('Revenue', '\$394.33B', '+2.8%', true)),
+              SizedBox(width: 16.w),
+              Expanded(child: _buildFinancialMetric('Net Income', '\$99.80B', '+5.4%', true)),
+            ],
           ),
           SizedBox(height: 16.h),
           Row(
             children: [
-              Expanded(
-                child: _buildMetricItem('Market Cap', _formatMarketCap(widget.stock.marketCap)),
-              ),
-              Expanded(
-                child: _buildMetricItem('P/E Ratio', widget.stock.peRatio.toStringAsFixed(2)),
-              ),
-            ],
-          ),
-          SizedBox(height: 12.h),
-          Row(
-            children: [
-              Expanded(
-                child: _buildMetricItem('Dividend Yield', '${widget.stock.dividendYield.toStringAsFixed(2)}%'),
-              ),
-              Expanded(
-                child: _buildMetricItem('Previous Close', '\$${widget.stock.previousClose.toStringAsFixed(2)}'),
-              ),
+              Expanded(child: _buildFinancialMetric('Gross Margin', '44.1%', '+0.5%', true)),
+              SizedBox(width: 16.w),
+              Expanded(child: _buildFinancialMetric('Operating Margin', '29.9%', '+1.2%', true)),
             ],
           ),
         ],
@@ -576,15 +821,8 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
     );
   }
 
-  Widget _buildMetricItem(String label, String value) {
-    return Container(
-      padding: EdgeInsets.all(12.w),
-      margin: EdgeInsets.symmetric(horizontal: 4.w),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(12.r),
-      ),
-      child: Column(
+  Widget _buildFinancialMetric(String label, String value, String change, bool isPositive) {
+    return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
@@ -600,7 +838,737 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
             style: GoogleFonts.inter(
               color: Colors.white,
               fontSize: 16.sp,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        SizedBox(height: 2.h),
+        Text(
+          change,
+          style: GoogleFonts.inter(
+            color: isPositive ? Colors.green : Colors.red,
+            fontSize: 12.sp,
               fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+    );
+  }
+
+  Widget _buildIncomeStatement() {
+    return Container(
+      padding: EdgeInsets.all(20.w),
+              decoration: BoxDecoration(
+        color: const Color(0xFF2A2A3E).withValues(alpha: 0.8),
+        borderRadius: BorderRadius.circular(20.r),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Income Statement',
+            style: GoogleFonts.inter(
+              color: Colors.white,
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w700,
+            ),
+              ),
+          SizedBox(height: 20.h),
+          _buildFinancialRow('Total Revenue', '\$394.33B', '\$383.29B', '\$365.82B'),
+          _buildFinancialRow('Cost of Revenue', '\$220.28B', '\$212.98B', '\$201.47B'),
+          _buildFinancialRow('Gross Profit', '\$174.05B', '\$170.31B', '\$164.35B'),
+          _buildFinancialRow('Operating Expenses', '\$56.29B', '\$51.35B', '\$47.11B'),
+          _buildFinancialRow('Operating Income', '\$117.76B', '\$118.96B', '\$117.24B'),
+          _buildFinancialRow('Net Income', '\$99.80B', '\$94.68B', '\$99.80B'),
+          SizedBox(height: 12.h),
+          _buildFinancialHeader(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFinancialHeader() {
+    return Row(
+      children: [
+        Expanded(
+          flex: 2,
+          child: Text(
+            '',
+            style: GoogleFonts.inter(color: Colors.white, fontSize: 12.sp),
+          ),
+        ),
+        Expanded(
+          child: Text(
+            '2023',
+            style: GoogleFonts.inter(
+              color: Colors.grey[400],
+              fontSize: 12.sp,
+              fontWeight: FontWeight.w600,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ),
+        Expanded(
+          child: Text(
+            '2022',
+            style: GoogleFonts.inter(
+              color: Colors.grey[400],
+              fontSize: 12.sp,
+              fontWeight: FontWeight.w600,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ),
+        Expanded(
+          child: Text(
+            '2021',
+            style: GoogleFonts.inter(
+              color: Colors.grey[400],
+              fontSize: 12.sp,
+              fontWeight: FontWeight.w600,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFinancialRow(String label, String val2023, String val2022, String val2021) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: 12.h),
+                child: Row(
+                  children: [
+          Expanded(
+            flex: 2,
+            child: Text(
+              label,
+              style: GoogleFonts.inter(
+                      color: Colors.white,
+                fontSize: 14.sp,
+                    ),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              val2023,
+                      style: GoogleFonts.inter(
+                        color: Colors.white,
+                fontSize: 12.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+              textAlign: TextAlign.center,
+                ),
+              ),
+          Expanded(
+            child: Text(
+              val2022,
+              style: GoogleFonts.inter(
+                color: Colors.grey[300],
+                fontSize: 12.sp,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          Expanded(
+            child: Text(
+              val2021,
+              style: GoogleFonts.inter(
+                color: Colors.grey[300],
+                fontSize: 12.sp,
+                ),
+              textAlign: TextAlign.center,
+            ),
+                  ),
+                ],
+              ),
+    );
+  }
+
+  Widget _buildBalanceSheet() {
+    return Container(
+      padding: EdgeInsets.all(20.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFF2A2A3E).withValues(alpha: 0.8),
+        borderRadius: BorderRadius.circular(20.r),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+            'Balance Sheet',
+                      style: GoogleFonts.inter(
+                        color: Colors.white,
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          SizedBox(height: 20.h),
+          _buildFinancialRow('Total Assets', '\$352.76B', '\$352.76B', '\$351.00B'),
+          _buildFinancialRow('Total Liabilities', '\$290.44B', '\$302.08B', '\$287.91B'),
+          _buildFinancialRow('Total Equity', '\$62.15B', '\$50.67B', '\$63.09B'),
+          _buildFinancialRow('Cash & Equivalents', '\$29.97B', '\$23.65B', '\$34.94B'),
+          _buildFinancialRow('Total Debt', '\$109.28B', '\$120.07B', '\$124.72B'),
+                  ],
+                ),
+    );
+  }
+
+  Widget _buildCashFlow() {
+    return Container(
+      padding: EdgeInsets.all(20.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFF2A2A3E).withValues(alpha: 0.8),
+        borderRadius: BorderRadius.circular(20.r),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Cash Flow Statement',
+            style: GoogleFonts.inter(
+              color: Colors.white,
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          SizedBox(height: 20.h),
+          _buildFinancialRow('Operating Cash Flow', '\$110.54B', '\$122.15B', '\$104.04B'),
+          _buildFinancialRow('Investing Cash Flow', '\$-10.12B', '\$-22.35B', '\$-14.55B'),
+          _buildFinancialRow('Financing Cash Flow', '\$-106.11B', '\$-110.75B', '\$-93.35B'),
+          _buildFinancialRow('Free Cash Flow', '\$99.58B', '\$111.44B', '\$92.95B'),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFinancialRatios() {
+    return Container(
+      padding: EdgeInsets.all(20.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFF2A2A3E).withValues(alpha: 0.8),
+        borderRadius: BorderRadius.circular(20.r),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Key Ratios',
+            style: GoogleFonts.inter(
+              color: Colors.white,
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          SizedBox(height: 20.h),
+          Row(
+            children: [
+              Expanded(child: _buildRatioItem('P/E Ratio', '28.5')),
+              SizedBox(width: 16.w),
+              Expanded(child: _buildRatioItem('P/B Ratio', '39.4')),
+            ],
+          ),
+          SizedBox(height: 16.h),
+          Row(
+            children: [
+              Expanded(child: _buildRatioItem('ROE', '162.4%')),
+              SizedBox(width: 16.w),
+              Expanded(child: _buildRatioItem('ROA', '28.3%')),
+            ],
+          ),
+          SizedBox(height: 16.h),
+          Row(
+            children: [
+              Expanded(child: _buildRatioItem('Debt/Equity', '1.76')),
+              SizedBox(width: 16.w),
+              Expanded(child: _buildRatioItem('Current Ratio', '0.98')),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRatioItem(String label, String value) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+            label,
+            style: GoogleFonts.inter(
+              color: Colors.grey[400],
+            fontSize: 12.sp,
+            ),
+          ),
+        SizedBox(height: 4.h),
+        Text(
+            value,
+            style: GoogleFonts.inter(
+              color: Colors.white,
+            fontSize: 16.sp,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildNewsTab() {
+    return SingleChildScrollView(
+      padding: EdgeInsets.all(16.w),
+      child: Column(
+        children: [
+          _buildMarketSentiment(),
+          SizedBox(height: 16.h),
+          _buildRecentNews(),
+          SizedBox(height: 16.h),
+          _buildAnalystReports(),
+          SizedBox(height: 16.h),
+          _buildCompanyAnnouncements(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMarketSentiment() {
+    return Container(
+      padding: EdgeInsets.all(20.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFF2A2A3E).withValues(alpha: 0.8),
+        borderRadius: BorderRadius.circular(20.r),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Market Sentiment',
+            style: GoogleFonts.inter(
+              color: Colors.white,
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          SizedBox(height: 20.h),
+          Row(
+            children: [
+              Expanded(
+                child: _buildSentimentItem('Bullish', '68%', Colors.green),
+              ),
+              SizedBox(width: 16.w),
+              Expanded(
+                child: _buildSentimentItem('Neutral', '22%', Colors.grey),
+              ),
+              SizedBox(width: 16.w),
+              Expanded(
+                child: _buildSentimentItem('Bearish', '10%', Colors.red),
+              ),
+            ],
+          ),
+          SizedBox(height: 16.h),
+          Text(
+            'Based on 1,247 social media mentions and analyst reports in the last 24 hours',
+            style: GoogleFonts.inter(
+              color: Colors.grey[400],
+              fontSize: 12.sp,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSentimentItem(String label, String percentage, Color color) {
+    return Column(
+      children: [
+        Container(
+          width: 60.w,
+          height: 60.h,
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.2),
+            borderRadius: BorderRadius.circular(30.r),
+          ),
+          child: Center(
+            child: Text(
+              percentage,
+              style: GoogleFonts.inter(
+                color: color,
+                fontSize: 16.sp,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ),
+        SizedBox(height: 8.h),
+        Text(
+          label,
+          style: GoogleFonts.inter(
+            color: Colors.white,
+            fontSize: 12.sp,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
+    );
+    }
+
+  Widget _buildRecentNews() {
+    return Container(
+      padding: EdgeInsets.all(20.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFF2A2A3E).withValues(alpha: 0.8),
+        borderRadius: BorderRadius.circular(20.r),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text(
+                'Recent News',
+                style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              Spacer(),
+              Text(
+                'See all',
+                style: GoogleFonts.inter(
+                  color: Colors.green,
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 20.h),
+          _buildNewsItem(
+            'Apple Announces Q4 2023 Results',
+            'Apple reports record revenue of \$89.5 billion for Q4 2023, beating analyst expectations...',
+            '2 hours ago',
+            'Apple Inc.',
+          ),
+          _buildNewsItem(
+            'iPhone 15 Sales Exceed Expectations',
+            'Strong demand for iPhone 15 Pro models drives higher than expected sales in launch quarter...',
+            '4 hours ago',
+            'Reuters',
+        ),
+          _buildNewsItem(
+            'Apple Services Revenue Hits New High',
+            'Services division reports \$22.3 billion in revenue, marking 16% year-over-year growth...',
+            '6 hours ago',
+            'TechCrunch',
+          ),
+          _buildNewsItem(
+            'Vision Pro Production Ramp Up',
+            'Apple increases Vision Pro production ahead of early 2024 launch, sources confirm...',
+            '8 hours ago',
+            'Bloomberg',
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNewsItem(String headline, String summary, String time, String source) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: 16.h),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            headline,
+            style: GoogleFonts.inter(
+              color: Colors.white,
+              fontSize: 14.sp,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          SizedBox(height: 4.h),
+          Text(
+            summary,
+            style: GoogleFonts.inter(
+              color: Colors.grey[300],
+              fontSize: 12.sp,
+              height: 1.4,
+        ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+          SizedBox(height: 8.h),
+          Row(
+            children: [
+              Text(
+                source,
+                style: GoogleFonts.inter(
+                  color: Colors.grey[400],
+                  fontSize: 11.sp,
+                  fontWeight: FontWeight.w600,
+            ),
+          ),
+              SizedBox(width: 8.w),
+              Text(
+                '•',
+                style: GoogleFonts.inter(
+                  color: Colors.grey[400],
+                  fontSize: 11.sp,
+                ),
+              ),
+              SizedBox(width: 8.w),
+              Text(
+                time,
+                style: GoogleFonts.inter(
+                  color: Colors.grey[400],
+                  fontSize: 11.sp,
+                ),
+              ),
+            ],
+          ),
+          if (headline != 'Vision Pro Production Ramp Up') ...[
+            SizedBox(height: 16.h),
+            Divider(color: Colors.grey[700], height: 1),
+            SizedBox(height: 16.h),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAnalystReports() {
+    return Container(
+      padding: EdgeInsets.all(20.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFF2A2A3E).withValues(alpha: 0.8),
+        borderRadius: BorderRadius.circular(20.r),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+          ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+          Text(
+            'Latest Analyst Reports',
+            style: GoogleFonts.inter(
+              color: Colors.white,
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          SizedBox(height: 20.h),
+          _buildAnalystReportItem(
+            'Morgan Stanley',
+            'Overweight',
+            '\$220',
+            'Maintains positive outlook on Services growth and iPhone cycle',
+            '1 day ago',
+            Colors.green,
+                  ),
+          _buildAnalystReportItem(
+            'Goldman Sachs',
+            'Buy',
+            '\$210',
+            'Raises price target citing strong Vision Pro potential',
+            '3 days ago',
+            Colors.green,
+                  ),
+          _buildAnalystReportItem(
+            'JPMorgan',
+            'Neutral',
+            '\$185',
+            'Cautious on near-term iPhone demand in China market',
+            '5 days ago',
+            Colors.grey,
+                  ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAnalystReportItem(
+    String firm,
+    String rating,
+    String target,
+    String summary,
+    String time,
+    Color ratingColor,
+  ) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: 16.h),
+      child: Row(
+        children: [
+          Container(
+            width: 40.w,
+            height: 40.h,
+            decoration: BoxDecoration(
+              color: Colors.grey[700],
+              borderRadius: BorderRadius.circular(20.r),
+            ),
+            child: Icon(Icons.analytics, color: Colors.white, size: 20.sp),
+              ),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      firm,
+                      style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                  ),
+                    Spacer(),
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
+                      decoration: BoxDecoration(
+                        color: ratingColor.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(8.r),
+                      ),
+                      child: Text(
+                        rating,
+                        style: GoogleFonts.inter(
+                          color: ratingColor,
+                          fontSize: 11.sp,
+                          fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+                  ],
+                ),
+                SizedBox(height: 4.h),
+                Text(
+                  summary,
+                  style: GoogleFonts.inter(
+                    color: Colors.grey[300],
+                    fontSize: 12.sp,
+                  ),
+                ),
+                SizedBox(height: 4.h),
+                Row(
+                  children: [
+                    Text(
+                      'PT: $target',
+                      style: GoogleFonts.inter(
+                        color: Colors.grey[400],
+                        fontSize: 11.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    SizedBox(width: 8.w),
+                    Text(
+                      '• $time',
+                      style: GoogleFonts.inter(
+                        color: Colors.grey[400],
+                        fontSize: 11.sp,
+                  ),
+                ),
+              ],
+                ),
+            ],
+          ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCompanyAnnouncements() {
+    return Container(
+      padding: EdgeInsets.all(20.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFF2A2A3E).withValues(alpha: 0.8),
+        borderRadius: BorderRadius.circular(20.r),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Company Announcements',
+            style: GoogleFonts.inter(
+              color: Colors.white,
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w700,
+              ),
+            ),
+          SizedBox(height: 20.h),
+          _buildAnnouncementItem(
+            'Quarterly Earnings Call',
+            'Nov 2, 2023 • 5:00 PM EST',
+            Icons.phone,
+            'Join the live earnings call for Q4 2023 results',
+          ),
+          _buildAnnouncementItem(
+            'Developer Conference 2024',
+            'June 10-14, 2024 • Cupertino',
+            Icons.code,
+            'WWDC 2024 registration now open for developers',
+          ),
+          _buildAnnouncementItem(
+            'Sustainability Report',
+            'Oct 15, 2023',
+            Icons.eco,
+            'Apple releases 2023 Environmental Progress Report',
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAnnouncementItem(String title, String date, IconData icon, String description) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: 16.h),
+      child: Row(
+        children: [
+          Container(
+            width: 40.w,
+            height: 40.h,
+            decoration: BoxDecoration(
+              color: Colors.blue.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(20.r),
+            ),
+            child: Icon(icon, color: Colors.blue, size: 20.sp),
+          ),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                SizedBox(height: 2.h),
+                Text(
+                  date,
+                  style: GoogleFonts.inter(
+                    color: Colors.grey[400],
+                    fontSize: 11.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                SizedBox(height: 4.h),
+                Text(
+                  description,
+                  style: GoogleFonts.inter(
+                    color: Colors.grey[300],
+                    fontSize: 12.sp,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -615,18 +1583,41 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
         children: [
           Expanded(
             child: Container(
+              height: 50.h,
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Colors.green[700]!, Colors.green[500]!],
-                ),
-                borderRadius: BorderRadius.circular(16.r),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.green.withValues(alpha: 0.4),
-                    blurRadius: 16,
-                    offset: const Offset(0, 8),
+                border: Border.all(color: Colors.red, width: 2),
+                borderRadius: BorderRadius.circular(25.r),
+              ),
+              child: ElevatedButton(
+                onPressed: () => Get.toNamed(AppRoutes.stockTradeAmount, arguments: {
+                  'stock': widget.stock,
+                  'tradeType': 'sell',
+                }),
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.transparent,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(25.r),
                   ),
-                ],
+                ),
+                child: Text(
+                  'Sell',
+                  style: GoogleFonts.inter(
+                    color: Colors.red,
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Container(
+              height: 50.h,
+              decoration: BoxDecoration(
+                color: Colors.green,
+                borderRadius: BorderRadius.circular(25.r),
               ),
               child: ElevatedButton(
                 onPressed: () => Get.toNamed(AppRoutes.stockTradeAmount, arguments: {
@@ -636,380 +1627,52 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.transparent,
                   elevation: 0,
-                  padding: EdgeInsets.symmetric(vertical: 16.h),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16.r),
+                    borderRadius: BorderRadius.circular(25.r),
                   ),
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.trending_up,
-                      color: Colors.white,
-                      size: 20.sp,
-                    ),
-                    SizedBox(width: 8.w),
-                    Text(
-                      'Buy',
-                      style: GoogleFonts.inter(
-                        color: Colors.white,
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
+                child: Text(
+                  'Buy',
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ),
-          ),
-          SizedBox(width: 12.w),
-          Expanded(
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Colors.red[700]!, Colors.red[500]!],
-                ),
-                borderRadius: BorderRadius.circular(16.r),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.red.withValues(alpha: 0.4),
-                    blurRadius: 16,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
-              ),
-              child: ElevatedButton(
-                onPressed: () => Get.toNamed(AppRoutes.stockTradeAmount, arguments: {
-                  'stock': widget.stock,
-                  'tradeType': 'sell',
-                }),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.transparent,
-                  elevation: 0,
-                  padding: EdgeInsets.symmetric(vertical: 16.h),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16.r),
-                  ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.trending_down,
-                      color: Colors.white,
-                      size: 20.sp,
-                    ),
-                    SizedBox(width: 8.w),
-                    Text(
-                      'Sell',
-                      style: GoogleFonts.inter(
-                        color: Colors.white,
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCompanyInfo() {
-    return Container(
-      margin: EdgeInsets.all(16.w),
-      padding: EdgeInsets.all(20.w),
-      decoration: BoxDecoration(
-        color: const Color(0xFF2D2D2D),
-        borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Company Information',
-            style: GoogleFonts.inter(
-              color: Colors.white,
-              fontSize: 18.sp,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          SizedBox(height: 16.h),
-          _buildInfoRow('Sector', widget.stock.sector),
-          SizedBox(height: 12.h),
-          _buildInfoRow('Industry', widget.stock.industry),
-          SizedBox(height: 12.h),
-          _buildInfoRow('Last Updated', _formatDateTime(widget.stock.lastUpdated)),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInfoRow(String label, String value) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SizedBox(
-          width: 100.w,
-          child: Text(
-            label,
-            style: GoogleFonts.inter(
-              color: Colors.grey[400],
-              fontSize: 14.sp,
-            ),
-          ),
+          ],
         ),
-        Expanded(
-          child: Text(
-            value,
-            style: GoogleFonts.inter(
-              color: Colors.white,
-              fontSize: 14.sp,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ),
-      ],
     );
   }
 
-  String _formatVolume(double volume) {
-    if (volume >= 1000000000) {
-      return '${(volume / 1000000000).toStringAsFixed(1)}B';
-    } else if (volume >= 1000000) {
-      return '${(volume / 1000000).toStringAsFixed(1)}M';
-    } else if (volume >= 1000) {
-      return '${(volume / 1000).toStringAsFixed(1)}K';
-    }
-    return volume.toStringAsFixed(0);
-  }
-
+  // Helper methods
   String _formatMarketCap(double marketCap) {
     if (marketCap >= 1000000000000) {
       return '\$${(marketCap / 1000000000000).toStringAsFixed(2)}T';
     } else if (marketCap >= 1000000000) {
       return '\$${(marketCap / 1000000000).toStringAsFixed(2)}B';
-    } else if (marketCap >= 1000000) {
-      return '\$${(marketCap / 1000000).toStringAsFixed(2)}M';
     }
-    return '\$${marketCap.toStringAsFixed(0)}';
-  }
-
-  String _formatDateTime(DateTime dateTime) {
-    final now = DateTime.now();
-    final difference = now.difference(dateTime);
-    
-    if (difference.inDays > 0) {
-      return '${difference.inDays} days ago';
-    } else if (difference.inHours > 0) {
-      return '${difference.inHours} hours ago';
-    } else {
-      return '${difference.inMinutes} minutes ago';
-    }
+    return '\$${(marketCap / 1000000).toStringAsFixed(2)}M';
   }
 
   void _toggleWatchlist() {
     setState(() {
       _isInWatchlist = !_isInWatchlist;
     });
-    
-    // TODO: Implement actual watchlist functionality
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          _isInWatchlist 
-              ? 'Added to watchlist' 
-              : 'Removed from watchlist',
-        ),
-        backgroundColor: _isInWatchlist ? Colors.green : Colors.red,
-      ),
-    );
   }
 
-  void _showShareDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF2D2D2D),
-        title: Text(
-          'Share ${widget.stock.symbol}',
-          style: GoogleFonts.inter(color: Colors.white),
-        ),
-        content: Text(
-          'Share this stock with others',
-          style: GoogleFonts.inter(color: Colors.grey[400]),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              'Cancel',
-              style: GoogleFonts.inter(color: Colors.grey[400]),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              // TODO: Implement share functionality
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Share functionality coming soon'),
-                  backgroundColor: Colors.blue,
-                ),
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blue,
-              foregroundColor: Colors.white,
-            ),
-            child: Text('Share'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showTradeDialog(OrderSide side) {
-    final quantityController = TextEditingController();
-    final priceController = TextEditingController(text: widget.stock.currentPrice.toStringAsFixed(2));
-    OrderType orderType = OrderType.market;
-    
-    showDialog(
-      context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) => AlertDialog(
-          backgroundColor: const Color(0xFF2D2D2D),
-          title: Text(
-            '${side == OrderSide.buy ? 'Buy' : 'Sell'} ${widget.stock.symbol}',
-            style: GoogleFonts.inter(color: Colors.white),
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              DropdownButtonFormField<OrderType>(
-                value: orderType,
-                decoration: InputDecoration(
-                  labelText: 'Order Type',
-                  labelStyle: GoogleFonts.inter(color: Colors.grey[400]),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12.r),
-                    borderSide: BorderSide(color: Colors.grey[600]!),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12.r),
-                    borderSide: BorderSide(color: Colors.grey[600]!),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12.r),
-                    borderSide: BorderSide(color: Colors.blue),
-                  ),
-                ),
-                dropdownColor: const Color(0xFF2D2D2D),
-                style: GoogleFonts.inter(color: Colors.white),
-                items: OrderType.values.map((type) {
-                  return DropdownMenuItem(
-                    value: type,
-                    child: Text(
-                      type.toString().split('.').last.toUpperCase(),
-                      style: GoogleFonts.inter(color: Colors.white),
-                    ),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  setState(() {
-                    orderType = value!;
-                  });
-                },
-              ),
-              SizedBox(height: 16.h),
-              TextField(
-                controller: quantityController,
-                style: GoogleFonts.inter(color: Colors.white),
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                  labelText: 'Quantity',
-                  labelStyle: GoogleFonts.inter(color: Colors.grey[400]),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12.r),
-                    borderSide: BorderSide(color: Colors.grey[600]!),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12.r),
-                    borderSide: BorderSide(color: Colors.grey[600]!),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12.r),
-                    borderSide: BorderSide(color: Colors.blue),
-                  ),
-                ),
-              ),
-              if (orderType == OrderType.limit) ...[
-                SizedBox(height: 16.h),
-                TextField(
-                  controller: priceController,
-                  style: GoogleFonts.inter(color: Colors.white),
-                  keyboardType: TextInputType.number,
-                  decoration: InputDecoration(
-                    labelText: 'Price',
-                    labelStyle: GoogleFonts.inter(color: Colors.grey[400]),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12.r),
-                      borderSide: BorderSide(color: Colors.grey[600]!),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12.r),
-                      borderSide: BorderSide(color: Colors.grey[600]!),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12.r),
-                      borderSide: BorderSide(color: Colors.blue),
-                    ),
-                  ),
-                ),
-              ],
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text(
-                'Cancel',
-                style: GoogleFonts.inter(color: Colors.grey[400]),
-              ),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                if (quantityController.text.isNotEmpty) {
-                  final quantity = int.tryParse(quantityController.text);
-                  final price = orderType == OrderType.limit 
-                      ? double.tryParse(priceController.text)
-                      : null;
-                  
-                  if (quantity != null && quantity > 0) {
-                    context.read<StockCubit>().placeOrder(
-                      symbol: widget.stock.symbol,
-                      type: orderType,
-                      side: side,
-                      quantity: quantity,
-                      price: price,
-                    );
-                    Navigator.pop(context);
-                  }
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: side == OrderSide.buy ? Colors.green : Colors.red,
-                foregroundColor: Colors.white,
-              ),
-              child: Text(side == OrderSide.buy ? 'Buy' : 'Sell'),
-            ),
-          ],
-        ),
+  void _showIndicatorSelector() {
+    Get.bottomSheet(
+      TechnicalIndicatorsBottomSheet(
+        availableIndicators: _availableIndicators,
+        selectedIndicators: _selectedIndicators,
+        onIndicatorsChanged: (indicators) {
+          setState(() {
+            _selectedIndicators = indicators;
+          });
+        },
       ),
     );
   }

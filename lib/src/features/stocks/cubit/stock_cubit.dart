@@ -1,5 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../domain/entities/stock_entity.dart';
+import '../domain/entities/analyst_ratings.dart';
+import '../domain/entities/stock_event.dart';
 import '../domain/usecases/get_stocks_usecase.dart';
 import '../domain/usecases/get_portfolio_usecase.dart';
 import '../domain/usecases/place_order_usecase.dart';
@@ -63,8 +65,15 @@ class StockCubit extends Cubit<StockState> {
             (failure) => emit(StockDetailsError(failure.message)),
             (priceHistory) {
               analysisResult.fold(
-                (failure) => emit(StockDetailsLoaded(stock, priceHistory)),
-                (analysis) => emit(StockDetailsLoaded(stock, priceHistory, analysis: analysis)),
+                (failure) => emit(StockDetailsLoaded(
+                  stock: stock,
+                  priceHistory: priceHistory,
+                )),
+                (analysis) => emit(StockDetailsLoaded(
+                  stock: stock,
+                  priceHistory: priceHistory,
+                  analysis: analysis,
+                )),
               );
             },
           );
@@ -549,5 +558,151 @@ class StockCubit extends Cubit<StockState> {
 
   void resetToInitial() {
     emit(StockInitial());
+  }
+
+  void loadAnalystRatings(String symbol) async {
+    try {
+      // Simulate loading analyst ratings
+      await Future.delayed(const Duration(milliseconds: 500));
+      
+      // In a real implementation, you would fetch this data from your API
+      final analystRatings = AnalystRatings(
+        symbol: symbol,
+        consensus: 'Hold',
+        targetPrice: 299.38,
+        buyRating: 48,
+        holdRating: 31,
+        sellRating: 21,
+        analystCount: 48,
+      );
+      
+      if (state is StockDetailsLoaded) {
+        final currentState = state as StockDetailsLoaded;
+        emit(currentState.copyWith(analystRatings: analystRatings));
+      }
+    } catch (error) {
+      emit(StockError('Failed to load analyst ratings: $error'));
+    }
+  }
+
+  void loadStockEvents(String symbol) async {
+    try {
+      // Simulate loading stock events
+      await Future.delayed(const Duration(milliseconds: 300));
+      
+      // In a real implementation, you would fetch this data from your API
+      final events = [
+        StockEvent(
+          id: '1',
+          title: 'Earnings Call',
+          date: DateTime.now().add(const Duration(days: 15)),
+          type: 'earnings',
+          description: 'Quarterly earnings announcement',
+        ),
+        StockEvent(
+          id: '2',
+          title: 'Dividend Payment',
+          date: DateTime.now().add(const Duration(days: 30)),
+          type: 'dividend',
+          description: 'Regular dividend payment',
+        ),
+      ];
+      
+      if (state is StockDetailsLoaded) {
+        final currentState = state as StockDetailsLoaded;
+        emit(currentState.copyWith(events: events));
+      }
+    } catch (error) {
+      emit(StockError('Failed to load stock events: $error'));
+    }
+  }
+
+  Future<void> loadStockChart(String symbol, String timeframe) async {
+    try {
+      // Don't emit loading state to avoid disrupting current UI
+      // Just update the chart data
+      
+      // Mock implementation - replace with actual API call
+      await Future.delayed(Duration(milliseconds: 500));
+      
+      // Generate mock chart data based on timeframe
+      final chartData = _generateChartData(symbol, timeframe);
+      
+      // For now, we'll just complete the future since we're using mock data
+      // In a real implementation, you would emit a new state with updated chart data
+      
+    } catch (e) {
+      emit(StockError('Failed to load chart data: $e'));
+    }
+  }
+
+  List<StockPrice> _generateChartData(String symbol, String timeframe) {
+    final now = DateTime.now();
+    final prices = <StockPrice>[];
+    
+    // Determine number of data points and interval based on timeframe
+    int dataPoints;
+    Duration interval;
+    
+    switch (timeframe) {
+      case '1m':
+        dataPoints = 60;
+        interval = Duration(minutes: 1);
+        break;
+      case '5m':
+        dataPoints = 288; // 24 hours
+        interval = Duration(minutes: 5);
+        break;
+      case '15m':
+        dataPoints = 96; // 24 hours
+        interval = Duration(minutes: 15);
+        break;
+      case '30m':
+        dataPoints = 48; // 24 hours
+        interval = Duration(minutes: 30);
+        break;
+      case '1H':
+        dataPoints = 168; // 1 week
+        interval = Duration(hours: 1);
+        break;
+      case '4H':
+        dataPoints = 168; // 4 weeks
+        interval = Duration(hours: 4);
+        break;
+      case '1D':
+        dataPoints = 365; // 1 year
+        interval = Duration(days: 1);
+        break;
+      case '1W':
+        dataPoints = 104; // 2 years
+        interval = Duration(days: 7);
+        break;
+      case '1M':
+        dataPoints = 60; // 5 years
+        interval = Duration(days: 30);
+        break;
+      default:
+        dataPoints = 60;
+        interval = Duration(days: 1);
+    }
+    
+    double basePrice = 100.0; // Default base price
+    
+    for (int i = dataPoints; i >= 0; i--) {
+      final date = now.subtract(interval * i);
+      final variation = (i % 10 - 5) * 0.02; // Random variation
+      final price = basePrice * (1 + variation);
+      
+      prices.add(StockPrice(
+        timestamp: date,
+        open: price * 0.99,
+        high: price * 1.02,
+        low: price * 0.98,
+        close: price,
+        volume: 1000000 + (i * 50000),
+      ));
+    }
+    
+    return prices;
   }
 } 

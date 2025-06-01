@@ -87,4 +87,5 @@ abstract class AppRoutes {
   static const String stockWatchlist = '/stocks/watchlist';
   static const String stockOrders = '/stocks/orders';
   static const String stockNews = '/stocks/news';
+  static const String stockChartDetails = '/stocks/chart-details';
 }
