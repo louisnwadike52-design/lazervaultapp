@@ -1,4 +1,5 @@
 import '../../domain/entities/stock_entity.dart';
+import '../../domain/entities/price_point.dart';
 
 class StockModel extends Stock {
   const StockModel({
@@ -47,7 +48,11 @@ class StockModel extends Stock {
       industry: json['industry'] ?? '',
       logoUrl: json['logoUrl'] ?? '',
       priceHistory: (json['priceHistory'] as List<dynamic>?)
-              ?.map((e) => StockPriceModel.fromJson(e))
+              ?.map((e) => PricePoint(
+                timestamp: DateTime.parse(e['timestamp']),
+                price: (e['price'] as num).toDouble(),
+                volume: (e['volume'] as num?)?.toDouble(),
+              ))
               .toList() ??
           [],
       lastUpdated: DateTime.parse(json['lastUpdated'] ?? DateTime.now().toIso8601String()),
@@ -79,7 +84,11 @@ class StockModel extends Stock {
       'sector': sector,
       'industry': industry,
       'logoUrl': logoUrl,
-      'priceHistory': priceHistory.map((e) => (e as StockPriceModel).toJson()).toList(),
+      'priceHistory': priceHistory.map((e) => {
+        'timestamp': e.timestamp.toIso8601String(),
+        'price': e.price,
+        'volume': e.volume,
+      }).toList(),
       'lastUpdated': lastUpdated.toIso8601String(),
       'weekHigh52': weekHigh52,
       'weekLow52': weekLow52,

@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'price_point.dart';
 
 class Stock extends Equatable {
   final String symbol;
@@ -16,7 +17,7 @@ class Stock extends Equatable {
   final String sector;
   final String industry;
   final String logoUrl;
-  final List<StockPrice> priceHistory;
+  final List<PricePoint> priceHistory;
   final DateTime lastUpdated;
   final double weekHigh52;
   final double weekLow52;
