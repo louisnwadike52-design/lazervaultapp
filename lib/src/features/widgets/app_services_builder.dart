@@ -25,12 +25,14 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
         serviceName: AppServiceName.payElectricityBill,
         serviceImg: AppServiceImg.payElectricityBill),
     const AppService(
-        serviceName: AppServiceName.stocks, serviceImg: AppServiceImg.stocks),
+        serviceName: AppServiceName.invest,
+        serviceImg: AppServiceImg.invest),
     const AppService(
         serviceName: AppServiceName.exchange,
         serviceImg: AppServiceImg.exchange),
     const AppService(
-        serviceName: AppServiceName.crypto, serviceImg: AppServiceImg.crypto),
+        serviceName: AppServiceName.crypto,
+        serviceImg: AppServiceImg.crypto),
     const AppService(
         serviceName: AppServiceName.giftCards,
         serviceImg: AppServiceImg.giftCards),

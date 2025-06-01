@@ -2050,6 +2050,398 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => Container(
+        height: MediaQuery.of(context).size.height * 0.85,
+        decoration: BoxDecoration(
+          color: Colors.grey[900],
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+        ),
+        child: Column(
+          children: [
+            // Header
+            Container(
+              padding: EdgeInsets.all(16.w),
+              decoration: BoxDecoration(
+                border: Border(bottom: BorderSide(color: Colors.grey[700]!)),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.more_horiz, color: Colors.blue, size: 24.sp),
+                  SizedBox(width: 12.w),
+                  Text(
+                    'Chart Options',
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 20.sp,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Spacer(),
+                  IconButton(
+                    icon: Icon(Icons.close, color: Colors.white),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
+              ),
+            ),
+            
+            // Options content
+            Expanded(
+              child: SingleChildScrollView(
+                padding: EdgeInsets.all(16.w),
+                child: Column(
+                  children: [
+                    // Chart Settings Section
+                    _buildOptionsSection(
+                      'Chart Settings',
+                      Icons.settings,
+                      Colors.blue,
+                      [
+                        _buildOptionItem(
+                          Icons.refresh,
+                          'Reset View',
+                          'Reset zoom and pan to default',
+                          () {
+                            Navigator.pop(context);
+                            _resetZoom();
+                            HapticFeedback.lightImpact();
+                          },
+                        ),
+                        _buildOptionItem(
+                          Icons.grid_on,
+                          'Toggle Grid',
+                          'Show/hide chart grid lines',
+                          () {
+                            // Toggle grid functionality
+                            HapticFeedback.lightImpact();
+                          },
+                        ),
+                        _buildOptionItem(
+                          Icons.color_lens,
+                          'Chart Theme',
+                          'Switch between light and dark themes',
+                          () => _showThemeSelector(),
+                        ),
+                        _buildOptionItem(
+                          Icons.speed,
+                          'Chart Speed',
+                          'Adjust real-time update frequency',
+                          () => _showSpeedSelector(),
+                        ),
+                      ],
+                    ),
+                    
+                    SizedBox(height: 20.h),
+                    
+                    // Save & Export Section
+                    _buildOptionsSection(
+                      'Save & Export',
+                      Icons.save,
+                      Colors.green,
+                      [
+                        _buildOptionItem(
+                          Icons.bookmark_add,
+                          'Save Chart Layout',
+                          'Save current indicators and drawings',
+                          () => _saveChartLayout(),
+                        ),
+                        _buildOptionItem(
+                          Icons.download,
+                          'Export Chart',
+                          'Save chart as image',
+                          () => _exportChart(),
+                        ),
+                        _buildOptionItem(
+                          Icons.share,
+                          'Share Chart',
+                          'Share chart with others',
+                          () => _shareChart(),
+                        ),
+                        _buildOptionItem(
+                          Icons.print,
+                          'Print Chart',
+                          'Print current chart view',
+                          () => _printChart(),
+                        ),
+                      ],
+                    ),
+                    
+                    SizedBox(height: 20.h),
+                    
+                    // Alerts & Notifications Section
+                    _buildOptionsSection(
+                      'Alerts & Notifications',
+                      Icons.notifications,
+                      Colors.orange,
+                      [
+                        _buildOptionItem(
+                          Icons.add_alert,
+                          'Price Alert',
+                          'Set price level alerts',
+                          () => _showPriceAlertDialog(),
+                        ),
+                        _buildOptionItem(
+                          Icons.trending_up,
+                          'Technical Alerts',
+                          'Get notified on indicator signals',
+                          () => _showTechnicalAlertsDialog(),
+                        ),
+                        _buildOptionItem(
+                          Icons.volume_up,
+                          'Volume Alerts',
+                          'Set volume spike notifications',
+                          () => _showVolumeAlertsDialog(),
+                        ),
+                        _buildOptionItem(
+                          Icons.schedule,
+                          'Time-based Alerts',
+                          'Set market open/close reminders',
+                          () => _showTimeAlertsDialog(),
+                        ),
+                      ],
+                    ),
+                    
+                    SizedBox(height: 20.h),
+                    
+                    // Display Options Section
+                    _buildOptionsSection(
+                      'Display Options',
+                      Icons.visibility,
+                      Colors.purple,
+                      [
+                        _buildOptionItem(
+                          Icons.fullscreen,
+                          'Fullscreen Mode',
+                          'Hide UI elements for clean view',
+                          () => _toggleFullscreen(),
+                        ),
+                        _buildOptionItem(
+                          Icons.picture_in_picture,
+                          'Picture in Picture',
+                          'Enable floating chart window',
+                          () => _enablePictureInPicture(),
+                        ),
+                        _buildOptionItem(
+                          Icons.aspect_ratio,
+                          'Chart Ratio',
+                          'Adjust chart aspect ratio',
+                          () => _showRatioSelector(),
+                        ),
+                        _buildOptionItem(
+                          Icons.format_size,
+                          'Text Size',
+                          'Adjust labels and text size',
+                          () => _showTextSizeSelector(),
+                        ),
+                      ],
+                    ),
+                    
+                    SizedBox(height: 20.h),
+                    
+                    // Data & Tools Section
+                    _buildOptionsSection(
+                      'Data & Tools',
+                      Icons.data_usage,
+                      Colors.teal,
+                      [
+                        _buildOptionItem(
+                          Icons.download_for_offline,
+                          'Download Data',
+                          'Export price data to CSV',
+                          () => _downloadPriceData(),
+                        ),
+                        _buildOptionItem(
+                          Icons.calculate,
+                          'Calculator',
+                          'Open trading calculator',
+                          () => _showTradingCalculator(),
+                        ),
+                        _buildOptionItem(
+                          Icons.compare,
+                          'Compare Stocks',
+                          'Add stocks for comparison',
+                          () => _showStockComparison(),
+                        ),
+                        _buildOptionItem(
+                          Icons.history,
+                          'Chart History',
+                          'View previously saved charts',
+                          () => _showChartHistory(),
+                        ),
+                      ],
+                    ),
+                    
+                    SizedBox(height: 20.h),
+                    
+                    // Help & Info Section
+                    _buildOptionsSection(
+                      'Help & Information',
+                      Icons.help,
+                      Colors.indigo,
+                      [
+                        _buildOptionItem(
+                          Icons.help_outline,
+                          'Chart Guide',
+                          'Learn how to use chart features',
+                          () => _showChartGuide(),
+                        ),
+                        _buildOptionItem(
+                          Icons.keyboard,
+                          'Keyboard Shortcuts',
+                          'View available shortcuts',
+                          () => _showKeyboardShortcuts(),
+                        ),
+                        _buildOptionItem(
+                          Icons.info_outline,
+                          'Chart Info',
+                          'Technical details about this chart',
+                          () => _showChartInfo(),
+                        ),
+                        _buildOptionItem(
+                          Icons.feedback,
+                          'Send Feedback',
+                          'Report issues or suggestions',
+                          () => _showFeedbackDialog(),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildOptionsSection(
+    String title,
+    IconData icon,
+    Color color,
+    List<Widget> items,
+  ) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.grey[800],
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: Colors.grey[700]!),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Section header
+          Container(
+            padding: EdgeInsets.all(16.w),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(12.r)),
+              border: Border(bottom: BorderSide(color: Colors.grey[700]!)),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: EdgeInsets.all(8.w),
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(8.r),
+                  ),
+                  child: Icon(icon, color: color, size: 20.sp),
+                ),
+                SizedBox(width: 12.w),
+                Text(
+                  title,
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          
+          // Section items
+          Column(children: items),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOptionItem(
+    IconData icon,
+    String title,
+    String subtitle,
+    VoidCallback onTap,
+  ) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(8.r),
+        child: Container(
+          padding: EdgeInsets.all(16.w),
+          decoration: BoxDecoration(
+            border: Border(
+              bottom: BorderSide(
+                color: Colors.grey[700]!.withOpacity(0.5),
+                width: 0.5,
+              ),
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: EdgeInsets.all(8.w),
+                decoration: BoxDecoration(
+                  color: Colors.grey[700],
+                  borderRadius: BorderRadius.circular(8.r),
+                ),
+                child: Icon(icon, color: Colors.white, size: 20.sp),
+              ),
+              SizedBox(width: 16.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    SizedBox(height: 2.h),
+                    Text(
+                      subtitle,
+                      style: GoogleFonts.inter(
+                        color: Colors.grey[400],
+                        fontSize: 12.sp,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.chevron_right,
+                color: Colors.grey[400],
+                size: 20.sp,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Theme selector dialog
+  void _showThemeSelector() {
+    Navigator.pop(context);
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
       builder: (context) => Container(
         height: 300.h,
         decoration: BoxDecoration(
@@ -2060,27 +2452,35 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
           children: [
             Container(
               padding: EdgeInsets.all(16.w),
-              child: Text(
-                'More Options',
-                style: GoogleFonts.inter(
-                  color: Colors.white,
-                  fontSize: 18.sp,
-                  fontWeight: FontWeight.bold,
-                ),
+              decoration: BoxDecoration(
+                border: Border(bottom: BorderSide(color: Colors.grey[700]!)),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.color_lens, color: Colors.blue, size: 24.sp),
+                  SizedBox(width: 12.w),
+                  Text(
+                    'Chart Theme',
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 18.sp,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Spacer(),
+                  IconButton(
+                    icon: Icon(Icons.close, color: Colors.white),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
               ),
             ),
             Expanded(
               child: ListView(
-                padding: EdgeInsets.all(16.w),
                 children: [
-                  ListTile(
-                    leading: Icon(Icons.refresh, color: Colors.white),
-                    title: Text('Reset View', style: TextStyle(color: Colors.white)),
-                    onTap: () {
-                      Navigator.pop(context);
-                      _resetZoom();
-                    },
-                  ),
+                  _buildThemeOption('Dark Theme', 'Current theme', true, Icons.dark_mode),
+                  _buildThemeOption('Light Theme', 'Switch to light mode', false, Icons.light_mode),
+                  _buildThemeOption('Auto Theme', 'Follow system settings', false, Icons.brightness_auto),
                 ],
               ),
             ),
@@ -2088,6 +2488,378 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
         ),
       ),
     );
+  }
+
+  Widget _buildThemeOption(String title, String subtitle, bool isSelected, IconData icon) {
+    return ListTile(
+      leading: Container(
+        padding: EdgeInsets.all(8.w),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.blue.withOpacity(0.2) : Colors.grey[700],
+          borderRadius: BorderRadius.circular(8.r),
+        ),
+        child: Icon(icon, color: isSelected ? Colors.blue : Colors.white, size: 20.sp),
+      ),
+      title: Text(title, style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+      subtitle: Text(subtitle, style: TextStyle(color: Colors.grey[400], fontSize: 12.sp)),
+      trailing: isSelected ? Icon(Icons.check, color: Colors.blue) : null,
+      onTap: () {
+        HapticFeedback.lightImpact();
+        Navigator.pop(context);
+        // Implement theme switching
+      },
+    );
+  }
+
+  // Speed selector dialog
+  void _showSpeedSelector() {
+    Navigator.pop(context);
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        height: 250.h,
+        decoration: BoxDecoration(
+          color: Colors.grey[900],
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+        ),
+        child: Column(
+          children: [
+            Container(
+              padding: EdgeInsets.all(16.w),
+              decoration: BoxDecoration(
+                border: Border(bottom: BorderSide(color: Colors.grey[700]!)),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.speed, color: Colors.blue, size: 24.sp),
+                  SizedBox(width: 12.w),
+                  Text(
+                    'Update Frequency',
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 18.sp,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Spacer(),
+                  IconButton(
+                    icon: Icon(Icons.close, color: Colors.white),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: ListView(
+                children: [
+                  _buildSpeedOption('Real-time', '1 second updates', false),
+                  _buildSpeedOption('Fast', '5 second updates', true),
+                  _buildSpeedOption('Normal', '15 second updates', false),
+                  _buildSpeedOption('Slow', '30 second updates', false),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSpeedOption(String title, String subtitle, bool isSelected) {
+    return ListTile(
+      title: Text(title, style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+      subtitle: Text(subtitle, style: TextStyle(color: Colors.grey[400], fontSize: 12.sp)),
+      trailing: isSelected ? Icon(Icons.check, color: Colors.blue) : null,
+      onTap: () {
+        HapticFeedback.lightImpact();
+        Navigator.pop(context);
+        // Implement speed change
+      },
+    );
+  }
+
+  // Price Alert Dialog
+  void _showPriceAlertDialog() {
+    Navigator.pop(context);
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.grey[900],
+        title: Row(
+          children: [
+            Icon(Icons.add_alert, color: Colors.orange, size: 24.sp),
+            SizedBox(width: 12.w),
+            Text(
+              'Price Alert',
+              style: GoogleFonts.inter(color: Colors.white, fontSize: 18.sp),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              decoration: InputDecoration(
+                labelText: 'Alert Price',
+                labelStyle: TextStyle(color: Colors.grey[400]),
+                border: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.grey[600]!),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.grey[600]!),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.blue),
+                ),
+              ),
+              style: TextStyle(color: Colors.white),
+              keyboardType: TextInputType.number,
+            ),
+            SizedBox(height: 16.h),
+            DropdownButtonFormField<String>(
+              decoration: InputDecoration(
+                labelText: 'Alert Type',
+                labelStyle: TextStyle(color: Colors.grey[400]),
+                border: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.grey[600]!),
+                ),
+              ),
+              dropdownColor: Colors.grey[800],
+              style: TextStyle(color: Colors.white),
+              items: ['Above Price', 'Below Price', 'Price Change %'].map((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value),
+                );
+              }).toList(),
+              onChanged: (value) {},
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Cancel', style: TextStyle(color: Colors.grey[400])),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
+            onPressed: () {
+              Navigator.pop(context);
+              HapticFeedback.lightImpact();
+              // Implement alert creation
+            },
+            child: Text('Create Alert', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Implement other functionality methods
+  void _saveChartLayout() {
+    Navigator.pop(context);
+    HapticFeedback.lightImpact();
+    // Show success message
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Chart layout saved successfully'),
+        backgroundColor: Colors.green,
+      ),
+    );
+  }
+
+  void _exportChart() {
+    Navigator.pop(context);
+    HapticFeedback.lightImpact();
+    // Implement chart export
+  }
+
+  void _shareChart() {
+    Navigator.pop(context);
+    HapticFeedback.lightImpact();
+    // Implement chart sharing
+  }
+
+  void _printChart() {
+    Navigator.pop(context);
+    HapticFeedback.lightImpact();
+    // Implement chart printing
+  }
+
+  void _showTechnicalAlertsDialog() {
+    Navigator.pop(context);
+    // Implement technical alerts
+  }
+
+  void _showVolumeAlertsDialog() {
+    Navigator.pop(context);
+    // Implement volume alerts
+  }
+
+  void _showTimeAlertsDialog() {
+    Navigator.pop(context);
+    // Implement time alerts
+  }
+
+  void _toggleFullscreen() {
+    Navigator.pop(context);
+    HapticFeedback.lightImpact();
+    // Implement fullscreen toggle
+  }
+
+  void _enablePictureInPicture() {
+    Navigator.pop(context);
+    HapticFeedback.lightImpact();
+    // Implement PiP mode
+  }
+
+  void _showRatioSelector() {
+    Navigator.pop(context);
+    // Show ratio selector
+  }
+
+  void _showTextSizeSelector() {
+    Navigator.pop(context);
+    // Show text size selector
+  }
+
+  void _downloadPriceData() {
+    Navigator.pop(context);
+    HapticFeedback.lightImpact();
+    // Implement data download
+  }
+
+  void _showTradingCalculator() {
+    Navigator.pop(context);
+    // Show trading calculator
+  }
+
+  void _showStockComparison() {
+    Navigator.pop(context);
+    // Show stock comparison
+  }
+
+  void _showChartHistory() {
+    Navigator.pop(context);
+    // Show chart history
+  }
+
+  void _showChartGuide() {
+    Navigator.pop(context);
+    // Show chart guide
+  }
+
+  void _showKeyboardShortcuts() {
+    Navigator.pop(context);
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => Container(
+        height: MediaQuery.of(context).size.height * 0.7,
+        decoration: BoxDecoration(
+          color: Colors.grey[900],
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+        ),
+        child: Column(
+          children: [
+            Container(
+              padding: EdgeInsets.all(16.w),
+              decoration: BoxDecoration(
+                border: Border(bottom: BorderSide(color: Colors.grey[700]!)),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.keyboard, color: Colors.indigo, size: 24.sp),
+                  SizedBox(width: 12.w),
+                  Text(
+                    'Keyboard Shortcuts',
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 18.sp,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Spacer(),
+                  IconButton(
+                    icon: Icon(Icons.close, color: Colors.white),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: ListView(
+                padding: EdgeInsets.all(16.w),
+                children: [
+                  _buildShortcutItem('Space', 'Pan chart'),
+                  _buildShortcutItem('Scroll', 'Zoom in/out'),
+                  _buildShortcutItem('R', 'Reset view'),
+                  _buildShortcutItem('T', 'Toggle trendline tool'),
+                  _buildShortcutItem('H', 'Toggle horizontal line'),
+                  _buildShortcutItem('V', 'Toggle vertical line'),
+                  _buildShortcutItem('M', 'Toggle measure tool'),
+                  _buildShortcutItem('Esc', 'Deselect tool'),
+                  _buildShortcutItem('Del', 'Delete selected drawing'),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildShortcutItem(String key, String description) {
+    return Container(
+      margin: EdgeInsets.only(bottom: 12.h),
+      padding: EdgeInsets.all(12.w),
+      decoration: BoxDecoration(
+        color: Colors.grey[800],
+        borderRadius: BorderRadius.circular(8.r),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+            decoration: BoxDecoration(
+              color: Colors.grey[700],
+              borderRadius: BorderRadius.circular(6.r),
+              border: Border.all(color: Colors.grey[600]!),
+            ),
+            child: Text(
+              key,
+              style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 12.sp,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          SizedBox(width: 16.w),
+          Expanded(
+            child: Text(
+              description,
+              style: GoogleFonts.inter(
+                color: Colors.grey[300],
+                fontSize: 14.sp,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showChartInfo() {
+    Navigator.pop(context);
+    // Show chart technical info
+  }
+
+  void _showFeedbackDialog() {
+    Navigator.pop(context);
+    // Show feedback form
   }
 
   void _showStockInfoBottomSheet() {
