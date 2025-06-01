@@ -3966,224 +3966,228 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
 
   void _showAddStockToWatchlistDialog(Watchlist watchlist) {
     final searchController = TextEditingController();
+    final stockCubit = context.read<StockCubit>(); // Get the cubit instance
     
     showDialog(
       context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) => Dialog(
-          backgroundColor: Colors.transparent,
-          child: Container(
-            width: double.infinity,
-            constraints: BoxConstraints(maxHeight: 500.h),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  const Color(0xFF2A2A3E),
-                  const Color(0xFF1F1F35),
-                ],
+      builder: (context) => BlocProvider.value(
+        value: stockCubit, // Provide the cubit to the dialog context
+        child: StatefulBuilder(
+          builder: (context, setState) => Dialog(
+            backgroundColor: Colors.transparent,
+            child: Container(
+              width: double.infinity,
+              constraints: BoxConstraints(maxHeight: 500.h),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    const Color(0xFF2A2A3E),
+                    const Color(0xFF1F1F35),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(24.r),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.1),
+                ),
               ),
-              borderRadius: BorderRadius.circular(24.r),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.1),
-              ),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Header
-                Container(
-                  padding: EdgeInsets.all(24.w),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        const Color(0xFF4A90E2).withValues(alpha: 0.2),
-                        const Color(0xFF357ABD).withValues(alpha: 0.2),
-                      ],
-                    ),
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.add_circle,
-                        color: const Color(0xFF4A90E2),
-                        size: 24.sp,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Header
+                  Container(
+                    padding: EdgeInsets.all(24.w),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          const Color(0xFF4A90E2).withValues(alpha: 0.2),
+                          const Color(0xFF357ABD).withValues(alpha: 0.2),
+                        ],
                       ),
-                      SizedBox(width: 12.w),
-                      Expanded(
-                        child: Text(
-                          'Add Stock to ${watchlist.name}',
-                          style: GoogleFonts.inter(
-                            color: Colors.white,
-                            fontSize: 18.sp,
-                            fontWeight: FontWeight.w700,
+                      borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.add_circle,
+                          color: const Color(0xFF4A90E2),
+                          size: 24.sp,
+                        ),
+                        SizedBox(width: 12.w),
+                        Expanded(
+                          child: Text(
+                            'Add Stock to ${watchlist.name}',
+                            style: GoogleFonts.inter(
+                              color: Colors.white,
+                              fontSize: 18.sp,
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
                         ),
-                      ),
-                      IconButton(
-                        onPressed: () => Navigator.pop(context),
-                        icon: Icon(
-                          Icons.close,
+                        IconButton(
+                          onPressed: () => Navigator.pop(context),
+                          icon: Icon(
+                            Icons.close,
+                            color: Colors.grey[400],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Search
+                  Padding(
+                    padding: EdgeInsets.all(16.w),
+                    child: TextField(
+                      controller: searchController,
+                      style: GoogleFonts.inter(color: Colors.white),
+                      decoration: InputDecoration(
+                        hintText: 'Search stocks by symbol or name',
+                        hintStyle: GoogleFonts.inter(color: Colors.grey[400]),
+                        filled: true,
+                        fillColor: Colors.white.withValues(alpha: 0.1),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16.r),
+                          borderSide: BorderSide.none,
+                        ),
+                        prefixIcon: Icon(
+                          Icons.search,
                           color: Colors.grey[400],
                         ),
                       ),
-                    ],
-                  ),
-                ),
-                // Search
-                Padding(
-                  padding: EdgeInsets.all(16.w),
-                  child: TextField(
-                    controller: searchController,
-                    style: GoogleFonts.inter(color: Colors.white),
-                    decoration: InputDecoration(
-                      hintText: 'Search stocks by symbol or name',
-                      hintStyle: GoogleFonts.inter(color: Colors.grey[400]),
-                      filled: true,
-                      fillColor: Colors.white.withValues(alpha: 0.1),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(16.r),
-                        borderSide: BorderSide.none,
-                      ),
-                      prefixIcon: Icon(
-                        Icons.search,
-                        color: Colors.grey[400],
-                      ),
+                      onChanged: (query) {
+                        if (query.isNotEmpty) {
+                          context.read<StockCubit>().searchStocks(query);
+                        }
+                      },
                     ),
-                    onChanged: (query) {
-                      if (query.isNotEmpty) {
-                        context.read<StockCubit>().searchStocks(query);
-                      }
-                    },
                   ),
-                ),
-                // Search Results
-                Flexible(
-                  child: BlocBuilder<StockCubit, StockState>(
-                    builder: (context, state) {
-                      if (state is StockSearchLoaded) {
-                        return ListView.builder(
-                          padding: EdgeInsets.symmetric(horizontal: 16.w),
-                          shrinkWrap: true,
-                          itemCount: state.searchResults.length,
-                          itemBuilder: (context, index) {
-                            final stock = state.searchResults[index];
-                            final isAlreadyAdded = watchlist.symbols.contains(stock.symbol);
-                            
-                            return Container(
-                              margin: EdgeInsets.only(bottom: 8.h),
-                              padding: EdgeInsets.all(12.w),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.05),
-                                borderRadius: BorderRadius.circular(12.r),
-                                border: Border.all(
-                                  color: Colors.white.withValues(alpha: 0.1),
+                  // Search Results - Now the BlocBuilder has access to StockCubit
+                  Flexible(
+                    child: BlocBuilder<StockCubit, StockState>(
+                      builder: (context, state) {
+                        if (state is StockSearchLoaded) {
+                          return ListView.builder(
+                            padding: EdgeInsets.symmetric(horizontal: 16.w),
+                            shrinkWrap: true,
+                            itemCount: state.searchResults.length,
+                            itemBuilder: (context, index) {
+                              final stock = state.searchResults[index];
+                              final isAlreadyAdded = watchlist.symbols.contains(stock.symbol);
+                              
+                              return Container(
+                                margin: EdgeInsets.only(bottom: 8.h),
+                                padding: EdgeInsets.all(12.w),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.05),
+                                  borderRadius: BorderRadius.circular(12.r),
+                                  border: Border.all(
+                                    color: Colors.white.withValues(alpha: 0.1),
+                                  ),
                                 ),
-                              ),
-                              child: Row(
-                                children: [
-                                  Container(
-                                    width: 40.w,
-                                    height: 40.h,
-                                    decoration: BoxDecoration(
-                                      gradient: LinearGradient(
-                                        colors: [
-                                          const Color(0xFF4A90E2).withValues(alpha: 0.3),
-                                          const Color(0xFF357ABD).withValues(alpha: 0.3),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      width: 40.w,
+                                      height: 40.h,
+                                      decoration: BoxDecoration(
+                                        gradient: LinearGradient(
+                                          colors: [
+                                            const Color(0xFF4A90E2).withValues(alpha: 0.3),
+                                            const Color(0xFF357ABD).withValues(alpha: 0.3),
+                                          ],
+                                        ),
+                                        borderRadius: BorderRadius.circular(10.r),
+                                      ),
+                                      child: Center(
+                                        child: Text(
+                                          stock.symbol[0],
+                                          style: GoogleFonts.inter(
+                                            color: const Color(0xFF4A90E2),
+                                            fontSize: 16.sp,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    SizedBox(width: 12.w),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            stock.symbol,
+                                            style: GoogleFonts.inter(
+                                              color: Colors.white,
+                                              fontSize: 16.sp,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                          Text(
+                                            stock.name,
+                                            style: GoogleFonts.inter(
+                                              color: Colors.grey[400],
+                                              fontSize: 12.sp,
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
                                         ],
                                       ),
-                                      borderRadius: BorderRadius.circular(10.r),
                                     ),
-                                    child: Center(
+                                    ElevatedButton(
+                                      onPressed: isAlreadyAdded
+                                          ? null
+                                          : () {
+                                              context.read<StockCubit>().addToWatchlist(
+                                                watchlist.id,
+                                                stock.symbol,
+                                              );
+                                              Navigator.pop(context);
+                                            },
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: isAlreadyAdded
+                                            ? Colors.grey[600]
+                                            : const Color(0xFF4A90E2),
+                                        foregroundColor: Colors.white,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(8.r),
+                                        ),
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: 12.w,
+                                          vertical: 8.h,
+                                        ),
+                                      ),
                                       child: Text(
-                                        stock.symbol[0],
+                                        isAlreadyAdded ? 'Added' : 'Add',
                                         style: GoogleFonts.inter(
-                                          color: const Color(0xFF4A90E2),
-                                          fontSize: 16.sp,
-                                          fontWeight: FontWeight.w700,
+                                          fontSize: 12.sp,
+                                          fontWeight: FontWeight.w600,
                                         ),
                                       ),
                                     ),
-                                  ),
-                                  SizedBox(width: 12.w),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          stock.symbol,
-                                          style: GoogleFonts.inter(
-                                            color: Colors.white,
-                                            fontSize: 16.sp,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                        Text(
-                                          stock.name,
-                                          style: GoogleFonts.inter(
-                                            color: Colors.grey[400],
-                                            fontSize: 12.sp,
-                                          ),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  ElevatedButton(
-                                    onPressed: isAlreadyAdded
-                                        ? null
-                                        : () {
-                                            context.read<StockCubit>().addToWatchlist(
-                                              watchlist.id,
-                                              stock.symbol,
-                                            );
-                                            Navigator.pop(context);
-                                          },
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: isAlreadyAdded
-                                          ? Colors.grey[600]
-                                          : const Color(0xFF4A90E2),
-                                      foregroundColor: Colors.white,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(8.r),
-                                      ),
-                                      padding: EdgeInsets.symmetric(
-                                        horizontal: 12.w,
-                                        vertical: 8.h,
-                                      ),
-                                    ),
-                                    child: Text(
-                                      isAlreadyAdded ? 'Added' : 'Add',
-                                      style: GoogleFonts.inter(
-                                        fontSize: 12.sp,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                        );
-                      }
-                      return Container(
-                        padding: EdgeInsets.all(32.w),
-                        child: Text(
-                          'Search for stocks to add to your watchlist',
-                          style: GoogleFonts.inter(
-                            color: Colors.grey[400],
-                            fontSize: 14.sp,
+                                  ],
+                                ),
+                              );
+                            },
+                          );
+                        }
+                        return Container(
+                          padding: EdgeInsets.all(32.w),
+                          child: Text(
+                            'Search for stocks to add to your watchlist',
+                            style: GoogleFonts.inter(
+                              color: Colors.grey[400],
+                              fontSize: 14.sp,
+                            ),
+                            textAlign: TextAlign.center,
                           ),
-                          textAlign: TextAlign.center,
-                        ),
-                      );
-                    },
+                        );
+                      },
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

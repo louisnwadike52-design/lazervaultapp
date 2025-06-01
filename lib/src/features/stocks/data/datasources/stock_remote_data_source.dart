@@ -1,5 +1,6 @@
 import '../models/stock_model.dart';
 import '../../domain/entities/stock_entity.dart';
+import '../../domain/entities/price_point.dart';
 
 abstract class IStockRemoteDataSource {
   Future<List<StockModel>> getStocks({
@@ -144,7 +145,11 @@ class StockRemoteDataSourceImpl implements IStockRemoteDataSource {
         sector: 'Technology',
         industry: 'Consumer Electronics',
         logoUrl: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg',
-        priceHistory: _generateMockPriceHistory('AAPL'),
+        priceHistory: _generateMockPriceHistory('AAPL').map((p) => PricePoint(
+          timestamp: p.timestamp,
+          price: p.close,
+          volume: p.volume,
+        )).toList(),
         lastUpdated: DateTime.now(),
         weekHigh52: 180.00,
         weekLow52: 150.00,
@@ -171,7 +176,11 @@ class StockRemoteDataSourceImpl implements IStockRemoteDataSource {
         sector: 'Technology',
         industry: 'Internet Content & Information',
         logoUrl: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg',
-        priceHistory: _generateMockPriceHistory('GOOGL'),
+        priceHistory: _generateMockPriceHistory('GOOGL').map((p) => PricePoint(
+          timestamp: p.timestamp,
+          price: p.close,
+          volume: p.volume,
+        )).toList(),
         lastUpdated: DateTime.now(),
         weekHigh52: 145.00,
         weekLow52: 120.00,
@@ -198,7 +207,11 @@ class StockRemoteDataSourceImpl implements IStockRemoteDataSource {
         sector: 'Technology',
         industry: 'Software—Infrastructure',
         logoUrl: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/microsoftsqlserver/microsoftsqlserver-plain.svg',
-        priceHistory: _generateMockPriceHistory('MSFT'),
+        priceHistory: _generateMockPriceHistory('MSFT').map((p) => PricePoint(
+          timestamp: p.timestamp,
+          price: p.close,
+          volume: p.volume,
+        )).toList(),
         lastUpdated: DateTime.now(),
         weekHigh52: 385.00,
         weekLow52: 320.00,
@@ -225,7 +238,11 @@ class StockRemoteDataSourceImpl implements IStockRemoteDataSource {
         sector: 'Consumer Cyclical',
         industry: 'Auto Manufacturers',
         logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/b/bb/Tesla_T_symbol.svg',
-        priceHistory: _generateMockPriceHistory('TSLA'),
+        priceHistory: _generateMockPriceHistory('TSLA').map((p) => PricePoint(
+          timestamp: p.timestamp,
+          price: p.close,
+          volume: p.volume,
+        )).toList(),
         lastUpdated: DateTime.now(),
         weekHigh52: 280.00,
         weekLow52: 200.00,
@@ -252,7 +269,11 @@ class StockRemoteDataSourceImpl implements IStockRemoteDataSource {
         sector: 'Technology',
         industry: 'Semiconductors',
         logoUrl: 'https://upload.wikimedia.org/wikipedia/sco/2/21/Nvidia_logo.svg',
-        priceHistory: _generateMockPriceHistory('NVDA'),
+        priceHistory: _generateMockPriceHistory('NVDA').map((p) => PricePoint(
+          timestamp: p.timestamp,
+          price: p.close,
+          volume: p.volume,
+        )).toList(),
         lastUpdated: DateTime.now(),
         weekHigh52: 500.00,
         weekLow52: 400.00,
