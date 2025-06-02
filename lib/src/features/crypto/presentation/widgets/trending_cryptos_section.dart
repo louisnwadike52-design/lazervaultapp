@@ -87,7 +87,7 @@ class TrendingCryptosSection extends StatelessWidget {
               itemCount: cryptos.length,
               itemBuilder: (context, index) {
                 final crypto = cryptos[index];
-                return Container(
+    return Container(
                   width: 140.w,
                   margin: EdgeInsets.only(right: 12.w),
                   child: _buildTrendingCard(crypto),

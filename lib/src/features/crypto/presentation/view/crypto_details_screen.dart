@@ -92,8 +92,8 @@ class _CryptoDetailsScreenState extends State<CryptoDetailsScreen>
           ),
         ),
         child: SafeArea(
-          child: Column(
-            children: [
+                child: Column(
+                  children: [
               _buildHeader(),
               _buildTabBar(),
               Expanded(
@@ -123,7 +123,7 @@ class _CryptoDetailsScreenState extends State<CryptoDetailsScreen>
             Container(
               height: 40.h,
               width: 40.w,
-              decoration: BoxDecoration(
+      decoration: BoxDecoration(
                 color: Colors.grey[900],
                 borderRadius: BorderRadius.circular(12.r),
               ),
@@ -133,55 +133,55 @@ class _CryptoDetailsScreenState extends State<CryptoDetailsScreen>
               ),
             ),
             SizedBox(width: 16.w),
-            Container(
+              Container(
               width: 40.w,
               height: 40.h,
-              decoration: BoxDecoration(
+                decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [Colors.orange, Colors.orange.withOpacity(0.7)],
                 ),
                 borderRadius: BorderRadius.circular(20.r),
-              ),
-              child: Icon(
-                Icons.currency_bitcoin,
+                ),
+                child: Icon(
+                  Icons.currency_bitcoin,
                 color: Colors.white,
                 size: 24.sp,
+                ),
               ),
-            ),
             SizedBox(width: 12.w),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
-                    children: [
-                      Text(
+                  children: [
+                    Text(
                         widget.crypto.symbol.toUpperCase(),
-                        style: GoogleFonts.inter(
-                          color: Colors.white,
+                      style: GoogleFonts.inter(
+                        color: Colors.white,
                           fontSize: 20.sp,
                           fontWeight: FontWeight.w700,
-                        ),
                       ),
+                    ),
                       SizedBox(width: 8.w),
-                      Text(
+                    Text(
                         '• ${widget.crypto.name}',
-                        style: GoogleFonts.inter(
+                      style: GoogleFonts.inter(
                           color: Colors.grey[400],
-                          fontSize: 14.sp,
-                        ),
+                        fontSize: 14.sp,
                       ),
-                    ],
+                    ),
+                  ],
                   ),
                   Text(
                     'Rank #${widget.crypto.marketCapRank}',
                     style: GoogleFonts.inter(
                       color: Colors.grey[500],
                       fontSize: 12.sp,
-                    ),
-                  ),
-                ],
+                ),
               ),
+            ],
+          ),
             ),
             IconButton(
               onPressed: _toggleWatchlist,
@@ -293,11 +293,11 @@ class _CryptoDetailsScreenState extends State<CryptoDetailsScreen>
                 child: Text(
                   '${widget.crypto.priceChangePercentage24h >= 0 ? '+' : ''}${widget.crypto.priceChangePercentage24h.toStringAsFixed(2)}%',
                   style: GoogleFonts.inter(
-                    color: isPositive ? Colors.green : Colors.red,
+                  color: isPositive ? Colors.green : Colors.red,
                     fontSize: 12.sp,
                     fontWeight: FontWeight.w600,
-                  ),
                 ),
+              ),
               ),
               SizedBox(width: 8.w),
               Text(
@@ -526,15 +526,15 @@ class _CryptoDetailsScreenState extends State<CryptoDetailsScreen>
                 border: Border.all(color: Colors.red, width: 2),
                 borderRadius: BorderRadius.circular(25.r),
               ),
-              child: ElevatedButton(
+          child: ElevatedButton(
                 onPressed: () => Get.toNamed(AppRoutes.cryptoTrade, arguments: {
                   'crypto': widget.crypto,
                   'tradeType': 'sell',
                 }),
-                style: ElevatedButton.styleFrom(
+            style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.transparent,
                   elevation: 0,
-                  shape: RoundedRectangleBorder(
+              shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(25.r),
                   ),
                 ),
@@ -567,48 +567,48 @@ class _CryptoDetailsScreenState extends State<CryptoDetailsScreen>
                   ),
                 ),
                 child: Text(
-                  'Buy',
-                  style: GoogleFonts.inter(
-                    color: Colors.white,
+                    'Buy',
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
                     fontSize: 16.sp,
                     fontWeight: FontWeight.w600,
+                    ),
                   ),
-                ),
-              ),
-            ),
+          ),
+        ),
           ),
           SizedBox(width: 12.w),
-          Expanded(
+        Expanded(
             child: Container(
               height: 50.h,
               decoration: BoxDecoration(
                 border: Border.all(color: const Color(0xFF6C5CE7), width: 2),
                 borderRadius: BorderRadius.circular(25.r),
               ),
-              child: ElevatedButton(
+          child: ElevatedButton(
                 onPressed: () => Get.toNamed(AppRoutes.cryptoTrade, arguments: {
                   'crypto': widget.crypto,
                   'tradeType': 'swap',
                 }),
-                style: ElevatedButton.styleFrom(
+            style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.transparent,
                   elevation: 0,
-                  shape: RoundedRectangleBorder(
+              shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(25.r),
                   ),
                 ),
                 child: Text(
                   'Swap',
-                  style: GoogleFonts.inter(
+                    style: GoogleFonts.inter(
                     color: const Color(0xFF6C5CE7),
-                    fontSize: 16.sp,
+                      fontSize: 16.sp,
                     fontWeight: FontWeight.w600,
                   ),
-                ),
-              ),
-            ),
+                    ),
+                  ),
           ),
-        ],
+        ),
+      ],
       ),
     );
   }
@@ -626,11 +626,11 @@ class _CryptoDetailsScreenState extends State<CryptoDetailsScreen>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            children: [
-              Text(
-                'Market Stats',
-                style: GoogleFonts.inter(
-                  color: Colors.white,
+        children: [
+          Text(
+            'Market Stats',
+            style: GoogleFonts.inter(
+              color: Colors.white,
                   fontSize: 18.sp,
                   fontWeight: FontWeight.w700,
                 ),
@@ -992,7 +992,7 @@ class _CryptoDetailsScreenState extends State<CryptoDetailsScreen>
     Get.bottomSheet(
       Container(
         height: Get.height * 0.6,
-        decoration: BoxDecoration(
+          decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -1004,10 +1004,10 @@ class _CryptoDetailsScreenState extends State<CryptoDetailsScreen>
           borderRadius: BorderRadius.only(
             topLeft: Radius.circular(24.r),
             topRight: Radius.circular(24.r),
+            ),
           ),
-        ),
-        child: Column(
-          children: [
+          child: Column(
+            children: [
             Container(
               margin: EdgeInsets.only(top: 12.h),
               width: 40.w,
@@ -1038,7 +1038,7 @@ class _CryptoDetailsScreenState extends State<CryptoDetailsScreen>
                   return CheckboxListTile(
                     title: Text(
                       indicator,
-                      style: GoogleFonts.inter(color: Colors.white),
+                style: GoogleFonts.inter(color: Colors.white),
                     ),
                     value: isSelected,
                     onChanged: (value) {
@@ -1102,9 +1102,9 @@ class _CryptoDetailsScreenState extends State<CryptoDetailsScreen>
             ),
           ),
           SizedBox(height: 20.h),
-          Row(
-            children: [
-              Expanded(
+              Row(
+                children: [
+                  Expanded(
                 child: _buildSentimentItem('Bullish', '72%', Colors.green),
               ),
               SizedBox(width: 16.w),
@@ -1141,7 +1141,7 @@ class _CryptoDetailsScreenState extends State<CryptoDetailsScreen>
             borderRadius: BorderRadius.circular(30.r),
           ),
           child: Center(
-            child: Text(
+                      child: Text(
               percentage,
               style: GoogleFonts.inter(
                 color: color,
@@ -1154,12 +1154,12 @@ class _CryptoDetailsScreenState extends State<CryptoDetailsScreen>
         SizedBox(height: 8.h),
         Text(
           label,
-          style: GoogleFonts.inter(
-            color: Colors.white,
+                        style: GoogleFonts.inter(
+                          color: Colors.white,
             fontSize: 12.sp,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
       ],
     );
   }
@@ -1205,21 +1205,21 @@ class _CryptoDetailsScreenState extends State<CryptoDetailsScreen>
             children: [
               Text(
                 indicator,
-                style: GoogleFonts.inter(
-                  color: Colors.white,
+                        style: GoogleFonts.inter(
+                          color: Colors.white,
                   fontSize: 14.sp,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
               Text(
                 value,
                 style: GoogleFonts.inter(
                   color: Colors.grey[400],
                   fontSize: 12.sp,
-                ),
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
           Container(
             padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
             decoration: BoxDecoration(
