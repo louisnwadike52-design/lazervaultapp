@@ -88,5 +88,20 @@ abstract class AppRoutes {
   static const String stockOrders = '/stocks/orders';
   static const String stockNews = '/stocks/news';
   static const String stockChartDetails = '/stock-chart-details';
+  
+  // Crypto Routes
+  static const String cryptoDetails = '/crypto/details';
+  static const String buyCrypto = '/crypto/buy';
+  static const String cryptoTrade = '/crypto/trade';
+  static const String cryptoTradeAmount = '/crypto/trade/amount';
+  static const String cryptoTradePayment = '/crypto/trade/payment';
+  static const String cryptoTradeReview = '/crypto/trade/review';
+  static const String cryptoTradeReceipt = '/crypto/trade/receipt';
+  static const String cryptoPortfolio = '/crypto/portfolio';
+  static const String cryptoWatchlist = '/crypto/watchlist';
+  static const String cryptoOrders = '/crypto/orders';
+  static const String cryptoNews = '/crypto/news';
+  static const String cryptoChartDetails = '/crypto-chart-details';
+  
   static const String investments = '/investments';
 }

@@ -6,6 +6,8 @@ import 'package:lazervault/core/types/recipient.dart';
 import 'package:lazervault/core/types/transaction.dart';
 import 'package:lazervault/src/features/authentication/domain/entities/user.dart';
 import 'package:lazervault/src/features/authentication/presentation/views/email_sign_in_screen.dart';
+import 'package:lazervault/src/features/crypto/presentation/view/crypto_screen.dart';
+import 'package:lazervault/src/features/crypto/presentation/view/buy_crypto_screen.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/transfer_proof.dart';
 import 'package:lazervault/src/features/gift_cards/presentation/view/gift_cards_screen.dart';
 import 'package:lazervault/src/features/gift_cards/presentation/view/purchase_gift_card_screen.dart';
@@ -29,7 +31,6 @@ import 'package:lazervault/src/features/presentation/views/deposit/deposit_revie
 import 'package:lazervault/src/features/presentation/views/deposit/deposit_success_screen.dart';
 import 'package:lazervault/src/features/presentation/views/change_pin_screen.dart';
 import 'package:lazervault/src/features/presentation/views/create_new_password_screen.dart';
-import 'package:lazervault/src/features/presentation/views/crypto/crypto_screen.dart';
 import 'package:lazervault/src/features/presentation/views/dashboard/transaction_history_screen.dart';
 import 'package:lazervault/src/features/presentation/views/enable_biometric_access_screen.dart';
 import 'package:lazervault/src/features/presentation/views/face_scan_screen.dart';
@@ -82,6 +83,10 @@ import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_
 import 'package:lazervault/src/features/funds/cubit/transfer_cubit.dart';
 import 'package:lazervault/src/features/stocks/presentation/view/stock_chart_details_screen.dart';
 import '../investments/presentation/view/investments_screen.dart';
+import 'package:lazervault/src/features/crypto/cubit/crypto_cubit.dart';
+import 'package:lazervault/src/features/crypto/presentation/view/crypto_detail_screen.dart';
+import 'package:lazervault/src/features/crypto/domain/entities/crypto_entity.dart';
+import 'package:lazervault/src/features/crypto/presentation/view/crypto_chart_details_screen.dart';
 
 class AppRouter {
   static final routes = [
@@ -117,7 +122,32 @@ class AppRouter {
     ),
     GetPage(
       name: AppRoutes.crypto,
-      page: () => serviceLocator<CryptoScreen>(),
+      page: () => BlocProvider(
+        create: (context) => serviceLocator<CryptoCubit>(),
+        child: serviceLocator<CryptoScreen>(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.cryptoDetails,
+      page: () {
+        final crypto = Get.arguments as Crypto;
+        return BlocProvider(
+          create: (context) => serviceLocator<CryptoCubit>(),
+          child: serviceLocator<CryptoDetailScreen>(param1: crypto),
+        );
+      },
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.buyCrypto,
+      page: () {
+        final selectedCrypto = Get.arguments as Crypto?;
+        return BlocProvider(
+          create: (context) => serviceLocator<CryptoCubit>(),
+          child: BuyCryptoScreen(selectedCrypto: selectedCrypto),
+        );
+      },
       transition: Transition.rightToLeft,
     ),
     GetPage(
@@ -573,6 +603,17 @@ class AppRouter {
         return BlocProvider(
           create: (_) => serviceLocator<StockCubit>()..loadStockDetails(stock.symbol),
           child: serviceLocator<StockChartDetailsScreen>(param1: stock),
+        );
+      },
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.cryptoChartDetails,
+      page: () {
+        final crypto = Get.arguments as Crypto;
+        return BlocProvider(
+          create: (context) => serviceLocator<CryptoCubit>(),
+          child: serviceLocator<CryptoChartDetailsScreen>(param1: crypto),
         );
       },
       transition: Transition.rightToLeft,
