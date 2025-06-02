@@ -36,7 +36,6 @@ import 'package:lazervault/src/features/presentation/views/cb_currency_exchange/
 import 'package:lazervault/src/features/presentation/views/cb_currency_exchange/currency_deposit_screen.dart';
 import 'package:lazervault/src/features/presentation/views/change_pin_screen.dart';
 import 'package:lazervault/src/features/presentation/views/create_new_password_screen.dart';
-import 'package:lazervault/src/features/presentation/views/crypto/crypto_screen.dart';
 import 'package:lazervault/src/features/presentation/views/enable_biometric_access_screen.dart';
 import 'package:lazervault/src/features/presentation/views/face_scan_screen.dart';
 import 'package:lazervault/src/features/presentation/views/facial_biometric_verification_screen.dart';
@@ -88,7 +87,6 @@ import 'package:lazervault/src/features/account_cards_summary/data/repositories/
 import 'package:lazervault/src/features/account_cards_summary/domain/repositories/i_account_summary_repository.dart';
 import 'package:lazervault/src/features/account_cards_summary/domain/usecases/get_account_summaries_usecase.dart';
 import 'package:lazervault/src/generated/account.pbgrpc.dart';
-import 'package:lazervault/src/generated/recipient.pbgrpc.dart';
 import 'package:lazervault/src/features/funds/domain/usecases/initiate_withdrawal_usecase.dart';
 
 // AI Chat Imports
@@ -136,6 +134,17 @@ import 'package:lazervault/src/features/stocks/presentation/view/stock_trade_rec
 import 'package:lazervault/src/features/stocks/domain/entities/stock_entity.dart';
 import 'package:lazervault/src/features/stocks/presentation/view/stock_chart_details_screen.dart';
 // End Stocks Imports
+
+// Crypto Imports
+import 'package:lazervault/src/features/crypto/data/datasources/crypto_remote_data_source.dart';
+import 'package:lazervault/src/features/crypto/data/repositories/crypto_repository_impl.dart';
+import 'package:lazervault/src/features/crypto/domain/repositories/crypto_repository.dart';
+import 'package:lazervault/src/features/crypto/domain/entities/crypto_entity.dart';
+import 'package:lazervault/src/features/crypto/cubit/crypto_cubit.dart';
+import 'package:lazervault/src/features/crypto/presentation/view/crypto_screen.dart' as CryptoFeature;
+import 'package:lazervault/src/features/crypto/presentation/view/crypto_chart_details_screen.dart';
+import 'package:lazervault/src/features/crypto/presentation/view/crypto_detail_screen.dart';
+// End Crypto Imports
 
 import 'package:lazervault/src/features/investments/presentation/view/investments_screen.dart';
 
@@ -374,6 +383,24 @@ Future<void> init() async {
       ));
 
 
+  // ================== Feature: Crypto ==================
+
+  // Data Sources
+  serviceLocator.registerLazySingleton<CryptoRemoteDataSource>(
+    () => CryptoRemoteDataSourceImpl(),
+  );
+
+  // Repositories
+  serviceLocator.registerLazySingleton<CryptoRepository>(
+    () => CryptoRepositoryImpl(remoteDataSource: serviceLocator<CryptoRemoteDataSource>()),
+  );
+
+  // Blocs/Cubits
+  serviceLocator.registerFactory(() => CryptoCubit(
+    repository: serviceLocator<CryptoRepository>(),
+  ));
+
+
   // ================== Screens / Presentation ==================
   serviceLocator
       ..registerFactory(() => OnboardingScreen())
@@ -405,9 +432,13 @@ Future<void> init() async {
       ..registerFactory(() => FaceScanScreen())
       ..registerFactory(() => TransactionHistoryScreen())
       ..registerFactory(() => FlightsScreen())
-      ..registerFactory(() => CryptoScreen())
       ..registerFactory(() => StocksScreen())
       ..registerFactory(() => CBCurrencyExchangeScreen())
+      ..registerFactory(() => CryptoFeature.CryptoScreen())
+      ..registerFactoryParam<CryptoDetailScreen, Crypto, void>(
+          (crypto, _) => CryptoDetailScreen(crypto: crypto))
+      ..registerFactoryParam<CryptoChartDetailsScreen, Crypto, void>(
+          (crypto, _) => CryptoChartDetailsScreen(crypto: crypto))
       ..registerFactoryParam<CurrencyDepositScreen, String, void>(
           (currencyCode, _) => CurrencyDepositScreen(currencyCode: currencyCode))
       ..registerFactory(() => GiftCardsScreen())
