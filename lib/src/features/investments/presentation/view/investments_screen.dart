@@ -176,7 +176,7 @@ class _InvestmentsScreenState extends State<InvestmentsScreen>
             size: 20.sp,
           ),
         ),
-        onPressed: () => Get.back(),
+        onPressed: () => Get.toNamed(AppRoutes.dashboard),
       ),
       title: Text(
         'Investments',
