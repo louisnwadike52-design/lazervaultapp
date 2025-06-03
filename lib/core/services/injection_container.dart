@@ -54,7 +54,6 @@ import 'package:lazervault/src/features/presentation/views/dashboard/transaction
 import 'package:lazervault/src/features/presentation/views/input_pin_screen.dart';
 import 'package:lazervault/src/features/presentation/views/new_card_screen.dart';
 import 'package:lazervault/src/features/presentation/views/pay_electricity_bill_screen.dart';
-import 'package:lazervault/src/features/presentation/views/request_funds_screen.dart';
 import 'package:lazervault/src/features/presentation/views/review_funds_transfer_screen.dart';
 import 'package:lazervault/src/features/presentation/views/review_transfer_funds_screen.dart';
 import 'package:lazervault/src/features/presentation/views/select_country_screen.dart';
@@ -145,6 +144,17 @@ import 'package:lazervault/src/features/crypto/presentation/view/crypto_screen.d
 import 'package:lazervault/src/features/crypto/presentation/view/crypto_chart_details_screen.dart';
 import 'package:lazervault/src/features/crypto/presentation/view/crypto_detail_screen.dart';
 // End Crypto Imports
+
+// Invoice Imports
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:lazervault/src/features/invoice/data/datasources/invoice_local_datasource.dart';
+import 'package:lazervault/src/features/invoice/data/repositories/invoice_repository_impl.dart';
+import 'package:lazervault/src/features/invoice/domain/repositories/invoice_repository.dart';
+import 'package:lazervault/src/features/invoice/presentation/cubit/invoice_cubit.dart';
+import 'package:lazervault/src/features/invoice/presentation/view/invoice_list_screen.dart';
+import 'package:lazervault/src/features/invoice/presentation/view/create_invoice_screen.dart';
+import 'package:lazervault/src/features/invoice/presentation/view/invoice_details_screen.dart';
+// End Invoice Imports
 
 import 'package:lazervault/src/features/investments/presentation/view/investments_screen.dart';
 
@@ -401,6 +411,33 @@ Future<void> init() async {
   ));
 
 
+  // ================== Feature: Invoice ==================
+
+  // External Dependencies
+  serviceLocator.registerLazySingletonAsync<SharedPreferences>(
+    () => SharedPreferences.getInstance(),
+  );
+
+  // Wait for SharedPreferences to be ready
+  await serviceLocator.isReady<SharedPreferences>();
+
+  // Data Sources
+  serviceLocator.registerLazySingleton<InvoiceLocalDataSource>(
+    () => InvoiceLocalDataSourceImpl(sharedPreferences: serviceLocator<SharedPreferences>()),
+  );
+
+  // Repositories
+  serviceLocator.registerLazySingleton<InvoiceRepository>(
+    () => InvoiceRepositoryImpl(localDataSource: serviceLocator<InvoiceLocalDataSource>()),
+  );
+
+  // Blocs/Cubits
+  serviceLocator.registerFactory(() => InvoiceCubit(
+    repository: serviceLocator<InvoiceRepository>(),
+    currentUserId: 'current_user_id', // This should be injected based on authenticated user
+  ));
+
+
   // ================== Screens / Presentation ==================
   serviceLocator
       ..registerFactory(() => OnboardingScreen())
@@ -411,7 +448,10 @@ Future<void> init() async {
       ..registerFactory(() => UploadImageScreen())
       ..registerFactory(() => SelectRecipientScreen())
       ..registerFactory(() => AddRecipientScreen())
-      ..registerFactory(() => RequestFundsScreen())
+      ..registerFactory(() => InvoiceListScreen())
+      ..registerFactory(() => CreateInvoiceScreen())
+      ..registerFactoryParam<InvoiceDetailsScreen, String, void>(
+          (invoiceId, _) => InvoiceDetailsScreen(invoiceId: invoiceId))
       ..registerFactoryParam<InputPinScreen, User, void>(
           (recipient, _) => InputPinScreen(recipient: recipient))
       ..registerFactory(() => PayElectricityBillScreen())

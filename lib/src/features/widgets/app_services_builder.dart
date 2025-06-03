@@ -16,8 +16,8 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
         serviceName: AppServiceName.sendFunds,
         serviceImg: AppServiceImg.sendFunds),
     const AppService(
-        serviceName: AppServiceName.requestFunds,
-        serviceImg: AppServiceImg.requestFunds),
+        serviceName: AppServiceName.invoice,
+        serviceImg: AppServiceImg.invoice),
     const AppService(
         serviceName: AppServiceName.transferFunds,
         serviceImg: AppServiceImg.transferFunds),

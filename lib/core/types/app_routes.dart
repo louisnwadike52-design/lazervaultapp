@@ -8,7 +8,11 @@ abstract class AppRoutes {
   static const String uploadImage = '/upload-image';
   static const String selectRecipient = '/select-recipient';
   static const String addRecipient = '/add-recipient';
-  static const String requestFunds = '/request-funds';
+  static const String invoice = '/invoice';
+  static const String createInvoice = '/invoice/create';
+  static const String invoiceDetails = '/invoice/details';
+  static const String invoicePreview = '/invoice/preview';
+  static const String invoicePayment = '/invoice/payment';
   static const String sendFunds = '/send-funds';
   static const String initiateSendFunds = '/initiate-send-funds';
   static const String transferProcessing = '/transfer-processing';
