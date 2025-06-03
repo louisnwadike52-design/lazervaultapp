@@ -175,6 +175,11 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                         backgroundColor: const Color(0xFF10B981),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
                         behavior: SnackBarBehavior.floating,
+                        margin: EdgeInsets.only(
+                          bottom: MediaQuery.of(context).size.height - 150.h,
+                          right: 20.w,
+                          left: 20.w,
+                        ),
                       ),
                     );
                     // Navigate to payment screen if we have a created invoice, otherwise go back
@@ -192,6 +197,11 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                         backgroundColor: const Color(0xFFEF4444),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
                         behavior: SnackBarBehavior.floating,
+                        margin: EdgeInsets.only(
+                          bottom: MediaQuery.of(context).size.height - 150.h,
+                          right: 20.w,
+                          left: 20.w,
+                        ),
                       ),
                     );
                     setState(() => _isLoading = false);
@@ -898,6 +908,8 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
             
             if (missingFields.isNotEmpty) {
               setDialogState(() {});
+              
+              // Show snackbar from top, positioned above dialog
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Column(
@@ -930,6 +942,11 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
                   behavior: SnackBarBehavior.floating,
                   duration: const Duration(seconds: 4),
+                  margin: EdgeInsets.only(
+                    bottom: MediaQuery.of(context).size.height - 150.h,
+                    right: 20.w,
+                    left: 20.w,
+                  ),
                 ),
               );
               return;
@@ -1102,6 +1119,8 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
             
             if (missingFields.isNotEmpty) {
               setDialogState(() {});
+              
+              // Show snackbar from top, positioned above dialog
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Column(
@@ -1134,6 +1153,11 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
                   behavior: SnackBarBehavior.floating,
                   duration: const Duration(seconds: 4),
+                  margin: EdgeInsets.only(
+                    bottom: MediaQuery.of(context).size.height - 150.h,
+                    right: 20.w,
+                    left: 20.w,
+                  ),
                 ),
               );
               return;
@@ -2463,12 +2487,14 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
               borderRadius: BorderRadius.circular(12.r),
               borderSide: BorderSide(
                 color: hasError ? const Color(0xFFEF4444) : const Color(0xFF2D2D2D),
+                width: hasError ? 2 : 1,
               ),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r),
               borderSide: BorderSide(
                 color: hasError ? const Color(0xFFEF4444) : const Color(0xFF2D2D2D),
+                width: hasError ? 2 : 1,
               ),
             ),
             focusedBorder: OutlineInputBorder(
@@ -2489,13 +2515,34 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
           ),
         ),
         if (hasError && isRequired) ...[
-          SizedBox(height: 6.h),
-          Text(
-            'This field is required',
-            style: GoogleFonts.inter(
-              color: const Color(0xFFEF4444),
-              fontSize: 12.sp,
-              fontWeight: FontWeight.w400,
+          SizedBox(height: 8.h),
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+            decoration: BoxDecoration(
+              color: const Color(0xFFEF4444).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8.r),
+              border: Border.all(
+                color: const Color(0xFFEF4444).withOpacity(0.3),
+                width: 1,
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.error_outline,
+                  color: const Color(0xFFEF4444),
+                  size: 16.sp,
+                ),
+                SizedBox(width: 8.w),
+                Text(
+                  'This field is required',
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFFEF4444),
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -2607,9 +2654,16 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
 
     if (state.items.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please add at least one item'),
+        SnackBar(
+          content: const Text('Please add at least one item'),
           backgroundColor: Colors.red,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+          behavior: SnackBarBehavior.floating,
+          margin: EdgeInsets.only(
+            bottom: MediaQuery.of(context).size.height - 150.h,
+            right: 20.w,
+            left: 20.w,
+          ),
         ),
       );
       return;
@@ -2725,6 +2779,13 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
         SnackBar(
           content: Text('Failed to pick image: ${e.toString()}'),
           backgroundColor: Colors.red,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+          behavior: SnackBarBehavior.floating,
+          margin: EdgeInsets.only(
+            bottom: MediaQuery.of(context).size.height - 150.h,
+            right: 20.w,
+            left: 20.w,
+          ),
         ),
       );
     }
