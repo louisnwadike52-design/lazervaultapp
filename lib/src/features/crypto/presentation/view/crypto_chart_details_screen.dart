@@ -1493,39 +1493,39 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
                 ],
               ),
             ),
-            Expanded(
+              Expanded(
               child: GridView.builder(
-                padding: EdgeInsets.all(16.w),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  padding: EdgeInsets.all(16.w),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 3,
                   childAspectRatio: 2.5,
-                  crossAxisSpacing: 8.w,
-                  mainAxisSpacing: 8.h,
-                ),
+              crossAxisSpacing: 8.w,
+              mainAxisSpacing: 8.h,
+            ),
                 itemCount: _timeframes.length,
-                itemBuilder: (context, index) {
+            itemBuilder: (context, index) {
                   final timeframe = _timeframes[index];
                   final isSelected = _selectedTimeframe == timeframe;
                   return GestureDetector(
-                    onTap: () {
-                      setState(() {
+          onTap: () {
+            setState(() {
                         _selectedTimeframe = timeframe;
                       });
                       Navigator.pop(context);
                     },
                     child: Container(
-                      decoration: BoxDecoration(
+            decoration: BoxDecoration(
                         color: isSelected ? _getCryptoColor().withOpacity(0.2) : Colors.grey[800],
-                        borderRadius: BorderRadius.circular(8.r),
-                        border: Border.all(
+              borderRadius: BorderRadius.circular(8.r),
+              border: Border.all(
                           color: isSelected ? _getCryptoColor() : Colors.grey[600]!,
-                          width: isSelected ? 2 : 1,
-                        ),
-                      ),
+                width: isSelected ? 2 : 1,
+              ),
+            ),
                       child: Center(
-                        child: Text(
+                      child: Text(
                           timeframe,
-                          style: GoogleFonts.inter(
+                        style: GoogleFonts.inter(
                             color: isSelected ? _getCryptoColor() : Colors.white,
                             fontSize: 14.sp,
                             fontWeight: FontWeight.w600,
@@ -1549,35 +1549,35 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
         height: 300.h,
-        decoration: BoxDecoration(
-          color: Colors.grey[900],
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
-        ),
-        child: Column(
-          children: [
-            Container(
-              padding: EdgeInsets.all(16.w),
-              child: Text(
+          decoration: BoxDecoration(
+            color: Colors.grey[900],
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+          ),
+          child: Column(
+            children: [
+              Container(
+                padding: EdgeInsets.all(16.w),
+                          child: Text(
                 'Chart Type',
                 style: GoogleFonts.inter(color: Colors.white, fontSize: 18.sp, fontWeight: FontWeight.bold),
               ),
             ),
-            Expanded(
+              Expanded(
               child: ListView(
                 children: ChartType.values.map((type) => ListTile(
                   title: Text(_getChartTypeName(type), style: TextStyle(color: Colors.white)),
                   leading: Icon(Icons.timeline, color: Colors.white),
                   selected: _selectedChartType == type,
-                  onTap: () {
-                    setState(() {
+          onTap: () {
+            setState(() {
                       _selectedChartType = type;
                     });
                     Navigator.pop(context);
                   },
                 )).toList(),
-              ),
-            ),
-          ],
+                        ),
+                      ),
+                    ],
         ),
       ),
     );
@@ -1622,115 +1622,115 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
             Expanded(
               child: SingleChildScrollView(
                 padding: EdgeInsets.all(16.w),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
                           width: 60.w,
                           height: 60.w,
-                          decoration: BoxDecoration(
+                decoration: BoxDecoration(
                             color: _getCryptoColor(),
-                            borderRadius: BorderRadius.circular(12.r),
-                          ),
+        borderRadius: BorderRadius.circular(12.r),
+      ),
                           child: Center(
-                            child: Text(
+          child: Text(
                               widget.crypto.symbol.length >= 2 
                                   ? widget.crypto.symbol.substring(0, 2)
                                   : widget.crypto.symbol,
-                              style: GoogleFonts.inter(
-                                color: Colors.white,
+            style: GoogleFonts.inter(
+              color: Colors.white,
                                 fontSize: 20.sp,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ),
                         SizedBox(width: 16.w),
                         Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
                                 widget.crypto.symbol.toUpperCase(),
-                                style: GoogleFonts.inter(
-                                  color: Colors.white,
+            style: GoogleFonts.inter(
+              color: Colors.white,
                                   fontSize: 20.sp,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              Text(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          Text(
                                 widget.crypto.name,
-                                style: GoogleFonts.inter(
+            style: GoogleFonts.inter(
                                   color: Colors.grey[300],
-                                  fontSize: 14.sp,
+              fontSize: 14.sp,
                                 ),
                               ),
-                              Text(
+                Text(
                                 'Rank #${widget.crypto.marketCapRank}',
-                                style: GoogleFonts.inter(
-                                  color: Colors.grey[400],
-                                  fontSize: 12.sp,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 24.h),
-                    Container(
-                      padding: EdgeInsets.all(16.w),
-                      decoration: BoxDecoration(
-                        color: Colors.grey[800],
-                        borderRadius: BorderRadius.circular(12.r),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Current Price',
-                            style: GoogleFonts.inter(
-                              color: Colors.grey[400],
-                              fontSize: 12.sp,
-                            ),
-                          ),
-                          SizedBox(height: 8.h),
-                          Row(
-                            children: [
-                              Text(
-                                '\$${widget.crypto.currentPrice.toStringAsFixed(widget.crypto.currentPrice < 1 ? 6 : 2)}',
-                                style: GoogleFonts.inter(
-                                  color: Colors.white,
-                                  fontSize: 24.sp,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              SizedBox(width: 12.w),
-                              Container(
-                                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-                                decoration: BoxDecoration(
-                                  color: (widget.crypto.priceChangePercentage24h >= 0 ? Colors.green : Colors.red).withOpacity(0.2),
-                                  borderRadius: BorderRadius.circular(6.r),
-                                ),
-                                child: Text(
-                                  '${widget.crypto.priceChangePercentage24h >= 0 ? '+' : ''}${widget.crypto.priceChangePercentage24h.toStringAsFixed(2)}%',
-                                  style: GoogleFonts.inter(
-                                    color: widget.crypto.priceChangePercentage24h >= 0 ? Colors.green : Colors.red,
-                                    fontSize: 12.sp,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+              style: GoogleFonts.inter(
+                color: Colors.grey[400],
+                fontSize: 12.sp,
+            ),
+          ),
+        ],
                 ),
               ),
+            ],
+          ),
+                    SizedBox(height: 24.h),
+        Container(
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: Colors.grey[800],
+        borderRadius: BorderRadius.circular(12.r),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+                            'Current Price',
+            style: GoogleFonts.inter(
+              color: Colors.grey[400],
+              fontSize: 12.sp,
+            ),
+          ),
+          SizedBox(height: 8.h),
+                Row(
+                  children: [
+                    Text(
+                                '\$${widget.crypto.currentPrice.toStringAsFixed(widget.crypto.currentPrice < 1 ? 6 : 2)}',
+                      style: GoogleFonts.inter(
+                        color: Colors.white,
+                                  fontSize: 24.sp,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      ),
+                      SizedBox(width: 12.w),
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                decoration: BoxDecoration(
+                                  color: (widget.crypto.priceChangePercentage24h >= 0 ? Colors.green : Colors.red).withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(6.r),
+                ),
+                child: Text(
+                                  '${widget.crypto.priceChangePercentage24h >= 0 ? '+' : ''}${widget.crypto.priceChangePercentage24h.toStringAsFixed(2)}%',
+                  style: GoogleFonts.inter(
+                                    color: widget.crypto.priceChangePercentage24h >= 0 ? Colors.green : Colors.red,
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+                        ],
+              ),
+            ),
+          ],
+        ),
+      ),
             ),
           ],
         ),

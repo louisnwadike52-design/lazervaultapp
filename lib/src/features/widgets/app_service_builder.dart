@@ -19,8 +19,8 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
 
   void _handleGotoService() {
     switch (widget.appService.serviceName) {
-      case AppServiceName.requestFunds:
-        Get.toNamed(AppRoutes.requestFunds);
+      case AppServiceName.invoice:
+        Get.toNamed(AppRoutes.invoice);
         break;
       case AppServiceName.payElectricityBill:
         Get.toNamed(AppRoutes.payElectricityBill);
@@ -163,8 +163,8 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
       case AppServiceName.sendFunds:
         iconData = Icons.send;
         break;
-      case AppServiceName.requestFunds:
-        iconData = Icons.request_quote;
+      case AppServiceName.invoice:
+        iconData = Icons.receipt_long;
         break;
       case AppServiceName.transferFunds:
         iconData = Icons.swap_horiz;

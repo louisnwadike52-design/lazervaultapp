@@ -50,7 +50,6 @@ import 'package:lazervault/src/features/presentation/views/dashboard/dashboard_s
 import 'package:lazervault/src/features/presentation/views/input_pin_screen.dart';
 import 'package:lazervault/src/features/presentation/views/new_card_screen.dart';
 import 'package:lazervault/src/features/presentation/views/pay_electricity_bill_screen.dart';
-import 'package:lazervault/src/features/presentation/views/request_funds_screen.dart';
 import 'package:lazervault/src/features/presentation/views/review_funds_transfer_screen.dart';
 import 'package:lazervault/src/features/presentation/views/review_transfer_funds_screen.dart';
 import 'package:lazervault/src/features/presentation/views/select_country_screen.dart';
@@ -87,6 +86,13 @@ import 'package:lazervault/src/features/crypto/cubit/crypto_cubit.dart';
 import 'package:lazervault/src/features/crypto/presentation/view/crypto_detail_screen.dart';
 import 'package:lazervault/src/features/crypto/domain/entities/crypto_entity.dart';
 import 'package:lazervault/src/features/crypto/presentation/view/crypto_chart_details_screen.dart';
+import 'package:lazervault/src/features/invoice/presentation/view/invoice_list_screen.dart';
+import 'package:lazervault/src/features/invoice/presentation/cubit/invoice_cubit.dart';
+import 'package:lazervault/src/features/invoice/presentation/view/create_invoice_screen.dart';
+import 'package:lazervault/src/features/invoice/presentation/view/invoice_details_screen.dart';
+import 'package:lazervault/src/features/invoice/domain/entities/invoice_entity.dart';
+import 'package:lazervault/src/features/invoice/presentation/view/invoice_preview_screen.dart';
+import 'package:lazervault/src/features/invoice/presentation/view/invoice_payment_screen.dart';
 
 class AppRouter {
   static final routes = [
@@ -188,8 +194,49 @@ class AppRouter {
       transition: Transition.rightToLeft,
     ),
     GetPage(
-      name: AppRoutes.requestFunds,
-      page: () => serviceLocator<RequestFundsScreen>(),
+      name: AppRoutes.invoice,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<InvoiceCubit>(),
+        child: serviceLocator<InvoiceListScreen>(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.createInvoice,
+      page: () {
+        final editingInvoice = Get.arguments as Invoice?;
+        return BlocProvider(
+          create: (_) => serviceLocator<InvoiceCubit>(),
+          child: CreateInvoiceScreen(editingInvoice: editingInvoice),
+        );
+      },
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.invoiceDetails,
+      page: () {
+        final invoiceId = Get.arguments as String;
+        return BlocProvider(
+          create: (_) => serviceLocator<InvoiceCubit>(),
+          child: serviceLocator<InvoiceDetailsScreen>(param1: invoiceId),
+        );
+      },
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.invoicePreview,
+      page: () {
+        final invoice = Get.arguments as Invoice;
+        return InvoicePreviewScreen(invoice: invoice);
+      },
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.invoicePayment,
+      page: () {
+        final invoice = Get.arguments as Invoice;
+        return InvoicePaymentScreen(invoice: invoice);
+      },
       transition: Transition.rightToLeft,
     ),
     GetPage(
