@@ -9,6 +9,8 @@ import 'dart:io';
 import 'dart:ui' as ui;
 import 'dart:typed_data';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import '../../domain/entities/invoice_entity.dart';
 import '../../services/invoice_pdf_service.dart';
@@ -640,16 +642,58 @@ class InvoicePreviewScreen extends StatelessWidget {
       ),
       child: Column(
         children: [
-          // QR Code buttons row
+          // Tag User button row
+          Container(
+            width: double.infinity,
+            height: 52.h,
+            decoration: BoxDecoration(
+              color: Colors.transparent,
+              borderRadius: BorderRadius.circular(12.r),
+              border: Border.all(
+                color: const Color(0xFF10B981),
+                width: 2,
+              ),
+            ),
+            child: ElevatedButton.icon(
+              onPressed: () => _showTagUserBottomSheet(context),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.transparent,
+                shadowColor: Colors.transparent,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+              ),
+              icon: Icon(
+                Icons.person_add_outlined,
+                color: const Color(0xFF10B981),
+                size: 20.sp,
+              ),
+              label: Text(
+                'Tag User for Payment',
+                style: GoogleFonts.inter(
+                  color: const Color(0xFF10B981),
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
+          SizedBox(height: 16.w),
+          
+          // QR Code, Download, and Share buttons row
           Row(
             children: [
+              // Invoice QR button - transparent with orange border
               Expanded(
                 child: Container(
                   height: 52.h,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF1F1F1F),
+                    color: Colors.transparent,
                     borderRadius: BorderRadius.circular(12.r),
-                    border: Border.all(color: const Color(0xFF10B981), width: 1.5),
+                    border: Border.all(
+                      color: const Color(0xFFEA580C),
+                      width: 2,
+                    ),
                   ),
                   child: ElevatedButton.icon(
                     onPressed: () => _showQRCode(context, 'invoice'),
@@ -662,68 +706,33 @@ class InvoicePreviewScreen extends StatelessWidget {
                     ),
                     icon: Icon(
                       Icons.qr_code,
-                      color: const Color(0xFF10B981),
-                      size: 20.sp,
+                      color: const Color(0xFFEA580C),
+                      size: 18.sp,
                     ),
                     label: Text(
-                      'Invoice QR',
+                      'QR Code',
                       style: GoogleFonts.inter(
-                        color: const Color(0xFF10B981),
-                        fontSize: 14.sp,
+                        color: const Color(0xFFEA580C),
+                        fontSize: 12.sp,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
                 ),
               ),
-              SizedBox(width: 12.w),
+              SizedBox(width: 8.w),
+              
+              // Download button
               Expanded(
                 child: Container(
                   height: 52.h,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF1F1F1F),
+                    color: Colors.transparent,
                     borderRadius: BorderRadius.circular(12.r),
-                    border: Border.all(color: const Color(0xFFEAB308), width: 1.5),
-                  ),
-                  child: ElevatedButton.icon(
-                    onPressed: () => _showQRCode(context, 'payment'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.transparent,
-                      shadowColor: Colors.transparent,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12.r),
-                      ),
+                    border: Border.all(
+                      color: const Color(0xFF8B5CF6),
+                      width: 2,
                     ),
-                    icon: Icon(
-                      Icons.payment,
-                      color: const Color(0xFFEAB308),
-                      size: 20.sp,
-                    ),
-                    label: Text(
-                      'Payment QR',
-                      style: GoogleFonts.inter(
-                        color: const Color(0xFFEAB308),
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 16.w),
-          
-          // Download and Share buttons row
-          Row(
-            children: [
-              Expanded(
-                child: Container(
-                  height: 52.h,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF1F1F1F),
-                    borderRadius: BorderRadius.circular(12.r),
-                    border: Border.all(color: const Color(0xFF6366F1), width: 1.5),
                   ),
                   child: ElevatedButton.icon(
                     onPressed: () => _downloadInvoice(context),
@@ -736,38 +745,33 @@ class InvoicePreviewScreen extends StatelessWidget {
                     ),
                     icon: Icon(
                       Icons.download_outlined,
-                      color: const Color(0xFF6366F1),
-                      size: 20.sp,
+                      color: const Color(0xFF8B5CF6),
+                      size: 18.sp,
                     ),
                     label: Text(
-                      'Download PDF',
+                      'Download',
                       style: GoogleFonts.inter(
-                        color: const Color(0xFF6366F1),
-                        fontSize: 16.sp,
+                        color: const Color(0xFF8B5CF6),
+                        fontSize: 12.sp,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
                 ),
               ),
-              SizedBox(width: 16.w),
+              SizedBox(width: 8.w),
+              
+              // Share button
               Expanded(
                 child: Container(
                   height: 52.h,
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
-                      begin: Alignment.centerLeft,
-                      end: Alignment.centerRight,
-                    ),
+                    color: Colors.transparent,
                     borderRadius: BorderRadius.circular(12.r),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFF6366F1).withOpacity(0.3),
-                        offset: const Offset(0, 4),
-                        blurRadius: 12,
-                      ),
-                    ],
+                    border: Border.all(
+                      color: const Color(0xFF6366F1),
+                      width: 2,
+                    ),
                   ),
                   child: ElevatedButton.icon(
                     onPressed: () => _shareInvoice(context),
@@ -780,14 +784,14 @@ class InvoicePreviewScreen extends StatelessWidget {
                     ),
                     icon: Icon(
                       Icons.share_outlined,
-                      color: Colors.white,
-                      size: 20.sp,
+                      color: const Color(0xFF6366F1),
+                      size: 18.sp,
                     ),
                     label: Text(
-                      'Share Invoice',
+                      'Share',
                       style: GoogleFonts.inter(
-                        color: Colors.white,
-                        fontSize: 16.sp,
+                        color: const Color(0xFF6366F1),
+                        fontSize: 12.sp,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -798,6 +802,15 @@ class InvoicePreviewScreen extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  void _showTagUserBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => _TagUserBottomSheet(invoice: invoice),
     );
   }
 
@@ -1230,5 +1243,1319 @@ class InvoicePreviewScreen extends StatelessWidget {
 
   String _formatDate(DateTime date) {
     return '${date.day}/${date.month}/${date.year}';
+  }
+}
+
+class _TagUserBottomSheet extends StatefulWidget {
+  final Invoice invoice;
+
+  const _TagUserBottomSheet({required this.invoice});
+
+  @override
+  State<_TagUserBottomSheet> createState() => _TagUserBottomSheetState();
+}
+
+class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
+    with TickerProviderStateMixin {
+  final TextEditingController _searchController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  
+  late TabController _tabController;
+  String _searchQuery = '';
+  Set<String> _selectedUserIds = {};
+  List<Map<String, dynamic>> _contacts = [];
+  bool _loadingContacts = false;
+  int _currentTab = 0;
+
+  // Mock user data
+  final List<Map<String, dynamic>> _mockUsers = [
+    {
+      'id': 'user1',
+      'name': 'John Smith',
+      'email': 'john.smith@email.com',
+      'username': '@johnsmith',
+      'phone': '+44 7700 900123',
+      'avatar': 'https://i.pravatar.cc/150?img=1',
+      'isOnline': true,
+      'isOnPlatform': true,
+    },
+    {
+      'id': 'user2', 
+      'name': 'Sarah Johnson',
+      'email': 'sarah.j@email.com',
+      'username': '@sarahj',
+      'phone': '+44 7700 900124',
+      'avatar': 'https://i.pravatar.cc/150?img=2',
+      'isOnline': false,
+      'isOnPlatform': true,
+    },
+    {
+      'id': 'user3',
+      'name': 'Mike Davis',
+      'email': 'mike.davis@email.com',
+      'username': '@mikedavis',
+      'phone': '+44 7700 900125',
+      'avatar': 'https://i.pravatar.cc/150?img=3',
+      'isOnline': true,
+      'isOnPlatform': true,
+    },
+    {
+      'id': 'user4',
+      'name': 'Emma Wilson',
+      'email': 'emma.wilson@email.com',
+      'username': '@emmaw',
+      'phone': '+44 7700 900126',
+      'avatar': 'https://i.pravatar.cc/150?img=4',
+      'isOnline': false,
+      'isOnPlatform': true,
+    },
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 3, vsync: this);
+    _tabController.addListener(() {
+      setState(() {
+        _currentTab = _tabController.index;
+        if (_currentTab == 2) {
+          _loadContacts();
+        }
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _phoneController.dispose();
+    _emailController.dispose();
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.92,
+      width: MediaQuery.of(context).size.width,
+      decoration: BoxDecoration(
+        color: const Color(0xFF1A1A3E),
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(24.r),
+          topRight: Radius.circular(24.r),
+        ),
+      ),
+      child: Column(
+        children: [
+          _buildHeader(),
+          _buildTabBar(),
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                _buildSearchTab(),
+                _buildManualTab(),
+                _buildContactsTab(),
+              ],
+            ),
+          ),
+          _buildBottomActions(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeader() {
+    return Container(
+      padding: EdgeInsets.all(24.w),
+      child: Column(
+        children: [
+          // Drag handle
+          Container(
+            width: 40.w,
+            height: 4.h,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.3),
+              borderRadius: BorderRadius.circular(2.r),
+            ),
+          ),
+          SizedBox(height: 20.h),
+          Row(
+            children: [
+              Container(
+                padding: EdgeInsets.all(12.w),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      const Color(0xFF10B981).withValues(alpha: 0.2),
+                      const Color(0xFF059669).withValues(alpha: 0.2),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(12.r),
+                  border: Border.all(
+                    color: const Color(0xFF10B981).withValues(alpha: 0.3),
+                  ),
+                ),
+                child: Icon(
+                  Icons.group_add,
+                  color: const Color(0xFF10B981),
+                  size: 24.sp,
+                ),
+              ),
+              SizedBox(width: 16.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Tag Users for Payment',
+                      style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 22.sp,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    SizedBox(height: 4.h),
+                    Text(
+                      'Select multiple users to tag for this invoice',
+                      style: GoogleFonts.inter(
+                        color: Colors.white.withValues(alpha: 0.7),
+                        fontSize: 14.sp,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              GestureDetector(
+                onTap: () => Navigator.pop(context),
+                child: Container(
+                  padding: EdgeInsets.all(8.w),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8.r),
+                  ),
+                  child: Icon(
+                    Icons.close,
+                    color: Colors.white.withValues(alpha: 0.7),
+                    size: 20.sp,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          if (_selectedUserIds.isNotEmpty) ...[
+            SizedBox(height: 16.h),
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+              decoration: BoxDecoration(
+                color: const Color(0xFF10B981).withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(20.r),
+                border: Border.all(
+                  color: const Color(0xFF10B981).withValues(alpha: 0.3),
+                ),
+              ),
+              child: Text(
+                '${_selectedUserIds.length} user${_selectedUserIds.length == 1 ? '' : 's'} selected',
+                style: GoogleFonts.inter(
+                  color: const Color(0xFF10B981),
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTabBar() {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 24.w),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.1),
+        ),
+      ),
+      child: TabBar(
+        controller: _tabController,
+        indicator: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              const Color(0xFF10B981),
+              const Color(0xFF059669),
+            ],
+          ),
+          borderRadius: BorderRadius.circular(10.r),
+        ),
+        indicatorSize: TabBarIndicatorSize.tab,
+        indicatorPadding: EdgeInsets.all(4.w),
+        labelColor: Colors.white,
+        unselectedLabelColor: Colors.white.withValues(alpha: 0.6),
+        labelStyle: GoogleFonts.inter(
+          fontSize: 14.sp,
+          fontWeight: FontWeight.w600,
+        ),
+        unselectedLabelStyle: GoogleFonts.inter(
+          fontSize: 14.sp,
+          fontWeight: FontWeight.w500,
+        ),
+        dividerColor: Colors.transparent,
+        tabs: [
+          Tab(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.search, size: 16.sp),
+                SizedBox(width: 6.w),
+                Text('Search'),
+              ],
+            ),
+          ),
+          Tab(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.edit, size: 16.sp),
+                SizedBox(width: 6.w),
+                Text('Manual'),
+              ],
+            ),
+          ),
+          Tab(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.contacts, size: 16.sp),
+                SizedBox(width: 6.w),
+                Text('Contacts'),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSearchTab() {
+    return Padding(
+      padding: EdgeInsets.all(24.w),
+      child: Column(
+        children: [
+          // Search bar
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.05),
+              borderRadius: BorderRadius.circular(12.r),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.1),
+              ),
+            ),
+            child: TextField(
+              controller: _searchController,
+              onChanged: (value) {
+                setState(() {
+                  _searchQuery = value;
+                });
+              },
+              style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 16.sp,
+              ),
+              decoration: InputDecoration(
+                hintText: 'Search by name, email, or username...',
+                hintStyle: GoogleFonts.inter(
+                  color: Colors.white.withValues(alpha: 0.5),
+                  fontSize: 16.sp,
+                ),
+                prefixIcon: Icon(
+                  Icons.search,
+                  color: const Color(0xFF10B981),
+                  size: 20.sp,
+                ),
+                border: InputBorder.none,
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 16.w,
+                  vertical: 16.h,
+                ),
+              ),
+            ),
+          ),
+          SizedBox(height: 20.h),
+          
+          // User list
+          Expanded(
+            child: _buildUserList(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildUserList() {
+    final filteredUsers = _searchQuery.isEmpty
+        ? _mockUsers
+        : _mockUsers.where((user) {
+            final name = user['name'].toString().toLowerCase();
+            final email = user['email'].toString().toLowerCase();
+            final username = user['username'].toString().toLowerCase();
+            final query = _searchQuery.toLowerCase();
+            return name.contains(query) || 
+                   email.contains(query) || 
+                   username.contains(query);
+          }).toList();
+
+    if (filteredUsers.isEmpty) {
+      return _buildEmptyState();
+    }
+
+    return ListView.builder(
+      itemCount: filteredUsers.length,
+      itemBuilder: (context, index) {
+        final user = filteredUsers[index];
+        final isSelected = _selectedUserIds.contains(user['id']);
+        
+        return _buildUserTile(user, isSelected);
+      },
+    );
+  }
+
+  Widget _buildUserTile(Map<String, dynamic> user, bool isSelected) {
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.lightImpact();
+        setState(() {
+          if (isSelected) {
+            _selectedUserIds.remove(user['id']);
+          } else {
+            _selectedUserIds.add(user['id']);
+          }
+        });
+      },
+      child: Container(
+        margin: EdgeInsets.only(bottom: 12.h),
+        padding: EdgeInsets.all(16.w),
+        decoration: BoxDecoration(
+          color: isSelected 
+              ? const Color(0xFF10B981).withValues(alpha: 0.1)
+              : Colors.white.withValues(alpha: 0.05),
+          borderRadius: BorderRadius.circular(16.r),
+          border: Border.all(
+            color: isSelected 
+                ? const Color(0xFF10B981) 
+                : Colors.white.withValues(alpha: 0.1),
+            width: isSelected ? 2 : 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            // Avatar with selection indicator
+            Stack(
+              children: [
+                CircleAvatar(
+                  radius: 26.r,
+                  backgroundColor: Colors.white.withValues(alpha: 0.1),
+                  child: Text(
+                    user['name'].toString().substring(0, 1).toUpperCase(),
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 18.sp,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                if (isSelected)
+                  Positioned(
+                    bottom: 0,
+                    right: 0,
+                    child: Container(
+                      width: 20.w,
+                      height: 20.w,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            const Color(0xFF10B981),
+                            const Color(0xFF059669),
+                          ],
+                        ),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: const Color(0xFF1A1A3E),
+                          width: 2,
+                        ),
+                      ),
+                      child: Icon(
+                        Icons.check,
+                        color: Colors.white,
+                        size: 12.sp,
+                      ),
+                    ),
+                  ),
+                if (user['isOnline'] == true && !isSelected)
+                  Positioned(
+                    bottom: 0,
+                    right: 0,
+                    child: Container(
+                      width: 14.w,
+                      height: 14.w,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF10B981),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: const Color(0xFF1A1A3E),
+                          width: 2,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            SizedBox(width: 16.w),
+            
+            // User info
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          user['name'].toString(),
+                          style: GoogleFonts.inter(
+                            color: Colors.white,
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                      if (user['isOnline'] == true && !isSelected)
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 8.w,
+                            vertical: 4.h,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF10B981).withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(8.r),
+                            border: Border.all(
+                              color: const Color(0xFF10B981),
+                              width: 1,
+                            ),
+                          ),
+                          child: Text(
+                            'Online',
+                            style: GoogleFonts.inter(
+                              color: const Color(0xFF10B981),
+                              fontSize: 10.sp,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  SizedBox(height: 4.h),
+                  Text(
+                    user['username'].toString(),
+                    style: GoogleFonts.inter(
+                      color: Colors.white.withValues(alpha: 0.7),
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  Text(
+                    user['email'].toString(),
+                    style: GoogleFonts.inter(
+                      color: Colors.white.withValues(alpha: 0.5),
+                      fontSize: 12.sp,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            
+            // Selection indicator
+            Container(
+              width: 24.w,
+              height: 24.w,
+              decoration: BoxDecoration(
+                color: isSelected 
+                    ? const Color(0xFF10B981) 
+                    : Colors.transparent,
+                borderRadius: BorderRadius.circular(6.r),
+                border: Border.all(
+                  color: isSelected 
+                      ? const Color(0xFF10B981) 
+                      : Colors.white.withValues(alpha: 0.3),
+                  width: 2,
+                ),
+              ),
+              child: isSelected
+                  ? Icon(
+                      Icons.check,
+                      color: Colors.white,
+                      size: 16.sp,
+                    )
+                  : null,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildManualTab() {
+    return Padding(
+      padding: EdgeInsets.all(24.w),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Add by Phone or Email',
+            style: GoogleFonts.inter(
+              color: Colors.white,
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          SizedBox(height: 8.h),
+          Text(
+            'Enter phone number or email to invite users to pay this invoice',
+            style: GoogleFonts.inter(
+              color: Colors.white.withValues(alpha: 0.7),
+              fontSize: 14.sp,
+            ),
+          ),
+          SizedBox(height: 24.h),
+          
+          // Phone input
+          _buildInputField(
+            controller: _phoneController,
+            label: 'Phone Number',
+            hint: '+44 7700 900000',
+            icon: Icons.phone,
+            keyboardType: TextInputType.phone,
+          ),
+          SizedBox(height: 16.h),
+          
+          // Email input
+          _buildInputField(
+            controller: _emailController,
+            label: 'Email Address',
+            hint: 'user@example.com',
+            icon: Icons.email,
+            keyboardType: TextInputType.emailAddress,
+          ),
+          SizedBox(height: 24.h),
+          
+          // Add button
+          Container(
+            width: double.infinity,
+            height: 52.h,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  const Color(0xFF10B981),
+                  const Color(0xFF059669),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(12.r),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF10B981).withValues(alpha: 0.3),
+                  offset: const Offset(0, 4),
+                  blurRadius: 12,
+                ),
+              ],
+            ),
+            child: ElevatedButton.icon(
+              onPressed: _addManualUser,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.transparent,
+                shadowColor: Colors.transparent,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+              ),
+              icon: Icon(
+                Icons.add,
+                color: Colors.white,
+                size: 20.sp,
+              ),
+              label: Text(
+                'Add User',
+                style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
+          SizedBox(height: 32.h),
+          
+          // Info card
+          Container(
+            padding: EdgeInsets.all(16.w),
+            decoration: BoxDecoration(
+              color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12.r),
+              border: Border.all(
+                color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.info_outline,
+                  color: const Color(0xFF3B82F6),
+                  size: 20.sp,
+                ),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: Text(
+                    'Users not on LazerVault will receive an invitation link',
+                    style: GoogleFonts.inter(
+                      color: const Color(0xFF3B82F6),
+                      fontSize: 12.sp,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildContactsTab() {
+    return Padding(
+      padding: EdgeInsets.all(24.w),
+      child: Column(
+        children: [
+          // Header with permission button
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Device Contacts',
+                      style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 18.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    SizedBox(height: 4.h),
+                    Text(
+                      'Import from your phone contacts',
+                      style: GoogleFonts.inter(
+                        color: Colors.white.withValues(alpha: 0.7),
+                        fontSize: 14.sp,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      const Color(0xFF3B82F6),
+                      const Color(0xFF1D4ED8),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(8.r),
+                ),
+                child: ElevatedButton.icon(
+                  onPressed: _requestContactsPermission,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.transparent,
+                    shadowColor: Colors.transparent,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8.r),
+                    ),
+                  ),
+                  icon: Icon(
+                    Icons.contacts,
+                    color: Colors.white,
+                    size: 16.sp,
+                  ),
+                  label: Text(
+                    'Load',
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 20.h),
+          
+          // Contacts list
+          Expanded(
+            child: _loadingContacts
+                ? _buildLoadingState()
+                : _contacts.isEmpty
+                    ? _buildNoContactsState()
+                    : _buildContactsList(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInputField({
+    required TextEditingController controller,
+    required String label,
+    required String hint,
+    required IconData icon,
+    required TextInputType keyboardType,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: GoogleFonts.inter(
+            color: Colors.white,
+            fontSize: 14.sp,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        SizedBox(height: 8.h),
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.05),
+            borderRadius: BorderRadius.circular(12.r),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.1),
+            ),
+          ),
+          child: TextField(
+            controller: controller,
+            keyboardType: keyboardType,
+            style: GoogleFonts.inter(
+              color: Colors.white,
+              fontSize: 16.sp,
+            ),
+            decoration: InputDecoration(
+              hintText: hint,
+              hintStyle: GoogleFonts.inter(
+                color: Colors.white.withValues(alpha: 0.5),
+                fontSize: 16.sp,
+              ),
+              prefixIcon: Icon(
+                icon,
+                color: const Color(0xFF10B981),
+                size: 20.sp,
+              ),
+              border: InputBorder.none,
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: 16.w,
+                vertical: 16.h,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: EdgeInsets.all(20.w),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.05),
+              borderRadius: BorderRadius.circular(20.r),
+            ),
+            child: Icon(
+              Icons.search_off,
+              size: 48.sp,
+              color: Colors.white.withValues(alpha: 0.5),
+            ),
+          ),
+          SizedBox(height: 16.h),
+          Text(
+            'No users found',
+            style: GoogleFonts.inter(
+              color: Colors.white,
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          SizedBox(height: 8.h),
+          Text(
+            'Try searching with different keywords',
+            style: GoogleFonts.inter(
+              color: Colors.white.withValues(alpha: 0.7),
+              fontSize: 14.sp,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLoadingState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(const Color(0xFF10B981)),
+          ),
+          SizedBox(height: 16.h),
+          Text(
+            'Loading contacts...',
+            style: GoogleFonts.inter(
+              color: Colors.white.withValues(alpha: 0.7),
+              fontSize: 16.sp,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNoContactsState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: EdgeInsets.all(20.w),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.05),
+              borderRadius: BorderRadius.circular(20.r),
+            ),
+            child: Icon(
+              Icons.contacts_outlined,
+              size: 48.sp,
+              color: Colors.white.withValues(alpha: 0.5),
+            ),
+          ),
+          SizedBox(height: 16.h),
+          Text(
+            'No contacts available',
+            style: GoogleFonts.inter(
+              color: Colors.white,
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          SizedBox(height: 8.h),
+          Text(
+            'Grant permission to access your contacts',
+            style: GoogleFonts.inter(
+              color: Colors.white.withValues(alpha: 0.7),
+              fontSize: 14.sp,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildContactsList() {
+    return ListView.builder(
+      itemCount: _contacts.length,
+      itemBuilder: (context, index) {
+        final contact = _contacts[index];
+        return _buildContactTile(contact);
+      },
+    );
+  }
+
+  Widget _buildContactTile(Map<String, dynamic> contact) {
+    final isSelected = _selectedUserIds.contains(contact['id']);
+    
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.lightImpact();
+        setState(() {
+          if (isSelected) {
+            _selectedUserIds.remove(contact['id']);
+          } else {
+            _selectedUserIds.add(contact['id']);
+          }
+        });
+      },
+      child: Container(
+        margin: EdgeInsets.only(bottom: 12.h),
+        padding: EdgeInsets.all(16.w),
+        decoration: BoxDecoration(
+          color: isSelected 
+              ? const Color(0xFF10B981).withValues(alpha: 0.1)
+              : Colors.white.withValues(alpha: 0.05),
+          borderRadius: BorderRadius.circular(16.r),
+          border: Border.all(
+            color: isSelected 
+                ? const Color(0xFF10B981) 
+                : Colors.white.withValues(alpha: 0.1),
+            width: isSelected ? 2 : 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            CircleAvatar(
+              radius: 24.r,
+              backgroundColor: Colors.white.withValues(alpha: 0.1),
+              child: Text(
+                (contact['name']?.isNotEmpty == true 
+                    ? contact['name'][0].toUpperCase() 
+                    : '?'),
+                style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            SizedBox(width: 16.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    contact['name'] ?? 'Unknown',
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  if (contact['phone']?.isNotEmpty == true) ...[
+                    SizedBox(height: 2.h),
+                    Text(
+                      contact['phone'] ?? '',
+                      style: GoogleFonts.inter(
+                        color: Colors.white.withValues(alpha: 0.7),
+                        fontSize: 14.sp,
+                      ),
+                    ),
+                  ],
+                  if (contact['email']?.isNotEmpty == true) ...[
+                    SizedBox(height: 2.h),
+                    Text(
+                      contact['email'] ?? '',
+                      style: GoogleFonts.inter(
+                        color: Colors.white.withValues(alpha: 0.5),
+                        fontSize: 12.sp,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            Container(
+              width: 24.w,
+              height: 24.w,
+              decoration: BoxDecoration(
+                color: isSelected 
+                    ? const Color(0xFF10B981) 
+                    : Colors.transparent,
+                borderRadius: BorderRadius.circular(6.r),
+                border: Border.all(
+                  color: isSelected 
+                      ? const Color(0xFF10B981) 
+                      : Colors.white.withValues(alpha: 0.3),
+                  width: 2,
+                ),
+              ),
+              child: isSelected
+                  ? Icon(
+                      Icons.check,
+                      color: Colors.white,
+                      size: 16.sp,
+                    )
+                  : null,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBottomActions() {
+    return Container(
+      padding: EdgeInsets.all(24.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1A1A3E),
+        border: Border(
+          top: BorderSide(
+            color: Colors.white.withValues(alpha: 0.1),
+          ),
+        ),
+      ),
+      child: SafeArea(
+        top: false,
+        child: Row(
+          children: [
+            Expanded(
+              child: OutlinedButton(
+                onPressed: () => Navigator.pop(context),
+                style: OutlinedButton.styleFrom(
+                  side: BorderSide(
+                    color: Colors.white.withValues(alpha: 0.3),
+                  ),
+                  padding: EdgeInsets.symmetric(vertical: 16.h),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                ),
+                child: Text(
+                  'Cancel',
+                  style: GoogleFonts.inter(
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white.withValues(alpha: 0.7),
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(width: 16.w),
+            Expanded(
+              flex: 2,
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: _selectedUserIds.isNotEmpty
+                        ? [const Color(0xFF10B981), const Color(0xFF059669)]
+                        : [Colors.grey.shade700, Colors.grey.shade800],
+                  ),
+                  borderRadius: BorderRadius.circular(12.r),
+                  boxShadow: _selectedUserIds.isNotEmpty ? [
+                    BoxShadow(
+                      color: const Color(0xFF10B981).withValues(alpha: 0.3),
+                      offset: const Offset(0, 4),
+                      blurRadius: 12,
+                    ),
+                  ] : null,
+                ),
+                child: ElevatedButton.icon(
+                  onPressed: _selectedUserIds.isNotEmpty ? _tagSelectedUsers : null,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.transparent,
+                    shadowColor: Colors.transparent,
+                    padding: EdgeInsets.symmetric(vertical: 16.h),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                  ),
+                  icon: Icon(
+                    Icons.group_add,
+                    color: Colors.white,
+                    size: 20.sp,
+                  ),
+                  label: Text(
+                    _selectedUserIds.isEmpty 
+                        ? 'Select Users' 
+                        : 'Tag ${_selectedUserIds.length} User${_selectedUserIds.length == 1 ? '' : 's'}',
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _addManualUser() {
+    final phone = _phoneController.text.trim();
+    final email = _emailController.text.trim();
+    
+    if (phone.isEmpty && email.isEmpty) {
+      _showErrorSnackbar('Please enter a phone number or email address');
+      return;
+    }
+    
+    // Generate a temporary ID for manual users
+    final manualId = 'manual_${DateTime.now().millisecondsSinceEpoch}';
+    
+    // Add to selected users
+    setState(() {
+      _selectedUserIds.add(manualId);
+    });
+    
+    // Clear inputs
+    _phoneController.clear();
+    _emailController.clear();
+    
+    // Show success
+    HapticFeedback.heavyImpact();
+    _showSuccessSnackbar('User added successfully');
+  }
+
+  Future<void> _requestContactsPermission() async {
+    final status = await Permission.contacts.request();
+    
+    if (status.isGranted) {
+      _loadContacts();
+    } else if (status.isDenied) {
+      _showErrorSnackbar('Contacts permission denied');
+    } else if (status.isPermanentlyDenied) {
+      _showErrorSnackbar('Please enable contacts permission in settings');
+    }
+  }
+
+  Future<void> _loadContacts() async {
+    if (_loadingContacts) return;
+    
+    setState(() {
+      _loadingContacts = true;
+    });
+    
+    try {
+      final permission = await Permission.contacts.status;
+      if (permission.isGranted) {
+        // Simulate loading mock contacts
+        final mockContacts = [
+          {
+            'id': 'contact1',
+            'name': 'Alice Cooper',
+            'phone': '+44 7700 900111',
+            'email': 'alice@example.com',
+          },
+          {
+            'id': 'contact2',
+            'name': 'Bob Wilson',
+            'phone': '+44 7700 900222',
+            'email': 'bob@example.com',
+          },
+          {
+            'id': 'contact3',
+            'name': 'Charlie Brown',
+            'phone': '+44 7700 900333',
+            'email': 'charlie@example.com',
+          },
+        ];
+        
+        await Future.delayed(Duration(seconds: 1)); // Simulate loading
+        
+        setState(() {
+          _contacts = mockContacts;
+        });
+      }
+    } catch (e) {
+      _showErrorSnackbar('Failed to load contacts');
+    } finally {
+      setState(() {
+        _loadingContacts = false;
+      });
+    }
+  }
+
+  void _tagSelectedUsers() {
+    if (_selectedUserIds.isEmpty) return;
+    
+    Navigator.pop(context);
+    
+    // Show success snackbar
+    final userCount = _selectedUserIds.length;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Container(
+              padding: EdgeInsets.all(8.w),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(20.r),
+              ),
+              child: Icon(
+                Icons.check_circle,
+                color: Colors.white,
+                size: 20.sp,
+              ),
+            ),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Successfully Tagged!',
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  Text(
+                    '$userCount user${userCount == 1 ? '' : 's'} tagged for payment',
+                    style: GoogleFonts.inter(
+                      color: Colors.white.withValues(alpha: 0.9),
+                      fontSize: 14.sp,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: const Color(0xFF10B981),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16.r),
+        ),
+        behavior: SnackBarBehavior.floating,
+        margin: EdgeInsets.only(
+          bottom: MediaQuery.of(context).size.height - 200.h,
+          right: 20.w,
+          left: 20.w,
+        ),
+        duration: Duration(seconds: 4),
+      ),
+    );
+    
+    HapticFeedback.heavyImpact();
+  }
+
+  void _showErrorSnackbar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: const Color(0xFFEF4444),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8.r),
+        ),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  void _showSuccessSnackbar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: const Color(0xFF10B981),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8.r),
+        ),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
   }
 } 

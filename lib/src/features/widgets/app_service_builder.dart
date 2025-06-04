@@ -34,35 +34,8 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
       case AppServiceName.exchange:
         Get.toNamed(AppRoutes.cbCurrencyExchange);
         break;
-      case AppServiceName.transferFunds:
-        final userArg = User(
-          id: "4454",
-          firstName: "John",
-          lastName: "Doe",
-          email: 'john.doe@example.com',
-          verified: false,
-          isEmailVerified: false,
-          createdAt: DateTime.fromMillisecondsSinceEpoch(0),
-          updatedAt: DateTime.fromMillisecondsSinceEpoch(0),
-        );
-        final transaction = TransferTransaction(
-          type: TransactionType.billPay,
-          amount: 5000,
-          accountNo: '1234567890',
-          transactionId: 'txn12345',
-          dateTime: DateTime.now(),
-          notes: 'Sample transaction',
-          status: TransactionStatus.pending,
-          user: userArg,
-        );
-
-        Get.toNamed(
-          AppRoutes.transferFunds,
-          arguments: {
-            'user': userArg,
-            'transaction': transaction,
-          },
-        );
+      case AppServiceName.payInvoice:
+        Get.toNamed(AppRoutes.payInvoice);
         break;
       case AppServiceName.giftCards:
         Get.toNamed(AppRoutes.giftCards);
@@ -166,8 +139,8 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
       case AppServiceName.invoice:
         iconData = Icons.receipt_long;
         break;
-      case AppServiceName.transferFunds:
-        iconData = Icons.swap_horiz;
+      case AppServiceName.payInvoice:
+        iconData = Icons.payment;
         break;
       case AppServiceName.payElectricityBill:
         iconData = Icons.receipt;

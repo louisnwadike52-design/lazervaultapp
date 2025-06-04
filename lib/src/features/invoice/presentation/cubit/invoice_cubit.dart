@@ -324,6 +324,19 @@ class InvoiceCubit extends Cubit<InvoiceState> {
     }
   }
 
+  // Load invoices tagged to current user (for payment)
+  Future<void> loadTaggedInvoices() async {
+    try {
+      emit(InvoiceLoading());
+      
+      final invoices = await repository.getInvoicesTaggedToUser(currentUserId);
+      
+      emit(InvoicesLoaded(invoices: invoices));
+    } catch (e) {
+      emit(InvoiceError(message: 'Failed to load tagged invoices: ${e.toString()}'));
+    }
+  }
+
   // Clear state
   void clearState() {
     emit(InvoiceInitial());

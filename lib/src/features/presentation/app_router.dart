@@ -51,7 +51,6 @@ import 'package:lazervault/src/features/presentation/views/input_pin_screen.dart
 import 'package:lazervault/src/features/presentation/views/new_card_screen.dart';
 import 'package:lazervault/src/features/presentation/views/pay_electricity_bill_screen.dart';
 import 'package:lazervault/src/features/presentation/views/review_funds_transfer_screen.dart';
-import 'package:lazervault/src/features/presentation/views/review_transfer_funds_screen.dart';
 import 'package:lazervault/src/features/presentation/views/select_country_screen.dart';
 import 'package:lazervault/src/features/recipients/data/models/recipient_model.dart';
 import 'package:lazervault/src/features/recipients/presentation/view/add_recipient_screen.dart';
@@ -72,7 +71,6 @@ import 'package:lazervault/src/features/stocks/presentation/view/stock_trade_rev
 import 'package:lazervault/src/features/stocks/presentation/view/stock_trade_receipt_screen.dart';
 import 'package:lazervault/src/features/stocks/cubit/stock_cubit.dart';
 import 'package:lazervault/src/features/stocks/domain/entities/stock_entity.dart';
-import 'package:lazervault/src/features/presentation/views/transfer_funds_screen.dart';
 import 'package:lazervault/src/features/presentation/views/upload_image_scren.dart';
 import '../../../core/services/injection_container.dart';
 import 'views/onboarding_screen.dart';
@@ -93,6 +91,8 @@ import 'package:lazervault/src/features/invoice/presentation/view/invoice_detail
 import 'package:lazervault/src/features/invoice/domain/entities/invoice_entity.dart';
 import 'package:lazervault/src/features/invoice/presentation/view/invoice_preview_screen.dart';
 import 'package:lazervault/src/features/invoice/presentation/view/invoice_payment_screen.dart';
+import 'package:lazervault/src/features/pay_invoice/presentation/view/pay_invoice_screen.dart';
+import 'package:lazervault/src/features/pay_invoice/presentation/cubit/pay_invoice_cubit.dart';
 
 class AppRouter {
   static final routes = [
@@ -386,28 +386,6 @@ class AppRouter {
       transition: Transition.rightToLeft,
     ),
     GetPage(
-      name: AppRoutes.transferFunds,
-      page: () {
-        final args = Get.arguments as Map<String, dynamic>;
-        return serviceLocator<TransferFundsScreen>(
-          param1: args['user'] as User,
-          param2: args['transaction'] as TransferTransaction,
-        );
-      },
-      transition: Transition.rightToLeft,
-    ),
-    GetPage(
-      name: AppRoutes.reviewTransferFunds,
-      page: () {
-        final args = Get.arguments as Map<String, dynamic>;
-        return serviceLocator<ReviewTransferFundsScreen>(
-          param1: args['user'] as User,
-          param2: args['transaction'] as TransferTransaction,
-        );
-      },
-      transition: Transition.rightToLeft,
-    ),
-    GetPage(
       name: AppRoutes.transactionHistory,
       page: () => serviceLocator<TransactionHistoryScreen>(),
       transition: Transition.rightToLeft,
@@ -663,6 +641,18 @@ class AppRouter {
           child: serviceLocator<CryptoChartDetailsScreen>(param1: crypto),
         );
       },
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.payInvoice,
+      page: () => MultiBlocProvider(
+        providers: [
+          BlocProvider(
+            create: (_) => serviceLocator<PayInvoiceCubit>(),
+          ),
+        ],
+        child: serviceLocator<PayInvoiceScreen>(),
+      ),
       transition: Transition.rightToLeft,
     ),
   ];

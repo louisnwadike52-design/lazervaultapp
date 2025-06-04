@@ -4,6 +4,7 @@ abstract class InvoiceRepository {
   // CRUD Operations
   Future<List<Invoice>> getAllInvoices();
   Future<List<Invoice>> getInvoicesByUserId(String userId);
+  Future<List<Invoice>> getInvoicesTaggedToUser(String userId);
   Future<List<Invoice>> getInvoicesByStatus(InvoiceStatus status);
   Future<Invoice?> getInvoiceById(String id);
   Future<Invoice> createInvoice(Invoice invoice);

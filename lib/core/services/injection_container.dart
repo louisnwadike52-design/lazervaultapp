@@ -55,7 +55,6 @@ import 'package:lazervault/src/features/presentation/views/input_pin_screen.dart
 import 'package:lazervault/src/features/presentation/views/new_card_screen.dart';
 import 'package:lazervault/src/features/presentation/views/pay_electricity_bill_screen.dart';
 import 'package:lazervault/src/features/presentation/views/review_funds_transfer_screen.dart';
-import 'package:lazervault/src/features/presentation/views/review_transfer_funds_screen.dart';
 import 'package:lazervault/src/features/presentation/views/select_country_screen.dart';
 import 'package:lazervault/src/features/recipients/presentation/view/select_recipient_screen.dart';
 import 'package:lazervault/src/features/presentation/views/send_fund_receipt_screen.dart';
@@ -65,7 +64,6 @@ import 'package:lazervault/src/features/presentation/views/set_fingerprint_scree
 import 'package:lazervault/src/features/authentication/presentation/views/passcode_sign_in_screen.dart';
 import 'package:lazervault/src/features/authentication/presentation/views/sign_up_screen.dart';
 import 'package:lazervault/src/features/presentation/views/stocks/stocks_screen.dart';
-import 'package:lazervault/src/features/presentation/views/transfer_funds_screen.dart';
 import 'package:lazervault/src/features/presentation/views/upload_image_scren.dart';
 import 'package:lazervault/src/generated/withdraw.pbgrpc.dart';
 
@@ -154,6 +152,11 @@ import 'package:lazervault/src/features/invoice/presentation/cubit/invoice_cubit
 import 'package:lazervault/src/features/invoice/presentation/view/invoice_list_screen.dart';
 import 'package:lazervault/src/features/invoice/presentation/view/create_invoice_screen.dart';
 import 'package:lazervault/src/features/invoice/presentation/view/invoice_details_screen.dart';
+import 'package:lazervault/src/features/pay_invoice/presentation/view/pay_invoice_screen.dart';
+import 'package:lazervault/src/features/pay_invoice/presentation/cubit/pay_invoice_cubit.dart';
+import 'package:lazervault/src/features/pay_invoice/data/repositories/pay_invoice_repository_impl.dart';
+import 'package:lazervault/src/features/pay_invoice/data/datasources/pay_invoice_local_datasource.dart';
+import 'package:lazervault/src/features/pay_invoice/domain/repositories/pay_invoice_repository.dart';
 // End Invoice Imports
 
 import 'package:lazervault/src/features/investments/presentation/view/investments_screen.dart';
@@ -450,6 +453,7 @@ Future<void> init() async {
       ..registerFactory(() => AddRecipientScreen())
       ..registerFactory(() => InvoiceListScreen())
       ..registerFactory(() => CreateInvoiceScreen())
+      ..registerFactory(() => PayInvoiceScreen())
       ..registerFactoryParam<InvoiceDetailsScreen, String, void>(
           (invoiceId, _) => InvoiceDetailsScreen(invoiceId: invoiceId))
       ..registerFactoryParam<InputPinScreen, User, void>(
@@ -507,15 +511,6 @@ Future<void> init() async {
               void>(
           (electricityBillDetails, _) => ReviewElectricityBillsScreen(
               electricityBillDetails: electricityBillDetails))
-      ..registerFactoryParam<TransferFundsScreen, User, TransferTransaction>(
-        (user, transaction) =>
-            TransferFundsScreen(user: user, transaction: transaction),
-      )
-      ..registerFactoryParam<ReviewTransferFundsScreen, User,
-          TransferTransaction>(
-        (user, transaction) =>
-            ReviewTransferFundsScreen(user: user, transaction: transaction),
-      )
       ..registerFactoryParam<DepositFundsScreen, Map<String, dynamic>, void>(
         (selectedCard, _) => DepositFundsScreen(selectedCard: selectedCard),
       )
@@ -532,6 +527,23 @@ Future<void> init() async {
   // Then, register VoiceSessionCubit and inject AuthenticationCubit:
   serviceLocator.registerLazySingleton<VoiceSessionCubit>(
     () => VoiceSessionCubit(),
+  );
+
+  // ================== Feature: Pay Invoice ==================
+
+  // Data Sources
+  serviceLocator.registerLazySingleton<PayInvoiceLocalDataSource>(
+    () => PayInvoiceLocalDataSourceImpl(),
+  );
+
+  // Repositories
+  serviceLocator.registerLazySingleton<PayInvoiceRepository>(
+    () => PayInvoiceRepositoryImpl(localDataSource: serviceLocator<PayInvoiceLocalDataSource>()),
+  );
+
+  // Blocs/Cubits
+  serviceLocator.registerFactory<PayInvoiceCubit>(
+    () => PayInvoiceCubit(repository: serviceLocator<PayInvoiceRepository>()),
   );
 
   print("Dependency Injection Initialized with Hierarchical Order");
