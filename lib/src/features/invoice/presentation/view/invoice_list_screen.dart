@@ -8,6 +8,7 @@ import 'package:lazervault/core/types/app_routes.dart';
 
 import '../../domain/entities/invoice_entity.dart';
 import '../../services/invoice_pdf_service.dart';
+import '../../data/models/pagination_model.dart';
 import '../cubit/invoice_cubit.dart';
 import '../cubit/invoice_state.dart';
 import '../widgets/invoice_card.dart';
@@ -31,7 +32,7 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
   void initState() {
     super.initState();
     
-    // Load initial data
+    // Load initial data with pagination
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<InvoiceCubit>().loadInvoices();
     });
@@ -149,7 +150,7 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
               ),
               onChanged: (query) {
                 if (query.isNotEmpty) {
-                  context.read<InvoiceCubit>().searchInvoices(query);
+                  context.read<InvoiceCubit>().searchInvoices(query: query);
                 } else {
                   context.read<InvoiceCubit>().loadInvoices();
                 }
@@ -403,7 +404,8 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
     if (status == null) {
       context.read<InvoiceCubit>().loadInvoices();
     } else {
-      context.read<InvoiceCubit>().loadInvoicesByStatus(status);
+      final filter = InvoiceSearchFilter(statuses: [status.name]);
+      context.read<InvoiceCubit>().applyFilters(filter);
     }
   }
 

@@ -918,26 +918,23 @@ class InvoicePreviewScreen extends StatelessWidget {
     String qrData;
     String title;
     String subtitle;
-    Color accentColor;
+    Color accentColor = const Color(0xFFEA580C); // Orange color for all QR codes
 
     switch (type) {
       case 'invoice':
         qrData = InvoiceQrService.generateInvoiceQR(invoice);
         title = 'Invoice QR Code';
         subtitle = 'Scan to view invoice details';
-        accentColor = const Color(0xFF10B981);
         break;
       case 'payment':
         qrData = InvoiceQrService.generatePaymentQR(invoice);
         title = 'Payment QR Code';
         subtitle = 'Scan to pay invoice';
-        accentColor = const Color(0xFFEAB308);
         break;
       default:
         qrData = InvoiceQrService.generateInvoiceUrl(invoice);
         title = 'Invoice QR Code';
         subtitle = 'Scan to view invoice';
-        accentColor = const Color(0xFF6366F1);
     }
 
     // Global key to capture QR code widget
@@ -963,7 +960,7 @@ class InvoicePreviewScreen extends StatelessWidget {
                   Container(
                     padding: EdgeInsets.all(8.w),
                     decoration: BoxDecoration(
-                      color: accentColor.withOpacity(0.1),
+                      color: accentColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8.r),
                     ),
                     child: Icon(
@@ -1809,7 +1806,7 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
   }
 
   Widget _buildManualTab() {
-    return Padding(
+    return SingleChildScrollView(
       padding: EdgeInsets.all(24.w),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1935,7 +1932,7 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
   }
 
   Widget _buildContactsTab() {
-    return Padding(
+    return SingleChildScrollView(
       padding: EdgeInsets.all(24.w),
       child: Column(
         children: [
@@ -2004,7 +2001,8 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
           SizedBox(height: 20.h),
           
           // Contacts list
-          Expanded(
+          SizedBox(
+            height: MediaQuery.of(context).size.height * 0.4, // Fixed height for contacts list
             child: _loadingContacts
                 ? _buildLoadingState()
                 : _contacts.isEmpty
