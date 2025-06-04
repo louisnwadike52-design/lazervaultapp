@@ -160,6 +160,13 @@ import 'package:lazervault/src/features/pay_invoice/domain/repositories/pay_invo
 
 import 'package:lazervault/src/features/investments/presentation/view/investments_screen.dart';
 
+// AI Scan to Pay Imports
+import 'package:lazervault/src/features/ai_scan_to_pay/data/datasources/ai_scan_datasource.dart';
+import 'package:lazervault/src/features/ai_scan_to_pay/data/repositories/ai_scan_repository_impl.dart';
+import 'package:lazervault/src/features/ai_scan_to_pay/domain/repositories/ai_scan_repository.dart';
+import 'package:lazervault/src/features/ai_scan_to_pay/domain/usecases/ai_scan_usecases.dart';
+import 'package:lazervault/src/features/ai_scan_to_pay/presentation/cubit/ai_scan_cubit.dart';
+
 final serviceLocator = GetIt.instance;
 
 Future<void> init() async {
@@ -541,6 +548,36 @@ Future<void> init() async {
   serviceLocator.registerFactory<PayInvoiceCubit>(
     () => PayInvoiceCubit(repository: serviceLocator<PayInvoiceRepository>()),
   );
+
+  // ================== Feature: AI Scan to Pay ==================
+
+  // Data Sources
+  serviceLocator.registerLazySingleton<AiScanDataSource>(
+    () => AiScanDataSourceImpl(),
+  );
+
+  // Repositories
+  serviceLocator.registerLazySingleton<AiScanRepository>(
+    () => AiScanRepositoryImpl(serviceLocator<AiScanDataSource>()),
+  );
+
+  // Use Cases
+  serviceLocator.registerLazySingleton(() => StartScanSessionUseCase(serviceLocator<AiScanRepository>()));
+  serviceLocator.registerLazySingleton(() => ProcessScanUseCase(serviceLocator<AiScanRepository>()));
+  serviceLocator.registerLazySingleton(() => AiChatUseCase(serviceLocator<AiScanRepository>()));
+  serviceLocator.registerLazySingleton(() => GeneratePaymentUseCase(serviceLocator<AiScanRepository>()));
+  serviceLocator.registerLazySingleton(() => ProcessPaymentUseCase(serviceLocator<AiScanRepository>()));
+  serviceLocator.registerLazySingleton(() => GetScanHistoryUseCase(serviceLocator<AiScanRepository>()));
+
+  // Cubit
+  serviceLocator.registerFactory(() => AiScanCubit(
+    startScanSessionUseCase: serviceLocator<StartScanSessionUseCase>(),
+    processScanUseCase: serviceLocator<ProcessScanUseCase>(),
+    aiChatUseCase: serviceLocator<AiChatUseCase>(),
+    generatePaymentUseCase: serviceLocator<GeneratePaymentUseCase>(),
+    processPaymentUseCase: serviceLocator<ProcessPaymentUseCase>(),
+    getScanHistoryUseCase: serviceLocator<GetScanHistoryUseCase>(),
+  ));
 
   print("Dependency Injection Initialized with Hierarchical Order");
 }

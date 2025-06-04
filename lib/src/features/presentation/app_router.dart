@@ -93,6 +93,13 @@ import 'package:lazervault/src/features/invoice/presentation/view/invoice_previe
 import 'package:lazervault/src/features/invoice/presentation/view/invoice_payment_screen.dart';
 import 'package:lazervault/src/features/pay_invoice/presentation/view/pay_invoice_screen.dart';
 import 'package:lazervault/src/features/pay_invoice/presentation/cubit/pay_invoice_cubit.dart';
+// AI Scan to Pay imports
+import 'package:lazervault/src/features/ai_scan_to_pay/presentation/view/ai_scan_to_pay_screen.dart';
+import 'package:lazervault/src/features/ai_scan_to_pay/presentation/cubit/ai_scan_cubit.dart';
+import 'package:lazervault/src/features/ai_scan_to_pay/presentation/view/ai_scan_camera_screen.dart';
+// import 'package:lazervault/src/features/ai_scan_to_pay/presentation/view/ai_scan_payment_screen.dart';
+// import 'package:lazervault/src/features/ai_scan_to_pay/presentation/view/ai_scan_payment_success_screen.dart';
+// import 'package:lazervault/src/features/ai_scan_to_pay/domain/entities/scan_entities.dart';
 
 class AppRouter {
   static final routes = [
@@ -655,5 +662,47 @@ class AppRouter {
       ),
       transition: Transition.rightToLeft,
     ),
+    // AI Scan to Pay routes
+    GetPage(
+      name: AppRoutes.aiScanToPay,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<AiScanCubit>(),
+        child: const AiScanToPayScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.aiScanCamera,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<AiScanCubit>(),
+        child: const AiScanCameraScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    // GetPage(
+    //   name: AppRoutes.aiScanPayment,
+    //   page: () {
+    //     final paymentInstruction = Get.arguments as PaymentInstruction;
+    //     return BlocProvider(
+    //       create: (_) => serviceLocator<AiScanCubit>(),
+    //       child: AiScanPaymentScreen(paymentInstruction: paymentInstruction),
+    //     );
+    //   },
+    //   transition: Transition.rightToLeft,
+    // ),
+    // GetPage(
+    //   name: AppRoutes.aiScanPaymentSuccess,
+    //   page: () {
+    //     final args = Get.arguments as Map<String, dynamic>;
+    //     return BlocProvider(
+    //       create: (_) => serviceLocator<AiScanCubit>(),
+    //       child: AiScanPaymentSuccessScreen(
+    //         paymentInstruction: args['paymentInstruction'] as PaymentInstruction,
+    //         transactionId: args['transactionId'] as String,
+    //       ),
+    //     );
+    //   },
+    //   transition: Transition.rightToLeft,
+    // ),
   ];
 }

@@ -106,6 +106,8 @@ class _NotificationsBuilderState extends State<NotificationsBuilder> {
         return Icons.currency_bitcoin_rounded;
       case AppServiceName.giftCards:
         return Icons.card_giftcard_rounded;
+      case AppServiceName.aiScanToPay:
+        return Icons.qr_code_scanner_rounded;
       default:
         return Icons.help_outline;
     }
@@ -129,6 +131,8 @@ class _NotificationsBuilderState extends State<NotificationsBuilder> {
         return Colors.amber;
       case AppServiceName.giftCards:
         return Colors.pink;
+      case AppServiceName.aiScanToPay:
+        return const Color.fromARGB(255, 78, 3, 208);
     }
   }
 
