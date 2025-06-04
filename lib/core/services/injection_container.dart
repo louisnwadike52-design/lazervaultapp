@@ -144,7 +144,6 @@ import 'package:lazervault/src/features/crypto/presentation/view/crypto_detail_s
 // End Crypto Imports
 
 // Invoice Imports
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:lazervault/src/features/invoice/data/datasources/invoice_local_datasource.dart';
 import 'package:lazervault/src/features/invoice/data/repositories/invoice_repository_impl.dart';
 import 'package:lazervault/src/features/invoice/domain/repositories/invoice_repository.dart';
@@ -416,17 +415,14 @@ Future<void> init() async {
 
   // ================== Feature: Invoice ==================
 
-  // External Dependencies
-  serviceLocator.registerLazySingletonAsync<SharedPreferences>(
-    () => SharedPreferences.getInstance(),
-  );
-
-  // Wait for SharedPreferences to be ready
-  await serviceLocator.isReady<SharedPreferences>();
-
   // Data Sources
   serviceLocator.registerLazySingleton<InvoiceLocalDataSource>(
-    () => InvoiceLocalDataSourceImpl(sharedPreferences: serviceLocator<SharedPreferences>()),
+    () {
+      final dataSource = InvoiceLocalDataSourceImpl();
+      // Initialize Hive when the data source is created
+      dataSource.initializeHive();
+      return dataSource;
+    },
   );
 
   // Repositories

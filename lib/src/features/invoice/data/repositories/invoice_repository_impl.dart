@@ -11,6 +11,7 @@ import '../../domain/entities/invoice_entity.dart';
 import '../../domain/repositories/invoice_repository.dart';
 import '../datasources/invoice_local_datasource.dart';
 import '../models/invoice_model.dart';
+import '../models/pagination_model.dart';
 
 class InvoiceRepositoryImpl implements InvoiceRepository {
   final InvoiceLocalDataSource localDataSource;
@@ -19,20 +20,46 @@ class InvoiceRepositoryImpl implements InvoiceRepository {
 
   @override
   Future<List<Invoice>> getAllInvoices() async {
-    final models = await localDataSource.getAllInvoices();
-    return models.cast<Invoice>();
+    final result = await localDataSource.getAllInvoices();
+    return result.invoices.cast<Invoice>();
+  }
+
+  Future<PaginatedInvoiceResult> getAllInvoicesPaginated({
+    int page = 1,
+    int limit = 20,
+    InvoiceSearchFilter? filter,
+  }) async {
+    return await localDataSource.getAllInvoices(
+      page: page,
+      limit: limit,
+      filter: filter,
+    );
+  }
+
+  Future<PaginatedInvoiceResult> searchInvoicesPaginated({
+    required String query,
+    int page = 1,
+    int limit = 20,
+    InvoiceSearchFilter? filter,
+  }) async {
+    return await localDataSource.searchInvoices(
+      query: query,
+      page: page,
+      limit: limit,
+      filter: filter,
+    );
   }
 
   @override
   Future<List<Invoice>> getInvoicesByUserId(String userId) async {
-    final invoices = await getAllInvoices();
-    return invoices.where((invoice) => invoice.fromUserId == userId).toList();
+    final models = await localDataSource.getInvoicesByUserId(userId);
+    return models.cast<Invoice>();
   }
 
   @override
   Future<List<Invoice>> getInvoicesByStatus(InvoiceStatus status) async {
-    final invoices = await getAllInvoices();
-    return invoices.where((invoice) => invoice.status == status).toList();
+    final models = await localDataSource.getInvoicesByStatus(status);
+    return models.cast<Invoice>();
   }
 
   @override
@@ -128,28 +155,14 @@ class InvoiceRepositoryImpl implements InvoiceRepository {
 
   @override
   Future<List<Invoice>> searchInvoices(String query) async {
-    final invoices = await getAllInvoices();
-    final lowerQuery = query.toLowerCase();
-    
-    return invoices.where((invoice) {
-      return invoice.title.toLowerCase().contains(lowerQuery) ||
-             invoice.description.toLowerCase().contains(lowerQuery) ||
-             (invoice.toName?.toLowerCase().contains(lowerQuery) ?? false) ||
-             (invoice.toEmail?.toLowerCase().contains(lowerQuery) ?? false) ||
-             invoice.id.toLowerCase().contains(lowerQuery);
-    }).toList();
+    final result = await localDataSource.searchInvoices(query: query);
+    return result.invoices.cast<Invoice>();
   }
 
   @override
   Future<List<Invoice>> getOverdueInvoices() async {
-    final invoices = await getAllInvoices();
-    final now = DateTime.now();
-    
-    return invoices.where((invoice) {
-      return invoice.status == InvoiceStatus.pending &&
-             invoice.dueDate != null &&
-             now.isAfter(invoice.dueDate!);
-    }).toList();
+    final models = await localDataSource.getOverdueInvoices();
+    return models.cast<Invoice>();
   }
 
   @override
@@ -255,8 +268,8 @@ Payment Link: https://payment.app/invoice/${invoice.id}
 
   @override
   Future<List<Invoice>> getInvoicesTaggedToUser(String userId) async {
-    final invoices = await getAllInvoices();
-    return invoices.where((invoice) => invoice.toUserId == userId).toList();
+    final models = await localDataSource.getAllInvoices();
+    return models.invoices.where((invoice) => invoice.toUserId == userId).toList().cast<Invoice>();
   }
 
   // Private helper methods
@@ -268,25 +281,12 @@ Payment Link: https://payment.app/invoice/${invoice.id}
 
   String _generatePaymentReference() {
     final timestamp = DateTime.now().millisecondsSinceEpoch;
-    final random = Random().nextInt(999999);
+    final random = Random().nextInt(9999);
     return 'PAY-$timestamp-$random';
   }
 
   Future<String> _generateQRData(Invoice invoice) async {
     // Generate QR code data with payment information
-    // This could be a payment URL, bank transfer details, or crypto address
-    
-    final qrData = {
-      'invoice_id': invoice.id,
-      'amount': invoice.totalAmount,
-      'currency': invoice.currency,
-      'recipient': invoice.fromUserId,
-      'description': invoice.title,
-      'due_date': invoice.dueDate?.toIso8601String(),
-      'payment_url': 'https://payment.app/pay/${invoice.id}',
-    };
-
-    // Convert to a payment URI format (could be customized based on payment method)
-    return 'lazervault://pay?${Uri(queryParameters: qrData.map((k, v) => MapEntry(k, v.toString()))).query}';
+    return 'invoice://pay?id=${invoice.id}&amount=${invoice.totalAmount}&currency=${invoice.currency}';
   }
 } 

@@ -1,32 +1,167 @@
+import 'package:hive/hive.dart';
 import '../../domain/entities/invoice_entity.dart';
 
+part 'invoice_model.g.dart';
+
+// Custom Type Adapters for Domain Enums
+class InvoiceStatusAdapter extends TypeAdapter<InvoiceStatus> {
+  @override
+  final int typeId = 3;
+
+  @override
+  InvoiceStatus read(BinaryReader reader) {
+    final index = reader.readByte();
+    return InvoiceStatus.values[index];
+  }
+
+  @override
+  void write(BinaryWriter writer, InvoiceStatus obj) {
+    writer.writeByte(obj.index);
+  }
+}
+
+class InvoiceTypeAdapter extends TypeAdapter<InvoiceType> {
+  @override
+  final int typeId = 4;
+
+  @override
+  InvoiceType read(BinaryReader reader) {
+    final index = reader.readByte();
+    return InvoiceType.values[index];
+  }
+
+  @override
+  void write(BinaryWriter writer, InvoiceType obj) {
+    writer.writeByte(obj.index);
+  }
+}
+
+class PaymentMethodAdapter extends TypeAdapter<PaymentMethod> {
+  @override
+  final int typeId = 5;
+
+  @override
+  PaymentMethod read(BinaryReader reader) {
+    final index = reader.readByte();
+    return PaymentMethod.values[index];
+  }
+
+  @override
+  void write(BinaryWriter writer, PaymentMethod obj) {
+    writer.writeByte(obj.index);
+  }
+}
+
+@HiveType(typeId: 0)
 class InvoiceModel extends Invoice {
+  @HiveField(0)
+  final String id;
+  @HiveField(1)
+  final String title;
+  @HiveField(2)
+  final String description;
+  @HiveField(3)
+  final double amount;
+  @HiveField(4)
+  final String currency;
+  @HiveField(5)
+  final InvoiceStatus status;
+  @HiveField(6)
+  final InvoiceType type;
+  @HiveField(7)
+  final DateTime createdAt;
+  @HiveField(8)
+  final DateTime? dueDate;
+  @HiveField(9)
+  final DateTime? paidAt;
+  @HiveField(10)
+  final String fromUserId;
+  @HiveField(11)
+  final String? toUserId;
+  @HiveField(12)
+  final String? toEmail;
+  @HiveField(13)
+  final String? toName;
+  @HiveField(14)
+  final List<InvoiceItemModel> items;
+  @HiveField(15)
+  final double? taxAmount;
+  @HiveField(16)
+  final double? discountAmount;
+  @HiveField(17)
+  final double totalAmount;
+  @HiveField(18)
+  final String? notes;
+  @HiveField(19)
+  final PaymentMethod? paymentMethod;
+  @HiveField(20)
+  final String? paymentReference;
+  @HiveField(21)
+  final String? qrCodeData;
+  @HiveField(22)
+  final List<String>? attachments;
+  @HiveField(23)
+  final Map<String, dynamic>? metadata;
+  @HiveField(24)
+  final AddressDetailsModel? recipientDetails;
+  @HiveField(25)
+  final AddressDetailsModel? payerDetails;
+
   const InvoiceModel({
-    required super.id,
-    required super.title,
-    required super.description,
-    required super.amount,
-    required super.currency,
-    required super.status,
-    required super.type,
-    required super.createdAt,
-    super.dueDate,
-    super.paidAt,
-    required super.fromUserId,
-    super.toUserId,
-    super.toEmail,
-    super.toName,
-    required super.items,
-    super.taxAmount,
-    super.discountAmount,
-    required super.totalAmount,
-    super.notes,
-    super.paymentMethod,
-    super.paymentReference,
-    super.qrCodeData,
-    super.attachments,
-    super.metadata,
-  });
+    required this.id,
+    required this.title,
+    required this.description,
+    required this.amount,
+    required this.currency,
+    required this.status,
+    required this.type,
+    required this.createdAt,
+    this.dueDate,
+    this.paidAt,
+    required this.fromUserId,
+    this.toUserId,
+    this.toEmail,
+    this.toName,
+    required this.items,
+    this.taxAmount,
+    this.discountAmount,
+    required this.totalAmount,
+    this.notes,
+    this.paymentMethod,
+    this.paymentReference,
+    this.qrCodeData,
+    this.attachments,
+    this.metadata,
+    this.recipientDetails,
+    this.payerDetails,
+  }) : super(
+    id: id,
+    title: title,
+    description: description,
+    amount: amount,
+    currency: currency,
+    status: status,
+    type: type,
+    createdAt: createdAt,
+    dueDate: dueDate,
+    paidAt: paidAt,
+    fromUserId: fromUserId,
+    toUserId: toUserId,
+    toEmail: toEmail,
+    toName: toName,
+    items: items,
+    taxAmount: taxAmount,
+    discountAmount: discountAmount,
+    totalAmount: totalAmount,
+    notes: notes,
+    paymentMethod: paymentMethod,
+    paymentReference: paymentReference,
+    qrCodeData: qrCodeData,
+    attachments: attachments,
+    metadata: metadata,
+    recipientDetails: recipientDetails,
+    payerDetails: payerDetails,
+  );
 
   factory InvoiceModel.fromJson(Map<String, dynamic> json) {
     return InvoiceModel(
@@ -69,6 +204,12 @@ class InvoiceModel extends Invoice {
           ? List<String>.from(json['attachments'] as List)
           : null,
       metadata: json['metadata'] as Map<String, dynamic>?,
+      recipientDetails: json['recipient_details'] != null
+          ? AddressDetailsModel.fromJson(json['recipient_details'] as Map<String, dynamic>)
+          : null,
+      payerDetails: json['payer_details'] != null
+          ? AddressDetailsModel.fromJson(json['payer_details'] as Map<String, dynamic>)
+          : null,
     );
   }
 
@@ -88,7 +229,7 @@ class InvoiceModel extends Invoice {
       'to_user_id': toUserId,
       'to_email': toEmail,
       'to_name': toName,
-      'items': items.map((item) => InvoiceItemModel.fromInvoiceItem(item).toJson()).toList(),
+      'items': items.map((item) => item.toJson()).toList(),
       'tax_amount': taxAmount,
       'discount_amount': discountAmount,
       'total_amount': totalAmount,
@@ -98,49 +239,81 @@ class InvoiceModel extends Invoice {
       'qr_code_data': qrCodeData,
       'attachments': attachments,
       'metadata': metadata,
+      'recipient_details': recipientDetails?.toJson(),
+      'payer_details': payerDetails?.toJson(),
     };
   }
 
-  factory InvoiceModel.fromEntity(Invoice invoice) {
+  factory InvoiceModel.fromEntity(Invoice entity) {
     return InvoiceModel(
-      id: invoice.id,
-      title: invoice.title,
-      description: invoice.description,
-      amount: invoice.amount,
-      currency: invoice.currency,
-      status: invoice.status,
-      type: invoice.type,
-      createdAt: invoice.createdAt,
-      dueDate: invoice.dueDate,
-      paidAt: invoice.paidAt,
-      fromUserId: invoice.fromUserId,
-      toUserId: invoice.toUserId,
-      toEmail: invoice.toEmail,
-      toName: invoice.toName,
-      items: invoice.items,
-      taxAmount: invoice.taxAmount,
-      discountAmount: invoice.discountAmount,
-      totalAmount: invoice.totalAmount,
-      notes: invoice.notes,
-      paymentMethod: invoice.paymentMethod,
-      paymentReference: invoice.paymentReference,
-      qrCodeData: invoice.qrCodeData,
-      attachments: invoice.attachments,
-      metadata: invoice.metadata,
+      id: entity.id,
+      title: entity.title,
+      description: entity.description,
+      amount: entity.amount,
+      currency: entity.currency,
+      status: entity.status,
+      type: entity.type,
+      createdAt: entity.createdAt,
+      dueDate: entity.dueDate,
+      paidAt: entity.paidAt,
+      fromUserId: entity.fromUserId,
+      toUserId: entity.toUserId,
+      toEmail: entity.toEmail,
+      toName: entity.toName,
+      items: entity.items.map((item) => InvoiceItemModel.fromInvoiceItem(item)).toList(),
+      taxAmount: entity.taxAmount,
+      discountAmount: entity.discountAmount,
+      totalAmount: entity.totalAmount,
+      notes: entity.notes,
+      paymentMethod: entity.paymentMethod,
+      paymentReference: entity.paymentReference,
+      qrCodeData: entity.qrCodeData,
+      attachments: entity.attachments,
+      metadata: entity.metadata,
+      recipientDetails: entity.recipientDetails != null 
+          ? AddressDetailsModel.fromEntity(entity.recipientDetails!)
+          : null,
+      payerDetails: entity.payerDetails != null 
+          ? AddressDetailsModel.fromEntity(entity.payerDetails!)
+          : null,
     );
   }
 }
 
+@HiveType(typeId: 1)
 class InvoiceItemModel extends InvoiceItem {
+  @HiveField(0)
+  final String id;
+  @HiveField(1)
+  final String name;
+  @HiveField(2)
+  final String? description;
+  @HiveField(3)
+  final double quantity;
+  @HiveField(4)
+  final double unitPrice;
+  @HiveField(5)
+  final double totalPrice;
+  @HiveField(6)
+  final String? category;
+
   const InvoiceItemModel({
-    required super.id,
-    required super.name,
-    super.description,
-    required super.quantity,
-    required super.unitPrice,
-    required super.totalPrice,
-    super.category,
-  });
+    required this.id,
+    required this.name,
+    this.description,
+    required this.quantity,
+    required this.unitPrice,
+    required this.totalPrice,
+    this.category,
+  }) : super(
+    id: id,
+    name: name,
+    description: description,
+    quantity: quantity,
+    unitPrice: unitPrice,
+    totalPrice: totalPrice,
+    category: category,
+  );
 
   factory InvoiceItemModel.fromJson(Map<String, dynamic> json) {
     return InvoiceItemModel(
@@ -175,6 +348,99 @@ class InvoiceItemModel extends InvoiceItem {
       unitPrice: item.unitPrice,
       totalPrice: item.totalPrice,
       category: item.category,
+    );
+  }
+}
+
+@HiveType(typeId: 2)
+class AddressDetailsModel extends AddressDetails {
+  @HiveField(0)
+  final String? companyName;
+  @HiveField(1)
+  final String? contactName;
+  @HiveField(2)
+  final String? email;
+  @HiveField(3)
+  final String? phone;
+  @HiveField(4)
+  final String? addressLine1;
+  @HiveField(5)
+  final String? addressLine2;
+  @HiveField(6)
+  final String? city;
+  @HiveField(7)
+  final String? state;
+  @HiveField(8)
+  final String? postcode;
+  @HiveField(9)
+  final String? country;
+
+  const AddressDetailsModel({
+    this.companyName,
+    this.contactName,
+    this.email,
+    this.phone,
+    this.addressLine1,
+    this.addressLine2,
+    this.city,
+    this.state,
+    this.postcode,
+    this.country,
+  }) : super(
+    companyName: companyName,
+    contactName: contactName,
+    email: email,
+    phone: phone,
+    addressLine1: addressLine1,
+    addressLine2: addressLine2,
+    city: city,
+    state: state,
+    postcode: postcode,
+    country: country,
+  );
+
+  factory AddressDetailsModel.fromJson(Map<String, dynamic> json) {
+    return AddressDetailsModel(
+      companyName: json['company_name'] as String?,
+      contactName: json['contact_name'] as String?,
+      email: json['email'] as String?,
+      phone: json['phone'] as String?,
+      addressLine1: json['address_line1'] as String?,
+      addressLine2: json['address_line2'] as String?,
+      city: json['city'] as String?,
+      state: json['state'] as String?,
+      postcode: json['postcode'] as String?,
+      country: json['country'] as String?,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'company_name': companyName,
+      'contact_name': contactName,
+      'email': email,
+      'phone': phone,
+      'address_line1': addressLine1,
+      'address_line2': addressLine2,
+      'city': city,
+      'state': state,
+      'postcode': postcode,
+      'country': country,
+    };
+  }
+
+  factory AddressDetailsModel.fromEntity(AddressDetails entity) {
+    return AddressDetailsModel(
+      companyName: entity.companyName,
+      contactName: entity.contactName,
+      email: entity.email,
+      phone: entity.phone,
+      addressLine1: entity.addressLine1,
+      addressLine2: entity.addressLine2,
+      city: entity.city,
+      state: entity.state,
+      postcode: entity.postcode,
+      country: entity.country,
     );
   }
 } 
