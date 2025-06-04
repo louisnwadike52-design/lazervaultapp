@@ -115,5 +115,16 @@ abstract class AppRoutes {
   static const String aiScanPayment = '/ai-scan-to-pay/payment';
   static const String aiScanPaymentSuccess = '/ai-scan-to-pay/payment-success';
   
+  // Group Account Routes
+  static const String groupAccount = '/group-account';
+  static const String groupDetails = '/group-account/details';
+  static const String createGroup = '/group-account/create';
+  static const String addGroupMember = '/group-account/add-member';
+  static const String createContribution = '/group-account/create-contribution';
+  static const String contributionDetails = '/group-account/contribution-details';
+  static const String makePayment = '/group-account/make-payment';
+  static const String paymentReceipt = '/group-account/payment-receipt';
+  static const String contributionTranscript = '/group-account/contribution-transcript';
+  
   static const String investments = '/investments';
 }

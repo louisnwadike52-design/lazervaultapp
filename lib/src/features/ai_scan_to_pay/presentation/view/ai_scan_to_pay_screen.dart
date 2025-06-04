@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
 import '../../domain/entities/scan_entities.dart';
 import '../cubit/ai_scan_cubit.dart';
@@ -28,7 +29,7 @@ class _AiScanToPayScreenState extends State<AiScanToPayScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: const Color(0xFF0A0A0A),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -37,29 +38,26 @@ class _AiScanToPayScreenState extends State<AiScanToPayScreen> {
           icon: Container(
             padding: EdgeInsets.all(8.w),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: const Color(0xFF1F1F1F),
               shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 10,
-                  offset: const Offset(0, 2),
-                ),
-              ],
+              border: Border.all(
+                color: const Color(0xFF2D2D2D),
+                width: 1,
+              ),
             ),
             child: Icon(
               Icons.arrow_back,
-              color: Colors.black87,
+              color: Colors.white,
               size: 20.sp,
             ),
           ),
         ),
         title: Text(
           'AI Scan to Pay',
-          style: TextStyle(
+          style: GoogleFonts.inter(
             fontSize: 20.sp,
             fontWeight: FontWeight.w700,
-            color: Colors.black87,
+            color: Colors.white,
           ),
         ),
         centerTitle: true,
@@ -69,15 +67,12 @@ class _AiScanToPayScreenState extends State<AiScanToPayScreen> {
             icon: Container(
               padding: EdgeInsets.all(8.w),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: const Color(0xFF1F1F1F),
                 shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 10,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
+                border: Border.all(
+                  color: const Color(0xFF2D2D2D),
+                  width: 1,
+                ),
               ),
               child: Icon(
                 Icons.history,
@@ -116,7 +111,7 @@ class _AiScanToPayScreenState extends State<AiScanToPayScreen> {
             Get.snackbar(
               'Error',
               state.message,
-              backgroundColor: Colors.red,
+              backgroundColor: const Color(0xFFEF4444),
               colorText: Colors.white,
               snackPosition: SnackPosition.TOP,
             );
@@ -155,8 +150,8 @@ class _AiScanToPayScreenState extends State<AiScanToPayScreen> {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
+                  const Color.fromARGB(255, 78, 3, 208).withOpacity(0.2),
                   const Color.fromARGB(255, 78, 3, 208).withOpacity(0.1),
-                  const Color.fromARGB(255, 78, 3, 208).withOpacity(0.05),
                 ],
               ),
               shape: BoxShape.circle,
@@ -170,10 +165,10 @@ class _AiScanToPayScreenState extends State<AiScanToPayScreen> {
           SizedBox(height: 24.h),
           Text(
             'AI-Powered Scan to Pay',
-            style: TextStyle(
+            style: GoogleFonts.inter(
               fontSize: 24.sp,
               fontWeight: FontWeight.w700,
-              color: Colors.black87,
+              color: Colors.white,
             ),
           ),
           SizedBox(height: 12.h),
@@ -182,9 +177,9 @@ class _AiScanToPayScreenState extends State<AiScanToPayScreen> {
             child: Text(
               'Scan any document, QR code, or image and let AI guide you through the payment process',
               textAlign: TextAlign.center,
-              style: TextStyle(
+              style: GoogleFonts.inter(
                 fontSize: 14.sp,
-                color: Colors.grey[600],
+                color: Colors.grey[400],
                 height: 1.5,
               ),
             ),
@@ -203,7 +198,7 @@ class _AiScanToPayScreenState extends State<AiScanToPayScreen> {
             ),
             child: Text(
               'Get Started',
-              style: TextStyle(
+              style: GoogleFonts.inter(
                 fontSize: 16.sp,
                 fontWeight: FontWeight.w600,
               ),
@@ -228,9 +223,9 @@ class _AiScanToPayScreenState extends State<AiScanToPayScreen> {
             SizedBox(height: 16.h),
             Text(
               message,
-              style: TextStyle(
+              style: GoogleFonts.inter(
                 fontSize: 14.sp,
-                color: Colors.grey[600],
+                color: Colors.grey[400],
               ),
             ),
           ],
@@ -257,6 +252,13 @@ class _AiScanToPayScreenState extends State<AiScanToPayScreen> {
                 ],
               ),
               borderRadius: BorderRadius.circular(16.r),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color.fromARGB(255, 78, 3, 208).withOpacity(0.2),
+                  blurRadius: 20,
+                  offset: const Offset(0, 8),
+                ),
+              ],
             ),
             child: Row(
               children: [
@@ -280,7 +282,7 @@ class _AiScanToPayScreenState extends State<AiScanToPayScreen> {
                     children: [
                       Text(
                         'What would you like to scan?',
-                        style: TextStyle(
+                        style: GoogleFonts.inter(
                           fontSize: 18.sp,
                           fontWeight: FontWeight.w700,
                           color: Colors.white,
@@ -289,7 +291,7 @@ class _AiScanToPayScreenState extends State<AiScanToPayScreen> {
                       SizedBox(height: 4.h),
                       Text(
                         'Choose the type of document or code you want to scan',
-                        style: TextStyle(
+                        style: GoogleFonts.inter(
                           fontSize: 12.sp,
                           color: Colors.white.withOpacity(0.9),
                         ),
@@ -335,17 +337,17 @@ class _AiScanToPayScreenState extends State<AiScanToPayScreen> {
             children: [
               Text(
                 'Scan History',
-                style: TextStyle(
+                style: GoogleFonts.inter(
                   fontSize: 20.sp,
                   fontWeight: FontWeight.w700,
-                  color: Colors.black87,
+                  color: Colors.white,
                 ),
               ),
               TextButton(
                 onPressed: () => context.read<AiScanCubit>().returnToScanTypeSelection(),
                 child: Text(
                   'New Scan',
-                  style: TextStyle(
+                  style: GoogleFonts.inter(
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w600,
                     color: const Color.fromARGB(255, 78, 3, 208),
@@ -363,23 +365,23 @@ class _AiScanToPayScreenState extends State<AiScanToPayScreen> {
                   Icon(
                     Icons.history,
                     size: 64.sp,
-                    color: Colors.grey[400],
+                    color: Colors.grey[600],
                   ),
                   SizedBox(height: 16.h),
                   Text(
                     'No scan history yet',
-                    style: TextStyle(
+                    style: GoogleFonts.inter(
                       fontSize: 16.sp,
                       fontWeight: FontWeight.w600,
-                      color: Colors.grey[600],
+                      color: Colors.white,
                     ),
                   ),
                   SizedBox(height: 8.h),
                   Text(
                     'Start scanning to see your history here',
-                    style: TextStyle(
+                    style: GoogleFonts.inter(
                       fontSize: 14.sp,
-                      color: Colors.grey[500],
+                      color: Colors.grey[400],
                     ),
                   ),
                 ],
@@ -413,7 +415,7 @@ class _AiScanToPayScreenState extends State<AiScanToPayScreen> {
           Icon(
             Icons.error_outline,
             size: 64.sp,
-            color: Colors.red[400],
+            color: const Color(0xFFEF4444),
           ),
           SizedBox(height: 16.h),
           Padding(
@@ -421,9 +423,9 @@ class _AiScanToPayScreenState extends State<AiScanToPayScreen> {
             child: Text(
               message,
               textAlign: TextAlign.center,
-              style: TextStyle(
+              style: GoogleFonts.inter(
                 fontSize: 14.sp,
-                color: Colors.grey[600],
+                color: Colors.grey[400],
               ),
             ),
           ),
@@ -440,7 +442,7 @@ class _AiScanToPayScreenState extends State<AiScanToPayScreen> {
             ),
             child: Text(
               'Try Again',
-              style: TextStyle(
+              style: GoogleFonts.inter(
                 fontSize: 14.sp,
                 fontWeight: FontWeight.w600,
               ),
@@ -462,8 +464,12 @@ class _AiScanToPayScreenState extends State<AiScanToPayScreen> {
           child: Container(
             padding: EdgeInsets.all(32.w),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: const Color(0xFF1F1F1F),
               borderRadius: BorderRadius.circular(20.r),
+              border: Border.all(
+                color: const Color(0xFF2D2D2D),
+                width: 1,
+              ),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -476,19 +482,19 @@ class _AiScanToPayScreenState extends State<AiScanToPayScreen> {
                 SizedBox(height: 24.h),
                 Text(
                   'Processing Payment',
-                  style: TextStyle(
+                  style: GoogleFonts.inter(
                     fontSize: 18.sp,
                     fontWeight: FontWeight.w700,
-                    color: Colors.black87,
+                    color: Colors.white,
                   ),
                 ),
                 SizedBox(height: 8.h),
                 Text(
                   state.status,
                   textAlign: TextAlign.center,
-                  style: TextStyle(
+                  style: GoogleFonts.inter(
                     fontSize: 14.sp,
-                    color: Colors.grey[600],
+                    color: Colors.grey[400],
                   ),
                 ),
               ],
@@ -515,8 +521,12 @@ class _AiScanToPayScreenState extends State<AiScanToPayScreen> {
           child: Container(
             padding: EdgeInsets.all(32.w),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: const Color(0xFF1F1F1F),
               borderRadius: BorderRadius.circular(20.r),
+              border: Border.all(
+                color: const Color(0xFF2D2D2D),
+                width: 1,
+              ),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -525,7 +535,7 @@ class _AiScanToPayScreenState extends State<AiScanToPayScreen> {
                   width: 80.w,
                   height: 80.w,
                   decoration: BoxDecoration(
-                    color: Colors.green,
+                    color: const Color(0xFF10B981),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
@@ -537,36 +547,36 @@ class _AiScanToPayScreenState extends State<AiScanToPayScreen> {
                 SizedBox(height: 24.h),
                 Text(
                   'Payment Successful!',
-                  style: TextStyle(
+                  style: GoogleFonts.inter(
                     fontSize: 18.sp,
                     fontWeight: FontWeight.w700,
-                    color: Colors.black87,
+                    color: Colors.white,
                   ),
                 ),
                 SizedBox(height: 8.h),
                 Text(
                   'Transaction ID: ${state.transactionId}',
                   textAlign: TextAlign.center,
-                  style: TextStyle(
+                  style: GoogleFonts.inter(
                     fontSize: 12.sp,
-                    color: Colors.grey[600],
+                    color: Colors.grey[400],
                   ),
                 ),
                 SizedBox(height: 16.h),
                 Text(
                   'Amount: \$${state.instruction.amount.toStringAsFixed(2)}',
-                  style: TextStyle(
+                  style: GoogleFonts.inter(
                     fontSize: 16.sp,
                     fontWeight: FontWeight.w600,
-                    color: Colors.black87,
+                    color: Colors.white,
                   ),
                 ),
                 SizedBox(height: 8.h),
                 Text(
                   'To: ${state.instruction.recipient}',
-                  style: TextStyle(
+                  style: GoogleFonts.inter(
                     fontSize: 14.sp,
-                    color: Colors.grey[600],
+                    color: Colors.grey[400],
                   ),
                 ),
                 SizedBox(height: 24.h),
@@ -585,7 +595,7 @@ class _AiScanToPayScreenState extends State<AiScanToPayScreen> {
                   ),
                   child: Text(
                     'Done',
-                    style: TextStyle(
+                    style: GoogleFonts.inter(
                       fontSize: 16.sp,
                       fontWeight: FontWeight.w600,
                     ),

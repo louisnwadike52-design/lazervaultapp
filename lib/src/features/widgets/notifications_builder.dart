@@ -108,6 +108,8 @@ class _NotificationsBuilderState extends State<NotificationsBuilder> {
         return Icons.card_giftcard_rounded;
       case AppServiceName.aiScanToPay:
         return Icons.qr_code_scanner_rounded;
+      case AppServiceName.groupAccount:
+        return Icons.groups_rounded;
       default:
         return Icons.help_outline;
     }
@@ -132,6 +134,8 @@ class _NotificationsBuilderState extends State<NotificationsBuilder> {
       case AppServiceName.giftCards:
         return Colors.pink;
       case AppServiceName.aiScanToPay:
+        return const Color.fromARGB(255, 78, 3, 208);
+      case AppServiceName.groupAccount:
         return const Color.fromARGB(255, 78, 3, 208);
     }
   }

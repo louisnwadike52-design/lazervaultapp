@@ -1,0 +1,229 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../../domain/entities/group_entities.dart';
+
+class MemberCard extends StatelessWidget {
+  final GroupMember member;
+  final GroupAccount group;
+  final VoidCallback? onTap;
+
+  const MemberCard({
+    super.key,
+    required this.member,
+    required this.group,
+    this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.all(16.w),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1F1F1F),
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(
+            color: const Color(0xFF2D2D2D),
+            width: 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            // Avatar
+            Container(
+              width: 48.w,
+              height: 48.w,
+              decoration: BoxDecoration(
+                color: const Color.fromARGB(255, 78, 3, 208).withOpacity(0.2),
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: const Color.fromARGB(255, 78, 3, 208).withOpacity(0.3),
+                  width: 2,
+                ),
+              ),
+              child: Center(
+                child: Text(
+                  member.userName.isNotEmpty 
+                      ? member.userName[0].toUpperCase()
+                      : '?',
+                  style: GoogleFonts.inter(
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.w600,
+                    color: const Color.fromARGB(255, 78, 3, 208),
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(width: 12.w),
+            
+            // Member Info
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    member.userName,
+                    style: GoogleFonts.inter(
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                  SizedBox(height: 4.h),
+                  Text(
+                    member.email,
+                    style: GoogleFonts.inter(
+                      fontSize: 13.sp,
+                      color: Colors.grey[400],
+                    ),
+                  ),
+                  SizedBox(height: 6.h),
+                  Row(
+                    children: [
+                      _buildRoleBadge(member.role),
+                      SizedBox(width: 8.w),
+                      _buildStatusBadge(member.status),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            
+            // Joined Date
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  'Joined',
+                  style: GoogleFonts.inter(
+                    fontSize: 11.sp,
+                    color: Colors.grey[500],
+                  ),
+                ),
+                SizedBox(height: 2.h),
+                Text(
+                  _formatDate(member.joinedAt),
+                  style: GoogleFonts.inter(
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.grey[300],
+                  ),
+                ),
+              ],
+            ),
+            
+            SizedBox(width: 8.w),
+            Icon(
+              Icons.chevron_right,
+              color: Colors.grey[600],
+              size: 20.sp,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRoleBadge(GroupMemberRole role) {
+    Color backgroundColor;
+    Color textColor;
+    
+    switch (role) {
+      case GroupMemberRole.admin:
+        backgroundColor = const Color(0xFFEF4444).withOpacity(0.2);
+        textColor = const Color(0xFFEF4444);
+        break;
+      case GroupMemberRole.moderator:
+        backgroundColor = const Color(0xFFF59E0B).withOpacity(0.2);
+        textColor = const Color(0xFFF59E0B);
+        break;
+      case GroupMemberRole.member:
+        backgroundColor = const Color(0xFF10B981).withOpacity(0.2);
+        textColor = const Color(0xFF10B981);
+        break;
+    }
+
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(
+          color: textColor.withOpacity(0.3),
+          width: 1,
+        ),
+      ),
+      child: Text(
+        role.displayName,
+        style: GoogleFonts.inter(
+          fontSize: 10.sp,
+          fontWeight: FontWeight.w600,
+          color: textColor,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatusBadge(GroupMemberStatus status) {
+    Color backgroundColor;
+    Color textColor;
+    
+    switch (status) {
+      case GroupMemberStatus.active:
+        backgroundColor = const Color(0xFF10B981).withOpacity(0.2);
+        textColor = const Color(0xFF10B981);
+        break;
+      case GroupMemberStatus.inactive:
+        backgroundColor = Colors.grey.withOpacity(0.2);
+        textColor = Colors.grey;
+        break;
+      case GroupMemberStatus.pending:
+        backgroundColor = const Color(0xFFF59E0B).withOpacity(0.2);
+        textColor = const Color(0xFFF59E0B);
+        break;
+      case GroupMemberStatus.removed:
+        backgroundColor = const Color(0xFFEF4444).withOpacity(0.2);
+        textColor = const Color(0xFFEF4444);
+        break;
+    }
+
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(
+          color: textColor.withOpacity(0.3),
+          width: 1,
+        ),
+      ),
+      child: Text(
+        status.displayName,
+        style: GoogleFonts.inter(
+          fontSize: 10.sp,
+          fontWeight: FontWeight.w600,
+          color: textColor,
+        ),
+      ),
+    );
+  }
+
+  String _formatDate(DateTime date) {
+    final now = DateTime.now();
+    final difference = now.difference(date);
+    
+    if (difference.inDays == 0) {
+      return 'Today';
+    } else if (difference.inDays == 1) {
+      return 'Yesterday';
+    } else if (difference.inDays < 7) {
+      return '${difference.inDays}d ago';
+    } else if (difference.inDays < 30) {
+      return '${(difference.inDays / 7).floor()}w ago';
+    } else {
+      return '${date.day}/${date.month}/${date.year}';
+    }
+  }
+} 

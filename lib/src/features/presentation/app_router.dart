@@ -101,6 +101,14 @@ import 'package:lazervault/src/features/ai_scan_to_pay/presentation/view/ai_scan
 // import 'package:lazervault/src/features/ai_scan_to_pay/presentation/view/ai_scan_payment_success_screen.dart';
 // import 'package:lazervault/src/features/ai_scan_to_pay/domain/entities/scan_entities.dart';
 
+// Group Account imports
+import 'package:lazervault/src/features/group_account/presentation/cubit/group_account_cubit.dart';
+import 'package:lazervault/src/features/group_account/presentation/views/group_account_list_screen.dart';
+import 'package:lazervault/src/features/group_account/presentation/views/group_details_screen.dart';
+import 'package:lazervault/src/features/group_account/presentation/views/contribution_details_screen.dart';
+import 'package:lazervault/src/features/group_account/presentation/views/make_payment_screen.dart';
+import 'package:lazervault/src/features/group_account/domain/entities/group_entities.dart';
+
 class AppRouter {
   static final routes = [
     GetPage(
@@ -704,5 +712,66 @@ class AppRouter {
     //   },
     //   transition: Transition.rightToLeft,
     // ),
+    
+    // Group Account routes
+    GetPage(
+      name: AppRoutes.groupAccount,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<GroupAccountCubit>()..loadUserGroups(),
+        child: const GroupAccountListScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.groupDetails,
+      page: () {
+        final groupId = Get.arguments as String;
+        return BlocProvider(
+          create: (_) => serviceLocator<GroupAccountCubit>()..loadGroupDetails(groupId),
+          child: GroupDetailsScreen(groupId: groupId),
+        );
+      },
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.createGroup,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<GroupAccountCubit>(),
+        child: const GroupAccountListScreen(), // This will be replaced with CreateGroupScreen later
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.contributionDetails,
+      page: () {
+        final args = Get.arguments as Map<String, dynamic>;
+        final contributionId = args['contributionId'] as String;
+        final contribution = args['contribution'] as Contribution?;
+        return BlocProvider(
+          create: (_) => serviceLocator<GroupAccountCubit>(),
+          child: ContributionDetailsScreen(
+            contributionId: contributionId,
+            contribution: contribution,
+          ),
+        );
+      },
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.makePayment,
+      page: () {
+        final args = Get.arguments as Map<String, dynamic>;
+        final contributionId = args['contributionId'] as String;
+        final contribution = args['contribution'] as Contribution?;
+        return BlocProvider(
+          create: (_) => serviceLocator<GroupAccountCubit>(),
+          child: MakePaymentScreen(
+            contributionId: contributionId,
+            contribution: contribution,
+          ),
+        );
+      },
+      transition: Transition.rightToLeft,
+    ),
   ];
 }
