@@ -38,10 +38,10 @@ final List<NotificationService> notifications = [
   ),
   NotificationService(
     appService: const AppService(
-        serviceName: AppServiceName.transferFunds,
-        serviceImg: AppServiceImg.transferFunds),
-    title: 'Transfer Completed',
-    subTitle: "Money transfer successfully to Account No: 2003898497975797",
+        serviceName: AppServiceName.payInvoice,
+        serviceImg: AppServiceImg.payInvoice),
+    title: 'Invoice Payment Completed',
+    subTitle: "Invoice payment successfully processed for £2,500.00",
     date: DateTime.now().subtract(Duration(days: 1)),
   ),
   NotificationService(

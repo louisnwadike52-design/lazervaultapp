@@ -24,7 +24,7 @@ abstract class AppRoutes {
   static const String flights = '/flights';
   static const String reviewElectricityBillDetails =
       '/validate-electricity-bill-details';
-  static const String transferFunds = '/transfer-funds';
+  static const String payInvoice = '/pay-invoice';
   static const String crypto = '/crypto';
   static const String stocks = '/stocks';
   static const String transactionHistory = '/transaction-history';

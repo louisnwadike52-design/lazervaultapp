@@ -253,6 +253,12 @@ Payment Link: https://payment.app/invoice/${invoice.id}
     return [];
   }
 
+  @override
+  Future<List<Invoice>> getInvoicesTaggedToUser(String userId) async {
+    final invoices = await getAllInvoices();
+    return invoices.where((invoice) => invoice.toUserId == userId).toList();
+  }
+
   // Private helper methods
   String _generateInvoiceId() {
     final timestamp = DateTime.now().millisecondsSinceEpoch;

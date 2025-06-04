@@ -94,8 +94,8 @@ class _NotificationsBuilderState extends State<NotificationsBuilder> {
         return Icons.send_rounded;
       case AppServiceName.invoice:
         return Icons.receipt_long_rounded;
-      case AppServiceName.transferFunds:
-        return Icons.swap_horiz_rounded;
+      case AppServiceName.payInvoice:
+        return Icons.payment;
       case AppServiceName.payElectricityBill:
         return Icons.receipt_rounded;
       case AppServiceName.invest:
@@ -106,17 +106,19 @@ class _NotificationsBuilderState extends State<NotificationsBuilder> {
         return Icons.currency_bitcoin_rounded;
       case AppServiceName.giftCards:
         return Icons.card_giftcard_rounded;
+      default:
+        return Icons.help_outline;
     }
   }
 
   Color _getServiceColor(AppServiceName serviceName) {
     switch (serviceName) {
       case AppServiceName.sendFunds:
-        return Colors.blue;
+        return const Color(0xFF10B981);
       case AppServiceName.invoice:
-        return Color.fromARGB(255, 78, 3, 208);
-      case AppServiceName.transferFunds:
-        return Colors.orange;
+        return const Color(0xFF6366F1);
+      case AppServiceName.payInvoice:
+        return const Color(0xFFEAB308);
       case AppServiceName.payElectricityBill:
         return Colors.green;
       case AppServiceName.invest:
