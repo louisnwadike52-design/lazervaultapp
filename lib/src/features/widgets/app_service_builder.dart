@@ -40,6 +40,9 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
       case AppServiceName.giftCards:
         Get.toNamed(AppRoutes.giftCards);
         break;
+      case AppServiceName.aiScanToPay:
+        Get.toNamed(AppRoutes.aiScanToPay);
+        break;
       case AppServiceName.sendFunds:
       default:
         Get.toNamed(AppRoutes.selectRecipient);
@@ -156,6 +159,9 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
         break;
       case AppServiceName.giftCards:
         iconData = Icons.card_giftcard;
+        break;
+      case AppServiceName.aiScanToPay:
+        iconData = Icons.qr_code_scanner;
         break;
     }
 

@@ -107,5 +107,13 @@ abstract class AppRoutes {
   static const String cryptoNews = '/crypto/news';
   static const String cryptoChartDetails = '/crypto-chart-details';
   
+  // AI Scan to Pay Routes
+  static const String aiScanToPay = '/ai-scan-to-pay';
+  static const String aiScanSelection = '/ai-scan-to-pay/selection';
+  static const String aiScanCamera = '/ai-scan-to-pay/camera';
+  static const String aiScanChat = '/ai-scan-to-pay/chat';
+  static const String aiScanPayment = '/ai-scan-to-pay/payment';
+  static const String aiScanPaymentSuccess = '/ai-scan-to-pay/payment-success';
+  
   static const String investments = '/investments';
 }
