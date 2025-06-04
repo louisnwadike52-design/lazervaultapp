@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../domain/entities/scan_entities.dart';
 
 class ScanTypeCard extends StatefulWidget {
@@ -30,20 +31,20 @@ class _ScanTypeCardState extends State<ScanTypeCard> {
         duration: const Duration(milliseconds: 150),
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: const Color(0xFF1F1F1F),
           borderRadius: BorderRadius.circular(16.r),
           border: Border.all(
             color: isPressed
                 ? const Color.fromARGB(255, 78, 3, 208)
-                : Colors.grey[200]!,
+                : const Color(0xFF2D2D2D),
             width: isPressed ? 2 : 1,
           ),
           boxShadow: [
             BoxShadow(
               color: isPressed
-                  ? const Color.fromARGB(255, 78, 3, 208).withOpacity(0.1)
-                  : Colors.black.withOpacity(0.05),
-              blurRadius: isPressed ? 15 : 10,
+                  ? const Color.fromARGB(255, 78, 3, 208).withOpacity(0.2)
+                  : Colors.black.withOpacity(0.1),
+              blurRadius: isPressed ? 15 : 8,
               offset: isPressed ? const Offset(0, 6) : const Offset(0, 4),
             ),
           ],
@@ -60,8 +61,8 @@ class _ScanTypeCardState extends State<ScanTypeCard> {
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
+                    const Color.fromARGB(255, 78, 3, 208).withOpacity(0.2),
                     const Color.fromARGB(255, 78, 3, 208).withOpacity(0.1),
-                    const Color.fromARGB(255, 78, 3, 208).withOpacity(0.05),
                   ],
                 ),
                 shape: BoxShape.circle,
@@ -80,10 +81,10 @@ class _ScanTypeCardState extends State<ScanTypeCard> {
             Text(
               widget.scanType.displayName,
               textAlign: TextAlign.center,
-              style: TextStyle(
+              style: GoogleFonts.inter(
                 fontSize: 14.sp,
                 fontWeight: FontWeight.w700,
-                color: Colors.black87,
+                color: Colors.white,
               ),
             ),
             SizedBox(height: 8.h),
@@ -94,9 +95,9 @@ class _ScanTypeCardState extends State<ScanTypeCard> {
               textAlign: TextAlign.center,
               maxLines: 3,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(
+              style: GoogleFonts.inter(
                 fontSize: 11.sp,
-                color: Colors.grey[600],
+                color: Colors.grey[400],
                 height: 1.3,
               ),
             ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '../../domain/entities/scan_entities.dart';
 
@@ -18,16 +19,16 @@ class ScanHistoryCard extends StatelessWidget {
     return Container(
       margin: EdgeInsets.only(bottom: 16.h),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(
-          color: Colors.grey[200]!,
+          color: const Color(0xFF2D2D2D),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
             offset: const Offset(0, 4),
           ),
         ],
@@ -46,7 +47,7 @@ class ScanHistoryCard extends StatelessWidget {
                   width: 50.w,
                   height: 50.w,
                   decoration: BoxDecoration(
-                    color: _getStatusColor(session.status).withOpacity(0.1),
+                    color: _getStatusColor(session.status).withOpacity(0.2),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
@@ -68,10 +69,10 @@ class ScanHistoryCard extends StatelessWidget {
                         children: [
                           Text(
                             session.scanType.displayName,
-                            style: TextStyle(
+                            style: GoogleFonts.inter(
                               fontSize: 16.sp,
                               fontWeight: FontWeight.w700,
-                              color: Colors.black87,
+                              color: Colors.white,
                             ),
                           ),
                           Container(
@@ -80,12 +81,12 @@ class ScanHistoryCard extends StatelessWidget {
                               vertical: 4.h,
                             ),
                             decoration: BoxDecoration(
-                              color: _getStatusColor(session.status).withOpacity(0.1),
+                              color: _getStatusColor(session.status).withOpacity(0.2),
                               borderRadius: BorderRadius.circular(8.r),
                             ),
                             child: Text(
                               session.status.displayName,
-                              style: TextStyle(
+                              style: GoogleFonts.inter(
                                 fontSize: 10.sp,
                                 fontWeight: FontWeight.w600,
                                 color: _getStatusColor(session.status),
@@ -107,9 +108,9 @@ class ScanHistoryCard extends StatelessWidget {
                           SizedBox(width: 4.w),
                           Text(
                             DateFormat('MMM dd, yyyy • hh:mm a').format(session.createdAt),
-                            style: TextStyle(
+                            style: GoogleFonts.inter(
                               fontSize: 12.sp,
-                              color: Colors.grey[600],
+                              color: Colors.grey[400],
                             ),
                           ),
                         ],
@@ -123,14 +124,14 @@ class ScanHistoryCard extends StatelessWidget {
                             Icon(
                               Icons.check_circle_outline,
                               size: 14.sp,
-                              color: Colors.green[600],
+                              color: const Color(0xFF10B981),
                             ),
                             SizedBox(width: 4.w),
                             Text(
                               'Data extracted successfully',
-                              style: TextStyle(
+                              style: GoogleFonts.inter(
                                 fontSize: 12.sp,
-                                color: Colors.green[600],
+                                color: const Color(0xFF10B981),
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -145,7 +146,7 @@ class ScanHistoryCard extends StatelessWidget {
                 Icon(
                   Icons.arrow_forward_ios,
                   size: 16.sp,
-                  color: Colors.grey[400],
+                  color: Colors.grey[600],
                 ),
               ],
             ),
@@ -158,15 +159,15 @@ class ScanHistoryCard extends StatelessWidget {
   Color _getStatusColor(ScanStatus status) {
     switch (status) {
       case ScanStatus.completed:
-        return Colors.green;
+        return const Color(0xFF10B981);
       case ScanStatus.pending:
-        return Colors.orange;
+        return const Color(0xFFF59E0B);
       case ScanStatus.scanning:
       case ScanStatus.analyzing:
       case ScanStatus.extracting:
         return const Color.fromARGB(255, 78, 3, 208);
       case ScanStatus.failed:
-        return Colors.red;
+        return const Color(0xFFEF4444);
       case ScanStatus.cancelled:
         return Colors.grey;
     }

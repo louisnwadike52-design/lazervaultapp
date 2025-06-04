@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:camera/camera.dart';
@@ -288,7 +289,7 @@ class _AiScanCameraScreenState extends State<AiScanCameraScreen>
                     SizedBox(height: 24.h),
                     Text(
                       'Scan Complete!',
-                      style: TextStyle(
+                      style: GoogleFonts.inter(
                         fontSize: 18.sp,
                         fontWeight: FontWeight.w600,
                         color: Colors.white,
@@ -297,7 +298,7 @@ class _AiScanCameraScreenState extends State<AiScanCameraScreen>
                     SizedBox(height: 8.h),
                     Text(
                       'Redirecting...',
-                      style: TextStyle(
+                      style: GoogleFonts.inter(
                         fontSize: 14.sp,
                         color: Colors.white70,
                       ),
@@ -365,7 +366,7 @@ class _AiScanCameraScreenState extends State<AiScanCameraScreen>
                     SizedBox(width: 8.w),
                     Text(
                       state.session.scanType.displayName,
-                      style: TextStyle(
+                      style: GoogleFonts.inter(
                         fontSize: 14.sp,
                         fontWeight: FontWeight.w600,
                         color: Colors.white,
@@ -385,7 +386,7 @@ class _AiScanCameraScreenState extends State<AiScanCameraScreen>
                 child: Text(
                   'Position ${state.session.scanType.displayName.toLowerCase()} within the frame and tap capture',
                   textAlign: TextAlign.center,
-                  style: TextStyle(
+                  style: GoogleFonts.inter(
                     fontSize: 13.sp,
                     color: Colors.white,
                   ),
@@ -545,7 +546,7 @@ class _AiScanCameraScreenState extends State<AiScanCameraScreen>
           SizedBox(height: 8.h),
           Text(
             label,
-            style: TextStyle(
+            style: GoogleFonts.inter(
               fontSize: 12.sp,
               color: onTap != null ? Colors.white : Colors.white.withOpacity(0.5),
               fontWeight: FontWeight.w500,
@@ -590,7 +591,7 @@ class _AiScanCameraScreenState extends State<AiScanCameraScreen>
             
             Text(
               state.status,
-              style: TextStyle(
+              style: GoogleFonts.inter(
                 fontSize: 18.sp,
                 fontWeight: FontWeight.w600,
                 color: Colors.white,
@@ -601,7 +602,7 @@ class _AiScanCameraScreenState extends State<AiScanCameraScreen>
             Text(
               'Please wait while AI analyzes your image...',
               textAlign: TextAlign.center,
-              style: TextStyle(
+              style: GoogleFonts.inter(
                 fontSize: 14.sp,
                 color: Colors.white70,
               ),
@@ -629,7 +630,7 @@ class _AiScanCameraScreenState extends State<AiScanCameraScreen>
             SizedBox(height: 16.h),
             Text(
               'Initializing camera...',
-              style: TextStyle(
+              style: GoogleFonts.inter(
                 fontSize: 16.sp,
                 color: Colors.white,
               ),

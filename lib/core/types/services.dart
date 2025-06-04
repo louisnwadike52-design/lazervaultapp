@@ -8,6 +8,7 @@ enum AppServiceName {
   crypto,
   giftCards,
   aiScanToPay,
+  groupAccount,
 }
 
 extension AppServiceNameExtension on AppServiceName {
@@ -20,7 +21,7 @@ extension AppServiceNameExtension on AppServiceName {
       case AppServiceName.payInvoice:
         return 'Pay Invoice';
       case AppServiceName.payElectricityBill:
-        return 'Pay Bills';
+        return 'Pay Electricity Bill';
       case AppServiceName.invest:
         return 'Invest';
       case AppServiceName.exchange:
@@ -31,6 +32,8 @@ extension AppServiceNameExtension on AppServiceName {
         return 'Gift Cards';
       case AppServiceName.aiScanToPay:
         return 'AI Scan to Pay';
+      case AppServiceName.groupAccount:
+        return 'Group Account';
     }
   }
 }
@@ -52,6 +55,7 @@ enum AppServiceImg {
   crypto,
   giftCards,
   aiScanToPay,
+  groupAccount,
 }
 
 extension AppServiceImgExtension on AppServiceImg {
@@ -75,6 +79,8 @@ extension AppServiceImgExtension on AppServiceImg {
         return 'assets/images/gift-cards.png';
       case AppServiceImg.aiScanToPay:
         return 'assets/images/ai-scan.png';
+      case AppServiceImg.groupAccount:
+        return 'assets/images/group-account.png';
     }
   }
 }

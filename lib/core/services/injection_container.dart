@@ -167,6 +167,14 @@ import 'package:lazervault/src/features/ai_scan_to_pay/domain/repositories/ai_sc
 import 'package:lazervault/src/features/ai_scan_to_pay/domain/usecases/ai_scan_usecases.dart';
 import 'package:lazervault/src/features/ai_scan_to_pay/presentation/cubit/ai_scan_cubit.dart';
 
+// Group Account Imports
+import 'package:lazervault/src/features/group_account/data/datasources/group_account_remote_data_source.dart';
+import 'package:lazervault/src/features/group_account/data/repositories/group_account_repository_impl.dart';
+import 'package:lazervault/src/features/group_account/domain/repositories/group_account_repository.dart';
+import 'package:lazervault/src/features/group_account/domain/usecases/group_account_usecases.dart';
+import 'package:lazervault/src/features/group_account/presentation/cubit/group_account_cubit.dart';
+import 'package:lazervault/src/features/group_account/presentation/views/group_account_list_screen.dart';
+
 final serviceLocator = GetIt.instance;
 
 Future<void> init() async {
@@ -524,6 +532,9 @@ Future<void> init() async {
           (stock, _) => StockChartDetailsScreen(stock: stock))
       ..registerFactory(() => InvestmentsScreen());
 
+  // ================== Screens / Presentation - Group Account ==================
+  serviceLocator.registerFactory(() => GroupAccountListScreen());
+
   // Make sure AuthenticationCubit is registered first, e.g.:
   // serviceLocator.registerLazySingleton(() => AuthenticationCubit(...));
 
@@ -577,6 +588,70 @@ Future<void> init() async {
     generatePaymentUseCase: serviceLocator<GeneratePaymentUseCase>(),
     processPaymentUseCase: serviceLocator<ProcessPaymentUseCase>(),
     getScanHistoryUseCase: serviceLocator<GetScanHistoryUseCase>(),
+  ));
+
+  // ================== Feature: Group Account ==================
+
+  // Data Sources
+  serviceLocator.registerLazySingleton<GroupAccountRemoteDataSource>(
+    () => GroupAccountRemoteDataSourceImpl(),
+  );
+
+  // Repositories
+  serviceLocator.registerLazySingleton<GroupAccountRepository>(
+    () => GroupAccountRepositoryImpl(remoteDataSource: serviceLocator<GroupAccountRemoteDataSource>()),
+  );
+
+  // Use Cases
+  serviceLocator.registerLazySingleton(() => GetUserGroups(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(() => GetGroupById(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(() => CreateGroup(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(() => UpdateGroup(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(() => DeleteGroup(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(() => GetGroupMembers(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(() => AddMemberToGroup(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(() => UpdateMemberRole(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(() => RemoveMemberFromGroup(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(() => SearchUsers(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(() => GetGroupContributions(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(() => GetContributionById(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(() => CreateContribution(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(() => UpdateContribution(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(() => DeleteContribution(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(() => GetContributionPayments(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(() => MakeContributionPayment(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(() => UpdatePaymentStatus(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(() => GenerateReceipt(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(() => GetUserReceipts(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(() => GenerateContributionTranscript(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(() => GetGroupStatistics(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(() => GetUserContributionStats(serviceLocator<GroupAccountRepository>()));
+
+  // Blocs/Cubits
+  serviceLocator.registerFactory(() => GroupAccountCubit(
+    getUserGroups: serviceLocator<GetUserGroups>(),
+    getGroupById: serviceLocator<GetGroupById>(),
+    createGroup: serviceLocator<CreateGroup>(),
+    updateGroup: serviceLocator<UpdateGroup>(),
+    deleteGroup: serviceLocator<DeleteGroup>(),
+    getGroupMembers: serviceLocator<GetGroupMembers>(),
+    addMemberToGroup: serviceLocator<AddMemberToGroup>(),
+    updateMemberRole: serviceLocator<UpdateMemberRole>(),
+    removeMemberFromGroup: serviceLocator<RemoveMemberFromGroup>(),
+    searchUsers: serviceLocator<SearchUsers>(),
+    getGroupContributions: serviceLocator<GetGroupContributions>(),
+    getContributionById: serviceLocator<GetContributionById>(),
+    createContribution: serviceLocator<CreateContribution>(),
+    updateContribution: serviceLocator<UpdateContribution>(),
+    deleteContribution: serviceLocator<DeleteContribution>(),
+    getContributionPayments: serviceLocator<GetContributionPayments>(),
+    makeContributionPayment: serviceLocator<MakeContributionPayment>(),
+    updatePaymentStatus: serviceLocator<UpdatePaymentStatus>(),
+    generateReceipt: serviceLocator<GenerateReceipt>(),
+    getUserReceipts: serviceLocator<GetUserReceipts>(),
+    generateContributionTranscript: serviceLocator<GenerateContributionTranscript>(),
+    getGroupStatistics: serviceLocator<GetGroupStatistics>(),
+    getUserContributionStats: serviceLocator<GetUserContributionStats>(),
   ));
 
   print("Dependency Injection Initialized with Hierarchical Order");

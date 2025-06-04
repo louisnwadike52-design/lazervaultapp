@@ -39,6 +39,9 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
     const AppService(
         serviceName: AppServiceName.aiScanToPay,
         serviceImg: AppServiceImg.aiScanToPay),
+    const AppService(
+        serviceName: AppServiceName.groupAccount,
+        serviceImg: AppServiceImg.groupAccount),
   ];
 
   @override

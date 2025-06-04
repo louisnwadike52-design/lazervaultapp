@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '../../domain/entities/scan_entities.dart';
 import '../cubit/ai_scan_cubit.dart';
@@ -66,10 +67,14 @@ class _AiChatBottomSheetState extends State<AiChatBottomSheet> {
     return Container(
       height: MediaQuery.of(context).size.height * 0.85,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(24.r),
           topRight: Radius.circular(24.r),
+        ),
+        border: Border.all(
+          color: const Color(0xFF2D2D2D),
+          width: 1,
         ),
       ),
       child: Column(
@@ -93,11 +98,17 @@ class _AiChatBottomSheetState extends State<AiChatBottomSheet> {
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(
-            color: Colors.grey[200]!,
-            width: 1,
-          ),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            const Color.fromARGB(255, 78, 3, 208),
+            const Color.fromARGB(255, 78, 3, 208).withOpacity(0.8),
+          ],
+        ),
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(24.r),
+          topRight: Radius.circular(24.r),
         ),
       ),
       child: Column(
@@ -107,7 +118,7 @@ class _AiChatBottomSheetState extends State<AiChatBottomSheet> {
             width: 40.w,
             height: 4.h,
             decoration: BoxDecoration(
-              color: Colors.grey[300],
+              color: Colors.white.withOpacity(0.3),
               borderRadius: BorderRadius.circular(2.r),
             ),
           ),
@@ -120,14 +131,7 @@ class _AiChatBottomSheetState extends State<AiChatBottomSheet> {
                 width: 50.w,
                 height: 50.w,
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      const Color.fromARGB(255, 78, 3, 208),
-                      const Color.fromARGB(255, 78, 3, 208).withOpacity(0.8),
-                    ],
-                  ),
+                  color: Colors.white.withOpacity(0.2),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
@@ -144,19 +148,19 @@ class _AiChatBottomSheetState extends State<AiChatBottomSheet> {
                   children: [
                     Text(
                       'AI Payment Assistant',
-                      style: TextStyle(
+                      style: GoogleFonts.inter(
                         fontSize: 16.sp,
                         fontWeight: FontWeight.w700,
-                        color: Colors.black87,
+                        color: Colors.white,
                       ),
                     ),
                     Text(
                       widget.isTyping ? 'Typing...' : 'Online',
-                      style: TextStyle(
+                      style: GoogleFonts.inter(
                         fontSize: 12.sp,
                         color: widget.isTyping 
-                            ? const Color.fromARGB(255, 78, 3, 208)
-                            : Colors.green,
+                            ? Colors.white.withOpacity(0.8)
+                            : const Color(0xFF10B981),
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -168,15 +172,19 @@ class _AiChatBottomSheetState extends State<AiChatBottomSheet> {
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                 decoration: BoxDecoration(
-                  color: const Color.fromARGB(255, 78, 3, 208).withOpacity(0.1),
+                  color: Colors.white.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(16.r),
+                  border: Border.all(
+                    color: Colors.white.withOpacity(0.3),
+                    width: 1,
+                  ),
                 ),
                 child: Text(
                   widget.session.scanType.displayName,
-                  style: TextStyle(
+                  style: GoogleFonts.inter(
                     fontSize: 11.sp,
                     fontWeight: FontWeight.w600,
-                    color: const Color.fromARGB(255, 78, 3, 208),
+                    color: Colors.white,
                   ),
                 ),
               ),
@@ -191,13 +199,13 @@ class _AiChatBottomSheetState extends State<AiChatBottomSheet> {
                 child: Container(
                   padding: EdgeInsets.all(8.w),
                   decoration: BoxDecoration(
-                    color: Colors.grey[100],
+                    color: Colors.white.withOpacity(0.2),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
                     Icons.close,
                     size: 16.sp,
-                    color: Colors.grey[600],
+                    color: Colors.white,
                   ),
                 ),
               ),
@@ -276,19 +284,23 @@ class _AiChatBottomSheetState extends State<AiChatBottomSheet> {
                   decoration: BoxDecoration(
                     color: isUser 
                         ? const Color.fromARGB(255, 78, 3, 208)
-                        : Colors.grey[100],
+                        : const Color(0xFF0A0A0A),
                     borderRadius: BorderRadius.only(
                       topLeft: Radius.circular(20.r),
                       topRight: Radius.circular(20.r),
                       bottomLeft: isUser ? Radius.circular(20.r) : Radius.circular(4.r),
                       bottomRight: isUser ? Radius.circular(4.r) : Radius.circular(20.r),
                     ),
+                    border: !isUser ? Border.all(
+                      color: const Color(0xFF2D2D2D),
+                      width: 1,
+                    ) : null,
                   ),
                   child: Text(
                     message.content,
-                    style: TextStyle(
+                    style: GoogleFonts.inter(
                       fontSize: 14.sp,
-                      color: isUser ? Colors.white : Colors.black87,
+                      color: Colors.white,
                       height: 1.4,
                     ),
                   ),
@@ -297,7 +309,7 @@ class _AiChatBottomSheetState extends State<AiChatBottomSheet> {
                 
                 Text(
                   DateFormat('hh:mm a').format(message.timestamp),
-                  style: TextStyle(
+                  style: GoogleFonts.inter(
                     fontSize: 10.sp,
                     color: Colors.grey[500],
                   ),
@@ -312,12 +324,12 @@ class _AiChatBottomSheetState extends State<AiChatBottomSheet> {
               width: 32.w,
               height: 32.w,
               decoration: BoxDecoration(
-                color: Colors.grey[300],
+                color: const Color(0xFF2D2D2D),
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 Icons.person,
-                color: Colors.grey[600],
+                color: Colors.grey[400],
                 size: 16.sp,
               ),
             ),
@@ -350,12 +362,16 @@ class _AiChatBottomSheetState extends State<AiChatBottomSheet> {
           Container(
             padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
-              color: Colors.grey[100],
+              color: const Color(0xFF0A0A0A),
               borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(20.r),
                 topRight: Radius.circular(20.r),
                 bottomRight: Radius.circular(20.r),
                 bottomLeft: Radius.circular(4.r),
+              ),
+              border: Border.all(
+                color: const Color(0xFF2D2D2D),
+                width: 1,
               ),
             ),
             child: Row(
@@ -391,10 +407,10 @@ class _AiChatBottomSheetState extends State<AiChatBottomSheet> {
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFF1F1F1F),
         border: Border(
           top: BorderSide(
-            color: Colors.grey[200]!,
+            color: const Color(0xFF2D2D2D),
             width: 1,
           ),
         ),
@@ -410,14 +426,18 @@ class _AiChatBottomSheetState extends State<AiChatBottomSheet> {
               Expanded(
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Colors.grey[100],
+                    color: const Color(0xFF0A0A0A),
                     borderRadius: BorderRadius.circular(24.r),
+                    border: Border.all(
+                      color: const Color(0xFF2D2D2D),
+                      width: 1,
+                    ),
                   ),
                   child: TextField(
                     controller: _messageController,
                     decoration: InputDecoration(
                       hintText: 'Type your message...',
-                      hintStyle: TextStyle(
+                      hintStyle: GoogleFonts.inter(
                         fontSize: 14.sp,
                         color: Colors.grey[500],
                       ),
@@ -427,7 +447,10 @@ class _AiChatBottomSheetState extends State<AiChatBottomSheet> {
                         vertical: 12.h,
                       ),
                     ),
-                    style: TextStyle(fontSize: 14.sp),
+                    style: GoogleFonts.inter(
+                      fontSize: 14.sp,
+                      color: Colors.white,
+                    ),
                     maxLines: 3,
                     minLines: 1,
                     onSubmitted: (value) => _sendMessage(),
@@ -467,35 +490,37 @@ class _AiChatBottomSheetState extends State<AiChatBottomSheet> {
         children: [
           Text(
             'Quick Actions',
-            style: TextStyle(
-              fontSize: 12.sp,
+            style: GoogleFonts.inter(
+              fontSize: 14.sp,
               fontWeight: FontWeight.w600,
-              color: Colors.grey[600],
+              color: Colors.white,
             ),
           ),
-          SizedBox(height: 8.h),
+          SizedBox(height: 12.h),
           
           Wrap(
             spacing: 8.w,
             runSpacing: 8.h,
             children: [
-              _buildQuickActionChip(
-                'Process Payment',
+              _buildQuickActionButton(
+                'Confirm Payment',
                 Icons.payment,
-                () {
-                  final cubit = _aiScanCubit ?? context.read<AiScanCubit>();
-                  cubit.processPayment();
-                },
+                () => _sendQuickMessage('I confirm this payment'),
               ),
-              _buildQuickActionChip(
-                'View Details',
-                Icons.info_outline,
-                () => _sendPredefinedMessage('Show me the extracted details'),
+              _buildQuickActionButton(
+                'Edit Amount',
+                Icons.edit,
+                () => _sendQuickMessage('I want to edit the amount'),
               ),
-              _buildQuickActionChip(
-                'Help',
-                Icons.help_outline,
-                () => _sendPredefinedMessage('I need help with this payment'),
+              _buildQuickActionButton(
+                'Change Recipient',
+                Icons.person_outline,
+                () => _sendQuickMessage('I want to change the recipient'),
+              ),
+              _buildQuickActionButton(
+                'Cancel',
+                Icons.cancel_outlined,
+                () => _sendQuickMessage('Cancel this transaction'),
               ),
             ],
           ),
@@ -504,16 +529,16 @@ class _AiChatBottomSheetState extends State<AiChatBottomSheet> {
     );
   }
 
-  Widget _buildQuickActionChip(String label, IconData icon, VoidCallback onTap) {
+  Widget _buildQuickActionButton(String text, IconData icon, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
         decoration: BoxDecoration(
-          color: const Color.fromARGB(255, 78, 3, 208).withOpacity(0.1),
+          color: const Color(0xFF0A0A0A),
           borderRadius: BorderRadius.circular(16.r),
           border: Border.all(
-            color: const Color.fromARGB(255, 78, 3, 208).withOpacity(0.3),
+            color: const Color(0xFF2D2D2D),
             width: 1,
           ),
         ),
@@ -522,16 +547,16 @@ class _AiChatBottomSheetState extends State<AiChatBottomSheet> {
           children: [
             Icon(
               icon,
-              size: 14.sp,
+              size: 16.sp,
               color: const Color.fromARGB(255, 78, 3, 208),
             ),
             SizedBox(width: 6.w),
             Text(
-              label,
-              style: TextStyle(
+              text,
+              style: GoogleFonts.inter(
                 fontSize: 12.sp,
-                fontWeight: FontWeight.w600,
-                color: const Color.fromARGB(255, 78, 3, 208),
+                fontWeight: FontWeight.w500,
+                color: Colors.white,
               ),
             ),
           ],
@@ -549,7 +574,7 @@ class _AiChatBottomSheetState extends State<AiChatBottomSheet> {
     }
   }
 
-  void _sendPredefinedMessage(String message) {
+  void _sendQuickMessage(String message) {
     final cubit = _aiScanCubit ?? context.read<AiScanCubit>();
     cubit.sendChatMessage(message);
   }
