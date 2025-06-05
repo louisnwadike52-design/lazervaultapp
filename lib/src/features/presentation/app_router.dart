@@ -109,6 +109,18 @@ import 'package:lazervault/src/features/group_account/presentation/views/contrib
 import 'package:lazervault/src/features/group_account/presentation/views/make_payment_screen.dart';
 import 'package:lazervault/src/features/group_account/domain/entities/group_entities.dart';
 
+// Insurance imports
+import 'package:lazervault/src/features/insurance/presentation/cubit/insurance_cubit.dart';
+import 'package:lazervault/src/features/insurance/presentation/view/insurance_list_screen.dart';
+import 'package:lazervault/src/features/insurance/presentation/view/insurance_details_screen.dart';
+import 'package:lazervault/src/features/insurance/presentation/view/insurance_payment_screen.dart';
+import 'package:lazervault/src/features/insurance/presentation/view/insurance_payment_processing_screen.dart';
+import 'package:lazervault/src/features/insurance/presentation/view/insurance_payment_confirmation_screen.dart';
+import 'package:lazervault/src/features/insurance/presentation/view/create_claim_screen.dart';
+import 'package:lazervault/src/features/insurance/domain/entities/insurance_entity.dart';
+import 'package:lazervault/src/features/insurance/domain/entities/insurance_payment_entity.dart';
+
+
 class AppRouter {
   static final routes = [
     GetPage(
@@ -769,6 +781,76 @@ class AppRouter {
             contributionId: contributionId,
             contribution: contribution,
           ),
+        );
+      },
+      transition: Transition.rightToLeft,
+    ),
+    
+    // Insurance routes
+    GetPage(
+      name: AppRoutes.insurance,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<InsuranceCubit>(),
+        child: serviceLocator<InsuranceListScreen>(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.insuranceDetails,
+      page: () {
+        final insurance = Get.arguments as Insurance;
+        return BlocProvider(
+          create: (_) => serviceLocator<InsuranceCubit>(),
+          child: InsuranceDetailsScreen(insurance: insurance),
+        );
+      },
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.insurancePayment,
+      page: () {
+        final insurance = Get.arguments as Insurance;
+        return BlocProvider(
+          create: (_) => serviceLocator<InsuranceCubit>(),
+          child: InsurancePaymentScreen(insurance: insurance),
+        );
+      },
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.insurancePaymentProcessing,
+      page: () {
+        final payment = Get.arguments as InsurancePayment;
+        return BlocProvider(
+          create: (_) => serviceLocator<InsuranceCubit>(),
+          child: InsurancePaymentProcessingScreen(payment: payment),
+        );
+      },
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.insurancePaymentConfirmation,
+      page: () {
+        final args = Get.arguments as Map<String, dynamic>;
+        final payment = args['payment'] as InsurancePayment;
+        final receiptUrl = args['receiptUrl'] as String? ?? '';
+        return BlocProvider(
+          create: (_) => serviceLocator<InsuranceCubit>(),
+          child: InsurancePaymentConfirmationScreen(
+            payment: payment,
+            receiptUrl: receiptUrl,
+          ),
+        );
+      },
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.createClaim,
+      page: () {
+        final insuranceId = Get.arguments as String;
+        return BlocProvider(
+          create: (_) => serviceLocator<InsuranceCubit>(),
+          child: CreateClaimScreen(insuranceId: insuranceId),
         );
       },
       transition: Transition.rightToLeft,

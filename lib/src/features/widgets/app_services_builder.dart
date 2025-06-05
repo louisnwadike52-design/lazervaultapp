@@ -42,6 +42,9 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
     const AppService(
         serviceName: AppServiceName.groupAccount,
         serviceImg: AppServiceImg.groupAccount),
+    const AppService(
+        serviceName: AppServiceName.insurance,
+        serviceImg: AppServiceImg.insurance),
   ];
 
   @override

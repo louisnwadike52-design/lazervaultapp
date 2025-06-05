@@ -175,6 +175,13 @@ import 'package:lazervault/src/features/group_account/domain/usecases/group_acco
 import 'package:lazervault/src/features/group_account/presentation/cubit/group_account_cubit.dart';
 import 'package:lazervault/src/features/group_account/presentation/views/group_account_list_screen.dart';
 
+// Insurance Imports
+import 'package:lazervault/src/features/insurance/data/datasources/insurance_local_datasource.dart';
+import 'package:lazervault/src/features/insurance/data/repositories/insurance_repository_impl.dart';
+import 'package:lazervault/src/features/insurance/domain/repositories/insurance_repository.dart';
+import 'package:lazervault/src/features/insurance/presentation/cubit/insurance_cubit.dart';
+import 'package:lazervault/src/features/insurance/presentation/view/insurance_list_screen.dart';
+
 final serviceLocator = GetIt.instance;
 
 Future<void> init() async {
@@ -535,6 +542,9 @@ Future<void> init() async {
   // ================== Screens / Presentation - Group Account ==================
   serviceLocator.registerFactory(() => GroupAccountListScreen());
 
+  // ================== Screens / Presentation - Insurance ==================
+  serviceLocator.registerFactory(() => InsuranceListScreen());
+
   // Make sure AuthenticationCubit is registered first, e.g.:
   // serviceLocator.registerLazySingleton(() => AuthenticationCubit(...));
 
@@ -653,6 +663,30 @@ Future<void> init() async {
     getGroupStatistics: serviceLocator<GetGroupStatistics>(),
     getUserContributionStats: serviceLocator<GetUserContributionStats>(),
   ));
+
+  // ================== Feature: Insurance ==================
+
+  // Data Sources  
+  serviceLocator.registerLazySingleton<InsuranceLocalDataSource>(
+    () {
+      final dataSource = InsuranceLocalDataSourceImpl();
+      // Initialize Hive for insurance
+      dataSource.initializeHive();
+      return dataSource;
+    },
+  );
+
+  // Repositories
+  serviceLocator.registerLazySingleton<InsuranceRepository>(
+    () => InsuranceRepositoryImpl(localDataSource: serviceLocator<InsuranceLocalDataSource>()),
+  );
+
+  // Blocs/Cubits
+  serviceLocator.registerFactory<InsuranceCubit>(
+    () => InsuranceCubit(
+      repository: serviceLocator<InsuranceRepository>(),
+    ),
+  );
 
   print("Dependency Injection Initialized with Hierarchical Order");
 }

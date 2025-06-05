@@ -137,6 +137,8 @@ class _NotificationsBuilderState extends State<NotificationsBuilder> {
         return const Color.fromARGB(255, 78, 3, 208);
       case AppServiceName.groupAccount:
         return const Color.fromARGB(255, 78, 3, 208);
+      case AppServiceName.insurance:
+        return const Color.fromARGB(255, 78, 3, 208);
     }
   }
 
