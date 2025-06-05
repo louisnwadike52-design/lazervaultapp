@@ -126,5 +126,15 @@ abstract class AppRoutes {
   static const String paymentReceipt = '/group-account/payment-receipt';
   static const String contributionTranscript = '/group-account/contribution-transcript';
   
+  // Insurance Routes
+  static const String insurance = '/insurance';
+  static const String insuranceDetails = '/insurance/details';
+  static const String createInsurance = '/insurance/create';
+  static const String insurancePayment = '/insurance/payment';
+  static const String insurancePaymentProcessing = '/insurance/payment-processing';
+  static const String insurancePaymentConfirmation = '/insurance/payment-confirmation';
+  static const String insuranceClaims = '/insurance/claims';
+  static const String createClaim = '/insurance/create-claim';
+  
   static const String investments = '/investments';
 }

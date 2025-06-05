@@ -46,6 +46,9 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
       case AppServiceName.groupAccount:
         Get.toNamed(AppRoutes.groupAccount);
         break;
+      case AppServiceName.insurance:
+        Get.toNamed(AppRoutes.insurance);
+        break;
       case AppServiceName.sendFunds:
       default:
         Get.toNamed(AppRoutes.selectRecipient);
@@ -168,6 +171,9 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
         break;
       case AppServiceName.groupAccount:
         iconData = Icons.groups;
+        break;
+      case AppServiceName.insurance:
+        iconData = Icons.shield_outlined;
         break;
     }
 
