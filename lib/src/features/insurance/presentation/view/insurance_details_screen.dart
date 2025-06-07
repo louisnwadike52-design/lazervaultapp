@@ -64,8 +64,6 @@ class _InsuranceDetailsScreenState extends State<InsuranceDetailsScreen> with Ti
         
         final cubit = context.read<InsuranceCubit>();
         cubit.setUserId(userId);
-        // Load details but use the passed insurance object as base
-        cubit.loadInsuranceDetailsWithData(widget.insurance);
       },
       builder: (context, authState) {
         final userId = authState is AuthenticationSuccess 
@@ -76,8 +74,11 @@ class _InsuranceDetailsScreenState extends State<InsuranceDetailsScreen> with Ti
         WidgetsBinding.instance.addPostFrameCallback((_) {
           final cubit = context.read<InsuranceCubit>();
           cubit.setUserId(userId);
-          // Load details using the passed insurance data
-          cubit.loadInsuranceDetailsWithData(widget.insurance);
+          // Load details using the passed insurance data (only once)
+          if (cubit.state is! InsuranceDetailsLoaded || 
+              (cubit.state as InsuranceDetailsLoaded).insurance.id != widget.insurance.id) {
+            cubit.loadInsuranceDetailsWithData(widget.insurance);
+          }
         });
         
         return _buildDetailsScreen();
@@ -121,19 +122,20 @@ class _InsuranceDetailsScreenState extends State<InsuranceDetailsScreen> with Ti
               }
             },
             builder: (context, state) {
-              if (state is InsuranceLoading) {
-                return _buildLoadingState();
-              }
-
               if (state is InsuranceDetailsLoaded) {
                 return _buildDetailsView(state);
+              }
+
+              if (state is InsuranceLoading) {
+                return _buildLoadingState();
               }
 
               if (state is InsuranceError) {
                 return _buildErrorState(state.message);
               }
 
-              return _buildEmptyState();
+              // If no state is loaded yet, show loading while we initialize
+              return _buildLoadingState();
             },
           ),
         ),

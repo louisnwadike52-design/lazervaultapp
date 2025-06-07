@@ -45,6 +45,9 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
     const AppService(
         serviceName: AppServiceName.insurance,
         serviceImg: AppServiceImg.insurance),
+    const AppService(
+        serviceName: AppServiceName.airtime,
+        serviceImg: AppServiceImg.airtime),
   ];
 
   @override
@@ -116,9 +119,9 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
             padding: EdgeInsets.zero,
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 4,
-              crossAxisSpacing: 12.w,
-              mainAxisSpacing: 12.h,
-              childAspectRatio: 0.65,
+              crossAxisSpacing: 8.w,
+              mainAxisSpacing: 8.h,
+              childAspectRatio: 0.8,
             ),
             itemCount: appServices.length,
             shrinkWrap: true,

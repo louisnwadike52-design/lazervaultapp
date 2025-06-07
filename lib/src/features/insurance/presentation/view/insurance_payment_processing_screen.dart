@@ -92,32 +92,32 @@ class _InsurancePaymentProcessingScreenState extends State<InsurancePaymentProce
             ),
           ),
           child: BlocConsumer<InsuranceCubit, InsuranceState>(
-            listener: (context, state) {
-              if (state is PaymentCompleted) {
-                // Navigate to confirmation screen using route
-                Get.offNamed(
-                  AppRoutes.insurancePaymentConfirmation,
-                  arguments: {
-                    'payment': state.payment,
-                    'receiptUrl': state.receiptUrl,
-                  },
-                );
-              } else if (state is PaymentFailed) {
-                // Show error and navigate back
-                _showErrorDialog(state.error);
-              }
-            },
-            builder: (context, state) {
-              if (state is PaymentProcessing) {
-                return _buildProcessingView(state);
-              }
-              
-              return _buildProcessingView(PaymentProcessing(
-                payment: widget.payment,
-                step: 'Initializing payment...',
-                progress: 0.1,
-              ));
-            },
+          listener: (context, state) {
+            if (state is PaymentCompleted) {
+              // Navigate to confirmation screen using route
+              Get.offNamed(
+                AppRoutes.insurancePaymentConfirmation,
+                arguments: {
+                  'payment': state.payment,
+                  'receiptUrl': state.receiptUrl,
+                },
+              );
+            } else if (state is PaymentFailed) {
+              // Show error and navigate back
+              _showErrorDialog(state.error);
+            }
+          },
+          builder: (context, state) {
+            if (state is PaymentProcessing) {
+              return _buildProcessingView(state);
+            }
+            
+            return _buildProcessingView(PaymentProcessing(
+              payment: widget.payment,
+              step: 'Initializing payment...',
+              progress: 0.1,
+            ));
+          },
           ),
         ),
       ),
@@ -134,114 +134,114 @@ class _InsurancePaymentProcessingScreenState extends State<InsurancePaymentProce
                       MediaQuery.of(context).padding.top - 
                       MediaQuery.of(context).padding.bottom,
           ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
               SizedBox(height: 40.h),
-              
-              // Animated processing icon
-              AnimatedBuilder(
-                animation: _pulseAnimation,
-                builder: (context, child) {
-                  return Transform.scale(
-                    scale: _pulseAnimation.value,
-                    child: AnimatedBuilder(
-                      animation: _rotationAnimation,
-                      builder: (context, child) {
-                        return Transform.rotate(
-                          angle: _rotationAnimation.value * 2 * 3.14159,
-                          child: Container(
-                            width: 120.w,
-                            height: 120.w,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
+            
+            // Animated processing icon
+            AnimatedBuilder(
+              animation: _pulseAnimation,
+              builder: (context, child) {
+                return Transform.scale(
+                  scale: _pulseAnimation.value,
+                  child: AnimatedBuilder(
+                    animation: _rotationAnimation,
+                    builder: (context, child) {
+                      return Transform.rotate(
+                        angle: _rotationAnimation.value * 2 * 3.14159,
+                        child: Container(
+                          width: 120.w,
+                          height: 120.w,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
                               color: Colors.white.withValues(alpha: 0.2),
-                              border: Border.all(
-                                color: Colors.white,
-                                width: 3,
-                              ),
-                            ),
-                            child: Icon(
-                              Icons.shield_outlined,
-                              size: 60.sp,
+                            border: Border.all(
                               color: Colors.white,
+                              width: 3,
                             ),
                           ),
-                        );
-                      },
-                    ),
-                  );
-                },
-              ),
+                          child: Icon(
+                            Icons.shield_outlined,
+                            size: 60.sp,
+                            color: Colors.white,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                );
+              },
+            ),
 
               SizedBox(height: 32.h),
 
-              // Processing title
-              Text(
-                'Processing Payment',
+            // Processing title
+            Text(
+              'Processing Payment',
                 style: GoogleFonts.inter(
-                  fontSize: 28.sp,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
-                ),
-                textAlign: TextAlign.center,
+                fontSize: 28.sp,
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
               ),
+              textAlign: TextAlign.center,
+            ),
 
               SizedBox(height: 12.h),
 
-              // Processing step
-              Text(
-                state.step,
+            // Processing step
+            Text(
+              state.step,
                 style: GoogleFonts.inter(
-                  fontSize: 16.sp,
+                fontSize: 16.sp,
                   color: Colors.white.withValues(alpha: 0.9),
-                ),
-                textAlign: TextAlign.center,
               ),
+              textAlign: TextAlign.center,
+            ),
 
               SizedBox(height: 32.h),
 
-              // Progress bar
-              Container(
-                width: double.infinity,
-                height: 8.h,
-                decoration: BoxDecoration(
+            // Progress bar
+            Container(
+              width: double.infinity,
+              height: 8.h,
+              decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(4.r),
-                ),
-                child: FractionallySizedBox(
-                  alignment: Alignment.centerLeft,
-                  widthFactor: state.progress,
-                  child: Container(
-                    decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(4.r),
+              ),
+              child: FractionallySizedBox(
+                alignment: Alignment.centerLeft,
+                widthFactor: state.progress,
+                child: Container(
+                  decoration: BoxDecoration(
                       gradient: const LinearGradient(
                         colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
                       ),
-                      borderRadius: BorderRadius.circular(4.r),
-                    ),
+                    borderRadius: BorderRadius.circular(4.r),
                   ),
                 ),
               ),
+            ),
 
               SizedBox(height: 12.h),
 
-              // Progress percentage
-              Text(
-                '${(state.progress * 100).toInt()}%',
+            // Progress percentage
+            Text(
+              '${(state.progress * 100).toInt()}%',
                 style: GoogleFonts.inter(
-                  fontSize: 14.sp,
+                fontSize: 14.sp,
                   color: Colors.white.withValues(alpha: 0.8),
-                  fontWeight: FontWeight.w600,
-                ),
+                fontWeight: FontWeight.w600,
               ),
+            ),
 
               SizedBox(height: 32.h),
 
-              // Payment details card
-              Container(
-                width: double.infinity,
-                padding: EdgeInsets.all(20.w),
-                decoration: BoxDecoration(
+            // Payment details card
+            Container(
+              width: double.infinity,
+              padding: EdgeInsets.all(20.w),
+              decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
@@ -250,71 +250,71 @@ class _InsurancePaymentProcessingScreenState extends State<InsurancePaymentProce
                       const Color(0xFF1F1F35).withValues(alpha: 0.9),
                     ],
                   ),
-                  borderRadius: BorderRadius.circular(16.r),
-                  border: Border.all(
+                borderRadius: BorderRadius.circular(16.r),
+                border: Border.all(
                     color: Colors.white.withValues(alpha: 0.1),
-                  ),
                 ),
-                child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Amount',
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Amount',
                           style: GoogleFonts.inter(
-                            fontSize: 14.sp,
+                          fontSize: 14.sp,
                             color: const Color(0xFF9CA3AF),
-                          ),
                         ),
-                        Text(
-                          '\$${widget.payment.amount.toStringAsFixed(2)}',
+                      ),
+                      Text(
+                        '\$${widget.payment.amount.toStringAsFixed(2)}',
                           style: GoogleFonts.inter(
-                            fontSize: 18.sp,
-                            fontWeight: FontWeight.w700,
+                          fontSize: 18.sp,
+                          fontWeight: FontWeight.w700,
                             color: const Color(0xFF10B981),
-                          ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
+                  ),
 
-                    SizedBox(height: 16.h),
+                  SizedBox(height: 16.h),
 
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Policy Number',
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Policy Number',
                           style: GoogleFonts.inter(
-                            fontSize: 14.sp,
+                          fontSize: 14.sp,
                             color: const Color(0xFF9CA3AF),
-                          ),
                         ),
-                        Text(
-                          widget.payment.policyNumber,
+                      ),
+                      Text(
+                        widget.payment.policyNumber,
                           style: GoogleFonts.inter(
-                            fontSize: 14.sp,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                          ),
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
+                  ),
 
-                    SizedBox(height: 16.h),
+                  SizedBox(height: 16.h),
 
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Payment Method',
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Payment Method',
                           style: GoogleFonts.inter(
-                            fontSize: 14.sp,
+                          fontSize: 14.sp,
                             color: const Color(0xFF9CA3AF),
-                          ),
                         ),
-                        Row(
-                          children: [
+                      ),
+                      Row(
+                        children: [
                             Container(
                               padding: EdgeInsets.all(4.w),
                               decoration: BoxDecoration(
@@ -322,35 +322,35 @@ class _InsurancePaymentProcessingScreenState extends State<InsurancePaymentProce
                                 borderRadius: BorderRadius.circular(6.r),
                               ),
                               child: Text(
-                                widget.payment.paymentMethod.icon,
+                            widget.payment.paymentMethod.icon,
                                 style: TextStyle(fontSize: 14.sp),
                               ),
-                            ),
-                            SizedBox(width: 8.w),
-                            Text(
-                              widget.payment.paymentMethod.displayName,
+                          ),
+                          SizedBox(width: 8.w),
+                          Text(
+                            widget.payment.paymentMethod.displayName,
                               style: GoogleFonts.inter(
-                                fontSize: 14.sp,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.white,
-                              ),
+                              fontSize: 14.sp,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
                             ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
               ),
+            ),
 
               SizedBox(height: 24.h),
 
-              // Processing steps indicator
-              _buildProcessingSteps(state.progress),
+            // Processing steps indicator
+            _buildProcessingSteps(state.progress),
 
               SizedBox(height: 32.h),
 
-              // Security note
+            // Security note
               Container(
                 padding: EdgeInsets.all(16.w),
                 decoration: BoxDecoration(
@@ -361,30 +361,30 @@ class _InsurancePaymentProcessingScreenState extends State<InsurancePaymentProce
                   ),
                 ),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.lock_outline,
-                      size: 16.sp,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.lock_outline,
+                  size: 16.sp,
                       color: const Color(0xFF6366F1),
-                    ),
-                    SizedBox(width: 8.w),
+                ),
+                SizedBox(width: 8.w),
                     Expanded(
                       child: Text(
-                        'Your payment is secured with end-to-end encryption',
+                  'Your payment is secured with end-to-end encryption',
                         style: GoogleFonts.inter(
-                          fontSize: 12.sp,
+                    fontSize: 12.sp,
                           color: const Color(0xFF6366F1),
                         ),
                         textAlign: TextAlign.center,
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
+              ],
+                ),
+            ),
 
-              SizedBox(height: 40.h),
-            ],
+            SizedBox(height: 40.h),
+          ],
           ),
         ),
       ),
@@ -506,16 +506,16 @@ class _InsurancePaymentProcessingScreenState extends State<InsurancePaymentProce
               borderRadius: BorderRadius.circular(8.r),
             ),
             child: ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                Get.back(); // Return to previous screen
-              },
-              style: ElevatedButton.styleFrom(
+            onPressed: () {
+              Navigator.of(context).pop();
+              Get.back(); // Return to previous screen
+            },
+            style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.transparent,
                 shadowColor: Colors.transparent,
-              ),
+            ),
               child: Text(
-                'Try Again',
+              'Try Again',
                 style: GoogleFonts.inter(
                   color: Colors.white,
                   fontWeight: FontWeight.w600,

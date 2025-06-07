@@ -1,0 +1,584 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
+import 'package:intl/intl.dart';
+import '../../../../../core/types/app_routes.dart';
+import '../cubit/airtime_cubit.dart';
+import '../cubit/airtime_state.dart';
+import '../../domain/entities/network_provider.dart';
+import '../../domain/entities/country.dart';
+
+class AmountSelectionScreen extends StatefulWidget {
+  const AmountSelectionScreen({super.key});
+
+  @override
+  State<AmountSelectionScreen> createState() => _AmountSelectionScreenState();
+}
+
+class _AmountSelectionScreenState extends State<AmountSelectionScreen> {
+  final TextEditingController _amountController = TextEditingController();
+  final FocusNode _amountFocusNode = FocusNode();
+  
+  double? selectedAmount;
+  String? phoneNumber;
+  String? recipientName;
+  NetworkProvider? networkProvider;
+  Country? selectedCountry;
+  
+  final List<double> quickAmounts = [50, 100, 200, 500, 1000, 2000, 5000];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadArguments();
+    // Load quick amount options - this functionality will be added later
+    // context.read<AirtimeCubit>().loadQuickAmountOptions(networkProvider!.type);
+  }
+
+  void _loadArguments() {
+    final args = Get.arguments as Map<String, dynamic>?;
+    if (args != null) {
+      phoneNumber = args['phoneNumber'];
+      recipientName = args['recipientName'];
+      networkProvider = args['networkProvider'];
+      selectedCountry = args['country'];
+      
+      // Handle prefilled amount from repeat transactions
+      if (args['prefillAmount'] != null) {
+        final amount = args['prefillAmount'] as double;
+        setState(() {
+          selectedAmount = amount;
+          _amountController.text = amount.toStringAsFixed(0);
+        });
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _amountController.dispose();
+    _amountFocusNode.dispose();
+    super.dispose();
+  }
+
+  void _selectAmount(double amount) {
+    setState(() {
+      selectedAmount = amount;
+      _amountController.text = amount.toStringAsFixed(0);
+    });
+  }
+
+  void _validateAndProceed() {
+    if (selectedAmount == null) {
+      _showError('Please select or enter an amount');
+      return;
+    }
+
+    if (networkProvider == null || phoneNumber == null) {
+      _showError('Missing required information');
+      return;
+    }
+
+    context.read<AirtimeCubit>().prepareTransactionReview(
+      country: selectedCountry ?? Country(
+        id: 'ng',
+        code: 'NG',
+        name: 'Nigeria',
+        currency: '₦',
+        dialCode: '+234',
+        flag: '🇳🇬',
+        currencySymbol: '₦',
+      ),
+      provider: networkProvider!,
+      phoneNumber: phoneNumber!,
+      recipientName: recipientName ?? '',
+      amount: selectedAmount!,
+    );
+  }
+
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+        behavior: SnackBarBehavior.floating,
+        margin: EdgeInsets.all(16.w),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12.r),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Color(0xFF0A0E27),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFF1A1A3E),
+              Color(0xFF0A0E27),
+              Color(0xFF0F0F23),
+            ],
+          ),
+        ),
+        child: SafeArea(
+          child: BlocListener<AirtimeCubit, AirtimeState>(
+            listener: (context, state) {
+              if (state is AirtimeTransactionReviewReady) {
+                Get.toNamed(AppRoutes.airtimeReview, arguments: {
+                  'country': state.country,
+                  'provider': state.provider,
+                  'phoneNumber': state.phoneNumber,
+                  'recipientName': state.recipientName,
+                  'amount': state.amount,
+                  'fee': state.fee,
+                  'totalAmount': state.totalAmount,
+                });
+              } else if (state is AirtimeError) {
+                _showError(state.message);
+              }
+            },
+            child: Column(
+              children: [
+                // Header
+                _buildHeader(),
+                
+                // Content
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: EdgeInsets.symmetric(horizontal: 20.w),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(height: 20.h),
+                        
+                        // Recipient info card
+                        if (networkProvider != null) _buildRecipientCard(),
+                        
+                        SizedBox(height: 24.h),
+                        
+                        // Custom amount input
+                        _buildCustomAmountInput(),
+                        
+                        SizedBox(height: 24.h),
+                        
+                        // Quick amounts
+                        _buildQuickAmounts(),
+                        
+                        SizedBox(height: 24.h),
+                        
+                        // Amount summary
+                        if (selectedAmount != null) _buildAmountSummary(),
+                        
+                        SizedBox(height: 40.h),
+                      ],
+                    ),
+                  ),
+                ),
+                
+                // Continue button
+                _buildContinueButton(),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeader() {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
+      child: Row(
+        children: [
+          // Back button
+          GestureDetector(
+            onTap: () => Get.back(),
+            child: Container(
+              width: 40.w,
+              height: 40.w,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12.r),
+                border: Border.all(
+                  color: Colors.white.withOpacity(0.2),
+                  width: 1,
+                ),
+              ),
+              child: Icon(
+                Icons.arrow_back_ios_new,
+                color: Colors.white,
+                size: 20.sp,
+              ),
+            ),
+          ),
+          
+          SizedBox(width: 16.w),
+          
+          // Title and subtitle
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Select Amount',
+                  style: TextStyle(
+                    fontSize: 24.sp,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                SizedBox(height: 4.h),
+                Text(
+                  'How much airtime would you like to purchase?',
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    color: Colors.white.withOpacity(0.6),
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRecipientCard() {
+    return Container(
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.1),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 40.w,
+            height: 40.w,
+            decoration: BoxDecoration(
+              color: _getProviderColor(networkProvider!.type),
+              borderRadius: BorderRadius.circular(8.r),
+            ),
+            child: Center(
+              child: Text(
+                networkProvider!.name.substring(0, 1),
+                style: TextStyle(
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ),
+          
+          SizedBox(width: 12.w),
+          
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  networkProvider!.name,
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+                Text(
+                  phoneNumber ?? '',
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    color: Colors.white.withOpacity(0.6),
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+                if (recipientName != null && recipientName!.isNotEmpty)
+                  Text(
+                    recipientName!,
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      color: Colors.white.withOpacity(0.6),
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCustomAmountInput() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Enter Amount',
+          style: TextStyle(
+            fontSize: 16.sp,
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
+          ),
+        ),
+        
+        SizedBox(height: 8.h),
+        
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.05),
+            borderRadius: BorderRadius.circular(16.r),
+            border: Border.all(
+              color: _amountFocusNode.hasFocus 
+                ? Color(0xFF6366F1) 
+                : Colors.white.withOpacity(0.1),
+              width: 1,
+            ),
+          ),
+          child: TextField(
+            controller: _amountController,
+            focusNode: _amountFocusNode,
+            keyboardType: TextInputType.number,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+              LengthLimitingTextInputFormatter(6),
+            ],
+            onChanged: (value) {
+              if (value.isNotEmpty) {
+                final amount = double.tryParse(value);
+                if (amount != null) {
+                  setState(() {
+                    selectedAmount = amount;
+                  });
+                }
+              } else {
+                setState(() {
+                  selectedAmount = null;
+                });
+              }
+            },
+            style: TextStyle(
+              fontSize: 24.sp,
+              color: Colors.white,
+              fontWeight: FontWeight.w700,
+            ),
+            decoration: InputDecoration(
+              hintText: '0',
+              hintStyle: TextStyle(
+                color: Colors.white.withOpacity(0.4),
+                fontSize: 24.sp,
+                fontWeight: FontWeight.w700,
+              ),
+              prefixIcon: Container(
+                padding: EdgeInsets.all(16.w),
+                child: Text(
+                  '₦',
+                  style: TextStyle(
+                    fontSize: 24.sp,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              border: InputBorder.none,
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: 16.w,
+                vertical: 20.h,
+              ),
+            ),
+          ),
+        ),
+        
+        SizedBox(height: 8.h),
+        
+        Text(
+          'Minimum: ₦50 • Maximum: ₦50,000',
+          style: TextStyle(
+            fontSize: 12.sp,
+            color: Colors.white.withOpacity(0.5),
+            fontWeight: FontWeight.w400,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildQuickAmounts() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Quick Amounts',
+          style: TextStyle(
+            fontSize: 16.sp,
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
+          ),
+        ),
+        
+        SizedBox(height: 12.h),
+        
+        Wrap(
+          spacing: 8.w,
+          runSpacing: 8.h,
+          children: quickAmounts.map((amount) {
+            final isSelected = selectedAmount == amount;
+            return GestureDetector(
+              onTap: () => _selectAmount(amount),
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                decoration: BoxDecoration(
+                  color: isSelected 
+                    ? Color(0xFF6366F1) 
+                    : Colors.white.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(12.r),
+                  border: Border.all(
+                    color: isSelected 
+                      ? Color(0xFF6366F1) 
+                      : Colors.white.withOpacity(0.1),
+                    width: 1,
+                  ),
+                ),
+                child: Text(
+                  '₦${amount.toStringAsFixed(0)}',
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w600,
+                    color: isSelected ? Colors.white : Colors.white.withOpacity(0.8),
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAmountSummary() {
+    final fee = selectedAmount! * 0.01;
+    final clampedFee = fee.clamp(5.0, 100.0);
+    final discount = networkProvider?.discount != null 
+      ? selectedAmount! * (networkProvider!.discount! / 100) 
+      : 0.0;
+    final total = selectedAmount! + clampedFee - discount;
+
+    return Container(
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.1),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        children: [
+          _buildSummaryRow('Airtime Amount', '₦${selectedAmount!.toStringAsFixed(0)}'),
+          if (discount > 0) ...[
+            SizedBox(height: 8.h),
+            _buildSummaryRow('Discount (${networkProvider!.discount!.toStringAsFixed(0)}%)', '-₦${discount.toStringAsFixed(0)}', isDiscount: true),
+          ],
+          SizedBox(height: 8.h),
+          _buildSummaryRow('Service Fee', '₦${clampedFee.toStringAsFixed(0)}'),
+          SizedBox(height: 12.h),
+          Divider(color: Colors.white.withOpacity(0.1)),
+          SizedBox(height: 12.h),
+          _buildSummaryRow('Total Amount', '₦${total.toStringAsFixed(0)}', isTotal: true),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSummaryRow(String label, String amount, {bool isTotal = false, bool isDiscount = false}) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: isTotal ? 16.sp : 14.sp,
+            fontWeight: isTotal ? FontWeight.w600 : FontWeight.w400,
+            color: Colors.white.withOpacity(isTotal ? 1.0 : 0.6),
+          ),
+        ),
+        Text(
+          amount,
+          style: TextStyle(
+            fontSize: isTotal ? 16.sp : 14.sp,
+            fontWeight: isTotal ? FontWeight.w700 : FontWeight.w500,
+            color: isDiscount 
+              ? Color(0xFF10B981) 
+              : isTotal 
+                ? Colors.white 
+                : Colors.white.withOpacity(0.8),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildContinueButton() {
+    return Container(
+      padding: EdgeInsets.all(20.w),
+      child: SizedBox(
+        width: double.infinity,
+        child: ElevatedButton(
+          onPressed: selectedAmount != null && selectedAmount! >= 50 ? _validateAndProceed : null,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: selectedAmount != null && selectedAmount! >= 50 
+              ? Color(0xFF6366F1) 
+              : Colors.white.withOpacity(0.1),
+            padding: EdgeInsets.symmetric(vertical: 16.h),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16.r),
+            ),
+            elevation: 0,
+          ),
+          child: Text(
+            'Continue',
+            style: TextStyle(
+              fontSize: 16.sp,
+              fontWeight: FontWeight.w600,
+              color: selectedAmount != null && selectedAmount! >= 50 
+                ? Colors.white 
+                : Colors.white.withOpacity(0.4),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Color _getProviderColor(NetworkProviderType type) {
+    switch (type) {
+      case NetworkProviderType.mtn:
+        return Color(0xFFFFCC00);
+      case NetworkProviderType.airtel:
+        return Color(0xFFFF0000);
+      case NetworkProviderType.glo:
+        return Color(0xFF00B04F);
+      case NetworkProviderType.etisalat:
+      case NetworkProviderType.ninemobile:
+        return Color(0xFF00AA4F);
+      default:
+        return Color(0xFF6366F1); // Default blue color
+    }
+  }
+} 
