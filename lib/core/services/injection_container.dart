@@ -158,6 +158,13 @@ import 'package:lazervault/src/features/pay_invoice/data/datasources/pay_invoice
 import 'package:lazervault/src/features/pay_invoice/domain/repositories/pay_invoice_repository.dart';
 // End Invoice Imports
 
+// Airtime Imports
+import 'package:lazervault/src/features/airtime/data/datasources/airtime_local_datasource.dart';
+import 'package:lazervault/src/features/airtime/data/repositories/airtime_repository_impl.dart';
+import 'package:lazervault/src/features/airtime/domain/repositories/airtime_repository.dart';
+import 'package:lazervault/src/features/airtime/presentation/cubit/airtime_cubit.dart';
+// End Airtime Imports
+
 import 'package:lazervault/src/features/investments/presentation/view/investments_screen.dart';
 
 // AI Scan to Pay Imports
@@ -458,6 +465,22 @@ Future<void> init() async {
     currentUserId: 'current_user_id', // This should be injected based on authenticated user
   ));
 
+  // ================== Feature: Airtime ==================
+
+  // Data Sources
+  serviceLocator.registerLazySingleton<AirtimeLocalDataSource>(
+    () => AirtimeLocalDataSourceImpl(),
+  );
+
+  // Repositories
+  serviceLocator.registerLazySingleton<AirtimeRepository>(
+    () => AirtimeRepositoryImpl(localDataSource: serviceLocator<AirtimeLocalDataSource>()),
+  );
+
+  // Blocs/Cubits
+  serviceLocator.registerFactory(() => AirtimeCubit(
+    repository: serviceLocator<AirtimeRepository>(),
+  ));
 
   // ================== Screens / Presentation ==================
   serviceLocator

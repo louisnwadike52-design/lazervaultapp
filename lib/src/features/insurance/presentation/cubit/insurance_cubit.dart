@@ -76,13 +76,19 @@ class InsuranceCubit extends Cubit<InsuranceState> {
   /// Load details with provided insurance data (simulates API approach)
   Future<void> loadInsuranceDetailsWithData(Insurance insurance) async {
     try {
-      emit(InsuranceLoading());
+      // Immediately emit the state with the provided insurance data
+      // and empty payments/claims to show the screen right away
+      emit(InsuranceDetailsLoaded(
+        insurance: insurance,
+        payments: [],
+        claims: [],
+      ));
       
-      // Use the provided insurance data instead of fetching from repository
-      // Only fetch payments and claims
+      // Then load payments and claims in the background
       final payments = await repository.getInsurancePayments(insurance.id);
       final claims = await repository.getInsuranceClaims(insurance.id);
       
+      // Update the state with loaded payments and claims
       emit(InsuranceDetailsLoaded(
         insurance: insurance,
         payments: payments,

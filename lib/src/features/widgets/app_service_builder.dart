@@ -49,6 +49,9 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
       case AppServiceName.insurance:
         Get.toNamed(AppRoutes.insurance);
         break;
+      case AppServiceName.airtime:
+        Get.toNamed(AppRoutes.airtime);
+        break;
       case AppServiceName.sendFunds:
       default:
         Get.toNamed(AppRoutes.selectRecipient);
@@ -65,12 +68,12 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
       onTapCancel: () => setState(() => isHovered = false),
       child: AnimatedContainer(
         duration: Duration(milliseconds: 200),
-        padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 8.w),
+        padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 4.w),
         decoration: BoxDecoration(
           color: isHovered
               ? Color.fromARGB(255, 78, 3, 208).withOpacity(0.05)
               : Colors.white,
-          borderRadius: BorderRadius.circular(16.r),
+          borderRadius: BorderRadius.circular(12.r),
           border: Border.all(
             color: isHovered
                 ? Color.fromARGB(255, 78, 3, 208).withOpacity(0.2)
@@ -93,8 +96,8 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
           children: [
             // Service Icon
             Container(
-              width: 48.w,
-              height: 48.w,
+              width: 32.w,
+              height: 32.w,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
@@ -110,19 +113,19 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
                 child: _buildServiceIcon(),
               ),
             ),
-            SizedBox(height: 12.h),
+            SizedBox(height: 8.h),
 
             // Service Name
             Flexible(
               child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 4.w),
+                padding: EdgeInsets.symmetric(horizontal: 2.w),
                 child: Text(
                   widget.appService.serviceName.displayName,
                   textAlign: TextAlign.center,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    fontSize: 11.sp,
+                    fontSize: 10.sp,
                     height: 1.2,
                     fontWeight: FontWeight.w600,
                     color: isHovered
@@ -175,11 +178,14 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
       case AppServiceName.insurance:
         iconData = Icons.shield_outlined;
         break;
+      case AppServiceName.airtime:
+        iconData = Icons.phone_android;
+        break;
     }
 
     return Icon(
       iconData,
-      size: 24.sp,
+      size: 16.sp,
       color: Color.fromARGB(255, 78, 3, 208),
     );
   }

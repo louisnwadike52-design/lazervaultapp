@@ -110,6 +110,10 @@ class _NotificationsBuilderState extends State<NotificationsBuilder> {
         return Icons.qr_code_scanner_rounded;
       case AppServiceName.groupAccount:
         return Icons.groups_rounded;
+      case AppServiceName.insurance:
+        return Icons.shield_outlined;
+      case AppServiceName.airtime:
+        return Icons.phone_android;
       default:
         return Icons.help_outline;
     }
@@ -139,6 +143,8 @@ class _NotificationsBuilderState extends State<NotificationsBuilder> {
         return const Color.fromARGB(255, 78, 3, 208);
       case AppServiceName.insurance:
         return const Color.fromARGB(255, 78, 3, 208);
+      case AppServiceName.airtime:
+        return const Color(0xFF6366F1);
     }
   }
 

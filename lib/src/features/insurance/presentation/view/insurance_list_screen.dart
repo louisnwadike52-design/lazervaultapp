@@ -838,8 +838,8 @@ class _InsuranceListScreenState extends State<InsuranceListScreen> with TickerPr
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(2.r),
-                ),
-              ),
+          ),
+        ),
               // Header
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 20.w),
@@ -848,21 +848,21 @@ class _InsuranceListScreenState extends State<InsuranceListScreen> with TickerPr
                   children: [
                     Text(
                       'New Insurance Policy',
-                      style: GoogleFonts.inter(
+          style: GoogleFonts.inter(
                         fontSize: 20.sp,
                         fontWeight: FontWeight.w700,
                         color: Colors.white,
-                      ),
-                    ),
+          ),
+        ),
                     GestureDetector(
                       onTap: () => Navigator.of(context).pop(),
                       child: Container(
                         width: 32.w,
                         height: 32.w,
-                        decoration: BoxDecoration(
+            decoration: BoxDecoration(
                           color: Colors.white.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(16.r),
-                        ),
+            ),
                         child: Icon(
                           Icons.close,
                           color: Colors.white,
@@ -881,14 +881,14 @@ class _InsuranceListScreenState extends State<InsuranceListScreen> with TickerPr
                   child: CreateInsurancePolicyView(
                     scrollController: scrollController,
                     onPolicyCreated: () {
-                      Navigator.of(context).pop();
+                Navigator.of(context).pop();
                       insuranceCubit.loadInsurances();
-                    },
-                  ),
-                ),
+              },
               ),
-            ],
+            ),
           ),
+        ],
+      ),
         );
       },
     );

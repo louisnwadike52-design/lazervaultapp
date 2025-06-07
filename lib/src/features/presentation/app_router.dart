@@ -120,6 +120,19 @@ import 'package:lazervault/src/features/insurance/presentation/view/create_claim
 import 'package:lazervault/src/features/insurance/domain/entities/insurance_entity.dart';
 import 'package:lazervault/src/features/insurance/domain/entities/insurance_payment_entity.dart';
 
+// Airtime imports
+import 'package:lazervault/src/features/airtime/presentation/cubit/airtime_cubit.dart';
+import 'package:lazervault/src/features/airtime/presentation/view/airtime_screen.dart';
+import 'package:lazervault/src/features/airtime/presentation/view/country_selection_screen.dart';
+import 'package:lazervault/src/features/airtime/presentation/view/network_selection_screen.dart';
+import 'package:lazervault/src/features/airtime/presentation/view/recipient_input_screen.dart';
+import 'package:lazervault/src/features/airtime/presentation/view/amount_selection_screen.dart';
+import 'package:lazervault/src/features/airtime/presentation/view/airtime_review_screen.dart';
+import 'package:lazervault/src/features/airtime/presentation/view/airtime_payment_processing_screen.dart';
+import 'package:lazervault/src/features/airtime/presentation/view/airtime_payment_confirmation_screen.dart';
+import 'package:lazervault/src/features/airtime/presentation/view/airtime_history_screen.dart';
+import 'package:lazervault/src/features/airtime/presentation/view/airtime_details_screen.dart';
+import 'package:lazervault/src/features/airtime/domain/entities/airtime_transaction.dart';
 
 class AppRouter {
   static final routes = [
@@ -853,6 +866,88 @@ class AppRouter {
           child: CreateClaimScreen(insuranceId: insuranceId),
         );
       },
+      transition: Transition.rightToLeft,
+    ),
+    
+    // Airtime routes
+    GetPage(
+      name: AppRoutes.airtime,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<AirtimeCubit>(),
+        child: const AirtimeScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.airtimeCountrySelection,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<AirtimeCubit>(),
+        child: const CountrySelectionScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.airtimeNetworkSelection,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<AirtimeCubit>(),
+        child: const NetworkSelectionScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.airtimeRecipientInput,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<AirtimeCubit>(),
+        child: const RecipientInputScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.airtimeAmountSelection,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<AirtimeCubit>(),
+        child: const AmountSelectionScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.airtimeReview,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<AirtimeCubit>(),
+        child: const AirtimeReviewScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.airtimePaymentProcessing,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<AirtimeCubit>(),
+        child: const AirtimePaymentProcessingScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.airtimePaymentConfirmation,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<AirtimeCubit>(),
+        child: const AirtimePaymentConfirmationScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.airtimeHistory,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<AirtimeCubit>(),
+        child: const AirtimeHistoryScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.airtimeDetails,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<AirtimeCubit>(),
+        child: const AirtimeDetailsScreen(),
+      ),
       transition: Transition.rightToLeft,
     ),
   ];

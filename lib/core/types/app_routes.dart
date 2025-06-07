@@ -136,5 +136,17 @@ abstract class AppRoutes {
   static const String insuranceClaims = '/insurance/claims';
   static const String createClaim = '/insurance/create-claim';
   
+  // Airtime Routes
+  static const String airtime = '/airtime';
+  static const String airtimeCountrySelection = '/airtime/country-selection';
+  static const String airtimeNetworkSelection = '/airtime/network-selection';
+  static const String airtimeRecipientInput = '/airtime/recipient-input';
+  static const String airtimeAmountSelection = '/airtime/amount-selection';
+  static const String airtimeReview = '/airtime/review';
+  static const String airtimePaymentProcessing = '/airtime/payment-processing';
+  static const String airtimePaymentConfirmation = '/airtime/payment-confirmation';
+  static const String airtimeHistory = '/airtime/history';
+  static const String airtimeDetails = '/airtime/details';
+  
   static const String investments = '/investments';
 }

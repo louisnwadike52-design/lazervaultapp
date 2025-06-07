@@ -1,0 +1,840 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
+import 'package:intl/intl.dart';
+import '../../../../../core/types/app_routes.dart';
+import '../cubit/airtime_cubit.dart';
+import '../cubit/airtime_state.dart';
+import '../../domain/entities/airtime_transaction.dart';
+import '../../domain/entities/network_provider.dart';
+import '../../domain/entities/country.dart';
+
+class AirtimeDetailsScreen extends StatefulWidget {
+  const AirtimeDetailsScreen({super.key});
+
+  @override
+  State<AirtimeDetailsScreen> createState() => _AirtimeDetailsScreenState();
+}
+
+class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
+  String? transactionId;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadArguments();
+  }
+
+  void _loadArguments() {
+    transactionId = Get.arguments as String?;
+    if (transactionId != null) {
+      context.read<AirtimeCubit>().loadTransactionDetails(transactionId!);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Color(0xFF0A0E27),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFF1A1A3E),
+              Color(0xFF0A0E27),
+              Color(0xFF0F0F23),
+            ],
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
+            children: [
+              // Header
+              _buildHeader(),
+              
+              // Content
+              Expanded(
+                child: BlocBuilder<AirtimeCubit, AirtimeState>(
+                  builder: (context, state) {
+                    if (state is AirtimeTransactionDetailsLoaded) {
+                      return _buildTransactionDetails(state.transaction);
+                    } else if (state is AirtimeError) {
+                      return _buildErrorState(state.message);
+                    }
+                    return _buildLoadingState();
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeader() {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
+      child: Row(
+        children: [
+          // Back button
+          GestureDetector(
+            onTap: () => Get.back(),
+            child: Container(
+              width: 40.w,
+              height: 40.w,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12.r),
+                border: Border.all(
+                  color: Colors.white.withOpacity(0.2),
+                  width: 1,
+                ),
+              ),
+              child: Icon(
+                Icons.arrow_back_ios_new,
+                color: Colors.white,
+                size: 20.sp,
+              ),
+            ),
+          ),
+          
+          SizedBox(width: 16.w),
+          
+          // Title
+          Expanded(
+            child: Text(
+              'Transaction Details',
+              style: TextStyle(
+                fontSize: 24.sp,
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
+                letterSpacing: 0.5,
+              ),
+            ),
+          ),
+          
+          // Share button
+          GestureDetector(
+            onTap: () => _shareTransaction(),
+            child: Container(
+              width: 40.w,
+              height: 40.w,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12.r),
+                border: Border.all(
+                  color: Colors.white.withOpacity(0.2),
+                  width: 1,
+                ),
+              ),
+              child: Icon(
+                Icons.share,
+                color: Colors.white,
+                size: 20.sp,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTransactionDetails(AirtimeTransaction transaction) {
+    // Create a mock network provider from transaction data
+    final networkProvider = NetworkProvider(
+      id: transaction.networkProvider.name,
+      type: transaction.networkProvider,
+      name: transaction.networkProvider.displayName,
+      shortName: transaction.networkProvider.shortName,
+      logo: transaction.networkProvider.logo,
+      primaryColor: transaction.networkProvider.primaryColor,
+      prefixes: transaction.networkProvider.prefixes,
+      countryCode: 'NG', // Default to Nigeria
+    );
+    
+    return SingleChildScrollView(
+      padding: EdgeInsets.symmetric(horizontal: 20.w),
+      child: Column(
+        children: [
+          SizedBox(height: 20.h),
+          
+          // Status card
+          _buildStatusCard(transaction),
+          
+          SizedBox(height: 24.h),
+          
+          // Transaction summary
+          _buildTransactionSummary(transaction, networkProvider),
+          
+          SizedBox(height: 24.h),
+          
+          // Transaction details
+          _buildTransactionDetailsCard(transaction, networkProvider),
+          
+          SizedBox(height: 24.h),
+          
+          // Payment breakdown
+          _buildPaymentBreakdown(transaction),
+          
+          SizedBox(height: 32.h),
+          
+          // Action buttons
+          _buildActionButtons(transaction),
+          
+          SizedBox(height: 40.h),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatusCard(AirtimeTransaction transaction) {
+    final isSuccess = transaction.status == AirtimeTransactionStatus.completed;
+    final isPending = transaction.status == AirtimeTransactionStatus.pending || 
+                     transaction.status == AirtimeTransactionStatus.processing;
+    final isFailed = transaction.status == AirtimeTransactionStatus.failed;
+    
+    Color statusColor;
+    IconData statusIcon;
+    String statusMessage;
+    
+    if (isSuccess) {
+      statusColor = Color(0xFF10B981);
+      statusIcon = Icons.check_circle;
+      statusMessage = 'Transaction completed successfully';
+    } else if (isPending) {
+      statusColor = Color(0xFFFFA500);
+      statusIcon = Icons.access_time;
+      statusMessage = 'Transaction is being processed';
+    } else if (isFailed) {
+      statusColor = Color(0xFFEF4444);
+      statusIcon = Icons.error;
+      statusMessage = transaction.failureReason ?? 'Transaction failed';
+    } else {
+      statusColor = Color(0xFF6B46C1);
+      statusIcon = Icons.refresh;
+      statusMessage = 'Transaction was refunded';
+    }
+
+    return Container(
+      padding: EdgeInsets.all(20.w),
+      decoration: BoxDecoration(
+        color: statusColor.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(
+          color: statusColor.withOpacity(0.3),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 48.w,
+            height: 48.w,
+            decoration: BoxDecoration(
+              color: statusColor,
+              borderRadius: BorderRadius.circular(12.r),
+            ),
+            child: Icon(
+              statusIcon,
+              color: Colors.white,
+              size: 24.sp,
+            ),
+          ),
+          
+          SizedBox(width: 16.w),
+          
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  transaction.status.displayName,
+                  style: TextStyle(
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+                SizedBox(height: 4.h),
+                Text(
+                  statusMessage,
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    color: Colors.white.withOpacity(0.6),
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTransactionSummary(AirtimeTransaction transaction, NetworkProvider networkProvider) {
+    return Container(
+      padding: EdgeInsets.all(20.w),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(20.r),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.1),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        children: [
+          // Network provider and amount
+          Row(
+            children: [
+              Container(
+                width: 60.w,
+                height: 60.w,
+                decoration: BoxDecoration(
+                  color: _getProviderColor(networkProvider.type),
+                  borderRadius: BorderRadius.circular(16.r),
+                  boxShadow: [
+                    BoxShadow(
+                      color: _getProviderColor(networkProvider.type).withOpacity(0.3),
+                      blurRadius: 8,
+                      offset: Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Center(
+                  child: Text(
+                    networkProvider.name.substring(0, 1),
+                    style: TextStyle(
+                      fontSize: 24.sp,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+              
+              SizedBox(width: 16.w),
+              
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${networkProvider.name} Airtime',
+                      style: TextStyle(
+                        fontSize: 18.sp,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
+                    SizedBox(height: 4.h),
+                    Text(
+                      transaction.formattedRecipientNumber,
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        color: Colors.white.withOpacity(0.6),
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          
+          SizedBox(height: 20.h),
+          
+          // Amount display
+          Container(
+            width: double.infinity,
+            padding: EdgeInsets.all(16.w),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.05),
+              borderRadius: BorderRadius.circular(12.r),
+            ),
+            child: Column(
+              children: [
+                Text(
+                  'Amount',
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    color: Colors.white.withOpacity(0.6),
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+                SizedBox(height: 8.h),
+                Text(
+                  '₦${transaction.amount.toStringAsFixed(0)}',
+                  style: TextStyle(
+                    fontSize: 32.sp,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTransactionDetailsCard(AirtimeTransaction transaction, NetworkProvider networkProvider) {
+    return Container(
+      padding: EdgeInsets.all(20.w),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(20.r),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.1),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Transaction Information',
+            style: TextStyle(
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+            ),
+          ),
+          
+          SizedBox(height: 16.h),
+          
+          _buildDetailRow('Transaction ID', transaction.transactionReference),
+          _buildDivider(),
+          _buildDetailRow('Phone Number', transaction.formattedRecipientNumber),
+          
+          if (transaction.recipientName != null && transaction.recipientName!.isNotEmpty) ...[
+            _buildDivider(),
+            _buildDetailRow('Recipient Name', transaction.recipientName!),
+          ],
+          
+          _buildDivider(),
+          _buildDetailRow('Network Provider', networkProvider.name),
+          _buildDivider(),
+          _buildDetailRow('Date & Time', DateFormat('MMMM dd, yyyy • hh:mm a').format(transaction.createdAt)),
+          
+          if (transaction.completedAt != null) ...[
+            _buildDivider(),
+            _buildDetailRow('Completed At', DateFormat('MMMM dd, yyyy • hh:mm a').format(transaction.completedAt!)),
+          ],
+          
+          _buildDivider(),
+          _buildDetailRow('Status', transaction.status.displayName, 
+            valueColor: _getStatusColor(transaction.status)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPaymentBreakdown(AirtimeTransaction transaction) {
+    return Container(
+      padding: EdgeInsets.all(20.w),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(20.r),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.1),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Payment Breakdown',
+            style: TextStyle(
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+            ),
+          ),
+          
+          SizedBox(height: 16.h),
+          
+          _buildBreakdownRow('Airtime Amount', '₦${transaction.amount.toStringAsFixed(0)}'),
+          
+          if (transaction.discount != null && transaction.discount! > 0) ...[
+            SizedBox(height: 8.h),
+            _buildBreakdownRow('Discount', '-₦${transaction.discount!.toStringAsFixed(0)}', isDiscount: true),
+          ],
+          
+          if (transaction.fee != null) ...[
+            SizedBox(height: 8.h),
+            _buildBreakdownRow('Service Fee', '₦${transaction.fee!.toStringAsFixed(0)}'),
+          ],
+          
+          SizedBox(height: 12.h),
+          Divider(color: Colors.white.withOpacity(0.1)),
+          SizedBox(height: 12.h),
+          
+          _buildBreakdownRow('Total Amount', '₦${transaction.totalAmount.toStringAsFixed(0)}', isTotal: true),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDetailRow(String label, String value, {Color? valueColor}) {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 6.h),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 14.sp,
+              color: Colors.white.withOpacity(0.6),
+              fontWeight: FontWeight.w400,
+            ),
+          ),
+          Flexible(
+            child: Text(
+              value,
+              style: TextStyle(
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w500,
+                color: valueColor ?? Colors.white,
+              ),
+              textAlign: TextAlign.right,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBreakdownRow(String label, String amount, {bool isTotal = false, bool isDiscount = false}) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: isTotal ? 16.sp : 14.sp,
+            fontWeight: isTotal ? FontWeight.w600 : FontWeight.w400,
+            color: Colors.white.withOpacity(isTotal ? 1.0 : 0.6),
+          ),
+        ),
+        Text(
+          amount,
+          style: TextStyle(
+            fontSize: isTotal ? 16.sp : 14.sp,
+            fontWeight: isTotal ? FontWeight.w700 : FontWeight.w500,
+            color: isDiscount 
+              ? Color(0xFF10B981) 
+              : isTotal 
+                ? Colors.white 
+                : Colors.white.withOpacity(0.8),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActionButtons(AirtimeTransaction transaction) {
+    return Column(
+      children: [
+        // Repeat Transaction Button
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            onPressed: () => _repeatTransaction(transaction),
+            icon: Icon(
+              Icons.repeat,
+              color: Colors.white,
+              size: 20.sp,
+            ),
+            label: Text(
+              'Repeat Transaction',
+              style: TextStyle(
+                fontSize: 16.sp,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Color(0xFF6366F1),
+              padding: EdgeInsets.symmetric(vertical: 16.h),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16.r),
+              ),
+              elevation: 0,
+            ),
+          ),
+        ),
+        
+        SizedBox(height: 12.h),
+        
+        // Download Receipt Button
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton.icon(
+            onPressed: () => _downloadReceipt(transaction),
+            icon: Icon(
+              Icons.download,
+              color: Colors.white.withOpacity(0.8),
+              size: 20.sp,
+            ),
+            label: Text(
+              'Download Receipt',
+              style: TextStyle(
+                fontSize: 16.sp,
+                fontWeight: FontWeight.w600,
+                color: Colors.white.withOpacity(0.8),
+              ),
+            ),
+            style: OutlinedButton.styleFrom(
+              side: BorderSide(
+                color: Colors.white.withOpacity(0.3),
+                width: 1.5,
+              ),
+              padding: EdgeInsets.symmetric(vertical: 16.h),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16.r),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDivider() {
+    return Container(
+      margin: EdgeInsets.symmetric(vertical: 8.h),
+      height: 1,
+      color: Colors.white.withOpacity(0.1),
+    );
+  }
+
+  Widget _buildLoadingState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF6366F1)),
+          ),
+          SizedBox(height: 16.h),
+          Text(
+            'Loading transaction details...',
+            style: TextStyle(
+              fontSize: 14.sp,
+              color: Colors.white.withOpacity(0.6),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildErrorState(String message) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.error_outline,
+            size: 64.sp,
+            color: Colors.red.withOpacity(0.6),
+          ),
+          SizedBox(height: 16.h),
+          Text(
+            'Error',
+            style: TextStyle(
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+            ),
+          ),
+          SizedBox(height: 8.h),
+          Text(
+            message,
+            style: TextStyle(
+              fontSize: 14.sp,
+              color: Colors.white.withOpacity(0.6),
+            ),
+            textAlign: TextAlign.center,
+          ),
+          SizedBox(height: 24.h),
+          ElevatedButton(
+            onPressed: () => Get.back(),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Color(0xFF6366F1),
+              padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12.r),
+              ),
+            ),
+            child: Text(
+              'Go Back',
+              style: TextStyle(
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _shareTransaction() {
+    // Implement share functionality
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Share functionality coming soon'),
+        backgroundColor: Color(0xFF6366F1),
+        behavior: SnackBarBehavior.floating,
+        margin: EdgeInsets.all(16.w),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12.r),
+        ),
+      ),
+    );
+  }
+
+  void _repeatTransaction(AirtimeTransaction transaction) {
+    // Extract transaction details to recreate the flow
+    try {
+      // Create country object (default to Nigeria)
+      final country = Country(
+        id: 'ng',
+        code: 'NG',
+        name: 'Nigeria',
+        currency: 'NGN',
+        dialCode: '+234',
+        flag: '🇳🇬',
+        currencySymbol: '₦',
+      );
+
+      // Create network provider object from transaction
+      final networkProvider = NetworkProvider(
+        id: transaction.networkProvider.name.toLowerCase(),
+        type: transaction.networkProvider,
+        name: transaction.networkProvider.displayName,
+        shortName: transaction.networkProvider.shortName,
+        logo: transaction.networkProvider.logo,
+        primaryColor: transaction.networkProvider.primaryColor,
+        prefixes: transaction.networkProvider.prefixes,
+        countryCode: 'NG',
+      );
+
+      // Navigate to recipient input screen with pre-filled data
+      Get.toNamed(AppRoutes.airtimeRecipientInput, arguments: {
+        'country': country,
+        'networkProvider': networkProvider,
+        'prefillPhone': transaction.recipientPhoneNumber,
+        'prefillName': transaction.recipientName,
+        'prefillAmount': transaction.amount,
+        'isRepeatTransaction': true,
+      });
+
+      // Show success feedback
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              Icon(Icons.repeat, color: Colors.white, size: 20.sp),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: Text(
+                  'Repeating transaction...',
+                  style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w500),
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: Color(0xFF10B981),
+          behavior: SnackBarBehavior.floating,
+          margin: EdgeInsets.all(16.w),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12.r),
+          ),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    } catch (e) {
+      // Show error feedback
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to repeat transaction. Please try again.'),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+          margin: EdgeInsets.all(16.w),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12.r),
+          ),
+        ),
+      );
+    }
+  }
+
+  void _downloadReceipt(AirtimeTransaction transaction) {
+    // Implement download receipt functionality
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Icon(Icons.download, color: Colors.white, size: 20.sp),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: Text(
+                'Receipt download coming soon',
+                style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w500),
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: Color(0xFF6366F1),
+        behavior: SnackBarBehavior.floating,
+        margin: EdgeInsets.all(16.w),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12.r),
+        ),
+      ),
+    );
+  }
+
+  Color _getProviderColor(NetworkProviderType type) {
+    switch (type) {
+      case NetworkProviderType.mtn:
+        return Color(0xFFFFCC00);
+      case NetworkProviderType.airtel:
+        return Color(0xFFFF0000);
+      case NetworkProviderType.glo:
+        return Color(0xFF00B04F);
+      case NetworkProviderType.etisalat:
+      case NetworkProviderType.ninemobile:
+        return Color(0xFF00AA4F);
+      default:
+        return Color(0xFF6366F1); // Default blue color
+    }
+  }
+
+  Color _getStatusColor(AirtimeTransactionStatus status) {
+    switch (status) {
+      case AirtimeTransactionStatus.pending:
+        return Color(0xFFFFA500);
+      case AirtimeTransactionStatus.processing:
+        return Color(0xFF0066CC);
+      case AirtimeTransactionStatus.completed:
+        return Color(0xFF00AA4F);
+      case AirtimeTransactionStatus.failed:
+        return Color(0xFFFF0000);
+      case AirtimeTransactionStatus.refunded:
+        return Color(0xFF6B46C1);
+    }
+  }
+} 
