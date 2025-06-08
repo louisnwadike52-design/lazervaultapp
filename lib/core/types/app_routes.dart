@@ -148,5 +148,11 @@ abstract class AppRoutes {
   static const String airtimeHistory = '/airtime/history';
   static const String airtimeDetails = '/airtime/details';
   
+  // Batch Transfer Routes
+  static const String batchTransfer = '/batch-transfer';
+  static const String batchTransferConfirmation = '/batch-transfer-confirmation';
+  static const String batchTransferProcessing = '/batch-transfer-processing';
+  static const String batchTransferReceipt = '/batch-transfer-receipt';
+  
   static const String investments = '/investments';
 }

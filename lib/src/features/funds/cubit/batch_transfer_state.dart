@@ -1,0 +1,61 @@
+import 'package:equatable/equatable.dart';
+import 'package:lazervault/src/features/funds/domain/entities/batch_transfer_entity.dart';
+
+sealed class BatchTransferState extends Equatable {
+  const BatchTransferState();
+
+  @override
+  List<Object?> get props => [];
+}
+
+final class BatchTransferInitial extends BatchTransferState {
+  const BatchTransferInitial();
+}
+
+final class BatchTransferLoading extends BatchTransferState {
+  const BatchTransferLoading();
+}
+
+final class BatchTransferSuccess extends BatchTransferState {
+  final BatchTransferEntity response;
+
+  const BatchTransferSuccess({required this.response});
+
+  @override
+  List<Object?> get props => [response];
+}
+
+final class BatchTransferFailure extends BatchTransferState {
+  final String message;
+
+  const BatchTransferFailure({required this.message});
+
+  @override
+  List<Object?> get props => [message];
+}
+
+final class BatchTransferStatusLoading extends BatchTransferState {
+  const BatchTransferStatusLoading();
+}
+
+final class BatchTransferStatusSuccess extends BatchTransferState {
+  final BatchTransferEntity response;
+
+  const BatchTransferStatusSuccess({required this.response});
+
+  @override
+  List<Object?> get props => [response];
+}
+
+final class BatchTransferHistoryLoading extends BatchTransferState {
+  const BatchTransferHistoryLoading();
+}
+
+final class BatchTransferHistorySuccess extends BatchTransferState {
+  final List<BatchTransferEntity> history;
+
+  const BatchTransferHistorySuccess({required this.history});
+
+  @override
+  List<Object?> get props => [history];
+} 

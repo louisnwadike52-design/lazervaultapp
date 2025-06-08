@@ -73,6 +73,14 @@ import 'package:lazervault/src/features/funds/domain/repositories/i_transfer_rep
 import 'package:lazervault/src/features/funds/domain/usecases/initiate_transfer_usecase.dart';
 import 'package:lazervault/src/features/funds/cubit/transfer_cubit.dart';
 
+// Batch Transfer imports
+import 'package:lazervault/src/features/funds/data/datasources/batch_transfer_remote_data_source.dart';
+import 'package:lazervault/src/features/funds/data/repositories/batch_transfer_repository_impl.dart';
+import 'package:lazervault/src/features/funds/domain/repositories/i_batch_transfer_repository.dart';
+import 'package:lazervault/src/features/funds/domain/usecases/initiate_batch_transfer_usecase.dart';
+import 'package:lazervault/src/features/funds/domain/usecases/get_batch_transfer_history_usecase.dart';
+import 'package:lazervault/src/features/funds/cubit/batch_transfer_cubit.dart';
+
 import '../../src/features/authentication/data/datasources/authentication_remote_data_source.dart';
 import '../../src/features/presentation/views/onboarding_screen.dart';
 import '../../src/features/presentation/views/splash_screen.dart';
@@ -348,6 +356,29 @@ Future<void> init() async {
   // Blocs/Cubits
   serviceLocator.registerFactory(() => TransferCubit(
     initiateTransferUseCase: serviceLocator<InitiateTransferUseCase>(),
+  ));
+
+
+  // ================== Feature: Funds (Batch Transfer) ==================
+
+  // Data Sources
+  serviceLocator.registerLazySingleton<IBatchTransferRemoteDataSource>(
+    () => BatchTransferRemoteDataSourceImpl(),
+  );
+
+  // Repositories
+  serviceLocator.registerLazySingleton<IBatchTransferRepository>(
+    () => BatchTransferRepositoryImpl(remoteDataSource: serviceLocator<IBatchTransferRemoteDataSource>()),
+  );
+
+  // Use Cases
+  serviceLocator.registerLazySingleton(() => InitiateBatchTransferUseCase(serviceLocator<IBatchTransferRepository>()));
+  serviceLocator.registerLazySingleton(() => GetBatchTransferHistoryUseCase(repository: serviceLocator<IBatchTransferRepository>()));
+
+  // Blocs/Cubits
+  serviceLocator.registerFactory(() => BatchTransferCubit(
+    initiateBatchTransferUseCase: serviceLocator<InitiateBatchTransferUseCase>(),
+    getBatchTransferHistoryUseCase: serviceLocator<GetBatchTransferHistoryUseCase>(),
   ));
 
 

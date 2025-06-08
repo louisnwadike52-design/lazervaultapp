@@ -134,6 +134,12 @@ import 'package:lazervault/src/features/airtime/presentation/view/airtime_histor
 import 'package:lazervault/src/features/airtime/presentation/view/airtime_details_screen.dart';
 import 'package:lazervault/src/features/airtime/domain/entities/airtime_transaction.dart';
 
+// Batch Transfer imports
+import 'package:lazervault/src/features/funds/cubit/batch_transfer_cubit.dart';
+import 'package:lazervault/src/features/funds/presentation/view/batch_transfer/batch_transfer_screen.dart';
+import 'package:lazervault/src/features/funds/presentation/view/batch_transfer/batch_transfer_processing_screen.dart';
+import 'package:lazervault/src/features/funds/presentation/view/batch_transfer/batch_transfer_receipt_screen.dart';
+
 class AppRouter {
   static final routes = [
     GetPage(
@@ -948,6 +954,26 @@ class AppRouter {
         create: (_) => serviceLocator<AirtimeCubit>(),
         child: const AirtimeDetailsScreen(),
       ),
+      transition: Transition.rightToLeft,
+    ),
+    
+    // Batch Transfer routes
+    GetPage(
+      name: AppRoutes.batchTransfer,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<BatchTransferCubit>(),
+        child: const BatchTransferScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.batchTransferProcessing,
+      page: () => const BatchTransferProcessingScreen(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.batchTransferReceipt,
+      page: () => const BatchTransferReceiptScreen(),
       transition: Transition.rightToLeft,
     ),
   ];

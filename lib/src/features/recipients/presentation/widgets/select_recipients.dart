@@ -14,6 +14,7 @@ import 'package:lazervault/src/features/recipients/presentation/widgets/recipien
 import 'package:lazervault/src/features/recipients/data/models/recipient_model.dart';
 import 'package:lazervault/src/features/authentication/domain/entities/profile_entity.dart';
 import 'package:lazervault/src/features/authentication/domain/entities/session_entity.dart';
+import 'package:lazervault/src/features/recipients/presentation/widgets/enhanced_recipient_selection_bottom_sheet.dart';
 
 class SelectRecipients extends StatefulWidget {
   const SelectRecipients({super.key});
@@ -122,62 +123,78 @@ class _SelectRecipientsState extends State<SelectRecipients> {
                         SizedBox(height: 24.h),
 
                         // Search Bar and Voice Command
-                        Container(
-                          height: 48.h,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.15),
-                            borderRadius: BorderRadius.circular(24),
-                            border: Border.all(
-                              color: Colors.white.withOpacity(0.2),
+                        GestureDetector(
+                          onTap: _showEnhancedRecipientSelection,
+                          child: Container(
+                            height: 48.h,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.15),
+                              borderRadius: BorderRadius.circular(24),
+                              border: Border.all(
+                                color: Colors.white.withOpacity(0.2),
+                              ),
                             ),
-                          ),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: TextField(
-                                  decoration: InputDecoration(
-                                    hintText:
-                                        'Search by name or account number',
-                                    hintStyle: TextStyle(
-                                      color: Colors.white.withOpacity(0.7),
-                                      fontSize: 14.sp,
-                                    ),
-                                    prefixIcon: Icon(
-                                      Icons.search,
-                                      color: Colors.white.withOpacity(0.7),
-                                      size: 20,
-                                    ),
-                                    border: InputBorder.none,
-                                    contentPadding: EdgeInsets.symmetric(
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Padding(
+                                    padding: EdgeInsets.symmetric(
                                       horizontal: 16.w,
                                       vertical: 12.h,
                                     ),
-                                  ),
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 14.sp,
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          Icons.search,
+                                          color: Colors.white.withOpacity(0.7),
+                                          size: 20,
+                                        ),
+                                        SizedBox(width: 12.w),
+                                                                                 Expanded(
+                                           child: Text(
+                                             'Recipient, @username or contact',
+                                             style: TextStyle(
+                                               color: Colors.white.withOpacity(0.7),
+                                               fontSize: 14.sp,
+                                             ),
+                                           ),
+                                         ),
+                                        Icon(
+                                          Icons.alternate_email,
+                                          color: Colors.white.withOpacity(0.8),
+                                          size: 16.sp,
+                                        ),
+                                        SizedBox(width: 8.w),
+                                        Icon(
+                                          Icons.contacts_outlined,
+                                          color: Colors.white.withOpacity(0.8),
+                                          size: 16.sp,
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
-                              ),
-                              Container(
-                                margin: EdgeInsets.only(right: 4.w),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.2),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: IconButton(
-                                  onPressed: () {
-                                    // Implement voice command
-                                  },
-                                  icon: Icon(Icons.mic,
-                                      color: Colors.white, size: 20),
-                                  constraints: BoxConstraints(
-                                    minWidth: 40.w,
-                                    minHeight: 40.w,
+                                Container(
+                                  margin: EdgeInsets.only(right: 4.w),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.2),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: IconButton(
+                                    onPressed: () {
+                                      // Implement voice command or show enhanced selection
+                                      _showEnhancedRecipientSelection();
+                                    },
+                                    icon: Icon(Icons.mic,
+                                        color: Colors.white, size: 20),
+                                    constraints: BoxConstraints(
+                                      minWidth: 40.w,
+                                      minHeight: 40.w,
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                       ],
@@ -331,6 +348,122 @@ class _SelectRecipientsState extends State<SelectRecipients> {
 
     // Fallback for any other unhandled state (should ideally not be reached)
     return const Center(child: Text('An unexpected error occurred.'));
+  }
+
+  void _showEnhancedRecipientSelection() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (bottomSheetContext) => BlocProvider.value(
+        value: context.read<RecipientCubit>(),
+        child: EnhancedRecipientSelectionBottomSheet(
+          onRecipientSelected: (recipient) {
+            // Navigate to send funds with selected recipient
+            Get.toNamed(AppRoutes.initiateSendFunds, arguments: recipient);
+          },
+          onLazertagUserSelected: (user) {
+            // Convert lazertag user to recipient and navigate
+            final recipient = RecipientModel(
+              id: user.id,
+              name: user.name,
+              accountNumber: user.username,
+              bankName: 'LazerVault',
+              sortCode: '',
+              isFavorite: false,
+            );
+            Get.toNamed(AppRoutes.initiateSendFunds, arguments: recipient);
+          },
+          onContactSelected: (contact) {
+            // Show dialog to add contact as recipient, then navigate
+            _showAddContactAsRecipientDialog(contact);
+          },
+        ),
+      ),
+    );
+  }
+
+  void _showAddContactAsRecipientDialog(DeviceContact contact) {
+    final nameController = TextEditingController(text: contact.name);
+    final accountController = TextEditingController();
+    final bankController = TextEditingController();
+    final sortCodeController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: Colors.white,
+        title: Text(
+          'Add Contact as Recipient',
+          style: TextStyle(
+            color: Colors.black87,
+            fontSize: 18.sp,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: nameController,
+              decoration: InputDecoration(
+                labelText: 'Name',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            SizedBox(height: 12.h),
+            TextField(
+              controller: accountController,
+              decoration: InputDecoration(
+                labelText: 'Account Number',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            SizedBox(height: 12.h),
+            TextField(
+              controller: sortCodeController,
+              decoration: InputDecoration(
+                labelText: 'Sort Code',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            SizedBox(height: 12.h),
+            TextField(
+              controller: bankController,
+              decoration: InputDecoration(
+                labelText: 'Bank Name',
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              if (accountController.text.isNotEmpty && 
+                  sortCodeController.text.isNotEmpty &&
+                  bankController.text.isNotEmpty) {
+                final recipient = RecipientModel(
+                  id: contact.id,
+                  name: nameController.text,
+                  accountNumber: accountController.text,
+                  bankName: bankController.text,
+                  sortCode: sortCodeController.text,
+                  isFavorite: false,
+                );
+                Navigator.pop(dialogContext);
+                Get.toNamed(AppRoutes.initiateSendFunds, arguments: recipient);
+              }
+            },
+            child: Text('Add & Send'),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildQuickAction({

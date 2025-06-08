@@ -92,6 +92,8 @@ class _NotificationsBuilderState extends State<NotificationsBuilder> {
     switch (serviceName) {
       case AppServiceName.sendFunds:
         return Icons.send_rounded;
+      case AppServiceName.batchTransfer:
+        return Icons.batch_prediction;
       case AppServiceName.invoice:
         return Icons.receipt_long_rounded;
       case AppServiceName.payInvoice:
@@ -123,6 +125,8 @@ class _NotificationsBuilderState extends State<NotificationsBuilder> {
     switch (serviceName) {
       case AppServiceName.sendFunds:
         return const Color(0xFF10B981);
+      case AppServiceName.batchTransfer:
+        return const Color.fromARGB(255, 78, 3, 208);
       case AppServiceName.invoice:
         return const Color(0xFF6366F1);
       case AppServiceName.payInvoice:
