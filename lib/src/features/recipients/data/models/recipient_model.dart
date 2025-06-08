@@ -27,7 +27,7 @@ class RecipientModel {
       accountNumber: recipient.accountNumber,
       bankName: recipient.bankName,
       isFavorite: recipient.isFavorite,
-      sortCode: '', // The proto Recipient doesn't have sortCode, so we use an empty string
+      sortCode: recipient.sortCode,
     );
   }
 
@@ -37,8 +37,8 @@ class RecipientModel {
       ..name = name
       ..accountNumber = accountNumber
       ..bankName = bankName
+      ..sortCode = sortCode
       ..isFavorite = isFavorite;
-    // Note: sortCode is not included in the proto Recipient message
   }
 
   RecipientModel copyWith({

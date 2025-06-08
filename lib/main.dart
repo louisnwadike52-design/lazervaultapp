@@ -1,6 +1,7 @@
 import 'dart:io'; // Added for Platform.isAndroid / Platform.isIOS
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
@@ -84,6 +85,15 @@ void main() async {
   await _checkPermissions();
   await _initializeAndroidAudioSettings();
 
+  // Set global status bar style for dark screens
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.light,
+      systemNavigationBarIconBrightness: Brightness.light,
+    ),
+  );
+
   runApp(const MyApp());
 
   // Remove the splash screen after the app has been fully initialized
@@ -131,6 +141,13 @@ class _MyAppState extends State<MyApp> {
           theme: ThemeData(
             useMaterial3: true,
             visualDensity: VisualDensity.adaptivePlatformDensity,
+            appBarTheme: const AppBarTheme(
+              systemOverlayStyle: SystemUiOverlayStyle(
+                statusBarColor: Colors.transparent,
+                statusBarIconBrightness: Brightness.light,
+                systemNavigationBarIconBrightness: Brightness.light,
+              ),
+            ),
             textTheme: GoogleFonts.robotoTextTheme().copyWith(
               titleLarge: GoogleFonts.robotoTextTheme().titleLarge?.copyWith(
                     fontSize: 16,

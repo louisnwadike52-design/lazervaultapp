@@ -1,5 +1,6 @@
 enum AppServiceName {
   sendFunds,
+  batchTransfer,
   invoice,
   payInvoice,
   payElectricityBill,
@@ -18,6 +19,8 @@ extension AppServiceNameExtension on AppServiceName {
     switch (this) {
       case AppServiceName.sendFunds:
         return 'Send Funds';
+      case AppServiceName.batchTransfer:
+        return 'Batch Transfer';
       case AppServiceName.invoice:
         return 'Invoice';
       case AppServiceName.payInvoice:
@@ -53,6 +56,7 @@ final List<String> imagePaths = [
 
 enum AppServiceImg {
   sendFunds,
+  batchTransfer,
   invoice,
   payInvoice,
   payElectricityBill,
@@ -71,6 +75,8 @@ extension AppServiceImgExtension on AppServiceImg {
     switch (this) {
       case AppServiceImg.sendFunds:
         return 'assets/images/money-send.png';
+      case AppServiceImg.batchTransfer:
+        return 'assets/images/batch-transfer.png';
       case AppServiceImg.invoice:
         return 'assets/images/money-receive.png';
       case AppServiceImg.payInvoice:

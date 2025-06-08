@@ -3,8 +3,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/types/services.dart';
-import 'package:lazervault/core/types/transaction.dart'; // Import Transaction type
-import 'package:lazervault/src/features/authentication/domain/entities/user.dart';
 
 class AppServiceBuilder extends StatefulWidget {
   const AppServiceBuilder({required this.appService, super.key});
@@ -51,6 +49,9 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
         break;
       case AppServiceName.airtime:
         Get.toNamed(AppRoutes.airtime);
+        break;
+      case AppServiceName.batchTransfer:
+        Get.toNamed(AppRoutes.batchTransfer);
         break;
       case AppServiceName.sendFunds:
       default:
@@ -147,6 +148,9 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
     switch (widget.appService.serviceName) {
       case AppServiceName.sendFunds:
         iconData = Icons.send;
+        break;
+      case AppServiceName.batchTransfer:
+        iconData = Icons.batch_prediction;
         break;
       case AppServiceName.invoice:
         iconData = Icons.receipt_long;
