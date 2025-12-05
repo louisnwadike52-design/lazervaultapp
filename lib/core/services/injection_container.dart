@@ -3,6 +3,7 @@ import 'package:grpc/grpc.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:lazervault/core/services/grpc_call_options_helper.dart';
+import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:lazervault/core/types/electricity_bill_details.dart';
 import 'package:lazervault/core/types/recipient.dart' as core_recipient;
 import 'package:lazervault/core/types/transaction.dart';
@@ -223,6 +224,11 @@ Future<void> init() async {
   // Register FlutterSecureStorage
   serviceLocator.registerLazySingleton<FlutterSecureStorage>(
     () => const FlutterSecureStorage(),
+  );
+
+  // Register SecureStorageService
+  serviceLocator.registerLazySingleton<SecureStorageService>(
+    () => SecureStorageService(serviceLocator<FlutterSecureStorage>()),
   );
 
   // Register gRPC Call Options Helper
