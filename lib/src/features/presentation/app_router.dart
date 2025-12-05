@@ -6,6 +6,8 @@ import 'package:lazervault/core/types/recipient.dart';
 import 'package:lazervault/core/types/transaction.dart';
 import 'package:lazervault/src/features/authentication/domain/entities/user.dart';
 import 'package:lazervault/src/features/authentication/presentation/views/email_sign_in_screen.dart';
+import 'package:lazervault/src/features/authentication/presentation/views/email_verification_screen.dart';
+import 'package:lazervault/src/features/authentication/cubit/email_verification_cubit.dart';
 import 'package:lazervault/src/features/crypto/presentation/view/crypto_screen.dart';
 import 'package:lazervault/src/features/crypto/presentation/view/buy_crypto_screen.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/transfer_proof.dart';
@@ -331,6 +333,16 @@ class AppRouter {
     GetPage(
       name: AppRoutes.emailSignIn,
       page: () => serviceLocator<EmailSignInScreen>(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.emailVerification,
+      page: () => BlocProvider(
+        create: (context) => serviceLocator<EmailVerificationCubit>(),
+        child: EmailVerificationScreen(
+          email: Get.parameters['email'],
+        ),
+      ),
       transition: Transition.rightToLeft,
     ),
     GetPage(

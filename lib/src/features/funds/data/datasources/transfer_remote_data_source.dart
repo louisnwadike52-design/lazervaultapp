@@ -4,6 +4,7 @@ import 'package:grpc/grpc.dart';
 // Corrected imports for generated protobuf files
 
 import 'package:lazervault/core/exceptions/server_exception.dart';
+import 'package:lazervault/core/services/grpc_call_options_helper.dart';
 import 'package:lazervault/src/generated/google/protobuf/timestamp.pb.dart';
 import 'package:lazervault/src/generated/transfer.pb.dart';
 import 'package:lazervault/src/generated/transfer.pbgrpc.dart';
@@ -23,8 +24,12 @@ abstract class ITransferRemoteDataSource {
 
 class TransferRemoteDataSourceImpl implements ITransferRemoteDataSource {
   final TransferServiceClient _client; // Correct client type
+  final GrpcCallOptionsHelper _callOptionsHelper;
 
-  TransferRemoteDataSourceImpl(this._client);
+  TransferRemoteDataSourceImpl(
+    this._client,
+    this._callOptionsHelper,
+  );
 
   @override
   Future<InitiateTransferResponse> initiateTransfer({
@@ -47,15 +52,14 @@ class TransferRemoteDataSourceImpl implements ITransferRemoteDataSource {
       amount: amount,
       toAccountId: toAccountId,
       recipientId: recipientId,
-      category: category ?? '', 
+      category: category ?? '',
       reference: reference ?? '',
       scheduledAt: scheduleTimestamp, // Use the converted Timestamp?
     );
 
-    final options = CallOptions(metadata: {'authorization': 'Bearer $accessToken'});
-
     try {
-      final response = await _client.initiateTransfer(request, options: options);
+      final callOptions = await _callOptionsHelper.withAuth();
+      final response = await _client.initiateTransfer(request, options: callOptions);
       return response;
     } on GrpcError catch (e) {
       // Log the gRPC error details

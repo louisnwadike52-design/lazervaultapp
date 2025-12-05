@@ -1,27 +1,120 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:get/get.dart';
+import 'package:flutter/material.dart';
 import '../domain/usecases/login_usecase.dart';
 import '../domain/usecases/sign_up_usecase.dart';
 import '../domain/usecases/sign_in_with_google_usecase.dart';
 import '../domain/usecases/sign_in_with_apple_usecase.dart';
+import '../domain/usecases/forgot_password_usecase.dart';
+import '../domain/usecases/verify_email_usecase.dart';
+import '../domain/usecases/resend_verification_usecase.dart';
+import '../domain/usecases/check_email_availability_usecase.dart';
+import '../domain/entities/profile_entity.dart';
 import 'authentication_state.dart';
-
 
 class AuthenticationCubit extends Cubit<AuthenticationState> {
   final LoginUseCase _loginUseCase;
   final SignUpUseCase _signUpUseCase;
   final SignInWithGoogleUseCase _signInWithGoogleUseCase;
   final SignInWithAppleUseCase _signInWithAppleUseCase;
+  final ForgotPasswordUseCase _forgotPasswordUseCase;
+  final VerifyEmailUseCase _verifyEmailUseCase;
+  final ResendVerificationUseCase _resendVerificationUseCase;
+  final CheckEmailAvailabilityUseCase _checkEmailAvailabilityUseCase;
+  final FlutterSecureStorage _storage;
+
+  ProfileEntity? _currentProfile;
 
   AuthenticationCubit({
     required LoginUseCase login,
     required SignUpUseCase signUp,
     required SignInWithGoogleUseCase signInWithGoogle,
     required SignInWithAppleUseCase signInWithApple,
+    required ForgotPasswordUseCase forgotPassword,
+    required VerifyEmailUseCase verifyEmail,
+    required ResendVerificationUseCase resendVerification,
+    required CheckEmailAvailabilityUseCase checkEmailAvailability,
+    FlutterSecureStorage? storage,
   })  : _loginUseCase = login,
         _signUpUseCase = signUp,
         _signInWithGoogleUseCase = signInWithGoogle,
         _signInWithAppleUseCase = signInWithApple,
+        _forgotPasswordUseCase = forgotPassword,
+        _verifyEmailUseCase = verifyEmail,
+        _resendVerificationUseCase = resendVerification,
+        _checkEmailAvailabilityUseCase = checkEmailAvailability,
+        _storage = storage ?? const FlutterSecureStorage(),
         super(AuthenticationInitial());
+
+  // Getters
+  ProfileEntity? get currentProfile => _currentProfile;
+  bool get isAuthenticated => _currentProfile != null;
+  bool get isEmailVerified => _currentProfile?.user.isEmailVerified ?? false;
+
+  // Storage keys
+  static const String _accessTokenKey = 'access_token';
+  static const String _refreshTokenKey = 'refresh_token';
+  static const String _userIdKey = 'user_id';
+  static const String _userEmailKey = 'user_email';
+
+  // --- Session Management ---
+  Future<void> tryAutoLogin() async {
+    try {
+      final accessToken = await _storage.read(key: _accessTokenKey);
+      final userId = await _storage.read(key: _userIdKey);
+
+      if (accessToken != null && userId != null) {
+        // Token exists, validate it
+        // For now, assume valid. Later add token validation
+        emit(AuthenticationCheckingSession());
+
+        // TODO: Add API call to validate token and get user profile
+        // For now, just emit initial state
+        await Future.delayed(const Duration(milliseconds: 500));
+        emit(AuthenticationInitial());
+      }
+    } catch (e) {
+      print('Auto login failed: $e');
+      emit(AuthenticationInitial());
+    }
+  }
+
+  Future<void> _saveSession(ProfileEntity profile) async {
+    try {
+      await _storage.write(
+        key: _accessTokenKey,
+        value: profile.session.accessToken,
+      );
+      await _storage.write(
+        key: _refreshTokenKey,
+        value: profile.session.refreshToken,
+      );
+      await _storage.write(
+        key: _userIdKey,
+        value: profile.user.id,
+      );
+      await _storage.write(
+        key: _userEmailKey,
+        value: profile.user.email,
+      );
+      _currentProfile = profile;
+    } catch (e) {
+      print('Error saving session: $e');
+    }
+  }
+
+  Future<void> _clearSession() async {
+    try {
+      await _storage.delete(key: _accessTokenKey);
+      await _storage.delete(key: _refreshTokenKey);
+      await _storage.delete(key: _userIdKey);
+      await _storage.delete(key: _userEmailKey);
+      _currentProfile = null;
+    } catch (e) {
+      print('Error clearing session: $e');
+    }
+  }
 
   // --- Main Auth Methods ---
   Future<void> loginUser({
@@ -29,17 +122,25 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     required String password,
   }) async {
     emit(AuthenticationLoading());
-    final result = await _loginUseCase(email: email, password: password); // Call use case
+
+    final result = await _loginUseCase(email: email, password: password);
+
     result.fold(
-      (failure) => emit(AuthenticationFailure(
-        failure.message,
-        statusCode: failure.statusCode,
-      )),
-      (profile) => emit(AuthenticationSuccess(profile)), // Emit profile on success
+      (failure) {
+        _showErrorSnackbar('Login Failed', failure.message);
+        emit(AuthenticationFailure(
+          failure.message,
+          statusCode: failure.statusCode,
+        ));
+      },
+      (profile) async {
+        await _saveSession(profile);
+        _showSuccessSnackbar('Welcome back!', '${profile.user.firstName} ${profile.user.lastName}');
+        emit(AuthenticationSuccess(profile));
+      },
     );
   }
 
-  // Method to handle sign up
   Future<void> signUpUser({
     required String firstName,
     required String lastName,
@@ -48,63 +149,175 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     String? phoneNumber,
   }) async {
     emit(AuthenticationLoading());
-    final result = await _signUpUseCase( // Call use case
+
+    final result = await _signUpUseCase(
       firstName: firstName,
       lastName: lastName,
       email: email,
       password: password,
       phoneNumber: phoneNumber,
     );
-      result.fold(
-      (failure) => emit(AuthenticationFailure(
-        failure.message,
-        statusCode: failure.statusCode,
-      )),
-      (profile) => emit(AuthenticationSuccess(profile)), // Emit profile on success
+
+    result.fold(
+      (failure) {
+        _showErrorSnackbar('Sign Up Failed', failure.message);
+        emit(AuthenticationFailure(
+          failure.message,
+          statusCode: failure.statusCode,
+        ));
+      },
+      (profile) async {
+        await _saveSession(profile);
+
+        if (!profile.user.isEmailVerified) {
+          _showInfoSnackbar(
+            'Account Created!',
+            'Please check your email to verify your account.',
+          );
+        } else {
+          _showSuccessSnackbar(
+            'Welcome!',
+            'Your account has been created successfully.',
+          );
+        }
+
+        emit(AuthenticationSuccess(profile));
+      },
     );
   }
 
-  // Method to handle Google Sign In
   Future<void> signInWithGoogle() async {
     emit(AuthenticationLoading());
-    final result = await _signInWithGoogleUseCase(); // Call use case
+
+    final result = await _signInWithGoogleUseCase();
+
     result.fold(
-      (failure) => emit(AuthenticationFailure(
-        failure.message,
-        statusCode: failure.statusCode,
-      )),
-      (profile) => emit(AuthenticationSuccess(profile)), // Emit profile on success
+      (failure) {
+        _showErrorSnackbar('Google Sign-In Failed', failure.message);
+        emit(AuthenticationFailure(
+          failure.message,
+          statusCode: failure.statusCode,
+        ));
+      },
+      (profile) async {
+        await _saveSession(profile);
+        _showSuccessSnackbar('Welcome!', 'Signed in with Google');
+        emit(AuthenticationSuccess(profile));
+      },
     );
   }
 
-  // Method to handle Apple Sign In
   Future<void> signInWithApple() async {
     emit(AuthenticationLoading());
-    final result = await _signInWithAppleUseCase(); // Call use case
+
+    final result = await _signInWithAppleUseCase();
+
     result.fold(
-      (failure) => emit(AuthenticationFailure(
-        failure.message,
-        statusCode: failure.statusCode,
-      )),
-      (profile) => emit(AuthenticationSuccess(profile)), // Emit profile on success
+      (failure) {
+        _showErrorSnackbar('Apple Sign-In Failed', failure.message);
+        emit(AuthenticationFailure(
+          failure.message,
+          statusCode: failure.statusCode,
+        ));
+      },
+      (profile) async {
+        await _saveSession(profile);
+        _showSuccessSnackbar('Welcome!', 'Signed in with Apple');
+        emit(AuthenticationSuccess(profile));
+      },
     );
   }
 
-  // Method to handle logout
-  void logout() {
-    // TODO: Add logic here to clear any locally stored session/token data
-    // e.g., using flutter_secure_storage or shared_preferences
-    print("AuthenticationCubit: Logout called");
-    emit(AuthenticationInitial()); // Reset state to initial
+  // --- Password Recovery ---
+  Future<void> forgotPassword(String email) async {
+    emit(AuthenticationLoading());
+
+    final result = await _forgotPasswordUseCase(email);
+
+    result.fold(
+      (failure) {
+        _showErrorSnackbar('Password Reset Failed', failure.message);
+        emit(AuthenticationFailure(
+          failure.message,
+          statusCode: failure.statusCode,
+        ));
+      },
+      (_) {
+        _showSuccessSnackbar(
+          'Email Sent!',
+          'Check your email for password reset instructions.',
+        );
+        emit(PasswordResetEmailSent());
+      },
+    );
   }
 
-  // --- Email Sign In Specific Methods (if still used) ---
-  // void startEmailSignIn() { /* ... */ }
-  // void emailSignInEmailChanged(String value) { /* ... */ }
-  // void emailSignInPasswordChanged(String value) { /* ... */ }
-  // Future<void> emailSignInSubmitted() async { /* ... */ }
+  // --- Email Verification ---
+  Future<void> verifyEmail(String token) async {
+    emit(AuthenticationLoading());
 
-  // --- Sign Up Page Flow Methods ---
+    final result = await _verifyEmailUseCase(token);
+
+    result.fold(
+      (failure) {
+        _showErrorSnackbar('Verification Failed', failure.message);
+        emit(AuthenticationFailure(
+          failure.message,
+          statusCode: failure.statusCode,
+        ));
+      },
+      (profile) async {
+        await _saveSession(profile);
+        _showSuccessSnackbar(
+          'Email Verified!',
+          'Your email has been successfully verified.',
+        );
+        emit(EmailVerified(profile));
+      },
+    );
+  }
+
+  Future<void> resendVerificationEmail() async {
+    if (_currentProfile == null) {
+      _showErrorSnackbar('Error', 'Please sign in first');
+      return;
+    }
+
+    emit(AuthenticationLoading());
+
+    final result = await _resendVerificationUseCase();
+
+    result.fold(
+      (failure) {
+        _showErrorSnackbar('Failed to Send Email', failure.message);
+        emit(AuthenticationFailure(
+          failure.message,
+          statusCode: failure.statusCode,
+        ));
+      },
+      (_) {
+        _showSuccessSnackbar(
+          'Email Sent!',
+          'Verification email has been resent.',
+        );
+        // Return to previous success state
+        if (_currentProfile != null) {
+          emit(AuthenticationSuccess(_currentProfile!));
+        } else {
+          emit(AuthenticationInitial());
+        }
+      },
+    );
+  }
+
+  // --- Logout ---
+  Future<void> logout() async {
+    await _clearSession();
+    _showInfoSnackbar('Logged Out', 'Come back soon!');
+    emit(AuthenticationInitial());
+  }
+
+  // --- Sign Up Flow Methods ---
   void startSignUp() {
     emit(const SignUpInProgress());
   }
@@ -158,91 +371,363 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
   void signUpPhoneNumberChanged(String value) {
     if (state is SignUpInProgress) {
       final currentState = state as SignUpInProgress;
-      emit(currentState.copyWith(phoneNumber: value, clearErrorMessage: true, isLoading: false));
+      // Format phone number to remove spaces and special characters
+      final formattedPhone = _formatPhoneNumber(value);
+      emit(currentState.copyWith(phoneNumber: formattedPhone, clearErrorMessage: true, isLoading: false));
     }
   }
 
-  void signUpNextPage() {
-     if (state is SignUpInProgress) {
-        final currentState = state as SignUpInProgress;
-        if (currentState.currentPage == 0) {
-            // Validation for page 0 remains the same (email, passwords)
-            if (currentState.email.isEmpty || currentState.password.isEmpty || currentState.confirmPassword.isEmpty) {
-                emit(currentState.copyWith(errorMessage: 'Please fill all fields on this page.'));
-                return;
-            }
-            if (currentState.password != currentState.confirmPassword) {
-                emit(currentState.copyWith(errorMessage: 'Passwords do not match.'));
-                return;
-            }
-        }
-        // Navigation logic remains the same
-        if (currentState.currentPage < 1) {
-            emit(currentState.copyWith(currentPage: currentState.currentPage + 1, clearErrorMessage: true));
-        }
-     }
-  }
+  Future<void> signUpNextPage() async {
+    if (state is SignUpInProgress) {
+      final currentState = state as SignUpInProgress;
 
-  void signUpPreviousPage() {
-     if (state is SignUpInProgress) {
-        final currentState = state as SignUpInProgress;
-         if (currentState.currentPage > 0) {
-            emit(currentState.copyWith(currentPage: currentState.currentPage - 1, clearErrorMessage: true));
-         }
-     }
-  }
-
-  Future<void> signUpSubmitted() async {
-     if (state is SignUpInProgress) {
-        final currentState = state as SignUpInProgress;
-
-        // Perform validation checks first, using firstName and lastName
-        if (currentState.email.isEmpty ||
-            currentState.password.isEmpty ||
-            currentState.confirmPassword.isEmpty ||
-            currentState.firstName.isEmpty || // Check firstName
-            currentState.lastName.isEmpty || // Check lastName
-            currentState.selectedDate == null ||
-            currentState.phoneNumber.isEmpty) {
-          emit(currentState.copyWith(errorMessage: 'Please fill all fields.', isLoading: false));
+      if (currentState.currentPage == 0) {
+        // Validation for page 0: Email and Password
+        if (currentState.email.isEmpty) {
+          final errorMsg = 'Email is required';
+          _showErrorSnackbar('Validation Error', errorMsg);
+          emit(currentState.copyWith(errorMessage: errorMsg));
           return;
         }
-        if (currentState.password != currentState.confirmPassword) {
-            emit(currentState.copyWith(errorMessage: 'Passwords do not match.', isLoading: false));
-            return;
+
+        if (!_isValidEmail(currentState.email)) {
+          final errorMsg = 'Please enter a valid email address';
+          _showErrorSnackbar('Validation Error', errorMsg);
+          emit(currentState.copyWith(errorMessage: errorMsg));
+          return;
         }
 
-        if (currentState.isLoading) return; 
-        emit(currentState.copyWith(isLoading: true, clearErrorMessage: true)); 
+        if (currentState.password.isEmpty) {
+          final errorMsg = 'Password is required';
+          _showErrorSnackbar('Validation Error', errorMsg);
+          emit(currentState.copyWith(errorMessage: errorMsg));
+          return;
+        }
 
-        // Call the use case with separate names
-        final result = await _signUpUseCase( 
-            firstName: currentState.firstName,
-            lastName: currentState.lastName,
-            email: currentState.email,
-            password: currentState.password,
-            phoneNumber: currentState.phoneNumber,
-           // dateOfBirth: currentState.selectedDate!, // Pass DOB if use case requires it
-           // role: 'user', // Pass role if use case requires it
-          );
+        final passwordError = _validatePassword(currentState.password);
+        if (passwordError != null) {
+          _showErrorSnackbar('Password Requirements', passwordError);
+          emit(currentState.copyWith(errorMessage: passwordError));
+          return;
+        }
+
+        if (currentState.confirmPassword.isEmpty) {
+          final errorMsg = 'Please confirm your password';
+          _showErrorSnackbar('Validation Error', errorMsg);
+          emit(currentState.copyWith(errorMessage: errorMsg));
+          return;
+        }
+
+        if (currentState.password != currentState.confirmPassword) {
+          final errorMsg = 'Passwords do not match';
+          _showErrorSnackbar('Validation Error', errorMsg);
+          emit(currentState.copyWith(errorMessage: errorMsg));
+          return;
+        }
+
+        // Check email availability before proceeding
+        emit(currentState.copyWith(isLoading: true, clearErrorMessage: true));
+
+        final result = await _checkEmailAvailabilityUseCase(email: currentState.email);
 
         result.fold(
           (failure) {
-            print('Error signing up: ${failure.message}');
-            // Keep user input on failure
-            emit(currentState.copyWith(
-              isLoading: false,
-              errorMessage: failure.message, 
-            ));
+            final errorMsg = 'Failed to verify email availability. Please try again.';
+            _showErrorSnackbar('Connection Error', errorMsg);
+            emit(currentState.copyWith(errorMessage: errorMsg, isLoading: false));
+            return;
           },
-          // Success case now handled by the main Auth Cubit methods
-          // (profile) => emit(AuthenticationSuccess(profile)), // No longer needed here if signUpUser handles it
-           (profile) => emit(AuthenticationSuccess(profile)), // Emit success directly if signUpUser doesn't exist
+          (isAvailable) {
+            if (!isAvailable) {
+              final errorMsg = 'This email is already registered. Please use a different email or sign in.';
+              _showErrorSnackbar('Email Already Exists', errorMsg);
+              emit(currentState.copyWith(errorMessage: errorMsg, isLoading: false));
+              return;
+            }
+            // Email is available, proceed to next page
+            emit(currentState.copyWith(currentPage: currentState.currentPage + 1, clearErrorMessage: true, isLoading: false));
+          },
         );
+        return; // Return early as we handled page transition in the fold
+      } else if (currentState.currentPage == 1) {
+        // Validation for page 1: Personal Info
+        final firstNameError = _validateName(currentState.firstName, 'First name');
+        if (firstNameError != null) {
+          _showErrorSnackbar('Validation Error', firstNameError);
+          emit(currentState.copyWith(errorMessage: firstNameError));
+          return;
+        }
 
-     } else {
-        print('Cannot submit sign up from current state: $state');
-         emit(AuthenticationFailure("Cannot submit sign up from current state.", statusCode: 400)); // Use AuthenticationFailure
-     }
+        final lastNameError = _validateName(currentState.lastName, 'Last name');
+        if (lastNameError != null) {
+          _showErrorSnackbar('Validation Error', lastNameError);
+          emit(currentState.copyWith(errorMessage: lastNameError));
+          return;
+        }
+
+        final dobError = _validateDateOfBirth(currentState.selectedDate);
+        if (dobError != null) {
+          _showErrorSnackbar('Validation Error', dobError);
+          emit(currentState.copyWith(errorMessage: dobError));
+          return;
+        }
+
+        final phoneError = _validatePhoneNumber(currentState.phoneNumber);
+        if (phoneError != null) {
+          _showErrorSnackbar('Validation Error', phoneError);
+          emit(currentState.copyWith(errorMessage: phoneError));
+          return;
+        }
+      }
+
+      if (currentState.currentPage < 1) {
+        emit(currentState.copyWith(currentPage: currentState.currentPage + 1, clearErrorMessage: true));
+      }
+    }
+  }
+
+  void signUpPreviousPage() {
+    if (state is SignUpInProgress) {
+      final currentState = state as SignUpInProgress;
+      if (currentState.currentPage > 0) {
+        emit(currentState.copyWith(currentPage: currentState.currentPage - 1, clearErrorMessage: true));
+      }
+    }
+  }
+
+  Future<void> signUpSubmitted() async {
+    if (state is SignUpInProgress) {
+      final currentState = state as SignUpInProgress;
+
+      // Comprehensive validation before submission
+      if (!_isValidEmail(currentState.email)) {
+        final errorMsg = 'Please enter a valid email address';
+        _showErrorSnackbar('Validation Error', errorMsg);
+        emit(currentState.copyWith(errorMessage: errorMsg, isLoading: false));
+        return;
+      }
+
+      final passwordError = _validatePassword(currentState.password);
+      if (passwordError != null) {
+        _showErrorSnackbar('Password Requirements', passwordError);
+        emit(currentState.copyWith(errorMessage: passwordError, isLoading: false));
+        return;
+      }
+
+      if (currentState.password != currentState.confirmPassword) {
+        final errorMsg = 'Passwords do not match';
+        _showErrorSnackbar('Validation Error', errorMsg);
+        emit(currentState.copyWith(errorMessage: errorMsg, isLoading: false));
+        return;
+      }
+
+      final firstNameError = _validateName(currentState.firstName, 'First name');
+      if (firstNameError != null) {
+        _showErrorSnackbar('Validation Error', firstNameError);
+        emit(currentState.copyWith(errorMessage: firstNameError, isLoading: false));
+        return;
+      }
+
+      final lastNameError = _validateName(currentState.lastName, 'Last name');
+      if (lastNameError != null) {
+        _showErrorSnackbar('Validation Error', lastNameError);
+        emit(currentState.copyWith(errorMessage: lastNameError, isLoading: false));
+        return;
+      }
+
+      final dobError = _validateDateOfBirth(currentState.selectedDate);
+      if (dobError != null) {
+        _showErrorSnackbar('Validation Error', dobError);
+        emit(currentState.copyWith(errorMessage: dobError, isLoading: false));
+        return;
+      }
+
+      final phoneError = _validatePhoneNumber(currentState.phoneNumber);
+      if (phoneError != null) {
+        _showErrorSnackbar('Validation Error', phoneError);
+        emit(currentState.copyWith(errorMessage: phoneError, isLoading: false));
+        return;
+      }
+
+      if (currentState.isLoading) return;
+      emit(currentState.copyWith(isLoading: true, clearErrorMessage: true));
+
+      // Call the sign up use case
+      final result = await _signUpUseCase(
+        firstName: currentState.firstName,
+        lastName: currentState.lastName,
+        email: currentState.email,
+        password: currentState.password,
+        phoneNumber: currentState.phoneNumber,
+      );
+
+      result.fold(
+        (failure) {
+          print('Error signing up: ${failure.message}');
+          _showErrorSnackbar('Sign Up Failed', failure.message);
+          emit(currentState.copyWith(
+            isLoading: false,
+            errorMessage: failure.message,
+          ));
+        },
+        (profile) async {
+          await _saveSession(profile);
+
+          if (!profile.user.isEmailVerified) {
+            _showInfoSnackbar(
+              'Account Created!',
+              'Please check your email to verify your account.',
+            );
+          } else {
+            _showSuccessSnackbar(
+              'Welcome!',
+              'Your account has been created successfully.',
+            );
+          }
+
+          emit(AuthenticationSuccess(profile));
+        },
+      );
+    } else {
+      print('Cannot submit sign up from current state: $state');
+      emit(AuthenticationFailure("Cannot submit sign up from current state.", statusCode: 400));
+    }
+  }
+
+  // --- Helper Methods ---
+  bool _isValidEmail(String email) {
+    // Enhanced email validation with more comprehensive regex
+    final emailRegex = RegExp(
+      r'^[a-zA-Z0-9.!#$%&*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$',
+    );
+    return email.isNotEmpty && emailRegex.hasMatch(email) && email.length <= 254;
+  }
+
+  String? _validatePassword(String password) {
+    if (password.isEmpty) return 'Password is required';
+    if (password.length < 8) return 'Password must be at least 8 characters';
+    if (password.length > 128) return 'Password is too long (max 128 characters)';
+
+    // Check for uppercase letter
+    if (!RegExp(r'[A-Z]').hasMatch(password)) {
+      return 'Password must contain at least one uppercase letter';
+    }
+
+    // Check for lowercase letter
+    if (!RegExp(r'[a-z]').hasMatch(password)) {
+      return 'Password must contain at least one lowercase letter';
+    }
+
+    // Check for digit
+    if (!RegExp(r'[0-9]').hasMatch(password)) {
+      return 'Password must contain at least one number';
+    }
+
+    // Check for special character
+    if (!RegExp(r'[!@#$%^&*(),.?":{}|<>_\-+=\[\]\\\/;`~]').hasMatch(password)) {
+      return 'Password must contain at least one special character';
+    }
+
+    return null; // Password is valid
+  }
+
+  String? _validatePhoneNumber(String phoneNumber) {
+    if (phoneNumber.isEmpty) return 'Phone number is required';
+
+    // IntlPhoneField already validates and formats phone numbers
+    // Just ensure it starts with + and has reasonable length
+    if (!phoneNumber.startsWith('+')) {
+      return 'Please select a country code for your phone number';
+    }
+
+    if (phoneNumber.length < 8) {
+      return 'Please enter a complete phone number';
+    }
+
+    return null; // Phone number is valid
+  }
+
+  String _formatPhoneNumber(String phoneNumber) {
+    // Remove all non-digit characters except +
+    return phoneNumber.replaceAll(RegExp(r'[^\d+]'), '');
+  }
+
+  String? _validateName(String name, String fieldName) {
+    if (name.isEmpty) return '$fieldName is required';
+    if (name.length < 2) return '$fieldName must be at least 2 characters';
+    if (name.length > 255) return '$fieldName is too long (max 255 characters)';
+
+    // Allow letters, spaces, hyphens, and apostrophes
+    final nameRegex = RegExp(r"^[a-zA-Z\s\-']+$");
+    if (!nameRegex.hasMatch(name)) {
+      return '$fieldName can only contain letters, spaces, hyphens, and apostrophes';
+    }
+
+    return null; // Name is valid
+  }
+
+  String? _validateDateOfBirth(DateTime? dob) {
+    if (dob == null) return 'Date of birth is required';
+
+    final now = DateTime.now();
+    final age = now.year - dob.year - ((now.month > dob.month || (now.month == dob.month && now.day >= dob.day)) ? 0 : 1);
+
+    if (age < 13) {
+      return 'You must be at least 13 years old to sign up';
+    }
+
+    if (age > 150) {
+      return 'Please enter a valid date of birth';
+    }
+
+    return null; // Date of birth is valid
+  }
+
+  void _showSuccessSnackbar(String title, String message) {
+    Get.snackbar(
+      title,
+      message,
+      snackPosition: SnackPosition.TOP,
+      backgroundColor: Colors.green.withOpacity(0.9),
+      colorText: Colors.white,
+      margin: const EdgeInsets.all(15),
+      borderRadius: 10,
+      icon: const Icon(Icons.check_circle, color: Colors.white),
+      duration: const Duration(seconds: 3),
+      isDismissible: true,
+      dismissDirection: DismissDirection.horizontal,
+    );
+  }
+
+  void _showErrorSnackbar(String title, String message) {
+    Get.snackbar(
+      title,
+      message,
+      snackPosition: SnackPosition.TOP,
+      backgroundColor: Colors.red.withOpacity(0.9),
+      colorText: Colors.white,
+      margin: const EdgeInsets.all(15),
+      borderRadius: 10,
+      icon: const Icon(Icons.error, color: Colors.white),
+      duration: const Duration(seconds: 4),
+      isDismissible: true,
+      dismissDirection: DismissDirection.horizontal,
+    );
+  }
+
+  void _showInfoSnackbar(String title, String message) {
+    Get.snackbar(
+      title,
+      message,
+      snackPosition: SnackPosition.TOP,
+      backgroundColor: Colors.blue.withOpacity(0.9),
+      colorText: Colors.white,
+      margin: const EdgeInsets.all(15),
+      borderRadius: 10,
+      icon: const Icon(Icons.info, color: Colors.white),
+      duration: const Duration(seconds: 3),
+      isDismissible: true,
+      dismissDirection: DismissDirection.horizontal,
+    );
   }
 }

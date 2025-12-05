@@ -12,11 +12,11 @@ class AiChatRepositoryImpl implements IAiChatRepository {
 
   @override
   Future<Either<Failure, ProcessChatResponse>> processChat({
-    required String query, 
+    required String query,
     required String accessToken
   }) async {
     try {
-      final response = await _dataSource.processChat(query: query, accessToken: accessToken);
+      final response = await _dataSource.processChat(query: query);
       // Optional: Check response.success here if needed, but often handled in Cubit/UI
       return Right(response);
     } catch (e) {
@@ -31,7 +31,7 @@ class AiChatRepositoryImpl implements IAiChatRepository {
     required String accessToken
   }) async {
     try {
-      final response = await _dataSource.getChatHistory(accessToken: accessToken);
+      final response = await _dataSource.getChatHistory();
       // Map proto entries to ChatMessageEntity
       final chatEntities = response.history.expand((entry) {
         // Convert timestamp string (assuming RFC3339) to DateTime

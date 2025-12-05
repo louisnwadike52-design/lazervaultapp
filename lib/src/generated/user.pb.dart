@@ -1,23 +1,28 @@
-//
+///
 //  Generated code. Do not modify.
 //  source: user.proto
 //
-// @dart = 3.3
-
-// ignore_for_file: annotate_overrides, camel_case_types, comment_references
-// ignore_for_file: constant_identifier_names, library_prefixes
-// ignore_for_file: non_constant_identifier_names, prefer_final_fields
-// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
+// @dart = 2.12
+// ignore_for_file: annotate_overrides,camel_case_types,constant_identifier_names,directives_ordering,library_prefixes,non_constant_identifier_names,prefer_final_fields,return_of_invalid_type,unnecessary_const,unnecessary_import,unnecessary_this,unused_import,unused_shown_name
 
 import 'dart:core' as $core;
 
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'common.pb.dart' as $17;
-
-export 'package:protobuf/protobuf.dart' show GeneratedMessageGenericExtensions;
+import 'common.pb.dart' as $18;
 
 class CreateUserRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CreateUserRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'firstName')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastName')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'email')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'password')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'phoneNumber')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'role')
+    ..hasRequiredFields = false
+  ;
+
+  CreateUserRequest._() : super();
   factory CreateUserRequest({
     $core.String? firstName,
     $core.String? lastName,
@@ -26,41 +31,29 @@ class CreateUserRequest extends $pb.GeneratedMessage {
     $core.String? phoneNumber,
     $core.String? role,
   }) {
-    final $result = create();
+    final _result = create();
     if (firstName != null) {
-      $result.firstName = firstName;
+      _result.firstName = firstName;
     }
     if (lastName != null) {
-      $result.lastName = lastName;
+      _result.lastName = lastName;
     }
     if (email != null) {
-      $result.email = email;
+      _result.email = email;
     }
     if (password != null) {
-      $result.password = password;
+      _result.password = password;
     }
     if (phoneNumber != null) {
-      $result.phoneNumber = phoneNumber;
+      _result.phoneNumber = phoneNumber;
     }
     if (role != null) {
-      $result.role = role;
+      _result.role = role;
     }
-    return $result;
+    return _result;
   }
-  CreateUserRequest._() : super();
   factory CreateUserRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CreateUserRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreateUserRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'firstName')
-    ..aOS(2, _omitFieldNames ? '' : 'lastName')
-    ..aOS(3, _omitFieldNames ? '' : 'email')
-    ..aOS(4, _omitFieldNames ? '' : 'password')
-    ..aOS(5, _omitFieldNames ? '' : 'phoneNumber')
-    ..aOS(6, _omitFieldNames ? '' : 'role')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -70,10 +63,8 @@ class CreateUserRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CreateUserRequest copyWith(void Function(CreateUserRequest) updates) => super.copyWith((message) => updates(message as CreateUserRequest)) as CreateUserRequest;
-
+  CreateUserRequest copyWith(void Function(CreateUserRequest) updates) => super.copyWith((message) => updates(message as CreateUserRequest)) as CreateUserRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static CreateUserRequest create() => CreateUserRequest._();
   CreateUserRequest createEmptyInstance() => create();
@@ -89,7 +80,7 @@ class CreateUserRequest extends $pb.GeneratedMessage {
   @$pb.TagNumber(1)
   $core.bool hasFirstName() => $_has(0);
   @$pb.TagNumber(1)
-  void clearFirstName() => $_clearField(1);
+  void clearFirstName() => clearField(1);
 
   @$pb.TagNumber(2)
   $core.String get lastName => $_getSZ(1);
@@ -98,7 +89,7 @@ class CreateUserRequest extends $pb.GeneratedMessage {
   @$pb.TagNumber(2)
   $core.bool hasLastName() => $_has(1);
   @$pb.TagNumber(2)
-  void clearLastName() => $_clearField(2);
+  void clearLastName() => clearField(2);
 
   @$pb.TagNumber(3)
   $core.String get email => $_getSZ(2);
@@ -107,7 +98,7 @@ class CreateUserRequest extends $pb.GeneratedMessage {
   @$pb.TagNumber(3)
   $core.bool hasEmail() => $_has(2);
   @$pb.TagNumber(3)
-  void clearEmail() => $_clearField(3);
+  void clearEmail() => clearField(3);
 
   @$pb.TagNumber(4)
   $core.String get password => $_getSZ(3);
@@ -116,7 +107,7 @@ class CreateUserRequest extends $pb.GeneratedMessage {
   @$pb.TagNumber(4)
   $core.bool hasPassword() => $_has(3);
   @$pb.TagNumber(4)
-  void clearPassword() => $_clearField(4);
+  void clearPassword() => clearField(4);
 
   @$pb.TagNumber(5)
   $core.String get phoneNumber => $_getSZ(4);
@@ -125,7 +116,7 @@ class CreateUserRequest extends $pb.GeneratedMessage {
   @$pb.TagNumber(5)
   $core.bool hasPhoneNumber() => $_has(4);
   @$pb.TagNumber(5)
-  void clearPhoneNumber() => $_clearField(5);
+  void clearPhoneNumber() => clearField(5);
 
   @$pb.TagNumber(6)
   $core.String get role => $_getSZ(5);
@@ -134,38 +125,37 @@ class CreateUserRequest extends $pb.GeneratedMessage {
   @$pb.TagNumber(6)
   $core.bool hasRole() => $_has(5);
   @$pb.TagNumber(6)
-  void clearRole() => $_clearField(6);
+  void clearRole() => clearField(6);
 }
 
 class CreateUserResponse extends $pb.GeneratedMessage {
-  factory CreateUserResponse({
-    $core.bool? success,
-    $core.String? message,
-    $17.Data? data,
-  }) {
-    final $result = create();
-    if (success != null) {
-      $result.success = success;
-    }
-    if (message != null) {
-      $result.message = message;
-    }
-    if (data != null) {
-      $result.data = data;
-    }
-    return $result;
-  }
-  CreateUserResponse._() : super();
-  factory CreateUserResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory CreateUserResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreateUserResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..aOS(2, _omitFieldNames ? '' : 'message')
-    ..aOM<$17.Data>(3, _omitFieldNames ? '' : 'data', subBuilder: $17.Data.create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CreateUserResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..aOM<$18.Data>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'data', subBuilder: $18.Data.create)
     ..hasRequiredFields = false
   ;
 
+  CreateUserResponse._() : super();
+  factory CreateUserResponse({
+    $core.bool? success,
+    $core.String? message,
+    $18.Data? data,
+  }) {
+    final _result = create();
+    if (success != null) {
+      _result.success = success;
+    }
+    if (message != null) {
+      _result.message = message;
+    }
+    if (data != null) {
+      _result.data = data;
+    }
+    return _result;
+  }
+  factory CreateUserResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory CreateUserResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -175,10 +165,8 @@ class CreateUserResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CreateUserResponse copyWith(void Function(CreateUserResponse) updates) => super.copyWith((message) => updates(message as CreateUserResponse)) as CreateUserResponse;
-
+  CreateUserResponse copyWith(void Function(CreateUserResponse) updates) => super.copyWith((message) => updates(message as CreateUserResponse)) as CreateUserResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static CreateUserResponse create() => CreateUserResponse._();
   CreateUserResponse createEmptyInstance() => create();
@@ -194,7 +182,7 @@ class CreateUserResponse extends $pb.GeneratedMessage {
   @$pb.TagNumber(1)
   $core.bool hasSuccess() => $_has(0);
   @$pb.TagNumber(1)
-  void clearSuccess() => $_clearField(1);
+  void clearSuccess() => clearField(1);
 
   @$pb.TagNumber(2)
   $core.String get message => $_getSZ(1);
@@ -203,20 +191,17 @@ class CreateUserResponse extends $pb.GeneratedMessage {
   @$pb.TagNumber(2)
   $core.bool hasMessage() => $_has(1);
   @$pb.TagNumber(2)
-  void clearMessage() => $_clearField(2);
+  void clearMessage() => clearField(2);
 
   @$pb.TagNumber(3)
-  $17.Data get data => $_getN(2);
+  $18.Data get data => $_getN(2);
   @$pb.TagNumber(3)
-  set data($17.Data v) { $_setField(3, v); }
+  set data($18.Data v) { setField(3, v); }
   @$pb.TagNumber(3)
   $core.bool hasData() => $_has(2);
   @$pb.TagNumber(3)
-  void clearData() => $_clearField(3);
+  void clearData() => clearField(3);
   @$pb.TagNumber(3)
-  $17.Data ensureData() => $_ensure(2);
+  $18.Data ensureData() => $_ensure(2);
 }
 
-
-const _omitFieldNames = $core.bool.fromEnvironment('protobuf.omit_field_names');
-const _omitMessageNames = $core.bool.fromEnvironment('protobuf.omit_message_names');

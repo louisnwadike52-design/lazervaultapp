@@ -1,55 +1,48 @@
-//
+///
 //  Generated code. Do not modify.
 //  source: invoice.proto
 //
-// @dart = 3.3
-
-// ignore_for_file: annotate_overrides, camel_case_types, comment_references
-// ignore_for_file: constant_identifier_names, library_prefixes
-// ignore_for_file: non_constant_identifier_names, prefer_final_fields
-// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
+// @dart = 2.12
+// ignore_for_file: annotate_overrides,camel_case_types,constant_identifier_names,directives_ordering,library_prefixes,non_constant_identifier_names,prefer_final_fields,return_of_invalid_type,unnecessary_const,unnecessary_import,unnecessary_this,unused_import,unused_shown_name
 
 import 'dart:core' as $core;
 
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'google/protobuf/timestamp.pb.dart' as $16;
-import 'invoice.pbenum.dart';
+import 'google/protobuf/timestamp.pb.dart' as $17;
 
-export 'package:protobuf/protobuf.dart' show GeneratedMessageGenericExtensions;
+import 'invoice.pbenum.dart';
 
 export 'invoice.pbenum.dart';
 
-/// Represents customer details associated with an invoice
 class CustomerDetails extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CustomerDetails', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'name')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'email')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'address')
+    ..hasRequiredFields = false
+  ;
+
+  CustomerDetails._() : super();
   factory CustomerDetails({
     $core.String? name,
     $core.String? email,
     $core.String? address,
   }) {
-    final $result = create();
+    final _result = create();
     if (name != null) {
-      $result.name = name;
+      _result.name = name;
     }
     if (email != null) {
-      $result.email = email;
+      _result.email = email;
     }
     if (address != null) {
-      $result.address = address;
+      _result.address = address;
     }
-    return $result;
+    return _result;
   }
-  CustomerDetails._() : super();
   factory CustomerDetails.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CustomerDetails.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CustomerDetails', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'name')
-    ..aOS(2, _omitFieldNames ? '' : 'email')
-    ..aOS(3, _omitFieldNames ? '' : 'address')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -59,10 +52,8 @@ class CustomerDetails extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CustomerDetails copyWith(void Function(CustomerDetails) updates) => super.copyWith((message) => updates(message as CustomerDetails)) as CustomerDetails;
-
+  CustomerDetails copyWith(void Function(CustomerDetails) updates) => super.copyWith((message) => updates(message as CustomerDetails)) as CustomerDetails; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static CustomerDetails create() => CustomerDetails._();
   CustomerDetails createEmptyInstance() => create();
@@ -78,7 +69,7 @@ class CustomerDetails extends $pb.GeneratedMessage {
   @$pb.TagNumber(1)
   $core.bool hasName() => $_has(0);
   @$pb.TagNumber(1)
-  void clearName() => $_clearField(1);
+  void clearName() => clearField(1);
 
   @$pb.TagNumber(2)
   $core.String get email => $_getSZ(1);
@@ -87,7 +78,7 @@ class CustomerDetails extends $pb.GeneratedMessage {
   @$pb.TagNumber(2)
   $core.bool hasEmail() => $_has(1);
   @$pb.TagNumber(2)
-  void clearEmail() => $_clearField(2);
+  void clearEmail() => clearField(2);
 
   @$pb.TagNumber(3)
   $core.String get address => $_getSZ(2);
@@ -96,11 +87,20 @@ class CustomerDetails extends $pb.GeneratedMessage {
   @$pb.TagNumber(3)
   $core.bool hasAddress() => $_has(2);
   @$pb.TagNumber(3)
-  void clearAddress() => $_clearField(3);
+  void clearAddress() => clearField(3);
 }
 
-/// Represents a single line item in an invoice
 class InvoiceItem extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'InvoiceItem', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'itemId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
+    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'quantity', $pb.PbFieldType.O3)
+    ..a<$core.double>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'unitPrice', $pb.PbFieldType.OD)
+    ..a<$core.double>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalPrice', $pb.PbFieldType.OD)
+    ..hasRequiredFields = false
+  ;
+
+  InvoiceItem._() : super();
   factory InvoiceItem({
     $core.String? itemId,
     $core.String? description,
@@ -108,37 +108,26 @@ class InvoiceItem extends $pb.GeneratedMessage {
     $core.double? unitPrice,
     $core.double? totalPrice,
   }) {
-    final $result = create();
+    final _result = create();
     if (itemId != null) {
-      $result.itemId = itemId;
+      _result.itemId = itemId;
     }
     if (description != null) {
-      $result.description = description;
+      _result.description = description;
     }
     if (quantity != null) {
-      $result.quantity = quantity;
+      _result.quantity = quantity;
     }
     if (unitPrice != null) {
-      $result.unitPrice = unitPrice;
+      _result.unitPrice = unitPrice;
     }
     if (totalPrice != null) {
-      $result.totalPrice = totalPrice;
+      _result.totalPrice = totalPrice;
     }
-    return $result;
+    return _result;
   }
-  InvoiceItem._() : super();
   factory InvoiceItem.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory InvoiceItem.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'InvoiceItem', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'itemId')
-    ..aOS(2, _omitFieldNames ? '' : 'description')
-    ..a<$core.int>(3, _omitFieldNames ? '' : 'quantity', $pb.PbFieldType.O3)
-    ..a<$core.double>(4, _omitFieldNames ? '' : 'unitPrice', $pb.PbFieldType.OD)
-    ..a<$core.double>(5, _omitFieldNames ? '' : 'totalPrice', $pb.PbFieldType.OD)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -148,10 +137,8 @@ class InvoiceItem extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  InvoiceItem copyWith(void Function(InvoiceItem) updates) => super.copyWith((message) => updates(message as InvoiceItem)) as InvoiceItem;
-
+  InvoiceItem copyWith(void Function(InvoiceItem) updates) => super.copyWith((message) => updates(message as InvoiceItem)) as InvoiceItem; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static InvoiceItem create() => InvoiceItem._();
   InvoiceItem createEmptyInstance() => create();
@@ -167,7 +154,7 @@ class InvoiceItem extends $pb.GeneratedMessage {
   @$pb.TagNumber(1)
   $core.bool hasItemId() => $_has(0);
   @$pb.TagNumber(1)
-  void clearItemId() => $_clearField(1);
+  void clearItemId() => clearField(1);
 
   @$pb.TagNumber(2)
   $core.String get description => $_getSZ(1);
@@ -176,7 +163,7 @@ class InvoiceItem extends $pb.GeneratedMessage {
   @$pb.TagNumber(2)
   $core.bool hasDescription() => $_has(1);
   @$pb.TagNumber(2)
-  void clearDescription() => $_clearField(2);
+  void clearDescription() => clearField(2);
 
   @$pb.TagNumber(3)
   $core.int get quantity => $_getIZ(2);
@@ -185,7 +172,7 @@ class InvoiceItem extends $pb.GeneratedMessage {
   @$pb.TagNumber(3)
   $core.bool hasQuantity() => $_has(2);
   @$pb.TagNumber(3)
-  void clearQuantity() => $_clearField(3);
+  void clearQuantity() => clearField(3);
 
   @$pb.TagNumber(4)
   $core.double get unitPrice => $_getN(3);
@@ -194,7 +181,7 @@ class InvoiceItem extends $pb.GeneratedMessage {
   @$pb.TagNumber(4)
   $core.bool hasUnitPrice() => $_has(3);
   @$pb.TagNumber(4)
-  void clearUnitPrice() => $_clearField(4);
+  void clearUnitPrice() => clearField(4);
 
   @$pb.TagNumber(5)
   $core.double get totalPrice => $_getN(4);
@@ -203,11 +190,30 @@ class InvoiceItem extends $pb.GeneratedMessage {
   @$pb.TagNumber(5)
   $core.bool hasTotalPrice() => $_has(4);
   @$pb.TagNumber(5)
-  void clearTotalPrice() => $_clearField(5);
+  void clearTotalPrice() => clearField(5);
 }
 
-/// Represents an invoice
 class Invoice extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'Invoice', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'invoiceId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'invoiceNumber')
+    ..aOM<CustomerDetails>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'customerDetails', subBuilder: CustomerDetails.create)
+    ..pc<InvoiceItem>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'items', $pb.PbFieldType.PM, subBuilder: InvoiceItem.create)
+    ..a<$core.double>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'subtotal', $pb.PbFieldType.OD)
+    ..a<$core.double>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'tax', $pb.PbFieldType.OD)
+    ..a<$core.double>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalAmount', $pb.PbFieldType.OD)
+    ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currencyCode')
+    ..aOM<$17.Timestamp>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'issueDate', subBuilder: $17.Timestamp.create)
+    ..aOM<$17.Timestamp>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'dueDate', subBuilder: $17.Timestamp.create)
+    ..e<InvoiceStatus>(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: InvoiceStatus.DRAFT, valueOf: InvoiceStatus.valueOf, enumValues: InvoiceStatus.values)
+    ..aOS(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'notes')
+    ..aOM<$17.Timestamp>(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $17.Timestamp.create)
+    ..aOM<$17.Timestamp>(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $17.Timestamp.create)
+    ..hasRequiredFields = false
+  ;
+
+  Invoice._() : super();
   factory Invoice({
     $core.String? invoiceId,
     $core.String? userId,
@@ -218,84 +224,63 @@ class Invoice extends $pb.GeneratedMessage {
     $core.double? tax,
     $core.double? totalAmount,
     $core.String? currencyCode,
-    $16.Timestamp? issueDate,
-    $16.Timestamp? dueDate,
+    $17.Timestamp? issueDate,
+    $17.Timestamp? dueDate,
     InvoiceStatus? status,
     $core.String? notes,
-    $16.Timestamp? createdAt,
-    $16.Timestamp? updatedAt,
+    $17.Timestamp? createdAt,
+    $17.Timestamp? updatedAt,
   }) {
-    final $result = create();
+    final _result = create();
     if (invoiceId != null) {
-      $result.invoiceId = invoiceId;
+      _result.invoiceId = invoiceId;
     }
     if (userId != null) {
-      $result.userId = userId;
+      _result.userId = userId;
     }
     if (invoiceNumber != null) {
-      $result.invoiceNumber = invoiceNumber;
+      _result.invoiceNumber = invoiceNumber;
     }
     if (customerDetails != null) {
-      $result.customerDetails = customerDetails;
+      _result.customerDetails = customerDetails;
     }
     if (items != null) {
-      $result.items.addAll(items);
+      _result.items.addAll(items);
     }
     if (subtotal != null) {
-      $result.subtotal = subtotal;
+      _result.subtotal = subtotal;
     }
     if (tax != null) {
-      $result.tax = tax;
+      _result.tax = tax;
     }
     if (totalAmount != null) {
-      $result.totalAmount = totalAmount;
+      _result.totalAmount = totalAmount;
     }
     if (currencyCode != null) {
-      $result.currencyCode = currencyCode;
+      _result.currencyCode = currencyCode;
     }
     if (issueDate != null) {
-      $result.issueDate = issueDate;
+      _result.issueDate = issueDate;
     }
     if (dueDate != null) {
-      $result.dueDate = dueDate;
+      _result.dueDate = dueDate;
     }
     if (status != null) {
-      $result.status = status;
+      _result.status = status;
     }
     if (notes != null) {
-      $result.notes = notes;
+      _result.notes = notes;
     }
     if (createdAt != null) {
-      $result.createdAt = createdAt;
+      _result.createdAt = createdAt;
     }
     if (updatedAt != null) {
-      $result.updatedAt = updatedAt;
+      _result.updatedAt = updatedAt;
     }
-    return $result;
+    return _result;
   }
-  Invoice._() : super();
   factory Invoice.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory Invoice.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'Invoice', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'invoiceId')
-    ..aOS(2, _omitFieldNames ? '' : 'userId')
-    ..aOS(3, _omitFieldNames ? '' : 'invoiceNumber')
-    ..aOM<CustomerDetails>(4, _omitFieldNames ? '' : 'customerDetails', subBuilder: CustomerDetails.create)
-    ..pc<InvoiceItem>(5, _omitFieldNames ? '' : 'items', $pb.PbFieldType.PM, subBuilder: InvoiceItem.create)
-    ..a<$core.double>(6, _omitFieldNames ? '' : 'subtotal', $pb.PbFieldType.OD)
-    ..a<$core.double>(7, _omitFieldNames ? '' : 'tax', $pb.PbFieldType.OD)
-    ..a<$core.double>(8, _omitFieldNames ? '' : 'totalAmount', $pb.PbFieldType.OD)
-    ..aOS(9, _omitFieldNames ? '' : 'currencyCode')
-    ..aOM<$16.Timestamp>(10, _omitFieldNames ? '' : 'issueDate', subBuilder: $16.Timestamp.create)
-    ..aOM<$16.Timestamp>(11, _omitFieldNames ? '' : 'dueDate', subBuilder: $16.Timestamp.create)
-    ..e<InvoiceStatus>(12, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: InvoiceStatus.DRAFT, valueOf: InvoiceStatus.valueOf, enumValues: InvoiceStatus.values)
-    ..aOS(13, _omitFieldNames ? '' : 'notes')
-    ..aOM<$16.Timestamp>(14, _omitFieldNames ? '' : 'createdAt', subBuilder: $16.Timestamp.create)
-    ..aOM<$16.Timestamp>(15, _omitFieldNames ? '' : 'updatedAt', subBuilder: $16.Timestamp.create)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -305,10 +290,8 @@ class Invoice extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  Invoice copyWith(void Function(Invoice) updates) => super.copyWith((message) => updates(message as Invoice)) as Invoice;
-
+  Invoice copyWith(void Function(Invoice) updates) => super.copyWith((message) => updates(message as Invoice)) as Invoice; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static Invoice create() => Invoice._();
   Invoice createEmptyInstance() => create();
@@ -324,7 +307,7 @@ class Invoice extends $pb.GeneratedMessage {
   @$pb.TagNumber(1)
   $core.bool hasInvoiceId() => $_has(0);
   @$pb.TagNumber(1)
-  void clearInvoiceId() => $_clearField(1);
+  void clearInvoiceId() => clearField(1);
 
   @$pb.TagNumber(2)
   $core.String get userId => $_getSZ(1);
@@ -333,7 +316,7 @@ class Invoice extends $pb.GeneratedMessage {
   @$pb.TagNumber(2)
   $core.bool hasUserId() => $_has(1);
   @$pb.TagNumber(2)
-  void clearUserId() => $_clearField(2);
+  void clearUserId() => clearField(2);
 
   @$pb.TagNumber(3)
   $core.String get invoiceNumber => $_getSZ(2);
@@ -342,21 +325,21 @@ class Invoice extends $pb.GeneratedMessage {
   @$pb.TagNumber(3)
   $core.bool hasInvoiceNumber() => $_has(2);
   @$pb.TagNumber(3)
-  void clearInvoiceNumber() => $_clearField(3);
+  void clearInvoiceNumber() => clearField(3);
 
   @$pb.TagNumber(4)
   CustomerDetails get customerDetails => $_getN(3);
   @$pb.TagNumber(4)
-  set customerDetails(CustomerDetails v) { $_setField(4, v); }
+  set customerDetails(CustomerDetails v) { setField(4, v); }
   @$pb.TagNumber(4)
   $core.bool hasCustomerDetails() => $_has(3);
   @$pb.TagNumber(4)
-  void clearCustomerDetails() => $_clearField(4);
+  void clearCustomerDetails() => clearField(4);
   @$pb.TagNumber(4)
   CustomerDetails ensureCustomerDetails() => $_ensure(3);
 
   @$pb.TagNumber(5)
-  $pb.PbList<InvoiceItem> get items => $_getList(4);
+  $core.List<InvoiceItem> get items => $_getList(4);
 
   @$pb.TagNumber(6)
   $core.double get subtotal => $_getN(5);
@@ -365,7 +348,7 @@ class Invoice extends $pb.GeneratedMessage {
   @$pb.TagNumber(6)
   $core.bool hasSubtotal() => $_has(5);
   @$pb.TagNumber(6)
-  void clearSubtotal() => $_clearField(6);
+  void clearSubtotal() => clearField(6);
 
   @$pb.TagNumber(7)
   $core.double get tax => $_getN(6);
@@ -374,7 +357,7 @@ class Invoice extends $pb.GeneratedMessage {
   @$pb.TagNumber(7)
   $core.bool hasTax() => $_has(6);
   @$pb.TagNumber(7)
-  void clearTax() => $_clearField(7);
+  void clearTax() => clearField(7);
 
   @$pb.TagNumber(8)
   $core.double get totalAmount => $_getN(7);
@@ -383,7 +366,7 @@ class Invoice extends $pb.GeneratedMessage {
   @$pb.TagNumber(8)
   $core.bool hasTotalAmount() => $_has(7);
   @$pb.TagNumber(8)
-  void clearTotalAmount() => $_clearField(8);
+  void clearTotalAmount() => clearField(8);
 
   @$pb.TagNumber(9)
   $core.String get currencyCode => $_getSZ(8);
@@ -392,38 +375,38 @@ class Invoice extends $pb.GeneratedMessage {
   @$pb.TagNumber(9)
   $core.bool hasCurrencyCode() => $_has(8);
   @$pb.TagNumber(9)
-  void clearCurrencyCode() => $_clearField(9);
+  void clearCurrencyCode() => clearField(9);
 
   @$pb.TagNumber(10)
-  $16.Timestamp get issueDate => $_getN(9);
+  $17.Timestamp get issueDate => $_getN(9);
   @$pb.TagNumber(10)
-  set issueDate($16.Timestamp v) { $_setField(10, v); }
+  set issueDate($17.Timestamp v) { setField(10, v); }
   @$pb.TagNumber(10)
   $core.bool hasIssueDate() => $_has(9);
   @$pb.TagNumber(10)
-  void clearIssueDate() => $_clearField(10);
+  void clearIssueDate() => clearField(10);
   @$pb.TagNumber(10)
-  $16.Timestamp ensureIssueDate() => $_ensure(9);
+  $17.Timestamp ensureIssueDate() => $_ensure(9);
 
   @$pb.TagNumber(11)
-  $16.Timestamp get dueDate => $_getN(10);
+  $17.Timestamp get dueDate => $_getN(10);
   @$pb.TagNumber(11)
-  set dueDate($16.Timestamp v) { $_setField(11, v); }
+  set dueDate($17.Timestamp v) { setField(11, v); }
   @$pb.TagNumber(11)
   $core.bool hasDueDate() => $_has(10);
   @$pb.TagNumber(11)
-  void clearDueDate() => $_clearField(11);
+  void clearDueDate() => clearField(11);
   @$pb.TagNumber(11)
-  $16.Timestamp ensureDueDate() => $_ensure(10);
+  $17.Timestamp ensureDueDate() => $_ensure(10);
 
   @$pb.TagNumber(12)
   InvoiceStatus get status => $_getN(11);
   @$pb.TagNumber(12)
-  set status(InvoiceStatus v) { $_setField(12, v); }
+  set status(InvoiceStatus v) { setField(12, v); }
   @$pb.TagNumber(12)
   $core.bool hasStatus() => $_has(11);
   @$pb.TagNumber(12)
-  void clearStatus() => $_clearField(12);
+  void clearStatus() => clearField(12);
 
   @$pb.TagNumber(13)
   $core.String get notes => $_getSZ(12);
@@ -432,76 +415,74 @@ class Invoice extends $pb.GeneratedMessage {
   @$pb.TagNumber(13)
   $core.bool hasNotes() => $_has(12);
   @$pb.TagNumber(13)
-  void clearNotes() => $_clearField(13);
+  void clearNotes() => clearField(13);
 
   @$pb.TagNumber(14)
-  $16.Timestamp get createdAt => $_getN(13);
+  $17.Timestamp get createdAt => $_getN(13);
   @$pb.TagNumber(14)
-  set createdAt($16.Timestamp v) { $_setField(14, v); }
+  set createdAt($17.Timestamp v) { setField(14, v); }
   @$pb.TagNumber(14)
   $core.bool hasCreatedAt() => $_has(13);
   @$pb.TagNumber(14)
-  void clearCreatedAt() => $_clearField(14);
+  void clearCreatedAt() => clearField(14);
   @$pb.TagNumber(14)
-  $16.Timestamp ensureCreatedAt() => $_ensure(13);
+  $17.Timestamp ensureCreatedAt() => $_ensure(13);
 
   @$pb.TagNumber(15)
-  $16.Timestamp get updatedAt => $_getN(14);
+  $17.Timestamp get updatedAt => $_getN(14);
   @$pb.TagNumber(15)
-  set updatedAt($16.Timestamp v) { $_setField(15, v); }
+  set updatedAt($17.Timestamp v) { setField(15, v); }
   @$pb.TagNumber(15)
   $core.bool hasUpdatedAt() => $_has(14);
   @$pb.TagNumber(15)
-  void clearUpdatedAt() => $_clearField(15);
+  void clearUpdatedAt() => clearField(15);
   @$pb.TagNumber(15)
-  $16.Timestamp ensureUpdatedAt() => $_ensure(14);
+  $17.Timestamp ensureUpdatedAt() => $_ensure(14);
 }
 
-/// Request to create a new invoice
 class CreateInvoiceRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CreateInvoiceRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOM<CustomerDetails>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'customerDetails', subBuilder: CustomerDetails.create)
+    ..pc<InvoiceItem>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'items', $pb.PbFieldType.PM, subBuilder: InvoiceItem.create)
+    ..a<$core.double>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'tax', $pb.PbFieldType.OD)
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currencyCode')
+    ..aOM<$17.Timestamp>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'dueDate', subBuilder: $17.Timestamp.create)
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'notes')
+    ..hasRequiredFields = false
+  ;
+
+  CreateInvoiceRequest._() : super();
   factory CreateInvoiceRequest({
     CustomerDetails? customerDetails,
     $core.Iterable<InvoiceItem>? items,
     $core.double? tax,
     $core.String? currencyCode,
-    $16.Timestamp? dueDate,
+    $17.Timestamp? dueDate,
     $core.String? notes,
   }) {
-    final $result = create();
+    final _result = create();
     if (customerDetails != null) {
-      $result.customerDetails = customerDetails;
+      _result.customerDetails = customerDetails;
     }
     if (items != null) {
-      $result.items.addAll(items);
+      _result.items.addAll(items);
     }
     if (tax != null) {
-      $result.tax = tax;
+      _result.tax = tax;
     }
     if (currencyCode != null) {
-      $result.currencyCode = currencyCode;
+      _result.currencyCode = currencyCode;
     }
     if (dueDate != null) {
-      $result.dueDate = dueDate;
+      _result.dueDate = dueDate;
     }
     if (notes != null) {
-      $result.notes = notes;
+      _result.notes = notes;
     }
-    return $result;
+    return _result;
   }
-  CreateInvoiceRequest._() : super();
   factory CreateInvoiceRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CreateInvoiceRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreateInvoiceRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<CustomerDetails>(2, _omitFieldNames ? '' : 'customerDetails', subBuilder: CustomerDetails.create)
-    ..pc<InvoiceItem>(3, _omitFieldNames ? '' : 'items', $pb.PbFieldType.PM, subBuilder: InvoiceItem.create)
-    ..a<$core.double>(4, _omitFieldNames ? '' : 'tax', $pb.PbFieldType.OD)
-    ..aOS(5, _omitFieldNames ? '' : 'currencyCode')
-    ..aOM<$16.Timestamp>(6, _omitFieldNames ? '' : 'dueDate', subBuilder: $16.Timestamp.create)
-    ..aOS(7, _omitFieldNames ? '' : 'notes')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -511,10 +492,8 @@ class CreateInvoiceRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CreateInvoiceRequest copyWith(void Function(CreateInvoiceRequest) updates) => super.copyWith((message) => updates(message as CreateInvoiceRequest)) as CreateInvoiceRequest;
-
+  CreateInvoiceRequest copyWith(void Function(CreateInvoiceRequest) updates) => super.copyWith((message) => updates(message as CreateInvoiceRequest)) as CreateInvoiceRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static CreateInvoiceRequest create() => CreateInvoiceRequest._();
   CreateInvoiceRequest createEmptyInstance() => create();
@@ -523,21 +502,19 @@ class CreateInvoiceRequest extends $pb.GeneratedMessage {
   static CreateInvoiceRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<CreateInvoiceRequest>(create);
   static CreateInvoiceRequest? _defaultInstance;
 
-  /// invoice_number can be auto-generated or provided
-  /// string invoice_number = 1 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {description: "Optional custom invoice number."}];
   @$pb.TagNumber(2)
   CustomerDetails get customerDetails => $_getN(0);
   @$pb.TagNumber(2)
-  set customerDetails(CustomerDetails v) { $_setField(2, v); }
+  set customerDetails(CustomerDetails v) { setField(2, v); }
   @$pb.TagNumber(2)
   $core.bool hasCustomerDetails() => $_has(0);
   @$pb.TagNumber(2)
-  void clearCustomerDetails() => $_clearField(2);
+  void clearCustomerDetails() => clearField(2);
   @$pb.TagNumber(2)
   CustomerDetails ensureCustomerDetails() => $_ensure(0);
 
   @$pb.TagNumber(3)
-  $pb.PbList<InvoiceItem> get items => $_getList(1);
+  $core.List<InvoiceItem> get items => $_getList(1);
 
   @$pb.TagNumber(4)
   $core.double get tax => $_getN(2);
@@ -546,7 +523,7 @@ class CreateInvoiceRequest extends $pb.GeneratedMessage {
   @$pb.TagNumber(4)
   $core.bool hasTax() => $_has(2);
   @$pb.TagNumber(4)
-  void clearTax() => $_clearField(4);
+  void clearTax() => clearField(4);
 
   @$pb.TagNumber(5)
   $core.String get currencyCode => $_getSZ(3);
@@ -555,18 +532,18 @@ class CreateInvoiceRequest extends $pb.GeneratedMessage {
   @$pb.TagNumber(5)
   $core.bool hasCurrencyCode() => $_has(3);
   @$pb.TagNumber(5)
-  void clearCurrencyCode() => $_clearField(5);
+  void clearCurrencyCode() => clearField(5);
 
   @$pb.TagNumber(6)
-  $16.Timestamp get dueDate => $_getN(4);
+  $17.Timestamp get dueDate => $_getN(4);
   @$pb.TagNumber(6)
-  set dueDate($16.Timestamp v) { $_setField(6, v); }
+  set dueDate($17.Timestamp v) { setField(6, v); }
   @$pb.TagNumber(6)
   $core.bool hasDueDate() => $_has(4);
   @$pb.TagNumber(6)
-  void clearDueDate() => $_clearField(6);
+  void clearDueDate() => clearField(6);
   @$pb.TagNumber(6)
-  $16.Timestamp ensureDueDate() => $_ensure(4);
+  $17.Timestamp ensureDueDate() => $_ensure(4);
 
   @$pb.TagNumber(7)
   $core.String get notes => $_getSZ(5);
@@ -575,29 +552,27 @@ class CreateInvoiceRequest extends $pb.GeneratedMessage {
   @$pb.TagNumber(7)
   $core.bool hasNotes() => $_has(5);
   @$pb.TagNumber(7)
-  void clearNotes() => $_clearField(7);
+  void clearNotes() => clearField(7);
 }
 
-/// Response after creating an invoice
 class CreateInvoiceResponse extends $pb.GeneratedMessage {
-  factory CreateInvoiceResponse({
-    Invoice? invoice,
-  }) {
-    final $result = create();
-    if (invoice != null) {
-      $result.invoice = invoice;
-    }
-    return $result;
-  }
-  CreateInvoiceResponse._() : super();
-  factory CreateInvoiceResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory CreateInvoiceResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreateInvoiceResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<Invoice>(1, _omitFieldNames ? '' : 'invoice', subBuilder: Invoice.create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CreateInvoiceResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOM<Invoice>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'invoice', subBuilder: Invoice.create)
     ..hasRequiredFields = false
   ;
 
+  CreateInvoiceResponse._() : super();
+  factory CreateInvoiceResponse({
+    Invoice? invoice,
+  }) {
+    final _result = create();
+    if (invoice != null) {
+      _result.invoice = invoice;
+    }
+    return _result;
+  }
+  factory CreateInvoiceResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory CreateInvoiceResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -607,10 +582,8 @@ class CreateInvoiceResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CreateInvoiceResponse copyWith(void Function(CreateInvoiceResponse) updates) => super.copyWith((message) => updates(message as CreateInvoiceResponse)) as CreateInvoiceResponse;
-
+  CreateInvoiceResponse copyWith(void Function(CreateInvoiceResponse) updates) => super.copyWith((message) => updates(message as CreateInvoiceResponse)) as CreateInvoiceResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static CreateInvoiceResponse create() => CreateInvoiceResponse._();
   CreateInvoiceResponse createEmptyInstance() => create();
@@ -622,35 +595,33 @@ class CreateInvoiceResponse extends $pb.GeneratedMessage {
   @$pb.TagNumber(1)
   Invoice get invoice => $_getN(0);
   @$pb.TagNumber(1)
-  set invoice(Invoice v) { $_setField(1, v); }
+  set invoice(Invoice v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasInvoice() => $_has(0);
   @$pb.TagNumber(1)
-  void clearInvoice() => $_clearField(1);
+  void clearInvoice() => clearField(1);
   @$pb.TagNumber(1)
   Invoice ensureInvoice() => $_ensure(0);
 }
 
-/// Request to get a specific invoice
 class GetInvoiceRequest extends $pb.GeneratedMessage {
-  factory GetInvoiceRequest({
-    $core.String? invoiceId,
-  }) {
-    final $result = create();
-    if (invoiceId != null) {
-      $result.invoiceId = invoiceId;
-    }
-    return $result;
-  }
-  GetInvoiceRequest._() : super();
-  factory GetInvoiceRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetInvoiceRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetInvoiceRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'invoiceId')
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetInvoiceRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'invoiceId')
     ..hasRequiredFields = false
   ;
 
+  GetInvoiceRequest._() : super();
+  factory GetInvoiceRequest({
+    $core.String? invoiceId,
+  }) {
+    final _result = create();
+    if (invoiceId != null) {
+      _result.invoiceId = invoiceId;
+    }
+    return _result;
+  }
+  factory GetInvoiceRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetInvoiceRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -660,10 +631,8 @@ class GetInvoiceRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetInvoiceRequest copyWith(void Function(GetInvoiceRequest) updates) => super.copyWith((message) => updates(message as GetInvoiceRequest)) as GetInvoiceRequest;
-
+  GetInvoiceRequest copyWith(void Function(GetInvoiceRequest) updates) => super.copyWith((message) => updates(message as GetInvoiceRequest)) as GetInvoiceRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetInvoiceRequest create() => GetInvoiceRequest._();
   GetInvoiceRequest createEmptyInstance() => create();
@@ -679,39 +648,37 @@ class GetInvoiceRequest extends $pb.GeneratedMessage {
   @$pb.TagNumber(1)
   $core.bool hasInvoiceId() => $_has(0);
   @$pb.TagNumber(1)
-  void clearInvoiceId() => $_clearField(1);
+  void clearInvoiceId() => clearField(1);
 }
 
-/// Request to list invoices for the authenticated user
 class ListInvoicesRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ListInvoicesRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..a<$core.int>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pageSize', $pb.PbFieldType.O3)
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pageToken')
+    ..e<InvoiceStatus>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'statusFilter', $pb.PbFieldType.OE, defaultOrMaker: InvoiceStatus.DRAFT, valueOf: InvoiceStatus.valueOf, enumValues: InvoiceStatus.values)
+    ..hasRequiredFields = false
+  ;
+
+  ListInvoicesRequest._() : super();
   factory ListInvoicesRequest({
     $core.int? pageSize,
     $core.String? pageToken,
     InvoiceStatus? statusFilter,
   }) {
-    final $result = create();
+    final _result = create();
     if (pageSize != null) {
-      $result.pageSize = pageSize;
+      _result.pageSize = pageSize;
     }
     if (pageToken != null) {
-      $result.pageToken = pageToken;
+      _result.pageToken = pageToken;
     }
     if (statusFilter != null) {
-      $result.statusFilter = statusFilter;
+      _result.statusFilter = statusFilter;
     }
-    return $result;
+    return _result;
   }
-  ListInvoicesRequest._() : super();
   factory ListInvoicesRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ListInvoicesRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ListInvoicesRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..a<$core.int>(1, _omitFieldNames ? '' : 'pageSize', $pb.PbFieldType.O3)
-    ..aOS(2, _omitFieldNames ? '' : 'pageToken')
-    ..e<InvoiceStatus>(3, _omitFieldNames ? '' : 'statusFilter', $pb.PbFieldType.OE, defaultOrMaker: InvoiceStatus.DRAFT, valueOf: InvoiceStatus.valueOf, enumValues: InvoiceStatus.values)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -721,10 +688,8 @@ class ListInvoicesRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ListInvoicesRequest copyWith(void Function(ListInvoicesRequest) updates) => super.copyWith((message) => updates(message as ListInvoicesRequest)) as ListInvoicesRequest;
-
+  ListInvoicesRequest copyWith(void Function(ListInvoicesRequest) updates) => super.copyWith((message) => updates(message as ListInvoicesRequest)) as ListInvoicesRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static ListInvoicesRequest create() => ListInvoicesRequest._();
   ListInvoicesRequest createEmptyInstance() => create();
@@ -740,7 +705,7 @@ class ListInvoicesRequest extends $pb.GeneratedMessage {
   @$pb.TagNumber(1)
   $core.bool hasPageSize() => $_has(0);
   @$pb.TagNumber(1)
-  void clearPageSize() => $_clearField(1);
+  void clearPageSize() => clearField(1);
 
   @$pb.TagNumber(2)
   $core.String get pageToken => $_getSZ(1);
@@ -749,43 +714,41 @@ class ListInvoicesRequest extends $pb.GeneratedMessage {
   @$pb.TagNumber(2)
   $core.bool hasPageToken() => $_has(1);
   @$pb.TagNumber(2)
-  void clearPageToken() => $_clearField(2);
+  void clearPageToken() => clearField(2);
 
   @$pb.TagNumber(3)
   InvoiceStatus get statusFilter => $_getN(2);
   @$pb.TagNumber(3)
-  set statusFilter(InvoiceStatus v) { $_setField(3, v); }
+  set statusFilter(InvoiceStatus v) { setField(3, v); }
   @$pb.TagNumber(3)
   $core.bool hasStatusFilter() => $_has(2);
   @$pb.TagNumber(3)
-  void clearStatusFilter() => $_clearField(3);
+  void clearStatusFilter() => clearField(3);
 }
 
-/// Response containing a list of invoices
 class ListInvoicesResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ListInvoicesResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..pc<Invoice>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'invoices', $pb.PbFieldType.PM, subBuilder: Invoice.create)
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'nextPageToken')
+    ..hasRequiredFields = false
+  ;
+
+  ListInvoicesResponse._() : super();
   factory ListInvoicesResponse({
     $core.Iterable<Invoice>? invoices,
     $core.String? nextPageToken,
   }) {
-    final $result = create();
+    final _result = create();
     if (invoices != null) {
-      $result.invoices.addAll(invoices);
+      _result.invoices.addAll(invoices);
     }
     if (nextPageToken != null) {
-      $result.nextPageToken = nextPageToken;
+      _result.nextPageToken = nextPageToken;
     }
-    return $result;
+    return _result;
   }
-  ListInvoicesResponse._() : super();
   factory ListInvoicesResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ListInvoicesResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ListInvoicesResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..pc<Invoice>(1, _omitFieldNames ? '' : 'invoices', $pb.PbFieldType.PM, subBuilder: Invoice.create)
-    ..aOS(2, _omitFieldNames ? '' : 'nextPageToken')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -795,10 +758,8 @@ class ListInvoicesResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ListInvoicesResponse copyWith(void Function(ListInvoicesResponse) updates) => super.copyWith((message) => updates(message as ListInvoicesResponse)) as ListInvoicesResponse;
-
+  ListInvoicesResponse copyWith(void Function(ListInvoicesResponse) updates) => super.copyWith((message) => updates(message as ListInvoicesResponse)) as ListInvoicesResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static ListInvoicesResponse create() => ListInvoicesResponse._();
   ListInvoicesResponse createEmptyInstance() => create();
@@ -808,7 +769,7 @@ class ListInvoicesResponse extends $pb.GeneratedMessage {
   static ListInvoicesResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $pb.PbList<Invoice> get invoices => $_getList(0);
+  $core.List<Invoice> get invoices => $_getList(0);
 
   @$pb.TagNumber(2)
   $core.String get nextPageToken => $_getSZ(1);
@@ -817,9 +778,6 @@ class ListInvoicesResponse extends $pb.GeneratedMessage {
   @$pb.TagNumber(2)
   $core.bool hasNextPageToken() => $_has(1);
   @$pb.TagNumber(2)
-  void clearNextPageToken() => $_clearField(2);
+  void clearNextPageToken() => clearField(2);
 }
 
-
-const _omitFieldNames = $core.bool.fromEnvironment('protobuf.omit_field_names');
-const _omitMessageNames = $core.bool.fromEnvironment('protobuf.omit_message_names');

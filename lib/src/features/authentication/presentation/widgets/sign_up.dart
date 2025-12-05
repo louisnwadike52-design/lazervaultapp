@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart'; // Import intl for date formatting
+import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/utilities/responsive_controller.dart';
 import 'package:lazervault/src/features/widgets/build_form_field.dart';
@@ -73,17 +74,7 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
       listener: (context, state) {
         // Use object destructuring within the listener
         switch (state) {
-          case SignUpInProgress(errorMessage: final msg?): // Destructure and check non-null error
-             Get.snackbar(
-                  'Sign Up Error',
-                  msg,
-                  snackPosition: SnackPosition.TOP,
-                  backgroundColor: Colors.redAccent,
-                  colorText: Colors.white,
-                  margin: EdgeInsets.all(15.w),
-                  borderRadius: 10.r,
-              );
-            break;
+          // Removed duplicate error snackbar - cubit already shows errors via _showErrorSnackbar
            case SignUpInProgress(currentPage: final pageNum): // Destructure page number
              // Handle page changes triggered by cubit state update
              if (_pageController.hasClients && _pageController.page?.round() != pageNum) {
@@ -107,6 +98,13 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
             // IMPORTANT: Ensure the Cubit emits SignUpInProgress state with previous
             // fullName, selectedDate, and phoneNumber after this error to prevent fields clearing.
             break;
+          case AuthenticationSuccess(profile: var profile):
+            // Signup successful, navigate to email verification screen
+            final email = profile.user.email;
+            Get.offAllNamed(
+              '${AppRoutes.emailVerification}?email=$email',
+            );
+            break;
           case UserCreated(): // Handle successful user creation
             Get.snackbar(
               'Success',
@@ -120,7 +118,7 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
             // Navigate after success - Fields should clear implicitly as state changes
             // Get.offAllNamed(AppRoutes.signIn);
             // Navigate to Dashboard and clear previous routes
-            Get.offAllNamed(AppRoutes.dashboard); 
+            Get.offAllNamed(AppRoutes.dashboard);
             break;
           default:
              // Handle other states or do nothing
@@ -202,20 +200,19 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
                                 fontSize: 16.0.sp,
                                 fontWeight: FontWeight.w500,
                                 color: Colors.black54)),
-                        SizedBox(height: 42.0.h),
+                        SizedBox(height: 20.0.h),
                         SizedBox(
-                          // Adjusted height to potentially accommodate the new field
-                          height: _responsiveController.isMobile ? 280.0.h : 450.0.h,
+                          height: _responsiveController.isMobile ? 350.0.h : 500.0.h,
                           child: PageView(
                             controller: _pageController,
                             physics: const NeverScrollableScrollPhysics(),
                             children: [
                               _buildPageOne(context, initialEmail: initialEmail),
-                              _buildPageTwo(context, initialFirstName: firstName, initialLastName: lastName, selectedDate: selectedDate, initialPhoneNumber: phoneNumber), 
+                              _buildPageTwo(context, initialFirstName: firstName, initialLastName: lastName, selectedDate: selectedDate, initialPhoneNumber: phoneNumber),
                             ],
                           ),
                         ),
-                        SizedBox(height: 16.0.h),
+                        SizedBox(height: 8.0.h),
                         // --- Navigation Button ---
                         displayLoading // Use combined loading state
                             ? const Center(child: CircularProgressIndicator())
@@ -299,42 +296,131 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
 
   // Helper method for Page 1 content
   Widget _buildPageOne(BuildContext context, {String? initialEmail}) {
-    return Column(
-      children: [
-        BuildFormField(
-          name: "email",
-          placeholder: "Email",
-          keyboardType: TextInputType.emailAddress,
-          prefixIcon: const Icon(Icons.email, color: Colors.black45),
-          initialValue: initialEmail, // Pass initial value if needed
-          onChanged: (value) => context.read<AuthenticationCubit>().signUpEmailChanged(value),
-        ),
-        SizedBox(height: 8.0.h),
-        BuildFormField(
-          name: "password",
-          placeholder: "Password",
-          obscureText: true,
-          prefixIcon: const Icon(Icons.lock, color: Colors.black45),
-          // No initial value needed for password fields generally
-          onChanged: (value) => context.read<AuthenticationCubit>().signUpPasswordChanged(value),
-        ),
-        SizedBox(height: 8.0.h),
-        BuildFormField(
-          name: "confirmPassword",
-          placeholder: "Confirm password",
-          obscureText: true,
-          prefixIcon: const Icon(Icons.lock, color: Colors.black45),
-          onChanged: (value) => context.read<AuthenticationCubit>().signUpConfirmPasswordChanged(value),
-        ),
-      ],
+    return BlocBuilder<AuthenticationCubit, AuthenticationState>(
+      builder: (context, state) {
+        final password = state is SignUpInProgress ? state.password : '';
+        final confirmPassword = state is SignUpInProgress ? state.confirmPassword : '';
+
+        // Password validation checks
+        final hasMinLength = password.length >= 8;
+        final hasUppercase = RegExp(r'[A-Z]').hasMatch(password);
+        final hasLowercase = RegExp(r'[a-z]').hasMatch(password);
+        final hasDigit = RegExp(r'[0-9]').hasMatch(password);
+        final hasSpecialChar = RegExp(r'[!@#$%^&*(),.?":{}|<>_\-+=\[\]\\\/;`~]').hasMatch(password);
+        final passwordsMatch = password.isNotEmpty && confirmPassword.isNotEmpty && password == confirmPassword;
+
+        // Show indicators only if user has started typing
+        final showPasswordIndicators = password.isNotEmpty;
+        final showConfirmPasswordIndicator = confirmPassword.isNotEmpty;
+
+        // All password requirements met
+        final allPasswordRequirementsMet = hasMinLength && hasUppercase && hasLowercase && hasDigit && hasSpecialChar;
+
+        return SingleChildScrollView(
+          physics: const NeverScrollableScrollPhysics(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              BuildFormField(
+              name: "email",
+              placeholder: "Email",
+              keyboardType: TextInputType.emailAddress,
+              prefixIcon: const Icon(Icons.email, color: Colors.black45),
+              initialValue: initialEmail,
+              onChanged: (value) => context.read<AuthenticationCubit>().signUpEmailChanged(value),
+            ),
+            SizedBox(height: 8.0.h),
+            BuildFormField(
+              name: "password",
+              placeholder: "Password",
+              obscureText: true,
+              prefixIcon: const Icon(Icons.lock, color: Colors.black45),
+              onChanged: (value) => context.read<AuthenticationCubit>().signUpPasswordChanged(value),
+            ),
+            // Password validation indicators
+            if (showPasswordIndicators && !allPasswordRequirementsMet) ...[
+              SizedBox(height: 8.0.h),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 4.0.w),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildPasswordRequirement('At least 8 characters', hasMinLength),
+                    _buildPasswordRequirement('One uppercase letter', hasUppercase),
+                    _buildPasswordRequirement('One lowercase letter', hasLowercase),
+                    _buildPasswordRequirement('One number', hasDigit),
+                    _buildPasswordRequirement('One special character', hasSpecialChar),
+                  ],
+                ),
+              ),
+            ],
+            SizedBox(height: 8.0.h),
+            BuildFormField(
+              name: "confirmPassword",
+              placeholder: "Confirm password",
+              obscureText: true,
+              prefixIcon: const Icon(Icons.lock, color: Colors.black45),
+              onChanged: (value) => context.read<AuthenticationCubit>().signUpConfirmPasswordChanged(value),
+            ),
+            // Confirm password match indicator
+            if (showConfirmPasswordIndicator && !passwordsMatch) ...[
+              SizedBox(height: 4.0.h),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 4.0.w),
+                child: Row(
+                  children: [
+                    Icon(Icons.close, size: 14.sp, color: Colors.red),
+                    SizedBox(width: 4.w),
+                    Text(
+                      'Passwords do not match',
+                      style: TextStyle(
+                        fontSize: 12.sp,
+                        color: Colors.red,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ],
+          ),
+        );
+      },
+    );
+  }
+
+  // Helper widget for password requirement indicator
+  Widget _buildPasswordRequirement(String text, bool isMet) {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 2.0.h),
+      child: Row(
+        children: [
+          Icon(
+            isMet ? Icons.check_circle : Icons.cancel,
+            size: 14.sp,
+            color: isMet ? Colors.green : Colors.red,
+          ),
+          SizedBox(width: 6.w),
+          Text(
+            text,
+            style: TextStyle(
+              fontSize: 12.sp,
+              color: isMet ? Colors.green : Colors.red,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
   // Helper method for Page 2 content
   // Linter Fix: Accept firstName, lastName instead of fullName
   Widget _buildPageTwo(BuildContext context, {String? initialFirstName, String? initialLastName, DateTime? selectedDate, String? initialPhoneNumber}) {
-    return Column(
-      children: [
+    return SingleChildScrollView(
+      physics: const NeverScrollableScrollPhysics(),
+      child: Column(
+        children: [
         // Linter Fix: Separate First Name field
         BuildFormField(
           name: "firstname",
@@ -369,19 +455,33 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
                 ),
               ),
             ),
-        SizedBox(height: 8.0.h), 
-        // Phone Number Field
-        BuildFormField(
-          name: "phoneNumber",
-          placeholder: "Phone Number (e.g., +1234567890)",
-          keyboardType: TextInputType.phone,
-          prefixIcon: const Icon(Icons.phone, color: Colors.black45),
-          initialValue: initialPhoneNumber,
-          onChanged: (value) {
-            context.read<AuthenticationCubit>().signUpPhoneNumberChanged(value);
+        SizedBox(height: 8.0.h),
+        // Phone Number Field with Country Code
+        IntlPhoneField(
+          decoration: InputDecoration(
+            labelText: 'Phone Number',
+            hintText: 'Enter your phone number',
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8.0),
+              borderSide: const BorderSide(color: Colors.grey),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8.0),
+              borderSide: const BorderSide(color: Colors.grey),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8.0),
+              borderSide: const BorderSide(color: Colors.blue, width: 2.0),
+            ),
+          ),
+          initialCountryCode: 'US', // Default country code
+          onChanged: (phone) {
+            // Store complete phone number with country code in E.164 format
+            context.read<AuthenticationCubit>().signUpPhoneNumberChanged(phone.completeNumber);
           },
         ),
       ],
+      ),
     );
   }
 

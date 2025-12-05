@@ -1,10 +1,14 @@
 import 'package:get_it/get_it.dart';
 import 'package:grpc/grpc.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:lazervault/core/services/grpc_call_options_helper.dart';
 import 'package:lazervault/core/types/electricity_bill_details.dart';
 import 'package:lazervault/core/types/recipient.dart' as core_recipient;
 import 'package:lazervault/core/types/transaction.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
+import 'package:lazervault/src/features/authentication/cubit/email_verification_cubit.dart';
+import 'package:lazervault/src/features/authentication/cubit/face_verification_cubit.dart';
 import 'package:lazervault/src/features/authentication/data/repositories/auth_repository.dart';
 import 'package:lazervault/src/features/authentication/domain/entities/user.dart';
 import 'package:lazervault/src/features/authentication/domain/repositories/i_auth_repository.dart';
@@ -12,6 +16,15 @@ import 'package:lazervault/src/features/authentication/domain/usecases/login_use
 import 'package:lazervault/src/features/authentication/domain/usecases/sign_in_with_apple_usecase.dart';
 import 'package:lazervault/src/features/authentication/domain/usecases/sign_in_with_google_usecase.dart';
 import 'package:lazervault/src/features/authentication/domain/usecases/sign_up_usecase.dart';
+import 'package:lazervault/src/features/authentication/domain/usecases/forgot_password_usecase.dart';
+import 'package:lazervault/src/features/authentication/domain/usecases/verify_email_usecase.dart';
+import 'package:lazervault/src/features/authentication/domain/usecases/resend_verification_usecase.dart';
+import 'package:lazervault/src/features/authentication/domain/usecases/reset_password_usecase.dart';
+import 'package:lazervault/src/features/authentication/domain/usecases/check_email_availability_usecase.dart';
+import 'package:lazervault/src/features/authentication/domain/usecases/register_face_usecase.dart';
+import 'package:lazervault/src/features/authentication/domain/usecases/verify_face_usecase.dart';
+import 'package:lazervault/src/features/authentication/data/repositories/face_recognition_repository.dart';
+import 'package:lazervault/src/features/authentication/domain/repositories/i_face_recognition_repository.dart';
 import 'package:lazervault/src/features/authentication/presentation/views/email_sign_in_screen.dart';
 import 'package:lazervault/src/features/funds/cubit/withdrawal_cubit.dart';
 import 'package:lazervault/src/features/recipients/data/models/recipient_model.dart';
@@ -32,6 +45,7 @@ import 'package:lazervault/src/generated/transfer.pbgrpc.dart' hide TransferTran
 import 'package:lazervault/src/generated/user.pbgrpc.dart';
 import 'package:lazervault/src/generated/auth.pbgrpc.dart';
 import 'package:lazervault/src/generated/deposit.pbgrpc.dart';
+import 'package:lazervault/src/generated/facial_recognition.pbgrpc.dart';
 import 'package:lazervault/src/features/presentation/views/cb_currency_exchange/cb_currency_exchange_screen.dart';
 import 'package:lazervault/src/features/presentation/views/cb_currency_exchange/currency_deposit_screen.dart';
 import 'package:lazervault/src/features/presentation/views/change_pin_screen.dart';
@@ -206,14 +220,24 @@ Future<void> init() async {
   // ================== External / gRPC / HTTP ==================
   serviceLocator.registerLazySingleton(http.Client.new);
 
+  // Register FlutterSecureStorage
+  serviceLocator.registerLazySingleton<FlutterSecureStorage>(
+    () => const FlutterSecureStorage(),
+  );
+
+  // Register gRPC Call Options Helper
+  serviceLocator.registerLazySingleton<GrpcCallOptionsHelper>(
+    () => GrpcCallOptionsHelper(serviceLocator<FlutterSecureStorage>()),
+  );
+
   serviceLocator.registerLazySingleton<ClientChannel>(() {
-    final host = dotenv.env['GRPC_API_HOST'] ?? (throw Exception('GRPC_API_HOST environment variable is not set. For Android emulator, use http://10.0.2.2:7878')); 
+    final host = dotenv.env['GRPC_API_HOST'] ?? (throw Exception('GRPC_API_HOST environment variable is not set. For Android emulator, use http://10.0.2.2:7878'));
     final port = int.parse(dotenv.env['GRPC_API_PORT'] ?? (throw Exception('GRPC_API_PORT environment variable is not set')));
-    
+
     // Extract host without protocol
     final uri = Uri.parse(host);
     final cleanHost = uri.host;
-    
+
     print("Creating gRPC Channel to $cleanHost:$port");
     return ClientChannel(
       cleanHost,
@@ -249,12 +273,16 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton<AIChatServiceClient>(
     () => AIChatServiceClient(serviceLocator<ClientChannel>()),
   );
+  serviceLocator.registerLazySingleton<FacialRecognitionServiceClient>(
+    () => FacialRecognitionServiceClient(serviceLocator<ClientChannel>()),
+  );
 
 
   // ================== Feature: Authentication ==================
 
   // Data Sources
-  serviceLocator.registerLazySingleton<AuthenticationRemoteDataSource>(
+  serviceLocator.registerLazySingleton
+  <AuthenticationRemoteDataSource>(
       () => AuthenticationRemoteDataSourceImpl(serviceLocator<http.Client>()));
 
   // Repositories
@@ -262,6 +290,13 @@ Future<void> init() async {
       () => AuthRepositoryImpl(
           userServiceClient: serviceLocator<UserServiceClient>(),
           authServiceClient: serviceLocator<AuthServiceClient>(),
+          callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
+        ));
+
+  serviceLocator.registerLazySingleton<IFaceRecognitionRepository>(
+      () => FaceRecognitionRepositoryImpl(
+          facialRecognitionServiceClient: serviceLocator<FacialRecognitionServiceClient>(),
+          callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
         ));
 
   // Use Cases
@@ -269,6 +304,13 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton(() => LoginUseCase(serviceLocator<IAuthRepository>()));
   serviceLocator.registerLazySingleton(() => SignInWithGoogleUseCase(serviceLocator<IAuthRepository>()));
   serviceLocator.registerLazySingleton(() => SignInWithAppleUseCase(serviceLocator<IAuthRepository>()));
+  serviceLocator.registerLazySingleton(() => ForgotPasswordUseCase(serviceLocator<IAuthRepository>()));
+  serviceLocator.registerLazySingleton(() => VerifyEmailUseCase(serviceLocator<IAuthRepository>()));
+  serviceLocator.registerLazySingleton(() => ResendVerificationUseCase(serviceLocator<IAuthRepository>()));
+  serviceLocator.registerLazySingleton(() => ResetPasswordUseCase(serviceLocator<IAuthRepository>()));
+  serviceLocator.registerLazySingleton(() => CheckEmailAvailabilityUseCase(serviceLocator<IAuthRepository>()));
+  serviceLocator.registerLazySingleton(() => RegisterFaceUseCase(serviceLocator<IFaceRecognitionRepository>()));
+  serviceLocator.registerLazySingleton(() => VerifyFaceUseCase(serviceLocator<IFaceRecognitionRepository>()));
 
   // Blocs/Cubits
   serviceLocator.registerFactory(() => AuthenticationCubit(
@@ -276,6 +318,20 @@ Future<void> init() async {
         signUp: serviceLocator<SignUpUseCase>(),
         signInWithGoogle: serviceLocator<SignInWithGoogleUseCase>(),
         signInWithApple: serviceLocator<SignInWithAppleUseCase>(),
+        forgotPassword: serviceLocator<ForgotPasswordUseCase>(),
+        verifyEmail: serviceLocator<VerifyEmailUseCase>(),
+        resendVerification: serviceLocator<ResendVerificationUseCase>(),
+        checkEmailAvailability: serviceLocator<CheckEmailAvailabilityUseCase>(),
+      ));
+
+  serviceLocator.registerFactory(() => FaceVerificationCubit(
+        registerFace: serviceLocator<RegisterFaceUseCase>(),
+        verifyFace: serviceLocator<VerifyFaceUseCase>(),
+      ));
+
+  serviceLocator.registerFactory(() => EmailVerificationCubit(
+        verifyEmailUseCase: serviceLocator<VerifyEmailUseCase>(),
+        resendVerificationUseCase: serviceLocator<ResendVerificationUseCase>(),
       ));
 
 
@@ -283,7 +339,10 @@ Future<void> init() async {
 
   // Repositories
   serviceLocator.registerLazySingleton<IAccountSummaryRepository>(
-      () => AccountSummaryRepositoryImpl(serviceLocator<AccountServiceClient>()));
+      () => AccountSummaryRepositoryImpl(
+        serviceLocator<AccountServiceClient>(),
+        serviceLocator<GrpcCallOptionsHelper>(),
+      ));
 
   // Use Cases
   serviceLocator.registerLazySingleton(() => GetAccountSummariesUseCase(serviceLocator<IAccountSummaryRepository>()));
@@ -296,7 +355,10 @@ Future<void> init() async {
 
   // Repositories
   serviceLocator.registerLazySingleton<IRecipientRepository>(
-    () => RecipientRepositoryImpl(serviceLocator<RecipientServiceClient>()),
+    () => RecipientRepositoryImpl(
+      serviceLocator<RecipientServiceClient>(),
+      serviceLocator<GrpcCallOptionsHelper>(),
+    ),
   );
 
   // Use Cases
@@ -316,7 +378,10 @@ Future<void> init() async {
 
   // Repositories
   serviceLocator.registerLazySingleton<IDepositRepository>(
-      () => DepositRepositoryImpl(serviceLocator<DepositServiceClient>()));
+      () => DepositRepositoryImpl(
+        serviceLocator<DepositServiceClient>(),
+        serviceLocator<GrpcCallOptionsHelper>(),
+      ));
 
   // Use Cases
   serviceLocator.registerLazySingleton(() => InitiateDepositUseCase(serviceLocator<IDepositRepository>()));
@@ -329,7 +394,10 @@ Future<void> init() async {
 
   // Repositories
   serviceLocator.registerLazySingleton<IWithdrawalRepository>(
-      () => WithdrawalRepositoryImpl(serviceLocator<WithdrawServiceClient>()));
+      () => WithdrawalRepositoryImpl(
+        serviceLocator<WithdrawServiceClient>(),
+        serviceLocator<GrpcCallOptionsHelper>(),
+      ));
 
   // Use Cases
   serviceLocator.registerLazySingleton(() => InitiateWithdrawalUseCase(serviceLocator<IWithdrawalRepository>()));
@@ -342,7 +410,10 @@ Future<void> init() async {
 
   // Data Sources
   serviceLocator.registerLazySingleton<ITransferRemoteDataSource>(
-    () => TransferRemoteDataSourceImpl(serviceLocator<TransferServiceClient>()),
+    () => TransferRemoteDataSourceImpl(
+      serviceLocator<TransferServiceClient>(),
+      serviceLocator<GrpcCallOptionsHelper>(),
+    ),
   );
 
   // Repositories
@@ -386,7 +457,10 @@ Future<void> init() async {
 
   // Data Sources
   serviceLocator.registerLazySingleton<IAiChatDataSource>(
-    () => GrpcAiChatDataSource(client: serviceLocator<AIChatServiceClient>()),
+    () => GrpcAiChatDataSource(
+      client: serviceLocator<AIChatServiceClient>(),
+      callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
+    ),
   );
 
   // Repositories
