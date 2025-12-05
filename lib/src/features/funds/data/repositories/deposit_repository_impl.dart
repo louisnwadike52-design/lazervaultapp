@@ -2,6 +2,7 @@ import 'package:dartz/dartz.dart';
 import 'package:fixnum/fixnum.dart';
 import 'package:grpc/grpc.dart';
 import 'package:lazervault/core/error/failure.dart';
+import 'package:lazervault/core/services/grpc_call_options_helper.dart';
 import 'package:lazervault/src/features/funds/data/models/deposit_model.dart';
 import 'package:lazervault/src/features/funds/domain/entities/deposit_entity.dart';
 import 'package:lazervault/src/features/funds/domain/repositories/i_deposit_repository.dart';
@@ -10,8 +11,12 @@ import 'package:lazervault/src/generated/deposit.pbgrpc.dart';
 
 class DepositRepositoryImpl implements IDepositRepository {
   final DepositServiceClient _depositServiceClient;
+  final GrpcCallOptionsHelper _callOptionsHelper;
 
-  DepositRepositoryImpl(this._depositServiceClient);
+  DepositRepositoryImpl(
+    this._depositServiceClient,
+    this._callOptionsHelper,
+  );
 
   @override
   Future<Either<Failure, DepositDetails>> initiateDeposit({
@@ -25,7 +30,7 @@ class DepositRepositoryImpl implements IDepositRepository {
       final amountMinorUnits = Int64((amount * 100).round());
 
       print('DepositRepository: Preparing request with targetAccountId: $targetAccountId, amount: $amount, currency: $currency, sourceBankName: $sourceBankName');
-      
+
       final request = req_resp.InitiateDepositRequest(
         targetAccountId: Int64(targetAccountId),
         amount: amountMinorUnits,
@@ -33,23 +38,12 @@ class DepositRepositoryImpl implements IDepositRepository {
         sourceBankName: sourceBankName,
       );
 
-      CallOptions? callOptions;
-      if (accessToken != null && accessToken.isNotEmpty) {
-        callOptions = CallOptions(
-          metadata: {
-            'authorization': 'Bearer $accessToken',
-          },
-        );
-        print('DepositRepository: Using authorization token for deposit request: ${accessToken.substring(0, 10)}...');
-      } else {
-        print('DepositRepository: WARNING - No authorization token provided for deposit request');
-      }
+      // Use helper to get call options with authorization header from secure storage
+      final callOptions = await _callOptionsHelper.withAuth();
 
       print('DepositRepository: Sending gRPC InitiateDeposit Request: $request');
-      
-      final response = callOptions != null
-          ? await _depositServiceClient.initiateDeposit(request, options: callOptions)
-          : await _depositServiceClient.initiateDeposit(request);
+
+      final response = await _depositServiceClient.initiateDeposit(request, options: callOptions);
 
       print('DepositRepository: gRPC InitiateDeposit Response received: ${response.message} with status ${response.status.name}, depositId: ${response.depositId}');
 

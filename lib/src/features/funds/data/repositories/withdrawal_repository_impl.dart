@@ -1,6 +1,7 @@
 import 'package:dartz/dartz.dart';
 import 'package:fixnum/fixnum.dart';
 import 'package:grpc/grpc.dart';
+import 'package:lazervault/core/services/grpc_call_options_helper.dart';
 import 'package:lazervault/core/error/failure.dart';
 import 'package:lazervault/src/features/funds/data/models/withdrawal_model.dart';
 import 'package:lazervault/src/features/funds/domain/entities/withdrawal_entity.dart';
@@ -10,8 +11,12 @@ import 'package:lazervault/src/generated/withdraw.pbgrpc.dart';
 
 class WithdrawalRepositoryImpl implements IWithdrawalRepository {
   final WithdrawServiceClient _withdrawServiceClient;
+  final GrpcCallOptionsHelper _callOptionsHelper;
 
-  WithdrawalRepositoryImpl(this._withdrawServiceClient);
+  WithdrawalRepositoryImpl(
+    this._withdrawServiceClient,
+    this._callOptionsHelper,
+  );
 
   @override
   Future<Either<Failure, WithdrawalDetails>> initiateWithdrawal({
@@ -37,23 +42,12 @@ class WithdrawalRepositoryImpl implements IWithdrawalRepository {
         targetSortCode: targetSortCode,
       );
 
-      CallOptions? callOptions;
-      if (accessToken != null && accessToken.isNotEmpty) {
-        callOptions = CallOptions(
-          metadata: {
-            'authorization': 'Bearer $accessToken',
-          },
-        );
-        print('WithdrawalRepository: Using authorization token for withdrawal request: ${accessToken.substring(0, 10)}...');
-      } else {
-        print('WithdrawalRepository: WARNING - No authorization token provided for withdrawal request');
-      }
+      // Use helper to get call options with authorization header from secure storage
+      final callOptions = await _callOptionsHelper.withAuth();
 
       print('WithdrawalRepository: Sending gRPC InitiateWithdrawal Request: $request');
-      
-      final response = callOptions != null
-          ? await _withdrawServiceClient.initiateWithdrawal(request, options: callOptions)
-          : await _withdrawServiceClient.initiateWithdrawal(request);
+
+      final response = await _withdrawServiceClient.initiateWithdrawal(request, options: callOptions);
 
       print('WithdrawalRepository: gRPC InitiateWithdrawal Response received: ${response.message} with status ${response.status.name}, withdrawalId: ${response.withdrawalId}');
 

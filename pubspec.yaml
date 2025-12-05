@@ -85,7 +85,7 @@ dependencies:
   sign_in_with_apple: ^7.0.1
   protobuf: ^4.0.0
   fixnum: ^1.1.1
-  grpc: ^4.0.4
+  grpc: 4.0.0
   fpdart: ^1.1.0
   injectable: ^2.3.2
   connectivity_plus: ^6.1.4
@@ -101,6 +101,7 @@ dependencies:
   country_flags: ^3.3.0
   hive: ^2.2.3
   hive_flutter: ^1.1.0
+  intl_phone_field: ^3.2.0
 
 dev_dependencies:
   flutter_test:

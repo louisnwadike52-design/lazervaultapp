@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:grpc/grpc.dart';
 import 'package:dartz/dartz.dart';
 import 'package:lazervault/core/error/failure.dart';
+import 'package:lazervault/core/services/grpc_call_options_helper.dart';
 import 'package:lazervault/src/features/authentication/data/models/profile_model.dart';
 import 'package:lazervault/src/features/authentication/data/models/session_model.dart';
 import 'package:lazervault/src/features/authentication/data/models/user_model.dart';
@@ -20,13 +21,16 @@ import 'package:lazervault/src/generated/user.pb.dart' as user_req_resp;
 class AuthRepositoryImpl implements IAuthRepository {
   final UserServiceClient _userServiceClient;
   final AuthServiceClient _authServiceClient;
+  final GrpcCallOptionsHelper _callOptionsHelper;
   // final GoogleSignIn _googleSignIn = GoogleSignIn(); // Uncomment if using Google Sign In
 
   AuthRepositoryImpl({
     required UserServiceClient userServiceClient,
     required AuthServiceClient authServiceClient,
+    required GrpcCallOptionsHelper callOptionsHelper,
   })  : _userServiceClient = userServiceClient,
-        _authServiceClient = authServiceClient;
+        _authServiceClient = authServiceClient,
+        _callOptionsHelper = callOptionsHelper;
 
   Future<Either<Failure, ProfileEntity>> _processAuthResponse(
       Future<auth_req_resp.LoginResponse> Function() action) async {
@@ -88,18 +92,32 @@ class AuthRepositoryImpl implements IAuthRepository {
       print('Sending gRPC CreateUser request...');
       final createUserResponse = await _userServiceClient.createUser(createUserRequest);
 
-      if (!createUserResponse.success) { 
+      if (!createUserResponse.success) {
          print('gRPC CreateUser failed (success=false)');
-         String errorMessage = 'Signup failed during user creation.'; 
+         String errorMessage = createUserResponse.message.isNotEmpty
+             ? createUserResponse.message
+             : 'Signup failed during user creation.';
         return Left(ServerFailure(message: errorMessage, statusCode: 500));
       }
-      if (!createUserResponse.hasData() || !createUserResponse.data.hasUser()){
-        print('gRPC CreateUser succeeded but returned no user data.');
-        return Left(ServerFailure(message: 'Signup partially failed (no user data).', statusCode: 500));
+
+      // Verify response has complete data (user and session)
+      if (!createUserResponse.hasData() ||
+          !createUserResponse.data.hasUser() ||
+          !createUserResponse.data.hasSession()) {
+        print('gRPC CreateUser succeeded but returned incomplete data.');
+        return Left(ServerFailure(
+          message: 'Signup partially failed (incomplete response data).',
+          statusCode: 500
+        ));
       }
 
-      print('gRPC CreateUser successful. Proceeding to login...');
-      return await login(email: email, password: password); 
+      // CreateUser endpoint already returns session data, no need to call login
+      print('gRPC CreateUser successful. User created and logged in.');
+      final userModel = UserModel.fromProto(createUserResponse.data.user);
+      final sessionModel = SessionModel.fromProto(createUserResponse.data.session);
+      final profileModel = ProfileModel(user: userModel, session: sessionModel);
+
+      return Right(profileModel);
 
     } on GrpcError catch (e) {
       print('gRPC Error during signUp (CreateUser step): ${e.codeName} - ${e.message}');
@@ -119,14 +137,206 @@ class AuthRepositoryImpl implements IAuthRepository {
   @override
   Future<Either<Failure, ProfileEntity>> signInWithGoogle() async {
     print('signInWithGoogle called - NOT IMPLEMENTED');
-    await Future.delayed(const Duration(milliseconds: 50)); 
+    await Future.delayed(const Duration(milliseconds: 50));
     return Left(ServerFailure(message: 'Google Sign-In not implemented yet.', statusCode: 501));
   }
 
   @override
   Future<Either<Failure, ProfileEntity>> signInWithApple() async {
     print('signInWithApple called - NOT IMPLEMENTED');
-    await Future.delayed(const Duration(milliseconds: 50)); 
+    await Future.delayed(const Duration(milliseconds: 50));
     return Left(ServerFailure(message: 'Apple Sign-In not implemented yet.', statusCode: 501));
+  }
+
+  @override
+  Future<Either<Failure, void>> requestPasswordReset({required String email}) async {
+    try {
+      final request = auth_req_resp.RequestPasswordResetRequest(email: email);
+      print('Sending gRPC RequestPasswordReset request for email: $email');
+
+      final response = await _authServiceClient.requestPasswordReset(request);
+
+      if (response.success) {
+        print('Password reset email sent successfully');
+        return const Right(null);
+      } else {
+        print('Password reset request failed: ${response.msg}');
+        return Left(ServerFailure(
+          message: response.msg.isNotEmpty ? response.msg : 'Failed to send password reset email.',
+          statusCode: 400,
+        ));
+      }
+    } on GrpcError catch (e) {
+      print('gRPC Error during requestPasswordReset: ${e.codeName} - ${e.message}');
+      return Left(ServerFailure(
+        message: e.message ?? 'Failed to send password reset email.',
+        statusCode: e.code,
+      ));
+    } catch (e) {
+      print('Unexpected error during requestPasswordReset: $e');
+      return Left(ServerFailure(message: 'An unexpected error occurred.', statusCode: 500));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> resetPassword({
+    required String email,
+    required String token,
+    required String newPassword,
+  }) async {
+    try {
+      final request = auth_req_resp.ResetPasswordRequest(
+        email: email,
+        token: token,
+        newPassword: newPassword,
+      );
+      print('Sending gRPC ResetPassword request');
+
+      final response = await _authServiceClient.resetPassword(request);
+
+      if (response.success) {
+        print('Password reset successful');
+        return const Right(null);
+      } else {
+        print('Password reset failed: ${response.msg}');
+        return Left(ServerFailure(
+          message: response.msg.isNotEmpty ? response.msg : 'Failed to reset password.',
+          statusCode: 400,
+        ));
+      }
+    } on GrpcError catch (e) {
+      print('gRPC Error during resetPassword: ${e.codeName} - ${e.message}');
+      return Left(ServerFailure(
+        message: e.message ?? 'Failed to reset password.',
+        statusCode: e.code,
+      ));
+    } catch (e) {
+      print('Unexpected error during resetPassword: $e');
+      return Left(ServerFailure(message: 'An unexpected error occurred.', statusCode: 500));
+    }
+  }
+
+  @override
+  Future<Either<Failure, ProfileEntity>> verifyEmail({required String verificationCode}) async {
+    try {
+      final request = auth_req_resp.VerifyEmailRequest(verificationCode: verificationCode);
+      print('Sending gRPC VerifyEmail request');
+
+      // Use helper to get call options with authorization header from secure storage
+      final callOptions = await _callOptionsHelper.withAuth();
+      final response = await _authServiceClient.verifyEmail(request, options: callOptions);
+
+      if (response.success) {
+        print('Email verified successfully');
+        // After successful verification, need to get updated user profile
+        // For now, return a success with message
+        // TODO: Implement getting updated profile or modify backend to return profile
+        return Left(ServerFailure(
+          message: 'Email verified! Please log in again.',
+          statusCode: 200,
+        ));
+      } else {
+        print('Email verification failed: ${response.msg}');
+        return Left(ServerFailure(
+          message: response.msg.isNotEmpty ? response.msg : 'Failed to verify email.',
+          statusCode: 400,
+        ));
+      }
+    } on GrpcError catch (e) {
+      print('gRPC Error during verifyEmail: ${e.codeName} - ${e.message}');
+      return Left(ServerFailure(
+        message: e.message ?? 'Failed to verify email.',
+        statusCode: e.code,
+      ));
+    } catch (e) {
+      print('Unexpected error during verifyEmail: $e');
+      return Left(ServerFailure(message: 'An unexpected error occurred.', statusCode: 500));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> resendVerificationEmail() async {
+    try {
+      final request = auth_req_resp.RequestEmailVerificationRequest();
+      print('Sending gRPC RequestEmailVerification request');
+
+      // Use helper to get call options with authorization header from secure storage
+      final callOptions = await _callOptionsHelper.withAuth();
+      final response = await _authServiceClient.requestEmailVerification(request, options: callOptions);
+
+      if (response.success) {
+        print('Verification email sent successfully');
+        return const Right(null);
+      } else {
+        print('Resend verification email failed: ${response.msg}');
+        return Left(ServerFailure(
+          message: response.msg.isNotEmpty ? response.msg : 'Failed to send verification email.',
+          statusCode: 400,
+        ));
+      }
+    } on GrpcError catch (e) {
+      print('gRPC Error during resendVerificationEmail: ${e.codeName} - ${e.message}');
+      return Left(ServerFailure(
+        message: e.message ?? 'Failed to send verification email.',
+        statusCode: e.code,
+      ));
+    } catch (e) {
+      print('Unexpected error during resendVerificationEmail: $e');
+      return Left(ServerFailure(message: 'An unexpected error occurred.', statusCode: 500));
+    }
+  }
+
+  @override
+  Future<Either<Failure, ProfileEntity>> refreshToken({required String refreshToken}) async {
+    try {
+      final request = auth_req_resp.RefreshTokenRequest(refreshToken: refreshToken);
+      final response = await _authServiceClient.refreshToken(request);
+
+      if (response.success &&
+          response.hasData() &&
+          response.data.hasUser() &&
+          response.data.hasSession()) {
+        final userModel = UserModel.fromProto(response.data.user);
+        final sessionModel = SessionModel.fromProto(response.data.session);
+        final profileModel = ProfileModel(user: userModel, session: sessionModel);
+        return Right(profileModel);
+      } else {
+        return Left(ServerFailure(
+            message: response.msg.isNotEmpty
+                ? response.msg
+                : 'Token refresh failed.', statusCode: 401));
+      }
+    } on GrpcError catch (e) {
+      print('gRPC Error during token refresh: ${e.codeName} - ${e.message}');
+      return Left(ServerFailure(
+        message: e.message ?? 'Token refresh failed due to server error.',
+        statusCode: e.code,
+      ));
+    } catch (e) {
+      print('Unexpected error during token refresh: $e');
+      return Left(ServerFailure(message: 'An unexpected error occurred during token refresh.', statusCode: 500));
+    }
+  }
+
+  @override
+  Future<Either<Failure, bool>> checkEmailAvailability({required String email}) async {
+    try {
+      final request = auth_req_resp.CheckEmailAvailabilityRequest(email: email);
+      print('Sending gRPC CheckEmailAvailability request for email: $email');
+
+      final response = await _authServiceClient.checkEmailAvailability(request);
+
+      print('Email availability check response: available=${response.available}, msg=${response.msg}');
+      return Right(response.available);
+    } on GrpcError catch (e) {
+      print('gRPC Error during checkEmailAvailability: ${e.codeName} - ${e.message}');
+      return Left(ServerFailure(
+        message: e.message ?? 'Failed to check email availability.',
+        statusCode: e.code,
+      ));
+    } catch (e) {
+      print('Unexpected error during checkEmailAvailability: $e');
+      return Left(ServerFailure(message: 'An unexpected error occurred.', statusCode: 500));
+    }
   }
 }

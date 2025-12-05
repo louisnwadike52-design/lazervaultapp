@@ -1,39 +1,43 @@
 import 'package:grpc/grpc.dart';
+import 'package:lazervault/core/services/grpc_call_options_helper.dart';
 // Assuming your generated proto files are in a 'pb' directory relative to lib
 // Adjust the import path based on your actual project structure
-import 'package:lazervault/src/generated/ai_chat.pbgrpc.dart'; 
+import 'package:lazervault/src/generated/ai_chat.pbgrpc.dart';
 
 // Define an abstract class for the data source
 abstract class IAiChatDataSource {
-  Future<ProcessChatResponse> processChat({required String query, required String accessToken});
-  Future<GetAIChatHistoryResponse> getChatHistory({required String accessToken});
+  Future<ProcessChatResponse> processChat({required String query});
+  Future<GetAIChatHistoryResponse> getChatHistory();
 }
 
 // Implementation using gRPC
 class GrpcAiChatDataSource implements IAiChatDataSource {
   final AIChatServiceClient _client;
+  final GrpcCallOptionsHelper _callOptionsHelper;
 
-  // Accept the client via constructor (injected by GetIt)
-  GrpcAiChatDataSource({required AIChatServiceClient client}) : _client = client;
-
-  CallOptions _getAuthOptions(String accessToken) =>
-      CallOptions(metadata: {'authorization': 'Bearer $accessToken'});
+  // Accept the client and helper via constructor (injected by GetIt)
+  GrpcAiChatDataSource({
+    required AIChatServiceClient client,
+    required GrpcCallOptionsHelper callOptionsHelper,
+  }) : _client = client,
+       _callOptionsHelper = callOptionsHelper;
 
   @override
-  Future<ProcessChatResponse> processChat({required String query, required String accessToken}) async {
+  Future<ProcessChatResponse> processChat({required String query}) async {
     final request = ProcessChatRequest()..query = query;
     try {
-      print("Sending ProcessChat request with query: $query and token: $accessToken");
+      print("Sending ProcessChat request with query: $query");
+      final callOptions = await _callOptionsHelper.withAuth();
       final response = await _client.processChat(
         request,
-        options: _getAuthOptions(accessToken), // Pass options with token
+        options: callOptions,
       );
        print("Received ProcessChat response: ${response.success} - ${response.msg}");
       return response;
     } on GrpcError catch (e) {
       print('gRPC Error calling ProcessChat: $e');
       // Let the repository handle mapping to Failure
-      throw Exception('gRPC Error (${e.codeName}): ${e.message ?? 'Failed to communicate with AI service'}'); 
+      throw Exception('gRPC Error (${e.codeName}): ${e.message ?? 'Failed to communicate with AI service'}');
     } catch (e) {
       print('Unexpected error calling ProcessChat: $e');
       throw Exception('An unexpected error occurred calling AI service.');
@@ -41,19 +45,20 @@ class GrpcAiChatDataSource implements IAiChatDataSource {
   }
 
   @override
-  Future<GetAIChatHistoryResponse> getChatHistory({required String accessToken}) async {
+  Future<GetAIChatHistoryResponse> getChatHistory() async {
     final request = GetAIChatHistoryRequest(); // Empty request
     try {
-      print("Sending GetAIChatHistory request with token: $accessToken");
+      print("Sending GetAIChatHistory request");
+      final callOptions = await _callOptionsHelper.withAuth();
       final response = await _client.getAIChatHistory(
         request,
-        options: _getAuthOptions(accessToken),
+        options: callOptions,
       );
       print("Received GetAIChatHistory response with ${response.history.length} entries.");
       return response;
     } on GrpcError catch (e) {
       print('gRPC Error calling GetAIChatHistory: $e');
-      throw Exception('gRPC Error (${e.codeName}): ${e.message ?? 'Failed to get chat history'}'); 
+      throw Exception('gRPC Error (${e.codeName}): ${e.message ?? 'Failed to get chat history'}');
     } catch (e) {
       print('Unexpected error calling GetAIChatHistory: $e');
       throw Exception('An unexpected error occurred fetching chat history.');

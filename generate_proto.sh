@@ -12,7 +12,10 @@
 
 # Install/Update Dart protoc plugin (safe to run multiple times)
 echo "Ensuring Dart protoc plugin is activated..."
-dart pub global activate protoc_plugin
+dart pub global activate protoc_plugin 20.0.1
+
+# Add dart global bin to PATH
+export PATH="$PATH:$HOME/.pub-cache/bin"
 
 # Create the generated directory if it doesn't exist
 echo "Creating generated code directory..."

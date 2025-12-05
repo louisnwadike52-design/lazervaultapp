@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import '../domain/entities/profile_entity.dart'; // Import ProfileEntity
+import '../domain/entities/profile_entity.dart';
 
 abstract class AuthenticationState extends Equatable {
   const AuthenticationState();
@@ -12,6 +12,11 @@ class AuthenticationInitial extends AuthenticationState {
   const AuthenticationInitial();
 }
 
+// Checking for existing session
+class AuthenticationCheckingSession extends AuthenticationState {
+  const AuthenticationCheckingSession();
+}
+
 // Generic Loading state (can be used for various auth operations)
 class AuthenticationLoading extends AuthenticationState {
   const AuthenticationLoading();
@@ -19,12 +24,27 @@ class AuthenticationLoading extends AuthenticationState {
 
 // State indicating successful authentication (login, signup, social)
 class AuthenticationSuccess extends AuthenticationState {
-  final ProfileEntity profile; // Changed from User to ProfileEntity
+  final ProfileEntity profile;
 
   const AuthenticationSuccess(this.profile);
 
   @override
   List<Object?> get props => [profile];
+}
+
+// Email verified state
+class EmailVerified extends AuthenticationState {
+  final ProfileEntity profile;
+
+  const EmailVerified(this.profile);
+
+  @override
+  List<Object?> get props => [profile];
+}
+
+// Password reset email sent
+class PasswordResetEmailSent extends AuthenticationState {
+  const PasswordResetEmailSent();
 }
 
 class CreatingUser extends AuthenticationState {

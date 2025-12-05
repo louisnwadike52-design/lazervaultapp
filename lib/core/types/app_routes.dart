@@ -62,6 +62,7 @@ abstract class AppRoutes {
   static const String signUp = '/auth/sign-up';
   static const String signIn = '/auth/sign-in';
   static const String emailSignIn = '/auth/email-sign-in';
+  static const String emailVerification = '/auth/email-verification';
   static const String otpVerification = '/auth/otp-verification';
   static const String enableBiometricAccess = '/auth/enable-biometric-access';
   static const String passwordRecovery = '/auth/password-recovery';

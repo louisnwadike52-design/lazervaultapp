@@ -1,31 +1,23 @@
-//
+///
 //  Generated code. Do not modify.
 //  source: tx_file.proto
 //
-// @dart = 3.3
-
-// ignore_for_file: annotate_overrides, camel_case_types, comment_references
-// ignore_for_file: constant_identifier_names, library_prefixes
-// ignore_for_file: non_constant_identifier_names, prefer_final_fields
-// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
+// @dart = 2.12
+// ignore_for_file: annotate_overrides,camel_case_types,constant_identifier_names,directives_ordering,library_prefixes,non_constant_identifier_names,prefer_final_fields,return_of_invalid_type,unnecessary_const,unnecessary_import,unnecessary_this,unused_import,unused_shown_name
 
 import 'dart:core' as $core;
 
 import 'package:protobuf/protobuf.dart' as $pb;
 
-export 'package:protobuf/protobuf.dart' show GeneratedMessageGenericExtensions;
-
-/// Request message for GetUserTxFileUrl
 class GetUserTxFileUrlRequest extends $pb.GeneratedMessage {
-  factory GetUserTxFileUrlRequest() => create();
-  GetUserTxFileUrlRequest._() : super();
-  factory GetUserTxFileUrlRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetUserTxFileUrlRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetUserTxFileUrlRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetUserTxFileUrlRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
     ..hasRequiredFields = false
   ;
 
+  GetUserTxFileUrlRequest._() : super();
+  factory GetUserTxFileUrlRequest() => create();
+  factory GetUserTxFileUrlRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetUserTxFileUrlRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -35,10 +27,8 @@ class GetUserTxFileUrlRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetUserTxFileUrlRequest copyWith(void Function(GetUserTxFileUrlRequest) updates) => super.copyWith((message) => updates(message as GetUserTxFileUrlRequest)) as GetUserTxFileUrlRequest;
-
+  GetUserTxFileUrlRequest copyWith(void Function(GetUserTxFileUrlRequest) updates) => super.copyWith((message) => updates(message as GetUserTxFileUrlRequest)) as GetUserTxFileUrlRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetUserTxFileUrlRequest create() => GetUserTxFileUrlRequest._();
   GetUserTxFileUrlRequest createEmptyInstance() => create();
@@ -48,26 +38,24 @@ class GetUserTxFileUrlRequest extends $pb.GeneratedMessage {
   static GetUserTxFileUrlRequest? _defaultInstance;
 }
 
-/// Response message for GetUserTxFileUrl
 class GetUserTxFileUrlResponse extends $pb.GeneratedMessage {
-  factory GetUserTxFileUrlResponse({
-    $core.String? publicFileUrl,
-  }) {
-    final $result = create();
-    if (publicFileUrl != null) {
-      $result.publicFileUrl = publicFileUrl;
-    }
-    return $result;
-  }
-  GetUserTxFileUrlResponse._() : super();
-  factory GetUserTxFileUrlResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetUserTxFileUrlResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetUserTxFileUrlResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'publicFileUrl')
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetUserTxFileUrlResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'publicFileUrl')
     ..hasRequiredFields = false
   ;
 
+  GetUserTxFileUrlResponse._() : super();
+  factory GetUserTxFileUrlResponse({
+    $core.String? publicFileUrl,
+  }) {
+    final _result = create();
+    if (publicFileUrl != null) {
+      _result.publicFileUrl = publicFileUrl;
+    }
+    return _result;
+  }
+  factory GetUserTxFileUrlResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetUserTxFileUrlResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -77,10 +65,8 @@ class GetUserTxFileUrlResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetUserTxFileUrlResponse copyWith(void Function(GetUserTxFileUrlResponse) updates) => super.copyWith((message) => updates(message as GetUserTxFileUrlResponse)) as GetUserTxFileUrlResponse;
-
+  GetUserTxFileUrlResponse copyWith(void Function(GetUserTxFileUrlResponse) updates) => super.copyWith((message) => updates(message as GetUserTxFileUrlResponse)) as GetUserTxFileUrlResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetUserTxFileUrlResponse create() => GetUserTxFileUrlResponse._();
   GetUserTxFileUrlResponse createEmptyInstance() => create();
@@ -89,8 +75,6 @@ class GetUserTxFileUrlResponse extends $pb.GeneratedMessage {
   static GetUserTxFileUrlResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetUserTxFileUrlResponse>(create);
   static GetUserTxFileUrlResponse? _defaultInstance;
 
-  /// The Public HTTPS URL to the transaction file.
-  /// Requires the GCS object to be publicly readable.
   @$pb.TagNumber(1)
   $core.String get publicFileUrl => $_getSZ(0);
   @$pb.TagNumber(1)
@@ -98,9 +82,6 @@ class GetUserTxFileUrlResponse extends $pb.GeneratedMessage {
   @$pb.TagNumber(1)
   $core.bool hasPublicFileUrl() => $_has(0);
   @$pb.TagNumber(1)
-  void clearPublicFileUrl() => $_clearField(1);
+  void clearPublicFileUrl() => clearField(1);
 }
 
-
-const _omitFieldNames = $core.bool.fromEnvironment('protobuf.omit_field_names');
-const _omitMessageNames = $core.bool.fromEnvironment('protobuf.omit_message_names');

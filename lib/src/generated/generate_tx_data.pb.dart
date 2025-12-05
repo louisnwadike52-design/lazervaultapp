@@ -1,40 +1,32 @@
-//
+///
 //  Generated code. Do not modify.
 //  source: generate_tx_data.proto
 //
-// @dart = 3.3
-
-// ignore_for_file: annotate_overrides, camel_case_types, comment_references
-// ignore_for_file: constant_identifier_names, library_prefixes
-// ignore_for_file: non_constant_identifier_names, prefer_final_fields
-// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
+// @dart = 2.12
+// ignore_for_file: annotate_overrides,camel_case_types,constant_identifier_names,directives_ordering,library_prefixes,non_constant_identifier_names,prefer_final_fields,return_of_invalid_type,unnecessary_const,unnecessary_import,unnecessary_this,unused_import,unused_shown_name
 
 import 'dart:core' as $core;
 
 import 'package:protobuf/protobuf.dart' as $pb;
 
-export 'package:protobuf/protobuf.dart' show GeneratedMessageGenericExtensions;
-
-/// Request message - Requires the user ID
 class GenerateUserTxDataFileRequest extends $pb.GeneratedMessage {
-  factory GenerateUserTxDataFileRequest({
-    $core.String? userId,
-  }) {
-    final $result = create();
-    if (userId != null) {
-      $result.userId = userId;
-    }
-    return $result;
-  }
-  GenerateUserTxDataFileRequest._() : super();
-  factory GenerateUserTxDataFileRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GenerateUserTxDataFileRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GenerateUserTxDataFileRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'userId')
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GenerateUserTxDataFileRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
     ..hasRequiredFields = false
   ;
 
+  GenerateUserTxDataFileRequest._() : super();
+  factory GenerateUserTxDataFileRequest({
+    $core.String? userId,
+  }) {
+    final _result = create();
+    if (userId != null) {
+      _result.userId = userId;
+    }
+    return _result;
+  }
+  factory GenerateUserTxDataFileRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GenerateUserTxDataFileRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -44,10 +36,8 @@ class GenerateUserTxDataFileRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GenerateUserTxDataFileRequest copyWith(void Function(GenerateUserTxDataFileRequest) updates) => super.copyWith((message) => updates(message as GenerateUserTxDataFileRequest)) as GenerateUserTxDataFileRequest;
-
+  GenerateUserTxDataFileRequest copyWith(void Function(GenerateUserTxDataFileRequest) updates) => super.copyWith((message) => updates(message as GenerateUserTxDataFileRequest)) as GenerateUserTxDataFileRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GenerateUserTxDataFileRequest create() => GenerateUserTxDataFileRequest._();
   GenerateUserTxDataFileRequest createEmptyInstance() => create();
@@ -63,29 +53,27 @@ class GenerateUserTxDataFileRequest extends $pb.GeneratedMessage {
   @$pb.TagNumber(1)
   $core.bool hasUserId() => $_has(0);
   @$pb.TagNumber(1)
-  void clearUserId() => $_clearField(1);
+  void clearUserId() => clearField(1);
 }
 
-/// Response message - Returns the GCS URL of the generated file
 class GenerateUserTxDataFileResponse extends $pb.GeneratedMessage {
-  factory GenerateUserTxDataFileResponse({
-    $core.String? fileGcsUrl,
-  }) {
-    final $result = create();
-    if (fileGcsUrl != null) {
-      $result.fileGcsUrl = fileGcsUrl;
-    }
-    return $result;
-  }
-  GenerateUserTxDataFileResponse._() : super();
-  factory GenerateUserTxDataFileResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GenerateUserTxDataFileResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GenerateUserTxDataFileResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'fileGcsUrl')
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GenerateUserTxDataFileResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'fileGcsUrl')
     ..hasRequiredFields = false
   ;
 
+  GenerateUserTxDataFileResponse._() : super();
+  factory GenerateUserTxDataFileResponse({
+    $core.String? fileGcsUrl,
+  }) {
+    final _result = create();
+    if (fileGcsUrl != null) {
+      _result.fileGcsUrl = fileGcsUrl;
+    }
+    return _result;
+  }
+  factory GenerateUserTxDataFileResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GenerateUserTxDataFileResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -95,10 +83,8 @@ class GenerateUserTxDataFileResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GenerateUserTxDataFileResponse copyWith(void Function(GenerateUserTxDataFileResponse) updates) => super.copyWith((message) => updates(message as GenerateUserTxDataFileResponse)) as GenerateUserTxDataFileResponse;
-
+  GenerateUserTxDataFileResponse copyWith(void Function(GenerateUserTxDataFileResponse) updates) => super.copyWith((message) => updates(message as GenerateUserTxDataFileResponse)) as GenerateUserTxDataFileResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GenerateUserTxDataFileResponse create() => GenerateUserTxDataFileResponse._();
   GenerateUserTxDataFileResponse createEmptyInstance() => create();
@@ -114,9 +100,6 @@ class GenerateUserTxDataFileResponse extends $pb.GeneratedMessage {
   @$pb.TagNumber(1)
   $core.bool hasFileGcsUrl() => $_has(0);
   @$pb.TagNumber(1)
-  void clearFileGcsUrl() => $_clearField(1);
+  void clearFileGcsUrl() => clearField(1);
 }
 
-
-const _omitFieldNames = $core.bool.fromEnvironment('protobuf.omit_field_names');
-const _omitMessageNames = $core.bool.fromEnvironment('protobuf.omit_message_names');
