@@ -8,6 +8,7 @@ import 'package:lazervault/src/features/authentication/domain/entities/user.dart
 import 'package:lazervault/src/features/authentication/presentation/views/email_sign_in_screen.dart';
 import 'package:lazervault/src/features/authentication/presentation/views/email_verification_screen.dart';
 import 'package:lazervault/src/features/authentication/cubit/email_verification_cubit.dart';
+import 'package:lazervault/src/features/authentication/presentation/views/passcode_setup_screen.dart';
 import 'package:lazervault/src/features/crypto/presentation/view/crypto_screen.dart';
 import 'package:lazervault/src/features/crypto/presentation/view/buy_crypto_screen.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/transfer_proof.dart';
@@ -76,6 +77,7 @@ import 'package:lazervault/src/features/stocks/domain/entities/stock_entity.dart
 import 'package:lazervault/src/features/presentation/views/upload_image_scren.dart';
 import '../../../core/services/injection_container.dart';
 import 'views/onboarding_screen.dart';
+import '../../../main.dart' show AuthCheckScreen;
 import 'package:lazervault/src/features/funds/cubit/withdrawal_cubit.dart';
 import 'package:lazervault/src/features/funds/cubit/deposit_cubit.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_cubit.dart';
@@ -148,6 +150,11 @@ class AppRouter {
       name: AppRoutes.root,
       page: () => serviceLocator<OnboardingScreen>(),
       transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.authCheck,
+      page: () => const AuthCheckScreen(),
+      transition: Transition.noTransition,
     ),
     GetPage(
       name: AppRoutes.dashboard,
@@ -333,6 +340,16 @@ class AppRouter {
     GetPage(
       name: AppRoutes.emailSignIn,
       page: () => serviceLocator<EmailSignInScreen>(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.passcodeLogin,
+      page: () => serviceLocator<PasscodeSignInScreen>(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.passcodeSetup,
+      page: () => const PasscodeSetupScreen(),
       transition: Transition.rightToLeft,
     ),
     GetPage(

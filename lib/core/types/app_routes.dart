@@ -1,5 +1,6 @@
 abstract class AppRoutes {
   static const String root = '/';
+  static const String authCheck = '/auth-check';
   static const String onboarding = '/onboarding';
   static const String dashboard = '/dashboard';
   static const String home = '/home';
@@ -62,6 +63,8 @@ abstract class AppRoutes {
   static const String signUp = '/auth/sign-up';
   static const String signIn = '/auth/sign-in';
   static const String emailSignIn = '/auth/email-sign-in';
+  static const String passcodeLogin = '/auth/passcode-login';
+  static const String passcodeSetup = '/auth/passcode-setup';
   static const String emailVerification = '/auth/email-verification';
   static const String otpVerification = '/auth/otp-verification';
   static const String enableBiometricAccess = '/auth/enable-biometric-access';

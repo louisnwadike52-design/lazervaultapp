@@ -19,6 +19,38 @@ const LoginRequest$json = const {
 
 /// Descriptor for `LoginRequest`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List loginRequestDescriptor = $convert.base64Decode('CgxMb2dpblJlcXVlc3QSFAoFZW1haWwYASABKAlSBWVtYWlsEhoKCHBhc3N3b3JkGAIgASgJUghwYXNzd29yZA==');
+@$core.Deprecated('Use loginWithPasscodeRequestDescriptor instead')
+const LoginWithPasscodeRequest$json = const {
+  '1': 'LoginWithPasscodeRequest',
+  '2': const [
+    const {'1': 'email', '3': 1, '4': 1, '5': 9, '10': 'email'},
+    const {'1': 'login_passcode', '3': 2, '4': 1, '5': 9, '10': 'loginPasscode'},
+  ],
+};
+
+/// Descriptor for `LoginWithPasscodeRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List loginWithPasscodeRequestDescriptor = $convert.base64Decode('ChhMb2dpbldpdGhQYXNzY29kZVJlcXVlc3QSFAoFZW1haWwYASABKAlSBWVtYWlsEiUKDmxvZ2luX3Bhc3Njb2RlGAIgASgJUg1sb2dpblBhc3Njb2Rl');
+@$core.Deprecated('Use registerPasscodeRequestDescriptor instead')
+const RegisterPasscodeRequest$json = const {
+  '1': 'RegisterPasscodeRequest',
+  '2': const [
+    const {'1': 'login_passcode', '3': 1, '4': 1, '5': 9, '10': 'loginPasscode'},
+  ],
+};
+
+/// Descriptor for `RegisterPasscodeRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List registerPasscodeRequestDescriptor = $convert.base64Decode('ChdSZWdpc3RlclBhc3Njb2RlUmVxdWVzdBIlCg5sb2dpbl9wYXNzY29kZRgBIAEoCVINbG9naW5QYXNzY29kZQ==');
+@$core.Deprecated('Use registerPasscodeResponseDescriptor instead')
+const RegisterPasscodeResponse$json = const {
+  '1': 'RegisterPasscodeResponse',
+  '2': const [
+    const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    const {'1': 'msg', '3': 2, '4': 1, '5': 9, '10': 'msg'},
+  ],
+};
+
+/// Descriptor for `RegisterPasscodeResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List registerPasscodeResponseDescriptor = $convert.base64Decode('ChhSZWdpc3RlclBhc3Njb2RlUmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2VzcxIQCgNtc2cYAiABKAlSA21zZw==');
 @$core.Deprecated('Use loginResponseDescriptor instead')
 const LoginResponse$json = const {
   '1': 'LoginResponse',

@@ -18,6 +18,17 @@ class AuthServiceClient extends $grpc.Client {
       '/pb.AuthService/Login',
       ($4.LoginRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) => $4.LoginResponse.fromBuffer(value));
+  static final _$loginWithPasscode =
+      $grpc.ClientMethod<$4.LoginWithPasscodeRequest, $4.LoginResponse>(
+          '/pb.AuthService/LoginWithPasscode',
+          ($4.LoginWithPasscodeRequest value) => value.writeToBuffer(),
+          ($core.List<$core.int> value) => $4.LoginResponse.fromBuffer(value));
+  static final _$registerPasscode = $grpc.ClientMethod<
+          $4.RegisterPasscodeRequest, $4.RegisterPasscodeResponse>(
+      '/pb.AuthService/RegisterPasscode',
+      ($4.RegisterPasscodeRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $4.RegisterPasscodeResponse.fromBuffer(value));
   static final _$refreshToken =
       $grpc.ClientMethod<$4.RefreshTokenRequest, $4.RefreshTokenResponse>(
           '/pb.AuthService/RefreshToken',
@@ -85,6 +96,18 @@ class AuthServiceClient extends $grpc.Client {
   $grpc.ResponseFuture<$4.LoginResponse> login($4.LoginRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$login, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$4.LoginResponse> loginWithPasscode(
+      $4.LoginWithPasscodeRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$loginWithPasscode, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$4.RegisterPasscodeResponse> registerPasscode(
+      $4.RegisterPasscodeRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$registerPasscode, request, options: options);
   }
 
   $grpc.ResponseFuture<$4.RefreshTokenResponse> refreshToken(
@@ -160,6 +183,24 @@ abstract class AuthServiceBase extends $grpc.Service {
         false,
         ($core.List<$core.int> value) => $4.LoginRequest.fromBuffer(value),
         ($4.LoginResponse value) => value.writeToBuffer()));
+    $addMethod(
+        $grpc.ServiceMethod<$4.LoginWithPasscodeRequest, $4.LoginResponse>(
+            'LoginWithPasscode',
+            loginWithPasscode_Pre,
+            false,
+            false,
+            ($core.List<$core.int> value) =>
+                $4.LoginWithPasscodeRequest.fromBuffer(value),
+            ($4.LoginResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$4.RegisterPasscodeRequest,
+            $4.RegisterPasscodeResponse>(
+        'RegisterPasscode',
+        registerPasscode_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $4.RegisterPasscodeRequest.fromBuffer(value),
+        ($4.RegisterPasscodeResponse value) => value.writeToBuffer()));
     $addMethod(
         $grpc.ServiceMethod<$4.RefreshTokenRequest, $4.RefreshTokenResponse>(
             'RefreshToken',
@@ -252,6 +293,17 @@ abstract class AuthServiceBase extends $grpc.Service {
     return login(call, await request);
   }
 
+  $async.Future<$4.LoginResponse> loginWithPasscode_Pre($grpc.ServiceCall call,
+      $async.Future<$4.LoginWithPasscodeRequest> request) async {
+    return loginWithPasscode(call, await request);
+  }
+
+  $async.Future<$4.RegisterPasscodeResponse> registerPasscode_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$4.RegisterPasscodeRequest> request) async {
+    return registerPasscode(call, await request);
+  }
+
   $async.Future<$4.RefreshTokenResponse> refreshToken_Pre(
       $grpc.ServiceCall call,
       $async.Future<$4.RefreshTokenRequest> request) async {
@@ -309,6 +361,10 @@ abstract class AuthServiceBase extends $grpc.Service {
 
   $async.Future<$4.LoginResponse> login(
       $grpc.ServiceCall call, $4.LoginRequest request);
+  $async.Future<$4.LoginResponse> loginWithPasscode(
+      $grpc.ServiceCall call, $4.LoginWithPasscodeRequest request);
+  $async.Future<$4.RegisterPasscodeResponse> registerPasscode(
+      $grpc.ServiceCall call, $4.RegisterPasscodeRequest request);
   $async.Future<$4.RefreshTokenResponse> refreshToken(
       $grpc.ServiceCall call, $4.RefreshTokenRequest request);
   $async.Future<$4.LogoutResponse> logout(

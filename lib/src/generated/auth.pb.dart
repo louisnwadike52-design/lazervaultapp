@@ -72,6 +72,175 @@ class LoginRequest extends $pb.GeneratedMessage {
   void clearPassword() => clearField(2);
 }
 
+class LoginWithPasscodeRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'LoginWithPasscodeRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'email')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'loginPasscode')
+    ..hasRequiredFields = false
+  ;
+
+  LoginWithPasscodeRequest._() : super();
+  factory LoginWithPasscodeRequest({
+    $core.String? email,
+    $core.String? loginPasscode,
+  }) {
+    final _result = create();
+    if (email != null) {
+      _result.email = email;
+    }
+    if (loginPasscode != null) {
+      _result.loginPasscode = loginPasscode;
+    }
+    return _result;
+  }
+  factory LoginWithPasscodeRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory LoginWithPasscodeRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  LoginWithPasscodeRequest clone() => LoginWithPasscodeRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  LoginWithPasscodeRequest copyWith(void Function(LoginWithPasscodeRequest) updates) => super.copyWith((message) => updates(message as LoginWithPasscodeRequest)) as LoginWithPasscodeRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static LoginWithPasscodeRequest create() => LoginWithPasscodeRequest._();
+  LoginWithPasscodeRequest createEmptyInstance() => create();
+  static $pb.PbList<LoginWithPasscodeRequest> createRepeated() => $pb.PbList<LoginWithPasscodeRequest>();
+  @$core.pragma('dart2js:noInline')
+  static LoginWithPasscodeRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<LoginWithPasscodeRequest>(create);
+  static LoginWithPasscodeRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get email => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set email($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasEmail() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearEmail() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get loginPasscode => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set loginPasscode($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasLoginPasscode() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearLoginPasscode() => clearField(2);
+}
+
+class RegisterPasscodeRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'RegisterPasscodeRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'loginPasscode')
+    ..hasRequiredFields = false
+  ;
+
+  RegisterPasscodeRequest._() : super();
+  factory RegisterPasscodeRequest({
+    $core.String? loginPasscode,
+  }) {
+    final _result = create();
+    if (loginPasscode != null) {
+      _result.loginPasscode = loginPasscode;
+    }
+    return _result;
+  }
+  factory RegisterPasscodeRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory RegisterPasscodeRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  RegisterPasscodeRequest clone() => RegisterPasscodeRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  RegisterPasscodeRequest copyWith(void Function(RegisterPasscodeRequest) updates) => super.copyWith((message) => updates(message as RegisterPasscodeRequest)) as RegisterPasscodeRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static RegisterPasscodeRequest create() => RegisterPasscodeRequest._();
+  RegisterPasscodeRequest createEmptyInstance() => create();
+  static $pb.PbList<RegisterPasscodeRequest> createRepeated() => $pb.PbList<RegisterPasscodeRequest>();
+  @$core.pragma('dart2js:noInline')
+  static RegisterPasscodeRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<RegisterPasscodeRequest>(create);
+  static RegisterPasscodeRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get loginPasscode => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set loginPasscode($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasLoginPasscode() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearLoginPasscode() => clearField(1);
+}
+
+class RegisterPasscodeResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'RegisterPasscodeResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'msg')
+    ..hasRequiredFields = false
+  ;
+
+  RegisterPasscodeResponse._() : super();
+  factory RegisterPasscodeResponse({
+    $core.bool? success,
+    $core.String? msg,
+  }) {
+    final _result = create();
+    if (success != null) {
+      _result.success = success;
+    }
+    if (msg != null) {
+      _result.msg = msg;
+    }
+    return _result;
+  }
+  factory RegisterPasscodeResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory RegisterPasscodeResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  RegisterPasscodeResponse clone() => RegisterPasscodeResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  RegisterPasscodeResponse copyWith(void Function(RegisterPasscodeResponse) updates) => super.copyWith((message) => updates(message as RegisterPasscodeResponse)) as RegisterPasscodeResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static RegisterPasscodeResponse create() => RegisterPasscodeResponse._();
+  RegisterPasscodeResponse createEmptyInstance() => create();
+  static $pb.PbList<RegisterPasscodeResponse> createRepeated() => $pb.PbList<RegisterPasscodeResponse>();
+  @$core.pragma('dart2js:noInline')
+  static RegisterPasscodeResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<RegisterPasscodeResponse>(create);
+  static RegisterPasscodeResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool v) { $_setBool(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get msg => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set msg($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasMsg() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMsg() => clearField(2);
+}
+
 class LoginResponse extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'LoginResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
     ..aOM<$18.Data>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'data', subBuilder: $18.Data.create)

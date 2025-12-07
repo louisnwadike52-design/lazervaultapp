@@ -19,6 +19,7 @@ import 'package:lazervault/core/database/database_helper.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:device_info_plus/device_info_plus.dart'; // Added device_info_plus
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 Future<void> _checkPermissions() async {
   var status = await Permission.bluetooth.request();
@@ -100,6 +101,72 @@ void main() async {
   FlutterNativeSplash.remove();
 }
 
+/// Helper function to determine the initial route based on stored login method
+/// Always starts from login screen - never directly to dashboard
+Future<String> _determineInitialRoute() async {
+  const storage = FlutterSecureStorage();
+
+  try {
+    // Check if user has logged in before
+    final loginMethod = await storage.read(key: 'login_method');
+    final storedEmail = await storage.read(key: 'stored_email');
+
+    // If has passcode login set up, show passcode login
+    if (loginMethod == 'passcode' && storedEmail != null && storedEmail.isNotEmpty) {
+      return AppRoutes.passcodeLogin;
+    }
+
+    // Check if user has seen onboarding
+    final hasSeenOnboarding = await storage.read(key: 'has_seen_onboarding');
+    if (hasSeenOnboarding != null && hasSeenOnboarding == 'true') {
+      return AppRoutes.emailSignIn;
+    }
+
+    // Default to onboarding for first-time users
+    return AppRoutes.root;
+  } catch (e) {
+    print('Error determining initial route: $e');
+    return AppRoutes.root;
+  }
+}
+
+/// Auth check screen that determines where to navigate on app start
+class AuthCheckScreen extends StatefulWidget {
+  const AuthCheckScreen({super.key});
+
+  @override
+  State<AuthCheckScreen> createState() => _AuthCheckScreenState();
+}
+
+class _AuthCheckScreenState extends State<AuthCheckScreen> {
+  @override
+  void initState() {
+    super.initState();
+    _checkAuthAndNavigate();
+  }
+
+  Future<void> _checkAuthAndNavigate() async {
+    final initialRoute = await _determineInitialRoute();
+
+    // Small delay to ensure app is ready
+    await Future.delayed(const Duration(milliseconds: 100));
+
+    if (mounted) {
+      Get.offAllNamed(initialRoute);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(
+      backgroundColor: Colors.white,
+      body: Center(
+        child: CircularProgressIndicator(),
+      ),
+    );
+  }
+}
+
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
@@ -157,7 +224,7 @@ class _MyAppState extends State<MyApp> {
                   ),
             ),
           ),
-          initialRoute: AppRoutes.root,
+          initialRoute: AppRoutes.authCheck,
           getPages: AppRouter.routes,
         ),
       ),

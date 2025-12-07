@@ -9,6 +9,15 @@ abstract class IAuthRepository {
     required String password,
   });
 
+  Future<Either<Failure, ProfileEntity>> loginWithPasscode({
+    required String email,
+    required String passcode,
+  });
+
+  Future<Either<Failure, void>> registerPasscode({
+    required String passcode,
+  });
+
   Future<Either<Failure, ProfileEntity>> signUp({
     required String firstName,
     required String lastName,

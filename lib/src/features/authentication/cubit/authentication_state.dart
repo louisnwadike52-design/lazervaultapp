@@ -47,6 +47,81 @@ class PasswordResetEmailSent extends AuthenticationState {
   const PasswordResetEmailSent();
 }
 
+// Password reset completed
+class PasswordResetSuccess extends AuthenticationState {
+  const PasswordResetSuccess();
+}
+
+// Forgot Password Flow State
+class ForgotPasswordInProgress extends AuthenticationState {
+  const ForgotPasswordInProgress({
+    this.email = '',
+    this.isLoading = false,
+    this.errorMessage,
+  });
+
+  final String email;
+  final bool isLoading;
+  final String? errorMessage;
+
+  ForgotPasswordInProgress copyWith({
+    String? email,
+    bool? isLoading,
+    String? errorMessage,
+    bool clearError = false,
+  }) {
+    return ForgotPasswordInProgress(
+      email: email ?? this.email,
+      isLoading: isLoading ?? this.isLoading,
+      errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
+    );
+  }
+
+  @override
+  List<Object?> get props => [email, isLoading, errorMessage];
+}
+
+// Reset Password Flow State
+class ResetPasswordInProgress extends AuthenticationState {
+  const ResetPasswordInProgress({
+    this.email = '',
+    this.token = '',
+    this.newPassword = '',
+    this.confirmPassword = '',
+    this.isLoading = false,
+    this.errorMessage,
+  });
+
+  final String email;
+  final String token;
+  final String newPassword;
+  final String confirmPassword;
+  final bool isLoading;
+  final String? errorMessage;
+
+  ResetPasswordInProgress copyWith({
+    String? email,
+    String? token,
+    String? newPassword,
+    String? confirmPassword,
+    bool? isLoading,
+    String? errorMessage,
+    bool clearError = false,
+  }) {
+    return ResetPasswordInProgress(
+      email: email ?? this.email,
+      token: token ?? this.token,
+      newPassword: newPassword ?? this.newPassword,
+      confirmPassword: confirmPassword ?? this.confirmPassword,
+      isLoading: isLoading ?? this.isLoading,
+      errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
+    );
+  }
+
+  @override
+  List<Object?> get props => [email, token, newPassword, confirmPassword, isLoading, errorMessage];
+}
+
 class CreatingUser extends AuthenticationState {
   const CreatingUser();
 }
@@ -140,6 +215,82 @@ class SignUpInProgress extends AuthenticationState {
         selectedDate,
         phoneNumber,
         isLoading,
+        errorMessage,
+      ];
+}
+
+// Passcode Setup States
+class PasscodeSetupInProgress extends AuthenticationState {
+  const PasscodeSetupInProgress({
+    this.enteredPasscode = '',
+    this.isConfirmMode = false,
+    this.initialPasscode = '',
+    this.isRegistering = false,
+    this.errorMessage,
+  });
+
+  final String enteredPasscode;
+  final bool isConfirmMode;
+  final String initialPasscode;
+  final bool isRegistering;
+  final String? errorMessage;
+
+  PasscodeSetupInProgress copyWith({
+    String? enteredPasscode,
+    bool? isConfirmMode,
+    String? initialPasscode,
+    bool? isRegistering,
+    String? errorMessage,
+    bool clearError = false,
+  }) {
+    return PasscodeSetupInProgress(
+      enteredPasscode: enteredPasscode ?? this.enteredPasscode,
+      isConfirmMode: isConfirmMode ?? this.isConfirmMode,
+      initialPasscode: initialPasscode ?? this.initialPasscode,
+      isRegistering: isRegistering ?? this.isRegistering,
+      errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        enteredPasscode,
+        isConfirmMode,
+        initialPasscode,
+        isRegistering,
+        errorMessage,
+      ];
+}
+
+// Passcode Login States
+class PasscodeLoginInProgress extends AuthenticationState {
+  const PasscodeLoginInProgress({
+    this.enteredPasscode = '',
+    this.isAuthenticating = false,
+    this.errorMessage,
+  });
+
+  final String enteredPasscode;
+  final bool isAuthenticating;
+  final String? errorMessage;
+
+  PasscodeLoginInProgress copyWith({
+    String? enteredPasscode,
+    bool? isAuthenticating,
+    String? errorMessage,
+    bool clearError = false,
+  }) {
+    return PasscodeLoginInProgress(
+      enteredPasscode: enteredPasscode ?? this.enteredPasscode,
+      isAuthenticating: isAuthenticating ?? this.isAuthenticating,
+      errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        enteredPasscode,
+        isAuthenticating,
         errorMessage,
       ];
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart'; // Import intl for date formatting
@@ -44,7 +45,7 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
     super.dispose();
   }
 
-  /// **Date Picker Function**
+  /// **Date Picker Function - Uses native date picker for each platform**
   Future<void> _showDatePicker() async {
     final currentContext = context;
     // Read state only if it's SignUpInProgress
@@ -54,12 +55,61 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
        initialPickerDate = currentState.selectedDate ?? initialPickerDate;
     }
 
-    DateTime? pickedDate = await showDatePicker(
-      context: currentContext,
-      initialDate: initialPickerDate,
-      firstDate: DateTime(1900),
-      lastDate: DateTime.now(),
-    );
+    DateTime? pickedDate;
+
+    // Use platform-specific date picker
+    if (Theme.of(currentContext).platform == TargetPlatform.iOS) {
+      // iOS native picker
+      await showCupertinoModalPopup<void>(
+        context: currentContext,
+        builder: (BuildContext context) {
+          DateTime tempPickedDate = initialPickerDate;
+          return Container(
+            height: 250.h,
+            color: Colors.white,
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: const Text('Cancel'),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        pickedDate = tempPickedDate;
+                        Navigator.of(context).pop();
+                      },
+                      child: const Text('Done'),
+                    ),
+                  ],
+                ),
+                Expanded(
+                  child: CupertinoDatePicker(
+                    mode: CupertinoDatePickerMode.date,
+                    initialDateTime: initialPickerDate,
+                    minimumDate: DateTime(1900),
+                    maximumDate: DateTime.now(),
+                    onDateTimeChanged: (DateTime newDate) {
+                      tempPickedDate = newDate;
+                    },
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      );
+    } else {
+      // Android/Material native picker
+      pickedDate = await showDatePicker(
+        context: currentContext,
+        initialDate: initialPickerDate,
+        firstDate: DateTime(1900),
+        lastDate: DateTime.now(),
+      );
+    }
 
     if (pickedDate != null && currentContext.mounted) {
       // Call the cubit method to update the date
@@ -98,27 +148,31 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
             // IMPORTANT: Ensure the Cubit emits SignUpInProgress state with previous
             // fullName, selectedDate, and phoneNumber after this error to prevent fields clearing.
             break;
-          case AuthenticationSuccess(profile: var profile):
-            // Signup successful, navigate to email verification screen
-            final email = profile.user.email;
-            Get.offAllNamed(
-              '${AppRoutes.emailVerification}?email=$email',
-            );
-            break;
-          case UserCreated(): // Handle successful user creation
+          case AuthenticationSuccess():
+            // Signup successful, navigate to email verification screen first
             Get.snackbar(
-              'Success',
-              'Sign up successful! Please check your email to verify.',
+              'Account Created!',
+              'Please verify your email to continue.',
               snackPosition: SnackPosition.TOP,
               backgroundColor: Colors.green,
               colorText: Colors.white,
               margin: EdgeInsets.all(15.w),
               borderRadius: 10.r,
             );
-            // Navigate after success - Fields should clear implicitly as state changes
-            // Get.offAllNamed(AppRoutes.signIn);
-            // Navigate to Dashboard and clear previous routes
-            Get.offAllNamed(AppRoutes.dashboard);
+            Get.offAllNamed(AppRoutes.emailVerification);
+            break;
+          case UserCreated(): // Handle successful user creation
+            Get.snackbar(
+              'Success',
+              'Sign up successful! Please verify your email.',
+              snackPosition: SnackPosition.TOP,
+              backgroundColor: Colors.green,
+              colorText: Colors.white,
+              margin: EdgeInsets.all(15.w),
+              borderRadius: 10.r,
+            );
+            // Navigate to email verification after successful signup
+            Get.offAllNamed(AppRoutes.emailVerification);
             break;
           default:
              // Handle other states or do nothing
@@ -201,59 +255,11 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
                                 fontWeight: FontWeight.w500,
                                 color: Colors.black54)),
                         SizedBox(height: 20.0.h),
-                        SizedBox(
-                          height: _responsiveController.isMobile ? 350.0.h : 500.0.h,
-                          child: PageView(
-                            controller: _pageController,
-                            physics: const NeverScrollableScrollPhysics(),
-                            children: [
-                              _buildPageOne(context, initialEmail: initialEmail),
-                              _buildPageTwo(context, initialFirstName: firstName, initialLastName: lastName, selectedDate: selectedDate, initialPhoneNumber: phoneNumber),
-                            ],
-                          ),
-                        ),
-                        SizedBox(height: 8.0.h),
-                        // --- Navigation Button ---
-                        displayLoading // Use combined loading state
-                            ? const Center(child: CircularProgressIndicator())
-                            : Center(
-                                child: ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.blue,
-                                    foregroundColor: Colors.white,
-                                    padding: EdgeInsets.symmetric(
-                                        vertical: 12.0,
-                                        horizontal: _responsiveController.screenWidth * 0.4),
-                                  ),
-                                  onPressed: () {
-                                     // Use destructured currentPage
-                                    if (currentPage == 0) {
-                                      context.read<AuthenticationCubit>().signUpNextPage();
-                                    } else {
-                                      // IMPORTANT: The AuthenticationCubit.signUpSubmitted method
-                                      // should implicitly add 'role': 'user' to the data
-                                      // before calling the createUser use case.
-                                      context.read<AuthenticationCubit>().signUpSubmitted();
-                                    }
-                                  },
-                                  child: Text(
-                                     // Use destructured currentPage
-                                    currentPage == 0 ? "Next" : "Sign Up",
-                                    style: const TextStyle(fontWeight: FontWeight.bold),
-                                  ),
-                                ),
-                              ),
-                        SizedBox(height: 24.0.h),
-                        UniversalImageLoader(imagePath: AppData.orDivider),
-                        SizedBox(height: 24.0.h),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            _socialLoginButton(AppData.googleLogo),
-                            SizedBox(width: 10.w),
-                            _socialLoginButton(AppData.appleLogo),
-                          ],
-                        ),
+                        // Page content based on currentPage
+                        if (currentPage == 0)
+                          _buildPageOne(context, initialEmail: initialEmail, isLoading: displayLoading)
+                        else
+                          _buildPageTwo(context, initialFirstName: firstName, initialLastName: lastName, selectedDate: selectedDate, initialPhoneNumber: phoneNumber, isLoading: displayLoading),
                         SizedBox(height: 24.0.h),
                       ],
                     ),
@@ -295,7 +301,7 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
   }
 
   // Helper method for Page 1 content
-  Widget _buildPageOne(BuildContext context, {String? initialEmail}) {
+  Widget _buildPageOne(BuildContext context, {String? initialEmail, required bool isLoading}) {
     return BlocBuilder<AuthenticationCubit, AuthenticationState>(
       builder: (context, state) {
         final password = state is SignUpInProgress ? state.password : '';
@@ -316,12 +322,10 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
         // All password requirements met
         final allPasswordRequirementsMet = hasMinLength && hasUppercase && hasLowercase && hasDigit && hasSpecialChar;
 
-        return SingleChildScrollView(
-          physics: const NeverScrollableScrollPhysics(),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              BuildFormField(
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            BuildFormField(
               name: "email",
               placeholder: "Email",
               keyboardType: TextInputType.emailAddress,
@@ -382,8 +386,40 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
                 ),
               ),
             ],
+            SizedBox(height: 32.0.h),
+            // --- Navigation Button ---
+            isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : Center(
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        foregroundColor: Colors.white,
+                        padding: EdgeInsets.symmetric(
+                            vertical: 12.0,
+                            horizontal: _responsiveController.screenWidth * 0.4),
+                      ),
+                      onPressed: () {
+                        context.read<AuthenticationCubit>().signUpNextPage();
+                      },
+                      child: const Text(
+                        "Next",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
+            SizedBox(height: 16.0.h),
+            UniversalImageLoader(imagePath: AppData.orDivider),
+            SizedBox(height: 16.0.h),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _socialLoginButton(AppData.googleLogo),
+                SizedBox(width: 10.w),
+                _socialLoginButton(AppData.appleLogo),
+              ],
+            ),
           ],
-          ),
         );
       },
     );
@@ -416,11 +452,9 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
 
   // Helper method for Page 2 content
   // Linter Fix: Accept firstName, lastName instead of fullName
-  Widget _buildPageTwo(BuildContext context, {String? initialFirstName, String? initialLastName, DateTime? selectedDate, String? initialPhoneNumber}) {
-    return SingleChildScrollView(
-      physics: const NeverScrollableScrollPhysics(),
-      child: Column(
-        children: [
+  Widget _buildPageTwo(BuildContext context, {String? initialFirstName, String? initialLastName, DateTime? selectedDate, String? initialPhoneNumber, required bool isLoading}) {
+    return Column(
+      children: [
         // Linter Fix: Separate First Name field
         BuildFormField(
           name: "firstname",
@@ -429,7 +463,7 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
           initialValue: initialFirstName,
           onChanged: (value) => context.read<AuthenticationCubit>().signUpFirstNameChanged(value),
         ),
-        SizedBox(height: 8.0.h), 
+        SizedBox(height: 8.0.h),
         // Linter Fix: Separate Last Name field
         BuildFormField(
           name: "lastname",
@@ -459,29 +493,72 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
         // Phone Number Field with Country Code
         IntlPhoneField(
           decoration: InputDecoration(
-            labelText: 'Phone Number',
-            hintText: 'Enter your phone number',
+            hintText: 'Phone Number',
+            hintStyle: TextStyle(
+              fontSize: 16.sp,
+              color: Colors.grey.shade600,
+            ),
+            fillColor: const Color(0xFFF0F0F0),
+            filled: true,
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8.0),
-              borderSide: const BorderSide(color: Colors.grey),
+              borderRadius: BorderRadius.circular(24.0.r),
+              borderSide: BorderSide.none,
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8.0),
-              borderSide: const BorderSide(color: Colors.grey),
+              borderRadius: BorderRadius.circular(24.0.r),
+              borderSide: BorderSide.none,
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8.0),
-              borderSide: const BorderSide(color: Colors.blue, width: 2.0),
+              borderRadius: BorderRadius.circular(24.0.r),
+              borderSide: BorderSide.none,
+            ),
+            contentPadding: EdgeInsets.symmetric(
+              horizontal: 12.0.w,
+              vertical: 12.0.h,
             ),
           ),
+          style: TextStyle(fontSize: 16.sp),
+          dropdownTextStyle: TextStyle(fontSize: 16.sp),
           initialCountryCode: 'US', // Default country code
           onChanged: (phone) {
             // Store complete phone number with country code in E.164 format
             context.read<AuthenticationCubit>().signUpPhoneNumberChanged(phone.completeNumber);
           },
         ),
+        SizedBox(height: 32.0.h),
+        // --- Navigation Button ---
+        isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : Center(
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    foregroundColor: Colors.white,
+                    padding: EdgeInsets.symmetric(
+                        vertical: 12.0,
+                        horizontal: _responsiveController.screenWidth * 0.4),
+                  ),
+                  onPressed: () {
+                    context.read<AuthenticationCubit>().signUpSubmitted();
+                  },
+                  child: const Text(
+                    "Sign Up",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+        SizedBox(height: 16.0.h),
+        UniversalImageLoader(imagePath: AppData.orDivider),
+        SizedBox(height: 16.0.h),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _socialLoginButton(AppData.googleLogo),
+            SizedBox(width: 10.w),
+            _socialLoginButton(AppData.appleLogo),
+          ],
+        ),
       ],
-      ),
     );
   }
 

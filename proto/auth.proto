@@ -1,7 +1,7 @@
 syntax = "proto3";
 
 package pb;
-option go_package = "lazervaultGolang/pb";
+option go_package = "lazervaultGo/pb";
 
 import "google/api/annotations.proto";
 import "protoc-gen-openapiv2/options/annotations.proto";
@@ -25,6 +25,19 @@ message LoginRequest {
   string password = 2;
 }
 
+message LoginWithPasscodeRequest {
+  string email = 1;
+  string login_passcode = 2; // 4-6 digit passcode
+}
+
+message RegisterPasscodeRequest {
+  string login_passcode = 1; // 6-digit passcode to register
+}
+
+message RegisterPasscodeResponse {
+  bool success = 1;
+  string msg = 2;
+}
 
 message LoginResponse {
   Data data = 1;
@@ -194,6 +207,36 @@ service AuthService {
       body: "*"
     };
   }
+
+  rpc LoginWithPasscode(LoginWithPasscodeRequest) returns (LoginResponse) {
+    option (google.api.http) = {
+      post: "/v1/auth/login-passcode"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Login with Passcode"
+      description: "Authenticates a user using their email and login passcode."
+      tags: ["Auth"]
+    };
+  }
+
+  rpc RegisterPasscode(RegisterPasscodeRequest) returns (RegisterPasscodeResponse) {
+    option (google.api.http) = {
+      post: "/v1/auth/register-passcode"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Register Passcode"
+      description: "Registers a login passcode for the authenticated user."
+      tags: ["Auth"]
+      security: {
+        security_requirement: {
+          key: "bearer" value: {}
+        }
+      }
+    };
+  }
+
 rpc RefreshToken(RefreshTokenRequest) returns (RefreshTokenResponse) {
     option (google.api.http) = {
       post: "/v1/auth/refresh-token"

@@ -28,7 +28,7 @@ class AvatarWithDetails extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 18.0.sp,
                     fontWeight: FontWeight.w600,
-                    color: HexColor.fromHex("#262626"),
+                    color: Colors.white,
                   ),
                 ),
               ]),
