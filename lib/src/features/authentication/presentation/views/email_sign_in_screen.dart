@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -9,6 +10,7 @@ import 'package:lazervault/src/features/authentication/cubit/authentication_cubi
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/features/widgets/build_form_field.dart';
 import 'package:lazervault/src/features/widgets/universal_image_loader.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class EmailSignInScreen extends StatefulWidget {
   const EmailSignInScreen({super.key});
@@ -22,11 +24,35 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  final _storage = const FlutterSecureStorage();
+  bool _hasPasscodeSetup = false;
 
   @override
   void initState() {
     super.initState();
     _responsiveController = ResponsiveController(context);
+    // Set status bar icons to white
+    SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.light,
+      ),
+    );
+    _checkPasscodeAvailability();
+  }
+
+  Future<void> _checkPasscodeAvailability() async {
+    final loginMethod = await _storage.read(key: 'login_method');
+    final storedEmail = await _storage.read(key: 'stored_email');
+    if (mounted) {
+      setState(() {
+        _hasPasscodeSetup = loginMethod == 'passcode' && storedEmail != null && storedEmail.isNotEmpty;
+      });
+    }
+  }
+
+  void _switchToPasscodeLogin() {
+    Get.offAllNamed(AppRoutes.passcodeLogin);
   }
 
   @override
@@ -39,22 +65,20 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: NetworkImage(
-              'https://images.unsplash.com/photo-1554755343-a81c0f837656?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1974&q=80',
-            ),
-            fit: BoxFit.cover,
-            colorFilter: ColorFilter.mode(
-              Colors.black.withOpacity(0.7),
-              BlendMode.darken,
+      extendBodyBehindAppBar: true,
+      body: Stack(
+        children: [
+          Container(
+            decoration: const BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage("assets/images/bg/up-down-curve-bg.png"),
+                fit: BoxFit.cover,
+              ),
             ),
           ),
-        ),
-        child: BlocListener<AuthenticationCubit, AuthenticationState>(
-          listener: (context, state) {
-            switch (state) {
+          BlocListener<AuthenticationCubit, AuthenticationState>(
+            listener: (context, state) async {
+              switch (state) {
               case AuthenticationSuccess():
                 Get.snackbar(
                   'Success',
@@ -65,7 +89,15 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
                   margin: EdgeInsets.all(15.w),
                   borderRadius: 10.r,
                 );
-                Get.offAllNamed(AppRoutes.dashboard);
+                // Check if passcode is set up
+                final loginMethod = await _storage.read(key: 'login_method');
+                if (loginMethod == 'passcode') {
+                  // Already has passcode, go to dashboard
+                  Get.offAllNamed(AppRoutes.dashboard);
+                } else {
+                  // No passcode set up, prompt to set it up
+                  Get.offAllNamed(AppRoutes.passcodeSetup);
+                }
                 break;
               case AuthenticationFailure(message: final msg):
                 Get.snackbar(
@@ -78,28 +110,28 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
                   borderRadius: 10.r,
                 );
                 break;
-              default:
-                break;
-            }
-          },
-          child: BlocBuilder<AuthenticationCubit, AuthenticationState>(
-            builder: (context, state) {
-              final isLoading = state is AuthenticationLoading;
+                default:
+                  break;
+              }
+            },
+            child: BlocBuilder<AuthenticationCubit, AuthenticationState>(
+              builder: (context, state) {
+                final isLoading = state is AuthenticationLoading;
 
-              return SafeArea(
-                child: SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(),
-                  padding: EdgeInsets.symmetric(
-                    vertical: 16.0.h,
-                    horizontal: 16.0.w,
-                  ),
-                  child: Form(
-                    key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      SizedBox(height: _responsiveController.screenHeight * 0.1),
-                      Center(
+                return SafeArea(
+                  child: SingleChildScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    padding: EdgeInsets.symmetric(
+                      vertical: 16.0.h,
+                      horizontal: 16.0.w,
+                    ),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          SizedBox(height: _responsiveController.screenHeight * 0.1),
+                          Center(
                         child: UniversalImageLoader(
                           imagePath: AppData.appLogo,
                           height: 70.0.h,
@@ -113,7 +145,7 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
                         style: TextStyle(
                           fontSize: 20.0.sp,
                           fontWeight: FontWeight.w600,
-                          color: Colors.black,
+                          color: Colors.black87,
                         ),
                       ),
                       SizedBox(height: 8.0.h),
@@ -123,14 +155,14 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
                         style: TextStyle(
                           fontSize: 16.0.sp,
                           fontWeight: FontWeight.w500,
-                            color: Colors.black54,
+                          color: Colors.black54,
                         ),
                       ),
                       SizedBox(height: 42.0.h),
                         _buildSignInForm(context),
                       SizedBox(height: 24.0.h),
                       isLoading
-                          ? const Center(child: CircularProgressIndicator(color: Colors.black))
+                          ? const Center(child: CircularProgressIndicator(color: Colors.white))
                           : ElevatedButton(
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.blue,
@@ -151,6 +183,18 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
                                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16.sp),
                               ),
                             ),
+                      if (_hasPasscodeSetup && !isLoading)
+                        TextButton(
+                          onPressed: _switchToPasscodeLogin,
+                          child: Text(
+                            'Use Passcode Instead',
+                            style: TextStyle(
+                              fontSize: 16.sp,
+                              color: Colors.black87,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
                       SizedBox(height: 24.0.h),
                       UniversalImageLoader(imagePath: AppData.orDivider),
                       SizedBox(height: 24.0.h),
@@ -166,17 +210,18 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
                           }),
                         ],
                       ),
-                      SizedBox(height: 40.h),
+                      SizedBox(height: 120.h),
                       _buildSignUpLink(context),
-                      SizedBox(height: 20.h),
+                      SizedBox(height: 30.h),
                     ],
                     ),
                   ),
                 ),
-              );
-            },
+                );
+              },
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -211,6 +256,25 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
             return null;
           },
           ),
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton(
+              onPressed: () => Get.toNamed(AppRoutes.passwordRecovery),
+              style: TextButton.styleFrom(
+                padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 4.h),
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+              child: Text(
+                'Forgot Password?',
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  color: Colors.black87,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ),
         ],
       );
     }
@@ -219,11 +283,10 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
       return InkWell(
         onTap: onPressed,
         child: Container(
-          padding: EdgeInsets.symmetric(vertical: 12.0.h, horizontal: 50.0.w),
+          padding: EdgeInsets.symmetric(vertical: 8.0.h, horizontal: 50.0.w),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.1),
             borderRadius: BorderRadius.circular(32.0.r),
-            border: Border.all(color: Colors.black54, width: 1),
+            border: Border.all(color: Colors.black, width: 1.2),
           ),
           child: UniversalImageLoader(
             imagePath: imagePath,
@@ -240,13 +303,13 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
         children: [
           Text(
             "Don't have an account?",
-            style: TextStyle(fontSize: 16.sp, color: Colors.black54),
+            style: TextStyle(fontSize: 16.sp, color: Colors.white),
           ),
-          SizedBox(width: 8.w),
+          SizedBox(width: 4.w),
           TextButton(
             style: TextButton.styleFrom(
-              foregroundColor: Colors.blueAccent,
-              padding: const EdgeInsets.symmetric(horizontal: 12.0),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
               minimumSize: Size.zero,
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
@@ -254,6 +317,7 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
               "Sign Up",
               style: TextStyle(
                 fontSize: 16.sp,
+                color: Colors.white,
                 fontWeight: FontWeight.bold,
               ),
             ),

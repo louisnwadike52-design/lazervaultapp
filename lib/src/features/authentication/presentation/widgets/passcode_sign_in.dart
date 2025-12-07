@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/data/app_data.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/features/widgets/avatar_with_details.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:flutter/services.dart'; // For PlatformException
-// Assuming you have a gRPC client setup
-// import 'package:lazervault/src/grpc_client.dart'; // Example import
-// import 'package:lazervault/src/generated/auth.pbgrpc.dart'; // Example import
+import 'package:flutter/services.dart';
 
 class PasscodeSignIn extends StatefulWidget {
   const PasscodeSignIn({super.key});
@@ -19,440 +19,387 @@ class PasscodeSignIn extends StatefulWidget {
 }
 
 class _PasscodeSignInState extends State<PasscodeSignIn> {
-  // Removed GlobalKey for Scaffold
+  final int _passcodeLength = 6;
 
-  // Keep passcode state
-  String _enteredPasscode = '';
-  final int _passcodeLength = 6; // Define passcode length
-  bool _isAuthenticating = false; // Loading state for biometric/login
-
-  // Secure storage instance
   final _secureStorage = const FlutterSecureStorage();
-  final String _refreshTokenKey = 'refreshToken'; // Key for storing refresh token
-  final String _userEmailKey = 'userEmail'; // Key for storing user email
-
-  // Local auth instance
   final LocalAuthentication _localAuth = LocalAuthentication();
 
-  // State for biometric icon and type
   bool _canCheckBiometrics = false;
-  IconData _biometricIcon = Icons.fingerprint; // Default icon
+  IconData _biometricIcon = Icons.fingerprint;
   String _biometricTooltip = 'Use Biometrics';
-  BiometricType? _availableBiometricType; // To store the preferred type
+  BiometricType? _availableBiometricType;
+
+  // Stored user data
+  String? _storedFirstName;
+  String? _storedAvatarUrl;
 
   @override
   void initState() {
     super.initState();
     _checkBiometricCapabilities();
+    _loadStoredUserData();
+
+    // Initialize passcode login state
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<AuthenticationCubit>().startPasscodeLogin();
+    });
   }
 
-  // Check device capabilities and set the appropriate icon/tooltip
   Future<void> _checkBiometricCapabilities() async {
     bool canCheck = false;
     List<BiometricType> availableBiometrics = [];
     try {
-       canCheck = await _localAuth.canCheckBiometrics;
-       if (canCheck) {
-          availableBiometrics = await _localAuth.getAvailableBiometrics();
-       }
+      canCheck = await _localAuth.canCheckBiometrics;
+      if (canCheck) {
+        availableBiometrics = await _localAuth.getAvailableBiometrics();
+      }
     } on PlatformException catch (e) {
       print("Error checking biometrics: $e");
-      canCheck = false; // Assume false if error occurs
+      canCheck = false;
     }
 
-    if (!mounted) return; // Check if widget is still in the tree
+    if (!mounted) return;
 
     setState(() {
-        _canCheckBiometrics = canCheck;
-        if (_canCheckBiometrics && availableBiometrics.isNotEmpty) {
-            // Prioritize Face ID over Fingerprint
-            if (availableBiometrics.contains(BiometricType.face)) {
-                _availableBiometricType = BiometricType.face;
-                _biometricIcon = Icons.face; // Or Icons.face_retouching_natural
-                _biometricTooltip = 'Use Face ID';
-            } else if (availableBiometrics.contains(BiometricType.fingerprint) ||
-                       availableBiometrics.contains(BiometricType.strong) || // Android strong often includes fingerprint
-                       availableBiometrics.contains(BiometricType.weak)) { // Android weak might include fingerprint
-                _availableBiometricType = BiometricType.fingerprint;
-                _biometricIcon = Icons.fingerprint;
-                _biometricTooltip = 'Use Fingerprint';
-            } else {
-                 // Neither face nor fingerprint explicitly found, but biometrics are available
-                 // Keep default fingerprint icon or hide button? Let's keep default for now.
-                 _availableBiometricType = availableBiometrics.first; // Take the first available one
-                 _biometricIcon = Icons.fingerprint; // Keep default
-                 _biometricTooltip = 'Use Biometrics';
-            }
+      _canCheckBiometrics = canCheck;
+      if (_canCheckBiometrics && availableBiometrics.isNotEmpty) {
+        if (availableBiometrics.contains(BiometricType.face)) {
+          _availableBiometricType = BiometricType.face;
+          _biometricIcon = Icons.face;
+          _biometricTooltip = 'Use Face ID';
+        } else if (availableBiometrics.contains(BiometricType.fingerprint) ||
+            availableBiometrics.contains(BiometricType.strong) ||
+            availableBiometrics.contains(BiometricType.weak)) {
+          _availableBiometricType = BiometricType.fingerprint;
+          _biometricIcon = Icons.fingerprint;
+          _biometricTooltip = 'Use Fingerprint';
         } else {
-            _availableBiometricType = null; // No specific type usable
+          _availableBiometricType = availableBiometrics.first;
+          _biometricIcon = Icons.fingerprint;
+          _biometricTooltip = 'Use Biometrics';
         }
+      } else {
+        _availableBiometricType = null;
+      }
     });
   }
 
-  // Mock login function - replace with your actual auth logic
-  void _attemptLogin() {
-    if (_enteredPasscode.length == _passcodeLength) {
-      // Simulate network call or validation
-      print('Attempting login with passcode: $_enteredPasscode');
-      // TODO: Replace with actual login verification logic
-      // If successful:
-      Get.offAllNamed(AppRoutes.dashboard);
-      // If failed:
-      // setState(() { _enteredPasscode = ''; }); // Clear passcode on failure
-      // Show error message (e.g., using Get.snackbar or another method)
-    }
-  }
-
-  // --- Passcode Login --- 
-  void _attemptPasscodeLogin() async {
-    if (_enteredPasscode.length != _passcodeLength || _isAuthenticating) return;
-
-    setState(() => _isAuthenticating = true);
-    print('Attempting login with passcode: $_enteredPasscode');
-
+  Future<void> _loadStoredUserData() async {
     try {
-      // TODO: Implement actual passcode login verification
-      // This should call your standard Login gRPC endpoint
-      // Example placeholder:
-      await Future.delayed(const Duration(seconds: 1)); 
-      bool loginSuccess = true; // Replace with actual gRPC call result
-      String? refreshToken = "DUMMY_REFRESH_TOKEN"; // Replace with actual token from LoginResponse
-      String? userEmail = "dummy@example.com"; // Replace with actual email
+      final firstName = await _secureStorage.read(key: 'user_first_name');
+      final avatarUrl = await _secureStorage.read(key: 'user_avatar_url');
 
-      if (loginSuccess) {
-        // Store refresh token and email securely
-        await _secureStorage.write(key: _refreshTokenKey, value: refreshToken);
-        await _secureStorage.write(key: _userEmailKey, value: userEmail);
-        Get.offAllNamed(AppRoutes.dashboard);
-      } else {
-        // Handle login failure
-        _showErrorSnackbar('Login Failed', 'Invalid passcode.');
-        setState(() => _enteredPasscode = ''); // Clear passcode
+      if (mounted) {
+        setState(() {
+          _storedFirstName = firstName;
+          _storedAvatarUrl = avatarUrl;
+        });
       }
     } catch (e) {
-      // Handle exceptions during login
-      _showErrorSnackbar('Login Error', 'An error occurred during login.');
-      print('Login error: $e');
-      setState(() => _enteredPasscode = '');
-    } finally {
-      if(mounted) {
-          setState(() => _isAuthenticating = false);
-      }
+      print('Error loading stored user data: $e');
     }
   }
 
   void _onNumberPressed(String number) {
-    if (_enteredPasscode.length < _passcodeLength && !_isAuthenticating) {
-      setState(() {
-        _enteredPasscode += number;
-      });
-      if (_enteredPasscode.length == _passcodeLength) {
-        _attemptPasscodeLogin();
-      }
-    }
+    context.read<AuthenticationCubit>().passcodeLoginDigitEntered(number);
   }
 
   void _onBackspacePressed() {
-    if (_enteredPasscode.isNotEmpty && !_isAuthenticating) {
-      setState(() {
-        _enteredPasscode =
-            _enteredPasscode.substring(0, _enteredPasscode.length - 1);
-      });
-    }
+    context.read<AuthenticationCubit>().passcodeLoginBackspace();
   }
 
-  // --- Biometric Login --- 
   void _onBiometricPressed() async {
-    // Re-check just in case, although initState should handle it
-    if (!_canCheckBiometrics || _availableBiometricType == null || _isAuthenticating) {
-        if (!_canCheckBiometrics) {
-            _showErrorSnackbar('Biometric Error', 'Biometrics not available or supported.');
-        } else if (_availableBiometricType == null) {
-             _showErrorSnackbar('Biometric Error', 'No supported biometric type found.');
-        }
-        return;
+    final currentState = context.read<AuthenticationCubit>().state;
+    final isAuthenticating = currentState is PasscodeLoginInProgress && currentState.isAuthenticating;
+
+    if (!_canCheckBiometrics || _availableBiometricType == null || isAuthenticating) {
+      if (!_canCheckBiometrics) {
+        _showErrorSnackbar('Biometric Error', 'Biometrics not available or supported.');
+      } else if (_availableBiometricType == null) {
+        _showErrorSnackbar('Biometric Error', 'No supported biometric type found.');
+      }
+      return;
     }
 
-    setState(() => _isAuthenticating = true);
-
     try {
-      // Use stickyAuth to keep prompt visible, biometricOnly to prevent device credential fallback
       final bool didAuthenticate = await _localAuth.authenticate(
-          // Use dynamic reason based on type if desired, or keep generic
-          localizedReason: 'Authenticate using ${_biometricTooltip.split(' ').last}', // e.g., "Authenticate using Face ID"
-          options: const AuthenticationOptions(
-              biometricOnly: true, // Don't allow device passcode fallback
-              stickyAuth: true,
-              // useErrorDialogs: true // Use system dialogs for errors
-          ),
+        localizedReason: 'Authenticate using ${_biometricTooltip.split(' ').last}',
+        options: const AuthenticationOptions(
+          biometricOnly: true,
+          stickyAuth: true,
+        ),
       );
 
       if (didAuthenticate) {
         print('Biometric authentication successful using ${_availableBiometricType?.toString()}.');
-        final storedRefreshToken = await _secureStorage.read(key: _refreshTokenKey);
+        final storedRefreshToken = await _secureStorage.read(key: 'refresh_token');
 
         if (storedRefreshToken != null && storedRefreshToken.isNotEmpty) {
-          print('Calling RefreshToken with stored token...');
-          // TODO: Replace with actual gRPC RefreshToken call
-           Get.offAllNamed(AppRoutes.dashboard); // Placeholder navigation
+          print('Navigating to dashboard after biometric auth...');
+          Get.offAllNamed(AppRoutes.dashboard);
         } else {
           print('No refresh token found for biometric login.');
           _showErrorSnackbar('Biometric Login', 'Please log in with your passcode first to enable biometric login.');
         }
       } else {
         print('Biometric authentication failed.');
-        // Optional: show a message if auth failed, but often not needed
       }
     } on PlatformException catch (e) {
-       print('Biometric PlatformException: ${e.code} - ${e.message}');
-       // Handle specific codes if needed, e.g., e.code == 'LockedOut' or 'PermanentlyLockedOut'
-       _showErrorSnackbar('Biometric Error', 'An error occurred: ${e.message ?? 'Platform error'}');
+      print('Biometric PlatformException: ${e.code} - ${e.message}');
+      _showErrorSnackbar('Biometric Error', 'An error occurred: ${e.message ?? 'Platform error'}');
     } catch (e) {
-       print('Biometric general error: $e');
-       _showErrorSnackbar('Biometric Error', 'An unexpected error occurred.');
-    } finally {
-       if(mounted) {
-          setState(() => _isAuthenticating = false);
-       }
+      print('Biometric general error: $e');
+      _showErrorSnackbar('Biometric Error', 'An unexpected error occurred.');
     }
   }
 
-  // --- Voice Login (Placeholder) ---
   void _onVoicePressed() {
-    if (_isAuthenticating) return;
-    // TODO: Implement Voice authentication trigger (e.g., start listening)
+    final currentState = context.read<AuthenticationCubit>().state;
+    final isAuthenticating = currentState is PasscodeLoginInProgress && currentState.isAuthenticating;
+
+    if (isAuthenticating) return;
     print('Voice login tapped - Placeholder');
     _showErrorSnackbar('Voice Login', 'Voice login is not yet implemented.');
-    // Placeholder - would eventually call a backend endpoint after voice processing
-    // String? userEmail = await _secureStorage.read(key: _userEmailKey);
-    // if (userEmail != null) {
-    //    callVoiceLoginEndpoint(userEmail);
-    // } else { ... }
+  }
+
+  void _switchToEmailPasswordLogin() {
+    Get.offAllNamed(AppRoutes.emailSignIn);
   }
 
   void _showErrorSnackbar(String title, String message) {
-    if(mounted && Get.isSnackbarOpen == false) { // Prevent multiple snackbars
-        Get.snackbar(
-          title,
-          message,
-          backgroundColor: Colors.redAccent.withOpacity(0.8),
-          colorText: Colors.white,
-          snackPosition: SnackPosition.TOP,
-          margin: EdgeInsets.all(15.w),
-          borderRadius: 10.r,
-        );
+    if (mounted && Get.isSnackbarOpen == false) {
+      Get.snackbar(
+        title,
+        message,
+        backgroundColor: Colors.redAccent.withValues(alpha: 0.8),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+        margin: EdgeInsets.all(15.w),
+        borderRadius: 10.r,
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    // Use Theme colors for better consistency
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
 
-    // Calculate approximate available height excluding safe area padding
     final availableHeight = MediaQuery.of(context).size.height -
         MediaQuery.of(context).padding.top -
         MediaQuery.of(context).padding.bottom;
 
-    // Return the Stack directly, without the Scaffold
-    return Stack(
-      children: [
-        // Dark overlay Container
-        Container(
-          color: Colors.black.withOpacity(0.6), // 60% opacity black
-        ),
-        // Original content on top of the overlay
-        SafeArea(
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 24.w),
-            child: SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  // Ensure Column tries to fill at least the viewport height
-                  minHeight: availableHeight,
-                ),
-                child: Column(
-                  // Use MainAxisAlignment.end to push flexible space to the top
-                  // if content is shorter than the screen.
-                  // Use MainAxisAlignment.start if you prefer content aligned top.
-                  // Or use MainAxisAlignment.spaceBetween if you want space distributed.
-                  mainAxisAlignment: MainAxisAlignment.start, // Adjust as needed
-                  children: [
-                    // --- Top Content ---
-                    Padding(
-                      padding: EdgeInsets.only(top: 45.h),
-                      child: AvatarWithDetails(
-                        title: "Hey Louis 👋",
-                        avatar: AppData.dp,
+    // Determine display name
+    String displayName = 'Welcome Back 👋';
+    if (_storedFirstName != null && _storedFirstName!.isNotEmpty) {
+      displayName = 'Hey ${_storedFirstName!} 👋';
+    }
+
+    // Determine avatar to use
+    String avatarPath = _storedAvatarUrl ?? AppData.dp;
+
+    return BlocConsumer<AuthenticationCubit, AuthenticationState>(
+      listener: (context, state) {
+        if (state is AuthenticationSuccess) {
+          Get.offAllNamed(AppRoutes.dashboard);
+        }
+      },
+      builder: (context, state) {
+        // Handle non-passcode login states
+        if (state is! PasscodeLoginInProgress) {
+          return Stack(
+            children: [
+              Container(
+                color: Colors.black.withValues(alpha: 0.6),
+              ),
+              const Center(child: CircularProgressIndicator(color: Colors.white)),
+            ],
+          );
+        }
+
+        final passcodeState = state;
+        final enteredPasscode = passcodeState.enteredPasscode;
+        final isAuthenticating = passcodeState.isAuthenticating;
+
+        return Stack(
+          children: [
+            Container(
+              color: Colors.black.withValues(alpha: 0.6),
+            ),
+          SafeArea(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 24.w),
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minHeight: availableHeight,
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: EdgeInsets.only(top: 45.h),
+                        child: AvatarWithDetails(
+                          title: displayName,
+                          avatar: avatarPath,
+                        ),
                       ),
-                    ),
-                    SizedBox(height: 15.h),
-                    Text(
-                      'Enter your Passcode',
-                      style: textTheme.titleMedium?.copyWith(
-                        color: Colors.white.withOpacity(0.8),
+                      SizedBox(height: 15.h),
+                      Text(
+                        'Enter your Passcode',
+                        style: textTheme.titleMedium?.copyWith(
+                          color: Colors.white.withValues(alpha: 0.8),
+                        ),
                       ),
-                    ),
-                    SizedBox(height: 30.h),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: List.generate(_passcodeLength, (index) {
-                        bool isActive = index < _enteredPasscode.length;
-                        return AnimatedContainer(
-                          duration: const Duration(milliseconds: 200),
-                          margin: EdgeInsets.symmetric(horizontal: 8.w),
-                          width: 18.w,
-                          height: 18.w,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: isActive
-                                ? Colors.white
-                                : Colors.white.withOpacity(0.3),
-                          ),
-                        );
-                      }),
-                    ),
-                    SizedBox(height: 35.h),
-                    GridView.count(
-                      physics: const NeverScrollableScrollPhysics(),
-                      shrinkWrap: true,
-                      crossAxisCount: 3,
-                      mainAxisSpacing: 18.h,
-                      crossAxisSpacing: 25.w,
-                      childAspectRatio: 1.6,
-                      children: [
-                        ...List.generate(9, (index) {
-                          final number = (index + 1).toString();
-                          return _buildNumberButton(number, colorScheme, textTheme.titleLarge, Colors.white);
+                      SizedBox(height: 30.h),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: List.generate(_passcodeLength, (index) {
+                          bool isActive = index < enteredPasscode.length;
+                          return AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            margin: EdgeInsets.symmetric(horizontal: 8.w),
+                            width: 18.w,
+                            height: 18.w,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: isActive
+                                  ? Colors.white
+                                  : Colors.white.withValues(alpha: 0.3),
+                            ),
+                          );
                         }),
-                        Container(),
-                        _buildNumberButton('0', colorScheme, textTheme.titleLarge, Colors.white),
-                        _buildIconButton(
-                          icon: Icons.backspace_outlined,
-                          onPressed: _isAuthenticating ? null : _onBackspacePressed, // Disable while authenticating
-                          iconColor: _isAuthenticating ? Colors.grey : Colors.white,
-                          colorScheme: colorScheme,
-                        ),
-                      ],
-                    ),
-
-                    // --- Flexible Space (Replaces Spacer) ---
-                    // Add flexible space if content is shorter than screen
-                    // Only works well if Column height is constrained or known.
-                    // Given SingleChildScrollView, explicit SizedBox is safer.
-                    SizedBox(height: 30.h), // Adjust this height as needed
-
-                    // --- Bottom Content ---
-                    TextButton(
-                      onPressed: _isAuthenticating ? null : () => Get.toNamed(AppRoutes.passwordRecovery),
-                      child: Text(
-                        'Forgot your passcode?',
-                        style: textTheme.bodyMedium?.copyWith(
-                          color: _isAuthenticating ? Colors.grey.withOpacity(0.8) : Colors.white.withOpacity(0.8),
-                          fontWeight: FontWeight.w600,
-                        ),
                       ),
-                    ),
-                    SizedBox(height: 5.h),
-                    // --- Biometric/Voice Buttons --- 
-                    // Show loading indicator or buttons
-                    _isAuthenticating 
-                    ? Padding(
-                      padding: EdgeInsets.symmetric(vertical: 20.h),
-                      child: const CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5),
-                    )
-                    : Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        // Only show biometric button if it's supported
-                        // if (_canCheckBiometrics && _availableBiometricType != null)
-                           _buildIconButton(
-                             icon: _biometricIcon, // Use the icon determined in initState
-                             onPressed: _onBiometricPressed,
-                             iconColor: Colors.white,
-                             colorScheme: colorScheme,
-                             tooltip: _biometricTooltip, // Use the tooltip determined in initState
-                           ),
-                        // Add spacing only if biometric button is shown
-                        // if (_canCheckBiometrics && _availableBiometricType != null)
-                        //     SizedBox(width: 30.w),
-
-                            // faceId login option 
-                            // if(_availableBiometricType == BiometricType.face)
-                              _buildIconButton(
-                                icon: Icons.face_outlined,
-                                onPressed: _onBiometricPressed,
-                                iconColor: Colors.white,
-                                colorScheme: colorScheme,
-                                tooltip: 'Use Face ID',
-                              ),
-
-                        _buildIconButton(
-                          icon: Icons.mic_none_outlined,
-                          onPressed: _onVoicePressed,
-                          iconColor: Colors.white,
-                          colorScheme: colorScheme,
-                          tooltip: 'Use Voice Login (Placeholder)',
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 15.h),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          "Don't have an account?",
+                      SizedBox(height: 35.h),
+                      GridView.count(
+                        physics: const NeverScrollableScrollPhysics(),
+                        shrinkWrap: true,
+                        crossAxisCount: 3,
+                        mainAxisSpacing: 18.h,
+                        crossAxisSpacing: 25.w,
+                        childAspectRatio: 1.6,
+                        children: [
+                          ...List.generate(9, (index) {
+                            final number = (index + 1).toString();
+                            return _buildNumberButton(number, colorScheme, textTheme.titleLarge, Colors.white, isAuthenticating);
+                          }),
+                          Container(),
+                          _buildNumberButton('0', colorScheme, textTheme.titleLarge, Colors.white, isAuthenticating),
+                          _buildIconButton(
+                            icon: Icons.backspace_outlined,
+                            onPressed: isAuthenticating ? null : _onBackspacePressed,
+                            iconColor: isAuthenticating ? Colors.grey : Colors.white,
+                            colorScheme: colorScheme,
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 30.h),
+                      TextButton(
+                        onPressed: isAuthenticating ? null : () => Get.toNamed(AppRoutes.passwordRecovery),
+                        child: Text(
+                          'Forgot your passcode?',
                           style: textTheme.bodyMedium?.copyWith(
-                            color: Colors.white.withOpacity(0.7),
+                            color: isAuthenticating ? Colors.grey.withValues(alpha: 0.8) : Colors.white.withValues(alpha: 0.8),
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
-                        TextButton(
-                          // Disable during auth attempt
-                          onPressed: _isAuthenticating ? null : () => Get.offAllNamed(AppRoutes.signUp),
-                          child: Text(
-                            "Sign Up",
+                      ),
+                      SizedBox(height: 5.h),
+                      isAuthenticating
+                          ? Padding(
+                              padding: EdgeInsets.symmetric(vertical: 20.h),
+                              child: const CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5),
+                            )
+                          : Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                if (_canCheckBiometrics && _availableBiometricType != null)
+                                  _buildIconButton(
+                                    icon: _biometricIcon,
+                                    onPressed: _onBiometricPressed,
+                                    iconColor: Colors.white,
+                                    colorScheme: colorScheme,
+                                    tooltip: _biometricTooltip,
+                                  ),
+                                if (_canCheckBiometrics && _availableBiometricType != null)
+                                  SizedBox(width: 20.w),
+                                _buildIconButton(
+                                  icon: Icons.mic_none_outlined,
+                                  onPressed: _onVoicePressed,
+                                  iconColor: Colors.white,
+                                  colorScheme: colorScheme,
+                                  tooltip: 'Use Voice Login (Placeholder)',
+                                ),
+                              ],
+                            ),
+                      SizedBox(height: 15.h),
+                      TextButton(
+                        onPressed: isAuthenticating ? null : _switchToEmailPasswordLogin,
+                        child: Text(
+                          "Use Email/Password Instead",
+                          style: textTheme.bodyMedium?.copyWith(
+                            color: isAuthenticating ? Colors.grey : Colors.white,
+                            fontWeight: FontWeight.bold,
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 10.h),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            "Don't have an account?",
                             style: textTheme.bodyMedium?.copyWith(
-                              color: _isAuthenticating ? Colors.grey : Colors.white,
-                              fontWeight: FontWeight.bold,
+                              color: Colors.white.withValues(alpha: 0.7),
                             ),
                           ),
-                        )
-                      ],
-                    ),
-                    SizedBox(height: 24.h),
-                  ],
+                          TextButton(
+                            onPressed: isAuthenticating ? null : () => Get.offAllNamed(AppRoutes.signUp),
+                            child: Text(
+                              "Sign Up",
+                              style: textTheme.bodyMedium?.copyWith(
+                                color: isAuthenticating ? Colors.grey : Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          )
+                        ],
+                      ),
+                      SizedBox(height: 24.h),
+                    ],
+                  ),
                 ),
               ),
             ),
           ),
-        ),
-      ],
+          ],
+        );
+      },
     );
   }
 
-  // Updated helper to accept text style
   Widget _buildNumberButton(
-      String number, ColorScheme colorScheme, TextStyle? textStyle, Color textColor) {
+      String number, ColorScheme colorScheme, TextStyle? textStyle, Color textColor, bool isAuthenticating) {
     return Material(
       color: Colors.transparent,
       shape: const CircleBorder(),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-        onTap: _isAuthenticating ? null : () => _onNumberPressed(number), // Disable while authenticating
+        onTap: isAuthenticating ? null : () => _onNumberPressed(number),
         child: Container(
           alignment: Alignment.center,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: Colors.white.withOpacity(0.15),
+            color: Colors.white.withValues(alpha: 0.15),
           ),
           child: Text(
             number,
             style: (textStyle ?? Theme.of(context).textTheme.titleLarge)?.copyWith(
               fontWeight: FontWeight.w500,
-              color: _isAuthenticating ? Colors.grey : textColor,
+              color: isAuthenticating ? Colors.grey : textColor,
             ),
           ),
         ),
@@ -460,10 +407,9 @@ class _PasscodeSignInState extends State<PasscodeSignIn> {
     );
   }
 
-  // Helper to build consistently styled icon buttons
   Widget _buildIconButton({
     required IconData icon,
-    required VoidCallback? onPressed, // Allow null for disabling
+    required VoidCallback? onPressed,
     required ColorScheme colorScheme,
     required Color iconColor,
     String? tooltip,
@@ -472,7 +418,7 @@ class _PasscodeSignInState extends State<PasscodeSignIn> {
       icon: Icon(icon),
       tooltip: tooltip,
       iconSize: 30.sp,
-      color: onPressed == null ? Colors.grey : iconColor, // Grey out if disabled
+      color: onPressed == null ? Colors.grey : iconColor,
       onPressed: onPressed,
       splashRadius: 28.r,
     );

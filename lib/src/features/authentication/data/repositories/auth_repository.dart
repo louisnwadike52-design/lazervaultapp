@@ -74,6 +74,57 @@ class AuthRepositoryImpl implements IAuthRepository {
   }
 
   @override
+  Future<Either<Failure, ProfileEntity>> loginWithPasscode({
+    required String email,
+    required String passcode,
+  }) async {
+    return _processAuthResponse(() async {
+      final request = auth_req_resp.LoginWithPasscodeRequest(
+        email: email,
+        loginPasscode: passcode,
+      );
+      return await _authServiceClient.loginWithPasscode(request);
+    });
+  }
+
+  @override
+  Future<Either<Failure, void>> registerPasscode({
+    required String passcode,
+  }) async {
+    try {
+      final request = auth_req_resp.RegisterPasscodeRequest(
+        loginPasscode: passcode,
+      );
+      final callOptions = await _callOptionsHelper.withAuth();
+      final response = await _authServiceClient.registerPasscode(
+        request,
+        options: callOptions,
+      );
+
+      if (response.success) {
+        return const Right(null);
+      } else {
+        return Left(ServerFailure(
+          message: response.msg.isNotEmpty
+              ? response.msg
+              : 'Failed to register passcode',
+          statusCode: 400,
+        ));
+      }
+    } on GrpcError catch (e) {
+      return Left(ServerFailure(
+        message: e.message ?? 'gRPC error during passcode registration',
+        statusCode: e.code,
+      ));
+    } catch (e) {
+      return Left(ServerFailure(
+        message: 'Unexpected error during passcode registration: $e',
+        statusCode: 500,
+      ));
+    }
+  }
+
+  @override
   Future<Either<Failure, ProfileEntity>> signUp({
     required String firstName,
     required String lastName,

@@ -5,7 +5,7 @@ import 'package:get/get.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/authentication/cubit/email_verification_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/email_verification_state.dart';
-import 'package:lazervault/src/features/widgets/build_form_field.dart';
+import 'package:lazervault/src/features/widgets/verification_code_input.dart';
 import 'package:lazervault/src/features/widgets/universal_image_loader.dart';
 import 'package:lazervault/core/data/app_data.dart';
 
@@ -20,8 +20,6 @@ class EmailVerificationScreen extends StatefulWidget {
 }
 
 class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
-  final TextEditingController _codeController = TextEditingController();
-
   @override
   void initState() {
     super.initState();
@@ -33,12 +31,6 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
   }
 
   @override
-  void dispose() {
-    _codeController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
@@ -46,22 +38,27 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
         listener: (context, state) {
           switch (state) {
             case EmailVerificationSuccess():
-              Get.snackbar(
-                'Success',
-                'Email verified successfully!',
-                snackPosition: SnackPosition.TOP,
-                backgroundColor: Colors.green,
-                colorText: Colors.white,
-                margin: EdgeInsets.all(15.w),
-                borderRadius: 10.r,
-              );
-              // Navigate to dashboard
-              Get.offAllNamed(AppRoutes.dashboard);
+              // Navigate to passcode setup on success
+              Get.offAllNamed(AppRoutes.passcodeSetup);
               break;
 
             case EmailVerificationSkipped():
-              // Navigate to dashboard even if skipped
-              Get.offAllNamed(AppRoutes.dashboard);
+              // Navigate to passcode setup even if skipped
+              Get.offAllNamed(AppRoutes.passcodeSetup);
+              break;
+
+            case EmailVerificationFailure():
+              // Show error message
+              Get.snackbar(
+                'Error',
+                state.message,
+                snackPosition: SnackPosition.TOP,
+                backgroundColor: Colors.redAccent,
+                colorText: Colors.white,
+                margin: EdgeInsets.all(16.w),
+                borderRadius: 12.r,
+                duration: const Duration(seconds: 3),
+              );
               break;
 
             case EmailVerificationInProgress():
@@ -72,8 +69,9 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                   snackPosition: SnackPosition.TOP,
                   backgroundColor: Colors.redAccent,
                   colorText: Colors.white,
-                  margin: EdgeInsets.all(15.w),
-                  borderRadius: 10.r,
+                  margin: EdgeInsets.all(16.w),
+                  borderRadius: 12.r,
+                  duration: const Duration(seconds: 3),
                 );
               }
               if (state.successMessage.isNotEmpty) {
@@ -83,8 +81,9 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                   snackPosition: SnackPosition.TOP,
                   backgroundColor: Colors.green,
                   colorText: Colors.white,
-                  margin: EdgeInsets.all(15.w),
-                  borderRadius: 10.r,
+                  margin: EdgeInsets.all(16.w),
+                  borderRadius: 12.r,
+                  duration: const Duration(seconds: 2),
                 );
               }
               break;
@@ -111,11 +110,11 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                 SafeArea(
                   child: SingleChildScrollView(
                     child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 20.w),
+                      padding: EdgeInsets.symmetric(horizontal: 24.w),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          SizedBox(height: 60.h),
+                          SizedBox(height: 48.h),
 
                           // Logo
                           Center(
@@ -126,7 +125,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                             ),
                           ),
 
-                          SizedBox(height: 40.h),
+                          SizedBox(height: 32.h),
 
                           // Title
                           Text(
@@ -139,7 +138,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                             textAlign: TextAlign.center,
                           ),
 
-                          SizedBox(height: 12.h),
+                          SizedBox(height: 8.h),
 
                           // Subtitle
                           Text(
@@ -156,118 +155,93 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                           SizedBox(height: 40.h),
 
                           // Verification Code Input
-                          BuildFormField(
-                            name: 'verification_code',
-                            placeholder: 'Enter 6-digit code',
-                            labelText: 'Verification Code',
-                            controller: _codeController,
-                            keyboardType: TextInputType.text,
-                            textCapitalization: TextCapitalization.characters,
-                            maxLength: 6,
-                            onChanged: (value) {
+                          VerificationCodeInput(
+                            onChanged: (code) {
                               context
                                   .read<EmailVerificationCubit>()
-                                  .updateVerificationCode(value);
+                                  .updateVerificationCode(code);
+                            },
+                            onCompleted: (code) {
+                              context
+                                  .read<EmailVerificationCubit>()
+                                  .updateVerificationCode(code);
+                              // Auto-submit when all 6 digits are entered
+                              context
+                                  .read<EmailVerificationCubit>()
+                                  .verifyEmail();
                             },
                           ),
 
-                          SizedBox(height: 20.h),
+                          SizedBox(height: 24.h),
 
-                          // Resend Code Button
-                          Align(
-                            alignment: Alignment.centerRight,
-                            child: TextButton(
-                              onPressed: isResending
-                                  ? null
-                                  : () {
-                                      context
-                                          .read<EmailVerificationCubit>()
-                                          .resendVerificationEmail();
-                                    },
-                              child: Text(
-                                isResending
-                                    ? 'Sending...'
-                                    : 'Resend Code',
-                                style: TextStyle(
-                                  color: isResending
-                                      ? Colors.grey
-                                      : Theme.of(context).primaryColor,
-                                  fontSize: 14.sp,
-                                  fontWeight: FontWeight.w600,
+                          // Loading Indicator
+                          if (isLoading)
+                            Center(
+                              child: Padding(
+                                padding: EdgeInsets.symmetric(vertical: 8.h),
+                                child: SizedBox(
+                                  height: 24.h,
+                                  width: 24.w,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2.5,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      Theme.of(context).primaryColor,
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
 
-                          SizedBox(height: 30.h),
+                          if (!isLoading) SizedBox(height: 24.h),
 
-                          // Verify Button
-                          ElevatedButton(
-                            onPressed: isLoading
-                                ? null
-                                : () {
-                                    context
-                                        .read<EmailVerificationCubit>()
-                                        .verifyEmail();
-                                  },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Theme.of(context).primaryColor,
-                              foregroundColor: Colors.white,
-                              padding: EdgeInsets.symmetric(vertical: 16.h),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12.r),
-                              ),
-                            ),
-                            child: isLoading
-                                ? SizedBox(
-                                    height: 20.h,
-                                    width: 20.w,
-                                    child: const CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      valueColor: AlwaysStoppedAnimation<Color>(
-                                          Colors.white),
-                                    ),
-                                  )
-                                : Text(
-                                    'Verify Email',
-                                    style: TextStyle(
-                                      fontSize: 16.sp,
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                          // Resend Code and Skip Links Row
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              TextButton(
+                                onPressed: isResending || isLoading
+                                    ? null
+                                    : () {
+                                        context
+                                            .read<EmailVerificationCubit>()
+                                            .resendVerificationEmail();
+                                      },
+                                child: Text(
+                                  isResending
+                                      ? 'Sending...'
+                                      : 'Resend Code',
+                                  style: TextStyle(
+                                    color: isResending || isLoading
+                                        ? Colors.grey
+                                        : Theme.of(context).primaryColor,
+                                    fontSize: 14.sp,
+                                    fontWeight: FontWeight.w600,
                                   ),
+                                ),
+                              ),
+                              TextButton(
+                                onPressed: isLoading
+                                    ? null
+                                    : () {
+                                        context
+                                            .read<EmailVerificationCubit>()
+                                            .skipVerification();
+                                      },
+                                child: Text(
+                                  'Skip for Now',
+                                  style: TextStyle(
+                                    color: isLoading
+                                        ? Colors.grey
+                                        : Colors.black54,
+                                    fontSize: 14.sp,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
 
-                          SizedBox(height: 16.h),
-
-                          // Skip Button
-                          OutlinedButton(
-                            onPressed: isLoading
-                                ? null
-                                : () {
-                                    // Show confirmation dialog
-                                    _showSkipConfirmationDialog(context);
-                                  },
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: Theme.of(context).primaryColor,
-                              side: BorderSide(
-                                color: Theme.of(context).primaryColor,
-                                width: 1.5,
-                              ),
-                              padding: EdgeInsets.symmetric(vertical: 16.h),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12.r),
-                              ),
-                            ),
-                            child: Text(
-                              'Skip for Now',
-                              style: TextStyle(
-                                fontSize: 16.sp,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-
-                          SizedBox(height: 40.h),
+                          SizedBox(height: 24.h),
                         ],
                       ),
                     ),
@@ -277,55 +251,6 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
             );
           },
         ),
-      ),
-    );
-  }
-
-  void _showSkipConfirmationDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(
-          'Skip Email Verification?',
-          style: TextStyle(
-            fontSize: 18.sp,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        content: Text(
-          'You can verify your email later from your profile settings. Some features may be limited until you verify your email.',
-          style: TextStyle(fontSize: 14.sp),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(dialogContext).pop();
-            },
-            child: Text(
-              'Cancel',
-              style: TextStyle(
-                color: Colors.grey,
-                fontSize: 14.sp,
-              ),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.of(dialogContext).pop();
-              context.read<EmailVerificationCubit>().skipVerification();
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Theme.of(context).primaryColor,
-            ),
-            child: Text(
-              'Skip',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 14.sp,
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }

@@ -14,6 +14,8 @@ import 'package:lazervault/src/features/authentication/data/repositories/auth_re
 import 'package:lazervault/src/features/authentication/domain/entities/user.dart';
 import 'package:lazervault/src/features/authentication/domain/repositories/i_auth_repository.dart';
 import 'package:lazervault/src/features/authentication/domain/usecases/login_usecase.dart';
+import 'package:lazervault/src/features/authentication/domain/usecases/login_with_passcode_usecase.dart';
+import 'package:lazervault/src/features/authentication/domain/usecases/register_passcode_usecase.dart';
 import 'package:lazervault/src/features/authentication/domain/usecases/sign_in_with_apple_usecase.dart';
 import 'package:lazervault/src/features/authentication/domain/usecases/sign_in_with_google_usecase.dart';
 import 'package:lazervault/src/features/authentication/domain/usecases/sign_up_usecase.dart';
@@ -308,6 +310,8 @@ Future<void> init() async {
   // Use Cases
   serviceLocator.registerLazySingleton(() => SignUpUseCase(serviceLocator<IAuthRepository>()));
   serviceLocator.registerLazySingleton(() => LoginUseCase(serviceLocator<IAuthRepository>()));
+  serviceLocator.registerLazySingleton(() => LoginWithPasscodeUseCase(serviceLocator<IAuthRepository>()));
+  serviceLocator.registerLazySingleton(() => RegisterPasscodeUseCase(serviceLocator<IAuthRepository>()));
   serviceLocator.registerLazySingleton(() => SignInWithGoogleUseCase(serviceLocator<IAuthRepository>()));
   serviceLocator.registerLazySingleton(() => SignInWithAppleUseCase(serviceLocator<IAuthRepository>()));
   serviceLocator.registerLazySingleton(() => ForgotPasswordUseCase(serviceLocator<IAuthRepository>()));
@@ -321,10 +325,13 @@ Future<void> init() async {
   // Blocs/Cubits
   serviceLocator.registerFactory(() => AuthenticationCubit(
         login: serviceLocator<LoginUseCase>(),
+        loginWithPasscode: serviceLocator<LoginWithPasscodeUseCase>(),
+        registerPasscode: serviceLocator<RegisterPasscodeUseCase>(),
         signUp: serviceLocator<SignUpUseCase>(),
         signInWithGoogle: serviceLocator<SignInWithGoogleUseCase>(),
         signInWithApple: serviceLocator<SignInWithAppleUseCase>(),
         forgotPassword: serviceLocator<ForgotPasswordUseCase>(),
+        resetPassword: serviceLocator<ResetPasswordUseCase>(),
         verifyEmail: serviceLocator<VerifyEmailUseCase>(),
         resendVerification: serviceLocator<ResendVerificationUseCase>(),
         checkEmailAvailability: serviceLocator<CheckEmailAvailabilityUseCase>(),

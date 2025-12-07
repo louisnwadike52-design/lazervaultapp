@@ -3,10 +3,13 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import '../domain/usecases/login_usecase.dart';
+import '../domain/usecases/login_with_passcode_usecase.dart';
+import '../domain/usecases/register_passcode_usecase.dart';
 import '../domain/usecases/sign_up_usecase.dart';
 import '../domain/usecases/sign_in_with_google_usecase.dart';
 import '../domain/usecases/sign_in_with_apple_usecase.dart';
 import '../domain/usecases/forgot_password_usecase.dart';
+import '../domain/usecases/reset_password_usecase.dart';
 import '../domain/usecases/verify_email_usecase.dart';
 import '../domain/usecases/resend_verification_usecase.dart';
 import '../domain/usecases/check_email_availability_usecase.dart';
@@ -15,10 +18,13 @@ import 'authentication_state.dart';
 
 class AuthenticationCubit extends Cubit<AuthenticationState> {
   final LoginUseCase _loginUseCase;
+  final LoginWithPasscodeUseCase _loginWithPasscodeUseCase;
+  final RegisterPasscodeUseCase _registerPasscodeUseCase;
   final SignUpUseCase _signUpUseCase;
   final SignInWithGoogleUseCase _signInWithGoogleUseCase;
   final SignInWithAppleUseCase _signInWithAppleUseCase;
   final ForgotPasswordUseCase _forgotPasswordUseCase;
+  final ResetPasswordUseCase _resetPasswordUseCase;
   final VerifyEmailUseCase _verifyEmailUseCase;
   final ResendVerificationUseCase _resendVerificationUseCase;
   final CheckEmailAvailabilityUseCase _checkEmailAvailabilityUseCase;
@@ -28,19 +34,25 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
 
   AuthenticationCubit({
     required LoginUseCase login,
+    required LoginWithPasscodeUseCase loginWithPasscode,
+    required RegisterPasscodeUseCase registerPasscode,
     required SignUpUseCase signUp,
     required SignInWithGoogleUseCase signInWithGoogle,
     required SignInWithAppleUseCase signInWithApple,
     required ForgotPasswordUseCase forgotPassword,
+    required ResetPasswordUseCase resetPassword,
     required VerifyEmailUseCase verifyEmail,
     required ResendVerificationUseCase resendVerification,
     required CheckEmailAvailabilityUseCase checkEmailAvailability,
     FlutterSecureStorage? storage,
   })  : _loginUseCase = login,
+        _loginWithPasscodeUseCase = loginWithPasscode,
+        _registerPasscodeUseCase = registerPasscode,
         _signUpUseCase = signUp,
         _signInWithGoogleUseCase = signInWithGoogle,
         _signInWithAppleUseCase = signInWithApple,
         _forgotPasswordUseCase = forgotPassword,
+        _resetPasswordUseCase = resetPassword,
         _verifyEmailUseCase = verifyEmail,
         _resendVerificationUseCase = resendVerification,
         _checkEmailAvailabilityUseCase = checkEmailAvailability,
@@ -98,6 +110,15 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
         key: _userEmailKey,
         value: profile.user.email,
       );
+      // Store user profile data for passcode screen
+      await _storage.write(
+        key: 'user_first_name',
+        value: profile.user.firstName,
+      );
+      await _storage.write(
+        key: 'user_last_name',
+        value: profile.user.lastName,
+      );
       _currentProfile = profile;
     } catch (e) {
       print('Error saving session: $e');
@@ -110,6 +131,9 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       await _storage.delete(key: _refreshTokenKey);
       await _storage.delete(key: _userIdKey);
       await _storage.delete(key: _userEmailKey);
+      await _storage.delete(key: 'user_first_name');
+      await _storage.delete(key: 'user_last_name');
+      await _storage.delete(key: 'user_avatar_url');
       _currentProfile = null;
     } catch (e) {
       print('Error clearing session: $e');
@@ -127,16 +151,71 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
 
     result.fold(
       (failure) {
-        _showErrorSnackbar('Login Failed', failure.message);
+        // Show generic error message for security
+        const genericError = 'Invalid email or password';
         emit(AuthenticationFailure(
-          failure.message,
+          genericError,
           statusCode: failure.statusCode,
         ));
       },
       (profile) async {
         await _saveSession(profile);
+        emit(AuthenticationSuccess(profile));
+      },
+    );
+  }
+
+  Future<void> loginWithPasscode({
+    required String email,
+    required String passcode,
+  }) async {
+    emit(const AuthenticationLoading());
+
+    final result = await _loginWithPasscodeUseCase(
+      email: email,
+      passcode: passcode,
+    );
+
+    result.fold(
+      (failure) {
+        emit(AuthenticationError(failure.message));
+      },
+      (profile) async {
+        await _saveSession(profile);
+        // Store login method preference
+        await _storage.write(key: 'login_method', value: 'passcode');
+        await _storage.write(key: 'stored_email', value: email);
         _showSuccessSnackbar('Welcome back!', '${profile.user.firstName} ${profile.user.lastName}');
         emit(AuthenticationSuccess(profile));
+      },
+    );
+  }
+
+  Future<void> registerPasscode({
+    required String passcode,
+  }) async {
+    emit(const AuthenticationLoading());
+
+    final result = await _registerPasscodeUseCase(passcode: passcode);
+
+    result.fold(
+      (failure) {
+        _showErrorSnackbar('Passcode Registration Failed', failure.message);
+        emit(AuthenticationError(failure.message));
+      },
+      (_) async {
+        // Store login method preference after successful registration
+        await _storage.write(key: 'login_method', value: 'passcode');
+        if (_currentProfile != null) {
+          await _storage.write(key: 'stored_email', value: _currentProfile!.user.email);
+        }
+        _showSuccessSnackbar('Success!', 'Passcode registered successfully');
+        // Return to the current authenticated state
+        if (_currentProfile != null) {
+          emit(AuthenticationSuccess(_currentProfile!));
+        } else {
+          emit(AuthenticationInitial());
+        }
       },
     );
   }
@@ -228,7 +307,59 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     );
   }
 
-  // --- Password Recovery ---
+  // --- Password Recovery Flow---
+  void startForgotPassword() {
+    emit(const ForgotPasswordInProgress());
+  }
+
+  void forgotPasswordEmailChanged(String email) {
+    if (state is ForgotPasswordInProgress) {
+      final currentState = state as ForgotPasswordInProgress;
+      emit(currentState.copyWith(email: email, clearError: true));
+    }
+  }
+
+  Future<void> submitForgotPassword() async {
+    if (state is! ForgotPasswordInProgress) return;
+
+    final currentState = state as ForgotPasswordInProgress;
+
+    // Validate email
+    if (currentState.email.isEmpty) {
+      emit(currentState.copyWith(errorMessage: 'Email is required'));
+      return;
+    }
+
+    if (!_isValidEmail(currentState.email)) {
+      emit(currentState.copyWith(errorMessage: 'Please enter a valid email address'));
+      return;
+    }
+
+    emit(currentState.copyWith(isLoading: true, clearError: true));
+
+    final result = await _forgotPasswordUseCase(currentState.email);
+
+    result.fold(
+      (failure) {
+        _showErrorSnackbar('Password Reset Failed', failure.message);
+        if (state is ForgotPasswordInProgress) {
+          emit((state as ForgotPasswordInProgress).copyWith(
+            isLoading: false,
+            errorMessage: failure.message,
+          ));
+        }
+      },
+      (_) {
+        _showSuccessSnackbar(
+          'Email Sent!',
+          'Check your email for password reset instructions.',
+        );
+        emit(PasswordResetEmailSent());
+      },
+    );
+  }
+
+  // Legacy method for backward compatibility
   Future<void> forgotPassword(String email) async {
     emit(AuthenticationLoading());
 
@@ -248,6 +379,73 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
           'Check your email for password reset instructions.',
         );
         emit(PasswordResetEmailSent());
+      },
+    );
+  }
+
+  // --- Reset Password Flow ---
+  void startResetPassword({required String email, required String token}) {
+    emit(ResetPasswordInProgress(email: email, token: token));
+  }
+
+  void resetPasswordNewPasswordChanged(String password) {
+    if (state is ResetPasswordInProgress) {
+      final currentState = state as ResetPasswordInProgress;
+      emit(currentState.copyWith(newPassword: password, clearError: true));
+    }
+  }
+
+  void resetPasswordConfirmPasswordChanged(String password) {
+    if (state is ResetPasswordInProgress) {
+      final currentState = state as ResetPasswordInProgress;
+      emit(currentState.copyWith(confirmPassword: password, clearError: true));
+    }
+  }
+
+  Future<void> submitResetPassword() async {
+    if (state is! ResetPasswordInProgress) return;
+
+    final currentState = state as ResetPasswordInProgress;
+
+    // Validate passwords
+    final passwordError = _validatePassword(currentState.newPassword);
+    if (passwordError != null) {
+      _showErrorSnackbar('Invalid Password', passwordError);
+      emit(currentState.copyWith(errorMessage: passwordError));
+      return;
+    }
+
+    if (currentState.newPassword != currentState.confirmPassword) {
+      const error = 'Passwords do not match';
+      _showErrorSnackbar('Error', error);
+      emit(currentState.copyWith(errorMessage: error));
+      return;
+    }
+
+    emit(currentState.copyWith(isLoading: true, clearError: true));
+
+    final result = await _resetPasswordUseCase(
+      email: currentState.email,
+      token: currentState.token,
+      newPassword: currentState.newPassword,
+    );
+
+    result.fold(
+      (failure) {
+        _showErrorSnackbar('Password Reset Failed', failure.message);
+        if (state is ResetPasswordInProgress) {
+          emit((state as ResetPasswordInProgress).copyWith(
+            isLoading: false,
+            errorMessage: failure.message,
+          ));
+        }
+      },
+      (_) {
+        _showSuccessSnackbar(
+          'Password Reset!',
+          'Your password has been successfully reset. You can now log in.',
+        );
+        emit(const PasswordResetSuccess());
       },
     );
   }
@@ -728,6 +926,185 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       duration: const Duration(seconds: 3),
       isDismissible: true,
       dismissDirection: DismissDirection.horizontal,
+    );
+  }
+
+  // --- Passcode Setup Flow Methods ---
+  void startPasscodeSetup() {
+    emit(const PasscodeSetupInProgress());
+  }
+
+  void passcodeSetupDigitEntered(String digit) {
+    if (state is PasscodeSetupInProgress) {
+      final currentState = state as PasscodeSetupInProgress;
+      if (currentState.enteredPasscode.length < 6) {
+        final newPasscode = currentState.enteredPasscode + digit;
+        emit(currentState.copyWith(enteredPasscode: newPasscode, clearError: true));
+
+        // Auto-submit when 6 digits entered
+        if (newPasscode.length == 6) {
+          _handlePasscodeSetupComplete(newPasscode);
+        }
+      }
+    }
+  }
+
+  void passcodeSetupBackspace() {
+    if (state is PasscodeSetupInProgress) {
+      final currentState = state as PasscodeSetupInProgress;
+      if (currentState.enteredPasscode.isNotEmpty) {
+        final newPasscode = currentState.enteredPasscode.substring(
+          0,
+          currentState.enteredPasscode.length - 1,
+        );
+        emit(currentState.copyWith(enteredPasscode: newPasscode, clearError: true));
+      }
+    }
+  }
+
+  void _handlePasscodeSetupComplete(String passcode) {
+    if (state is PasscodeSetupInProgress) {
+      final currentState = state as PasscodeSetupInProgress;
+
+      if (!currentState.isConfirmMode) {
+        // First entry - ask for confirmation
+        emit(PasscodeSetupInProgress(
+          isConfirmMode: true,
+          initialPasscode: passcode,
+          enteredPasscode: '',
+        ));
+      } else {
+        // Confirmation mode - check if they match
+        if (passcode == currentState.initialPasscode) {
+          _registerPasscodeFromSetup(passcode);
+        } else {
+          _showErrorSnackbar('Error', 'Passcodes do not match. Please try again.');
+          emit(const PasscodeSetupInProgress()); // Reset to initial mode
+        }
+      }
+    }
+  }
+
+  Future<void> _registerPasscodeFromSetup(String passcode) async {
+    if (state is! PasscodeSetupInProgress) return;
+
+    final currentState = state as PasscodeSetupInProgress;
+    emit(currentState.copyWith(isRegistering: true, clearError: true));
+
+    // Store passcode locally
+    try {
+      await _storage.write(key: 'user_passcode', value: passcode);
+    } catch (e) {
+      print('Error storing passcode locally: $e');
+    }
+
+    // Call backend API
+    final result = await _registerPasscodeUseCase(passcode: passcode);
+
+    result.fold(
+      (failure) {
+        _showErrorSnackbar('Passcode Registration Failed', failure.message);
+        emit(PasscodeSetupInProgress(
+          errorMessage: failure.message,
+          isRegistering: false,
+        ));
+      },
+      (_) async {
+        // Store login method preference
+        await _storage.write(key: 'login_method', value: 'passcode');
+        if (_currentProfile != null) {
+          await _storage.write(key: 'stored_email', value: _currentProfile!.user.email);
+        }
+        _showSuccessSnackbar('Success!', 'Passcode registered successfully');
+
+        // Navigate to dashboard by emitting success
+        if (_currentProfile != null) {
+          emit(AuthenticationSuccess(_currentProfile!));
+        } else {
+          emit(AuthenticationInitial());
+        }
+      },
+    );
+  }
+
+  void skipPasscodeSetup() {
+    // Just emit success to navigate to dashboard
+    if (_currentProfile != null) {
+      emit(AuthenticationSuccess(_currentProfile!));
+    } else {
+      emit(AuthenticationInitial());
+    }
+  }
+
+  // --- Passcode Login Flow Methods ---
+  void startPasscodeLogin() {
+    emit(const PasscodeLoginInProgress());
+  }
+
+  void passcodeLoginDigitEntered(String digit) {
+    if (state is PasscodeLoginInProgress) {
+      final currentState = state as PasscodeLoginInProgress;
+      if (currentState.enteredPasscode.length < 6 && !currentState.isAuthenticating) {
+        final newPasscode = currentState.enteredPasscode + digit;
+        emit(currentState.copyWith(enteredPasscode: newPasscode, clearError: true));
+
+        // Auto-submit when 6 digits entered
+        if (newPasscode.length == 6) {
+          _attemptPasscodeLogin(newPasscode);
+        }
+      }
+    }
+  }
+
+  void passcodeLoginBackspace() {
+    if (state is PasscodeLoginInProgress) {
+      final currentState = state as PasscodeLoginInProgress;
+      if (currentState.enteredPasscode.isNotEmpty && !currentState.isAuthenticating) {
+        final newPasscode = currentState.enteredPasscode.substring(
+          0,
+          currentState.enteredPasscode.length - 1,
+        );
+        emit(currentState.copyWith(enteredPasscode: newPasscode, clearError: true));
+      }
+    }
+  }
+
+  Future<void> _attemptPasscodeLogin(String passcode) async {
+    if (state is! PasscodeLoginInProgress) return;
+
+    final currentState = state as PasscodeLoginInProgress;
+
+    // Get stored email
+    final email = await _storage.read(key: 'user_email');
+    if (email == null || email.isEmpty) {
+      _showErrorSnackbar('Error', 'No stored email found. Please use email/password login.');
+      emit(currentState.copyWith(enteredPasscode: '', clearError: true));
+      return;
+    }
+
+    emit(currentState.copyWith(isAuthenticating: true, clearError: true));
+
+    final result = await _loginWithPasscodeUseCase(
+      email: email,
+      passcode: passcode,
+    );
+
+    result.fold(
+      (failure) {
+        _showErrorSnackbar('Login Failed', failure.message);
+        emit(PasscodeLoginInProgress(
+          enteredPasscode: '',
+          isAuthenticating: false,
+          errorMessage: failure.message,
+        ));
+      },
+      (profile) async {
+        await _saveSession(profile);
+        await _storage.write(key: 'login_method', value: 'passcode');
+        await _storage.write(key: 'stored_email', value: email);
+        _showSuccessSnackbar('Welcome back!', '${profile.user.firstName} ${profile.user.lastName}');
+        emit(AuthenticationSuccess(profile));
+      },
     );
   }
 }
