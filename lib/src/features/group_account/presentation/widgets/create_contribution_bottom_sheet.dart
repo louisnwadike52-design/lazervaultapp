@@ -242,10 +242,14 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
             padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
               color: isSelected ? const Color(0xFF6C5CE7).withOpacity(0.2) : const Color(0xFF1F1F1F),
-              border: Border.all(
-                color: isSelected ? const Color(0xFF6C5CE7) : const Color(0xFF2D2D2D),
-                width: 1,
-              ),
+              boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: Column(

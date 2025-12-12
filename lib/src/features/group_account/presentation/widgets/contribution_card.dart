@@ -28,10 +28,14 @@ class ContributionCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: const Color(0xFF1F1F1F),
           borderRadius: BorderRadius.circular(16.r),
-          border: Border.all(
-            color: const Color(0xFF2D2D2D),
-            width: 1,
+          boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
           ),
+        ],
+        
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -240,9 +244,14 @@ class ContributionCard extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: const Color(0xFF10B981).withOpacity(0.2),
                       borderRadius: BorderRadius.circular(8.r),
-                      border: Border.all(
-                        color: const Color(0xFF10B981).withOpacity(0.3),
-                      ),
+                      boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -348,10 +357,14 @@ class ContributionCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: backgroundColor,
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(
-          color: textColor.withOpacity(0.3),
-          width: 1,
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
