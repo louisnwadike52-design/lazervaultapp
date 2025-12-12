@@ -110,11 +110,7 @@ class GroupCard extends StatelessWidget {
                   padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                   decoration: BoxDecoration(
                     color: _getStatusColor(group.status).withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(8.r),
-                    border: Border.all(
-                      color: _getStatusColor(group.status).withOpacity(0.3),
-                    ),
-                  ),
+                    borderRadius: BorderRadius.circular(8.r),                  ),
                   child: Text(
                     group.status.displayName,
                     style: GoogleFonts.inter(
@@ -254,9 +250,14 @@ class GroupCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: color.withOpacity(0.1),
         borderRadius: BorderRadius.circular(8.r),
-        border: Border.all(
-          color: color.withOpacity(0.2),
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

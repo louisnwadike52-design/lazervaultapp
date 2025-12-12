@@ -24,10 +24,14 @@ class MemberCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: const Color(0xFF1F1F1F),
           borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(
-            color: const Color(0xFF2D2D2D),
-            width: 1,
+          boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
           ),
+        ],
+        
         ),
         child: Row(
           children: [
@@ -85,6 +89,10 @@ class MemberCard extends StatelessWidget {
                       _buildRoleBadge(member.role),
                       SizedBox(width: 8.w),
                       _buildStatusBadge(member.status),
+                      if (member.isPartial) ...[
+                        SizedBox(width: 8.w),
+                        _buildInviteBadge(),
+                      ],
                     ],
                   ),
                 ],
@@ -150,10 +158,14 @@ class MemberCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: backgroundColor,
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(
-          color: textColor.withOpacity(0.3),
-          width: 1,
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
       ),
       child: Text(
         role.displayName,
@@ -194,10 +206,14 @@ class MemberCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: backgroundColor,
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(
-          color: textColor.withOpacity(0.3),
-          width: 1,
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
       ),
       child: Text(
         status.displayName,
@@ -210,10 +226,50 @@ class MemberCard extends StatelessWidget {
     );
   }
 
+  Widget _buildInviteBadge() {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+      decoration: BoxDecoration(
+        color: const Color(0xFF3B82F6).withOpacity(0.2),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(
+          color: const Color(0xFF3B82F6).withOpacity(0.5),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.mail_outline,
+            size: 10.sp,
+            color: const Color(0xFF3B82F6),
+          ),
+          SizedBox(width: 4.w),
+          Text(
+            'Invited',
+            style: GoogleFonts.inter(
+              fontSize: 10.sp,
+              fontWeight: FontWeight.w600,
+              color: const Color(0xFF3B82F6),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   String _formatDate(DateTime date) {
     final now = DateTime.now();
     final difference = now.difference(date);
-    
+
     if (difference.inDays == 0) {
       return 'Today';
     } else if (difference.inDays == 1) {

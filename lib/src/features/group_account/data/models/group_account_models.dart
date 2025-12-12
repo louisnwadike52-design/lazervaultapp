@@ -109,6 +109,9 @@ class GroupMemberModel extends GroupMember {
     required super.joinedAt,
     required super.status,
     super.permissions,
+    super.phoneNumber,
+    super.isPartial = false,
+    super.userUsername,
   });
 
   factory GroupMemberModel.fromJson(Map<String, dynamic> json) {
@@ -128,6 +131,9 @@ class GroupMemberModel extends GroupMember {
         orElse: () => GroupMemberStatus.active,
       ),
       permissions: json['permissions'] as Map<String, dynamic>?,
+      phoneNumber: json['phoneNumber'] as String?,
+      isPartial: json['isPartial'] as bool? ?? false,
+      userUsername: json['userUsername'] as String?,
     );
   }
 
@@ -142,6 +148,9 @@ class GroupMemberModel extends GroupMember {
       'joinedAt': joinedAt.toIso8601String(),
       'status': status.toString().split('.').last,
       'permissions': permissions,
+      'phoneNumber': phoneNumber,
+      'isPartial': isPartial,
+      'userUsername': userUsername,
     };
   }
 
@@ -156,6 +165,9 @@ class GroupMemberModel extends GroupMember {
       joinedAt: entity.joinedAt,
       status: entity.status,
       permissions: entity.permissions,
+      phoneNumber: entity.phoneNumber,
+      isPartial: entity.isPartial,
+      userUsername: entity.userUsername,
     );
   }
 
@@ -170,6 +182,9 @@ class GroupMemberModel extends GroupMember {
     DateTime? joinedAt,
     GroupMemberStatus? status,
     Map<String, dynamic>? permissions,
+    String? phoneNumber,
+    bool? isPartial,
+    String? userUsername,
   }) {
     return GroupMemberModel(
       id: id ?? this.id,
@@ -181,6 +196,9 @@ class GroupMemberModel extends GroupMember {
       joinedAt: joinedAt ?? this.joinedAt,
       status: status ?? this.status,
       permissions: permissions ?? this.permissions,
+      phoneNumber: phoneNumber ?? this.phoneNumber,
+      isPartial: isPartial ?? this.isPartial,
+      userUsername: userUsername ?? this.userUsername,
     );
   }
 }

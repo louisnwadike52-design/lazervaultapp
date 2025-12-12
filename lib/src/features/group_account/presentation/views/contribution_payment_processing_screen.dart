@@ -368,10 +368,14 @@ class _ContributionPaymentProcessingScreenState extends State<ContributionPaymen
               height: 120.w,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(
-                  color: const Color(0xFF6C5CE7).withOpacity(0.3),
-                  width: 2,
-                ),
+                boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
               ),
             ),
             builder: (context, child) {
@@ -568,11 +572,7 @@ class _ContributionPaymentProcessingScreenState extends State<ContributionPaymen
                   Expanded(
                     child: Container(
                       height: 56.h,
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: Colors.white.withOpacity(0.3),
-                        ),
-                        borderRadius: BorderRadius.circular(16.r),
+                      decoration: BoxDecoration(                        borderRadius: BorderRadius.circular(16.r),
                       ),
                       child: Material(
                         color: Colors.transparent,

@@ -80,9 +80,14 @@ class PaymentHistoryCard extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: _getStatusColor(payment.status).withOpacity(0.1),
                         borderRadius: BorderRadius.circular(6.r),
-                        border: Border.all(
-                          color: _getStatusColor(payment.status).withOpacity(0.3),
-                        ),
+                        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
                       ),
                       child: Text(
                         payment.status.displayName,

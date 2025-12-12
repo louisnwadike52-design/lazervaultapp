@@ -145,6 +145,9 @@ class GroupMember extends Equatable {
   final DateTime joinedAt;
   final GroupMemberStatus status;
   final Map<String, dynamic>? permissions;
+  final String? phoneNumber;
+  final bool isPartial;
+  final String? userUsername;
 
   const GroupMember({
     required this.id,
@@ -156,6 +159,9 @@ class GroupMember extends Equatable {
     required this.joinedAt,
     required this.status,
     this.permissions,
+    this.phoneNumber,
+    this.isPartial = false,
+    this.userUsername,
   });
 
   @override
@@ -169,6 +175,9 @@ class GroupMember extends Equatable {
         joinedAt,
         status,
         permissions,
+        phoneNumber,
+        isPartial,
+        userUsername,
       ];
 
   GroupMember copyWith({
@@ -181,6 +190,9 @@ class GroupMember extends Equatable {
     DateTime? joinedAt,
     GroupMemberStatus? status,
     Map<String, dynamic>? permissions,
+    String? phoneNumber,
+    bool? isPartial,
+    String? userUsername,
   }) {
     return GroupMember(
       id: id ?? this.id,
@@ -192,6 +204,9 @@ class GroupMember extends Equatable {
       joinedAt: joinedAt ?? this.joinedAt,
       status: status ?? this.status,
       permissions: permissions ?? this.permissions,
+      phoneNumber: phoneNumber ?? this.phoneNumber,
+      isPartial: isPartial ?? this.isPartial,
+      userUsername: userUsername ?? this.userUsername,
     );
   }
 }

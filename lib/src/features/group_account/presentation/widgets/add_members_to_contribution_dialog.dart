@@ -252,10 +252,14 @@ class _AddMembersToContributionDialogState extends State<AddMembersToContributio
                   height: 20.w,
                   decoration: BoxDecoration(
                     color: _selectAll ? const Color(0xFF6C5CE7) : Colors.transparent,
-                    border: Border.all(
-                      color: _selectAll ? const Color(0xFF6C5CE7) : Colors.grey[600]!,
-                      width: 2,
-                    ),
+                    boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
                     borderRadius: BorderRadius.circular(4.r),
                   ),
                   child: _selectAll
@@ -311,12 +315,14 @@ class _AddMembersToContributionDialogState extends State<AddMembersToContributio
                             ? const Color(0xFF6C5CE7).withOpacity(0.1)
                             : const Color(0xFF1F1F1F),
                         borderRadius: BorderRadius.circular(12.r),
-                        border: Border.all(
-                          color: isSelected 
-                              ? const Color(0xFF6C5CE7)
-                              : const Color(0xFF2D2D2D),
-                          width: 1,
-                        ),
+                        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
                       ),
                       child: Row(
                         children: [
@@ -325,10 +331,14 @@ class _AddMembersToContributionDialogState extends State<AddMembersToContributio
                             height: 20.w,
                             decoration: BoxDecoration(
                               color: isSelected ? const Color(0xFF6C5CE7) : Colors.transparent,
-                              border: Border.all(
-                                color: isSelected ? const Color(0xFF6C5CE7) : Colors.grey[600]!,
-                                width: 2,
-                              ),
+                              boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
                               borderRadius: BorderRadius.circular(4.r),
                             ),
                             child: isSelected
@@ -388,9 +398,14 @@ class _AddMembersToContributionDialogState extends State<AddMembersToContributio
                             decoration: BoxDecoration(
                               color: _getRoleColor(member.role).withOpacity(0.1),
                               borderRadius: BorderRadius.circular(6.r),
-                              border: Border.all(
-                                color: _getRoleColor(member.role).withOpacity(0.3),
-                              ),
+                              boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
                             ),
                             child: Text(
                               member.role.displayName,

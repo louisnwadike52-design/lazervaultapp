@@ -646,7 +646,7 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
 
   void _showAddMemberBottomSheet(GroupAccount group) {
     final cubit = context.read<GroupAccountCubit>();
-    
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -655,12 +655,15 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
         value: cubit,
         child: AddMemberBottomSheet(group: group),
       ),
-    );
+    ).then((_) {
+      // Reload group details after bottom sheet closes to ensure members list is updated
+      context.read<GroupAccountCubit>().loadGroupDetails(widget.groupId);
+    });
   }
 
   void _showCreateContributionBottomSheet(GroupAccount group) {
     final cubit = context.read<GroupAccountCubit>();
-    
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -672,7 +675,10 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
           groupMembers: group.members,
         ),
       ),
-    );
+    ).then((_) {
+      // Reload group details after bottom sheet closes to ensure contributions list is updated
+      context.read<GroupAccountCubit>().loadGroupDetails(widget.groupId);
+    });
   }
 
   void _showMemberOptions(GroupMember member, GroupAccount group) {

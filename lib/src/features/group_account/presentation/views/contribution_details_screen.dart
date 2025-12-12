@@ -408,16 +408,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                       : isOverdue
                           ? const Color(0xFFEF4444).withOpacity(0.2)
                           : Colors.white.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(12.r),
-                  border: Border.all(
-                    color: isCompleted
-                        ? const Color(0xFF10B981)
-                        : isOverdue
-                            ? const Color(0xFFEF4444)
-                            : Colors.white,
-                    width: 1,
-                  ),
-                ),
+                  borderRadius: BorderRadius.circular(12.r),                ),
                 child: Text(
                   isCompleted
                       ? 'Completed'
@@ -1018,11 +1009,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
               const Color(0xFF1F1F35).withOpacity(0.98),
             ],
           ),
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
-          border: Border.all(
-            color: Colors.white.withOpacity(0.1),
-          ),
-          boxShadow: [
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),          boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.3),
               blurRadius: 20,
@@ -1080,9 +1067,14 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                   decoration: BoxDecoration(
                     color: _getPaymentStatusColor(payment.status).withOpacity(0.2),
                     borderRadius: BorderRadius.circular(8.r),
-                    border: Border.all(
-                      color: _getPaymentStatusColor(payment.status).withOpacity(0.3),
-                    ),
+                    boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
                   ),
                   child: Text(
                     payment.status.displayName.toUpperCase(),
@@ -1263,9 +1255,14 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
           decoration: BoxDecoration(
             color: Colors.white.withOpacity(0.05),
             borderRadius: BorderRadius.circular(12.r),
-            border: Border.all(
-              color: Colors.white.withOpacity(0.1),
-            ),
+            boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
           ),
           child: Column(
             children: [
@@ -1349,9 +1346,14 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
           decoration: BoxDecoration(
             color: Colors.white.withOpacity(0.05),
             borderRadius: BorderRadius.circular(12.r),
-            border: Border.all(
-              color: Colors.white.withOpacity(0.1),
-            ),
+            boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
           ),
           child: Column(
             children: [
@@ -1620,9 +1622,14 @@ Powered by LazerVault 🚀
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.03),
         borderRadius: BorderRadius.circular(8.r),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.08),
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
       ),
       child: Row(
         crossAxisAlignment: isMultiline ? CrossAxisAlignment.start : CrossAxisAlignment.center,
