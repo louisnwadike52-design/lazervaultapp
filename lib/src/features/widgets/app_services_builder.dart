@@ -1,8 +1,10 @@
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lazervault/core/types/services.dart';
 import 'package:lazervault/src/features/widgets/app_service_builder.dart';
 
+// Quick Services carousel - 3 rows with reduced indicator spacing
 class AppServicesBuilder extends StatefulWidget {
   const AppServicesBuilder({super.key});
 
@@ -11,6 +13,10 @@ class AppServicesBuilder extends StatefulWidget {
 }
 
 class _AppServicesBuilderState extends State<AppServicesBuilder> {
+  int _currentIndex = 0;
+  static const int _itemsPerRow = 4;
+  static const int _maxRows = 3;
+  static const int _itemsPerPage = _itemsPerRow * _maxRows; // 12 items per page
   final List<AppService> appServices = [
     const AppService(
         serviceName: AppServiceName.sendFunds,
@@ -18,6 +24,9 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
     const AppService(
         serviceName: AppServiceName.batchTransfer,
         serviceImg: AppServiceImg.batchTransfer),
+    const AppService(
+        serviceName: AppServiceName.tagPay,
+        serviceImg: AppServiceImg.tagPay),
     const AppService(
         serviceName: AppServiceName.invoice,
         serviceImg: AppServiceImg.invoice),
@@ -51,20 +60,69 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
     const AppService(
         serviceName: AppServiceName.airtime,
         serviceImg: AppServiceImg.airtime),
+    const AppService(
+        serviceName: AppServiceName.autoSave,
+        serviceImg: AppServiceImg.autoSave),
   ];
+
+  // Split services into pages
+  List<List<AppService>> _getServicePages() {
+    List<List<AppService>> pages = [];
+    for (int i = 0; i < appServices.length; i += _itemsPerPage) {
+      int end = (i + _itemsPerPage < appServices.length)
+          ? i + _itemsPerPage
+          : appServices.length;
+      pages.add(appServices.sublist(i, end));
+    }
+    return pages;
+  }
+
+  // Calculate carousel height based on grid content
+  double _calculateCarouselHeight(BuildContext context) {
+    // Screen width
+    final screenWidth = MediaQuery.of(context).size.width;
+
+    // Container horizontal padding (left + right)
+    final containerHorizontalPadding = 16.w * 2;
+
+    // Available width for grid
+    final availableWidth = screenWidth - containerHorizontalPadding;
+
+    // Grid spacing
+    const crossAxisSpacing = 8.0; // spacing between columns
+    const mainAxisSpacing = 8.0;  // spacing between rows
+    const childAspectRatio = 0.85;
+
+    // Calculate item width
+    // Formula: (availableWidth - (crossAxisSpacing × (columns - 1))) / columns
+    final itemWidth = (availableWidth - (crossAxisSpacing.w * (_itemsPerRow - 1))) / _itemsPerRow;
+
+    // Calculate item height from aspect ratio
+    // If aspectRatio = width/height, then height = width/aspectRatio
+    final itemHeight = itemWidth / childAspectRatio;
+
+    // Calculate total height for 3 rows
+    // Formula: (itemHeight × rows) + (mainAxisSpacing × (rows - 1))
+    final totalHeight = (itemHeight * _maxRows) + (mainAxisSpacing.h * (_maxRows - 1));
+
+    return totalHeight;
+  }
 
   @override
   Widget build(BuildContext context) {
+    final servicePages = _getServicePages();
+    final carouselHeight = _calculateCarouselHeight(context);
+
     return Container(
-      padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 16.w),
+      padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 16.w),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(24.r),
+        borderRadius: BorderRadius.circular(20.r),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
-            blurRadius: 20,
-            offset: Offset(0, 4),
+            blurRadius: 15,
+            offset: Offset(0, 3),
           ),
         ],
       ),
@@ -87,12 +145,12 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
               ),
               Container(
                 padding: EdgeInsets.symmetric(
-                  horizontal: 12.w,
-                  vertical: 6.h,
+                  horizontal: 10.w,
+                  vertical: 4.h,
                 ),
                 decoration: BoxDecoration(
                   color: Color.fromARGB(255, 78, 3, 208).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(20.r),
+                  borderRadius: BorderRadius.circular(16.r),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -117,22 +175,62 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
             ],
           ),
           SizedBox(height: 16.h),
-          // Services Grid
-          GridView.builder(
-            padding: EdgeInsets.zero,
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 4,
-              crossAxisSpacing: 8.w,
-              mainAxisSpacing: 8.h,
-              childAspectRatio: 0.8,
+
+          // Services Carousel
+          CarouselSlider.builder(
+            itemCount: servicePages.length,
+            options: CarouselOptions(
+              height: carouselHeight, // Dynamic height based on content
+              viewportFraction: 1.0,
+              enlargeCenterPage: false,
+              enableInfiniteScroll: false,
+              onPageChanged: (index, reason) {
+                setState(() => _currentIndex = index);
+              },
             ),
-            itemCount: appServices.length,
-            shrinkWrap: true,
-            physics: NeverScrollableScrollPhysics(),
-            itemBuilder: (context, index) {
-              return AppServiceBuilder(appService: appServices[index]);
+            itemBuilder: (context, pageIndex, realIndex) {
+              final servicesOnPage = servicePages[pageIndex];
+
+              return GridView.builder(
+                padding: EdgeInsets.zero,
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: _itemsPerRow,
+                  crossAxisSpacing: 8.w,
+                  mainAxisSpacing: 8.h,
+                  childAspectRatio: 0.85,
+                ),
+                itemCount: servicesOnPage.length,
+                shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(),
+                itemBuilder: (context, index) {
+                  return AppServiceBuilder(appService: servicesOnPage[index]);
+                },
+              );
             },
           ),
+
+          // Carousel Indicators (only show if more than 1 page)
+          if (servicePages.length > 1) ...[
+            SizedBox(height: 6.h),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(
+                servicePages.length,
+                (index) => AnimatedContainer(
+                  duration: Duration(milliseconds: 200),
+                  width: _currentIndex == index ? 24.w : 8.w,
+                  height: 8.h,
+                  margin: EdgeInsets.symmetric(horizontal: 4.w),
+                  decoration: BoxDecoration(
+                    color: _currentIndex == index
+                        ? Color.fromARGB(255, 78, 3, 208)
+                        : Color.fromARGB(255, 78, 3, 208).withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(4.r),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );

@@ -149,6 +149,10 @@ class _NotificationsBuilderState extends State<NotificationsBuilder> {
         return const Color.fromARGB(255, 78, 3, 208);
       case AppServiceName.airtime:
         return const Color(0xFF6366F1);
+      case AppServiceName.tagPay:
+        return const Color(0xFF3B82F6);
+      case AppServiceName.autoSave:
+        return const Color(0xFF10B981);
     }
   }
 
@@ -160,35 +164,46 @@ class _NotificationsBuilderState extends State<NotificationsBuilder> {
       itemCount: widget.notifications.length,
       separatorBuilder: (context, index) => Divider(
         height: 1,
-        thickness: 0.5,
-        color: Colors.grey[200],
-        indent: 72.w,
+        thickness: 1,
+        color: Colors.grey[100],
+        indent: 84.w,
       ),
       itemBuilder: (context, index) {
         final notification = widget.notifications[index];
         final serviceColor = _getServiceColor(notification.appService.serviceName);
         
         return Container(
-          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+          padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 18.h),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Service Icon
               Container(
-                width: 48.w,
-                height: 48.w,
+                width: 52.w,
+                height: 52.w,
                 decoration: BoxDecoration(
-                  color: serviceColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12.r),
+                  gradient: LinearGradient(
+                    colors: [
+                      serviceColor.withOpacity(0.15),
+                      serviceColor.withOpacity(0.08),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(14.r),
+                  border: Border.all(
+                    color: serviceColor.withOpacity(0.2),
+                    width: 1,
+                  ),
                 ),
                 child: Icon(
                   _getServiceIcon(notification.appService.serviceName),
                   color: serviceColor,
-                  size: 24.sp,
+                  size: 26.sp,
                 ),
               ),
-              
-              SizedBox(width: 12.w),
+
+              SizedBox(width: 14.w),
               
               // Content
               Expanded(
