@@ -92,9 +92,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.transparent,
         elevation: 0,
         title: Text(
           'Notifications',
@@ -217,15 +217,12 @@ class _NotificationScreenState extends State<NotificationScreen> {
       return Container(
         padding: EdgeInsets.all(32.w),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Colors.grey[50],
           borderRadius: BorderRadius.circular(16.r),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: Offset(0, 2),
-            ),
-          ],
+          border: Border.all(
+            color: Colors.grey[200]!,
+            width: 1,
+          ),
         ),
         child: Column(
           children: [
@@ -259,15 +256,12 @@ class _NotificationScreenState extends State<NotificationScreen> {
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.grey[50],
         borderRadius: BorderRadius.circular(16.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 15,
-            offset: Offset(0, 4),
-          ),
-        ],
+        border: Border.all(
+          color: Colors.grey[200]!,
+          width: 1,
+        ),
       ),
       child: NotificationsBuilder(notifications: notificationsList),
     );
