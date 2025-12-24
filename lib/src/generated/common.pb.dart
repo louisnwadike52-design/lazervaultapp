@@ -10,7 +10,9 @@ import 'dart:core' as $core;
 import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'google/protobuf/timestamp.pb.dart' as $17;
+import 'google/protobuf/timestamp.pb.dart' as $25;
+
+export 'common.pbenum.dart';
 
 class User extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'User', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
@@ -19,11 +21,16 @@ class User extends $pb.GeneratedMessage {
     ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastName')
     ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'email')
     ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'phoneNumber')
-    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'role')
-    ..aOB(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'verified')
-    ..aOB(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isEmailVerified')
-    ..aOM<$17.Timestamp>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $17.Timestamp.create)
-    ..aOM<$17.Timestamp>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $17.Timestamp.create)
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'username')
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'role')
+    ..aOB(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'verified')
+    ..aOB(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isEmailVerified')
+    ..aOM<$25.Timestamp>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $25.Timestamp.create)
+    ..aOM<$25.Timestamp>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $25.Timestamp.create)
+    ..aOS(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'language')
+    ..aOS(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
+    ..aOS(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'country')
+    ..aOS(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'profilePicture')
     ..hasRequiredFields = false
   ;
 
@@ -34,11 +41,16 @@ class User extends $pb.GeneratedMessage {
     $core.String? lastName,
     $core.String? email,
     $core.String? phoneNumber,
+    $core.String? username,
     $core.String? role,
     $core.bool? verified,
     $core.bool? isEmailVerified,
-    $17.Timestamp? createdAt,
-    $17.Timestamp? updatedAt,
+    $25.Timestamp? createdAt,
+    $25.Timestamp? updatedAt,
+    $core.String? language,
+    $core.String? currency,
+    $core.String? country,
+    $core.String? profilePicture,
   }) {
     final _result = create();
     if (id != null) {
@@ -56,6 +68,9 @@ class User extends $pb.GeneratedMessage {
     if (phoneNumber != null) {
       _result.phoneNumber = phoneNumber;
     }
+    if (username != null) {
+      _result.username = username;
+    }
     if (role != null) {
       _result.role = role;
     }
@@ -70,6 +85,18 @@ class User extends $pb.GeneratedMessage {
     }
     if (updatedAt != null) {
       _result.updatedAt = updatedAt;
+    }
+    if (language != null) {
+      _result.language = language;
+    }
+    if (currency != null) {
+      _result.currency = currency;
+    }
+    if (country != null) {
+      _result.country = country;
+    }
+    if (profilePicture != null) {
+      _result.profilePicture = profilePicture;
     }
     return _result;
   }
@@ -140,53 +167,98 @@ class User extends $pb.GeneratedMessage {
   void clearPhoneNumber() => clearField(5);
 
   @$pb.TagNumber(6)
-  $core.String get role => $_getSZ(5);
+  $core.String get username => $_getSZ(5);
   @$pb.TagNumber(6)
-  set role($core.String v) { $_setString(5, v); }
+  set username($core.String v) { $_setString(5, v); }
   @$pb.TagNumber(6)
-  $core.bool hasRole() => $_has(5);
+  $core.bool hasUsername() => $_has(5);
   @$pb.TagNumber(6)
-  void clearRole() => clearField(6);
+  void clearUsername() => clearField(6);
 
   @$pb.TagNumber(7)
-  $core.bool get verified => $_getBF(6);
+  $core.String get role => $_getSZ(6);
   @$pb.TagNumber(7)
-  set verified($core.bool v) { $_setBool(6, v); }
+  set role($core.String v) { $_setString(6, v); }
   @$pb.TagNumber(7)
-  $core.bool hasVerified() => $_has(6);
+  $core.bool hasRole() => $_has(6);
   @$pb.TagNumber(7)
-  void clearVerified() => clearField(7);
+  void clearRole() => clearField(7);
 
   @$pb.TagNumber(8)
-  $core.bool get isEmailVerified => $_getBF(7);
+  $core.bool get verified => $_getBF(7);
   @$pb.TagNumber(8)
-  set isEmailVerified($core.bool v) { $_setBool(7, v); }
+  set verified($core.bool v) { $_setBool(7, v); }
   @$pb.TagNumber(8)
-  $core.bool hasIsEmailVerified() => $_has(7);
+  $core.bool hasVerified() => $_has(7);
   @$pb.TagNumber(8)
-  void clearIsEmailVerified() => clearField(8);
+  void clearVerified() => clearField(8);
 
   @$pb.TagNumber(9)
-  $17.Timestamp get createdAt => $_getN(8);
+  $core.bool get isEmailVerified => $_getBF(8);
   @$pb.TagNumber(9)
-  set createdAt($17.Timestamp v) { setField(9, v); }
+  set isEmailVerified($core.bool v) { $_setBool(8, v); }
   @$pb.TagNumber(9)
-  $core.bool hasCreatedAt() => $_has(8);
+  $core.bool hasIsEmailVerified() => $_has(8);
   @$pb.TagNumber(9)
-  void clearCreatedAt() => clearField(9);
-  @$pb.TagNumber(9)
-  $17.Timestamp ensureCreatedAt() => $_ensure(8);
+  void clearIsEmailVerified() => clearField(9);
 
   @$pb.TagNumber(10)
-  $17.Timestamp get updatedAt => $_getN(9);
+  $25.Timestamp get createdAt => $_getN(9);
   @$pb.TagNumber(10)
-  set updatedAt($17.Timestamp v) { setField(10, v); }
+  set createdAt($25.Timestamp v) { setField(10, v); }
   @$pb.TagNumber(10)
-  $core.bool hasUpdatedAt() => $_has(9);
+  $core.bool hasCreatedAt() => $_has(9);
   @$pb.TagNumber(10)
-  void clearUpdatedAt() => clearField(10);
+  void clearCreatedAt() => clearField(10);
   @$pb.TagNumber(10)
-  $17.Timestamp ensureUpdatedAt() => $_ensure(9);
+  $25.Timestamp ensureCreatedAt() => $_ensure(9);
+
+  @$pb.TagNumber(11)
+  $25.Timestamp get updatedAt => $_getN(10);
+  @$pb.TagNumber(11)
+  set updatedAt($25.Timestamp v) { setField(11, v); }
+  @$pb.TagNumber(11)
+  $core.bool hasUpdatedAt() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearUpdatedAt() => clearField(11);
+  @$pb.TagNumber(11)
+  $25.Timestamp ensureUpdatedAt() => $_ensure(10);
+
+  @$pb.TagNumber(12)
+  $core.String get language => $_getSZ(11);
+  @$pb.TagNumber(12)
+  set language($core.String v) { $_setString(11, v); }
+  @$pb.TagNumber(12)
+  $core.bool hasLanguage() => $_has(11);
+  @$pb.TagNumber(12)
+  void clearLanguage() => clearField(12);
+
+  @$pb.TagNumber(13)
+  $core.String get currency => $_getSZ(12);
+  @$pb.TagNumber(13)
+  set currency($core.String v) { $_setString(12, v); }
+  @$pb.TagNumber(13)
+  $core.bool hasCurrency() => $_has(12);
+  @$pb.TagNumber(13)
+  void clearCurrency() => clearField(13);
+
+  @$pb.TagNumber(14)
+  $core.String get country => $_getSZ(13);
+  @$pb.TagNumber(14)
+  set country($core.String v) { $_setString(13, v); }
+  @$pb.TagNumber(14)
+  $core.bool hasCountry() => $_has(13);
+  @$pb.TagNumber(14)
+  void clearCountry() => clearField(14);
+
+  @$pb.TagNumber(15)
+  $core.String get profilePicture => $_getSZ(14);
+  @$pb.TagNumber(15)
+  set profilePicture($core.String v) { $_setString(14, v); }
+  @$pb.TagNumber(15)
+  $core.bool hasProfilePicture() => $_has(14);
+  @$pb.TagNumber(15)
+  void clearProfilePicture() => clearField(15);
 }
 
 class Data extends $pb.GeneratedMessage {
@@ -260,8 +332,8 @@ class Session extends $pb.GeneratedMessage {
     ..a<$fixnum.Int64>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accessToken')
     ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'refreshToken')
-    ..aOM<$17.Timestamp>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accessTokenExpiresAt', subBuilder: $17.Timestamp.create)
-    ..aOM<$17.Timestamp>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'refreshTokenExpiresAt', subBuilder: $17.Timestamp.create)
+    ..aOM<$25.Timestamp>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accessTokenExpiresAt', subBuilder: $25.Timestamp.create)
+    ..aOM<$25.Timestamp>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'refreshTokenExpiresAt', subBuilder: $25.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -271,8 +343,8 @@ class Session extends $pb.GeneratedMessage {
     $fixnum.Int64? userId,
     $core.String? accessToken,
     $core.String? refreshToken,
-    $17.Timestamp? accessTokenExpiresAt,
-    $17.Timestamp? refreshTokenExpiresAt,
+    $25.Timestamp? accessTokenExpiresAt,
+    $25.Timestamp? refreshTokenExpiresAt,
   }) {
     final _result = create();
     if (id != null) {
@@ -353,25 +425,142 @@ class Session extends $pb.GeneratedMessage {
   void clearRefreshToken() => clearField(4);
 
   @$pb.TagNumber(5)
-  $17.Timestamp get accessTokenExpiresAt => $_getN(4);
+  $25.Timestamp get accessTokenExpiresAt => $_getN(4);
   @$pb.TagNumber(5)
-  set accessTokenExpiresAt($17.Timestamp v) { setField(5, v); }
+  set accessTokenExpiresAt($25.Timestamp v) { setField(5, v); }
   @$pb.TagNumber(5)
   $core.bool hasAccessTokenExpiresAt() => $_has(4);
   @$pb.TagNumber(5)
   void clearAccessTokenExpiresAt() => clearField(5);
   @$pb.TagNumber(5)
-  $17.Timestamp ensureAccessTokenExpiresAt() => $_ensure(4);
+  $25.Timestamp ensureAccessTokenExpiresAt() => $_ensure(4);
 
   @$pb.TagNumber(6)
-  $17.Timestamp get refreshTokenExpiresAt => $_getN(5);
+  $25.Timestamp get refreshTokenExpiresAt => $_getN(5);
   @$pb.TagNumber(6)
-  set refreshTokenExpiresAt($17.Timestamp v) { setField(6, v); }
+  set refreshTokenExpiresAt($25.Timestamp v) { setField(6, v); }
   @$pb.TagNumber(6)
   $core.bool hasRefreshTokenExpiresAt() => $_has(5);
   @$pb.TagNumber(6)
   void clearRefreshTokenExpiresAt() => clearField(6);
   @$pb.TagNumber(6)
-  $17.Timestamp ensureRefreshTokenExpiresAt() => $_ensure(5);
+  $25.Timestamp ensureRefreshTokenExpiresAt() => $_ensure(5);
+}
+
+class PaginationInfo extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'PaginationInfo', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..a<$core.int>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currentPage', $pb.PbFieldType.O3)
+    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalPages', $pb.PbFieldType.O3)
+    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalItems', $pb.PbFieldType.O3)
+    ..a<$core.int>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'itemsPerPage', $pb.PbFieldType.O3)
+    ..aOB(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'hasNext')
+    ..aOB(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'hasPrev')
+    ..hasRequiredFields = false
+  ;
+
+  PaginationInfo._() : super();
+  factory PaginationInfo({
+    $core.int? currentPage,
+    $core.int? totalPages,
+    $core.int? totalItems,
+    $core.int? itemsPerPage,
+    $core.bool? hasNext,
+    $core.bool? hasPrev,
+  }) {
+    final _result = create();
+    if (currentPage != null) {
+      _result.currentPage = currentPage;
+    }
+    if (totalPages != null) {
+      _result.totalPages = totalPages;
+    }
+    if (totalItems != null) {
+      _result.totalItems = totalItems;
+    }
+    if (itemsPerPage != null) {
+      _result.itemsPerPage = itemsPerPage;
+    }
+    if (hasNext != null) {
+      _result.hasNext = hasNext;
+    }
+    if (hasPrev != null) {
+      _result.hasPrev = hasPrev;
+    }
+    return _result;
+  }
+  factory PaginationInfo.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory PaginationInfo.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  PaginationInfo clone() => PaginationInfo()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  PaginationInfo copyWith(void Function(PaginationInfo) updates) => super.copyWith((message) => updates(message as PaginationInfo)) as PaginationInfo; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static PaginationInfo create() => PaginationInfo._();
+  PaginationInfo createEmptyInstance() => create();
+  static $pb.PbList<PaginationInfo> createRepeated() => $pb.PbList<PaginationInfo>();
+  @$core.pragma('dart2js:noInline')
+  static PaginationInfo getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<PaginationInfo>(create);
+  static PaginationInfo? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.int get currentPage => $_getIZ(0);
+  @$pb.TagNumber(1)
+  set currentPage($core.int v) { $_setSignedInt32(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasCurrentPage() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearCurrentPage() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.int get totalPages => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set totalPages($core.int v) { $_setSignedInt32(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasTotalPages() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearTotalPages() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.int get totalItems => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set totalItems($core.int v) { $_setSignedInt32(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasTotalItems() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearTotalItems() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.int get itemsPerPage => $_getIZ(3);
+  @$pb.TagNumber(4)
+  set itemsPerPage($core.int v) { $_setSignedInt32(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasItemsPerPage() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearItemsPerPage() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.bool get hasNext => $_getBF(4);
+  @$pb.TagNumber(5)
+  set hasNext($core.bool v) { $_setBool(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasHasNext() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearHasNext() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.bool get hasPrev => $_getBF(5);
+  @$pb.TagNumber(6)
+  set hasPrev($core.bool v) { $_setBool(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasHasPrev() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearHasPrev() => clearField(6);
 }
 

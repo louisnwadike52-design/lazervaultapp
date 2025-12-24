@@ -199,6 +199,46 @@ message VerifyPinResponse {
   string msg = 2;   // e.g., "PIN verified successfully."
 }
 
+// --- Phone Verification Messages ---
+
+// Request to send a verification code to a phone number.
+message RequestPhoneVerificationRequest {
+  option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
+    json_schema: {
+      required: ["phone_number"]
+    }
+  };
+  string phone_number = 1; // The phone number to verify (E.164 format preferred)
+}
+
+// Response for requesting phone verification.
+message RequestPhoneVerificationResponse {
+  bool success = 1; // Indicates if the request was accepted (SMS sending initiated)
+  string msg = 2;   // User-facing message (e.g., "Verification code sent to your phone")
+  string verification_id = 3; // Optional: ID to track this verification request
+  int32 expires_in = 4; // Optional: Expiry time in seconds
+}
+
+// Request to verify a phone number using a received code.
+message VerifyPhoneNumberRequest {
+  option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
+    json_schema: {
+      required: ["phone_number", "verification_code"]
+    }
+  };
+  string phone_number = 1; // The phone number being verified
+  string verification_code = 2; // The verification code sent to the user's phone
+}
+
+// Response for verifying a phone number.
+message VerifyPhoneNumberResponse {
+  bool success = 1; // Indicates if the phone number was successfully verified
+  string msg = 2;   // User-facing message (e.g., "Phone number verified successfully")
+  bool is_verified = 3; // Indicates if the phone is now verified
+}
+
+// --- End Phone Verification Messages ---
+
 // Service Definition
 service AuthService {
   rpc Login(LoginRequest) returns (LoginResponse) {
@@ -374,4 +414,44 @@ rpc RefreshToken(RefreshTokenRequest) returns (RefreshTokenResponse) {
       }
     };
   }
+
+  // --- Phone Verification RPCs ---
+
+  // Request sending a verification code to the user's phone number.
+  rpc RequestPhoneVerification(RequestPhoneVerificationRequest) returns (RequestPhoneVerificationResponse) {
+    option (google.api.http) = {
+      post: "/v1/auth/request-phone-verification"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Request Phone Verification"
+      description: "Sends a verification code to the provided phone number via SMS."
+      tags: ["Auth"]
+      security: {
+        security_requirement: {
+          key: "bearer" value: {}
+        }
+      }
+    };
+  }
+
+  // Verify the user's phone number using a verification code.
+  rpc VerifyPhoneNumber(VerifyPhoneNumberRequest) returns (VerifyPhoneNumberResponse) {
+    option (google.api.http) = {
+      post: "/v1/auth/verify-phone"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Verify Phone Number"
+      description: "Verifies the user's phone number using the provided verification code."
+      tags: ["Auth"]
+      security: {
+        security_requirement: {
+          key: "bearer" value: {}
+        }
+      }
+    };
+  }
+
+  // --- End Phone Verification RPCs ---
 } 

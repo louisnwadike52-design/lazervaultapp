@@ -273,11 +273,7 @@ class _StockTradeReceiptScreenState extends State<StockTradeReceiptScreen>
             const Color(0xFF1F1F35).withValues(alpha: 0.9),
           ],
         ),
-        borderRadius: BorderRadius.circular(24.r),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
-        ),
-        boxShadow: [
+        borderRadius: BorderRadius.circular(24.r),        boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.3),
             blurRadius: 20,
@@ -538,9 +534,14 @@ class _StockTradeReceiptScreenState extends State<StockTradeReceiptScreen>
             decoration: BoxDecoration(
               color: const Color(0xFF2A2A3E),
               borderRadius: BorderRadius.circular(16.r),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.1),
-              ),
+              boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
             ),
             child: ElevatedButton.icon(
               onPressed: _downloadReceipt,
@@ -658,11 +659,7 @@ class _StockTradeReceiptScreenState extends State<StockTradeReceiptScreen>
             width: double.infinity,
             decoration: BoxDecoration(
               color: const Color(0xFF2A2A3E),
-              borderRadius: BorderRadius.circular(16.r),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.1),
-              ),
-            ),
+              borderRadius: BorderRadius.circular(16.r),            ),
             child: ElevatedButton(
               onPressed: _goToHome,
               style: ElevatedButton.styleFrom(

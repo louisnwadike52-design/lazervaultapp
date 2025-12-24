@@ -10,7 +10,7 @@ import 'dart:core' as $core;
 import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'google/protobuf/timestamp.pb.dart' as $17;
+import 'google/protobuf/timestamp.pb.dart' as $25;
 
 import 'transfer.pbenum.dart';
 
@@ -27,7 +27,7 @@ class TransferTransaction extends $pb.GeneratedMessage {
     ..e<TransferType>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transferType', $pb.PbFieldType.OE, defaultOrMaker: TransferType.TRANSFER_TYPE_UNSPECIFIED, valueOf: TransferType.valueOf, enumValues: TransferType.values)
     ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'category')
     ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
-    ..aOM<$17.Timestamp>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $17.Timestamp.create)
+    ..aOM<$25.Timestamp>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $25.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -42,7 +42,7 @@ class TransferTransaction extends $pb.GeneratedMessage {
     TransferType? transferType,
     $core.String? category,
     $core.String? description,
-    $17.Timestamp? createdAt,
+    $25.Timestamp? createdAt,
   }) {
     final _result = create();
     if (transactionId != null) {
@@ -180,15 +180,15 @@ class TransferTransaction extends $pb.GeneratedMessage {
   void clearDescription() => clearField(9);
 
   @$pb.TagNumber(10)
-  $17.Timestamp get createdAt => $_getN(9);
+  $25.Timestamp get createdAt => $_getN(9);
   @$pb.TagNumber(10)
-  set createdAt($17.Timestamp v) { setField(10, v); }
+  set createdAt($25.Timestamp v) { setField(10, v); }
   @$pb.TagNumber(10)
   $core.bool hasCreatedAt() => $_has(9);
   @$pb.TagNumber(10)
   void clearCreatedAt() => clearField(10);
   @$pb.TagNumber(10)
-  $17.Timestamp ensureCreatedAt() => $_ensure(9);
+  $25.Timestamp ensureCreatedAt() => $_ensure(9);
 }
 
 class InitiateTransferRequest extends $pb.GeneratedMessage {
@@ -197,7 +197,7 @@ class InitiateTransferRequest extends $pb.GeneratedMessage {
     ..a<$fixnum.Int64>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'category')
     ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'reference')
-    ..aOM<$17.Timestamp>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'scheduledAt', subBuilder: $17.Timestamp.create)
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'scheduledAt')
     ..a<$fixnum.Int64>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'to_account_id', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..a<$fixnum.Int64>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recipient_id', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..hasRequiredFields = false
@@ -209,7 +209,7 @@ class InitiateTransferRequest extends $pb.GeneratedMessage {
     $fixnum.Int64? amount,
     $core.String? category,
     $core.String? reference,
-    $17.Timestamp? scheduledAt,
+    $core.String? scheduledAt,
     $fixnum.Int64? toAccountId,
     $fixnum.Int64? recipientId,
   }) {
@@ -295,15 +295,13 @@ class InitiateTransferRequest extends $pb.GeneratedMessage {
   void clearReference() => clearField(4);
 
   @$pb.TagNumber(5)
-  $17.Timestamp get scheduledAt => $_getN(4);
+  $core.String get scheduledAt => $_getSZ(4);
   @$pb.TagNumber(5)
-  set scheduledAt($17.Timestamp v) { setField(5, v); }
+  set scheduledAt($core.String v) { $_setString(4, v); }
   @$pb.TagNumber(5)
   $core.bool hasScheduledAt() => $_has(4);
   @$pb.TagNumber(5)
   void clearScheduledAt() => clearField(5);
-  @$pb.TagNumber(5)
-  $17.Timestamp ensureScheduledAt() => $_ensure(4);
 
   @$pb.TagNumber(10)
   $fixnum.Int64 get toAccountId => $_getI64(5);
@@ -331,7 +329,7 @@ class InitiateTransferResponse extends $pb.GeneratedMessage {
     ..a<$fixnum.Int64>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..a<$fixnum.Int64>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'fee', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..a<$fixnum.Int64>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalAmount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..aOM<$17.Timestamp>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $17.Timestamp.create)
+    ..aOM<$25.Timestamp>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $25.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -342,7 +340,7 @@ class InitiateTransferResponse extends $pb.GeneratedMessage {
     $fixnum.Int64? amount,
     $fixnum.Int64? fee,
     $fixnum.Int64? totalAmount,
-    $17.Timestamp? createdAt,
+    $25.Timestamp? createdAt,
   }) {
     final _result = create();
     if (transferId != null) {
@@ -432,27 +430,27 @@ class InitiateTransferResponse extends $pb.GeneratedMessage {
   void clearTotalAmount() => clearField(5);
 
   @$pb.TagNumber(6)
-  $17.Timestamp get createdAt => $_getN(5);
+  $25.Timestamp get createdAt => $_getN(5);
   @$pb.TagNumber(6)
-  set createdAt($17.Timestamp v) { setField(6, v); }
+  set createdAt($25.Timestamp v) { setField(6, v); }
   @$pb.TagNumber(6)
   $core.bool hasCreatedAt() => $_has(5);
   @$pb.TagNumber(6)
   void clearCreatedAt() => clearField(6);
   @$pb.TagNumber(6)
-  $17.Timestamp ensureCreatedAt() => $_ensure(5);
+  $25.Timestamp ensureCreatedAt() => $_ensure(5);
 }
 
 class TimeSeriesPoint extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'TimeSeriesPoint', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<$17.Timestamp>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'timestamp', subBuilder: $17.Timestamp.create)
+    ..aOM<$25.Timestamp>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'timestamp', subBuilder: $25.Timestamp.create)
     ..a<$core.double>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
     ..hasRequiredFields = false
   ;
 
   TimeSeriesPoint._() : super();
   factory TimeSeriesPoint({
-    $17.Timestamp? timestamp,
+    $25.Timestamp? timestamp,
     $core.double? amount,
   }) {
     final _result = create();
@@ -486,15 +484,15 @@ class TimeSeriesPoint extends $pb.GeneratedMessage {
   static TimeSeriesPoint? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $17.Timestamp get timestamp => $_getN(0);
+  $25.Timestamp get timestamp => $_getN(0);
   @$pb.TagNumber(1)
-  set timestamp($17.Timestamp v) { setField(1, v); }
+  set timestamp($25.Timestamp v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasTimestamp() => $_has(0);
   @$pb.TagNumber(1)
   void clearTimestamp() => clearField(1);
   @$pb.TagNumber(1)
-  $17.Timestamp ensureTimestamp() => $_ensure(0);
+  $25.Timestamp ensureTimestamp() => $_ensure(0);
 
   @$pb.TagNumber(2)
   $core.double get amount => $_getN(1);
@@ -943,301 +941,6 @@ class GetStatisticsResponse extends $pb.GeneratedMessage {
   ComparisonData ensureComparisonMetrics() => $_ensure(6);
 }
 
-class PaginationInfo extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'PaginationInfo', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..a<$core.int>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currentPage', $pb.PbFieldType.O3)
-    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pageSize', $pb.PbFieldType.O3)
-    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalPages', $pb.PbFieldType.O3)
-    ..aInt64(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalItems')
-    ..hasRequiredFields = false
-  ;
-
-  PaginationInfo._() : super();
-  factory PaginationInfo({
-    $core.int? currentPage,
-    $core.int? pageSize,
-    $core.int? totalPages,
-    $fixnum.Int64? totalItems,
-  }) {
-    final _result = create();
-    if (currentPage != null) {
-      _result.currentPage = currentPage;
-    }
-    if (pageSize != null) {
-      _result.pageSize = pageSize;
-    }
-    if (totalPages != null) {
-      _result.totalPages = totalPages;
-    }
-    if (totalItems != null) {
-      _result.totalItems = totalItems;
-    }
-    return _result;
-  }
-  factory PaginationInfo.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory PaginationInfo.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  PaginationInfo clone() => PaginationInfo()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  PaginationInfo copyWith(void Function(PaginationInfo) updates) => super.copyWith((message) => updates(message as PaginationInfo)) as PaginationInfo; // ignore: deprecated_member_use
-  $pb.BuilderInfo get info_ => _i;
-  @$core.pragma('dart2js:noInline')
-  static PaginationInfo create() => PaginationInfo._();
-  PaginationInfo createEmptyInstance() => create();
-  static $pb.PbList<PaginationInfo> createRepeated() => $pb.PbList<PaginationInfo>();
-  @$core.pragma('dart2js:noInline')
-  static PaginationInfo getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<PaginationInfo>(create);
-  static PaginationInfo? _defaultInstance;
-
-  @$pb.TagNumber(1)
-  $core.int get currentPage => $_getIZ(0);
-  @$pb.TagNumber(1)
-  set currentPage($core.int v) { $_setSignedInt32(0, v); }
-  @$pb.TagNumber(1)
-  $core.bool hasCurrentPage() => $_has(0);
-  @$pb.TagNumber(1)
-  void clearCurrentPage() => clearField(1);
-
-  @$pb.TagNumber(2)
-  $core.int get pageSize => $_getIZ(1);
-  @$pb.TagNumber(2)
-  set pageSize($core.int v) { $_setSignedInt32(1, v); }
-  @$pb.TagNumber(2)
-  $core.bool hasPageSize() => $_has(1);
-  @$pb.TagNumber(2)
-  void clearPageSize() => clearField(2);
-
-  @$pb.TagNumber(3)
-  $core.int get totalPages => $_getIZ(2);
-  @$pb.TagNumber(3)
-  set totalPages($core.int v) { $_setSignedInt32(2, v); }
-  @$pb.TagNumber(3)
-  $core.bool hasTotalPages() => $_has(2);
-  @$pb.TagNumber(3)
-  void clearTotalPages() => clearField(3);
-
-  @$pb.TagNumber(4)
-  $fixnum.Int64 get totalItems => $_getI64(3);
-  @$pb.TagNumber(4)
-  set totalItems($fixnum.Int64 v) { $_setInt64(3, v); }
-  @$pb.TagNumber(4)
-  $core.bool hasTotalItems() => $_has(3);
-  @$pb.TagNumber(4)
-  void clearTotalItems() => clearField(4);
-}
-
-class GetTransactionsRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetTransactionsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..a<$fixnum.Int64>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accountId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'cardId')
-    ..aOM<$17.Timestamp>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'startDate', subBuilder: $17.Timestamp.create)
-    ..aOM<$17.Timestamp>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'endDate', subBuilder: $17.Timestamp.create)
-    ..e<TransferType>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transferType', $pb.PbFieldType.OE, defaultOrMaker: TransferType.TRANSFER_TYPE_UNSPECIFIED, valueOf: TransferType.valueOf, enumValues: TransferType.values)
-    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'category')
-    ..a<$core.int>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pageNumber', $pb.PbFieldType.O3)
-    ..a<$core.int>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pageSize', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
-
-  GetTransactionsRequest._() : super();
-  factory GetTransactionsRequest({
-    $fixnum.Int64? accountId,
-    $core.String? cardId,
-    $17.Timestamp? startDate,
-    $17.Timestamp? endDate,
-    TransferType? transferType,
-    $core.String? category,
-    $core.int? pageNumber,
-    $core.int? pageSize,
-  }) {
-    final _result = create();
-    if (accountId != null) {
-      _result.accountId = accountId;
-    }
-    if (cardId != null) {
-      _result.cardId = cardId;
-    }
-    if (startDate != null) {
-      _result.startDate = startDate;
-    }
-    if (endDate != null) {
-      _result.endDate = endDate;
-    }
-    if (transferType != null) {
-      _result.transferType = transferType;
-    }
-    if (category != null) {
-      _result.category = category;
-    }
-    if (pageNumber != null) {
-      _result.pageNumber = pageNumber;
-    }
-    if (pageSize != null) {
-      _result.pageSize = pageSize;
-    }
-    return _result;
-  }
-  factory GetTransactionsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetTransactionsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  GetTransactionsRequest clone() => GetTransactionsRequest()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  GetTransactionsRequest copyWith(void Function(GetTransactionsRequest) updates) => super.copyWith((message) => updates(message as GetTransactionsRequest)) as GetTransactionsRequest; // ignore: deprecated_member_use
-  $pb.BuilderInfo get info_ => _i;
-  @$core.pragma('dart2js:noInline')
-  static GetTransactionsRequest create() => GetTransactionsRequest._();
-  GetTransactionsRequest createEmptyInstance() => create();
-  static $pb.PbList<GetTransactionsRequest> createRepeated() => $pb.PbList<GetTransactionsRequest>();
-  @$core.pragma('dart2js:noInline')
-  static GetTransactionsRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetTransactionsRequest>(create);
-  static GetTransactionsRequest? _defaultInstance;
-
-  @$pb.TagNumber(1)
-  $fixnum.Int64 get accountId => $_getI64(0);
-  @$pb.TagNumber(1)
-  set accountId($fixnum.Int64 v) { $_setInt64(0, v); }
-  @$pb.TagNumber(1)
-  $core.bool hasAccountId() => $_has(0);
-  @$pb.TagNumber(1)
-  void clearAccountId() => clearField(1);
-
-  @$pb.TagNumber(2)
-  $core.String get cardId => $_getSZ(1);
-  @$pb.TagNumber(2)
-  set cardId($core.String v) { $_setString(1, v); }
-  @$pb.TagNumber(2)
-  $core.bool hasCardId() => $_has(1);
-  @$pb.TagNumber(2)
-  void clearCardId() => clearField(2);
-
-  @$pb.TagNumber(3)
-  $17.Timestamp get startDate => $_getN(2);
-  @$pb.TagNumber(3)
-  set startDate($17.Timestamp v) { setField(3, v); }
-  @$pb.TagNumber(3)
-  $core.bool hasStartDate() => $_has(2);
-  @$pb.TagNumber(3)
-  void clearStartDate() => clearField(3);
-  @$pb.TagNumber(3)
-  $17.Timestamp ensureStartDate() => $_ensure(2);
-
-  @$pb.TagNumber(4)
-  $17.Timestamp get endDate => $_getN(3);
-  @$pb.TagNumber(4)
-  set endDate($17.Timestamp v) { setField(4, v); }
-  @$pb.TagNumber(4)
-  $core.bool hasEndDate() => $_has(3);
-  @$pb.TagNumber(4)
-  void clearEndDate() => clearField(4);
-  @$pb.TagNumber(4)
-  $17.Timestamp ensureEndDate() => $_ensure(3);
-
-  @$pb.TagNumber(5)
-  TransferType get transferType => $_getN(4);
-  @$pb.TagNumber(5)
-  set transferType(TransferType v) { setField(5, v); }
-  @$pb.TagNumber(5)
-  $core.bool hasTransferType() => $_has(4);
-  @$pb.TagNumber(5)
-  void clearTransferType() => clearField(5);
-
-  @$pb.TagNumber(6)
-  $core.String get category => $_getSZ(5);
-  @$pb.TagNumber(6)
-  set category($core.String v) { $_setString(5, v); }
-  @$pb.TagNumber(6)
-  $core.bool hasCategory() => $_has(5);
-  @$pb.TagNumber(6)
-  void clearCategory() => clearField(6);
-
-  @$pb.TagNumber(10)
-  $core.int get pageNumber => $_getIZ(6);
-  @$pb.TagNumber(10)
-  set pageNumber($core.int v) { $_setSignedInt32(6, v); }
-  @$pb.TagNumber(10)
-  $core.bool hasPageNumber() => $_has(6);
-  @$pb.TagNumber(10)
-  void clearPageNumber() => clearField(10);
-
-  @$pb.TagNumber(11)
-  $core.int get pageSize => $_getIZ(7);
-  @$pb.TagNumber(11)
-  set pageSize($core.int v) { $_setSignedInt32(7, v); }
-  @$pb.TagNumber(11)
-  $core.bool hasPageSize() => $_has(7);
-  @$pb.TagNumber(11)
-  void clearPageSize() => clearField(11);
-}
-
-class GetTransactionsResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetTransactionsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..pc<TransferTransaction>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactions', $pb.PbFieldType.PM, subBuilder: TransferTransaction.create)
-    ..aOM<PaginationInfo>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pagination', subBuilder: PaginationInfo.create)
-    ..hasRequiredFields = false
-  ;
-
-  GetTransactionsResponse._() : super();
-  factory GetTransactionsResponse({
-    $core.Iterable<TransferTransaction>? transactions,
-    PaginationInfo? pagination,
-  }) {
-    final _result = create();
-    if (transactions != null) {
-      _result.transactions.addAll(transactions);
-    }
-    if (pagination != null) {
-      _result.pagination = pagination;
-    }
-    return _result;
-  }
-  factory GetTransactionsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetTransactionsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  GetTransactionsResponse clone() => GetTransactionsResponse()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  GetTransactionsResponse copyWith(void Function(GetTransactionsResponse) updates) => super.copyWith((message) => updates(message as GetTransactionsResponse)) as GetTransactionsResponse; // ignore: deprecated_member_use
-  $pb.BuilderInfo get info_ => _i;
-  @$core.pragma('dart2js:noInline')
-  static GetTransactionsResponse create() => GetTransactionsResponse._();
-  GetTransactionsResponse createEmptyInstance() => create();
-  static $pb.PbList<GetTransactionsResponse> createRepeated() => $pb.PbList<GetTransactionsResponse>();
-  @$core.pragma('dart2js:noInline')
-  static GetTransactionsResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetTransactionsResponse>(create);
-  static GetTransactionsResponse? _defaultInstance;
-
-  @$pb.TagNumber(1)
-  $core.List<TransferTransaction> get transactions => $_getList(0);
-
-  @$pb.TagNumber(2)
-  PaginationInfo get pagination => $_getN(1);
-  @$pb.TagNumber(2)
-  set pagination(PaginationInfo v) { setField(2, v); }
-  @$pb.TagNumber(2)
-  $core.bool hasPagination() => $_has(1);
-  @$pb.TagNumber(2)
-  void clearPagination() => clearField(2);
-  @$pb.TagNumber(2)
-  PaginationInfo ensurePagination() => $_ensure(1);
-}
-
 class GetTransferDetailsRequest extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetTransferDetailsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
     ..a<$fixnum.Int64>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transfer_id', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
@@ -1299,10 +1002,10 @@ class GetTransferDetailsResponse extends $pb.GeneratedMessage {
     ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status')
     ..aOS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'reference')
     ..aOS(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'category')
-    ..aOM<$17.Timestamp>(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'created_at', subBuilder: $17.Timestamp.create)
-    ..aOM<$17.Timestamp>(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'scheduled_at', subBuilder: $17.Timestamp.create)
-    ..aOM<$17.Timestamp>(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'completed_at', subBuilder: $17.Timestamp.create)
-    ..aOM<$17.Timestamp>(16, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'failed_at', subBuilder: $17.Timestamp.create)
+    ..aOM<$25.Timestamp>(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'created_at', subBuilder: $25.Timestamp.create)
+    ..aOS(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'scheduled_at')
+    ..aOM<$25.Timestamp>(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'completed_at', subBuilder: $25.Timestamp.create)
+    ..aOM<$25.Timestamp>(16, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'failed_at', subBuilder: $25.Timestamp.create)
     ..aOS(17, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'failure_reason')
     ..hasRequiredFields = false
   ;
@@ -1321,10 +1024,10 @@ class GetTransferDetailsResponse extends $pb.GeneratedMessage {
     $core.String? status,
     $core.String? reference,
     $core.String? category,
-    $17.Timestamp? createdAt,
-    $17.Timestamp? scheduledAt,
-    $17.Timestamp? completedAt,
-    $17.Timestamp? failedAt,
+    $25.Timestamp? createdAt,
+    $core.String? scheduledAt,
+    $25.Timestamp? completedAt,
+    $25.Timestamp? failedAt,
     $core.String? failureReason,
   }) {
     final _result = create();
@@ -1511,48 +1214,46 @@ class GetTransferDetailsResponse extends $pb.GeneratedMessage {
   void clearCategory() => clearField(12);
 
   @$pb.TagNumber(13)
-  $17.Timestamp get createdAt => $_getN(12);
+  $25.Timestamp get createdAt => $_getN(12);
   @$pb.TagNumber(13)
-  set createdAt($17.Timestamp v) { setField(13, v); }
+  set createdAt($25.Timestamp v) { setField(13, v); }
   @$pb.TagNumber(13)
   $core.bool hasCreatedAt() => $_has(12);
   @$pb.TagNumber(13)
   void clearCreatedAt() => clearField(13);
   @$pb.TagNumber(13)
-  $17.Timestamp ensureCreatedAt() => $_ensure(12);
+  $25.Timestamp ensureCreatedAt() => $_ensure(12);
 
   @$pb.TagNumber(14)
-  $17.Timestamp get scheduledAt => $_getN(13);
+  $core.String get scheduledAt => $_getSZ(13);
   @$pb.TagNumber(14)
-  set scheduledAt($17.Timestamp v) { setField(14, v); }
+  set scheduledAt($core.String v) { $_setString(13, v); }
   @$pb.TagNumber(14)
   $core.bool hasScheduledAt() => $_has(13);
   @$pb.TagNumber(14)
   void clearScheduledAt() => clearField(14);
-  @$pb.TagNumber(14)
-  $17.Timestamp ensureScheduledAt() => $_ensure(13);
 
   @$pb.TagNumber(15)
-  $17.Timestamp get completedAt => $_getN(14);
+  $25.Timestamp get completedAt => $_getN(14);
   @$pb.TagNumber(15)
-  set completedAt($17.Timestamp v) { setField(15, v); }
+  set completedAt($25.Timestamp v) { setField(15, v); }
   @$pb.TagNumber(15)
   $core.bool hasCompletedAt() => $_has(14);
   @$pb.TagNumber(15)
   void clearCompletedAt() => clearField(15);
   @$pb.TagNumber(15)
-  $17.Timestamp ensureCompletedAt() => $_ensure(14);
+  $25.Timestamp ensureCompletedAt() => $_ensure(14);
 
   @$pb.TagNumber(16)
-  $17.Timestamp get failedAt => $_getN(15);
+  $25.Timestamp get failedAt => $_getN(15);
   @$pb.TagNumber(16)
-  set failedAt($17.Timestamp v) { setField(16, v); }
+  set failedAt($25.Timestamp v) { setField(16, v); }
   @$pb.TagNumber(16)
   $core.bool hasFailedAt() => $_has(15);
   @$pb.TagNumber(16)
   void clearFailedAt() => clearField(16);
   @$pb.TagNumber(16)
-  $17.Timestamp ensureFailedAt() => $_ensure(15);
+  $25.Timestamp ensureFailedAt() => $_ensure(15);
 
   @$pb.TagNumber(17)
   $core.String get failureReason => $_getSZ(16);
@@ -1562,5 +1263,1148 @@ class GetTransferDetailsResponse extends $pb.GeneratedMessage {
   $core.bool hasFailureReason() => $_has(16);
   @$pb.TagNumber(17)
   void clearFailureReason() => clearField(17);
+}
+
+class TransferPaginationInfo extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'TransferPaginationInfo', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..a<$core.int>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currentPage', $pb.PbFieldType.O3)
+    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalPages', $pb.PbFieldType.O3)
+    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalItems', $pb.PbFieldType.O3)
+    ..a<$core.int>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'itemsPerPage', $pb.PbFieldType.O3)
+    ..aOB(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'hasNext')
+    ..aOB(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'hasPrev')
+    ..hasRequiredFields = false
+  ;
+
+  TransferPaginationInfo._() : super();
+  factory TransferPaginationInfo({
+    $core.int? currentPage,
+    $core.int? totalPages,
+    $core.int? totalItems,
+    $core.int? itemsPerPage,
+    $core.bool? hasNext,
+    $core.bool? hasPrev,
+  }) {
+    final _result = create();
+    if (currentPage != null) {
+      _result.currentPage = currentPage;
+    }
+    if (totalPages != null) {
+      _result.totalPages = totalPages;
+    }
+    if (totalItems != null) {
+      _result.totalItems = totalItems;
+    }
+    if (itemsPerPage != null) {
+      _result.itemsPerPage = itemsPerPage;
+    }
+    if (hasNext != null) {
+      _result.hasNext = hasNext;
+    }
+    if (hasPrev != null) {
+      _result.hasPrev = hasPrev;
+    }
+    return _result;
+  }
+  factory TransferPaginationInfo.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory TransferPaginationInfo.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  TransferPaginationInfo clone() => TransferPaginationInfo()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  TransferPaginationInfo copyWith(void Function(TransferPaginationInfo) updates) => super.copyWith((message) => updates(message as TransferPaginationInfo)) as TransferPaginationInfo; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static TransferPaginationInfo create() => TransferPaginationInfo._();
+  TransferPaginationInfo createEmptyInstance() => create();
+  static $pb.PbList<TransferPaginationInfo> createRepeated() => $pb.PbList<TransferPaginationInfo>();
+  @$core.pragma('dart2js:noInline')
+  static TransferPaginationInfo getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<TransferPaginationInfo>(create);
+  static TransferPaginationInfo? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.int get currentPage => $_getIZ(0);
+  @$pb.TagNumber(1)
+  set currentPage($core.int v) { $_setSignedInt32(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasCurrentPage() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearCurrentPage() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.int get totalPages => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set totalPages($core.int v) { $_setSignedInt32(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasTotalPages() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearTotalPages() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.int get totalItems => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set totalItems($core.int v) { $_setSignedInt32(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasTotalItems() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearTotalItems() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.int get itemsPerPage => $_getIZ(3);
+  @$pb.TagNumber(4)
+  set itemsPerPage($core.int v) { $_setSignedInt32(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasItemsPerPage() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearItemsPerPage() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.bool get hasNext => $_getBF(4);
+  @$pb.TagNumber(5)
+  set hasNext($core.bool v) { $_setBool(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasHasNext() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearHasNext() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.bool get hasPrev => $_getBF(5);
+  @$pb.TagNumber(6)
+  set hasPrev($core.bool v) { $_setBool(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasHasPrev() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearHasPrev() => clearField(6);
+}
+
+class ListTransfersRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ListTransfersRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..a<$core.int>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'page', $pb.PbFieldType.O3)
+    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pageSize', $pb.PbFieldType.O3)
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sortBy')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sortOrder')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'search')
+    ..hasRequiredFields = false
+  ;
+
+  ListTransfersRequest._() : super();
+  factory ListTransfersRequest({
+    $core.int? page,
+    $core.int? pageSize,
+    $core.String? status,
+    $core.String? sortBy,
+    $core.String? sortOrder,
+    $core.String? search,
+  }) {
+    final _result = create();
+    if (page != null) {
+      _result.page = page;
+    }
+    if (pageSize != null) {
+      _result.pageSize = pageSize;
+    }
+    if (status != null) {
+      _result.status = status;
+    }
+    if (sortBy != null) {
+      _result.sortBy = sortBy;
+    }
+    if (sortOrder != null) {
+      _result.sortOrder = sortOrder;
+    }
+    if (search != null) {
+      _result.search = search;
+    }
+    return _result;
+  }
+  factory ListTransfersRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory ListTransfersRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  ListTransfersRequest clone() => ListTransfersRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  ListTransfersRequest copyWith(void Function(ListTransfersRequest) updates) => super.copyWith((message) => updates(message as ListTransfersRequest)) as ListTransfersRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static ListTransfersRequest create() => ListTransfersRequest._();
+  ListTransfersRequest createEmptyInstance() => create();
+  static $pb.PbList<ListTransfersRequest> createRepeated() => $pb.PbList<ListTransfersRequest>();
+  @$core.pragma('dart2js:noInline')
+  static ListTransfersRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ListTransfersRequest>(create);
+  static ListTransfersRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.int get page => $_getIZ(0);
+  @$pb.TagNumber(1)
+  set page($core.int v) { $_setSignedInt32(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasPage() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearPage() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.int get pageSize => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set pageSize($core.int v) { $_setSignedInt32(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasPageSize() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearPageSize() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get status => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set status($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasStatus() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearStatus() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get sortBy => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set sortBy($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasSortBy() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearSortBy() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get sortOrder => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set sortOrder($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasSortOrder() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearSortOrder() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get search => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set search($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasSearch() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearSearch() => clearField(6);
+}
+
+class ListTransfersResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ListTransfersResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..pc<GetTransferDetailsResponse>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transfers', $pb.PbFieldType.PM, subBuilder: GetTransferDetailsResponse.create)
+    ..aOM<TransferPaginationInfo>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pagination', subBuilder: TransferPaginationInfo.create)
+    ..hasRequiredFields = false
+  ;
+
+  ListTransfersResponse._() : super();
+  factory ListTransfersResponse({
+    $core.Iterable<GetTransferDetailsResponse>? transfers,
+    TransferPaginationInfo? pagination,
+  }) {
+    final _result = create();
+    if (transfers != null) {
+      _result.transfers.addAll(transfers);
+    }
+    if (pagination != null) {
+      _result.pagination = pagination;
+    }
+    return _result;
+  }
+  factory ListTransfersResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory ListTransfersResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  ListTransfersResponse clone() => ListTransfersResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  ListTransfersResponse copyWith(void Function(ListTransfersResponse) updates) => super.copyWith((message) => updates(message as ListTransfersResponse)) as ListTransfersResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static ListTransfersResponse create() => ListTransfersResponse._();
+  ListTransfersResponse createEmptyInstance() => create();
+  static $pb.PbList<ListTransfersResponse> createRepeated() => $pb.PbList<ListTransfersResponse>();
+  @$core.pragma('dart2js:noInline')
+  static ListTransfersResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ListTransfersResponse>(create);
+  static ListTransfersResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.List<GetTransferDetailsResponse> get transfers => $_getList(0);
+
+  @$pb.TagNumber(2)
+  TransferPaginationInfo get pagination => $_getN(1);
+  @$pb.TagNumber(2)
+  set pagination(TransferPaginationInfo v) { setField(2, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasPagination() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearPagination() => clearField(2);
+  @$pb.TagNumber(2)
+  TransferPaginationInfo ensurePagination() => $_ensure(1);
+}
+
+class BatchRecipient extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'BatchRecipient', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..a<$fixnum.Int64>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recipientId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'toAccountId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'reference')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'category')
+    ..hasRequiredFields = false
+  ;
+
+  BatchRecipient._() : super();
+  factory BatchRecipient({
+    $fixnum.Int64? recipientId,
+    $fixnum.Int64? toAccountId,
+    $fixnum.Int64? amount,
+    $core.String? reference,
+    $core.String? category,
+  }) {
+    final _result = create();
+    if (recipientId != null) {
+      _result.recipientId = recipientId;
+    }
+    if (toAccountId != null) {
+      _result.toAccountId = toAccountId;
+    }
+    if (amount != null) {
+      _result.amount = amount;
+    }
+    if (reference != null) {
+      _result.reference = reference;
+    }
+    if (category != null) {
+      _result.category = category;
+    }
+    return _result;
+  }
+  factory BatchRecipient.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory BatchRecipient.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  BatchRecipient clone() => BatchRecipient()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  BatchRecipient copyWith(void Function(BatchRecipient) updates) => super.copyWith((message) => updates(message as BatchRecipient)) as BatchRecipient; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static BatchRecipient create() => BatchRecipient._();
+  BatchRecipient createEmptyInstance() => create();
+  static $pb.PbList<BatchRecipient> createRepeated() => $pb.PbList<BatchRecipient>();
+  @$core.pragma('dart2js:noInline')
+  static BatchRecipient getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<BatchRecipient>(create);
+  static BatchRecipient? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $fixnum.Int64 get recipientId => $_getI64(0);
+  @$pb.TagNumber(1)
+  set recipientId($fixnum.Int64 v) { $_setInt64(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasRecipientId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearRecipientId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $fixnum.Int64 get toAccountId => $_getI64(1);
+  @$pb.TagNumber(2)
+  set toAccountId($fixnum.Int64 v) { $_setInt64(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasToAccountId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearToAccountId() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $fixnum.Int64 get amount => $_getI64(2);
+  @$pb.TagNumber(3)
+  set amount($fixnum.Int64 v) { $_setInt64(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasAmount() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearAmount() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get reference => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set reference($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasReference() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearReference() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get category => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set category($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasCategory() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearCategory() => clearField(5);
+}
+
+class InitiateBatchTransferRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'InitiateBatchTransferRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..a<$fixnum.Int64>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'from_account_id', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..pc<BatchRecipient>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recipients', $pb.PbFieldType.PM, subBuilder: BatchRecipient.create)
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'scheduledAt')
+    ..hasRequiredFields = false
+  ;
+
+  InitiateBatchTransferRequest._() : super();
+  factory InitiateBatchTransferRequest({
+    $fixnum.Int64? fromAccountId,
+    $core.Iterable<BatchRecipient>? recipients,
+    $core.String? scheduledAt,
+  }) {
+    final _result = create();
+    if (fromAccountId != null) {
+      _result.fromAccountId = fromAccountId;
+    }
+    if (recipients != null) {
+      _result.recipients.addAll(recipients);
+    }
+    if (scheduledAt != null) {
+      _result.scheduledAt = scheduledAt;
+    }
+    return _result;
+  }
+  factory InitiateBatchTransferRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory InitiateBatchTransferRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  InitiateBatchTransferRequest clone() => InitiateBatchTransferRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  InitiateBatchTransferRequest copyWith(void Function(InitiateBatchTransferRequest) updates) => super.copyWith((message) => updates(message as InitiateBatchTransferRequest)) as InitiateBatchTransferRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static InitiateBatchTransferRequest create() => InitiateBatchTransferRequest._();
+  InitiateBatchTransferRequest createEmptyInstance() => create();
+  static $pb.PbList<InitiateBatchTransferRequest> createRepeated() => $pb.PbList<InitiateBatchTransferRequest>();
+  @$core.pragma('dart2js:noInline')
+  static InitiateBatchTransferRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<InitiateBatchTransferRequest>(create);
+  static InitiateBatchTransferRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $fixnum.Int64 get fromAccountId => $_getI64(0);
+  @$pb.TagNumber(1)
+  set fromAccountId($fixnum.Int64 v) { $_setInt64(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasFromAccountId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearFromAccountId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.List<BatchRecipient> get recipients => $_getList(1);
+
+  @$pb.TagNumber(3)
+  $core.String get scheduledAt => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set scheduledAt($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasScheduledAt() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearScheduledAt() => clearField(3);
+}
+
+class BatchTransferResult extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'BatchTransferResult', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..a<$fixnum.Int64>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transferId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status')
+    ..a<$fixnum.Int64>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'fee', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recipientName')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recipientAccount')
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'failureReason')
+    ..hasRequiredFields = false
+  ;
+
+  BatchTransferResult._() : super();
+  factory BatchTransferResult({
+    $fixnum.Int64? transferId,
+    $core.String? status,
+    $fixnum.Int64? amount,
+    $fixnum.Int64? fee,
+    $core.String? recipientName,
+    $core.String? recipientAccount,
+    $core.String? failureReason,
+  }) {
+    final _result = create();
+    if (transferId != null) {
+      _result.transferId = transferId;
+    }
+    if (status != null) {
+      _result.status = status;
+    }
+    if (amount != null) {
+      _result.amount = amount;
+    }
+    if (fee != null) {
+      _result.fee = fee;
+    }
+    if (recipientName != null) {
+      _result.recipientName = recipientName;
+    }
+    if (recipientAccount != null) {
+      _result.recipientAccount = recipientAccount;
+    }
+    if (failureReason != null) {
+      _result.failureReason = failureReason;
+    }
+    return _result;
+  }
+  factory BatchTransferResult.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory BatchTransferResult.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  BatchTransferResult clone() => BatchTransferResult()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  BatchTransferResult copyWith(void Function(BatchTransferResult) updates) => super.copyWith((message) => updates(message as BatchTransferResult)) as BatchTransferResult; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static BatchTransferResult create() => BatchTransferResult._();
+  BatchTransferResult createEmptyInstance() => create();
+  static $pb.PbList<BatchTransferResult> createRepeated() => $pb.PbList<BatchTransferResult>();
+  @$core.pragma('dart2js:noInline')
+  static BatchTransferResult getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<BatchTransferResult>(create);
+  static BatchTransferResult? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $fixnum.Int64 get transferId => $_getI64(0);
+  @$pb.TagNumber(1)
+  set transferId($fixnum.Int64 v) { $_setInt64(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasTransferId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearTransferId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get status => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set status($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasStatus() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearStatus() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $fixnum.Int64 get amount => $_getI64(2);
+  @$pb.TagNumber(3)
+  set amount($fixnum.Int64 v) { $_setInt64(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasAmount() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearAmount() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $fixnum.Int64 get fee => $_getI64(3);
+  @$pb.TagNumber(4)
+  set fee($fixnum.Int64 v) { $_setInt64(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasFee() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearFee() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get recipientName => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set recipientName($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasRecipientName() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearRecipientName() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get recipientAccount => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set recipientAccount($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasRecipientAccount() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearRecipientAccount() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.String get failureReason => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set failureReason($core.String v) { $_setString(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasFailureReason() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearFailureReason() => clearField(7);
+}
+
+class InitiateBatchTransferResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'InitiateBatchTransferResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..a<$fixnum.Int64>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'batchId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status')
+    ..a<$fixnum.Int64>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalAmount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalFee', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalAmountWithFee', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$core.int>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'successfulTransfers', $pb.PbFieldType.O3)
+    ..a<$core.int>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'failedTransfers', $pb.PbFieldType.O3)
+    ..a<$core.int>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalTransfers', $pb.PbFieldType.O3)
+    ..pc<BatchTransferResult>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'results', $pb.PbFieldType.PM, subBuilder: BatchTransferResult.create)
+    ..aOM<$25.Timestamp>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $25.Timestamp.create)
+    ..aOM<$25.Timestamp>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'completedAt', subBuilder: $25.Timestamp.create)
+    ..hasRequiredFields = false
+  ;
+
+  InitiateBatchTransferResponse._() : super();
+  factory InitiateBatchTransferResponse({
+    $fixnum.Int64? batchId,
+    $core.String? status,
+    $fixnum.Int64? totalAmount,
+    $fixnum.Int64? totalFee,
+    $fixnum.Int64? totalAmountWithFee,
+    $core.int? successfulTransfers,
+    $core.int? failedTransfers,
+    $core.int? totalTransfers,
+    $core.Iterable<BatchTransferResult>? results,
+    $25.Timestamp? createdAt,
+    $25.Timestamp? completedAt,
+  }) {
+    final _result = create();
+    if (batchId != null) {
+      _result.batchId = batchId;
+    }
+    if (status != null) {
+      _result.status = status;
+    }
+    if (totalAmount != null) {
+      _result.totalAmount = totalAmount;
+    }
+    if (totalFee != null) {
+      _result.totalFee = totalFee;
+    }
+    if (totalAmountWithFee != null) {
+      _result.totalAmountWithFee = totalAmountWithFee;
+    }
+    if (successfulTransfers != null) {
+      _result.successfulTransfers = successfulTransfers;
+    }
+    if (failedTransfers != null) {
+      _result.failedTransfers = failedTransfers;
+    }
+    if (totalTransfers != null) {
+      _result.totalTransfers = totalTransfers;
+    }
+    if (results != null) {
+      _result.results.addAll(results);
+    }
+    if (createdAt != null) {
+      _result.createdAt = createdAt;
+    }
+    if (completedAt != null) {
+      _result.completedAt = completedAt;
+    }
+    return _result;
+  }
+  factory InitiateBatchTransferResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory InitiateBatchTransferResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  InitiateBatchTransferResponse clone() => InitiateBatchTransferResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  InitiateBatchTransferResponse copyWith(void Function(InitiateBatchTransferResponse) updates) => super.copyWith((message) => updates(message as InitiateBatchTransferResponse)) as InitiateBatchTransferResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static InitiateBatchTransferResponse create() => InitiateBatchTransferResponse._();
+  InitiateBatchTransferResponse createEmptyInstance() => create();
+  static $pb.PbList<InitiateBatchTransferResponse> createRepeated() => $pb.PbList<InitiateBatchTransferResponse>();
+  @$core.pragma('dart2js:noInline')
+  static InitiateBatchTransferResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<InitiateBatchTransferResponse>(create);
+  static InitiateBatchTransferResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $fixnum.Int64 get batchId => $_getI64(0);
+  @$pb.TagNumber(1)
+  set batchId($fixnum.Int64 v) { $_setInt64(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasBatchId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearBatchId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get status => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set status($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasStatus() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearStatus() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $fixnum.Int64 get totalAmount => $_getI64(2);
+  @$pb.TagNumber(3)
+  set totalAmount($fixnum.Int64 v) { $_setInt64(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasTotalAmount() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearTotalAmount() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $fixnum.Int64 get totalFee => $_getI64(3);
+  @$pb.TagNumber(4)
+  set totalFee($fixnum.Int64 v) { $_setInt64(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasTotalFee() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearTotalFee() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $fixnum.Int64 get totalAmountWithFee => $_getI64(4);
+  @$pb.TagNumber(5)
+  set totalAmountWithFee($fixnum.Int64 v) { $_setInt64(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasTotalAmountWithFee() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearTotalAmountWithFee() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.int get successfulTransfers => $_getIZ(5);
+  @$pb.TagNumber(6)
+  set successfulTransfers($core.int v) { $_setSignedInt32(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasSuccessfulTransfers() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearSuccessfulTransfers() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.int get failedTransfers => $_getIZ(6);
+  @$pb.TagNumber(7)
+  set failedTransfers($core.int v) { $_setSignedInt32(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasFailedTransfers() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearFailedTransfers() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.int get totalTransfers => $_getIZ(7);
+  @$pb.TagNumber(8)
+  set totalTransfers($core.int v) { $_setSignedInt32(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasTotalTransfers() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearTotalTransfers() => clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.List<BatchTransferResult> get results => $_getList(8);
+
+  @$pb.TagNumber(10)
+  $25.Timestamp get createdAt => $_getN(9);
+  @$pb.TagNumber(10)
+  set createdAt($25.Timestamp v) { setField(10, v); }
+  @$pb.TagNumber(10)
+  $core.bool hasCreatedAt() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearCreatedAt() => clearField(10);
+  @$pb.TagNumber(10)
+  $25.Timestamp ensureCreatedAt() => $_ensure(9);
+
+  @$pb.TagNumber(11)
+  $25.Timestamp get completedAt => $_getN(10);
+  @$pb.TagNumber(11)
+  set completedAt($25.Timestamp v) { setField(11, v); }
+  @$pb.TagNumber(11)
+  $core.bool hasCompletedAt() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearCompletedAt() => clearField(11);
+  @$pb.TagNumber(11)
+  $25.Timestamp ensureCompletedAt() => $_ensure(10);
+}
+
+class GetBatchTransferStatusRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetBatchTransferStatusRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..a<$fixnum.Int64>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'batch_id', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..hasRequiredFields = false
+  ;
+
+  GetBatchTransferStatusRequest._() : super();
+  factory GetBatchTransferStatusRequest({
+    $fixnum.Int64? batchId,
+  }) {
+    final _result = create();
+    if (batchId != null) {
+      _result.batchId = batchId;
+    }
+    return _result;
+  }
+  factory GetBatchTransferStatusRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetBatchTransferStatusRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetBatchTransferStatusRequest clone() => GetBatchTransferStatusRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetBatchTransferStatusRequest copyWith(void Function(GetBatchTransferStatusRequest) updates) => super.copyWith((message) => updates(message as GetBatchTransferStatusRequest)) as GetBatchTransferStatusRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GetBatchTransferStatusRequest create() => GetBatchTransferStatusRequest._();
+  GetBatchTransferStatusRequest createEmptyInstance() => create();
+  static $pb.PbList<GetBatchTransferStatusRequest> createRepeated() => $pb.PbList<GetBatchTransferStatusRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetBatchTransferStatusRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetBatchTransferStatusRequest>(create);
+  static GetBatchTransferStatusRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $fixnum.Int64 get batchId => $_getI64(0);
+  @$pb.TagNumber(1)
+  set batchId($fixnum.Int64 v) { $_setInt64(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasBatchId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearBatchId() => clearField(1);
+}
+
+class GetBatchTransferStatusResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetBatchTransferStatusResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..a<$fixnum.Int64>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'batchId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status')
+    ..a<$fixnum.Int64>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalAmount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalFee', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalAmountWithFee', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$core.int>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'successfulTransfers', $pb.PbFieldType.O3)
+    ..a<$core.int>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'failedTransfers', $pb.PbFieldType.O3)
+    ..a<$core.int>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalTransfers', $pb.PbFieldType.O3)
+    ..pc<BatchTransferResult>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'results', $pb.PbFieldType.PM, subBuilder: BatchTransferResult.create)
+    ..aOM<$25.Timestamp>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $25.Timestamp.create)
+    ..aOM<$25.Timestamp>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'completedAt', subBuilder: $25.Timestamp.create)
+    ..hasRequiredFields = false
+  ;
+
+  GetBatchTransferStatusResponse._() : super();
+  factory GetBatchTransferStatusResponse({
+    $fixnum.Int64? batchId,
+    $core.String? status,
+    $fixnum.Int64? totalAmount,
+    $fixnum.Int64? totalFee,
+    $fixnum.Int64? totalAmountWithFee,
+    $core.int? successfulTransfers,
+    $core.int? failedTransfers,
+    $core.int? totalTransfers,
+    $core.Iterable<BatchTransferResult>? results,
+    $25.Timestamp? createdAt,
+    $25.Timestamp? completedAt,
+  }) {
+    final _result = create();
+    if (batchId != null) {
+      _result.batchId = batchId;
+    }
+    if (status != null) {
+      _result.status = status;
+    }
+    if (totalAmount != null) {
+      _result.totalAmount = totalAmount;
+    }
+    if (totalFee != null) {
+      _result.totalFee = totalFee;
+    }
+    if (totalAmountWithFee != null) {
+      _result.totalAmountWithFee = totalAmountWithFee;
+    }
+    if (successfulTransfers != null) {
+      _result.successfulTransfers = successfulTransfers;
+    }
+    if (failedTransfers != null) {
+      _result.failedTransfers = failedTransfers;
+    }
+    if (totalTransfers != null) {
+      _result.totalTransfers = totalTransfers;
+    }
+    if (results != null) {
+      _result.results.addAll(results);
+    }
+    if (createdAt != null) {
+      _result.createdAt = createdAt;
+    }
+    if (completedAt != null) {
+      _result.completedAt = completedAt;
+    }
+    return _result;
+  }
+  factory GetBatchTransferStatusResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetBatchTransferStatusResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetBatchTransferStatusResponse clone() => GetBatchTransferStatusResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetBatchTransferStatusResponse copyWith(void Function(GetBatchTransferStatusResponse) updates) => super.copyWith((message) => updates(message as GetBatchTransferStatusResponse)) as GetBatchTransferStatusResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GetBatchTransferStatusResponse create() => GetBatchTransferStatusResponse._();
+  GetBatchTransferStatusResponse createEmptyInstance() => create();
+  static $pb.PbList<GetBatchTransferStatusResponse> createRepeated() => $pb.PbList<GetBatchTransferStatusResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetBatchTransferStatusResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetBatchTransferStatusResponse>(create);
+  static GetBatchTransferStatusResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $fixnum.Int64 get batchId => $_getI64(0);
+  @$pb.TagNumber(1)
+  set batchId($fixnum.Int64 v) { $_setInt64(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasBatchId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearBatchId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get status => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set status($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasStatus() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearStatus() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $fixnum.Int64 get totalAmount => $_getI64(2);
+  @$pb.TagNumber(3)
+  set totalAmount($fixnum.Int64 v) { $_setInt64(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasTotalAmount() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearTotalAmount() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $fixnum.Int64 get totalFee => $_getI64(3);
+  @$pb.TagNumber(4)
+  set totalFee($fixnum.Int64 v) { $_setInt64(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasTotalFee() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearTotalFee() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $fixnum.Int64 get totalAmountWithFee => $_getI64(4);
+  @$pb.TagNumber(5)
+  set totalAmountWithFee($fixnum.Int64 v) { $_setInt64(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasTotalAmountWithFee() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearTotalAmountWithFee() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.int get successfulTransfers => $_getIZ(5);
+  @$pb.TagNumber(6)
+  set successfulTransfers($core.int v) { $_setSignedInt32(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasSuccessfulTransfers() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearSuccessfulTransfers() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.int get failedTransfers => $_getIZ(6);
+  @$pb.TagNumber(7)
+  set failedTransfers($core.int v) { $_setSignedInt32(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasFailedTransfers() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearFailedTransfers() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.int get totalTransfers => $_getIZ(7);
+  @$pb.TagNumber(8)
+  set totalTransfers($core.int v) { $_setSignedInt32(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasTotalTransfers() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearTotalTransfers() => clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.List<BatchTransferResult> get results => $_getList(8);
+
+  @$pb.TagNumber(10)
+  $25.Timestamp get createdAt => $_getN(9);
+  @$pb.TagNumber(10)
+  set createdAt($25.Timestamp v) { setField(10, v); }
+  @$pb.TagNumber(10)
+  $core.bool hasCreatedAt() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearCreatedAt() => clearField(10);
+  @$pb.TagNumber(10)
+  $25.Timestamp ensureCreatedAt() => $_ensure(9);
+
+  @$pb.TagNumber(11)
+  $25.Timestamp get completedAt => $_getN(10);
+  @$pb.TagNumber(11)
+  set completedAt($25.Timestamp v) { setField(11, v); }
+  @$pb.TagNumber(11)
+  $core.bool hasCompletedAt() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearCompletedAt() => clearField(11);
+  @$pb.TagNumber(11)
+  $25.Timestamp ensureCompletedAt() => $_ensure(10);
+}
+
+class GetBatchTransferHistoryRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetBatchTransferHistoryRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..a<$core.int>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'page', $pb.PbFieldType.O3)
+    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pageSize', $pb.PbFieldType.O3)
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status')
+    ..hasRequiredFields = false
+  ;
+
+  GetBatchTransferHistoryRequest._() : super();
+  factory GetBatchTransferHistoryRequest({
+    $core.int? page,
+    $core.int? pageSize,
+    $core.String? status,
+  }) {
+    final _result = create();
+    if (page != null) {
+      _result.page = page;
+    }
+    if (pageSize != null) {
+      _result.pageSize = pageSize;
+    }
+    if (status != null) {
+      _result.status = status;
+    }
+    return _result;
+  }
+  factory GetBatchTransferHistoryRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetBatchTransferHistoryRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetBatchTransferHistoryRequest clone() => GetBatchTransferHistoryRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetBatchTransferHistoryRequest copyWith(void Function(GetBatchTransferHistoryRequest) updates) => super.copyWith((message) => updates(message as GetBatchTransferHistoryRequest)) as GetBatchTransferHistoryRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GetBatchTransferHistoryRequest create() => GetBatchTransferHistoryRequest._();
+  GetBatchTransferHistoryRequest createEmptyInstance() => create();
+  static $pb.PbList<GetBatchTransferHistoryRequest> createRepeated() => $pb.PbList<GetBatchTransferHistoryRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetBatchTransferHistoryRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetBatchTransferHistoryRequest>(create);
+  static GetBatchTransferHistoryRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.int get page => $_getIZ(0);
+  @$pb.TagNumber(1)
+  set page($core.int v) { $_setSignedInt32(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasPage() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearPage() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.int get pageSize => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set pageSize($core.int v) { $_setSignedInt32(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasPageSize() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearPageSize() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get status => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set status($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasStatus() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearStatus() => clearField(3);
+}
+
+class GetBatchTransferHistoryResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetBatchTransferHistoryResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..pc<GetBatchTransferStatusResponse>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'batches', $pb.PbFieldType.PM, subBuilder: GetBatchTransferStatusResponse.create)
+    ..aOM<TransferPaginationInfo>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pagination', subBuilder: TransferPaginationInfo.create)
+    ..hasRequiredFields = false
+  ;
+
+  GetBatchTransferHistoryResponse._() : super();
+  factory GetBatchTransferHistoryResponse({
+    $core.Iterable<GetBatchTransferStatusResponse>? batches,
+    TransferPaginationInfo? pagination,
+  }) {
+    final _result = create();
+    if (batches != null) {
+      _result.batches.addAll(batches);
+    }
+    if (pagination != null) {
+      _result.pagination = pagination;
+    }
+    return _result;
+  }
+  factory GetBatchTransferHistoryResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetBatchTransferHistoryResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetBatchTransferHistoryResponse clone() => GetBatchTransferHistoryResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetBatchTransferHistoryResponse copyWith(void Function(GetBatchTransferHistoryResponse) updates) => super.copyWith((message) => updates(message as GetBatchTransferHistoryResponse)) as GetBatchTransferHistoryResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GetBatchTransferHistoryResponse create() => GetBatchTransferHistoryResponse._();
+  GetBatchTransferHistoryResponse createEmptyInstance() => create();
+  static $pb.PbList<GetBatchTransferHistoryResponse> createRepeated() => $pb.PbList<GetBatchTransferHistoryResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetBatchTransferHistoryResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetBatchTransferHistoryResponse>(create);
+  static GetBatchTransferHistoryResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.List<GetBatchTransferStatusResponse> get batches => $_getList(0);
+
+  @$pb.TagNumber(2)
+  TransferPaginationInfo get pagination => $_getN(1);
+  @$pb.TagNumber(2)
+  set pagination(TransferPaginationInfo v) { setField(2, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasPagination() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearPagination() => clearField(2);
+  @$pb.TagNumber(2)
+  TransferPaginationInfo ensurePagination() => $_ensure(1);
 }
 

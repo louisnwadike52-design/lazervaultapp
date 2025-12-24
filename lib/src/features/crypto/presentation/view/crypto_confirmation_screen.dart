@@ -266,9 +266,14 @@ class _CryptoConfirmationScreenState extends State<CryptoConfirmationScreen>
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(
-          color: const Color(0xFF6C5CE7).withOpacity(0.3),
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -335,9 +340,14 @@ class _CryptoConfirmationScreenState extends State<CryptoConfirmationScreen>
       decoration: BoxDecoration(
         color: const Color(0xFF1E2746),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.1),
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -406,9 +416,14 @@ class _CryptoConfirmationScreenState extends State<CryptoConfirmationScreen>
       decoration: BoxDecoration(
         color: const Color(0xFF1E2746),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-          color: Colors.green.withOpacity(0.3),
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -470,9 +485,14 @@ class _CryptoConfirmationScreenState extends State<CryptoConfirmationScreen>
       decoration: BoxDecoration(
         color: Colors.orange.withOpacity(0.1),
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(
-          color: Colors.orange.withOpacity(0.3),
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,

@@ -47,86 +47,6 @@ class _RecipientManagementScreenState extends State<RecipientManagementScreen>
     super.dispose();
   }
 
-  void _loadMockRecipients() {
-    _allRecipients = [
-      Recipient(
-        id: '1',
-        name: 'John Smith',
-        email: 'john.smith@email.com',
-        phone: '+1234567890',
-        accountNumber: '1234567890',
-        bankName: 'Chase Bank',
-        swiftCode: 'CHASUS33',
-        countryCode: 'US',
-        currency: 'USD',
-        address: '123 Main St',
-        city: 'New York',
-        state: 'NY',
-        postalCode: '10001',
-        createdAt: DateTime.now().subtract(const Duration(days: 5)),
-        lastUsed: DateTime.now().subtract(const Duration(days: 1)),
-        type: RecipientType.frequent,
-        isFavorite: true,
-      ),
-      Recipient(
-        id: '2',
-        name: 'Emma Johnson',
-        email: 'emma.johnson@email.com',
-        phone: '+447123456789',
-        accountNumber: '12345678',
-        bankName: 'Barclays',
-        swiftCode: 'BARCGB22',
-        countryCode: 'GB',
-        currency: 'GBP',
-        address: '456 Oxford St',
-        city: 'London',
-        postalCode: 'W1C 1AP',
-        createdAt: DateTime.now().subtract(const Duration(days: 10)),
-        lastUsed: DateTime.now().subtract(const Duration(days: 3)),
-        type: RecipientType.saved,
-        isFavorite: false,
-      ),
-      Recipient(
-        id: '3',
-        name: 'Marie Dubois',
-        email: 'marie.dubois@email.com',
-        phone: '+33123456789',
-        accountNumber: 'FR1420041010050500013M02606',
-        bankName: 'BNP Paribas',
-        swiftCode: 'BNPAFRPP',
-        countryCode: 'FR',
-        currency: 'EUR',
-        address: '789 Champs-Élysées',
-        city: 'Paris',
-        postalCode: '75008',
-        createdAt: DateTime.now().subtract(const Duration(days: 15)),
-        lastUsed: DateTime.now().subtract(const Duration(days: 7)),
-        type: RecipientType.contact,
-        isFavorite: true,
-      ),
-      Recipient(
-        id: '4',
-        name: 'Hiroshi Tanaka',
-        email: 'hiroshi.tanaka@email.com',
-        phone: '+81312345678',
-        accountNumber: '1234567',
-        bankName: 'Mitsubishi UFJ Bank',
-        swiftCode: 'BOTKJPJT',
-        countryCode: 'JP',
-        currency: 'JPY',
-        address: '1-1-1 Shibuya',
-        city: 'Tokyo',
-        postalCode: '150-0002',
-        createdAt: DateTime.now().subtract(const Duration(days: 20)),
-        lastUsed: DateTime.now().subtract(const Duration(days: 10)),
-        type: RecipientType.manual,
-        isFavorite: false,
-      ),
-    ];
-    
-    _filteredRecipients = List.from(_allRecipients);
-    setState(() {});
-  }
 
   void _filterRecipients() {
     final query = _searchController.text.toLowerCase();
@@ -321,9 +241,14 @@ class _RecipientManagementScreenState extends State<RecipientManagementScreen>
         decoration: BoxDecoration(
           color: isSelected ? Colors.blue : Colors.grey[900],
           borderRadius: BorderRadius.circular(20.r),
-          border: Border.all(
-            color: isSelected ? Colors.blue : Colors.white.withOpacity(0.1),
+          boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
           ),
+        ],
+        
         ),
         child: Text(
           label,
@@ -1040,4 +965,60 @@ class _RecipientManagementScreenState extends State<RecipientManagementScreen>
       colorText: Colors.white,
     );
   }
-} 
+
+  void _loadMockRecipients() {
+    // TODO: Replace with actual API call to load recipients
+    _allRecipients = [
+      Recipient(
+        id: '1',
+        name: 'John Doe',
+        email: 'john.doe@example.com',
+        accountNumber: '1234567890',
+        bankName: 'Chase Bank',
+        swiftCode: 'CHASUS33',
+        currency: 'USD',
+        countryCode: 'US',
+        type: RecipientType.saved,
+        isFavorite: true,
+        lastUsed: DateTime.now().subtract(const Duration(days: 2)),
+        createdAt: DateTime.now().subtract(const Duration(days: 30)),
+        address: '123 Main St',
+        city: 'New York',
+      ),
+      Recipient(
+        id: '2',
+        name: 'Jane Smith',
+        email: 'jane.smith@example.com',
+        accountNumber: '0987654321',
+        bankName: 'Barclays',
+        swiftCode: 'BARCGB22',
+        currency: 'GBP',
+        countryCode: 'GB',
+        type: RecipientType.contact,
+        isFavorite: false,
+        lastUsed: DateTime.now().subtract(const Duration(days: 5)),
+        createdAt: DateTime.now().subtract(const Duration(days: 60)),
+        address: '456 High Street',
+        city: 'London',
+      ),
+      Recipient(
+        id: '3',
+        name: 'Alice Johnson',
+        email: 'alice.johnson@example.com',
+        accountNumber: '1122334455',
+        bankName: 'HSBC',
+        swiftCode: 'HSBCUS33',
+        currency: 'EUR',
+        countryCode: 'FR',
+        type: RecipientType.frequent,
+        isFavorite: true,
+        lastUsed: DateTime.now().subtract(const Duration(hours: 12)),
+        createdAt: DateTime.now().subtract(const Duration(days: 15)),
+        address: '789 Rue de la Paix',
+        city: 'Paris',
+      ),
+    ];
+
+    _filteredRecipients = List.from(_allRecipients);
+  }
+}

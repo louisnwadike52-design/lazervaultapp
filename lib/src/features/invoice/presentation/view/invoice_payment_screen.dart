@@ -215,7 +215,7 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
             padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6)],
               ),
               borderRadius: BorderRadius.circular(20.r),
             ),
@@ -241,12 +241,12 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Color(0xFF6366F1).withOpacity(0.1),
+            Color(0xFF3B82F6).withOpacity(0.1),
             Color(0xFF8B5CF6).withOpacity(0.1),
           ],
         ),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Color(0xFF6366F1).withOpacity(0.2)),
+        border: Border.all(color: Color(0xFF3B82F6).withOpacity(0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -256,12 +256,12 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
               Container(
                 padding: EdgeInsets.all(8.w),
                 decoration: BoxDecoration(
-                  color: Color(0xFF6366F1).withOpacity(0.2),
+                  color: Color(0xFF3B82F6).withOpacity(0.2),
                   borderRadius: BorderRadius.circular(8.r),
                 ),
                 child: Icon(
                   Icons.receipt_long,
-                  color: Color(0xFF6366F1),
+                  color: Color(0xFF3B82F6),
                   size: 24.sp,
                 ),
               ),
@@ -281,7 +281,7 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
                     Text(
                       'Professional invoice generation & management',
                       style: GoogleFonts.inter(
-                        color: Colors.grey[400],
+                        color: const Color(0xFF9CA3AF),
                         fontSize: 14.sp,
                       ),
                     ),
@@ -291,7 +291,7 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
               Text(
                 '£${widget.serviceFee.toStringAsFixed(2)}',
                 style: GoogleFonts.inter(
-                  color: Color(0xFF6366F1),
+                  color: Color(0xFF3B82F6),
                   fontSize: 24.sp,
                   fontWeight: FontWeight.bold,
                 ),
@@ -379,7 +379,7 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
                   Text(
                     'ID: ${widget.invoice.id.substring(0, 8).toUpperCase()}',
                     style: GoogleFonts.inter(
-                      color: Colors.grey[400],
+                      color: const Color(0xFF9CA3AF),
                       fontSize: 12.sp,
                     ),
                   ),
@@ -399,7 +399,7 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
           Text(
             widget.invoice.description,
             style: GoogleFonts.inter(
-              color: Colors.grey[400],
+              color: const Color(0xFF9CA3AF),
               fontSize: 14.sp,
             ),
             maxLines: 2,
@@ -472,12 +472,12 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
           color: isSelected 
-              ? Color(0xFF6366F1).withOpacity(0.1) 
+              ? Color(0xFF3B82F6).withOpacity(0.1) 
               : Colors.grey[900],
           borderRadius: BorderRadius.circular(12.r),
           border: Border.all(
             color: isSelected 
-                ? Color(0xFF6366F1) 
+                ? Color(0xFF3B82F6) 
                 : hasEnoughBalance 
                     ? Colors.grey[700]! 
                     : Colors.red.withOpacity(0.3),
@@ -514,7 +514,7 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
                   Text(
                     account["accountNumber"],
                     style: GoogleFonts.inter(
-                      color: Colors.grey[400],
+                      color: const Color(0xFF9CA3AF),
                       fontSize: 14.sp,
                     ),
                   ),
@@ -547,7 +547,7 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
                 margin: EdgeInsets.only(left: 12.w),
                 padding: EdgeInsets.all(4.w),
                 decoration: BoxDecoration(
-                  color: Color(0xFF6366F1),
+                  color: Color(0xFF3B82F6),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
@@ -576,11 +576,11 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
           color: isSelected 
-              ? Color(0xFF6366F1).withOpacity(0.1) 
+              ? Color(0xFF3B82F6).withOpacity(0.1) 
               : Colors.grey[900],
           borderRadius: BorderRadius.circular(12.r),
           border: Border.all(
-            color: isSelected ? Color(0xFF6366F1) : Colors.grey[700]!,
+            color: isSelected ? Color(0xFF3B82F6) : Colors.grey[700]!,
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -620,7 +620,7 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
                   Text(
                     crypto["symbol"],
                     style: GoogleFonts.inter(
-                      color: Colors.grey[400],
+                      color: const Color(0xFF9CA3AF),
                       fontSize: 14.sp,
                     ),
                   ),
@@ -641,7 +641,7 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
                 Text(
                   '≈ £${widget.serviceFee.toStringAsFixed(2)}',
                   style: GoogleFonts.inter(
-                    color: Colors.grey[400],
+                    color: const Color(0xFF9CA3AF),
                     fontSize: 12.sp,
                   ),
                 ),
@@ -652,7 +652,7 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
                 margin: EdgeInsets.only(left: 12.w),
                 padding: EdgeInsets.all(4.w),
                 decoration: BoxDecoration(
-                  color: Color(0xFF6366F1),
+                  color: Color(0xFF3B82F6),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
@@ -681,11 +681,11 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
           color: isSelected 
-              ? Color(0xFF6366F1).withOpacity(0.1) 
+              ? Color(0xFF3B82F6).withOpacity(0.1) 
               : Colors.grey[900],
           borderRadius: BorderRadius.circular(12.r),
           border: Border.all(
-            color: isSelected ? Color(0xFF6366F1) : Colors.grey[700]!,
+            color: isSelected ? Color(0xFF3B82F6) : Colors.grey[700]!,
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -719,7 +719,7 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
                   Text(
                     option["description"],
                     style: GoogleFonts.inter(
-                      color: Colors.grey[400],
+                      color: const Color(0xFF9CA3AF),
                       fontSize: 14.sp,
                     ),
                   ),
@@ -730,7 +730,7 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
               Container(
                 padding: EdgeInsets.all(4.w),
                 decoration: BoxDecoration(
-                  color: Color(0xFF6366F1),
+                  color: Color(0xFF3B82F6),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
@@ -763,15 +763,15 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
               padding: EdgeInsets.all(12.w),
               margin: EdgeInsets.only(bottom: 16.h),
               decoration: BoxDecoration(
-                color: Color(0xFF6366F1).withOpacity(0.1),
+                color: Color(0xFF3B82F6).withOpacity(0.1),
                 borderRadius: BorderRadius.circular(8.r),
-                border: Border.all(color: Color(0xFF6366F1).withOpacity(0.2)),
+                border: Border.all(color: Color(0xFF3B82F6).withOpacity(0.2)),
               ),
               child: Row(
                 children: [
                   Icon(
                     Icons.security,
-                    color: Color(0xFF6366F1),
+                    color: Color(0xFF3B82F6),
                     size: 16.sp,
                   ),
                   SizedBox(width: 8.w),
@@ -779,7 +779,7 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
                     child: Text(
                       'Your payment is secured with end-to-end encryption',
                       style: GoogleFonts.inter(
-                        color: Color(0xFF6366F1),
+                        color: Color(0xFF3B82F6),
                         fontSize: 12.sp,
                       ),
                     ),
@@ -793,7 +793,7 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
             child: ElevatedButton(
               onPressed: canPay ? _processPayment : null,
               style: ElevatedButton.styleFrom(
-                backgroundColor: canPay ? Color(0xFF6366F1) : Colors.grey[800],
+                backgroundColor: canPay ? Color(0xFF3B82F6) : Colors.grey[800],
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16.r),
                 ),
@@ -906,7 +906,7 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
                 'Your invoice premium features are now unlocked',
                 textAlign: TextAlign.center,
                 style: GoogleFonts.inter(
-                  color: Colors.grey[400],
+                  color: const Color(0xFF9CA3AF),
                   fontSize: 14.sp,
                 ),
               ),

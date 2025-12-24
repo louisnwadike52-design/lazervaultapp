@@ -169,10 +169,14 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
                 decoration: BoxDecoration(
                   color: _isInWatchlist ? _getCryptoColor().withValues(alpha: 0.2) : Colors.black.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(8.r),
-                  border: Border.all(
-                    color: _isInWatchlist ? _getCryptoColor() : Colors.white.withValues(alpha: 0.2),
-                    width: 1,
-                  ),
+                  boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
                 ),
                 child: Icon(
                   _isInWatchlist ? Icons.bookmark : Icons.bookmark_border,
@@ -273,10 +277,14 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
           ],
         ),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-          color: _getCryptoColor().withValues(alpha: 0.3),
-          width: 1,
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -378,10 +386,13 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
       decoration: BoxDecoration(
         color: const Color(0xFF2A2A3E).withValues(alpha: 0.8),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
-          width: 1,
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 8,
+            offset: Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         children: [
@@ -414,12 +425,7 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
                     padding: EdgeInsets.all(8.w),
                     decoration: BoxDecoration(
                       color: _getCryptoColor().withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(8.r),
-                      border: Border.all(
-                        color: _getCryptoColor().withValues(alpha: 0.5),
-                        width: 1,
-                      ),
-                    ),
+                      borderRadius: BorderRadius.circular(8.r),                    ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -465,10 +471,14 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
                       decoration: BoxDecoration(
                         color: isSelected ? _getCryptoColor().withValues(alpha: 0.2) : Colors.transparent,
                         borderRadius: BorderRadius.circular(6.r),
-                        border: Border.all(
-                          color: isSelected ? _getCryptoColor() : Colors.white.withValues(alpha: 0.2),
-                          width: 1,
-                        ),
+                        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
                       ),
                       child: Text(
                         timeframe,
@@ -625,10 +635,13 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
       decoration: BoxDecoration(
         color: const Color(0xFF2A2A3E).withValues(alpha: 0.8),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
-          width: 1,
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 8,
+            offset: Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -699,10 +712,13 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
       decoration: BoxDecoration(
         color: const Color(0xFF2A2A3E).withValues(alpha: 0.8),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
-          width: 1,
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 8,
+            offset: Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -775,10 +791,13 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
       decoration: BoxDecoration(
         color: const Color(0xFF2A2A3E).withValues(alpha: 0.8),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
-          width: 1,
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 8,
+            offset: Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -820,10 +839,13 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
       decoration: BoxDecoration(
         color: const Color(0xFF2A2A3E).withValues(alpha: 0.8),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
-          width: 1,
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 8,
+            offset: Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -880,10 +902,13 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
       decoration: BoxDecoration(
         color: const Color(0xFF2A2A3E).withValues(alpha: 0.8),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
-          width: 1,
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 8,
+            offset: Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -957,10 +982,13 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
       decoration: BoxDecoration(
         color: const Color(0xFF2A2A3E).withValues(alpha: 0.8),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
-          width: 1,
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 8,
+            offset: Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1179,10 +1207,14 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
                   decoration: BoxDecoration(
                     color: isSelected ? _getCryptoColor().withValues(alpha: 0.2) : Colors.transparent,
                     borderRadius: BorderRadius.circular(6.r),
-                    border: Border.all(
-                      color: isSelected ? _getCryptoColor() : Colors.white.withValues(alpha: 0.2),
-                      width: 1,
-                    ),
+                    boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
                   ),
                   child: Text(
                     indicator,

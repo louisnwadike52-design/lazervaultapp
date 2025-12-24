@@ -43,7 +43,7 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Color(0xFF1A1A3E),
+              Color(0xFF1F1F1F),
               Color(0xFF0A0E27),
               Color(0xFF0F0F23),
             ],
@@ -89,10 +89,14 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
               decoration: BoxDecoration(
                 color: Colors.white.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12.r),
-                border: Border.all(
-                  color: Colors.white.withOpacity(0.2),
-                  width: 1,
-                ),
+                boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
               ),
               child: Icon(
                 Icons.arrow_back_ios_new,
@@ -126,10 +130,14 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
               decoration: BoxDecoration(
                 color: Colors.white.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12.r),
-                border: Border.all(
-                  color: Colors.white.withOpacity(0.2),
-                  width: 1,
-                ),
+                boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
               ),
               child: Icon(
                 Icons.share,
@@ -224,10 +232,14 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
       decoration: BoxDecoration(
         color: statusColor.withOpacity(0.1),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-          color: statusColor.withOpacity(0.3),
-          width: 1,
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
       ),
       child: Row(
         children: [
@@ -282,10 +294,14 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.05),
         borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.1),
-          width: 1,
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
       ),
       child: Column(
         children: [
@@ -390,10 +406,14 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.05),
         borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.1),
-          width: 1,
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -442,10 +462,14 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.05),
         borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.1),
-          width: 1,
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -563,7 +587,7 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
               ),
             ),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Color(0xFF6366F1),
+              backgroundColor: Color(0xFF3B82F6),
               padding: EdgeInsets.symmetric(vertical: 16.h),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16.r),
@@ -623,7 +647,7 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF6366F1)),
+            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
           ),
           SizedBox(height: 16.h),
           Text(
@@ -670,7 +694,7 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
           ElevatedButton(
             onPressed: () => Get.back(),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Color(0xFF6366F1),
+              backgroundColor: Color(0xFF3B82F6),
               padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12.r),
@@ -695,7 +719,7 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Share functionality coming soon'),
-        backgroundColor: Color(0xFF6366F1),
+        backgroundColor: Color(0xFF3B82F6),
         behavior: SnackBarBehavior.floating,
         margin: EdgeInsets.all(16.w),
         shape: RoundedRectangleBorder(
@@ -797,7 +821,7 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
             ),
           ],
         ),
-        backgroundColor: Color(0xFF6366F1),
+        backgroundColor: Color(0xFF3B82F6),
         behavior: SnackBarBehavior.floating,
         margin: EdgeInsets.all(16.w),
         shape: RoundedRectangleBorder(
@@ -819,7 +843,7 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
       case NetworkProviderType.ninemobile:
         return Color(0xFF00AA4F);
       default:
-        return Color(0xFF6366F1); // Default blue color
+        return Color(0xFF3B82F6); // Default blue color
     }
   }
 

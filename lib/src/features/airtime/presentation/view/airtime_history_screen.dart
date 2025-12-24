@@ -34,7 +34,7 @@ class _AirtimeHistoryScreenState extends State<AirtimeHistoryScreen> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Color(0xFF1A1A3E),
+              Color(0xFF1F1F1F),
               Color(0xFF0A0E27),
               Color(0xFF0F0F23),
             ],
@@ -83,10 +83,14 @@ class _AirtimeHistoryScreenState extends State<AirtimeHistoryScreen> {
               decoration: BoxDecoration(
                 color: Colors.white.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12.r),
-                border: Border.all(
-                  color: Colors.white.withOpacity(0.2),
-                  width: 1,
-                ),
+                boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
               ),
               child: Icon(
                 Icons.arrow_back_ios_new,
@@ -134,10 +138,14 @@ class _AirtimeHistoryScreenState extends State<AirtimeHistoryScreen> {
               decoration: BoxDecoration(
                 color: Colors.white.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12.r),
-                border: Border.all(
-                  color: Colors.white.withOpacity(0.2),
-                  width: 1,
-                ),
+                boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
               ),
               child: Icon(
                 Icons.filter_list,
@@ -156,8 +164,8 @@ class _AirtimeHistoryScreenState extends State<AirtimeHistoryScreen> {
       onRefresh: () async {
         context.read<AirtimeCubit>().loadTransactionHistory('current_user');
       },
-      backgroundColor: Color(0xFF1A1A3E),
-      color: Color(0xFF6366F1),
+      backgroundColor: Color(0xFF1F1F1F),
+      color: Color(0xFF3B82F6),
       child: ListView.builder(
         padding: EdgeInsets.symmetric(horizontal: 20.w),
         itemCount: transactions.length,
@@ -184,10 +192,14 @@ class _AirtimeHistoryScreenState extends State<AirtimeHistoryScreen> {
         decoration: BoxDecoration(
           color: Colors.white.withOpacity(0.05),
           borderRadius: BorderRadius.circular(16.r),
-          border: Border.all(
-            color: Colors.white.withOpacity(0.1),
-            width: 1,
+          boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
           ),
+        ],
+        
         ),
         child: Column(
           children: [
@@ -363,7 +375,7 @@ class _AirtimeHistoryScreenState extends State<AirtimeHistoryScreen> {
           ElevatedButton(
             onPressed: () => Get.offNamed(AppRoutes.airtime),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Color(0xFF6366F1),
+              backgroundColor: Color(0xFF3B82F6),
               padding: EdgeInsets.symmetric(horizontal: 32.w, vertical: 16.h),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16.r),
@@ -389,7 +401,7 @@ class _AirtimeHistoryScreenState extends State<AirtimeHistoryScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF6366F1)),
+            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
           ),
           SizedBox(height: 16.h),
           Text(
@@ -436,7 +448,7 @@ class _AirtimeHistoryScreenState extends State<AirtimeHistoryScreen> {
           ElevatedButton(
             onPressed: () => context.read<AirtimeCubit>().loadTransactionHistory('current_user'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Color(0xFF6366F1),
+              backgroundColor: Color(0xFF3B82F6),
               padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12.r),
@@ -463,7 +475,7 @@ class _AirtimeHistoryScreenState extends State<AirtimeHistoryScreen> {
       builder: (context) => Container(
         padding: EdgeInsets.all(20.w),
         decoration: BoxDecoration(
-          color: Color(0xFF1A1A3E),
+          color: Color(0xFF1F1F1F),
           borderRadius: BorderRadius.only(
             topLeft: Radius.circular(24.r),
             topRight: Radius.circular(24.r),
@@ -512,7 +524,7 @@ class _AirtimeHistoryScreenState extends State<AirtimeHistoryScreen> {
       builder: (context) => Container(
         padding: EdgeInsets.all(20.w),
         decoration: BoxDecoration(
-          color: Color(0xFF1A1A3E),
+          color: Color(0xFF1F1F1F),
           borderRadius: BorderRadius.only(
             topLeft: Radius.circular(24.r),
             topRight: Radius.circular(24.r),
@@ -610,7 +622,7 @@ class _AirtimeHistoryScreenState extends State<AirtimeHistoryScreen> {
                       ),
                     ),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xFF6366F1),
+                      backgroundColor: Color(0xFF3B82F6),
                       padding: EdgeInsets.symmetric(vertical: 16.h),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16.r),
@@ -743,7 +755,7 @@ class _AirtimeHistoryScreenState extends State<AirtimeHistoryScreen> {
       case NetworkProviderType.ninemobile:
         return Color(0xFF00AA4F);
       default:
-        return Color(0xFF6366F1); // Default blue color
+        return Color(0xFF3B82F6); // Default blue color
     }
   }
 

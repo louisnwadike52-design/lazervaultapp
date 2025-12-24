@@ -8,6 +8,8 @@ import 'package:lazervault/src/features/account_cards_summary/cubit/account_card
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/features/authentication/domain/entities/user.dart';
+import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
+import 'package:lazervault/src/features/profile/cubit/profile_state.dart';
 import '../widgets/dashboard_header.dart';
 import '../widgets/account_carousel.dart';
 import '../widgets/card_details_bottom_sheet.dart';
@@ -80,10 +82,21 @@ class _DashboardCardSummaryViewState extends State<_DashboardCardSummaryView> {
     if (authState is AuthenticationSuccess) {
       final userId = authState.profile.user.id;
       final accessToken = authState.profile.session.accessToken;
+
+      // Get active country from ProfileCubit
+      final profileState = context.read<ProfileCubit>().state;
+      String? activeCountry;
+      if (profileState is ProfileLoaded) {
+        activeCountry = profileState.preferences.activeCountry.isNotEmpty
+            ? profileState.preferences.activeCountry
+            : null;
+      }
+
       // Use context.read to get the cubit provided in main.dart
       context.read<AccountCardsSummaryCubit>().fetchAccountSummaries(
             userId: userId,
             accessToken: accessToken,
+            country: activeCountry,
           );
     } else {
       print(
@@ -141,7 +154,7 @@ class _DashboardCardSummaryViewState extends State<_DashboardCardSummaryView> {
           children: [
             // Use DashboardHeader widget
             DashboardHeader(currentUser: currentUser),
-            SizedBox(height: 24.h),
+            SizedBox(height: 16.h),
             // Use AccountCarousel widget within BlocConsumer
             BlocConsumer<AccountCardsSummaryCubit, AccountCardsSummaryState>(
               listener: (context, state) {

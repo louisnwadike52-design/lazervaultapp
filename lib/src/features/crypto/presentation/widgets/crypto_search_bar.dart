@@ -106,10 +106,13 @@ class _CryptoSearchBarState extends State<CryptoSearchBar> {
               decoration: BoxDecoration(
                 color: const Color(0xFF1E2746),
                 borderRadius: BorderRadius.circular(12.r),
-                border: Border.all(
-                  color: Colors.white.withOpacity(0.1),
-                  width: 1,
-                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.2),
+                    blurRadius: 4,
+                    offset: Offset(0, 2),
+                  ),
+                ],
               ),
               child: Icon(
                 Icons.close,
@@ -129,12 +132,16 @@ class _CryptoSearchBarState extends State<CryptoSearchBar> {
       decoration: BoxDecoration(
         color: const Color(0xFF1E2746),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-          color: _focusNode.hasFocus 
-              ? const Color(0xFF6C5CE7)
-              : Colors.white.withOpacity(0.1),
-          width: 1,
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: _focusNode.hasFocus
+                ? const Color(0xFF6C5CE7).withValues(alpha: 0.3)
+                : Colors.black.withValues(alpha: 0.15),
+            blurRadius: _focusNode.hasFocus ? 12 : 6,
+            offset: Offset(0, _focusNode.hasFocus ? 4 : 2),
+            spreadRadius: 0,
+          ),
+        ],
       ),
       child: TextField(
         controller: widget.controller,
@@ -262,10 +269,13 @@ class _CryptoSearchBarState extends State<CryptoSearchBar> {
             decoration: BoxDecoration(
               color: const Color(0xFF1E2746),
               borderRadius: BorderRadius.circular(12.r),
-              border: Border.all(
-                color: Colors.white.withOpacity(0.1),
-                width: 1,
-              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.15),
+                  blurRadius: 6,
+                  offset: Offset(0, 2),
+                ),
+              ],
             ),
             child: Row(
               children: [
@@ -383,16 +393,19 @@ class _CryptoSearchBarState extends State<CryptoSearchBar> {
 
   Widget _buildSearchResultItem(Crypto crypto) {
     final isPositive = crypto.priceChangePercentage24h >= 0;
-    
+
     return Container(
       margin: EdgeInsets.only(bottom: 8.h),
       decoration: BoxDecoration(
         color: const Color(0xFF1E2746),
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.1),
-          width: 1,
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
       ),
       child: ListTile(
         onTap: () {

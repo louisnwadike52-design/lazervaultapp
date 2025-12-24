@@ -9,6 +9,8 @@ abstract class AppRoutes {
   static const String uploadImage = '/upload-image';
   static const String selectRecipient = '/select-recipient';
   static const String addRecipient = '/add-recipient';
+  static const String qrScanner = '/qr-scanner';
+  static const String splitBills = '/split-bills';
   static const String invoice = '/invoice';
   static const String createInvoice = '/invoice/create';
   static const String invoiceDetails = '/invoice/details';
@@ -69,11 +71,13 @@ abstract class AppRoutes {
   static const String otpVerification = '/auth/otp-verification';
   static const String enableBiometricAccess = '/auth/enable-biometric-access';
   static const String passwordRecovery = '/auth/password-recovery';
+  static const String passwordRecoveryVerification = '/auth/password-recovery-verification';
   static const String createNewPassword = '/auth/create-new-password';
   static const String selectCountry = '/auth/select-country';
   static const String facialBiometricVerification =
       '/auth/facial-biometric-verification';
   static const String faceScan = '/auth/face-scan';
+  static const String facialLogin = '/auth/facial-login';
   static const String proofOfResidence = '/auth/proof-of-residence';
   static const String giftCards = '/gift-cards';
   static const String purchaseGiftCard = '/gift-cards/purchase';
@@ -133,6 +137,7 @@ abstract class AppRoutes {
   // Insurance Routes
   static const String insurance = '/insurance';
   static const String insuranceDetails = '/insurance/details';
+  static const String insuranceEdit = '/insurance/edit';
   static const String createInsurance = '/insurance/create';
   static const String insurancePayment = '/insurance/payment';
   static const String insurancePaymentProcessing = '/insurance/payment-processing';
@@ -151,12 +156,53 @@ abstract class AppRoutes {
   static const String airtimePaymentConfirmation = '/airtime/payment-confirmation';
   static const String airtimeHistory = '/airtime/history';
   static const String airtimeDetails = '/airtime/details';
-  
+
+  // AutoSave Routes
+  static const String autoSave = '/auto-save';
+  static const String createAutoSaveRule = '/auto-save/create';
+  static const String autoSaveDetails = '/auto-save/details';
+  static const String autoSaveTransactions = '/auto-save/transactions';
+
   // Batch Transfer Routes
   static const String batchTransfer = '/batch-transfer';
+  static const String batchTransferReview = '/batch-transfer-review';
   static const String batchTransferConfirmation = '/batch-transfer-confirmation';
   static const String batchTransferProcessing = '/batch-transfer-processing';
   static const String batchTransferReceipt = '/batch-transfer-receipt';
-  
+
   static const String investments = '/investments';
+
+  // Statistics Routes
+  static const String statistics = '/statistics';
+  static const String addExpense = '/statistics/add-expense';
+  static const String addBudget = '/statistics/add-budget';
+
+  // Tag Pay Routes
+  static const String tagPay = '/tag-pay';
+  static const String createTagPay = '/tag-pay/create';
+  static const String sendMoneyTagPay = '/tag-pay/send';
+  static const String requestMoneyTagPay = '/tag-pay/request';
+  static const String tagPayTransactions = '/tag-pay/transactions';
+  static const String pendingRequests = '/tag-pay/requests';
+  static const String searchUsers = '/tag-pay/search';
+  static const String createTag = '/tag-pay/create-tag';
+  static const String myTags = '/tag-pay/my-tags';
+  static const String outgoingTags = '/tag-pay/outgoing-tags';
+  static const String incomingTags = '/tag-pay/incoming-tags';
+  static const String tagPaymentConfirmation = '/tag-pay/payment-confirmation';
+  static const String tagPayProcessing = '/tag-pay-processing';
+  static const String tagPaymentReceipt = '/tag-payment-receipt';
+  static const String tagCreationProcessing = '/tag-creation-processing';
+  static const String tagCreationReceipt = '/tag-creation-receipt';
+
+  // Barcode QuickPay Routes
+  static const String barcodeQuickPayHome = '/barcode-quick-pay';
+  static const String generateBarcode = '/barcode/generate';
+  static const String barcodeDisplay = '/barcode/display';
+  static const String scanBarcode = '/barcode/scan';
+  static const String barcodePaymentConfirmation = '/barcode/payment-confirmation';
+  static const String barcodePaymentProcessing = '/barcode/payment-processing';
+  static const String barcodePaymentReceipt = '/barcode/payment-receipt';
+  static const String generatedBarcodesHistory = '/barcode/generated-history';
+  static const String scannedBarcodesHistory = '/barcode/scanned-history';
 }

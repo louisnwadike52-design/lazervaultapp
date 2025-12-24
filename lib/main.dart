@@ -17,9 +17,11 @@ import 'src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/database/database_helper.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
+import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:device_info_plus/device_info_plus.dart'; // Added device_info_plus
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:lazervault/src/core/di/grpc_injection.dart';
 
 Future<void> _checkPermissions() async {
   var status = await Permission.bluetooth.request();
@@ -78,6 +80,10 @@ void main() async {
     // Consider how to handle errors - maybe default values are okay,
     // or maybe the app shouldn't start without certain variables.
   }
+
+  // Initialize gRPC dependencies (includes Exchange repository)
+  await initGrpcDependencies();
+  print("gRPC dependencies initialized.");
 
   // Initialize the database
   final dbHelper = DatabaseHelper();
@@ -187,11 +193,14 @@ class _MyAppState extends State<MyApp> {
         BlocProvider<AuthenticationCubit>(
           create: (_) => serviceLocator<AuthenticationCubit>(),
         ),
+        BlocProvider<ProfileCubit>(
+          create: (_) => serviceLocator<ProfileCubit>(),
+        ),
         BlocProvider<VoiceSessionCubit>(
           create: (_) => serviceLocator<VoiceSessionCubit>(),
         ),
-        BlocProvider<AccountCardsSummaryCubit>(
-          create: (_) => serviceLocator<AccountCardsSummaryCubit>(),
+        BlocProvider<AccountCardsSummaryCubit>.value(
+          value: serviceLocator<AccountCardsSummaryCubit>(),
         ),
       ],
       child: ScreenUtilInit(

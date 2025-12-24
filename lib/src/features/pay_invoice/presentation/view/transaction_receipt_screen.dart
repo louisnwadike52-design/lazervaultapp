@@ -215,11 +215,7 @@ class _TransactionReceiptScreenState extends State<TransactionReceiptScreen>
             const Color(0xFF1F1F35).withValues(alpha: 0.9),
           ],
         ),
-        borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
-        ),
-        boxShadow: [
+        borderRadius: BorderRadius.circular(20.r),        boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.2),
             blurRadius: 20,
@@ -262,12 +258,12 @@ class _TransactionReceiptScreenState extends State<TransactionReceiptScreen>
             Container(
               padding: EdgeInsets.all(8.w),
               decoration: BoxDecoration(
-                color: const Color(0xFF6366F1).withValues(alpha: 0.2),
+                color: const Color(0xFF3B82F6).withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(8.r),
               ),
               child: Icon(
                 Icons.receipt_long,
-                color: const Color(0xFF6366F1),
+                color: const Color(0xFF3B82F6),
                 size: 24.sp,
               ),
             ),
@@ -289,7 +285,7 @@ class _TransactionReceiptScreenState extends State<TransactionReceiptScreen>
           style: GoogleFonts.inter(
             fontSize: 16.sp,
             fontWeight: FontWeight.w600,
-            color: const Color(0xFF6366F1),
+            color: const Color(0xFF3B82F6),
           ),
         ),
         SizedBox(height: 8.h),
@@ -298,9 +294,14 @@ class _TransactionReceiptScreenState extends State<TransactionReceiptScreen>
           decoration: BoxDecoration(
             color: const Color(0xFF10B981).withValues(alpha: 0.2),
             borderRadius: BorderRadius.circular(12.r),
-            border: Border.all(
-              color: const Color(0xFF10B981).withValues(alpha: 0.3),
-            ),
+            boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
           ),
           child: Text(
             'PAID',
@@ -358,9 +359,14 @@ class _TransactionReceiptScreenState extends State<TransactionReceiptScreen>
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(12.r),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.1),
-            ),
+            boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
           ),
           child: Row(
             children: [
@@ -475,11 +481,16 @@ class _TransactionReceiptScreenState extends State<TransactionReceiptScreen>
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF6366F1).withValues(alpha: 0.1),
+        color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(
-          color: const Color(0xFF6366F1).withValues(alpha: 0.2),
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
       ),
       child: Column(
         children: [
@@ -488,7 +499,7 @@ class _TransactionReceiptScreenState extends State<TransactionReceiptScreen>
             style: GoogleFonts.inter(
               fontSize: 14.sp,
               fontWeight: FontWeight.w600,
-              color: const Color(0xFF6366F1),
+              color: const Color(0xFF3B82F6),
             ),
             textAlign: TextAlign.center,
           ),
@@ -564,9 +575,14 @@ class _TransactionReceiptScreenState extends State<TransactionReceiptScreen>
               child: Container(
                 height: 56.h,
                 decoration: BoxDecoration(
-                  border: Border.all(
-                    color: const Color(0xFF6366F1).withValues(alpha: 0.5),
-                  ),
+                  boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
                   borderRadius: BorderRadius.circular(16.r),
                 ),
                 child: Material(
@@ -580,7 +596,7 @@ class _TransactionReceiptScreenState extends State<TransactionReceiptScreen>
                         children: [
                           Icon(
                             Icons.share,
-                            color: const Color(0xFF6366F1),
+                            color: const Color(0xFF3B82F6),
                             size: 20.sp,
                           ),
                           SizedBox(width: 8.w),
@@ -589,7 +605,7 @@ class _TransactionReceiptScreenState extends State<TransactionReceiptScreen>
                             style: GoogleFonts.inter(
                               fontSize: 16.sp,
                               fontWeight: FontWeight.w600,
-                              color: const Color(0xFF6366F1),
+                              color: const Color(0xFF3B82F6),
                             ),
                           ),
                         ],
@@ -605,12 +621,12 @@ class _TransactionReceiptScreenState extends State<TransactionReceiptScreen>
                 height: 56.h,
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                    colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6)],
                   ),
                   borderRadius: BorderRadius.circular(16.r),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF6366F1).withValues(alpha: 0.3),
+                      color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
                       blurRadius: 12,
                       offset: const Offset(0, 4),
                     ),
@@ -663,11 +679,7 @@ class _TransactionReceiptScreenState extends State<TransactionReceiptScreen>
           height: 56.h,
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: 0.05),
-            borderRadius: BorderRadius.circular(16.r),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.1),
-            ),
-          ),
+            borderRadius: BorderRadius.circular(16.r),          ),
           child: Material(
             color: Colors.transparent,
             child: InkWell(
@@ -697,7 +709,7 @@ class _TransactionReceiptScreenState extends State<TransactionReceiptScreen>
           'name': 'Account Balance',
           'description': widget.selectedAccount ?? 'Main Account',
           'icon': Icons.account_balance_wallet,
-          'color': const Color(0xFF6366F1),
+          'color': const Color(0xFF3B82F6),
         };
       case PaymentMethod.bitcoin:
         return {

@@ -146,10 +146,14 @@ class _RedeemGiftCardScreenState extends State<RedeemGiftCardScreen>
               decoration: BoxDecoration(
                 color: Colors.white.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12.r),
-                border: Border.all(
-                  color: Colors.white.withOpacity(0.2),
-                  width: 1,
-                ),
+                boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
               ),
               child: IconButton(
                 onPressed: () => Navigator.of(context).pop(),
@@ -194,12 +198,7 @@ class _RedeemGiftCardScreenState extends State<RedeemGiftCardScreen>
               Colors.white.withOpacity(0.08),
             ],
           ),
-          borderRadius: BorderRadius.circular(24.r),
-          border: Border.all(
-            color: Colors.white.withOpacity(0.2),
-            width: 1,
-          ),
-          boxShadow: [
+          borderRadius: BorderRadius.circular(24.r),          boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.25),
               blurRadius: 20,
@@ -272,12 +271,7 @@ class _RedeemGiftCardScreenState extends State<RedeemGiftCardScreen>
             Colors.white.withOpacity(0.06),
           ],
         ),
-        borderRadius: BorderRadius.circular(24.r),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.2),
-          width: 1,
-        ),
-        boxShadow: [
+        borderRadius: BorderRadius.circular(24.r),        boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.2),
             blurRadius: 16,
@@ -391,12 +385,7 @@ class _RedeemGiftCardScreenState extends State<RedeemGiftCardScreen>
               height: 200.h,
               decoration: BoxDecoration(
                 color: Colors.black.withOpacity(0.4),
-                borderRadius: BorderRadius.circular(16.r),
-                border: Border.all(
-                  color: Colors.white.withOpacity(0.3),
-                  width: 2,
-                ),
-              ),
+                borderRadius: BorderRadius.circular(16.r),              ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -456,12 +445,7 @@ class _RedeemGiftCardScreenState extends State<RedeemGiftCardScreen>
             Colors.white.withOpacity(0.06),
           ],
         ),
-        borderRadius: BorderRadius.circular(24.r),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.2),
-          width: 1,
-        ),
-        boxShadow: [
+        borderRadius: BorderRadius.circular(24.r),        boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.2),
             blurRadius: 16,
@@ -523,10 +507,14 @@ class _RedeemGiftCardScreenState extends State<RedeemGiftCardScreen>
             decoration: BoxDecoration(
               color: Colors.white.withOpacity(0.1),
               borderRadius: BorderRadius.circular(16.r),
-              border: Border.all(
-                color: Colors.white.withOpacity(0.2),
-                width: 1,
-              ),
+              boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
             ),
             child: TextFormField(
               controller: _codeController,
@@ -776,10 +764,14 @@ class _RedeemGiftCardScreenState extends State<RedeemGiftCardScreen>
               decoration: BoxDecoration(
                 color: const Color(0xFFEF4444).withOpacity(0.2),
                 shape: BoxShape.circle,
-                border: Border.all(
-                  color: const Color(0xFFEF4444),
-                  width: 2,
-                ),
+                boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
               ),
               child: Icon(
                 Icons.error_outline_rounded,

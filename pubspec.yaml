@@ -63,6 +63,7 @@ dependencies:
   printing: ^5.13.4
   barcode: ^2.2.9
   barcode_widget: ^2.0.4
+  mobile_scanner: ^5.2.3
   local_auth: ^2.3.0
   lottie: ^3.3.1
   get: ^4.7.2
@@ -77,6 +78,7 @@ dependencies:
   sms_autofill: ^2.4.1
   curved_navigation_bar: ^1.0.6
   permission_handler: ^12.0.0+1
+  flutter_contacts: ^1.1.9+2
   speech_to_text: ^7.0.0
   shimmer: ^3.0.0
   flutter_tts: ^4.2.2
@@ -102,6 +104,8 @@ dependencies:
   hive: ^2.2.3
   hive_flutter: ^1.1.0
   intl_phone_field: ^3.2.0
+  screenshot: ^3.0.0
+  url_launcher: ^6.3.1
 
 dev_dependencies:
   flutter_test:
@@ -177,3 +181,4 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+mobile_scanner: ^5.2.3

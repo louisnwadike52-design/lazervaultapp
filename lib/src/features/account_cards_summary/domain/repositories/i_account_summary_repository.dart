@@ -6,5 +6,6 @@ abstract class IAccountSummaryRepository {
   Future<Either<Failure, List<AccountSummaryEntity>>> getAccountSummaries({
     required String userId, // User ID needed to fetch specific accounts
     String? accessToken, // Authentication token for API requests
+    String? country, // Country code to filter accounts by country
   });
 } 

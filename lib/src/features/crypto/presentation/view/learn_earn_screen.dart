@@ -990,10 +990,14 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
           decoration: BoxDecoration(
             color: earned ? color.withOpacity(0.2) : Colors.white.withOpacity(0.05),
             shape: BoxShape.circle,
-            border: Border.all(
-              color: earned ? color : Colors.white.withOpacity(0.2),
-              width: 2,
-            ),
+            boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
           ),
           child: Icon(
             icon,
@@ -1089,9 +1093,14 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.05),
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(
-          color: completed ? Colors.green.withOpacity(0.3) : Colors.white.withOpacity(0.1),
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
       ),
       child: Row(
         children: [

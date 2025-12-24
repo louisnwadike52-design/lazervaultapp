@@ -44,7 +44,7 @@ class _AccountCarouselState extends State<AccountCarousel> {
             viewportFraction: 0.9,
             enlargeCenterPage: true,
             onPageChanged: (index, reason) {
-              setState(() => _currentIndex = index); 
+              setState(() => _currentIndex = index);
             },
           ),
           itemBuilder: (context, index, realIndex) {
@@ -84,11 +84,15 @@ class _AccountCarouselState extends State<AccountCarousel> {
                 Colors.white.withOpacity(0.05),
               ],
             ),
-            borderRadius: BorderRadius.circular(24.r),
-            border: Border.all(
-              color: Colors.white.withOpacity(0.1),
-              width: 1,
-            ),
+            borderRadius: BorderRadius.circular(20.r),
+            boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -136,10 +140,14 @@ class _AccountCarouselState extends State<AccountCarousel> {
                           decoration: BoxDecoration(
                             color: Colors.white.withOpacity(0.1),
                             shape: BoxShape.circle,
-                            border: Border.all(
-                              color: Colors.white.withOpacity(0.2),
-                              width: 1,
-                            ),
+                            boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
                           ),
                           child: Icon(
                             Icons.account_balance_outlined,
@@ -213,9 +221,14 @@ class _AccountCarouselState extends State<AccountCarousel> {
           decoration: BoxDecoration(
             color: Colors.white.withOpacity(0.1),
             borderRadius: BorderRadius.circular(20.r),
-            border: Border.all(
-              color: Colors.white.withOpacity(0.1),
-            ),
+            boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,

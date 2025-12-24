@@ -38,13 +38,39 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
   final List<String> _beneficiaries = [];
   final TextEditingController _beneficiaryController = TextEditingController();
 
-  final Map<String, TextEditingController> _coverageControllers = {
-    'deductible': TextEditingController(),
-    'coverage_limit': TextEditingController(),
-  };
+  // Dynamic optional field controllers (lazy initialization)
+  final Map<String, TextEditingController> _optionalFieldControllers = {};
+
+  // Track which optional fields are currently visible
+  final Set<String> _visibleOptionalFields = {};
 
   final List<String> _features = [];
   final TextEditingController _featureController = TextEditingController();
+
+  // Available optional fields configuration
+  static const List<Map<String, dynamic>> _availableOptionalFields = [
+    {
+      'id': 'deductible',
+      'label': 'Deductible',
+      'icon': Icons.attach_money,
+      'description': 'Amount you pay before insurance covers costs',
+      'inputType': 'currency',
+    },
+    {
+      'id': 'coverage_limit',
+      'label': 'Coverage Limit',
+      'icon': Icons.trending_up,
+      'description': 'Maximum coverage amount for this policy',
+      'inputType': 'currency',
+    },
+    {
+      'id': 'description',
+      'label': 'Description',
+      'icon': Icons.description,
+      'description': 'Additional notes about this policy',
+      'inputType': 'text',
+    },
+  ];
 
   // Predefined data for dialogs
   final List<String> _availableProviders = [
@@ -111,8 +137,7 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
     _providerController.text = 'SafeGuard Insurance';
     _premiumAmountController.text = '250.00';
     _coverageAmountController.text = '50000.00';
-    _coverageControllers['deductible']!.text = '1000.00';
-    _coverageControllers['coverage_limit']!.text = '100000.00';
+    // Optional fields are not pre-filled - users add them dynamically
     _features.addAll(['24/7 Customer Support', 'Online Claims Processing', 'Mobile App Access']);
   }
 
@@ -127,10 +152,19 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
     _descriptionController.dispose();
     _beneficiaryController.dispose();
     _featureController.dispose();
-    for (final controller in _coverageControllers.values) {
+    // Dispose dynamic optional field controllers
+    for (final controller in _optionalFieldControllers.values) {
       controller.dispose();
     }
     super.dispose();
+  }
+
+  // Lazy controller initialization for optional fields
+  TextEditingController _getOrCreateController(String fieldId) {
+    if (!_optionalFieldControllers.containsKey(fieldId)) {
+      _optionalFieldControllers[fieldId] = TextEditingController();
+    }
+    return _optionalFieldControllers[fieldId]!;
   }
 
   @override
@@ -207,28 +241,6 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
                 ),
               ],
             ),
-            SizedBox(height: 16.h),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildInputField(
-                    'Deductible',
-                    _coverageControllers['deductible']!,
-                    keyboardType: TextInputType.number,
-                    prefix: '\$',
-                  ),
-                ),
-                SizedBox(width: 16.w),
-                Expanded(
-                  child: _buildInputField(
-                    'Coverage Limit',
-                    _coverageControllers['coverage_limit']!,
-                    keyboardType: TextInputType.number,
-                    prefix: '\$',
-                  ),
-                ),
-              ],
-            ),
             SizedBox(height: 24.h),
 
             _buildSectionHeader('Policy Dates'),
@@ -250,13 +262,7 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
             _buildFeaturesSection(),
             SizedBox(height: 24.h),
 
-            _buildSectionHeader('Description (Optional)'),
-            SizedBox(height: 12.h),
-            _buildInputField(
-              'Policy Description',
-              _descriptionController,
-              maxLines: 3,
-            ),
+            _buildOptionalFieldsSection(),
             SizedBox(height: 32.h),
 
             _buildCreateButton(),
@@ -283,7 +289,13 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         children: InsuranceType.values.map((type) {
@@ -430,7 +442,13 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(12.r),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+              boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -464,7 +482,13 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
         decoration: BoxDecoration(
           color: Colors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+          boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
         ),
         child: Row(
           children: [
@@ -875,6 +899,36 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
   void _createPolicy() {
     if (_formKey.currentState!.validate()) {
       final random = Random();
+
+      // Build coverage details with only visible optional fields
+      final coverageDetails = <String, dynamic>{
+        'features': List.from(_features),
+      };
+
+      // Add optional fields only if they're visible and have values
+      if (_visibleOptionalFields.contains('deductible')) {
+        final deductible = double.tryParse(_getOrCreateController('deductible').text);
+        if (deductible != null && deductible > 0) {
+          coverageDetails['deductible'] = deductible;
+        }
+      }
+
+      if (_visibleOptionalFields.contains('coverage_limit')) {
+        final coverageLimit = double.tryParse(_getOrCreateController('coverage_limit').text);
+        if (coverageLimit != null && coverageLimit > 0) {
+          coverageDetails['coverage_limit'] = coverageLimit;
+        }
+      }
+
+      // Handle description
+      String? description;
+      if (_visibleOptionalFields.contains('description')) {
+        final descriptionText = _getOrCreateController('description').text;
+        if (descriptionText.isNotEmpty) {
+          description = descriptionText;
+        }
+      }
+
       final insurance = Insurance(
         id: 'INS${random.nextInt(999999).toString().padLeft(6, '0')}',
         policyNumber: 'POL${random.nextInt(9999999).toString().padLeft(7, '0')}',
@@ -892,12 +946,8 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
         nextPaymentDate: _nextPaymentDate,
         status: InsuranceStatus.active,
         beneficiaries: List.from(_beneficiaries),
-        coverageDetails: {
-          'deductible': double.tryParse(_coverageControllers['deductible']!.text) ?? 0.0,
-          'coverage_limit': double.tryParse(_coverageControllers['coverage_limit']!.text) ?? 0.0,
-          'features': List.from(_features),
-        },
-        description: _descriptionController.text.isNotEmpty ? _descriptionController.text : null,
+        coverageDetails: coverageDetails,
+        description: description,
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
         userId: context.read<InsuranceCubit>().currentUserId,
@@ -921,7 +971,13 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
             decoration: BoxDecoration(
               color: const Color(0xFF1A1A1A),
               borderRadius: BorderRadius.circular(20.r),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+              boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -1058,7 +1114,13 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
                 decoration: BoxDecoration(
                   color: const Color(0xFF1A1A1A),
                   borderRadius: BorderRadius.circular(20.r),
-                  border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                  boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -1140,12 +1202,14 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
                                           ? const Color(0xFF10B981)
                                           : Colors.transparent,
                                       borderRadius: BorderRadius.circular(4.r),
-                                      border: Border.all(
-                                        color: isSelected 
-                                            ? const Color(0xFF10B981)
-                                            : Colors.white.withValues(alpha: 0.3),
-                                        width: 2,
-                                      ),
+                                      boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
                                     ),
                                     child: isSelected
                                         ? Icon(
@@ -1263,7 +1327,13 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
                 decoration: BoxDecoration(
                   color: const Color(0xFF1A1A1A),
                   borderRadius: BorderRadius.circular(20.r),
-                  border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                  boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -1389,7 +1459,13 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
                                     decoration: BoxDecoration(
                                       color: Colors.white.withValues(alpha: 0.05),
                                       borderRadius: BorderRadius.circular(8.r),
-                                      border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                                      boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
                                     ),
                                     child: Text(
                                       relationController.text.isEmpty ? 'Relation' : relationController.text,
@@ -1564,6 +1640,408 @@ class _CreateInsurancePolicyViewState extends State<CreateInsurancePolicyView> {
                                 },
                                 child: Text(
                                   'Save',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 16.sp,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildOptionalFieldsSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Additional Fields (Optional)',
+              style: GoogleFonts.inter(
+                fontSize: 16.sp,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
+            ),
+            GestureDetector(
+              onTap: _showOptionalFieldsDialog,
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF8B5CF6).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(20.r),
+                  border: Border.all(
+                    color: const Color(0xFF8B5CF6).withValues(alpha: 0.3),
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.add_circle_outline,
+                      color: const Color(0xFF8B5CF6),
+                      size: 14.sp,
+                    ),
+                    SizedBox(width: 4.w),
+                    Text(
+                      'Add Fields',
+                      style: GoogleFonts.inter(
+                        fontSize: 12.sp,
+                        color: const Color(0xFF8B5CF6),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: 12.h),
+
+        // Display currently visible optional fields
+        if (_visibleOptionalFields.isNotEmpty) ...[
+          ..._buildVisibleOptionalFields(),
+        ] else ...[
+          Container(
+            padding: EdgeInsets.all(16.w),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.02),
+              borderRadius: BorderRadius.circular(12.r),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.1),
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.info_outline,
+                  color: const Color(0xFF9CA3AF),
+                  size: 20.sp,
+                ),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: Text(
+                    'No additional fields added. Tap "Add Fields" to include optional information.',
+                    style: GoogleFonts.inter(
+                      fontSize: 13.sp,
+                      color: const Color(0xFF9CA3AF),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  List<Widget> _buildVisibleOptionalFields() {
+    List<Widget> widgets = [];
+
+    for (String fieldId in _visibleOptionalFields) {
+      final fieldConfig = _availableOptionalFields.firstWhere(
+        (f) => f['id'] == fieldId,
+      );
+
+      widgets.add(
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: _buildOptionalFieldInput(fieldId, fieldConfig),
+                ),
+                SizedBox(width: 8.w),
+                GestureDetector(
+                  onTap: () => _removeOptionalField(fieldId),
+                  child: Container(
+                    padding: EdgeInsets.all(8.w),
+                    decoration: BoxDecoration(
+                      color: Colors.red.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8.r),
+                    ),
+                    child: Icon(
+                      Icons.close,
+                      color: Colors.red,
+                      size: 16.sp,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 16.h),
+          ],
+        ),
+      );
+    }
+
+    return widgets;
+  }
+
+  Widget _buildOptionalFieldInput(String fieldId, Map<String, dynamic> config) {
+    final controller = _getOrCreateController(fieldId);
+
+    if (config['inputType'] == 'currency') {
+      return _buildInputField(
+        config['label'],
+        controller,
+        keyboardType: TextInputType.number,
+        prefix: '\$',
+      );
+    } else if (config['inputType'] == 'text') {
+      return _buildInputField(
+        config['label'],
+        controller,
+        maxLines: 3,
+      );
+    }
+
+    return const SizedBox.shrink();
+  }
+
+  void _removeOptionalField(String fieldId) {
+    setState(() {
+      _visibleOptionalFields.remove(fieldId);
+      // Clear the controller value when removing
+      if (_optionalFieldControllers.containsKey(fieldId)) {
+        _optionalFieldControllers[fieldId]!.clear();
+      }
+    });
+  }
+
+  void _showOptionalFieldsDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        Set<String> tempSelectedFields = Set.from(_visibleOptionalFields);
+
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return Dialog(
+              backgroundColor: Colors.transparent,
+              insetPadding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 40.h),
+              child: Container(
+                width: MediaQuery.of(context).size.width * 0.9,
+                constraints: BoxConstraints(maxHeight: 500.h),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1A1A1A),
+                  borderRadius: BorderRadius.circular(20.r),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.15),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Header
+                    Container(
+                      padding: EdgeInsets.all(20.w),
+                      decoration: BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(
+                            color: Colors.white.withValues(alpha: 0.1),
+                          ),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.add_box,
+                            color: const Color(0xFF8B5CF6),
+                            size: 24.sp,
+                          ),
+                          SizedBox(width: 12.w),
+                          Expanded(
+                            child: Text(
+                              'Add Optional Fields',
+                              style: GoogleFonts.inter(
+                                fontSize: 18.sp,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                          Text(
+                            '${tempSelectedFields.length} selected',
+                            style: GoogleFonts.inter(
+                              fontSize: 12.sp,
+                              color: const Color(0xFF8B5CF6),
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // Fields List
+                    Flexible(
+                      child: ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: _availableOptionalFields.length,
+                        itemBuilder: (context, index) {
+                          final field = _availableOptionalFields[index];
+                          final fieldId = field['id'] as String;
+                          final isSelected = tempSelectedFields.contains(fieldId);
+
+                          return GestureDetector(
+                            onTap: () {
+                              setDialogState(() {
+                                if (isSelected) {
+                                  tempSelectedFields.remove(fieldId);
+                                } else {
+                                  tempSelectedFields.add(fieldId);
+                                }
+                              });
+                            },
+                            child: Container(
+                              padding: EdgeInsets.all(16.w),
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? const Color(0xFF8B5CF6).withValues(alpha: 0.1)
+                                    : Colors.transparent,
+                                border: Border(
+                                  bottom: BorderSide(
+                                    color: Colors.white.withValues(alpha: 0.05),
+                                  ),
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    width: 24.w,
+                                    height: 24.w,
+                                    decoration: BoxDecoration(
+                                      color: isSelected
+                                          ? const Color(0xFF8B5CF6)
+                                          : Colors.transparent,
+                                      borderRadius: BorderRadius.circular(4.r),
+                                      border: Border.all(
+                                        color: isSelected
+                                            ? const Color(0xFF8B5CF6)
+                                            : Colors.white.withValues(alpha: 0.3),
+                                      ),
+                                    ),
+                                    child: isSelected
+                                        ? Icon(
+                                            Icons.check,
+                                            color: Colors.white,
+                                            size: 16.sp,
+                                          )
+                                        : null,
+                                  ),
+                                  SizedBox(width: 16.w),
+                                  Icon(
+                                    field['icon'] as IconData,
+                                    color: const Color(0xFF8B5CF6),
+                                    size: 20.sp,
+                                  ),
+                                  SizedBox(width: 12.w),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          field['label'] as String,
+                                          style: GoogleFonts.inter(
+                                            fontSize: 15.sp,
+                                            color: Colors.white,
+                                            fontWeight: isSelected
+                                                ? FontWeight.w600
+                                                : FontWeight.w400,
+                                          ),
+                                        ),
+                                        SizedBox(height: 2.h),
+                                        Text(
+                                          field['description'] as String,
+                                          style: GoogleFonts.inter(
+                                            fontSize: 12.sp,
+                                            color: const Color(0xFF9CA3AF),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+
+                    // Footer Buttons
+                    Container(
+                      padding: EdgeInsets.all(20.w),
+                      decoration: BoxDecoration(
+                        border: Border(
+                          top: BorderSide(
+                            color: Colors.white.withValues(alpha: 0.1),
+                          ),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                  color: const Color(0xFF8B5CF6),
+                                ),
+                                borderRadius: BorderRadius.circular(12.r),
+                              ),
+                              child: TextButton(
+                                onPressed: () => Navigator.of(context).pop(),
+                                child: Text(
+                                  'Cancel',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 16.sp,
+                                    color: const Color(0xFF8B5CF6),
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: 12.w),
+                          Expanded(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [Color(0xFF8B5CF6), Color(0xFF6366F1)],
+                                ),
+                                borderRadius: BorderRadius.circular(12.r),
+                              ),
+                              child: TextButton(
+                                onPressed: () {
+                                  setState(() {
+                                    _visibleOptionalFields.clear();
+                                    _visibleOptionalFields.addAll(tempSelectedFields);
+                                  });
+                                  Navigator.of(context).pop();
+                                },
+                                child: Text(
+                                  'Apply',
                                   style: GoogleFonts.inter(
                                     fontSize: 16.sp,
                                     color: Colors.white,

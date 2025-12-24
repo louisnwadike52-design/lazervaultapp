@@ -14,6 +14,7 @@ class SignUpUseCase {
     required String email,
     required String password,
     String? phoneNumber,
+    String? username,
   }) async {
     // Input validation could go here if needed
     return _repository.signUp(
@@ -22,6 +23,7 @@ class SignUpUseCase {
       email: email,
       password: password,
       phoneNumber: phoneNumber,
+      username: username,
     );
   }
 }

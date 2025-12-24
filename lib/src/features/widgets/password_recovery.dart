@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/extensions/app_colors.dart';
+import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/core/utilities/responsive_controller.dart';
@@ -18,6 +19,9 @@ class PasswordRecovery extends StatefulWidget {
 }
 
 class _PasswordRecoveryState extends State<PasswordRecovery> {
+  String _deliveryMethod = 'SMS'; // Default to SMS
+  String _email = ''; // Store email locally
+
   @override
   void initState() {
     super.initState();
@@ -64,13 +68,19 @@ class _PasswordRecoveryState extends State<PasswordRecovery> {
       listener: (context, state) {
         if (state is PasswordResetEmailSent) {
           _showSuccessSnackbar(
-            'Email Sent',
-            'Please check your email for password reset instructions',
+            'Code Sent',
+            'Please check your ${_deliveryMethod == 'EMAIL' ? 'email' : 'SMS'} for verification code',
           );
-          // Navigate back to login after a delay
+          // Navigate to verification screen with stored email
           Future.delayed(const Duration(seconds: 2), () {
-            if (mounted) {
-              Get.back();
+            if (mounted && _email.isNotEmpty) {
+              Get.toNamed(
+                AppRoutes.passwordRecoveryVerification,
+                arguments: {
+                  'email': _email,
+                  'deliveryMethod': _deliveryMethod,
+                },
+              );
             }
           });
         } else if (state is AuthenticationError) {
@@ -78,7 +88,73 @@ class _PasswordRecoveryState extends State<PasswordRecovery> {
         }
       },
       builder: (context, state) {
-        // Handle non-forgot password states
+        // If we're in a successful state, show the form with success indication
+        // The listener will handle navigation
+        if (state is PasswordResetEmailSent) {
+          // Show the form but keep everything disabled
+          return Column(
+            children: [
+              ThemedAppBar(
+                leading: IconButton(
+                  icon: const Icon(
+                    Icons.arrow_back,
+                    color: Colors.white,
+                  ),
+                  onPressed: null, // Disable back during navigation
+                ),
+              ),
+              Expanded(
+                child: Padding(
+                  padding: EdgeInsets.only(
+                      top: responsiveController.screenHeight * 0.08),
+                  child: SingleChildScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 16.0,
+                      horizontal: 16.0,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            UniversalImageLoader(
+                              imagePath:
+                                  'assets/images/profile/password-recovery.png',
+                              width: 50.w,
+                              height: 50.h,
+                            ),
+                            SizedBox(height: 20.0.h),
+                            Text(
+                              'Password Recovery',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16.sp,
+                                color: AppColors.primaryFont,
+                              ),
+                            ),
+                            SizedBox(height: 8.0.h),
+                            Text(
+                              'Check your email for password reset instructions',
+                              style: TextStyle(
+                                fontWeight: FontWeight.normal,
+                                fontSize: 14.sp,
+                                color: AppColors.secondaryFont,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          );
+        }
+
+        // Handle non-forgot password states - show initial loading
         if (state is! ForgotPasswordInProgress) {
           return Column(
             children: [
@@ -160,7 +236,60 @@ class _PasswordRecoveryState extends State<PasswordRecovery> {
                               color: AppColors.secondaryFont,
                             ),
                           ),
-                          SizedBox(height: 45.0.h),
+                          SizedBox(height: 30.0.h),
+                          // Delivery Method Selection
+                          Text(
+                            'Send verification code via:',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 14.sp,
+                              color: AppColors.primaryFont,
+                            ),
+                          ),
+                          SizedBox(height: 12.0.h),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: RadioListTile<String>(
+                                  title: Text(
+                                    'SMS',
+                                    style: TextStyle(fontSize: 14.sp),
+                                  ),
+                                  value: 'SMS',
+                                  groupValue: _deliveryMethod,
+                                  onChanged: isLoading
+                                      ? null
+                                      : (value) {
+                                          setState(() {
+                                            _deliveryMethod = value!;
+                                          });
+                                        },
+                                  contentPadding: EdgeInsets.zero,
+                                  dense: true,
+                                ),
+                              ),
+                              Expanded(
+                                child: RadioListTile<String>(
+                                  title: Text(
+                                    'Email',
+                                    style: TextStyle(fontSize: 14.sp),
+                                  ),
+                                  value: 'EMAIL',
+                                  groupValue: _deliveryMethod,
+                                  onChanged: isLoading
+                                      ? null
+                                      : (value) {
+                                          setState(() {
+                                            _deliveryMethod = value!;
+                                          });
+                                        },
+                                  contentPadding: EdgeInsets.zero,
+                                  dense: true,
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 24.0.h),
                           BuildFormField(
                             leading: const Icon(Icons.email_outlined,
                                 color: AppColors.secondaryFont),
@@ -168,6 +297,9 @@ class _PasswordRecoveryState extends State<PasswordRecovery> {
                             placeholder: 'Enter your email',
                             keyboardType: TextInputType.emailAddress,
                             onChanged: (email) {
+                              setState(() {
+                                _email = email;
+                              });
                               context
                                   .read<AuthenticationCubit>()
                                   .forgotPasswordEmailChanged(email);

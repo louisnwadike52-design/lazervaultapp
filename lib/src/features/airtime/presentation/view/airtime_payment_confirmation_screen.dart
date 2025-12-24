@@ -88,7 +88,7 @@ class _AirtimePaymentConfirmationScreenState extends State<AirtimePaymentConfirm
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Color(0xFF1A1A3E),
+              Color(0xFF1F1F1F),
               Color(0xFF0A0E27),
               Color(0xFF0F0F23),
             ],
@@ -205,7 +205,7 @@ class _AirtimePaymentConfirmationScreenState extends State<AirtimePaymentConfirm
         borderRadius: BorderRadius.circular(24.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: Colors.black.withOpacity(0.04),
             blurRadius: 30,
             offset: Offset(0, 15),
           ),
@@ -215,12 +215,7 @@ class _AirtimePaymentConfirmationScreenState extends State<AirtimePaymentConfirm
         borderRadius: BorderRadius.circular(24.r),
         child: Container(
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.05),
-            border: Border.all(
-              color: Colors.white.withOpacity(0.1),
-              width: 1,
-            ),
-          ),
+            color: Colors.white.withOpacity(0.05),          ),
           child: Column(
             children: [
               // Receipt header
@@ -243,7 +238,7 @@ class _AirtimePaymentConfirmationScreenState extends State<AirtimePaymentConfirm
       padding: EdgeInsets.all(24.w),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+          colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -454,7 +449,7 @@ class _AirtimePaymentConfirmationScreenState extends State<AirtimePaymentConfirm
             child: ElevatedButton(
               onPressed: () => Get.offAllNamed(AppRoutes.dashboard),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Color(0xFF6366F1),
+                backgroundColor: Color(0xFF3B82F6),
                 padding: EdgeInsets.symmetric(vertical: 16.h),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16.r),
@@ -481,7 +476,7 @@ class _AirtimePaymentConfirmationScreenState extends State<AirtimePaymentConfirm
                 child: OutlinedButton(
                   onPressed: () => Get.offAllNamed(AppRoutes.airtime),
                   style: OutlinedButton.styleFrom(
-                    side: BorderSide(color: Colors.white.withOpacity(0.2)),
+                    side: BorderSide(color: Color(0xFF1F1F1F)),
                     padding: EdgeInsets.symmetric(vertical: 14.h),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12.r),
@@ -504,7 +499,7 @@ class _AirtimePaymentConfirmationScreenState extends State<AirtimePaymentConfirm
                 child: OutlinedButton(
                   onPressed: () => Get.toNamed(AppRoutes.airtimeHistory),
                   style: OutlinedButton.styleFrom(
-                    side: BorderSide(color: Colors.white.withOpacity(0.2)),
+                    side: BorderSide(color: Color(0xFF1F1F1F)),
                     padding: EdgeInsets.symmetric(vertical: 14.h),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12.r),
@@ -539,7 +534,7 @@ class _AirtimePaymentConfirmationScreenState extends State<AirtimePaymentConfirm
       case NetworkProviderType.ninemobile:
         return Color(0xFF00AA4F);
       default:
-        return Color(0xFF6366F1); // Default blue color
+        return Color(0xFF3B82F6); // Default blue color
     }
   }
 } 

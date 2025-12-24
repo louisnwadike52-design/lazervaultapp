@@ -4,12 +4,14 @@ class User extends Equatable {
   final String id;
   final String email;
   final String? name; // Optional name
+  final String? username; // Optional username (tag pay)
   // Add other relevant user properties here (e.g., profile picture URL, roles)
 
   const User({
     required this.id,
     required this.email,
     this.name,
+    this.username,
     // Initialize other properties
   });
 
@@ -24,5 +26,5 @@ class User extends Equatable {
 
 
   @override
-  List<Object?> get props => [id, email, name]; // Include other properties in props
+  List<Object?> get props => [id, email, name, username]; // Include other properties in props
 } 

@@ -176,7 +176,7 @@ class _RecipientInputScreenState extends State<RecipientInputScreen> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Color(0xFF1A1A3E),
+              Color(0xFF1F1F1F),
               Color(0xFF0A0E27),
               Color(0xFF0F0F23),
             ],
@@ -281,10 +281,14 @@ class _RecipientInputScreenState extends State<RecipientInputScreen> {
               decoration: BoxDecoration(
                 color: Colors.white.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12.r),
-                border: Border.all(
-                  color: Colors.white.withOpacity(0.2),
-                  width: 1,
-                ),
+                boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
               ),
               child: Icon(
                 Icons.arrow_back_ios_new,
@@ -333,10 +337,14 @@ class _RecipientInputScreenState extends State<RecipientInputScreen> {
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.05),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-          color: _getProviderColor(selectedProvider!.type).withOpacity(0.3),
-          width: 1,
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
       ),
       child: Row(
         children: [
@@ -414,12 +422,14 @@ class _RecipientInputScreenState extends State<RecipientInputScreen> {
           decoration: BoxDecoration(
             color: Colors.white.withOpacity(0.05),
             borderRadius: BorderRadius.circular(16.r),
-            border: Border.all(
-              color: _phoneFocusNode.hasFocus 
-                ? Color(0xFF6366F1) 
-                : Colors.white.withOpacity(0.1),
-              width: 1,
-            ),
+            boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
           ),
           child: TextField(
             controller: _phoneController,
@@ -482,12 +492,14 @@ class _RecipientInputScreenState extends State<RecipientInputScreen> {
           decoration: BoxDecoration(
             color: Colors.white.withOpacity(0.05),
             borderRadius: BorderRadius.circular(16.r),
-            border: Border.all(
-              color: _nameFocusNode.hasFocus 
-                ? Color(0xFF6366F1) 
-                : Colors.white.withOpacity(0.1),
-              width: 1,
-            ),
+            boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
           ),
           child: TextField(
             controller: _nameController,
@@ -543,16 +555,20 @@ class _RecipientInputScreenState extends State<RecipientInputScreen> {
             decoration: BoxDecoration(
               color: Colors.white.withOpacity(0.05),
               borderRadius: BorderRadius.circular(16.r),
-              border: Border.all(
-                color: Colors.white.withOpacity(0.1),
-                width: 1,
-              ),
+              boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
             ),
             child: Row(
               children: [
                 Icon(
                   Icons.contacts,
-                  color: Color(0xFF6366F1),
+                  color: Color(0xFF3B82F6),
                   size: 24.sp,
                 ),
                 SizedBox(width: 12.w),
@@ -568,7 +584,7 @@ class _RecipientInputScreenState extends State<RecipientInputScreen> {
                 ),
                 Icon(
                   Icons.arrow_forward_ios,
-                  color: Color(0xFF6366F1),
+                  color: Color(0xFF3B82F6),
                   size: 16.sp,
                 ),
               ],
@@ -591,7 +607,7 @@ class _RecipientInputScreenState extends State<RecipientInputScreen> {
           onPressed: canProceed ? _validateAndProceed : null,
           style: ElevatedButton.styleFrom(
             backgroundColor: canProceed 
-              ? Color(0xFF6366F1) 
+              ? Color(0xFF3B82F6) 
               : Colors.white.withOpacity(0.1),
             padding: EdgeInsets.symmetric(vertical: 16.h),
             shape: RoundedRectangleBorder(
@@ -649,7 +665,7 @@ class _RecipientInputScreenState extends State<RecipientInputScreen> {
       case NetworkProviderType.ninemobile:
         return Color(0xFF00AA4F);
       default:
-        return Color(0xFF6366F1); // Default blue color
+        return Color(0xFF3B82F6); // Default blue color
     }
   }
 }
@@ -779,7 +795,7 @@ class _ContactSelectionBottomSheetState extends State<_ContactSelectionBottomShe
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            Color(0xFF1A1A3E),
+            Color(0xFF1F1F1F),
             Color(0xFF0A0E27),
           ],
         ),
@@ -822,15 +838,20 @@ class _ContactSelectionBottomSheetState extends State<_ContactSelectionBottomShe
               Container(
                 padding: EdgeInsets.all(12.w),
                 decoration: BoxDecoration(
-                  color: Color(0xFF6366F1).withOpacity(0.2),
+                  color: Color(0xFF3B82F6).withOpacity(0.2),
                   borderRadius: BorderRadius.circular(12.r),
-                  border: Border.all(
-                    color: Color(0xFF6366F1).withOpacity(0.3),
-                  ),
+                  boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
                 ),
                 child: Icon(
                   Icons.contacts,
-                  color: Color(0xFF6366F1),
+                  color: Color(0xFF3B82F6),
                   size: 24.sp,
                 ),
               ),
@@ -887,15 +908,20 @@ class _ContactSelectionBottomSheetState extends State<_ContactSelectionBottomShe
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.05),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.1),
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
       ),
       child: Row(
         children: [
           Icon(
             Icons.search,
-            color: Color(0xFF6366F1),
+            color: Color(0xFF3B82F6),
             size: 20.sp,
           ),
           SizedBox(width: 12.w),
@@ -939,7 +965,7 @@ class _ContactSelectionBottomSheetState extends State<_ContactSelectionBottomShe
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF6366F1)),
+            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
           ),
           SizedBox(height: 16.h),
           Text(
@@ -1023,9 +1049,14 @@ class _ContactSelectionBottomSheetState extends State<_ContactSelectionBottomShe
         decoration: BoxDecoration(
           color: Colors.white.withOpacity(0.05),
           borderRadius: BorderRadius.circular(16.r),
-          border: Border.all(
-            color: Colors.white.withOpacity(0.1),
+          boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
           ),
+        ],
+        
         ),
         child: Row(
           children: [
@@ -1036,7 +1067,7 @@ class _ContactSelectionBottomSheetState extends State<_ContactSelectionBottomShe
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    Color(0xFF6366F1),
+                    Color(0xFF3B82F6),
                     Color(0xFF8B5CF6),
                   ],
                 ),
@@ -1083,7 +1114,7 @@ class _ContactSelectionBottomSheetState extends State<_ContactSelectionBottomShe
             // Arrow icon
             Icon(
               Icons.arrow_forward_ios,
-              color: Color(0xFF6366F1),
+              color: Color(0xFF3B82F6),
               size: 16.sp,
             ),
           ],

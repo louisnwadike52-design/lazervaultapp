@@ -30,7 +30,7 @@ class _PayInvoiceScreenState extends State<PayInvoiceScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
-    
+
     // Load initial data
     context.read<PayInvoiceCubit>().loadTaggedInvoices();
   }
@@ -45,7 +45,7 @@ class _PayInvoiceScreenState extends State<PayInvoiceScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0A0A0A),
+      backgroundColor: const Color(0xFF1F1F1F),
       body: SafeArea(
         child: Column(
           children: [
@@ -60,7 +60,7 @@ class _PayInvoiceScreenState extends State<PayInvoiceScreen>
                       SnackBar(
                         content: Text(state.message),
                         backgroundColor: const Color(0xFFEF4444),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
                         behavior: SnackBarBehavior.floating,
                         margin: EdgeInsets.only(
                           bottom: MediaQuery.of(context).size.height - 150.h,
@@ -74,7 +74,7 @@ class _PayInvoiceScreenState extends State<PayInvoiceScreen>
                       SnackBar(
                         content: Text(state.message),
                         backgroundColor: const Color(0xFF10B981),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
                         behavior: SnackBarBehavior.floating,
                         margin: EdgeInsets.only(
                           bottom: MediaQuery.of(context).size.height - 150.h,
@@ -88,7 +88,7 @@ class _PayInvoiceScreenState extends State<PayInvoiceScreen>
                       SnackBar(
                         content: Text(state.errorMessage),
                         backgroundColor: const Color(0xFFEF4444),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
                         behavior: SnackBarBehavior.floating,
                         margin: EdgeInsets.only(
                           bottom: MediaQuery.of(context).size.height - 150.h,
@@ -102,7 +102,7 @@ class _PayInvoiceScreenState extends State<PayInvoiceScreen>
                       SnackBar(
                         content: Text(state.message),
                         backgroundColor: const Color(0xFF10B981),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
                         behavior: SnackBarBehavior.floating,
                         margin: EdgeInsets.only(
                           bottom: MediaQuery.of(context).size.height - 150.h,
@@ -145,11 +145,17 @@ class _PayInvoiceScreenState extends State<PayInvoiceScreen>
               decoration: BoxDecoration(
                 color: const Color(0xFF1F1F1F),
                 borderRadius: BorderRadius.circular(22.r),
-                border: Border.all(color: const Color(0xFF2D2D2D)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.08),
+                    blurRadius: 12,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
               child: Icon(
                 Icons.arrow_back_ios_new,
-                color: Colors.white,
+                color: const Color(0xFF1F1F1F),
                 size: 18.sp,
               ),
             ),
@@ -162,7 +168,7 @@ class _PayInvoiceScreenState extends State<PayInvoiceScreen>
                 Text(
                   'Pay Invoice',
                   style: GoogleFonts.inter(
-                    color: Colors.white,
+                    color: const Color(0xFF1F1F1F),
                     fontSize: 24.sp,
                     fontWeight: FontWeight.w700,
                   ),
@@ -171,7 +177,7 @@ class _PayInvoiceScreenState extends State<PayInvoiceScreen>
                 Text(
                   'Review and pay your invoices',
                   style: GoogleFonts.inter(
-                    color: const Color(0xFF9CA3AF),
+                    color: const Color(0xFF6B7280),
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w400,
                   ),
@@ -190,7 +196,7 @@ class _PayInvoiceScreenState extends State<PayInvoiceScreen>
       builder: (context, state) {
         int overdueCount = 0;
         if (state is PayInvoicesLoaded) {
-          overdueCount = state.invoices.where((invoice) => 
+          overdueCount = state.invoices.where((invoice) =>
             invoice.isOverdue && invoice.paymentStatus != PaymentStatus.completed
           ).length;
         }
@@ -201,14 +207,20 @@ class _PayInvoiceScreenState extends State<PayInvoiceScreen>
           decoration: BoxDecoration(
             color: const Color(0xFF1F1F1F),
             borderRadius: BorderRadius.circular(22.r),
-            border: Border.all(color: const Color(0xFF2D2D2D)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.08),
+                blurRadius: 12,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
           child: Stack(
             children: [
               Center(
                 child: Icon(
                   Icons.notifications_outlined,
-                  color: Colors.white,
+                  color: const Color(0xFF1F1F1F),
                   size: 20.sp,
                 ),
               ),
@@ -222,14 +234,15 @@ class _PayInvoiceScreenState extends State<PayInvoiceScreen>
                     decoration: BoxDecoration(
                       color: const Color(0xFFEF4444),
                       borderRadius: BorderRadius.circular(8.r),
+                      border: Border.all(color: const Color(0xFF1F1F1F), width: 2),
                     ),
                     child: Center(
                       child: Text(
                         overdueCount > 9 ? '9+' : overdueCount.toString(),
                         style: GoogleFonts.inter(
-                          color: Colors.white,
-                          fontSize: 10.sp,
-                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF1F1F1F),
+                          fontSize: 9.sp,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ),
@@ -249,7 +262,13 @@ class _PayInvoiceScreenState extends State<PayInvoiceScreen>
       decoration: BoxDecoration(
         color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: const Color(0xFF2D2D2D)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 12,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Row(
         children: [
@@ -273,7 +292,7 @@ class _PayInvoiceScreenState extends State<PayInvoiceScreen>
                 }
               },
               style: GoogleFonts.inter(
-                color: Colors.white,
+                color: const Color(0xFF1F1F1F),
                 fontSize: 16.sp,
               ),
               decoration: InputDecoration(
@@ -310,24 +329,13 @@ class _PayInvoiceScreenState extends State<PayInvoiceScreen>
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            const Color(0xFF2A2A3E).withValues(alpha: 0.8),
-            const Color(0xFF1F1F35).withValues(alpha: 0.9),
-          ],
-        ),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
-          width: 1,
-        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.3),
-            blurRadius: 16,
-            offset: const Offset(0, 8),
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 12,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
@@ -350,39 +358,38 @@ class _PayInvoiceScreenState extends State<PayInvoiceScreen>
           }
         },
         indicator: BoxDecoration(
-          gradient: LinearGradient(
+          gradient: const LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              const Color(0xFF6366F1),
-              const Color(0xFF8B5CF6),
-              const Color(0xFF3B82F6),
+              Color(0xFF3B82F6),
+              Color(0xFF1E3A8A),
             ],
           ),
           borderRadius: BorderRadius.circular(12.r),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF6366F1).withValues(alpha: 0.4),
+              color: const Color(0xFF3B82F6).withOpacity(0.3),
               blurRadius: 12,
-              offset: const Offset(0, 4),
+              offset: const Offset(0, 2),
             ),
           ],
         ),
         indicatorSize: TabBarIndicatorSize.tab,
         indicatorPadding: EdgeInsets.all(4.w),
         labelColor: Colors.white,
-        unselectedLabelColor: Colors.grey[400],
+        unselectedLabelColor: Colors.white.withOpacity(0.6),
         labelStyle: GoogleFonts.inter(
           fontSize: 13.sp,
           fontWeight: FontWeight.w700,
-          letterSpacing: 0.5,
+          letterSpacing: 0.3,
         ),
         unselectedLabelStyle: GoogleFonts.inter(
           fontSize: 13.sp,
           fontWeight: FontWeight.w500,
         ),
         dividerColor: Colors.transparent,
-        tabs: [
+        tabs: const [
           Tab(text: 'Pending'),
           Tab(text: 'Paid'),
           Tab(text: 'Overdue'),
@@ -408,8 +415,8 @@ class _PayInvoiceScreenState extends State<PayInvoiceScreen>
 
       return RefreshIndicator(
         onRefresh: () => context.read<PayInvoiceCubit>().refresh(),
-        backgroundColor: const Color(0xFF1F1F1F),
-        color: const Color(0xFF6366F1),
+        backgroundColor: Colors.white,
+        color: const Color(0xFF3B82F6),
         child: ListView.builder(
           padding: EdgeInsets.all(20.w),
           itemCount: filteredInvoices.length,
@@ -418,8 +425,8 @@ class _PayInvoiceScreenState extends State<PayInvoiceScreen>
             return InvoicePaymentCard(
               invoice: invoice,
               onTap: () => _showInvoiceDetails(invoice),
-              onPay: statusFilter == PaymentStatus.pending 
-                  ? () => _showPaymentSheet(invoice) 
+              onPay: statusFilter == PaymentStatus.pending
+                  ? () => _showPaymentSheet(invoice)
                   : null,
             );
           },
@@ -437,7 +444,7 @@ class _PayInvoiceScreenState extends State<PayInvoiceScreen>
 
     if (state is PayInvoicesLoaded) {
       final overdueInvoices = state.invoices
-          .where((invoice) => invoice.isOverdue && 
+          .where((invoice) => invoice.isOverdue &&
                              invoice.paymentStatus != PaymentStatus.completed)
           .toList();
 
@@ -447,8 +454,8 @@ class _PayInvoiceScreenState extends State<PayInvoiceScreen>
 
       return RefreshIndicator(
         onRefresh: () => context.read<PayInvoiceCubit>().refresh(),
-        backgroundColor: const Color(0xFF1F1F1F),
-        color: const Color(0xFF6366F1),
+        backgroundColor: Colors.white,
+        color: const Color(0xFF3B82F6),
         child: ListView.builder(
           padding: EdgeInsets.all(20.w),
           itemCount: overdueInvoices.length,
@@ -480,8 +487,8 @@ class _PayInvoiceScreenState extends State<PayInvoiceScreen>
 
       return RefreshIndicator(
         onRefresh: () => context.read<PayInvoiceCubit>().refresh(),
-        backgroundColor: const Color(0xFF1F1F1F),
-        color: const Color(0xFF6366F1),
+        backgroundColor: Colors.white,
+        color: const Color(0xFF3B82F6),
         child: ListView.builder(
           padding: EdgeInsets.all(20.w),
           itemCount: state.invoices.length,
@@ -490,10 +497,10 @@ class _PayInvoiceScreenState extends State<PayInvoiceScreen>
             return InvoicePaymentCard(
               invoice: invoice,
               onTap: () => _showInvoiceDetails(invoice),
-              onPay: invoice.paymentStatus == PaymentStatus.pending 
-                  ? () => _showPaymentSheet(invoice) 
+              onPay: invoice.paymentStatus == PaymentStatus.pending
+                  ? () => _showPaymentSheet(invoice)
                   : null,
-              isOverdue: invoice.isOverdue && 
+              isOverdue: invoice.isOverdue &&
                         invoice.paymentStatus != PaymentStatus.completed,
             );
           },
@@ -516,17 +523,24 @@ class _PayInvoiceScreenState extends State<PayInvoiceScreen>
             decoration: BoxDecoration(
               color: const Color(0xFF1F1F1F),
               borderRadius: BorderRadius.circular(24.r),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.08),
+                  blurRadius: 12,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
-            child: CircularProgressIndicator(
+            child: const CircularProgressIndicator(
               strokeWidth: 2,
-              valueColor: AlwaysStoppedAnimation<Color>(const Color(0xFF6366F1)),
+              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
             ),
           ),
           SizedBox(height: 16.h),
           Text(
             'Loading invoices...',
             style: GoogleFonts.inter(
-              color: const Color(0xFF9CA3AF),
+              color: const Color(0xFF6B7280),
               fontSize: 16.sp,
               fontWeight: FontWeight.w500,
             ),
@@ -540,23 +554,28 @@ class _PayInvoiceScreenState extends State<PayInvoiceScreen>
     String title;
     String subtitle;
     IconData icon;
+    Color iconColor;
 
     if (isOverdue) {
       title = 'No overdue invoices';
       subtitle = 'Great! You\'re all caught up with your payments';
       icon = Icons.check_circle_outline;
+      iconColor = const Color(0xFF10B981);
     } else if (status == PaymentStatus.pending) {
       title = 'No pending invoices';
       subtitle = 'All your invoices have been paid';
       icon = Icons.receipt_long_outlined;
+      iconColor = const Color(0xFF3B82F6);
     } else if (status == PaymentStatus.completed) {
       title = 'No paid invoices';
       subtitle = 'Your payment history will appear here';
       icon = Icons.payment_outlined;
+      iconColor = const Color(0xFF3B82F6);
     } else {
       title = 'No invoices found';
       subtitle = 'Tagged invoices will appear here when sent to you';
       icon = Icons.inbox_outlined;
+      iconColor = const Color(0xFF9A9FA5);
     }
 
     return Center(
@@ -568,32 +587,35 @@ class _PayInvoiceScreenState extends State<PayInvoiceScreen>
             height: 80.w,
             padding: EdgeInsets.all(20.w),
             decoration: BoxDecoration(
-              color: const Color(0xFF1F1F1F),
+              color: iconColor.withOpacity(0.1),
               borderRadius: BorderRadius.circular(40.r),
             ),
             child: Icon(
               icon,
               size: 40.sp,
-              color: const Color(0xFF6366F1),
+              color: iconColor,
             ),
           ),
           SizedBox(height: 24.h),
           Text(
             title,
             style: GoogleFonts.inter(
-              color: Colors.white,
+              color: const Color(0xFF1F1F1F),
               fontSize: 20.sp,
               fontWeight: FontWeight.w600,
             ),
           ),
           SizedBox(height: 8.h),
-          Text(
-            subtitle,
-            style: GoogleFonts.inter(
-              color: const Color(0xFF9CA3AF),
-              fontSize: 14.sp,
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 40.w),
+            child: Text(
+              subtitle,
+              style: GoogleFonts.inter(
+                color: const Color(0xFF6B7280),
+                fontSize: 14.sp,
+              ),
+              textAlign: TextAlign.center,
             ),
-            textAlign: TextAlign.center,
           ),
         ],
       ),
@@ -602,7 +624,7 @@ class _PayInvoiceScreenState extends State<PayInvoiceScreen>
 
   void _showInvoiceDetails(TaggedInvoice invoice) {
     HapticFeedback.lightImpact();
-    
+
     Get.to(
       () => InvoiceDetailsScreen(invoice: invoice),
       transition: GetX.Transition.rightToLeft,
@@ -612,7 +634,7 @@ class _PayInvoiceScreenState extends State<PayInvoiceScreen>
 
   void _showPaymentSheet(TaggedInvoice invoice) {
     HapticFeedback.lightImpact();
-    
+
     // Navigate to payment method selection screen
     Get.to(
       () => PaymentMethodSelectionScreen(invoice: invoice),
@@ -620,4 +642,4 @@ class _PayInvoiceScreenState extends State<PayInvoiceScreen>
       duration: const Duration(milliseconds: 300),
     );
   }
-} 
+}

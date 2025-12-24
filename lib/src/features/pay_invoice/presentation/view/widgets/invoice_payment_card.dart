@@ -23,19 +23,19 @@ class InvoicePaymentCard extends StatelessWidget {
     return Container(
       margin: EdgeInsets.only(bottom: 16.h),
       decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(
-          color: isOverdue 
-              ? const Color(0xFFEF4444) 
-              : const Color(0xFF2D2D2D),
-          width: isOverdue ? 1.5 : 1,
+          color: isOverdue
+              ? const Color(0xFFFF6B6B)
+              : Colors.transparent,
+          width: isOverdue ? 2 : 0,
         ),
         boxShadow: [
           BoxShadow(
-            color: isOverdue 
-                ? const Color(0xFFEF4444).withOpacity(0.1)
-                : Colors.black.withOpacity(0.05),
+            color: isOverdue
+                ? const Color(0xFFFF6B6B).withOpacity(0.15)
+                : Colors.black.withOpacity(0.04),
             offset: const Offset(0, 2),
             blurRadius: 8,
           ),
@@ -72,10 +72,10 @@ class InvoicePaymentCard extends StatelessWidget {
           width: 48.w,
           height: 48.w,
           decoration: BoxDecoration(
-            gradient: LinearGradient(
+            gradient: const LinearGradient(
               colors: [
-                Color(0xFF6366F1),
-                Color(0xFF8B5CF6),
+                Color(0xFF2A85FF),
+                Color(0xFF1E5ED9),
               ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
@@ -84,7 +84,7 @@ class InvoicePaymentCard extends StatelessWidget {
           ),
           child: Center(
             child: Text(
-              invoice.fromCompanyName?.substring(0, 1).toUpperCase() ?? 
+              invoice.fromCompanyName?.substring(0, 1).toUpperCase() ??
               invoice.fromUserName.substring(0, 1).toUpperCase(),
               style: GoogleFonts.inter(
                 color: Colors.white,
@@ -95,7 +95,7 @@ class InvoicePaymentCard extends StatelessWidget {
           ),
         ),
         SizedBox(width: 16.w),
-        
+
         // Invoice Info
         Expanded(
           child: Column(
@@ -104,7 +104,7 @@ class InvoicePaymentCard extends StatelessWidget {
               Text(
                 invoice.title,
                 style: GoogleFonts.inter(
-                  color: Colors.white,
+                  color: const Color(0xFF1A1D1F),
                   fontSize: 16.sp,
                   fontWeight: FontWeight.w600,
                 ),
@@ -115,7 +115,7 @@ class InvoicePaymentCard extends StatelessWidget {
               Text(
                 'From ${invoice.fromCompanyName ?? invoice.fromUserName}',
                 style: GoogleFonts.inter(
-                  color: const Color(0xFF9CA3AF),
+                  color: const Color(0xFF6F767E),
                   fontSize: 14.sp,
                   fontWeight: FontWeight.w400,
                 ),
@@ -125,7 +125,7 @@ class InvoicePaymentCard extends StatelessWidget {
             ],
           ),
         ),
-        
+
         // Status Badge
         _buildStatusBadge(),
       ],
@@ -140,18 +140,18 @@ class InvoicePaymentCard extends StatelessWidget {
     switch (invoice.paymentStatus) {
       case PaymentStatus.pending:
         if (isOverdue) {
-          backgroundColor = const Color(0xFFEF4444).withOpacity(0.1);
-          textColor = const Color(0xFFEF4444);
+          backgroundColor = const Color(0xFFFF6B6B).withOpacity(0.1);
+          textColor = const Color(0xFFFF6B6B);
           statusText = 'Overdue';
         } else {
-          backgroundColor = const Color(0xFFEAB308).withOpacity(0.1);
-          textColor = const Color(0xFFEAB308);
+          backgroundColor = const Color(0xFFFFA726).withOpacity(0.1);
+          textColor = const Color(0xFFFFA726);
           statusText = 'Pending';
         }
         break;
       case PaymentStatus.processing:
-        backgroundColor = const Color(0xFF6366F1).withOpacity(0.1);
-        textColor = const Color(0xFF6366F1);
+        backgroundColor = const Color(0xFF2A85FF).withOpacity(0.1);
+        textColor = const Color(0xFF2A85FF);
         statusText = 'Processing';
         break;
       case PaymentStatus.completed:
@@ -160,23 +160,22 @@ class InvoicePaymentCard extends StatelessWidget {
         statusText = 'Paid';
         break;
       case PaymentStatus.failed:
-        backgroundColor = const Color(0xFFEF4444).withOpacity(0.1);
-        textColor = const Color(0xFFEF4444);
+        backgroundColor = const Color(0xFFFF6B6B).withOpacity(0.1);
+        textColor = const Color(0xFFFF6B6B);
         statusText = 'Failed';
         break;
       case PaymentStatus.cancelled:
-        backgroundColor = const Color(0xFF6B7280).withOpacity(0.1);
-        textColor = const Color(0xFF6B7280);
+        backgroundColor = const Color(0xFF9A9FA5).withOpacity(0.1);
+        textColor = const Color(0xFF6F767E);
         statusText = 'Cancelled';
         break;
     }
 
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
       decoration: BoxDecoration(
         color: backgroundColor,
-        borderRadius: BorderRadius.circular(6.r),
-        border: Border.all(color: textColor, width: 1),
+        borderRadius: BorderRadius.circular(8.r),
       ),
       child: Text(
         statusText,
@@ -199,7 +198,7 @@ class InvoicePaymentCard extends StatelessWidget {
               Text(
                 'Amount',
                 style: GoogleFonts.inter(
-                  color: const Color(0xFF9CA3AF),
+                  color: const Color(0xFF6F767E),
                   fontSize: 12.sp,
                   fontWeight: FontWeight.w500,
                 ),
@@ -208,7 +207,7 @@ class InvoicePaymentCard extends StatelessWidget {
               Text(
                 invoice.formattedAmount,
                 style: GoogleFonts.inter(
-                  color: Colors.white,
+                  color: const Color(0xFF1A1D1F),
                   fontSize: 20.sp,
                   fontWeight: FontWeight.w700,
                 ),
@@ -216,12 +215,12 @@ class InvoicePaymentCard extends StatelessWidget {
             ],
           ),
         ),
-        
+
         // Priority indicator
         _buildPriorityIndicator(),
-        
+
         SizedBox(width: 16.w),
-        
+
         // Due date info
         Column(
           crossAxisAlignment: CrossAxisAlignment.end,
@@ -229,7 +228,7 @@ class InvoicePaymentCard extends StatelessWidget {
             Text(
               'Due Date',
               style: GoogleFonts.inter(
-                color: const Color(0xFF9CA3AF),
+                color: const Color(0xFF6F767E),
                 fontSize: 12.sp,
                 fontWeight: FontWeight.w500,
               ),
@@ -238,7 +237,7 @@ class InvoicePaymentCard extends StatelessWidget {
             Text(
               invoice.formattedDueDate,
               style: GoogleFonts.inter(
-                color: isOverdue ? const Color(0xFFEF4444) : Colors.white,
+                color: isOverdue ? const Color(0xFFFF6B6B) : const Color(0xFF1A1D1F),
                 fontSize: 14.sp,
                 fontWeight: FontWeight.w600,
               ),
@@ -248,10 +247,10 @@ class InvoicePaymentCard extends StatelessWidget {
               Text(
                 invoice.urgencyText,
                 style: GoogleFonts.inter(
-                  color: isOverdue 
-                      ? const Color(0xFFEF4444) 
-                      : const Color(0xFF9CA3AF),
-                  fontSize: 10.sp,
+                  color: isOverdue
+                      ? const Color(0xFFFF6B6B)
+                      : const Color(0xFF6F767E),
+                  fontSize: 11.sp,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -272,11 +271,11 @@ class InvoicePaymentCard extends StatelessWidget {
         icon = Icons.arrow_downward;
         break;
       case InvoicePriority.medium:
-        color = const Color(0xFFEAB308);
+        color = const Color(0xFFFFA726);
         icon = Icons.remove;
         break;
       case InvoicePriority.high:
-        color = const Color(0xFFEF4444);
+        color = const Color(0xFFFF6B6B);
         icon = Icons.arrow_upward;
         break;
       case InvoicePriority.urgent:
@@ -286,16 +285,15 @@ class InvoicePaymentCard extends StatelessWidget {
     }
 
     return Container(
-      width: 24.w,
-      height: 24.w,
+      width: 28.w,
+      height: 28.w,
       decoration: BoxDecoration(
         color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: color, width: 1),
+        borderRadius: BorderRadius.circular(14.r),
       ),
       child: Icon(
         icon,
-        size: 12.sp,
+        size: 14.sp,
         color: color,
       ),
     );
@@ -312,18 +310,18 @@ class InvoicePaymentCard extends StatelessWidget {
               Text(
                 'Invoice #${invoice.invoiceNumber}',
                 style: GoogleFonts.inter(
-                  color: const Color(0xFF9CA3AF),
+                  color: const Color(0xFF6F767E),
                   fontSize: 12.sp,
                   fontWeight: FontWeight.w500,
                 ),
               ),
               if (invoice.description.isNotEmpty) ...[
-                SizedBox(height: 2.h),
+                SizedBox(height: 4.h),
                 Text(
                   invoice.description,
                   style: GoogleFonts.inter(
-                    color: const Color(0xFF6B7280),
-                    fontSize: 10.sp,
+                    color: const Color(0xFF9A9FA5),
+                    fontSize: 11.sp,
                     fontWeight: FontWeight.w400,
                   ),
                   maxLines: 1,
@@ -333,27 +331,34 @@ class InvoicePaymentCard extends StatelessWidget {
             ],
           ),
         ),
-        
+
         // Action buttons
         if (onPay != null && invoice.paymentStatus == PaymentStatus.pending) ...[
           Container(
-            height: 36.h,
+            height: 38.h,
             decoration: BoxDecoration(
               gradient: const LinearGradient(
-                colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                colors: [Color(0xFF2A85FF), Color(0xFF1E5ED9)],
                 begin: Alignment.centerLeft,
                 end: Alignment.centerRight,
               ),
-              borderRadius: BorderRadius.circular(18.r),
+              borderRadius: BorderRadius.circular(19.r),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF2A85FF).withOpacity(0.3),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
             child: ElevatedButton(
               onPressed: onPay,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.transparent,
                 shadowColor: Colors.transparent,
-                padding: EdgeInsets.symmetric(horizontal: 16.w),
+                padding: EdgeInsets.symmetric(horizontal: 20.w),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(18.r),
+                  borderRadius: BorderRadius.circular(19.r),
                 ),
               ),
               child: Row(
@@ -369,7 +374,7 @@ class InvoicePaymentCard extends StatelessWidget {
                     'Pay Now',
                     style: GoogleFonts.inter(
                       color: Colors.white,
-                      fontSize: 12.sp,
+                      fontSize: 13.sp,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -379,26 +384,25 @@ class InvoicePaymentCard extends StatelessWidget {
           ),
         ] else if (invoice.paymentStatus == PaymentStatus.completed) ...[
           Container(
-            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
             decoration: BoxDecoration(
               color: const Color(0xFF10B981).withOpacity(0.1),
-              borderRadius: BorderRadius.circular(18.r),
-              border: Border.all(color: const Color(0xFF10B981)),
+              borderRadius: BorderRadius.circular(19.r),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(
-                  Icons.check_circle_outline,
+                  Icons.check_circle,
                   color: const Color(0xFF10B981),
-                  size: 14.sp,
+                  size: 16.sp,
                 ),
-                SizedBox(width: 4.w),
+                SizedBox(width: 6.w),
                 Text(
                   'Paid',
                   style: GoogleFonts.inter(
                     color: const Color(0xFF10B981),
-                    fontSize: 12.sp,
+                    fontSize: 13.sp,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -409,4 +413,4 @@ class InvoicePaymentCard extends StatelessWidget {
       ],
     );
   }
-} 
+}

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/models/device_contact.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
@@ -12,8 +12,6 @@ import 'package:lazervault/src/features/widgets/common/back_navigator.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/recipient_chips_builder.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/recipients.dart';
 import 'package:lazervault/src/features/recipients/data/models/recipient_model.dart';
-import 'package:lazervault/src/features/authentication/domain/entities/profile_entity.dart';
-import 'package:lazervault/src/features/authentication/domain/entities/session_entity.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/enhanced_recipient_selection_bottom_sheet.dart';
 
 class SelectRecipients extends StatefulWidget {
@@ -53,7 +51,7 @@ class _SelectRecipientsState extends State<SelectRecipients> {
         if (accessToken == null) {
           Get.snackbar('Authentication Error', 'You need to be logged in.',
               snackPosition: SnackPosition.BOTTOM,
-              backgroundColor: Colors.red.withOpacity(0.7),
+              backgroundColor: Colors.red.withValues(alpha: 0.7),
               colorText: Colors.white);
         } else {
           // authState is AuthenticationSuccess
@@ -76,8 +74,6 @@ class _SelectRecipientsState extends State<SelectRecipients> {
           return BlocConsumer<RecipientCubit, RecipientState>(
             listener: (context, recipientState) {
               // Add listener for RecipientState changes if needed
-              print(
-                  "SelectRecipients Recipient Listener: Received state -> $recipientState");
             },
             builder: (context, recipientState) {
               // Build UI based on Recipient state
@@ -128,11 +124,16 @@ class _SelectRecipientsState extends State<SelectRecipients> {
                           child: Container(
                             height: 48.h,
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.15),
+                              color: Colors.white.withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(24),
-                              border: Border.all(
-                                color: Colors.white.withOpacity(0.2),
-                              ),
+                              boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
                             ),
                             child: Row(
                               children: [
@@ -146,7 +147,7 @@ class _SelectRecipientsState extends State<SelectRecipients> {
                                       children: [
                                         Icon(
                                           Icons.search,
-                                          color: Colors.white.withOpacity(0.7),
+                                          color: Colors.white.withValues(alpha: 0.7),
                                           size: 20,
                                         ),
                                         SizedBox(width: 12.w),
@@ -154,20 +155,20 @@ class _SelectRecipientsState extends State<SelectRecipients> {
                                            child: Text(
                                              'Recipient, @username or contact',
                                              style: TextStyle(
-                                               color: Colors.white.withOpacity(0.7),
+                                               color: Colors.white.withValues(alpha: 0.7),
                                                fontSize: 14.sp,
                                              ),
                                            ),
                                          ),
                                         Icon(
                                           Icons.alternate_email,
-                                          color: Colors.white.withOpacity(0.8),
+                                          color: Colors.white.withValues(alpha: 0.8),
                                           size: 16.sp,
                                         ),
                                         SizedBox(width: 8.w),
                                         Icon(
                                           Icons.contacts_outlined,
-                                          color: Colors.white.withOpacity(0.8),
+                                          color: Colors.white.withValues(alpha: 0.8),
                                           size: 16.sp,
                                         ),
                                       ],
@@ -177,7 +178,7 @@ class _SelectRecipientsState extends State<SelectRecipients> {
                                 Container(
                                   margin: EdgeInsets.only(right: 4.w),
                                   decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.2),
+                                    color: Colors.white.withValues(alpha: 0.2),
                                     shape: BoxShape.circle,
                                   ),
                                   child: IconButton(
@@ -229,7 +230,7 @@ class _SelectRecipientsState extends State<SelectRecipients> {
                             _buildQuickAction(
                               icon: Icons.qr_code_scanner_outlined,
                               label: 'Scan QR',
-                              onTap: () {},
+                              onTap: _launchQRScanner,
                             ),
                             _buildQuickAction(
                               icon: Icons.person_add_outlined,
@@ -239,12 +240,12 @@ class _SelectRecipientsState extends State<SelectRecipients> {
                             _buildQuickAction(
                               icon: Icons.schedule_outlined,
                               label: 'Schedule',
-                              onTap: () {},
+                              onTap: _launchScheduledTransfer,
                             ),
                             _buildQuickAction(
                               icon: Icons.group_outlined,
                               label: 'Split Bills',
-                              onTap: () {},
+                              onTap: _launchSplitBills,
                             ),
                           ],
                         ),
@@ -479,7 +480,7 @@ class _SelectRecipientsState extends State<SelectRecipients> {
           Container(
             padding: EdgeInsets.all(12.w),
             decoration: BoxDecoration(
-              color: Color.fromARGB(255, 78, 3, 208).withOpacity(0.1),
+              color: Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(
@@ -500,5 +501,99 @@ class _SelectRecipientsState extends State<SelectRecipients> {
         ],
       ),
     );
+  }
+
+  Future<void> _launchQRScanner() async {
+    try {
+      final result = await Get.toNamed(AppRoutes.qrScanner);
+
+      if (result != null && result is Map<String, dynamic>) {
+        // QR code scanned successfully - create recipient from scanned data
+        final recipient = RecipientModel(
+          id: result['recipientId'] ?? '',
+          name: result['name'] ?? result['username'] ?? 'Unknown',
+          accountNumber: result['username'] ?? '',
+          bankName: 'LazerVault',
+          sortCode: '',
+          isFavorite: false,
+        );
+
+        // Navigate to send funds with scanned recipient
+        Get.toNamed(AppRoutes.initiateSendFunds, arguments: recipient);
+      }
+    } catch (e) {
+      Get.snackbar(
+        'QR Scanner Error',
+        'Failed to open QR scanner: ${e.toString()}',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.withValues(alpha: 0.7),
+        colorText: Colors.white,
+      );
+    }
+  }
+
+  Future<void> _launchScheduledTransfer() async {
+    // Show scheduled transfer dialog
+    final DateTime? selectedDate = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now().add(Duration(days: 1)),
+      firstDate: DateTime.now(),
+      lastDate: DateTime.now().add(Duration(days: 365)),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme.light(
+              primary: Color.fromARGB(255, 78, 3, 208),
+              onPrimary: Colors.white,
+              surface: Colors.white,
+              onSurface: Colors.black87,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (!mounted || selectedDate == null) return;
+
+    // Show time picker
+    final TimeOfDay? selectedTime = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay(hour: 9, minute: 0),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme.light(
+              primary: Color.fromARGB(255, 78, 3, 208),
+              onPrimary: Colors.white,
+              surface: Colors.white,
+              onSurface: Colors.black87,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (!mounted || selectedTime == null) return;
+
+    // Combine date and time
+    final scheduledDateTime = DateTime(
+      selectedDate.year,
+      selectedDate.month,
+      selectedDate.day,
+      selectedTime.hour,
+      selectedTime.minute,
+    );
+
+    // Navigate to send funds with scheduled time
+    Get.toNamed(
+      AppRoutes.initiateSendFunds,
+      arguments: {'scheduledAt': scheduledDateTime},
+    );
+  }
+
+  Future<void> _launchSplitBills() async {
+    Get.toNamed(AppRoutes.splitBills);
   }
 }

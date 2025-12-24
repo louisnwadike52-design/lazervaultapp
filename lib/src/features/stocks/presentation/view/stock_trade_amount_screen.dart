@@ -300,15 +300,11 @@ class _StockTradeAmountScreenState extends State<StockTradeAmountScreen>
           ],
         ),
         borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
-          width: 1,
-        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.3),
-            blurRadius: 15,
-            offset: const Offset(0, 6),
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 8,
+            offset: Offset(0, 2),
           ),
         ],
       ),
@@ -461,9 +457,14 @@ class _StockTradeAmountScreenState extends State<StockTradeAmountScreen>
       decoration: BoxDecoration(
         color: const Color(0xFF2A2A3E),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
       ),
       child: Row(
         children: [
@@ -519,9 +520,14 @@ class _StockTradeAmountScreenState extends State<StockTradeAmountScreen>
       decoration: BoxDecoration(
         color: const Color(0xFF2A2A3E),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
       ),
       child: Row(
         children: [
@@ -576,9 +582,14 @@ class _StockTradeAmountScreenState extends State<StockTradeAmountScreen>
       decoration: BoxDecoration(
         color: const Color(0xFF2A2A3E),
         borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -644,9 +655,14 @@ class _StockTradeAmountScreenState extends State<StockTradeAmountScreen>
       decoration: BoxDecoration(
         color: const Color(0xFF2A2A3E),
         borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -733,9 +749,14 @@ class _StockTradeAmountScreenState extends State<StockTradeAmountScreen>
                 decoration: BoxDecoration(
                   color: const Color(0xFF2A2A3E),
                   borderRadius: BorderRadius.circular(12.r),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.1),
-                  ),
+                  boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
                 ),
                 child: Text(
                   '\$${amount.toStringAsFixed(0)}',
@@ -766,9 +787,14 @@ class _StockTradeAmountScreenState extends State<StockTradeAmountScreen>
           ],
         ),
         borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

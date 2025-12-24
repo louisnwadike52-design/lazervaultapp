@@ -37,6 +37,7 @@ import 'package:lazervault/src/features/presentation/views/create_new_password_s
 import 'package:lazervault/src/features/presentation/views/dashboard/transaction_history_screen.dart';
 import 'package:lazervault/src/features/presentation/views/enable_biometric_access_screen.dart';
 import 'package:lazervault/src/features/presentation/views/face_scan_screen.dart';
+import 'package:lazervault/src/features/authentication/presentation/views/facial_login_screen.dart';
 import 'package:lazervault/src/features/presentation/views/facial_biometric_verification_screen.dart';
 import 'package:lazervault/src/features/presentation/views/flights/flights_screen.dart';
 import 'package:lazervault/src/features/funds/presentation/view/deposit_funds_screen.dart';
@@ -46,6 +47,7 @@ import 'package:lazervault/src/features/presentation/views/languages_screen.dart
 import 'package:lazervault/src/features/presentation/views/my_account_screen.dart';
 import 'package:lazervault/src/features/presentation/views/otp_verification_screen.dart';
 import 'package:lazervault/src/features/presentation/views/password_recovery_screen.dart';
+import 'package:lazervault/src/features/authentication/presentation/views/password_recovery_verification_screen.dart';
 import 'package:lazervault/src/features/presentation/views/profile_settings_screen.dart';
 import 'package:lazervault/src/features/presentation/views/review_electricity_bills_screen.dart';
 import 'package:lazervault/src/features/presentation/views/camera_scan_screen.dart';
@@ -58,6 +60,8 @@ import 'package:lazervault/src/features/presentation/views/select_country_screen
 import 'package:lazervault/src/features/recipients/data/models/recipient_model.dart';
 import 'package:lazervault/src/features/recipients/presentation/view/add_recipient_screen.dart';
 import 'package:lazervault/src/features/recipients/presentation/view/select_recipient_screen.dart';
+import 'package:lazervault/src/features/recipients/presentation/view/qr_scanner_screen.dart';
+import 'package:lazervault/src/features/funds/presentation/view/split_bills/split_bills_screen.dart';
 import 'package:lazervault/src/features/presentation/views/send_fund_receipt_screen.dart';
 import 'package:lazervault/src/features/presentation/views/send_fund_screen.dart';
 import 'package:lazervault/src/features/funds/presentation/view/send_funds/transfer_proof_screen.dart';
@@ -89,6 +93,7 @@ import 'package:lazervault/src/features/crypto/presentation/view/crypto_detail_s
 import 'package:lazervault/src/features/crypto/domain/entities/crypto_entity.dart';
 import 'package:lazervault/src/features/crypto/presentation/view/crypto_chart_details_screen.dart';
 import 'package:lazervault/src/features/invoice/presentation/view/invoice_list_screen.dart';
+import 'package:lazervault/src/features/invoice/presentation/view/invoice_service_screen.dart';
 import 'package:lazervault/src/features/invoice/presentation/cubit/invoice_cubit.dart';
 import 'package:lazervault/src/features/invoice/presentation/view/create_invoice_screen.dart';
 import 'package:lazervault/src/features/invoice/presentation/view/invoice_details_screen.dart';
@@ -117,6 +122,8 @@ import 'package:lazervault/src/features/group_account/domain/entities/group_enti
 import 'package:lazervault/src/features/insurance/presentation/cubit/insurance_cubit.dart';
 import 'package:lazervault/src/features/insurance/presentation/view/insurance_list_screen.dart';
 import 'package:lazervault/src/features/insurance/presentation/view/insurance_details_screen.dart';
+import 'package:lazervault/src/features/insurance/presentation/view/insurance_policy_detail_view.dart';
+import 'package:lazervault/src/features/insurance/presentation/view/edit_insurance_policy_view.dart';
 import 'package:lazervault/src/features/insurance/presentation/view/insurance_payment_screen.dart';
 import 'package:lazervault/src/features/insurance/presentation/view/insurance_payment_processing_screen.dart';
 import 'package:lazervault/src/features/insurance/presentation/view/insurance_payment_confirmation_screen.dart';
@@ -138,11 +145,68 @@ import 'package:lazervault/src/features/airtime/presentation/view/airtime_histor
 import 'package:lazervault/src/features/airtime/presentation/view/airtime_details_screen.dart';
 import 'package:lazervault/src/features/airtime/domain/entities/airtime_transaction.dart';
 
+// AutoSave imports
+import 'package:lazervault/src/features/autosave/presentation/cubit/autosave_cubit.dart';
+import 'package:lazervault/src/features/autosave/presentation/views/autosave_dashboard_screen.dart';
+import 'package:lazervault/src/features/autosave/presentation/views/autosave_transactions_screen.dart';
+import 'package:lazervault/src/features/autosave/presentation/views/create_autosave_rule_screen.dart';
+
 // Batch Transfer imports
 import 'package:lazervault/src/features/funds/cubit/batch_transfer_cubit.dart';
 import 'package:lazervault/src/features/funds/presentation/view/batch_transfer/batch_transfer_screen.dart';
+import 'package:lazervault/src/features/funds/presentation/view/batch_transfer/batch_transfer_review_screen.dart';
 import 'package:lazervault/src/features/funds/presentation/view/batch_transfer/batch_transfer_processing_screen.dart';
 import 'package:lazervault/src/features/funds/presentation/view/batch_transfer/batch_transfer_receipt_screen.dart';
+
+// Statistics imports
+import 'package:lazervault/src/features/statistics/cubit/statistics_cubit.dart';
+import 'package:lazervault/src/features/statistics/presentation/screens/statistics_screen.dart';
+import 'package:lazervault/src/features/statistics/presentation/screens/add_expense_screen.dart';
+import 'package:lazervault/src/features/statistics/presentation/screens/add_budget_screen.dart';
+
+// Tag Pay imports
+import 'package:lazervault/src/features/tag_pay/presentation/cubit/tag_pay_cubit.dart';
+import 'package:lazervault/src/features/tag_pay/presentation/view/tag_pay_home_screen.dart';
+import 'package:lazervault/src/features/tag_pay/presentation/view/create_tag_pay_screen.dart';
+import 'package:lazervault/src/features/tag_pay/presentation/view/send_money_tag_pay_screen.dart';
+import 'package:lazervault/src/features/tag_pay/presentation/view/request_money_screen.dart';
+import 'package:lazervault/src/features/tag_pay/presentation/view/tag_pay_transactions_screen.dart';
+import 'package:lazervault/src/features/tag_pay/presentation/view/pending_requests_screen.dart';
+import 'package:lazervault/src/features/tag_pay/presentation/view/search_users_screen.dart';
+import 'package:lazervault/src/features/tag_pay/presentation/view/create_tag_screen.dart';
+import 'package:lazervault/src/features/tag_pay/presentation/view/my_tags_screen.dart';
+import 'package:lazervault/src/features/tag_pay/presentation/view/create_tag_screen_redesigned.dart';
+import 'package:lazervault/src/features/tag_pay/presentation/view/my_tags_screen_redesigned.dart';
+import 'package:lazervault/src/features/tag_pay/presentation/view/outgoing_tags_screen.dart';
+import 'package:lazervault/src/features/tag_pay/presentation/view/incoming_tags_screen.dart';
+import 'package:lazervault/src/features/tag_pay/presentation/view/tag_payment_confirmation_screen.dart';
+import 'package:lazervault/src/features/tag_pay/presentation/view/tag_pay_processing_screen.dart';
+import 'package:lazervault/src/features/tag_pay/presentation/view/tag_payment_receipt_screen.dart';
+import 'package:lazervault/src/features/tag_pay/presentation/view/tag_creation_processing_screen.dart';
+import 'package:lazervault/src/features/tag_pay/presentation/view/tag_creation_receipt_screen.dart';
+import 'package:lazervault/src/features/tag_pay/domain/entities/user_tag_entity.dart';
+import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
+
+// Barcode QuickPay imports
+import 'package:lazervault/src/features/barcode_payment/presentation/cubit/barcode_payment_cubit.dart';
+import 'package:lazervault/src/features/barcode_payment/presentation/view/barcode_quick_pay_home_screen.dart';
+import 'package:lazervault/src/features/barcode_payment/presentation/view/generate_barcode_screen.dart';
+import 'package:lazervault/src/features/barcode_payment/presentation/view/barcode_display_screen.dart';
+import 'package:lazervault/src/features/barcode_payment/presentation/view/scan_barcode_screen.dart';
+import 'package:lazervault/src/features/barcode_payment/presentation/view/barcode_payment_confirmation_screen.dart';
+import 'package:lazervault/src/features/barcode_payment/presentation/view/barcode_payment_processing_screen.dart';
+import 'package:lazervault/src/features/barcode_payment/presentation/view/barcode_payment_receipt_screen.dart';
+import 'package:lazervault/src/features/barcode_payment/presentation/view/generated_barcodes_history_screen.dart';
+import 'package:lazervault/src/features/barcode_payment/presentation/view/scanned_barcodes_history_screen.dart';
+
+// Currency Exchange imports
+import 'package:lazervault/src/features/currency_exchange/presentation/views/exchange_screen.dart';
+import 'package:lazervault/src/features/currency_exchange/presentation/bindings/exchange_binding.dart';
+
+// Settings imports
+import 'package:lazervault/src/features/settings/presentation/view/privacy_policy_screen.dart';
+import 'package:lazervault/src/features/settings/presentation/view/help_support_screen.dart';
+import 'package:lazervault/src/features/settings/presentation/view/contact_us_screen.dart';
 
 class AppRouter {
   static final routes = [
@@ -249,11 +313,24 @@ class AppRouter {
       transition: Transition.rightToLeft,
     ),
     GetPage(
-      name: AppRoutes.invoice,
-      page: () => BlocProvider(
-        create: (_) => serviceLocator<InvoiceCubit>(),
-        child: serviceLocator<InvoiceListScreen>(),
+      name: AppRoutes.qrScanner,
+      page: () => const QRScannerScreen(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.splitBills,
+      page: () => MultiBlocProvider(
+        providers: [
+          BlocProvider(create: (_) => serviceLocator<RecipientCubit>()),
+          BlocProvider(create: (_) => serviceLocator<TransferCubit>()),
+        ],
+        child: const SplitBillsScreen(),
       ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.invoice,
+      page: () => const InvoiceServiceScreen(),
       transition: Transition.rightToLeft,
     ),
     GetPage(
@@ -383,6 +460,17 @@ class AppRouter {
       transition: Transition.rightToLeft,
     ),
     GetPage(
+      name: AppRoutes.passwordRecoveryVerification,
+      page: () {
+        final args = Get.arguments as Map<String, dynamic>;
+        return PasswordRecoveryVerificationScreen(
+          email: args['email'] as String,
+          deliveryMethod: args['deliveryMethod'] as String? ?? 'SMS',
+        );
+      },
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
       name: AppRoutes.createNewPassword,
       page: () => serviceLocator<CreateNewPasswordScreen>(),
       transition: Transition.rightToLeft,
@@ -400,6 +488,11 @@ class AppRouter {
     GetPage(
       name: AppRoutes.faceScan,
       page: () => serviceLocator<FaceScanScreen>(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.facialLogin,
+      page: () => serviceLocator<FacialLoginScreen>(),
       transition: Transition.rightToLeft,
     ),
     GetPage(
@@ -493,6 +586,12 @@ class AppRouter {
       name: AppRoutes.cbCurrencyExchange,
       page: () => serviceLocator<CBCurrencyExchangeScreen>(),
       transition: Transition.leftToRightWithFade,
+    ),
+    GetPage(
+      name: AppRoutes.currencyExchange,
+      page: () => const ExchangeScreen(),
+      binding: ExchangeBinding(),
+      transition: Transition.rightToLeft,
     ),
     GetPage(
       name: AppRoutes.currencyDeposit,
@@ -849,7 +948,18 @@ class AppRouter {
         final insurance = Get.arguments as Insurance;
         return BlocProvider(
           create: (_) => serviceLocator<InsuranceCubit>(),
-          child: InsuranceDetailsScreen(insurance: insurance),
+          child: InsurancePolicyDetailView(insurance: insurance),
+        );
+      },
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.insuranceEdit,
+      page: () {
+        final insurance = Get.arguments as Insurance;
+        return BlocProvider(
+          create: (_) => serviceLocator<InsuranceCubit>(),
+          child: EditInsurancePolicyView(insurance: insurance),
         );
       },
       transition: Transition.rightToLeft,
@@ -985,13 +1095,47 @@ class AppRouter {
       ),
       transition: Transition.rightToLeft,
     ),
-    
+
+    // AutoSave routes
+    GetPage(
+      name: AppRoutes.autoSave,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<AutoSaveCubit>(),
+        child: const AutoSaveDashboardScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.createAutoSaveRule,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<AutoSaveCubit>(),
+        child: const CreateAutoSaveRuleScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.autoSaveTransactions,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<AutoSaveCubit>(),
+        child: const AutoSaveTransactionsScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+
     // Batch Transfer routes
     GetPage(
       name: AppRoutes.batchTransfer,
       page: () => BlocProvider(
         create: (_) => serviceLocator<BatchTransferCubit>(),
         child: const BatchTransferScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.batchTransferReview,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<BatchTransferCubit>(),
+        child: const BatchTransferReviewScreen(),
       ),
       transition: Transition.rightToLeft,
     ),
@@ -1003,6 +1147,265 @@ class AppRouter {
     GetPage(
       name: AppRoutes.batchTransferReceipt,
       page: () => const BatchTransferReceiptScreen(),
+      transition: Transition.rightToLeft,
+    ),
+
+    // Statistics routes
+    GetPage(
+      name: AppRoutes.statistics,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<StatisticsCubit>()..loadStatistics(),
+        child: serviceLocator<StatisticsScreen>(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.addExpense,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<StatisticsCubit>(),
+        child: serviceLocator<AddExpenseScreen>(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.addBudget,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<StatisticsCubit>(),
+        child: serviceLocator<AddBudgetScreen>(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+
+    // Tag Pay routes
+    GetPage(
+      name: AppRoutes.tagPay,
+      page: () => BlocProvider(
+        create: (context) => serviceLocator<TagPayCubit>(),
+        child: const TagPayHomeScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.createTagPay,
+      page: () => BlocProvider(
+        create: (context) => serviceLocator<TagPayCubit>(),
+        child: const CreateTagPayScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.sendMoneyTagPay,
+      page: () => BlocProvider(
+        create: (context) => serviceLocator<TagPayCubit>(),
+        child: const SendMoneyTagPayScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.requestMoneyTagPay,
+      page: () => BlocProvider(
+        create: (context) => serviceLocator<TagPayCubit>(),
+        child: const RequestMoneyScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.tagPayTransactions,
+      page: () => BlocProvider(
+        create: (context) => serviceLocator<TagPayCubit>(),
+        child: const TagPayTransactionsScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.pendingRequests,
+      page: () => BlocProvider(
+        create: (context) => serviceLocator<TagPayCubit>(),
+        child: const PendingRequestsScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.searchUsers,
+      page: () => BlocProvider(
+        create: (context) => serviceLocator<TagPayCubit>(),
+        child: const SearchUsersScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.createTag,
+      page: () => BlocProvider(
+        create: (context) => serviceLocator<TagPayCubit>(),
+        child: const CreateTagScreenRedesigned(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.myTags,
+      page: () => BlocProvider(
+        create: (context) => serviceLocator<TagPayCubit>(),
+        child: const MyTagsScreenRedesigned(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.outgoingTags,
+      page: () => BlocProvider(
+        create: (context) => serviceLocator<TagPayCubit>(),
+        child: const OutgoingTagsScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.incomingTags,
+      page: () => BlocProvider(
+        create: (context) => serviceLocator<TagPayCubit>(),
+        child: const IncomingTagsScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.tagPaymentConfirmation,
+      page: () {
+        final tag = Get.arguments as UserTagEntity;
+        return MultiBlocProvider(
+          providers: [
+            BlocProvider.value(value: serviceLocator<TagPayCubit>()),
+            BlocProvider.value(value: serviceLocator<AccountCardsSummaryCubit>()),
+          ],
+          child: TagPaymentConfirmationScreen(tag: tag),
+        );
+      },
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.tagPayProcessing,
+      page: () {
+        return BlocProvider.value(
+          value: serviceLocator<TagPayCubit>(),
+          child: const TagPayProcessingScreen(),
+        );
+      },
+      transition: Transition.fadeIn,
+    ),
+    GetPage(
+      name: AppRoutes.tagPaymentReceipt,
+      page: () => const TagPaymentReceiptScreen(),
+      transition: Transition.zoom,
+    ),
+    GetPage(
+      name: AppRoutes.tagCreationProcessing,
+      page: () {
+        return BlocProvider.value(
+          value: serviceLocator<TagPayCubit>(),
+          child: const TagCreationProcessingScreen(),
+        );
+      },
+      transition: Transition.fadeIn,
+    ),
+    GetPage(
+      name: AppRoutes.tagCreationReceipt,
+      page: () => const TagCreationReceiptScreen(),
+      transition: Transition.zoom,
+    ),
+
+    // Barcode QuickPay routes
+    GetPage(
+      name: AppRoutes.barcodeQuickPayHome,
+      page: () {
+        return BlocProvider(
+          create: (context) => serviceLocator<BarcodePaymentCubit>(),
+          child: const BarcodeQuickPayHomeScreen(),
+        );
+      },
+      transition: Transition.fadeIn,
+    ),
+    GetPage(
+      name: AppRoutes.generateBarcode,
+      page: () {
+        return BlocProvider.value(
+          value: serviceLocator<BarcodePaymentCubit>(),
+          child: const GenerateBarcodeScreen(),
+        );
+      },
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.barcodeDisplay,
+      page: () => const BarcodeDisplayScreen(),
+      transition: Transition.zoom,
+    ),
+    GetPage(
+      name: AppRoutes.scanBarcode,
+      page: () {
+        return BlocProvider.value(
+          value: serviceLocator<BarcodePaymentCubit>(),
+          child: const ScanBarcodeScreen(),
+        );
+      },
+      transition: Transition.fadeIn,
+    ),
+    GetPage(
+      name: AppRoutes.barcodePaymentConfirmation,
+      page: () {
+        return BlocProvider.value(
+          value: serviceLocator<BarcodePaymentCubit>(),
+          child: const BarcodePaymentConfirmationScreen(),
+        );
+      },
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.barcodePaymentProcessing,
+      page: () {
+        return BlocProvider.value(
+          value: serviceLocator<BarcodePaymentCubit>(),
+          child: const BarcodePaymentProcessingScreen(),
+        );
+      },
+      transition: Transition.fadeIn,
+    ),
+    GetPage(
+      name: AppRoutes.barcodePaymentReceipt,
+      page: () => const BarcodePaymentReceiptScreen(),
+      transition: Transition.zoom,
+    ),
+    GetPage(
+      name: AppRoutes.generatedBarcodesHistory,
+      page: () {
+        return BlocProvider.value(
+          value: serviceLocator<BarcodePaymentCubit>(),
+          child: const GeneratedBarcodesHistoryScreen(),
+        );
+      },
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.scannedBarcodesHistory,
+      page: () {
+        return BlocProvider.value(
+          value: serviceLocator<BarcodePaymentCubit>(),
+          child: const ScannedBarcodesHistoryScreen(),
+        );
+      },
+      transition: Transition.rightToLeft,
+    ),
+
+    // Settings screens
+    GetPage(
+      name: '/privacy-policy',
+      page: () => const PrivacyPolicyScreen(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: '/help-support',
+      page: () => const HelpSupportScreen(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: '/contact-us',
+      page: () => const ContactUsScreen(),
       transition: Transition.rightToLeft,
     ),
   ];

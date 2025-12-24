@@ -9,9 +9,17 @@ class AccountCardsSummaryCubit extends Cubit<AccountCardsSummaryState> {
   AccountCardsSummaryCubit(this._getAccountSummariesUseCase)
       : super(AccountCardsSummaryInitial());
 
-  Future<void> fetchAccountSummaries({required String userId, String? accessToken}) async {
+  Future<void> fetchAccountSummaries({
+    required String userId,
+    String? accessToken,
+    String? country,
+  }) async {
     emit(AccountCardsSummaryLoading());
-    final result = await _getAccountSummariesUseCase.call(userId: userId, accessToken: accessToken);
+    final result = await _getAccountSummariesUseCase.call(
+      userId: userId,
+      accessToken: accessToken,
+      country: country,
+    );
     result.fold(
       (failure) => emit(AccountCardsSummaryError(
         failure.message,

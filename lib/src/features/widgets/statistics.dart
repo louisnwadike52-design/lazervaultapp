@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lazervault/core/extensions/app_colors.dart';
 import 'package:lazervault/core/types/typedef.dart';
+import 'package:lazervault/src/features/statistics/cubit/statistics_cubit.dart';
+import 'package:lazervault/src/features/statistics/cubit/statistics_state.dart';
+import 'package:lazervault/src/generated/statistics.pb.dart';
 
 class Statistics extends StatefulWidget {
   const Statistics({super.key});
@@ -100,6 +104,18 @@ class _StatisticsState extends State<Statistics> {
   void initState() {
     super.initState();
     _activeCashFlowType = cashFlow[activeTab];
+
+    // Load statistics data and AI insights from backend
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final cubit = context.read<StatisticsCubit>();
+      cubit.loadStatistics();
+      cubit.getAISpendingInsights(focusArea: 'savings');
+      cubit.getAIBudgetingRecommendations(
+        monthlyIncome: 8350.00, // TODO: Get from user profile
+        financialGoals: ['Emergency Fund', 'Save for Vacation', 'Invest'],
+        riskTolerance: 'moderate',
+      );
+    });
   }
 
   void _handleOnTimePeriodSelected(TimePeriod timePeriod) {}
@@ -113,125 +129,85 @@ class _StatisticsState extends State<Statistics> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: AppColors.secondaryBackgroundColor,
-      child: Stack(
-        children: [
-          SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
-            child: Column(
-              children: [
-                Container(
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        AppColors.backgroundColor,
-                        Color.fromARGB(255, 95, 20, 225),
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(24.r),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.15),
-                        blurRadius: 20,
-                        offset: Offset(0, 10),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    children: [
-                      _buildHeader(),
-                      _buildBalanceOverview(),
-                      SizedBox(height: 20.h),
-                      _buildPeriodSelector(),
-                      SizedBox(height: 20.h),
-                    ],
-                  ),
-                ),
-                _buildExpenseChart(),
-                _buildCategoryBreakdown(),
-                _buildBudgetProgress(),
-                _buildMonthlyTrendChart(),
-                _buildComparisonMetrics(),
-                _buildToggleSection(),
-                showIncome ? _buildIncomeAnalysis() : _buildExpenseAnalysis(),
-                _buildInvestmentPortfolio(),
-                _buildFinancialGoals(),
-                _buildSavingsGoal(),
-                _buildUpcomingBills(),
-                _buildFinancialInsights(),
-              ],
+    return BlocConsumer<StatisticsCubit, StatisticsState>(
+      listener: (context, state) {
+        // Show error if AI request fails
+        if (state is StatisticsLoaded && state.aiError != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.aiError!),
+              backgroundColor: Colors.red,
+              duration: Duration(seconds: 3),
             ),
-          ),
-          if (showAIAssistant)
-            Positioned(
-              top: 140.h,
-              left: 16.w,
-              right: 16.w,
-              child: Container(
-                padding: EdgeInsets.all(16.r),
-                decoration: BoxDecoration(
-                  color: AppColors.backgroundColor,
-                  borderRadius: BorderRadius.circular(16.r),
-                  border: Border.all(
-                    color: Colors.white.withOpacity(0.1),
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.2),
-                      blurRadius: 10,
-                      offset: Offset(0, 5),
-                    ),
-                  ],
-                ),
+          );
+        }
+      },
+      builder: (context, state) {
+        return Container(
+          color: AppColors.secondaryBackgroundColor,
+          child: Stack(
+            children: [
+              SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'AI Suggestions',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16.sp,
-                            fontWeight: FontWeight.w500,
-                          ),
+                    Container(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            AppColors.backgroundColor,
+                            Color.fromARGB(255, 95, 20, 225),
+                          ],
                         ),
-                        IconButton(
-                          onPressed: () {
-                            setState(() => showAIAssistant = false);
-                          },
-                          icon: Icon(
-                            Icons.close,
-                            color: Colors.white.withOpacity(0.7),
-                            size: 20.r,
+                        borderRadius: BorderRadius.circular(24.r),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.15),
+                            blurRadius: 20,
+                            offset: Offset(0, 10),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
+                      child: Column(
+                        children: [
+                          _buildHeader(),
+                          _buildBalanceOverview(state),
+                          SizedBox(height: 20.h),
+                          _buildPeriodSelector(),
+                          SizedBox(height: 20.h),
+                        ],
+                      ),
                     ),
-                    SizedBox(height: 12.h),
-                    Wrap(
-                      spacing: 8.w,
-                      runSpacing: 8.h,
-                      children: [
-                        _buildSuggestionChip('Analyze spending'),
-                        _buildSuggestionChip('Budget tips'),
-                        _buildSuggestionChip('Savings advice'),
-                        _buildSuggestionChip('Investment insights'),
-                        _buildSuggestionChip('Expense breakdown'),
-                      ],
-                    ),
+                    _buildExpenseChart(),
+                    _buildCategoryBreakdown(state),
+                    _buildBudgetProgress(state),
+                    _buildMonthlyTrendChart(),
+                    _buildComparisonMetrics(),
+                    _buildToggleSection(),
+                    showIncome ? _buildIncomeAnalysis(state) : _buildExpenseAnalysis(),
+                    _buildInvestmentPortfolio(state),
+                    _buildFinancialGoals(state),
+                    _buildSavingsGoal(state),
+                    _buildUpcomingBills(state),
+                    _buildFinancialInsights(state),
                   ],
                 ),
               ),
-            ),
-        ],
-      ),
+              if (showAIAssistant)
+                Positioned(
+                  top: 140.h,
+                  left: 16.w,
+                  right: 16.w,
+                  child: _buildAIAssistantPanel(state),
+                ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -261,9 +237,14 @@ class _StatisticsState extends State<Statistics> {
                           decoration: BoxDecoration(
                             color: Colors.white.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(20.r),
-                            border: Border.all(
-                              color: Colors.white.withOpacity(0.1),
-                            ),
+                            boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
                           ),
                           child: TextField(
                             controller: _aiQueryController,
@@ -304,9 +285,14 @@ class _StatisticsState extends State<Statistics> {
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.1),
                   shape: BoxShape.circle,
-                  border: Border.all(
-                    color: Colors.white.withOpacity(0.1),
-                  ),
+                  boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
                 ),
                 child: IconButton(
                   icon: Icon(
@@ -351,7 +337,20 @@ class _StatisticsState extends State<Statistics> {
     );
   }
 
-  Widget _buildBalanceOverview() {
+  Widget _buildBalanceOverview(StatisticsState state) {
+    // Get data from state or use defaults
+    double totalSpending = 0.0;
+    double totalIncome = 0.0;
+    double totalExpenses = 0.0;
+
+    if (state is StatisticsLoaded) {
+      // Calculate totals from expenses list
+      totalExpenses = state.expenses.fold(0.0, (sum, expense) => sum + expense.amount);
+      totalSpending = totalExpenses;
+      // Income would need to come from a separate source
+      totalIncome = 8350.00; // TODO: Get from user profile or income tracking
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -364,7 +363,7 @@ class _StatisticsState extends State<Statistics> {
         ),
         SizedBox(height: 8.h),
         Text(
-          '\$5,044.00',
+          '\$${totalSpending.toStringAsFixed(2)}',
           style: TextStyle(
             color: Colors.white,
             fontSize: 32.sp,
@@ -378,7 +377,7 @@ class _StatisticsState extends State<Statistics> {
             Expanded(
               child: _buildMetricCard(
                 'Income',
-                '\$8,350.00',
+                '\$${totalIncome.toStringAsFixed(2)}',
                 Icons.arrow_upward,
                 Colors.green[300]!,
                 true,
@@ -388,7 +387,7 @@ class _StatisticsState extends State<Statistics> {
             Expanded(
               child: _buildMetricCard(
                 'Expenses',
-                '\$3,306.00',
+                '\$${totalExpenses.toStringAsFixed(2)}',
                 Icons.arrow_downward,
                 Colors.red[300]!,
                 false,
@@ -410,9 +409,14 @@ class _StatisticsState extends State<Statistics> {
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.1),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.1),
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -517,9 +521,14 @@ class _StatisticsState extends State<Statistics> {
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.05),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.1),
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
       ),
       child: LineChart(
         LineChartData(
@@ -564,16 +573,27 @@ class _StatisticsState extends State<Statistics> {
     );
   }
 
-  Widget _buildCategoryBreakdown() {
+  Widget _buildCategoryBreakdown(StatisticsState state) {
+    List<CategorySpending> categories = [];
+
+    if (state is StatisticsLoaded && state.categoryBreakdown.isNotEmpty) {
+      categories = state.categoryBreakdown;
+    }
+
     return Container(
       margin: EdgeInsets.all(16.r),
       padding: EdgeInsets.all(16.r),
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.05),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.1),
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -587,17 +607,96 @@ class _StatisticsState extends State<Statistics> {
             ),
           ),
           SizedBox(height: 16.h),
-          ...List.generate(
-            expenseCategories.length,
-            (index) => _buildCategoryItem(
-              expenseCategories.keys.elementAt(index),
-              expenseCategories.values.elementAt(index),
-              categoryColors[index],
+
+          if (categories.isEmpty)
+            Center(
+              child: Padding(
+                padding: EdgeInsets.all(20.h),
+                child: Text(
+                  'No expense data available',
+                  style: TextStyle(
+                    color: Colors.white60,
+                    fontSize: 14.sp,
+                  ),
+                ),
+              ),
+            )
+          else
+            ...List.generate(
+              categories.length,
+              (index) => _buildCategoryItemFromBackend(
+                categories[index],
+                categoryColors[index % categoryColors.length],
+              ),
             ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCategoryItemFromBackend(CategorySpending categorySpending, Color color) {
+    final categoryName = _formatCategoryName(categorySpending.category);
+    final amount = categorySpending.amount;
+    final percentage = categorySpending.percentage;
+
+    return Container(
+      margin: EdgeInsets.only(bottom: 12.h),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 12.w,
+                    height: 12.w,
+                    decoration: BoxDecoration(
+                      color: color,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  SizedBox(width: 8.w),
+                  Text(
+                    categoryName,
+                    style: TextStyle(
+                      color: Colors.white70,
+                      fontSize: 14.sp,
+                    ),
+                  ),
+                ],
+              ),
+              Text(
+                '\$${amount.toStringAsFixed(2)}',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 8.h),
+          LinearProgressIndicator(
+            value: percentage / 100.0,
+            backgroundColor: Colors.white10,
+            valueColor: AlwaysStoppedAnimation<Color>(color),
+            minHeight: 4.h,
+            borderRadius: BorderRadius.circular(2.r),
           ),
         ],
       ),
     );
+  }
+
+  String _formatCategoryName(ExpenseCategory category) {
+    return category.name
+        .replaceAll('EXPENSE_CATEGORY_', '')
+        .replaceAll('_', ' ')
+        .toLowerCase()
+        .split(' ')
+        .map((word) => word.isNotEmpty ? word[0].toUpperCase() + word.substring(1) : '')
+        .join(' ');
   }
 
   Widget _buildCategoryItem(String category, double amount, Color color) {
@@ -654,16 +753,35 @@ class _StatisticsState extends State<Statistics> {
     );
   }
 
-  Widget _buildBudgetProgress() {
+  Widget _buildBudgetProgress(StatisticsState state) {
+    List<BudgetProgressItem> budgets = [];
+    double totalSpent = 0.0;
+    double totalBudget = 0.0;
+
+    if (state is StatisticsLoaded && state.budgetProgress.isNotEmpty) {
+      budgets = state.budgetProgress;
+      for (var budget in budgets) {
+        totalSpent += budget.spentAmount;
+        totalBudget += budget.budgetAmount;
+      }
+    }
+
+    final progress = totalBudget > 0 ? totalSpent / totalBudget : 0.0;
+
     return Container(
       margin: EdgeInsets.all(16.r),
       padding: EdgeInsets.all(16.r),
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.05),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.1),
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -677,35 +795,97 @@ class _StatisticsState extends State<Statistics> {
             ),
           ),
           SizedBox(height: 16.h),
+
+          if (budgets.isEmpty)
+            Center(
+              child: Padding(
+                padding: EdgeInsets.all(20.h),
+                child: Text(
+                  'No budget data available',
+                  style: TextStyle(
+                    color: Colors.white60,
+                    fontSize: 14.sp,
+                  ),
+                ),
+              ),
+            )
+          else ...{
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Total Budget',
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 14.sp,
+                  ),
+                ),
+                Text(
+                  '\$${totalSpent.toStringAsFixed(0)} / \$${totalBudget.toStringAsFixed(0)}',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 8.h),
+            LinearProgressIndicator(
+              value: progress,
+              backgroundColor: Colors.white10,
+              valueColor: AlwaysStoppedAnimation<Color>(
+                progress > 0.8 ? Colors.red : const Color(0xFF6C5CE7),
+              ),
+              minHeight: 8.h,
+              borderRadius: BorderRadius.circular(4.r),
+            ),
+            SizedBox(height: 16.h),
+
+            ...budgets.take(3).map((budget) => _buildBudgetItem(budget)),
+          },
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBudgetItem(BudgetProgressItem budget) {
+    final progress = budget.budgetAmount > 0 ? budget.spentAmount / budget.budgetAmount : 0.0;
+    final isOverBudget = progress > 1.0;
+
+    return Container(
+      margin: EdgeInsets.only(bottom: 12.h),
+      child: Column(
+        children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Monthly Budget',
+                budget.budgetName,
                 style: TextStyle(
                   color: Colors.white70,
-                  fontSize: 14.sp,
+                  fontSize: 13.sp,
                 ),
               ),
               Text(
-                '\$3,306 / \$5,000',
+                '\$${budget.spentAmount.toStringAsFixed(0)} / \$${budget.budgetAmount.toStringAsFixed(0)}',
                 style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.bold,
+                  color: isOverBudget ? Colors.red : Colors.white,
+                  fontSize: 13.sp,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ],
           ),
-          SizedBox(height: 8.h),
+          SizedBox(height: 6.h),
           LinearProgressIndicator(
-            value: 3306 / 5000,
+            value: progress > 1.0 ? 1.0 : progress,
             backgroundColor: Colors.white10,
             valueColor: AlwaysStoppedAnimation<Color>(
-              3306 / 5000 > 0.8 ? Colors.red : const Color(0xFF6C5CE7),
+              isOverBudget ? Colors.red : const Color(0xFF6C5CE7),
             ),
-            minHeight: 8.h,
-            borderRadius: BorderRadius.circular(4.r),
+            minHeight: 4.h,
+            borderRadius: BorderRadius.circular(2.r),
           ),
         ],
       ),
@@ -1005,55 +1185,30 @@ class _StatisticsState extends State<Statistics> {
     );
   }
 
-  Widget _buildIncomeAnalysis() {
-    return Container(
-      margin: EdgeInsets.all(16.r),
-      padding: EdgeInsets.all(16.r),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Income Breakdown',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 18.sp,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          SizedBox(height: 20.h),
-          AspectRatio(
-            aspectRatio: 1.3,
-            child: PieChart(
-              PieChartData(
-                sectionsSpace: 0,
-                centerSpaceRadius: 40,
-                sections: _generateIncomeSections(),
-              ),
-            ),
-          ),
-          SizedBox(height: 20.h),
-          Column(
-            children: incomeCategories.entries.map((entry) {
-              return _buildIncomeCategoryItem(
-                entry.key,
-                entry.value,
-                categoryColors[
-                    incomeCategories.keys.toList().indexOf(entry.key) %
-                        categoryColors.length],
-              );
-            }).toList(),
-          ),
-        ],
-      ),
-    );
-  }
+  Widget _buildIncomeAnalysis(StatisticsState state) {
+    if (state is! StatisticsLoaded) {
+      return SizedBox.shrink();
+    }
 
-  Widget _buildSavingsGoal() {
+    final incomeBreakdown = state.incomeBreakdown;
+    if (incomeBreakdown == null || incomeBreakdown.categories.isEmpty) {
+      return Container(
+        margin: EdgeInsets.all(16.r),
+        padding: EdgeInsets.all(16.r),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.05),
+          borderRadius: BorderRadius.circular(16.r),
+          border: Border.all(color: Colors.white.withOpacity(0.1)),
+        ),
+        child: Center(
+          child: Text(
+            'No income data available',
+            style: TextStyle(color: Colors.white70, fontSize: 14.sp),
+          ),
+        ),
+      );
+    }
+
     return Container(
       margin: EdgeInsets.all(16.r),
       padding: EdgeInsets.all(16.r),
@@ -1069,7 +1224,7 @@ class _StatisticsState extends State<Statistics> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Savings Goal',
+                'Income Breakdown',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 18.sp,
@@ -1077,7 +1232,163 @@ class _StatisticsState extends State<Statistics> {
                 ),
               ),
               Text(
-                '75% achieved',
+                '\$${state.totalMonthlyIncome.toStringAsFixed(2)}',
+                style: TextStyle(
+                  color: Colors.green[300],
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 20.h),
+          AspectRatio(
+            aspectRatio: 1.3,
+            child: PieChart(
+              PieChartData(
+                sectionsSpace: 0,
+                centerSpaceRadius: 40,
+                sections: _generateIncomeSections(incomeBreakdown),
+              ),
+            ),
+          ),
+          SizedBox(height: 20.h),
+          Column(
+            children: incomeBreakdown.categories.asMap().entries.map((entry) {
+              final index = entry.key;
+              final category = entry.value;
+              return _buildIncomeCategoryItem(
+                _getIncomeCategoryName(category.category),
+                category.amount,
+                categoryColors[index % categoryColors.length],
+              );
+            }).toList(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _getIncomeCategoryName(IncomeCategory category) {
+    switch (category) {
+      case IncomeCategory.INCOME_CATEGORY_SALARY:
+        return 'Salary';
+      case IncomeCategory.INCOME_CATEGORY_FREELANCE:
+        return 'Freelance';
+      case IncomeCategory.INCOME_CATEGORY_BUSINESS:
+        return 'Business';
+      case IncomeCategory.INCOME_CATEGORY_INVESTMENTS:
+        return 'Investment';
+      case IncomeCategory.INCOME_CATEGORY_RENTAL:
+        return 'Rental';
+      case IncomeCategory.INCOME_CATEGORY_DIVIDEND:
+        return 'Dividend';
+      case IncomeCategory.INCOME_CATEGORY_INTEREST:
+        return 'Interest';
+      case IncomeCategory.INCOME_CATEGORY_GIFT:
+        return 'Gift';
+      case IncomeCategory.INCOME_CATEGORY_OTHER:
+        return 'Other';
+      default:
+        return 'Unknown';
+    }
+  }
+
+  IconData _getBillIcon(String category) {
+    switch (category.toLowerCase()) {
+      case 'utilities':
+        return Icons.electric_bolt;
+      case 'rent':
+      case 'mortgage':
+        return Icons.home;
+      case 'internet':
+      case 'phone':
+        return Icons.wifi;
+      case 'insurance':
+        return Icons.security;
+      case 'subscription':
+        return Icons.subscriptions;
+      case 'loan':
+        return Icons.account_balance;
+      default:
+        return Icons.receipt_long;
+    }
+  }
+
+  IconData _getInvestmentIcon(String type) {
+    switch (type.toLowerCase()) {
+      case 'stocks':
+      case 'stock':
+        return Icons.show_chart;
+      case 'crypto':
+      case 'cryptocurrency':
+        return Icons.currency_bitcoin;
+      case 'bonds':
+      case 'bond':
+        return Icons.assignment;
+      case 'mutual funds':
+      case 'mutual_funds':
+        return Icons.account_balance;
+      case 'real estate':
+      case 'real_estate':
+        return Icons.home_work;
+      case 'commodities':
+        return Icons.shopping_basket;
+      default:
+        return Icons.trending_up;
+    }
+  }
+
+  Widget _buildSavingsGoal(StatisticsState state) {
+    if (state is! StatisticsLoaded) {
+      return SizedBox.shrink();
+    }
+
+    final savingsGoal = state.savingsGoal;
+    if (savingsGoal == null) {
+      return Container(
+        margin: EdgeInsets.all(16.r),
+        padding: EdgeInsets.all(16.r),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.05),
+          borderRadius: BorderRadius.circular(16.r),
+          border: Border.all(color: Colors.white.withOpacity(0.1)),
+        ),
+        child: Center(
+          child: Text(
+            'No savings goal set',
+            style: TextStyle(color: Colors.white70, fontSize: 14.sp),
+          ),
+        ),
+      );
+    }
+
+    final percentage = savingsGoal.percentageComplete / 100;
+
+    return Container(
+      margin: EdgeInsets.all(16.r),
+      padding: EdgeInsets.all(16.r),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: Colors.white.withOpacity(0.1)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                savingsGoal.name,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Text(
+                '${savingsGoal.percentageComplete.toStringAsFixed(0)}% achieved',
                 style: TextStyle(
                   color: Colors.green[300],
                   fontSize: 14.sp,
@@ -1101,7 +1412,7 @@ class _StatisticsState extends State<Statistics> {
                     ),
                   ),
                   Text(
-                    '\$15,000',
+                    '\$${savingsGoal.currentAmount.toStringAsFixed(2)}',
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 24.sp,
@@ -1121,7 +1432,7 @@ class _StatisticsState extends State<Statistics> {
                     ),
                   ),
                   Text(
-                    '\$20,000',
+                    '\$${savingsGoal.targetAmount.toStringAsFixed(2)}',
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 24.sp,
@@ -1134,7 +1445,7 @@ class _StatisticsState extends State<Statistics> {
           ),
           SizedBox(height: 16.h),
           LinearProgressIndicator(
-            value: 0.75,
+            value: percentage.clamp(0.0, 1.0),
             backgroundColor: Colors.white10,
             valueColor: AlwaysStoppedAnimation<Color>(Colors.green[300]!),
             minHeight: 8.h,
@@ -1145,27 +1456,29 @@ class _StatisticsState extends State<Statistics> {
     );
   }
 
-  Widget _buildUpcomingBills() {
-    final List<Map<String, dynamic>> upcomingBills = [
-      {
-        'name': 'Rent',
-        'amount': 1200.00,
-        'dueDate': DateTime.now().add(Duration(days: 5)),
-        'icon': Icons.home,
-      },
-      {
-        'name': 'Electricity',
-        'amount': 150.00,
-        'dueDate': DateTime.now().add(Duration(days: 8)),
-        'icon': Icons.electric_bolt,
-      },
-      {
-        'name': 'Internet',
-        'amount': 80.00,
-        'dueDate': DateTime.now().add(Duration(days: 12)),
-        'icon': Icons.wifi,
-      },
-    ];
+  Widget _buildUpcomingBills(StatisticsState state) {
+    if (state is! StatisticsLoaded) {
+      return SizedBox.shrink();
+    }
+
+    final billsList = state.upcomingBills;
+    if (billsList == null || billsList.bills.isEmpty) {
+      return Container(
+        margin: EdgeInsets.all(16.r),
+        padding: EdgeInsets.all(16.r),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.05),
+          borderRadius: BorderRadius.circular(16.r),
+          border: Border.all(color: Colors.white.withOpacity(0.1)),
+        ),
+        child: Center(
+          child: Text(
+            'No upcoming bills',
+            style: TextStyle(color: Colors.white70, fontSize: 14.sp),
+          ),
+        ),
+      );
+    }
 
     return Container(
       margin: EdgeInsets.all(16.r),
@@ -1178,23 +1491,37 @@ class _StatisticsState extends State<Statistics> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Upcoming Bills',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 18.sp,
-              fontWeight: FontWeight.bold,
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Upcoming Bills',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Text(
+                '\$${billsList.totalUpcoming.toStringAsFixed(2)}',
+                style: TextStyle(
+                  color: Colors.orange[300],
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
           ),
           SizedBox(height: 16.h),
-          ...upcomingBills.map((bill) => _buildBillItem(bill)),
+          ...billsList.bills.map((bill) => _buildBillItem(bill)),
         ],
       ),
     );
   }
 
-  Widget _buildBillItem(Map<String, dynamic> bill) {
-    final daysLeft = bill['dueDate'].difference(DateTime.now()).inDays;
+  Widget _buildBillItem(RecurringBill bill) {
+    final icon = _getBillIcon(bill.category.name);
+    final statusColor = bill.status == 'overdue' ? Colors.red[300] : Colors.orange[300];
 
     return Container(
       margin: EdgeInsets.only(bottom: 12.h),
@@ -1212,7 +1539,7 @@ class _StatisticsState extends State<Statistics> {
               borderRadius: BorderRadius.circular(8.r),
             ),
             child: Icon(
-              bill['icon'],
+              icon,
               color: Colors.white,
               size: 20.r,
             ),
@@ -1223,7 +1550,7 @@ class _StatisticsState extends State<Statistics> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  bill['name'],
+                  bill.name,
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 16.sp,
@@ -1231,9 +1558,13 @@ class _StatisticsState extends State<Statistics> {
                   ),
                 ),
                 Text(
-                  'Due in $daysLeft days',
+                  bill.daysUntilDue > 0
+                      ? 'Due in ${bill.daysUntilDue} days'
+                      : bill.status == 'overdue'
+                          ? 'Overdue'
+                          : 'Due today',
                   style: TextStyle(
-                    color: Colors.white60,
+                    color: statusColor,
                     fontSize: 12.sp,
                   ),
                 ),
@@ -1241,7 +1572,7 @@ class _StatisticsState extends State<Statistics> {
             ),
           ),
           Text(
-            '\$${bill['amount'].toStringAsFixed(2)}',
+            '\$${bill.amount.toStringAsFixed(2)}',
             style: TextStyle(
               color: Colors.white,
               fontSize: 16.sp,
@@ -1253,7 +1584,7 @@ class _StatisticsState extends State<Statistics> {
     );
   }
 
-  Widget _buildFinancialInsights() {
+  Widget _buildFinancialInsights(StatisticsState state) {
     return Container(
       margin: EdgeInsets.all(16.r),
       padding: EdgeInsets.all(16.r),
@@ -1265,33 +1596,259 @@ class _StatisticsState extends State<Statistics> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Financial Insights',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 18.sp,
-              fontWeight: FontWeight.bold,
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'AI Financial Insights',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              if (state is StatisticsLoaded && state.isLoadingAIInsights)
+                SizedBox(
+                  width: 20.w,
+                  height: 20.h,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+                ),
+            ],
           ),
           SizedBox(height: 16.h),
-          _buildInsightCard(
-            icon: Icons.trending_up,
-            title: 'Highest Expense Category',
-            value: 'Shopping - \$1,250.00',
-            color: Colors.orange[300]!,
+
+          // Display AI insights if available
+          if (state is StatisticsLoaded && state.aiSpendingInsights != null) ...{
+            if (state.aiSpendingInsights!.summary.isNotEmpty)
+              Container(
+                padding: EdgeInsets.all(12.r),
+                margin: EdgeInsets.only(bottom: 12.h),
+                decoration: BoxDecoration(
+                  color: Colors.blue.shade700,
+                  borderRadius: BorderRadius.circular(8.r),
+                ),
+                child: Text(
+                  state.aiSpendingInsights!.summary,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 14.sp,
+                  ),
+                ),
+              ),
+
+            ...state.aiSpendingInsights!.insights.take(3).map(
+              (insight) => _buildAIInsightCard(
+                title: insight.title,
+                description: insight.description,
+                impactAmount: insight.impactAmount,
+                insightType: insight.insightType,
+              ),
+            ),
+          } else ...{
+            // Show default insights if no AI data
+            _buildInsightCard(
+              icon: Icons.trending_up,
+              title: 'AI Insights Loading',
+              value: 'Analyzing your spending patterns...',
+              color: Colors.grey[400]!,
+            ),
+          },
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAIInsightCard({
+    required String title,
+    required String description,
+    required double impactAmount,
+    required String insightType,
+  }) {
+    IconData icon;
+    Color color;
+
+    switch (insightType.toLowerCase()) {
+      case 'positive':
+        icon = Icons.trending_up;
+        color = Colors.green[300]!;
+        break;
+      case 'warning':
+        icon = Icons.warning_amber;
+        color = Colors.orange[300]!;
+        break;
+      default:
+        icon = Icons.info_outline;
+        color = Colors.blue[300]!;
+    }
+
+    return Container(
+      margin: EdgeInsets.only(bottom: 12.h),
+      padding: EdgeInsets.all(12.r),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(12.r),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: EdgeInsets.all(8.r),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(8.r),
+            ),
+            child: Icon(
+              icon,
+              color: color,
+              size: 20.r,
+            ),
           ),
-          _buildInsightCard(
-            icon: Icons.savings,
-            title: 'Monthly Savings Rate',
-            value: '28% of Income',
-            color: Colors.green[300]!,
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                SizedBox(height: 4.h),
+                Text(
+                  description,
+                  style: TextStyle(
+                    color: Colors.white60,
+                    fontSize: 12.sp,
+                  ),
+                ),
+                if (impactAmount > 0) ...{
+                  SizedBox(height: 4.h),
+                  Text(
+                    'Impact: \$${impactAmount.toStringAsFixed(2)}',
+                    style: TextStyle(
+                      color: color,
+                      fontSize: 12.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                },
+              ],
+            ),
           ),
-          _buildInsightCard(
-            icon: Icons.compare_arrows,
-            title: 'Income vs Expense Ratio',
-            value: '1.65x',
-            color: Colors.blue[300]!,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAIAssistantPanel(StatisticsState state) {
+    return Container(
+      padding: EdgeInsets.all(16.r),
+      decoration: BoxDecoration(
+        color: AppColors.backgroundColor,
+        borderRadius: BorderRadius.circular(16.r),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 10,
+            offset: Offset(0, 5),
           ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'AI Suggestions',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              IconButton(
+                onPressed: () {
+                  setState(() => showAIAssistant = false);
+                },
+                icon: Icon(
+                  Icons.close,
+                  color: Colors.white.withOpacity(0.7),
+                  size: 20.r,
+                ),
+              ),
+            ],
+          ),
+
+          // Show AI advice if available
+          if (state is StatisticsLoaded && state.aiFinancialAdvice != null) ...{
+            SizedBox(height: 12.h),
+            Container(
+              padding: EdgeInsets.all(12.r),
+              decoration: BoxDecoration(
+                color: Colors.teal.shade700,
+                borderRadius: BorderRadius.circular(8.r),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 16.r,
+                        backgroundColor: Colors.teal.shade900,
+                        child: Icon(Icons.smart_toy, size: 18.r, color: Colors.white),
+                      ),
+                      SizedBox(width: 8.w),
+                      Text(
+                        'AI Advisor',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 12.h),
+                  Text(
+                    state.aiFinancialAdvice!.advice,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 13.sp,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          } else if (state is StatisticsLoaded && state.isLoadingAIAdvice) ...{
+            SizedBox(height: 12.h),
+            Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              ),
+            ),
+          } else ...{
+            SizedBox(height: 12.h),
+            Wrap(
+              spacing: 8.w,
+              runSpacing: 8.h,
+              children: [
+                _buildSuggestionChip('Analyze spending'),
+                _buildSuggestionChip('Budget tips'),
+                _buildSuggestionChip('Savings advice'),
+                _buildSuggestionChip('Investment insights'),
+                _buildSuggestionChip('Expense breakdown'),
+              ],
+            ),
+          },
         ],
       ),
     );
@@ -1352,14 +1909,16 @@ class _StatisticsState extends State<Statistics> {
     );
   }
 
-  List<PieChartSectionData> _generateIncomeSections() {
-    final total = incomeCategories.values.reduce((a, b) => a + b);
-    return incomeCategories.entries.map((entry) {
-      final index = incomeCategories.keys.toList().indexOf(entry.key);
-      final percentage = (entry.value / total * 100).roundToDouble();
+  List<PieChartSectionData> _generateIncomeSections(IncomeBreakdown breakdown) {
+    if (breakdown.totalIncome == 0) return [];
+
+    return breakdown.categories.asMap().entries.map((entry) {
+      final index = entry.key;
+      final category = entry.value;
+      final percentage = (category.amount / breakdown.totalIncome * 100).roundToDouble();
       return PieChartSectionData(
         color: categoryColors[index % categoryColors.length],
-        value: entry.value,
+        value: category.amount,
         title: '$percentage%',
         radius: 50,
         titleStyle: TextStyle(
@@ -1652,7 +2211,30 @@ class _StatisticsState extends State<Statistics> {
   }
 
   // Add new financial management sections
-  Widget _buildInvestmentPortfolio() {
+  Widget _buildInvestmentPortfolio(StatisticsState state) {
+    if (state is! StatisticsLoaded) {
+      return SizedBox.shrink();
+    }
+
+    final portfolio = state.investmentPortfolio;
+    if (portfolio == null || portfolio.investments.isEmpty) {
+      return Container(
+        margin: EdgeInsets.all(16.r),
+        padding: EdgeInsets.all(16.r),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.05),
+          borderRadius: BorderRadius.circular(16.r),
+          border: Border.all(color: Colors.white.withOpacity(0.1)),
+        ),
+        child: Center(
+          child: Text(
+            'No investments tracked',
+            style: TextStyle(color: Colors.white70, fontSize: 14.sp),
+          ),
+        ),
+      );
+    }
+
     return Container(
       margin: EdgeInsets.all(16.r),
       padding: EdgeInsets.all(16.r),
@@ -1675,46 +2257,40 @@ class _StatisticsState extends State<Statistics> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              TextButton(
-                onPressed: () {},
-                child: Text(
-                  'View Details',
-                  style: TextStyle(
-                    color: AppColors.backgroundColor,
-                    fontSize: 14.sp,
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    '\$${portfolio.totalValue.toStringAsFixed(2)}',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                ),
+                  Text(
+                    '${portfolio.totalGainLossPercentage >= 0 ? "+" : ""}${portfolio.totalGainLossPercentage.toStringAsFixed(2)}%',
+                    style: TextStyle(
+                      color: portfolio.totalGainLossPercentage >= 0
+                          ? Colors.green[300]
+                          : Colors.red[300],
+                      fontSize: 12.sp,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
           SizedBox(height: 16.h),
-          _buildInvestmentItem(
-            'Stocks',
-            8500.00,
-            0.12,
-            Icons.show_chart,
-          ),
-          _buildInvestmentItem(
-            'Crypto',
-            3200.00,
-            -0.05,
-            Icons.currency_bitcoin,
-          ),
-          _buildInvestmentItem(
-            'Mutual Funds',
-            5300.00,
-            0.08,
-            Icons.account_balance,
-          ),
+          ...portfolio.investments.map((investmentType) => _buildInvestmentTypeItem(investmentType)),
         ],
       ),
     );
   }
 
-  Widget _buildInvestmentItem(
-      String type, double amount, double change, IconData icon) {
-    final isPositive = change >= 0;
-    final percentageChange = (change * 100).abs().toStringAsFixed(1);
+  Widget _buildInvestmentTypeItem(InvestmentTypeData investmentType) {
+    final isPositive = investmentType.gainLossPercentage >= 0;
+    final icon = _getInvestmentIcon(investmentType.investmentType.name);
 
     return Container(
       margin: EdgeInsets.only(bottom: 12.h),
@@ -1739,7 +2315,7 @@ class _StatisticsState extends State<Statistics> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  type,
+                  investmentType.investmentType.name,
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 16.sp,
@@ -1747,7 +2323,7 @@ class _StatisticsState extends State<Statistics> {
                   ),
                 ),
                 Text(
-                  '\$${amount.toStringAsFixed(2)}',
+                  '\$${investmentType.currentValue.toStringAsFixed(2)}',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 14.sp,
@@ -1765,7 +2341,7 @@ class _StatisticsState extends State<Statistics> {
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: Text(
-              '${isPositive ? '+' : '-'}$percentageChange%',
+              '${isPositive ? '+' : ''}${investmentType.gainLossPercentage.toStringAsFixed(2)}%',
               style: TextStyle(
                 color: (isPositive ? Colors.green : Colors.red)[300],
                 fontSize: 12.sp,
@@ -1778,7 +2354,30 @@ class _StatisticsState extends State<Statistics> {
     );
   }
 
-  Widget _buildFinancialGoals() {
+  Widget _buildFinancialGoals(StatisticsState state) {
+    if (state is! StatisticsLoaded) {
+      return SizedBox.shrink();
+    }
+
+    final goals = state.financialGoals;
+    if (goals.isEmpty) {
+      return Container(
+        margin: EdgeInsets.all(16.r),
+        padding: EdgeInsets.all(16.r),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.05),
+          borderRadius: BorderRadius.circular(16.r),
+          border: Border.all(color: Colors.white.withOpacity(0.1)),
+        ),
+        child: Center(
+          child: Text(
+            'No financial goals set',
+            style: TextStyle(color: Colors.white70, fontSize: 14.sp),
+          ),
+        ),
+      );
+    }
+
     return Container(
       margin: EdgeInsets.all(16.r),
       padding: EdgeInsets.all(16.r),
@@ -1799,36 +2398,15 @@ class _StatisticsState extends State<Statistics> {
             ),
           ),
           SizedBox(height: 16.h),
-          _buildGoalItem(
-            'Emergency Fund',
-            15000,
-            20000,
-            Icons.health_and_safety,
-            Colors.blue[300]!,
-          ),
-          _buildGoalItem(
-            'New Car',
-            12000,
-            35000,
-            Icons.directions_car,
-            Colors.green[300]!,
-          ),
-          _buildGoalItem(
-            'Vacation',
-            2500,
-            5000,
-            Icons.beach_access,
-            Colors.orange[300]!,
-          ),
+          ...goals.map((goal) => _buildGoalItem(goal)),
         ],
       ),
     );
   }
 
-  Widget _buildGoalItem(String name, int currentAmount, int targetAmount,
-      IconData icon, Color color) {
-    final percentage = (currentAmount / targetAmount * 100).roundToDouble();
-    final isPositive = currentAmount <= targetAmount;
+  Widget _buildGoalItem(FinancialGoal goal) {
+    final icon = _getGoalIcon(goal.goalType.name);
+    final color = _getGoalColor(goal.goalType.name);
 
     return Container(
       margin: EdgeInsets.only(bottom: 12.h),
@@ -1853,7 +2431,7 @@ class _StatisticsState extends State<Statistics> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  name,
+                  goal.name,
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 16.sp,
@@ -1861,7 +2439,7 @@ class _StatisticsState extends State<Statistics> {
                   ),
                 ),
                 Text(
-                  '${currentAmount.toString()} / ${targetAmount.toString()}',
+                  '\$${goal.currentAmount.toStringAsFixed(0)} / \$${goal.targetAmount.toStringAsFixed(0)}',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 14.sp,
@@ -1874,14 +2452,13 @@ class _StatisticsState extends State<Statistics> {
           Container(
             padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
             decoration: BoxDecoration(
-              color: (isPositive ? Colors.green : Colors.red)[300]!
-                  .withOpacity(0.2),
+              color: Colors.green[300]!.withOpacity(0.2),
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: Text(
-              '${isPositive ? '+' : '-'}$percentage%',
+              '${goal.percentageComplete.toStringAsFixed(0)}%',
               style: TextStyle(
-                color: (isPositive ? Colors.green : Colors.red)[300],
+                color: Colors.green[300],
                 fontSize: 12.sp,
                 fontWeight: FontWeight.w600,
               ),
@@ -1890,6 +2467,52 @@ class _StatisticsState extends State<Statistics> {
         ],
       ),
     );
+  }
+
+  IconData _getGoalIcon(String goalType) {
+    switch (goalType.toLowerCase()) {
+      case 'emergency_fund':
+        return Icons.health_and_safety;
+      case 'retirement':
+        return Icons.savings;
+      case 'education':
+        return Icons.school;
+      case 'home_purchase':
+        return Icons.home;
+      case 'vacation':
+        return Icons.beach_access;
+      case 'vehicle':
+        return Icons.directions_car;
+      case 'wedding':
+        return Icons.favorite;
+      case 'debt_payoff':
+        return Icons.money_off;
+      default:
+        return Icons.flag;
+    }
+  }
+
+  Color _getGoalColor(String goalType) {
+    switch (goalType.toLowerCase()) {
+      case 'emergency_fund':
+        return Colors.blue[300]!;
+      case 'retirement':
+        return Colors.purple[300]!;
+      case 'education':
+        return Colors.amber[300]!;
+      case 'home_purchase':
+        return Colors.green[300]!;
+      case 'vacation':
+        return Colors.orange[300]!;
+      case 'vehicle':
+        return Colors.cyan[300]!;
+      case 'wedding':
+        return Colors.pink[300]!;
+      case 'debt_payoff':
+        return Colors.red[300]!;
+      default:
+        return Colors.grey[300]!;
+    }
   }
 
   // Add these methods for AI functionality
@@ -1902,7 +2525,22 @@ class _StatisticsState extends State<Statistics> {
   */
 
   void _handleAIQuery(String query) {
-    // Implement AI query handling
-    // You can integrate with your LLM service here
+    if (query.trim().isEmpty) return;
+
+    // Determine context areas based on query keywords
+    List<String> contextAreas = ['spending', 'budgeting', 'savings'];
+
+    if (query.toLowerCase().contains('invest') || query.toLowerCase().contains('stock')) {
+      contextAreas.add('investing');
+    }
+    if (query.toLowerCase().contains('debt') || query.toLowerCase().contains('loan')) {
+      contextAreas.add('debt');
+    }
+
+    // Call the cubit to get AI financial advice from backend
+    context.read<StatisticsCubit>().getAIFinancialAdvice(
+      query: query,
+      contextAreas: contextAreas,
+    );
   }
 }

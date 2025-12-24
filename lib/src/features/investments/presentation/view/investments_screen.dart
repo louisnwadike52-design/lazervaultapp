@@ -157,12 +157,7 @@ class _InvestmentsScreenState extends State<InvestmentsScreen>
           padding: EdgeInsets.all(8.w),
           decoration: BoxDecoration(
             color: const Color(0xFF1E2746),
-            borderRadius: BorderRadius.circular(12.r),
-            border: Border.all(
-              color: Colors.white.withOpacity(0.1),
-              width: 1,
-            ),
-            boxShadow: [
+            borderRadius: BorderRadius.circular(12.r),            boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.3),
                 blurRadius: 8,
@@ -276,10 +271,14 @@ class _InvestmentsScreenState extends State<InvestmentsScreen>
         decoration: BoxDecoration(
           color: Colors.white.withOpacity(0.15),
           borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(
-            color: Colors.white.withOpacity(0.2),
-            width: 1,
+          boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
           ),
+        ],
+        
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -488,12 +487,7 @@ class _InvestmentsScreenState extends State<InvestmentsScreen>
         padding: EdgeInsets.all(20.w),
         decoration: BoxDecoration(
           color: const Color(0xFF1E2746),
-          borderRadius: BorderRadius.circular(16.r),
-          border: Border.all(
-            color: Colors.white.withOpacity(0.1),
-            width: 1,
-          ),
-          boxShadow: [
+          borderRadius: BorderRadius.circular(16.r),          boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.2),
               blurRadius: 8,
@@ -638,10 +632,14 @@ class _InvestmentsScreenState extends State<InvestmentsScreen>
             decoration: BoxDecoration(
               color: const Color(0xFF1E2746),
               borderRadius: BorderRadius.circular(16.r),
-              border: Border.all(
-                color: Colors.white.withOpacity(0.1),
-                width: 1,
-              ),
+              boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,

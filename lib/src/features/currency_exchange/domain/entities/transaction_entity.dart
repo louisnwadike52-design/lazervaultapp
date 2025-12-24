@@ -134,6 +134,13 @@ class CurrencyTransaction {
   String get formattedFees => '${fees.toStringAsFixed(2)} $fromCurrency';
   String get formattedTotalCost => '${totalCost.toStringAsFixed(2)} $fromCurrency';
 
+  // Convenience getters for UI
+  String get transactionId => id;
+  DateTime get timestamp => createdAt;
+  String get recipientName => recipient.name;
+  double get fee => fees;
+  String get statusString => status.toString().split('.').last.toUpperCase();
+
   bool get isCompleted => status == TransactionStatus.completed;
   bool get isPending => status == TransactionStatus.pending;
   bool get isFailed => status == TransactionStatus.failed;

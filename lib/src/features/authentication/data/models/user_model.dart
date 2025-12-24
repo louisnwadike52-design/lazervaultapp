@@ -19,13 +19,18 @@ class UserModel extends User {
     required super.id,
     required super.firstName,
     required super.lastName,
-      required super.email,
+    required super.email,
     super.phoneNumber,
+    super.username,
     super.role,
     required super.verified,
     required super.isEmailVerified,
     required super.createdAt,
     required super.updatedAt,
+    super.language,
+    super.currency,
+    super.country,
+    super.profilePicture,
   });
 
   static final UserModel empty =
@@ -35,6 +40,7 @@ class UserModel extends User {
             lastName: '_empty.lastName',
             email: '_empty.email',
             phoneNumber: '_empty.phoneNumber',
+            username: '_empty.username',
             role: '_empty.role',
             verified: false,
             isEmailVerified: false,
@@ -51,11 +57,16 @@ class UserModel extends User {
       lastName: protoUser.lastName,
       email: protoUser.email,
       phoneNumber: protoUser.hasPhoneNumber() ? protoUser.phoneNumber : null,
+      username: protoUser.username.isNotEmpty ? protoUser.username : null,
       role: protoUser.hasRole() ? protoUser.role : null,
       verified: protoUser.verified,
       isEmailVerified: protoUser.isEmailVerified,
       createdAt: _timestampToDateTime(protoUser.createdAt),
       updatedAt: _timestampToDateTime(protoUser.updatedAt),
+      language: protoUser.hasLanguage() && protoUser.language.isNotEmpty ? protoUser.language : null,
+      currency: protoUser.hasCurrency() && protoUser.currency.isNotEmpty ? protoUser.currency : null,
+      country: protoUser.hasCountry() && protoUser.country.isNotEmpty ? protoUser.country : null,
+      profilePicture: protoUser.hasProfilePicture() && protoUser.profilePicture.isNotEmpty ? protoUser.profilePicture : null,
     );
   }
 
@@ -64,6 +75,7 @@ class UserModel extends User {
     String? lastName,
     String? email,
     String? phoneNumber,
+    String? username,
     String? role,
     bool? verified,
     bool? isEmailVerified,
@@ -76,6 +88,7 @@ class UserModel extends User {
         lastName: lastName ?? this.lastName,
         email: email ?? this.email,
         phoneNumber: phoneNumber ?? this.phoneNumber,
+        username: username ?? this.username,
         role: role ?? this.role,
         verified: verified ?? this.verified,
         isEmailVerified: isEmailVerified ?? this.isEmailVerified,
@@ -90,6 +103,7 @@ class UserModel extends User {
           lastName: map['lastName'] as String,
           email: map['email'] as String,
           phoneNumber: map['phoneNumber'] as String?,
+          username: map['username'] as String?,
           role: map['role'] as String?,
           verified: map['verified'] as bool,
           isEmailVerified: map['isEmailVerified'] as bool,
@@ -97,7 +111,7 @@ class UserModel extends User {
           updatedAt: map['updatedAt'] as DateTime);
 
   DataMap toMap() =>
-      {"id": id, "firstName": firstName, "lastName": lastName, "email": email, "phoneNumber": phoneNumber, "role": role, "verified": verified, "isEmailVerified": isEmailVerified, "createdAt": createdAt, "updatedAt": updatedAt};
+      {"id": id, "firstName": firstName, "lastName": lastName, "email": email, "phoneNumber": phoneNumber, "username": username, "role": role, "verified": verified, "isEmailVerified": isEmailVerified, "createdAt": createdAt, "updatedAt": updatedAt};
 
   String toJson() => jsonEncode(toMap());
 }

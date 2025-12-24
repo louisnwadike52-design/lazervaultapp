@@ -165,10 +165,14 @@ class _SavedRecipientsScreenState extends State<SavedRecipientsScreen> {
       decoration: BoxDecoration(
         color: isSelected ? Colors.blue.withOpacity(0.1) : Colors.grey[900],
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-          color: isSelected ? Colors.blue : Colors.white.withOpacity(0.1),
-          width: 1,
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
       ),
       child: Material(
         color: Colors.transparent,
@@ -273,10 +277,14 @@ class _SavedRecipientsScreenState extends State<SavedRecipientsScreen> {
       decoration: BoxDecoration(
         color: Colors.grey[900],
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.1),
-          width: 1,
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
       ),
       child: Material(
         color: Colors.transparent,

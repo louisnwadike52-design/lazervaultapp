@@ -76,12 +76,7 @@ class _RecipientsState extends State<Recipients> {
                       height: 48.w,
                       decoration: BoxDecoration(
                         color: Colors.grey[300],
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: Colors.grey[100]!,
-                          width: 2,
-                        ),
-                      ),
+                        shape: BoxShape.circle,                      ),
                       child: Center(
                         child: Text(
                           recipient.name.substring(0, 2).toUpperCase(),

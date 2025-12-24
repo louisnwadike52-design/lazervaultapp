@@ -5,6 +5,8 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/core/models/device_contact.dart';
+import 'package:lazervault/core/services/contact_service.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_cubit.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_state.dart';
 import 'package:lazervault/src/features/recipients/data/models/recipient_model.dart';
@@ -29,23 +31,6 @@ class LazertagUser {
     this.avatar,
     this.isOnline = false,
     this.isVerified = false,
-  });
-}
-
-// Model for device contacts
-class DeviceContact {
-  final String id;
-  final String name;
-  final String? phoneNumber;
-  final String? email;
-  final String initials;
-
-  const DeviceContact({
-    required this.id,
-    required this.name,
-    this.phoneNumber,
-    this.email,
-    required this.initials,
   });
 }
 
@@ -215,49 +200,133 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
     setState(() => _isLoadingContacts = true);
 
     try {
-      final permission = await Permission.contacts.request();
-      
-      if (permission.isGranted) {
-        // TODO: Load actual contacts when contacts_service is working
-        // final contacts = await ContactsService.getContacts();
-        _loadMockContacts();
-      } else {
-        // Use mock data when permission is denied
-        _loadMockContacts();
+      final contactService = ContactService();
+
+      // Check permission first
+      final hasPermission = await contactService.hasPermission();
+
+      if (!hasPermission) {
+        // Request permission
+        final granted = await contactService.requestPermission();
+
+        if (!granted) {
+          // Permission denied - show empty state
+          setState(() {
+            _deviceContacts = [];
+            _isLoadingContacts = false;
+          });
+
+          // Show permission rationale
+          if (mounted) {
+            _showPermissionDeniedDialog();
+          }
+          return;
+        }
       }
+
+      // Load contacts from device
+      final contacts = await contactService.getContactsWithPhone();
+
+      setState(() {
+        _deviceContacts = contacts;
+        _isLoadingContacts = false;
+      });
+
     } catch (e) {
-      _loadMockContacts();
+      // Handle error - show empty state
+      setState(() {
+        _deviceContacts = [];
+        _isLoadingContacts = false;
+      });
+
+      // Show error message
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Failed to load contacts: ${e.toString()}',
+              style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+            ),
+            backgroundColor: Colors.red[600],
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12.r),
+            ),
+          ),
+        );
+      }
     }
   }
 
-  void _loadMockContacts() {
-    final mockContacts = [
-      DeviceContact(
-        id: 'c1',
-        name: 'John Smith',
-        phoneNumber: '+44 7700 900123',
-        email: 'john@example.com',
-        initials: 'JS',
+  void _showPermissionDeniedDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF1A1A3E),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
+        title: Row(
+          children: [
+            Container(
+              padding: EdgeInsets.all(12.w),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Colors.orange[600]!, Colors.orange[400]!],
+                ),
+                borderRadius: BorderRadius.circular(12.r),
+              ),
+              child: Icon(Icons.contacts, color: Colors.white, size: 24.sp),
+            ),
+            SizedBox(width: 16.w),
+            Expanded(
+              child: Text(
+                'Contacts Permission',
+                style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          'LazerVault needs access to your contacts to help you quickly send money to friends and family. You can grant permission in Settings.',
+          style: GoogleFonts.inter(
+            color: Colors.grey[300],
+            fontSize: 14.sp,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'Cancel',
+              style: GoogleFonts.inter(
+                color: Colors.grey[400],
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              await ContactService().openSettings();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.orange[600],
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12.r),
+              ),
+            ),
+            child: Text(
+              'Open Settings',
+              style: GoogleFonts.inter(fontWeight: FontWeight.w700),
+            ),
+          ),
+        ],
       ),
-      DeviceContact(
-        id: 'c2',
-        name: 'Emma Wilson',
-        phoneNumber: '+44 7700 900124',
-        email: 'emma@example.com',
-        initials: 'EW',
-      ),
-      DeviceContact(
-        id: 'c3',
-        name: 'David Brown',
-        phoneNumber: '+44 7700 900125',
-        initials: 'DB',
-      ),
-    ];
-
-    setState(() {
-      _deviceContacts = mockContacts;
-      _isLoadingContacts = false;
-    });
+    );
   }
 
   List<RecipientModel> _filterRecipients(List<RecipientModel> recipients) {
@@ -383,7 +452,13 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
       ),
       child: TextField(
         controller: _searchController,
@@ -817,9 +892,14 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
       ),
       child: ListTile(
         contentPadding: EdgeInsets.symmetric(
@@ -903,9 +983,14 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
       ),
       child: ListTile(
         contentPadding: EdgeInsets.symmetric(
@@ -1032,9 +1117,14 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
       ),
       child: ListTile(
         contentPadding: EdgeInsets.symmetric(

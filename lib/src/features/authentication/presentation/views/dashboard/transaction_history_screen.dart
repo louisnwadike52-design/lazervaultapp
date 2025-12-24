@@ -41,9 +41,14 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                             padding: EdgeInsets.all(8.0.w),
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(10),
-                              border: Border.all(
-                                color: Colors.white,
-                              ),
+                              boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
                             ),
                             child: GestureDetector(
                               onTap: () {
@@ -64,9 +69,14 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                             padding: EdgeInsets.all(8.0.w),
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(10),
-                              border: Border.all(
-                                color: Colors.white,
-                              ),
+                              boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
                             ),
                             child: Icon(Icons.more_vert,
                                 color: Colors.white, size: 18),

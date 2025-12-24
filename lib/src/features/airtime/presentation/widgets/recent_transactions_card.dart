@@ -18,12 +18,7 @@ class RecentTransactionsCard extends StatelessWidget {
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.1),
-          width: 1,
-        ),
-        boxShadow: [
+        borderRadius: BorderRadius.circular(20.r),        boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.1),
             blurRadius: 20,
@@ -53,7 +48,7 @@ class RecentTransactionsCard extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w500,
-                    color: Color(0xFF6366F1),
+                    color: Color(0xFF3B82F6),
                   ),
                 ),
               ),
@@ -100,10 +95,14 @@ class RecentTransactionsCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white.withOpacity(0.03),
           borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(
-            color: Colors.white.withOpacity(0.08),
-            width: 1,
+          boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
           ),
+        ],
+        
         ),
         child: Row(
           children: [
@@ -277,7 +276,7 @@ class RecentTransactionsCard extends StatelessWidget {
       case NetworkProviderType.ninemobile:
         return Color(0xFF00AA4F);
       default:
-        return Color(0xFF6366F1); // Default blue color
+        return Color(0xFF3B82F6); // Default blue color
     }
   }
 

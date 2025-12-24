@@ -440,10 +440,14 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
               decoration: BoxDecoration(
                 color: Colors.black.withValues(alpha: 0.7),
                 borderRadius: BorderRadius.circular(8.r),
-                border: Border.all(
-                  color: widget.crypto.priceChangePercentage24h >= 0 ? Colors.green : Colors.red,
-                  width: 1,
-                ),
+                boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
@@ -510,7 +514,7 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
       case 'matic':
         return const Color(0xFF8247E5);
       default:
-        return const Color(0xFF6366F1);
+        return const Color(0xFF3B82F6);
     }
   }
 

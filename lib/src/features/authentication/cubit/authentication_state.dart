@@ -160,6 +160,7 @@ class SignUpInProgress extends AuthenticationState {
     this.confirmPassword = '',
     this.firstName = '',
     this.lastName = '',
+    this.username = '',
     this.selectedDate,
     this.phoneNumber = '',
     this.isLoading = false,
@@ -172,6 +173,7 @@ class SignUpInProgress extends AuthenticationState {
   final String confirmPassword;
   final String firstName;
   final String lastName;
+  final String username;
   final DateTime? selectedDate;
   final String phoneNumber;
   final bool isLoading;
@@ -184,6 +186,7 @@ class SignUpInProgress extends AuthenticationState {
     String? confirmPassword,
     String? firstName,
     String? lastName,
+    String? username,
     DateTime? selectedDate,
     String? phoneNumber,
     bool? isLoading,
@@ -197,6 +200,7 @@ class SignUpInProgress extends AuthenticationState {
       confirmPassword: confirmPassword ?? this.confirmPassword,
       firstName: firstName ?? this.firstName,
       lastName: lastName ?? this.lastName,
+      username: username ?? this.username,
       selectedDate: selectedDate ?? this.selectedDate,
       phoneNumber: phoneNumber ?? this.phoneNumber,
       isLoading: isLoading ?? this.isLoading,
@@ -212,6 +216,7 @@ class SignUpInProgress extends AuthenticationState {
         confirmPassword,
         firstName,
         lastName,
+        username,
         selectedDate,
         phoneNumber,
         isLoading,
@@ -308,4 +313,62 @@ class AuthenticationFailure extends AuthenticationState {
 
   @override
   List<Object?> get props => [message, statusCode];
+}
+
+// Password Recovery Verification States
+class PasswordRecoveryVerificationInProgress extends AuthenticationState {
+  const PasswordRecoveryVerificationInProgress();
+}
+
+class PasswordRecoveryCodeVerified extends AuthenticationState {
+  final String resetToken;
+
+  const PasswordRecoveryCodeVerified(this.resetToken);
+
+  @override
+  List<Object?> get props => [resetToken];
+}
+
+class PasswordRecoveryResendInProgress extends AuthenticationState {
+  const PasswordRecoveryResendInProgress();
+}
+
+class PasswordRecoveryResendSuccess extends AuthenticationState {
+  final String message;
+
+  const PasswordRecoveryResendSuccess(this.message);
+
+  @override
+  List<Object?> get props => [message];
+}
+
+// Facial Recognition States
+class FacialRecognitionLoginInProgress extends AuthenticationState {
+  const FacialRecognitionLoginInProgress();
+}
+
+class FacialRecognitionLoginSuccess extends AuthenticationState {
+  final ProfileEntity profile;
+
+  const FacialRecognitionLoginSuccess(this.profile);
+
+  @override
+  List<Object?> get props => [profile];
+}
+
+class FacialRecognitionCheckInProgress extends AuthenticationState {
+  const FacialRecognitionCheckInProgress();
+}
+
+class FacialRecognitionEnabled extends AuthenticationState {
+  final bool isEnabled;
+  final String? registeredAt;
+
+  const FacialRecognitionEnabled({
+    required this.isEnabled,
+    this.registeredAt,
+  });
+
+  @override
+  List<Object?> get props => [isEnabled, registeredAt];
 }

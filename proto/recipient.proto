@@ -3,9 +3,9 @@ syntax = "proto3";
 package pb;
 
 import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
 import "google/api/annotations.proto";
 import "protoc-gen-openapiv2/options/annotations.proto";
-import "google/protobuf/wrappers.proto";
 
 option go_package = "lazervaultGo/pb";
 
@@ -37,6 +37,11 @@ message Recipient {
   string sort_code = 8;
   string bank_name = 9;
   string country_code = 10; // e.g., "GB", "US"
+  string email = 13; // Recipient email address
+  string phone_number = 14; // Recipient phone number
+  string currency = 15; // Currency for this recipient (e.g., "USD", "GBP")
+  string swift_code = 16; // SWIFT/BIC code for international transfers
+  string iban = 17; // IBAN for European transfers
 
   google.protobuf.Timestamp created_at = 11;
   google.protobuf.Timestamp updated_at = 12;
@@ -55,6 +60,11 @@ message CreateRecipientRequest {
   optional string bank_name = 6;
   optional string sort_code = 7;
   optional string country_code = 8;
+  optional string email = 9;
+  optional string phone_number = 10;
+  optional string currency = 11;
+  optional string swift_code = 12;
+  optional string iban = 13;
 }
 
 message CreateRecipientResponse {
@@ -64,8 +74,9 @@ message CreateRecipientResponse {
 // --- List Recipients ---
 
 message ListRecipientsRequest {
-  // Future filtering/pagination options can go here
-  // User ID is derived from the authentication context on the server
+  optional string country_code = 1; // Filter by country code (e.g., "GB", "US")
+  optional string currency = 2; // Filter by currency (e.g., "USD", "GBP")
+  optional bool favorites_only = 3; // Only return favorite recipients
 }
 
 message ListRecipientsResponse {
@@ -128,6 +139,18 @@ message GetSimilarRecipientsByNameResponse {
   repeated FoundRecipientResult found_recipients = 1; // Changed from similar_users and type updated
 }
 
+// --- Search Recipients by Account Details ---
+
+message SearchRecipientsByAccountRequest {
+  string account_number = 1;        // Required - account number to search for
+  optional string sort_code = 2;    // Optional - sort code or routing number
+  optional string bank_name = 3;    // Optional - bank name (case-insensitive)
+}
+
+message SearchRecipientsByAccountResponse {
+  repeated Recipient recipients = 1; // Full recipient details for matches
+}
+
 // Service definition for managing recipients
 service RecipientService {
   // Creates a new recipient for the authenticated user.
@@ -177,6 +200,20 @@ service RecipientService {
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       summary: "Search saved recipients by name"
       description: "Searches existing saved recipients by their name. Returns a list of matching recipients with their ID and name."
+      tags: ["Recipients"]
+    };
+  }
+
+  // Searches for saved recipients by account details.
+  rpc SearchRecipientsByAccount(SearchRecipientsByAccountRequest) returns (SearchRecipientsByAccountResponse) {
+    option (google.api.http) = {
+      get: "/v1/recipients/search-by-account"
+      // Query parameters: account_number (required), sort_code (optional), bank_name (optional)
+      // e.g. /v1/recipients/search-by-account?account_number=12345678&sort_code=12-34-56&bank_name=lloyds
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Search saved recipients by account details"
+      description: "Searches existing saved recipients by their account details. Returns a list of matching recipients with full details."
       tags: ["Recipients"]
     };
   }

@@ -266,11 +266,7 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.1),
-        ),
-        boxShadow: [
+        borderRadius: BorderRadius.circular(20.r),        boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.1),
             blurRadius: 10,
@@ -307,11 +303,14 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
               decoration: BoxDecoration(
                 color: const Color(0xFF0A0E27),
                 borderRadius: BorderRadius.circular(12.r),
-                border: Border.all(
-                  color: _selectedHolding != null 
-                    ? Colors.red.withOpacity(0.5)
-                    : Colors.white.withOpacity(0.1),
-                ),
+                boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
               ),
               child: Row(
                 children: [
@@ -435,11 +434,7 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.1),
-        ),
-        boxShadow: [
+        borderRadius: BorderRadius.circular(20.r),        boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.1),
             blurRadius: 10,
@@ -484,9 +479,14 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
                         ],
                       ),
                       borderRadius: BorderRadius.circular(20.r),
-                      border: Border.all(
-                        color: Colors.red.withOpacity(0.5),
-                      ),
+                      boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -517,11 +517,14 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
             decoration: BoxDecoration(
               color: const Color(0xFF0A0E27),
               borderRadius: BorderRadius.circular(12.r),
-              border: Border.all(
-                color: _amountController.text.isNotEmpty 
-                  ? Colors.red.withOpacity(0.5)
-                  : Colors.white.withOpacity(0.1),
-              ),
+              boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -632,9 +635,14 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
               ],
             ),
             borderRadius: BorderRadius.circular(8.r),
-            border: Border.all(
-              color: Colors.red.withOpacity(0.3),
-            ),
+            boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
           ),
           child: Center(
             child: Text(
@@ -668,11 +676,7 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(
-          color: Colors.red.withOpacity(0.3),
-        ),
-        boxShadow: [
+        borderRadius: BorderRadius.circular(20.r),        boxShadow: [
           BoxShadow(
             color: Colors.red.withOpacity(0.1),
             blurRadius: 10,
@@ -765,11 +769,7 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.1),
-        ),
-        boxShadow: [
+        borderRadius: BorderRadius.circular(20.r),        boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.1),
             blurRadius: 10,
@@ -845,9 +845,14 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
           ],
         ),
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(
-          color: Colors.orange.withOpacity(0.3),
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,

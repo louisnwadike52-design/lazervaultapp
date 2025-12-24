@@ -327,7 +327,13 @@ class _InternationalTransferAmountScreenState extends State<InternationalTransfe
           ],
         ),
         borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         children: [
@@ -432,14 +438,14 @@ class _InternationalTransferAmountScreenState extends State<InternationalTransfe
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(20.r),
-              border: Border.all(
-                color: _isAmountValid 
-                    ? Colors.green.withValues(alpha: 0.5)
-                    : _amountController.text.isNotEmpty && !_isAmountValid
-                        ? Colors.red.withValues(alpha: 0.5)
-                        : Colors.white.withValues(alpha: 0.1),
-                width: 2,
-              ),
+              boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
             ),
             child: Row(
               children: [
@@ -522,9 +528,14 @@ class _InternationalTransferAmountScreenState extends State<InternationalTransfe
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12.r),
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.2),
-                      ),
+                      boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
                     ),
                     child: Text(
                       '${_fromCurrencyData['symbol']}$amount',
@@ -629,7 +640,13 @@ class _InternationalTransferAmountScreenState extends State<InternationalTransfe
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -756,7 +773,13 @@ class _InternationalTransferAmountScreenState extends State<InternationalTransfe
       height: size * 0.7,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(2.r),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(2.r),

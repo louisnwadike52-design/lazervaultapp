@@ -20,6 +20,10 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
       case AppServiceName.invoice:
         Get.toNamed(AppRoutes.invoice);
         break;
+      case AppServiceName.payInvoice:
+        // Both invoice services now go to the consolidated screen
+        Get.toNamed(AppRoutes.invoice);
+        break;
       case AppServiceName.payElectricityBill:
         Get.toNamed(AppRoutes.payElectricityBill);
         break;
@@ -30,16 +34,16 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
         Get.toNamed(AppRoutes.investments);
         break;
       case AppServiceName.exchange:
-        Get.toNamed(AppRoutes.cbCurrencyExchange);
-        break;
-      case AppServiceName.payInvoice:
-        Get.toNamed(AppRoutes.payInvoice);
+        Get.toNamed(AppRoutes.currencyExchange);
         break;
       case AppServiceName.giftCards:
         Get.toNamed(AppRoutes.giftCards);
         break;
       case AppServiceName.aiScanToPay:
         Get.toNamed(AppRoutes.aiScanToPay);
+        break;
+      case AppServiceName.barcodeQuickPay:
+        Get.toNamed(AppRoutes.barcodeQuickPayHome);
         break;
       case AppServiceName.groupAccount:
         Get.toNamed(AppRoutes.groupAccount);
@@ -50,8 +54,14 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
       case AppServiceName.airtime:
         Get.toNamed(AppRoutes.airtime);
         break;
+      case AppServiceName.autoSave:
+        Get.toNamed(AppRoutes.autoSave);
+        break;
       case AppServiceName.batchTransfer:
         Get.toNamed(AppRoutes.batchTransfer);
+        break;
+      case AppServiceName.tagPay:
+        Get.toNamed(AppRoutes.tagPay);
         break;
       case AppServiceName.sendFunds:
       default:
@@ -69,27 +79,22 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
       onTapCancel: () => setState(() => isHovered = false),
       child: AnimatedContainer(
         duration: Duration(milliseconds: 200),
-        padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 4.w),
+        padding: EdgeInsets.symmetric(vertical: 6.h, horizontal: 3.w),
         decoration: BoxDecoration(
           color: isHovered
-              ? Color.fromARGB(255, 78, 3, 208).withOpacity(0.05)
+              ? Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.05)
               : Colors.white,
           borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(
-            color: isHovered
-                ? Color.fromARGB(255, 78, 3, 208).withOpacity(0.2)
-                : Colors.grey[100]!,
-            width: 1.5,
-          ),
-          boxShadow: isHovered
-              ? [
-                  BoxShadow(
-                    color: Color.fromARGB(255, 78, 3, 208).withOpacity(0.1),
-                    blurRadius: 10,
-                    offset: Offset(0, 4),
-                  ),
-                ]
-              : [],
+          boxShadow: [
+            BoxShadow(
+              color: isHovered
+                  ? Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.15)
+                  : Colors.black.withValues(alpha: 0.04),
+              blurRadius: isHovered ? 12 : 6,
+              offset: Offset(0, isHovered ? 6 : 2),
+              spreadRadius: 0,
+            ),
+          ],
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -104,8 +109,8 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    Color.fromARGB(255, 78, 3, 208).withOpacity(0.1),
-                    Color.fromARGB(255, 78, 3, 208).withOpacity(0.05),
+                    Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
+                    Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.05),
                   ],
                 ),
                 shape: BoxShape.circle,
@@ -152,11 +157,14 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
       case AppServiceName.batchTransfer:
         iconData = Icons.batch_prediction;
         break;
+      case AppServiceName.tagPay:
+        iconData = Icons.tag;
+        break;
       case AppServiceName.invoice:
         iconData = Icons.receipt_long;
         break;
       case AppServiceName.payInvoice:
-        iconData = Icons.payment;
+        iconData = Icons.receipt_long; // Same icon as invoice since they're consolidated
         break;
       case AppServiceName.payElectricityBill:
         iconData = Icons.receipt;
@@ -176,6 +184,9 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
       case AppServiceName.aiScanToPay:
         iconData = Icons.qr_code_scanner;
         break;
+      case AppServiceName.barcodeQuickPay:
+        iconData = Icons.qr_code_2;
+        break;
       case AppServiceName.groupAccount:
         iconData = Icons.groups;
         break;
@@ -184,6 +195,9 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
         break;
       case AppServiceName.airtime:
         iconData = Icons.phone_android;
+        break;
+      case AppServiceName.autoSave:
+        iconData = Icons.auto_awesome;
         break;
     }
 
@@ -194,3 +208,4 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
     );
   }
 }
+

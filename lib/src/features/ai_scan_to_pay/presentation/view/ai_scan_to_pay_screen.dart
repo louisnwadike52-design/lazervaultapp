@@ -40,10 +40,14 @@ class _AiScanToPayScreenState extends State<AiScanToPayScreen> {
             decoration: BoxDecoration(
               color: const Color(0xFF1F1F1F),
               shape: BoxShape.circle,
-              border: Border.all(
-                color: const Color(0xFF2D2D2D),
-                width: 1,
-              ),
+              boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
             ),
             child: Icon(
               Icons.arrow_back,
@@ -69,10 +73,14 @@ class _AiScanToPayScreenState extends State<AiScanToPayScreen> {
               decoration: BoxDecoration(
                 color: const Color(0xFF1F1F1F),
                 shape: BoxShape.circle,
-                border: Border.all(
-                  color: const Color(0xFF2D2D2D),
-                  width: 1,
-                ),
+                boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
               ),
               child: Icon(
                 Icons.history,
@@ -466,10 +474,14 @@ class _AiScanToPayScreenState extends State<AiScanToPayScreen> {
             decoration: BoxDecoration(
               color: const Color(0xFF1F1F1F),
               borderRadius: BorderRadius.circular(20.r),
-              border: Border.all(
-                color: const Color(0xFF2D2D2D),
-                width: 1,
-              ),
+              boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -523,10 +535,14 @@ class _AiScanToPayScreenState extends State<AiScanToPayScreen> {
             decoration: BoxDecoration(
               color: const Color(0xFF1F1F1F),
               borderRadius: BorderRadius.circular(20.r),
-              border: Border.all(
-                color: const Color(0xFF2D2D2D),
-                width: 1,
-              ),
+              boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,

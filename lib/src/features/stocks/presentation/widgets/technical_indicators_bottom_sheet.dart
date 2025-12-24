@@ -199,10 +199,14 @@ class _TechnicalIndicatorsBottomSheetState extends State<TechnicalIndicatorsBott
                   height: 24.h,
                   decoration: BoxDecoration(
                     color: isSelected ? Colors.white : Colors.transparent,
-                    border: Border.all(
-                      color: isSelected ? Colors.white : Colors.grey[600]!,
-                      width: 2,
-                    ),
+                    boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
                     borderRadius: BorderRadius.circular(4.r),
                   ),
                   child: isSelected

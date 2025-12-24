@@ -20,12 +20,7 @@ class ScanHistoryCard extends StatelessWidget {
       margin: EdgeInsets.only(bottom: 16.h),
       decoration: BoxDecoration(
         color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-          color: const Color(0xFF2D2D2D),
-          width: 1,
-        ),
-        boxShadow: [
+        borderRadius: BorderRadius.circular(16.r),        boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.1),
             blurRadius: 8,

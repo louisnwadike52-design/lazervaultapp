@@ -32,9 +32,10 @@ class RecipientError extends RecipientState {
 
 class RecipientSuccess extends RecipientState {
   final String message;
+  final RecipientModel? recipient;
 
-  const RecipientSuccess(this.message);
+  const RecipientSuccess(this.message, {this.recipient});
 
   @override
-  List<Object> get props => [message];
+  List<Object> get props => [message, if (recipient != null) recipient!];
 } 

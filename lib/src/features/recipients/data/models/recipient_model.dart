@@ -9,6 +9,12 @@ class RecipientModel {
   final String? profileImageUrl;
   final bool isFavorite;
   final String sortCode;
+  final String? countryCode;
+  final String? email;
+  final String? phoneNumber;
+  final String? currency;
+  final String? swiftCode;
+  final String? iban;
 
   const RecipientModel({
     required this.id,
@@ -18,6 +24,12 @@ class RecipientModel {
     this.profileImageUrl,
     required this.isFavorite,
     required this.sortCode,
+    this.countryCode,
+    this.email,
+    this.phoneNumber,
+    this.currency,
+    this.swiftCode,
+    this.iban,
   });
 
   factory RecipientModel.fromProto(proto.Recipient recipient) {
@@ -28,6 +40,12 @@ class RecipientModel {
       bankName: recipient.bankName,
       isFavorite: recipient.isFavorite,
       sortCode: recipient.sortCode,
+      countryCode: recipient.countryCode.isNotEmpty ? recipient.countryCode : null,
+      email: recipient.email.isNotEmpty ? recipient.email : null,
+      phoneNumber: recipient.phoneNumber.isNotEmpty ? recipient.phoneNumber : null,
+      currency: recipient.currency.isNotEmpty ? recipient.currency : null,
+      swiftCode: recipient.swiftCode.isNotEmpty ? recipient.swiftCode : null,
+      iban: recipient.iban.isNotEmpty ? recipient.iban : null,
     );
   }
 
@@ -38,7 +56,13 @@ class RecipientModel {
       ..accountNumber = accountNumber
       ..bankName = bankName
       ..sortCode = sortCode
-      ..isFavorite = isFavorite;
+      ..isFavorite = isFavorite
+      ..countryCode = countryCode ?? ''
+      ..email = email ?? ''
+      ..phoneNumber = phoneNumber ?? ''
+      ..currency = currency ?? ''
+      ..swiftCode = swiftCode ?? ''
+      ..iban = iban ?? '';
   }
 
   RecipientModel copyWith({
@@ -49,6 +73,12 @@ class RecipientModel {
     String? profileImageUrl,
     bool? isFavorite,
     String? sortCode,
+    String? countryCode,
+    String? email,
+    String? phoneNumber,
+    String? currency,
+    String? swiftCode,
+    String? iban,
   }) {
     return RecipientModel(
       id: id ?? this.id,
@@ -58,6 +88,12 @@ class RecipientModel {
       profileImageUrl: profileImageUrl ?? this.profileImageUrl,
       isFavorite: isFavorite ?? this.isFavorite,
       sortCode: sortCode ?? this.sortCode,
+      countryCode: countryCode ?? this.countryCode,
+      email: email ?? this.email,
+      phoneNumber: phoneNumber ?? this.phoneNumber,
+      currency: currency ?? this.currency,
+      swiftCode: swiftCode ?? this.swiftCode,
+      iban: iban ?? this.iban,
     );
   }
 } 

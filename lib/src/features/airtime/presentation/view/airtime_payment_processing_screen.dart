@@ -118,7 +118,7 @@ class _AirtimePaymentProcessingScreenState extends State<AirtimePaymentProcessin
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Color(0xFF1A1A3E),
+              Color(0xFF1F1F1F),
               Color(0xFF0A0E27),
               Color(0xFF0F0F23),
             ],
@@ -192,11 +192,15 @@ class _AirtimePaymentProcessingScreenState extends State<AirtimePaymentProcessin
                   height: 200.w,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: Color(0xFF6366F1).withOpacity(0.1),
-                    border: Border.all(
-                      color: Color(0xFF6366F1).withOpacity(0.3),
-                      width: 2,
-                    ),
+                    color: Color(0xFF3B82F6).withOpacity(0.1),
+                    boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
                   ),
                 ),
               );
@@ -209,11 +213,15 @@ class _AirtimePaymentProcessingScreenState extends State<AirtimePaymentProcessin
             height: 140.w,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: Color(0xFF6366F1).withOpacity(0.2),
-              border: Border.all(
-                color: Color(0xFF6366F1).withOpacity(0.5),
-                width: 2,
-              ),
+              color: Color(0xFF3B82F6).withOpacity(0.2),
+              boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
             ),
           ),
           
@@ -229,13 +237,13 @@ class _AirtimePaymentProcessingScreenState extends State<AirtimePaymentProcessin
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     gradient: LinearGradient(
-                      colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                      colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6)],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Color(0xFF6366F1).withOpacity(0.4),
+                        color: Color(0xFF3B82F6).withOpacity(0.4),
                         blurRadius: 20,
                         offset: Offset(0, 8),
                       ),
@@ -327,7 +335,7 @@ class _AirtimePaymentProcessingScreenState extends State<AirtimePaymentProcessin
                     height: 4.h,
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                        colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6)],
                       ),
                       borderRadius: BorderRadius.circular(2.r),
                     ),
@@ -367,7 +375,7 @@ class _AirtimePaymentProcessingScreenState extends State<AirtimePaymentProcessin
               height: 8.w,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Color(0xFF6366F1).withOpacity(opacity),
+                color: Color(0xFF3B82F6).withOpacity(opacity),
               ),
             );
           },
@@ -383,10 +391,14 @@ class _AirtimePaymentProcessingScreenState extends State<AirtimePaymentProcessin
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.05),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.1),
-          width: 1,
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
       ),
       child: Column(
         children: [

@@ -176,9 +176,14 @@ class _CryptoReceiptScreenState extends State<CryptoReceiptScreen>
           end: Alignment.bottomCenter,
         ),
         borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(
-          color: Colors.green.withOpacity(0.3),
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
       ),
       child: Column(
         children: [
@@ -223,9 +228,14 @@ class _CryptoReceiptScreenState extends State<CryptoReceiptScreen>
       decoration: BoxDecoration(
         color: const Color(0xFF1E2746),
         borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.1),
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -356,9 +366,14 @@ class _CryptoReceiptScreenState extends State<CryptoReceiptScreen>
       decoration: BoxDecoration(
         color: const Color(0xFF1E2746),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.1),
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -394,9 +409,14 @@ class _CryptoReceiptScreenState extends State<CryptoReceiptScreen>
       decoration: BoxDecoration(
         color: const Color(0xFF1E2746),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-          color: Colors.green.withOpacity(0.3),
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

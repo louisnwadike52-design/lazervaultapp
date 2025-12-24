@@ -591,9 +591,14 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(12.r),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.1),
-            ),
+            boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
           ),
           child: Row(
             children: [
@@ -781,7 +786,13 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
                         decoration: BoxDecoration(
                           color: Colors.white.withValues(alpha: 0.05),
                           borderRadius: BorderRadius.circular(12.r),
-                          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                          boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
                         ),
                         child: Column(
                           children: [
@@ -1247,9 +1258,14 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
       decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.05),
                     borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.1),
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1725,17 +1741,13 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
               ],
             ),
             borderRadius: BorderRadius.circular(20.r),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.15),
-              width: 1,
-            ),
             boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.1),
-                blurRadius: 10,
-                offset: Offset(0, 4),
-              ),
-            ],
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 8,
+            offset: Offset(0, 2),
+          ),
+        ],
           ),
           child: Stack(
             clipBehavior: Clip.none,
@@ -1828,10 +1840,14 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
                                   ],
                   ),
                                 borderRadius: BorderRadius.circular(8.r),
-                                border: Border.all(
-                                  color: Colors.green.withValues(alpha: 0.4),
-                                  width: 1,
-                                ),
+                                boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
                               ),
                               child: Text(
                                 transaction['status'],
@@ -1854,10 +1870,13 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.05),
                       borderRadius: BorderRadius.circular(12.r),
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.1),
-                        width: 1,
-                      ),
+                      boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 8,
+            offset: Offset(0, 2),
+          ),
+        ],
                     ),
                     child: Column(
                       children: [
@@ -1954,7 +1973,13 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
       height: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
       ),
       child: ClipOval(
         child: CachedNetworkImage(

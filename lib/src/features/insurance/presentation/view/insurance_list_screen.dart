@@ -161,7 +161,13 @@ class _InsuranceListScreenState extends State<InsuranceListScreen> with TickerPr
               decoration: BoxDecoration(
                 color: Colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(22.r),
-                border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+                boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
               ),
               child: Icon(
                 Icons.arrow_back_ios_new,
@@ -259,11 +265,7 @@ class _InsuranceListScreenState extends State<InsuranceListScreen> with TickerPr
             const Color(0xFF1F1F35).withValues(alpha: 0.9),
           ],
         ),
-        borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
-        ),
-        boxShadow: [
+        borderRadius: BorderRadius.circular(16.r),        boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.2),
             blurRadius: 16,
@@ -369,11 +371,7 @@ class _InsuranceListScreenState extends State<InsuranceListScreen> with TickerPr
               const Color(0xFF1F1F35).withValues(alpha: 0.9),
             ],
           ),
-          borderRadius: BorderRadius.circular(16.r),
-          border: Border.all(
-            color: Colors.white.withValues(alpha: 0.1),
-          ),
-          boxShadow: [
+          borderRadius: BorderRadius.circular(16.r),          boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.2),
               blurRadius: 16,
@@ -492,9 +490,14 @@ class _InsuranceListScreenState extends State<InsuranceListScreen> with TickerPr
               decoration: BoxDecoration(
                 color: Colors.white.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(8.r),
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.1),
-                ),
+                boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,

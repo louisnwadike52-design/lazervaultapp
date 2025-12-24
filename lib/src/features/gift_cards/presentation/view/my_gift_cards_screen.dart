@@ -116,10 +116,14 @@ class _MyGiftCardsScreenState extends State<MyGiftCardsScreen> with TickerProvid
               decoration: BoxDecoration(
                 color: Colors.grey[900],
                 borderRadius: BorderRadius.circular(12.r),
-                border: Border.all(
-                  color: Colors.white.withOpacity(0.1),
-                  width: 1,
-                ),
+                boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
               ),
               child: IconButton(
             onPressed: () => Get.back(),
@@ -148,10 +152,14 @@ class _MyGiftCardsScreenState extends State<MyGiftCardsScreen> with TickerProvid
               decoration: BoxDecoration(
                 color: Colors.grey[900],
                 borderRadius: BorderRadius.circular(12.r),
-                border: Border.all(
-                  color: Colors.white.withOpacity(0.1),
-                  width: 1,
-                ),
+                boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
               ),
               child: IconButton(
                 icon: Icon(Icons.more_vert_rounded, 
@@ -170,12 +178,7 @@ class _MyGiftCardsScreenState extends State<MyGiftCardsScreen> with TickerProvid
       margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
       decoration: BoxDecoration(
         color: Colors.grey[900],
-        borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.1),
-          width: 1,
-        ),
-        boxShadow: [
+        borderRadius: BorderRadius.circular(16.r),        boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.2),
             blurRadius: 16,
@@ -246,10 +249,14 @@ class _MyGiftCardsScreenState extends State<MyGiftCardsScreen> with TickerProvid
               decoration: BoxDecoration(
                 color: Colors.white.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(24.r),
-                border: Border.all(
-                  color: Colors.white.withOpacity(0.2),
-                  width: 1,
-                ),
+                boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
               ),
               child: Icon(
                 Icons.card_giftcard_outlined,
@@ -302,12 +309,7 @@ class _MyGiftCardsScreenState extends State<MyGiftCardsScreen> with TickerProvid
       margin: EdgeInsets.only(bottom: 16.h),
       decoration: BoxDecoration(
           color: Colors.grey[900],
-          borderRadius: BorderRadius.circular(20.r),
-          border: Border.all(
-            color: Colors.white.withOpacity(0.1),
-            width: 1,
-          ),
-        boxShadow: [
+          borderRadius: BorderRadius.circular(20.r),        boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.2),
               blurRadius: 16,
@@ -461,10 +463,14 @@ class _MyGiftCardsScreenState extends State<MyGiftCardsScreen> with TickerProvid
             decoration: BoxDecoration(
               color: Colors.white.withOpacity(0.1),
               borderRadius: BorderRadius.circular(24.r),
-              border: Border.all(
-                color: Colors.white.withOpacity(0.2),
-                width: 1,
-              ),
+              boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
             ),
             child: CircularProgressIndicator(
               valueColor: AlwaysStoppedAnimation<Color>(Colors.blue[400]!),
@@ -495,10 +501,14 @@ class _MyGiftCardsScreenState extends State<MyGiftCardsScreen> with TickerProvid
             decoration: BoxDecoration(
               color: Colors.red.withOpacity(0.1),
               borderRadius: BorderRadius.circular(24.r),
-              border: Border.all(
-                color: Colors.red.withOpacity(0.2),
-                width: 1,
-              ),
+              boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
             ),
             child: Icon(
               Icons.error_outline_rounded,
@@ -583,10 +593,14 @@ class _MyGiftCardsScreenState extends State<MyGiftCardsScreen> with TickerProvid
             decoration: BoxDecoration(
               color: Colors.white.withOpacity(0.1),
               borderRadius: BorderRadius.circular(24.r),
-              border: Border.all(
-                color: Colors.white.withOpacity(0.2),
-                width: 1,
-              ),
+              boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
             ),
             child: Icon(
               Icons.card_giftcard_outlined,

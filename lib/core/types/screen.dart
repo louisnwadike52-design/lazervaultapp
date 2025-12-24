@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lazervault/core/types/electricity_bill_details.dart';
 import 'package:lazervault/core/types/transaction.dart';
 import 'package:lazervault/src/features/authentication/domain/entities/user.dart';
@@ -30,6 +31,9 @@ import 'package:lazervault/src/features/ai_chats/presentation/view/ai_chats_scre
 import 'package:lazervault/src/features/widgets/dashboard/dashboard.dart';
 import 'package:lazervault/src/features/widgets/my_cards.dart';
 import 'package:lazervault/src/features/widgets/statistics.dart';
+import 'package:lazervault/src/features/statistics/cubit/statistics_cubit.dart';
+import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
+import 'package:lazervault/core/services/injection_container.dart';
 
 class Screen {
   final ScreenName name;
@@ -41,9 +45,15 @@ class Screen {
   Widget get widget {
     switch (name) {
       case ScreenName.dashboard:
-        return const Dashboard();
+        return BlocProvider(
+          create: (context) => serviceLocator<ProfileCubit>()..getUserProfile(),
+          child: const Dashboard(),
+        );
       case ScreenName.statistics:
-        return const Statistics();
+        return BlocProvider(
+          create: (context) => serviceLocator<StatisticsCubit>(),
+          child: const Statistics(),
+        );
       case ScreenName.myCards:
         return const MyCards();
       case ScreenName.notifications:

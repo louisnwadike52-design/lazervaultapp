@@ -75,7 +75,7 @@ class InvoiceRepositoryImpl implements InvoiceRepository {
       createdAt: DateTime.now(),
       qrCodeData: await _generateQRData(invoice),
     );
-    
+
     final model = InvoiceModel.fromEntity(newInvoice);
     await localDataSource.saveInvoice(model);
     return newInvoice;
@@ -270,6 +270,28 @@ Payment Link: https://payment.app/invoice/${invoice.id}
   Future<List<Invoice>> getInvoicesTaggedToUser(String userId) async {
     final models = await localDataSource.getAllInvoices();
     return models.invoices.where((invoice) => invoice.toUserId == userId).toList().cast<Invoice>();
+  }
+
+  @override
+  Future<TagUsersResponse> tagUsersToInvoice(String invoiceId, List<String> userIds, List<String> emails, List<String> phoneNumbers) async {
+    // Mock implementation - in reality this would be handled by backend
+    await Future.delayed(Duration(milliseconds: 500));
+
+    return TagUsersResponse(
+      success: true,
+      taggedUserIds: userIds,
+      invitedEmails: emails,
+      invitedPhones: phoneNumbers,
+      message: 'Tagged ${userIds.length} users successfully',
+    );
+  }
+
+  @override
+  Future<List<InvoiceUser>> searchUsers(String query, {int limit = 20}) async {
+    // Mock implementation - return empty list
+    // In production, this would search backend users
+    await Future.delayed(Duration(milliseconds: 300));
+    return [];
   }
 
   // Private helper methods

@@ -12,12 +12,7 @@ class QuickActionsCard extends StatelessWidget {
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.1),
-          width: 1,
-        ),
-        boxShadow: [
+        borderRadius: BorderRadius.circular(20.r),        boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.1),
             blurRadius: 20,
@@ -48,7 +43,7 @@ class QuickActionsCard extends StatelessWidget {
                   title: 'Buy Airtime',
                   subtitle: 'Top up your phone',
                   gradient: LinearGradient(
-                    colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                    colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6)],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
@@ -107,7 +102,7 @@ class QuickActionsCard extends StatelessWidget {
               width: 40.w,
               height: 40.w,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
+                color: Color(0xFF1F1F1F),
                 borderRadius: BorderRadius.circular(12.r),
               ),
               child: Icon(

@@ -38,79 +38,6 @@ class _InternationalTransferRecipientScreenState extends State<InternationalTran
   Map<String, dynamic>? _selectedRecipient;
   bool _isAddingNew = false;
   String _searchQuery = '';
-  
-  // Mock saved recipients
-  final List<Map<String, dynamic>> _savedRecipients = [
-    {
-      'id': '1',
-      'name': 'John Smith',
-      'email': 'john.smith@email.com',
-      'account': '****1234',
-      'fullAccount': '1234567890',
-      'bank': 'Chase Bank',
-      'swift': 'CHASUS33',
-      'country': 'United States',
-      'currency': 'USD',
-      'isFrequent': true,
-      'lastUsed': DateTime.now().subtract(const Duration(days: 2)),
-      'avatar': 'https://i.pravatar.cc/150?img=1',
-    },
-    {
-      'id': '2',
-      'name': 'Marie Dubois',
-      'email': 'marie.dubois@email.fr',
-      'account': '****5678',
-      'fullAccount': '5678901234',
-      'bank': 'BNP Paribas',
-      'swift': 'BNPAFRPP',
-      'country': 'France',
-      'currency': 'EUR',
-      'isFrequent': true,
-      'lastUsed': DateTime.now().subtract(const Duration(days: 5)),
-      'avatar': 'https://i.pravatar.cc/150?img=2',
-    },
-    {
-      'id': '3',
-      'name': 'Hiroshi Tanaka',
-      'email': 'h.tanaka@email.jp',
-      'account': '****9012',
-      'fullAccount': '9012345678',
-      'bank': 'Mitsubishi UFJ',
-      'swift': 'BOTKJPJT',
-      'country': 'Japan',
-      'currency': 'JPY',
-      'isFrequent': false,
-      'lastUsed': DateTime.now().subtract(const Duration(days: 15)),
-      'avatar': 'https://i.pravatar.cc/150?img=3',
-    },
-    {
-      'id': '4',
-      'name': 'Sarah Wilson',
-      'email': 'sarah.wilson@email.ca',
-      'account': '****3456',
-      'fullAccount': '3456789012',
-      'bank': 'Royal Bank of Canada',
-      'swift': 'ROYCCAT2',
-      'country': 'Canada',
-      'currency': 'CAD',
-      'isFrequent': true,
-      'lastUsed': DateTime.now().subtract(const Duration(days: 1)),
-      'avatar': 'https://i.pravatar.cc/150?img=4',
-    },
-  ];
-
-  List<Map<String, dynamic>> get _filteredRecipients {
-    if (_searchQuery.isEmpty) return _savedRecipients;
-    
-    return _savedRecipients.where((recipient) {
-      final name = recipient['name'].toString().toLowerCase();
-      final bank = recipient['bank'].toString().toLowerCase();
-      final country = recipient['country'].toString().toLowerCase();
-      final query = _searchQuery.toLowerCase();
-      
-      return name.contains(query) || bank.contains(query) || country.contains(query);
-    }).toList();
-  }
 
   @override
   void initState() {
@@ -209,11 +136,10 @@ class _InternationalTransferRecipientScreenState extends State<InternationalTran
       'currency': _toCurrency,
       'isFrequent': false,
       'lastUsed': DateTime.now(),
-      'avatar': 'https://i.pravatar.cc/150?img=${_savedRecipients.length + 1}',
+      'avatar': 'https://i.pravatar.cc/150?img=1',
     };
-    
+
     setState(() {
-      _savedRecipients.insert(0, newRecipient);
       _selectedRecipient = newRecipient;
       _isAddingNew = false;
     });
@@ -387,7 +313,13 @@ class _InternationalTransferRecipientScreenState extends State<InternationalTran
           ],
         ),
         borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
       ),
       child: Row(
         children: [
@@ -451,7 +383,13 @@ class _InternationalTransferRecipientScreenState extends State<InternationalTran
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
       ),
       child: Row(
         children: [
@@ -543,7 +481,7 @@ class _InternationalTransferRecipientScreenState extends State<InternationalTran
   }
 
   Widget _buildRecipientsList() {
-    final recipients = _filteredRecipients;
+    final recipients = <Map<String, dynamic>>[];
     
     if (recipients.isEmpty) {
       return Center(
@@ -767,7 +705,13 @@ class _InternationalTransferRecipientScreenState extends State<InternationalTran
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(16.r),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+              boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
             ),
             child: TextField(
               controller: controller,
@@ -893,7 +837,13 @@ class _InternationalTransferRecipientScreenState extends State<InternationalTran
       height: size * 0.7,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(2.r),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(2.r),

@@ -460,10 +460,14 @@ class _LifeStyleScreenState extends State<LifeStyleScreen> {
                   margin: EdgeInsets.only(right: 16.w, left: 8.w),
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    border: Border.all(
-                      color: Colors.white24,
-                      width: 2,
-                    ),
+                    boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(20.r),
