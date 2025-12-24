@@ -10,87 +10,101 @@ import 'dart:async' as $async;
 import 'dart:core' as $core;
 
 import 'package:grpc/service_api.dart' as $grpc;
-import 'recipient.pb.dart' as $11;
+import 'recipient.pb.dart' as $16;
 export 'recipient.pb.dart';
 
 class RecipientServiceClient extends $grpc.Client {
   static final _$createRecipient = $grpc.ClientMethod<
-          $11.CreateRecipientRequest, $11.CreateRecipientResponse>(
+          $16.CreateRecipientRequest, $16.CreateRecipientResponse>(
       '/pb.RecipientService/CreateRecipient',
-      ($11.CreateRecipientRequest value) => value.writeToBuffer(),
+      ($16.CreateRecipientRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $11.CreateRecipientResponse.fromBuffer(value));
+          $16.CreateRecipientResponse.fromBuffer(value));
   static final _$listRecipients =
-      $grpc.ClientMethod<$11.ListRecipientsRequest, $11.ListRecipientsResponse>(
+      $grpc.ClientMethod<$16.ListRecipientsRequest, $16.ListRecipientsResponse>(
           '/pb.RecipientService/ListRecipients',
-          ($11.ListRecipientsRequest value) => value.writeToBuffer(),
+          ($16.ListRecipientsRequest value) => value.writeToBuffer(),
           ($core.List<$core.int> value) =>
-              $11.ListRecipientsResponse.fromBuffer(value));
+              $16.ListRecipientsResponse.fromBuffer(value));
   static final _$updateRecipient = $grpc.ClientMethod<
-          $11.UpdateRecipientRequest, $11.UpdateRecipientResponse>(
+          $16.UpdateRecipientRequest, $16.UpdateRecipientResponse>(
       '/pb.RecipientService/UpdateRecipient',
-      ($11.UpdateRecipientRequest value) => value.writeToBuffer(),
+      ($16.UpdateRecipientRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $11.UpdateRecipientResponse.fromBuffer(value));
+          $16.UpdateRecipientResponse.fromBuffer(value));
   static final _$deleteRecipient = $grpc.ClientMethod<
-          $11.DeleteRecipientRequest, $11.DeleteRecipientResponse>(
+          $16.DeleteRecipientRequest, $16.DeleteRecipientResponse>(
       '/pb.RecipientService/DeleteRecipient',
-      ($11.DeleteRecipientRequest value) => value.writeToBuffer(),
+      ($16.DeleteRecipientRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $11.DeleteRecipientResponse.fromBuffer(value));
+          $16.DeleteRecipientResponse.fromBuffer(value));
   static final _$getRecipient =
-      $grpc.ClientMethod<$11.GetRecipientRequest, $11.GetRecipientResponse>(
+      $grpc.ClientMethod<$16.GetRecipientRequest, $16.GetRecipientResponse>(
           '/pb.RecipientService/GetRecipient',
-          ($11.GetRecipientRequest value) => value.writeToBuffer(),
+          ($16.GetRecipientRequest value) => value.writeToBuffer(),
           ($core.List<$core.int> value) =>
-              $11.GetRecipientResponse.fromBuffer(value));
+              $16.GetRecipientResponse.fromBuffer(value));
   static final _$getSimilarRecipientsByName = $grpc.ClientMethod<
-          $11.GetSimilarRecipientsByNameRequest,
-          $11.GetSimilarRecipientsByNameResponse>(
+          $16.GetSimilarRecipientsByNameRequest,
+          $16.GetSimilarRecipientsByNameResponse>(
       '/pb.RecipientService/GetSimilarRecipientsByName',
-      ($11.GetSimilarRecipientsByNameRequest value) => value.writeToBuffer(),
+      ($16.GetSimilarRecipientsByNameRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $11.GetSimilarRecipientsByNameResponse.fromBuffer(value));
+          $16.GetSimilarRecipientsByNameResponse.fromBuffer(value));
+  static final _$searchRecipientsByAccount = $grpc.ClientMethod<
+          $16.SearchRecipientsByAccountRequest,
+          $16.SearchRecipientsByAccountResponse>(
+      '/pb.RecipientService/SearchRecipientsByAccount',
+      ($16.SearchRecipientsByAccountRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $16.SearchRecipientsByAccountResponse.fromBuffer(value));
 
   RecipientServiceClient($grpc.ClientChannel channel,
       {$grpc.CallOptions? options,
       $core.Iterable<$grpc.ClientInterceptor>? interceptors})
       : super(channel, options: options, interceptors: interceptors);
 
-  $grpc.ResponseFuture<$11.CreateRecipientResponse> createRecipient(
-      $11.CreateRecipientRequest request,
+  $grpc.ResponseFuture<$16.CreateRecipientResponse> createRecipient(
+      $16.CreateRecipientRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$createRecipient, request, options: options);
   }
 
-  $grpc.ResponseFuture<$11.ListRecipientsResponse> listRecipients(
-      $11.ListRecipientsRequest request,
+  $grpc.ResponseFuture<$16.ListRecipientsResponse> listRecipients(
+      $16.ListRecipientsRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$listRecipients, request, options: options);
   }
 
-  $grpc.ResponseFuture<$11.UpdateRecipientResponse> updateRecipient(
-      $11.UpdateRecipientRequest request,
+  $grpc.ResponseFuture<$16.UpdateRecipientResponse> updateRecipient(
+      $16.UpdateRecipientRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$updateRecipient, request, options: options);
   }
 
-  $grpc.ResponseFuture<$11.DeleteRecipientResponse> deleteRecipient(
-      $11.DeleteRecipientRequest request,
+  $grpc.ResponseFuture<$16.DeleteRecipientResponse> deleteRecipient(
+      $16.DeleteRecipientRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$deleteRecipient, request, options: options);
   }
 
-  $grpc.ResponseFuture<$11.GetRecipientResponse> getRecipient(
-      $11.GetRecipientRequest request,
+  $grpc.ResponseFuture<$16.GetRecipientResponse> getRecipient(
+      $16.GetRecipientRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getRecipient, request, options: options);
   }
 
-  $grpc.ResponseFuture<$11.GetSimilarRecipientsByNameResponse>
-      getSimilarRecipientsByName($11.GetSimilarRecipientsByNameRequest request,
+  $grpc.ResponseFuture<$16.GetSimilarRecipientsByNameResponse>
+      getSimilarRecipientsByName($16.GetSimilarRecipientsByNameRequest request,
           {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getSimilarRecipientsByName, request,
+        options: options);
+  }
+
+  $grpc.ResponseFuture<$16.SearchRecipientsByAccountResponse>
+      searchRecipientsByAccount($16.SearchRecipientsByAccountRequest request,
+          {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$searchRecipientsByAccount, request,
         options: options);
   }
 }
@@ -99,110 +113,129 @@ abstract class RecipientServiceBase extends $grpc.Service {
   $core.String get $name => 'pb.RecipientService';
 
   RecipientServiceBase() {
-    $addMethod($grpc.ServiceMethod<$11.CreateRecipientRequest,
-            $11.CreateRecipientResponse>(
+    $addMethod($grpc.ServiceMethod<$16.CreateRecipientRequest,
+            $16.CreateRecipientResponse>(
         'CreateRecipient',
         createRecipient_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $11.CreateRecipientRequest.fromBuffer(value),
-        ($11.CreateRecipientResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$11.ListRecipientsRequest,
-            $11.ListRecipientsResponse>(
+            $16.CreateRecipientRequest.fromBuffer(value),
+        ($16.CreateRecipientResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$16.ListRecipientsRequest,
+            $16.ListRecipientsResponse>(
         'ListRecipients',
         listRecipients_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $11.ListRecipientsRequest.fromBuffer(value),
-        ($11.ListRecipientsResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$11.UpdateRecipientRequest,
-            $11.UpdateRecipientResponse>(
+            $16.ListRecipientsRequest.fromBuffer(value),
+        ($16.ListRecipientsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$16.UpdateRecipientRequest,
+            $16.UpdateRecipientResponse>(
         'UpdateRecipient',
         updateRecipient_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $11.UpdateRecipientRequest.fromBuffer(value),
-        ($11.UpdateRecipientResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$11.DeleteRecipientRequest,
-            $11.DeleteRecipientResponse>(
+            $16.UpdateRecipientRequest.fromBuffer(value),
+        ($16.UpdateRecipientResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$16.DeleteRecipientRequest,
+            $16.DeleteRecipientResponse>(
         'DeleteRecipient',
         deleteRecipient_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $11.DeleteRecipientRequest.fromBuffer(value),
-        ($11.DeleteRecipientResponse value) => value.writeToBuffer()));
+            $16.DeleteRecipientRequest.fromBuffer(value),
+        ($16.DeleteRecipientResponse value) => value.writeToBuffer()));
     $addMethod(
-        $grpc.ServiceMethod<$11.GetRecipientRequest, $11.GetRecipientResponse>(
+        $grpc.ServiceMethod<$16.GetRecipientRequest, $16.GetRecipientResponse>(
             'GetRecipient',
             getRecipient_Pre,
             false,
             false,
             ($core.List<$core.int> value) =>
-                $11.GetRecipientRequest.fromBuffer(value),
-            ($11.GetRecipientResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$11.GetSimilarRecipientsByNameRequest,
-            $11.GetSimilarRecipientsByNameResponse>(
+                $16.GetRecipientRequest.fromBuffer(value),
+            ($16.GetRecipientResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$16.GetSimilarRecipientsByNameRequest,
+            $16.GetSimilarRecipientsByNameResponse>(
         'GetSimilarRecipientsByName',
         getSimilarRecipientsByName_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $11.GetSimilarRecipientsByNameRequest.fromBuffer(value),
-        ($11.GetSimilarRecipientsByNameResponse value) =>
+            $16.GetSimilarRecipientsByNameRequest.fromBuffer(value),
+        ($16.GetSimilarRecipientsByNameResponse value) =>
+            value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$16.SearchRecipientsByAccountRequest,
+            $16.SearchRecipientsByAccountResponse>(
+        'SearchRecipientsByAccount',
+        searchRecipientsByAccount_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $16.SearchRecipientsByAccountRequest.fromBuffer(value),
+        ($16.SearchRecipientsByAccountResponse value) =>
             value.writeToBuffer()));
   }
 
-  $async.Future<$11.CreateRecipientResponse> createRecipient_Pre(
+  $async.Future<$16.CreateRecipientResponse> createRecipient_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$11.CreateRecipientRequest> request) async {
+      $async.Future<$16.CreateRecipientRequest> request) async {
     return createRecipient(call, await request);
   }
 
-  $async.Future<$11.ListRecipientsResponse> listRecipients_Pre(
+  $async.Future<$16.ListRecipientsResponse> listRecipients_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$11.ListRecipientsRequest> request) async {
+      $async.Future<$16.ListRecipientsRequest> request) async {
     return listRecipients(call, await request);
   }
 
-  $async.Future<$11.UpdateRecipientResponse> updateRecipient_Pre(
+  $async.Future<$16.UpdateRecipientResponse> updateRecipient_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$11.UpdateRecipientRequest> request) async {
+      $async.Future<$16.UpdateRecipientRequest> request) async {
     return updateRecipient(call, await request);
   }
 
-  $async.Future<$11.DeleteRecipientResponse> deleteRecipient_Pre(
+  $async.Future<$16.DeleteRecipientResponse> deleteRecipient_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$11.DeleteRecipientRequest> request) async {
+      $async.Future<$16.DeleteRecipientRequest> request) async {
     return deleteRecipient(call, await request);
   }
 
-  $async.Future<$11.GetRecipientResponse> getRecipient_Pre(
+  $async.Future<$16.GetRecipientResponse> getRecipient_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$11.GetRecipientRequest> request) async {
+      $async.Future<$16.GetRecipientRequest> request) async {
     return getRecipient(call, await request);
   }
 
-  $async.Future<$11.GetSimilarRecipientsByNameResponse>
+  $async.Future<$16.GetSimilarRecipientsByNameResponse>
       getSimilarRecipientsByName_Pre($grpc.ServiceCall call,
-          $async.Future<$11.GetSimilarRecipientsByNameRequest> request) async {
+          $async.Future<$16.GetSimilarRecipientsByNameRequest> request) async {
     return getSimilarRecipientsByName(call, await request);
   }
 
-  $async.Future<$11.CreateRecipientResponse> createRecipient(
-      $grpc.ServiceCall call, $11.CreateRecipientRequest request);
-  $async.Future<$11.ListRecipientsResponse> listRecipients(
-      $grpc.ServiceCall call, $11.ListRecipientsRequest request);
-  $async.Future<$11.UpdateRecipientResponse> updateRecipient(
-      $grpc.ServiceCall call, $11.UpdateRecipientRequest request);
-  $async.Future<$11.DeleteRecipientResponse> deleteRecipient(
-      $grpc.ServiceCall call, $11.DeleteRecipientRequest request);
-  $async.Future<$11.GetRecipientResponse> getRecipient(
-      $grpc.ServiceCall call, $11.GetRecipientRequest request);
-  $async.Future<$11.GetSimilarRecipientsByNameResponse>
+  $async.Future<$16.SearchRecipientsByAccountResponse>
+      searchRecipientsByAccount_Pre($grpc.ServiceCall call,
+          $async.Future<$16.SearchRecipientsByAccountRequest> request) async {
+    return searchRecipientsByAccount(call, await request);
+  }
+
+  $async.Future<$16.CreateRecipientResponse> createRecipient(
+      $grpc.ServiceCall call, $16.CreateRecipientRequest request);
+  $async.Future<$16.ListRecipientsResponse> listRecipients(
+      $grpc.ServiceCall call, $16.ListRecipientsRequest request);
+  $async.Future<$16.UpdateRecipientResponse> updateRecipient(
+      $grpc.ServiceCall call, $16.UpdateRecipientRequest request);
+  $async.Future<$16.DeleteRecipientResponse> deleteRecipient(
+      $grpc.ServiceCall call, $16.DeleteRecipientRequest request);
+  $async.Future<$16.GetRecipientResponse> getRecipient(
+      $grpc.ServiceCall call, $16.GetRecipientRequest request);
+  $async.Future<$16.GetSimilarRecipientsByNameResponse>
       getSimilarRecipientsByName($grpc.ServiceCall call,
-          $11.GetSimilarRecipientsByNameRequest request);
+          $16.GetSimilarRecipientsByNameRequest request);
+  $async.Future<$16.SearchRecipientsByAccountResponse>
+      searchRecipientsByAccount(
+          $grpc.ServiceCall call, $16.SearchRecipientsByAccountRequest request);
 }

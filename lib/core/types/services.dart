@@ -1,6 +1,7 @@
 enum AppServiceName {
   sendFunds,
   batchTransfer,
+  tagPay,
   invoice,
   payInvoice,
   payElectricityBill,
@@ -9,9 +10,11 @@ enum AppServiceName {
   crypto,
   giftCards,
   aiScanToPay,
+  barcodeQuickPay,
   groupAccount,
   insurance,
   airtime,
+  autoSave,
 }
 
 extension AppServiceNameExtension on AppServiceName {
@@ -21,10 +24,12 @@ extension AppServiceNameExtension on AppServiceName {
         return 'Send Funds';
       case AppServiceName.batchTransfer:
         return 'Batch Transfer';
+      case AppServiceName.tagPay:
+        return 'Tag Pay';
       case AppServiceName.invoice:
-        return 'Invoice';
+        return 'Invoices';
       case AppServiceName.payInvoice:
-        return 'Pay Invoice';
+        return 'Invoices';
       case AppServiceName.payElectricityBill:
         return 'Pay Electricity Bill';
       case AppServiceName.invest:
@@ -37,12 +42,16 @@ extension AppServiceNameExtension on AppServiceName {
         return 'Gift Cards';
       case AppServiceName.aiScanToPay:
         return 'AI Scan to Pay';
+      case AppServiceName.barcodeQuickPay:
+        return 'Barcode QuickPay';
       case AppServiceName.groupAccount:
         return 'Joint Funds';
       case AppServiceName.insurance:
         return 'Insurance';
       case AppServiceName.airtime:
         return 'Airtime';
+      case AppServiceName.autoSave:
+        return 'Auto-Save';
     }
   }
 }
@@ -57,6 +66,7 @@ final List<String> imagePaths = [
 enum AppServiceImg {
   sendFunds,
   batchTransfer,
+  tagPay,
   invoice,
   payInvoice,
   payElectricityBill,
@@ -65,9 +75,11 @@ enum AppServiceImg {
   crypto,
   giftCards,
   aiScanToPay,
+  barcodeQuickPay,
   groupAccount,
   insurance,
   airtime,
+  autoSave,
 }
 
 extension AppServiceImgExtension on AppServiceImg {
@@ -77,6 +89,8 @@ extension AppServiceImgExtension on AppServiceImg {
         return 'assets/images/money-send.png';
       case AppServiceImg.batchTransfer:
         return 'assets/images/batch-transfer.png';
+      case AppServiceImg.tagPay:
+        return 'assets/images/tag-pay.png';
       case AppServiceImg.invoice:
         return 'assets/images/money-receive.png';
       case AppServiceImg.payInvoice:
@@ -93,12 +107,16 @@ extension AppServiceImgExtension on AppServiceImg {
         return 'assets/images/gift-cards.png';
       case AppServiceImg.aiScanToPay:
         return 'assets/images/ai-scan.png';
+      case AppServiceImg.barcodeQuickPay:
+        return 'assets/images/barcode.png';
       case AppServiceImg.groupAccount:
         return 'assets/images/group-account.png';
       case AppServiceImg.insurance:
         return 'assets/images/insurance.png';
       case AppServiceImg.airtime:
         return 'assets/images/airtime.png';
+      case AppServiceImg.autoSave:
+        return 'assets/images/auto-save.png';
     }
   }
 }

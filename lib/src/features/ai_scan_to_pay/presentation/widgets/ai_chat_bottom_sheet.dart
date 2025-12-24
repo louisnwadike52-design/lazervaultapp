@@ -72,10 +72,14 @@ class _AiChatBottomSheetState extends State<AiChatBottomSheet> {
           topLeft: Radius.circular(24.r),
           topRight: Radius.circular(24.r),
         ),
-        border: Border.all(
-          color: const Color(0xFF2D2D2D),
-          width: 1,
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
       ),
       child: Column(
         children: [
@@ -174,10 +178,14 @@ class _AiChatBottomSheetState extends State<AiChatBottomSheet> {
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(16.r),
-                  border: Border.all(
-                    color: Colors.white.withOpacity(0.3),
-                    width: 1,
-                  ),
+                  boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
                 ),
                 child: Text(
                   widget.session.scanType.displayName,
@@ -369,10 +377,14 @@ class _AiChatBottomSheetState extends State<AiChatBottomSheet> {
                 bottomRight: Radius.circular(20.r),
                 bottomLeft: Radius.circular(4.r),
               ),
-              border: Border.all(
-                color: const Color(0xFF2D2D2D),
-                width: 1,
-              ),
+              boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -428,10 +440,14 @@ class _AiChatBottomSheetState extends State<AiChatBottomSheet> {
                   decoration: BoxDecoration(
                     color: const Color(0xFF0A0A0A),
                     borderRadius: BorderRadius.circular(24.r),
-                    border: Border.all(
-                      color: const Color(0xFF2D2D2D),
-                      width: 1,
-                    ),
+                    boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
                   ),
                   child: TextField(
                     controller: _messageController,
@@ -537,10 +553,14 @@ class _AiChatBottomSheetState extends State<AiChatBottomSheet> {
         decoration: BoxDecoration(
           color: const Color(0xFF0A0A0A),
           borderRadius: BorderRadius.circular(16.r),
-          border: Border.all(
-            color: const Color(0xFF2D2D2D),
-            width: 1,
+          boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
           ),
+        ],
+        
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,

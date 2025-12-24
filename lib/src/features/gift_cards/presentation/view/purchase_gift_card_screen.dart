@@ -158,10 +158,14 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
               decoration: BoxDecoration(
                 color: Colors.white.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12.r),
-                border: Border.all(
-                  color: Colors.white.withOpacity(0.2),
-                  width: 1,
-                ),
+                boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
               ),
               child: IconButton(
                 onPressed: () => Navigator.of(context).pop(),
@@ -197,12 +201,7 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
         padding: EdgeInsets.all(24.w),
         decoration: BoxDecoration(
           color: Colors.grey[900],
-          borderRadius: BorderRadius.circular(20.r),
-          border: Border.all(
-            color: Colors.white.withOpacity(0.1),
-            width: 1,
-          ),
-          boxShadow: [
+          borderRadius: BorderRadius.circular(20.r),          boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.25),
               blurRadius: 16,
@@ -359,14 +358,7 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
                       )
                     : null,
                 color: isSelected ? null : Colors.grey[900],
-                borderRadius: BorderRadius.circular(16.r),
-                border: Border.all(
-                  color: isSelected 
-                      ? Colors.transparent 
-                      : Colors.white.withOpacity(0.1),
-                  width: 1,
-                ),
-                boxShadow: isSelected ? [
+                borderRadius: BorderRadius.circular(16.r),                boxShadow: isSelected ? [
                   BoxShadow(
                     color: Colors.blue.withOpacity(0.3),
                     blurRadius: 12,
@@ -416,10 +408,14 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
           decoration: BoxDecoration(
             color: Colors.white.withOpacity(0.1),
             borderRadius: BorderRadius.circular(16.r),
-            border: Border.all(
-              color: Colors.white.withOpacity(0.2),
-              width: 1,
-            ),
+            boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
           ),
           child: TextFormField(
             controller: _amountController,
@@ -536,14 +532,7 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
               )
             : null,
         color: isSelected ? null : Colors.grey[900],
-        borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-          color: isSelected 
-              ? Colors.transparent 
-              : Colors.white.withOpacity(0.1),
-          width: 1,
-        ),
-        boxShadow: isSelected ? [
+        borderRadius: BorderRadius.circular(16.r),        boxShadow: isSelected ? [
           BoxShadow(
             color: Colors.blue.withOpacity(0.3),
             blurRadius: 12,
@@ -589,10 +578,14 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.1),
         borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.2),
-          width: 1,
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -681,10 +674,14 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
           decoration: BoxDecoration(
             color: Colors.white.withOpacity(0.1),
             borderRadius: BorderRadius.circular(12.r),
-            border: Border.all(
-              color: Colors.white.withOpacity(0.2),
-              width: 1,
-            ),
+            boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
           ),
           child: TextFormField(
             controller: controller,
@@ -732,10 +729,14 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
           ],
         ),
         borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.2),
-          width: 1,
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -986,10 +987,14 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
               decoration: BoxDecoration(
                 color: const Color(0xFFEF4444).withOpacity(0.2),
                 shape: BoxShape.circle,
-                border: Border.all(
-                  color: const Color(0xFFEF4444),
-                  width: 2,
-                ),
+                boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
               ),
               child: Icon(
                 Icons.error_outline_rounded,

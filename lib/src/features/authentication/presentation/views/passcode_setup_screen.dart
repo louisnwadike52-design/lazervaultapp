@@ -47,6 +47,51 @@ class _PasscodeSetupScreenState extends State<PasscodeSetupScreen> {
     context.read<AuthenticationCubit>().skipPasscodeSetup();
   }
 
+  void _showFaceRegistrationPrompt() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: Text(
+            'Setup Face Recognition?',
+            style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold),
+          ),
+          content: Text(
+            'Would you like to enable Face Recognition for faster login?',
+            style: TextStyle(fontSize: 14.sp),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+                Get.offAllNamed(AppRoutes.dashboard);
+              },
+              child: Text(
+                'Skip for now',
+                style: TextStyle(fontSize: 14.sp, color: Colors.grey),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+                Get.offAllNamed(AppRoutes.faceScan);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue,
+                foregroundColor: Colors.white,
+              ),
+              child: Text(
+                'Setup Face Recognition',
+                style: TextStyle(fontSize: 14.sp),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
@@ -57,8 +102,12 @@ class _PasscodeSetupScreenState extends State<PasscodeSetupScreen> {
     return BlocConsumer<AuthenticationCubit, AuthenticationState>(
       listener: (context, state) {
         if (state is AuthenticationSuccess) {
-          // Navigate to dashboard on successful passcode registration
-          Get.offAllNamed(AppRoutes.dashboard);
+          // Show face registration prompt after successful passcode setup
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) {
+              _showFaceRegistrationPrompt();
+            }
+          });
         }
       },
       builder: (context, state) {
@@ -78,7 +127,19 @@ class _PasscodeSetupScreenState extends State<PasscodeSetupScreen> {
           extendBodyBehindAppBar: true,
           body: Stack(
             children: [
-              // Dark overlay background (matching passcode login)
+              // Background image (matching passcode login)
+              DecoratedBox(
+                decoration: const BoxDecoration(
+                  image: DecorationImage(
+                    image: NetworkImage(
+                      'https://picsum.photos/seed/lazervaultsignin/1080/1920',
+                    ),
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                child: const SizedBox.expand(),
+              ),
+              // Dark overlay
               Container(
                 color: Colors.black.withValues(alpha: 0.6),
               ),

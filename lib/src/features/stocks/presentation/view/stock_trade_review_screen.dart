@@ -417,10 +417,14 @@ class _StockTradeReviewScreenState extends State<StockTradeReviewScreen>
           ],
         ),
         borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(
-          color: Colors.grey[800]!,
-          width: 1,
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -515,10 +519,14 @@ class _StockTradeReviewScreenState extends State<StockTradeReviewScreen>
       decoration: BoxDecoration(
         color: Colors.grey[900],
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-          color: Colors.grey[800]!,
-          width: 1,
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -583,10 +591,14 @@ class _StockTradeReviewScreenState extends State<StockTradeReviewScreen>
       decoration: BoxDecoration(
         color: Colors.grey[900],
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-          color: Colors.grey[800]!,
-          width: 1,
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -626,10 +638,14 @@ class _StockTradeReviewScreenState extends State<StockTradeReviewScreen>
           ],
         ),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-                      color: Colors.green.withValues(alpha: 0.3),
-          width: 1,
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
       ),
       child: Column(
         children: [

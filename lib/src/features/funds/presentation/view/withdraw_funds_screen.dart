@@ -174,40 +174,13 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen> {
         
         print('Refreshing account summaries after successful withdrawal');
         
-        // First, refresh the locally created AccountCardsSummaryCubit
-        // This ensures we have fresh data if needed on this screen
-        try {
-          // Only try to access the cubit if it's available (we're in the MultiBlocProvider context)
-          if (context.mounted) {
-            try {
-              // Safe access to the cubit
-              final localCubit = BlocProvider.of<AccountCardsSummaryCubit>(context, listen: false);
-              localCubit.fetchAccountSummaries(
-                userId: userId,
-                accessToken: accessToken,
-              );
-              print('Successfully refreshed local AccountCardsSummaryCubit');
-            } catch (e) {
-              // This will catch the case where the cubit isn't available
-              print('Local AccountCardsSummaryCubit not found: $e');
-            }
-          }
-        } catch (e) {
-          print('Error refreshing local cubit: $e');
-        }
-        
-        // Since AccountCardsSummaryCubit is now a singleton, this will update 
-        // the data used by all screens that use it
-        try {
-          final dashboardCubit = serviceLocator<AccountCardsSummaryCubit>();
-          dashboardCubit.fetchAccountSummaries(
-            userId: userId,
-            accessToken: accessToken,
-          );
-          print('Successfully refreshed AccountCardsSummaryCubit singleton instance');
-        } catch (e) {
-          print('Error refreshing singleton cubit instance: $e');
-        }
+        // Refresh the globally provided AccountCardsSummaryCubit
+        // This is the same instance used by the dashboard, so it will update reactively
+        context.read<AccountCardsSummaryCubit>().fetchAccountSummaries(
+          userId: userId,
+          accessToken: accessToken,
+        );
+        print('Successfully refreshed global AccountCardsSummaryCubit instance');
       }
     } catch (e) {
       print('Error during account refresh: $e');
@@ -343,12 +316,8 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen> {
       }
     }
 
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider(create: (_) => serviceLocator<WithdrawalCubit>()),
-        // Create a new instance of AccountCardsSummaryCubit to use for refreshing account data
-        BlocProvider(create: (_) => serviceLocator<AccountCardsSummaryCubit>()),
-      ],
+    return BlocProvider(
+      create: (_) => serviceLocator<WithdrawalCubit>(),
       child: BlocConsumer<AuthenticationCubit, AuthenticationState>(
         listener: (context, authState) {
           if (authState is! AuthenticationSuccess) {
@@ -369,32 +338,57 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen> {
               }
 
               if (state is WithdrawalSuccess) {
+                Get.closeAllSnackbars();
                 Get.snackbar(
-                  'Withdrawal Initiated',
-                  'Your withdrawal request has been successfully initiated.',
+                  'Withdrawal Successful',
+                  'Your withdrawal of £${_amountController.text} has been processed successfully.',
                   snackPosition: SnackPosition.BOTTOM,
-                  backgroundColor: Colors.green.withOpacity(0.7),
+                  backgroundColor: Colors.green.withOpacity(0.9),
                   colorText: Colors.white,
                   duration: const Duration(seconds: 3),
+                  margin: EdgeInsets.all(16.w),
+                  borderRadius: 12.r,
+                  icon: Icon(
+                    Icons.check_circle_rounded,
+                    color: Colors.white,
+                    size: 28.sp,
+                  ),
                 );
-                
+
+                // Clear form
+                _amountController.clear();
+                setState(() {
+                  _selectedBank = '';
+                  _wasSelectedFromBottomSheet = false;
+                });
+
+                // Refresh account balances
                 _refreshAccountBalances(context);
-                
-                // Navigate back after a short delay
+
+                // Navigate back to dashboard after delay
                 Future.delayed(const Duration(seconds: 2), () {
                   if (Navigator.canPop(context)) {
                     Navigator.pop(context);
                   }
                 });
               } else if (state is WithdrawalFailure) {
+                Get.closeAllSnackbars();
                 Get.snackbar(
                   'Withdrawal Failed',
                   state.message,
                   snackPosition: SnackPosition.BOTTOM,
-                  backgroundColor: Colors.red.withOpacity(0.7),
+                  backgroundColor: Colors.red.withOpacity(0.9),
                   colorText: Colors.white,
-                  duration: const Duration(seconds: 3),
+                  duration: const Duration(seconds: 5),
+                  margin: EdgeInsets.all(16.w),
+                  borderRadius: 12.r,
+                  icon: Icon(
+                    Icons.error_outline_rounded,
+                    color: Colors.white,
+                    size: 28.sp,
+                  ),
                 );
+                // DO NOT navigate on error - stay on screen
               }
             },
             builder: (context, state) {
@@ -446,9 +440,14 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen> {
                           decoration: BoxDecoration(
                             color: Colors.white.withOpacity(0.05),
                             borderRadius: BorderRadius.circular(16.r),
-                            border: Border.all(
-                              color: Colors.white.withOpacity(0.1),
-                            ),
+                            boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -532,9 +531,14 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen> {
                             decoration: BoxDecoration(
                               color: const Color(0xFF3498DB).withOpacity(0.1),
                               borderRadius: BorderRadius.circular(16.r),
-                              border: Border.all(
-                                color: const Color(0xFF3498DB),
-                              ),
+                              boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
                             ),
                             child: Row(
                               children: [
@@ -581,9 +585,14 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen> {
                               decoration: BoxDecoration(
                                 color: Colors.white.withOpacity(0.05),
                                 borderRadius: BorderRadius.circular(12.r),
-                                border: Border.all(
-                                  color: Colors.white.withOpacity(0.1),
-                                ),
+                                boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
                               ),
                               child: Row(
                                 children: [
@@ -636,10 +645,14 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen> {
                                 ],
                               ),
                               borderRadius: BorderRadius.circular(16.r),
-                              border: Border.all(
-                                color: (selectedBankDetails['color'] as Color)
-                                    .withOpacity(0.3),
-                              ),
+                              boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
                             ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -739,9 +752,14 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen> {
                           decoration: BoxDecoration(
                             color: Colors.white.withOpacity(0.05),
                             borderRadius: BorderRadius.circular(12.r),
-                            border: Border.all(
-                              color: Colors.white.withOpacity(0.1),
-                            ),
+                            boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
                           ),
                           child: Row(
                             children: [
@@ -790,42 +808,8 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen> {
                         ),
                         SizedBox(height: 32.h),
 
-                        // Withdraw Button
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            onPressed:
-                                _selectedBank.isEmpty || _amountController.text.isEmpty
-                                    ? null
-                                    : () => _handleWithdraw(context),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF3498DB),
-                              foregroundColor: Colors.white,
-                              padding: EdgeInsets.symmetric(vertical: 16.h),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12.r),
-                              ),
-                              elevation: 0,
-                            ),
-                            child: _isProcessing
-                                ? SizedBox(
-                                    height: 20.h,
-                                    width: 20.w,
-                                    child: const CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      valueColor:
-                                          AlwaysStoppedAnimation<Color>(Colors.white),
-                                    ),
-                                  )
-                                : Text(
-                                    'Withdraw',
-                                    style: TextStyle(
-                                      fontSize: 16.sp,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                          ),
-                        ),
+                        // Withdraw Button - Always visible
+                        _buildWithdrawButton(context),
                       ],
                     ),
                   ),
@@ -834,6 +818,122 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen> {
             },
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildWithdrawButton(BuildContext context) {
+    final amount = double.tryParse(_amountController.text) ?? 0;
+    final balance = widget.selectedCard['balance'] as double? ?? 0.0;
+    final exceedsBalance = amount > balance && amount > 0;
+    final isValid = _selectedBank.isNotEmpty && amount > 0 && !exceedsBalance;
+
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16.r),
+        boxShadow: isValid && !_isProcessing
+            ? [
+                BoxShadow(
+                  color: const Color(0xFF3498DB).withOpacity(0.3),
+                  blurRadius: 12,
+                  offset: const Offset(0, 6),
+                ),
+              ]
+            : [],
+      ),
+      child: Column(
+        children: [
+          if (exceedsBalance)
+            Container(
+              margin: EdgeInsets.only(bottom: 12.h),
+              padding: EdgeInsets.all(12.w),
+              decoration: BoxDecoration(
+                color: Colors.red.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12.r),
+                border: Border.all(color: Colors.red.withOpacity(0.3)),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.warning_amber_rounded,
+                    color: Colors.red,
+                    size: 20.sp,
+                  ),
+                  SizedBox(width: 8.w),
+                  Expanded(
+                    child: Text(
+                      'Amount exceeds available balance (£${balance.toStringAsFixed(2)})',
+                      style: TextStyle(
+                        color: Colors.red,
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ElevatedButton(
+            onPressed: !isValid || _isProcessing ? null : () => _handleWithdraw(context),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: isValid && !_isProcessing
+                  ? const Color(0xFF3498DB)
+                  : Colors.grey.shade700,
+              foregroundColor: Colors.white,
+              padding: EdgeInsets.symmetric(vertical: 18.h),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16.r),
+              ),
+              elevation: 0,
+              minimumSize: Size(double.infinity, 56.h),
+            ),
+            child: _isProcessing
+                ? Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        height: 20.h,
+                        width: 20.w,
+                        child: const CircularProgressIndicator(
+                          strokeWidth: 2.5,
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      ),
+                      SizedBox(width: 12.w),
+                      Text(
+                        'Processing Withdrawal...',
+                        style: TextStyle(
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ],
+                  )
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Transform.rotate(
+                        angle: -0.785398, // -45 degrees in radians (down-right arrow)
+                        child: Icon(
+                          Icons.arrow_downward_rounded,
+                          size: 22.sp,
+                        ),
+                      ),
+                      SizedBox(width: 12.w),
+                      Text(
+                        amount > 0 ? 'Withdraw £${amount.toStringAsFixed(2)}' : 'Withdraw Funds',
+                        style: TextStyle(
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ],
+                  ),
+          ),
+        ],
       ),
     );
   }
@@ -848,9 +948,14 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen> {
         decoration: BoxDecoration(
           color: Colors.white.withOpacity(0.05),
           borderRadius: BorderRadius.circular(8.r),
-          border: Border.all(
-            color: Colors.white.withOpacity(0.1),
+          boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
           ),
+        ],
+        
         ),
         child: Text(
           amount,

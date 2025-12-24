@@ -40,11 +40,22 @@ class FaceRecognitionRepositoryImpl implements IFaceRecognitionRepository {
         duplicateThreshold: duplicateThreshold,
       );
 
-      print('Sending gRPC RegisterFace request for user: $userId');
+      print('=== Sending gRPC RegisterFace request ===');
+      print('User ID: $userId');
+      print('Image filename: $imageFilename');
+      print('Image size: ${imageBytes.length} bytes');
+      print('Allow duplicates: $allowDuplicates');
+
       final callOptions = await _callOptionsHelper.withAuth();
+      print('Call options created with auth token');
+
       final response = await _facialRecognitionServiceClient.registerFace(request, options: callOptions);
 
-      print('RegisterFace response: success=${response.success}, message=${response.message}');
+      print('=== RegisterFace response ===');
+      print('Success: ${response.success}');
+      print('Message: ${response.message}');
+      print('Error: ${response.error}');
+      print('Face ID: ${response.faceId}');
 
       final result = FaceRegistrationModel.fromProto(response);
 

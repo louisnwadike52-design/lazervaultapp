@@ -8,7 +8,17 @@ class GetRecipientsUseCase {
 
   GetRecipientsUseCase(this._repository);
 
-  Future<Either<Failure, List<RecipientModel>>> call({required String accessToken}) async {
-    return await _repository.getRecipients(accessToken: accessToken);
+  Future<Either<Failure, List<RecipientModel>>> call({
+    required String accessToken,
+    String? countryCode,
+    String? currency,
+    bool? favoritesOnly,
+  }) async {
+    return await _repository.getRecipients(
+      accessToken: accessToken,
+      countryCode: countryCode,
+      currency: currency,
+      favoritesOnly: favoritesOnly,
+    );
   }
 } 

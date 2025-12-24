@@ -8,6 +8,7 @@ import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/utilities/responsive_controller.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
+import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
 import 'package:lazervault/src/features/widgets/build_form_field.dart';
 import 'package:lazervault/src/features/widgets/universal_image_loader.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -44,9 +45,17 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
   Future<void> _checkPasscodeAvailability() async {
     final loginMethod = await _storage.read(key: 'login_method');
     final storedEmail = await _storage.read(key: 'stored_email');
+    final storedPasscode = await _storage.read(key: 'passcode');
+
     if (mounted) {
       setState(() {
-        _hasPasscodeSetup = loginMethod == 'passcode' && storedEmail != null && storedEmail.isNotEmpty;
+        // Show passcode option if:
+        // 1. Login method is set to passcode OR
+        // 2. A passcode is stored (regardless of login method)
+        // AND there's a stored email
+        _hasPasscodeSetup = (loginMethod == 'passcode' || storedPasscode != null) &&
+                           storedEmail != null &&
+                           storedEmail.isNotEmpty;
       });
     }
   }
@@ -64,6 +73,10 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Get arguments from navigation
+    final arguments = Get.arguments as Map<String, dynamic>?;
+    final fromForgotPasscode = arguments?['fromForgotPasscode'] == true;
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       body: Stack(
@@ -80,6 +93,9 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
             listener: (context, state) async {
               switch (state) {
               case AuthenticationSuccess():
+                // Load user profile after successful authentication
+                context.read<ProfileCubit>().getUserProfile();
+
                 Get.snackbar(
                   'Success',
                   'Login Successful!',
@@ -89,14 +105,20 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
                   margin: EdgeInsets.all(15.w),
                   borderRadius: 10.r,
                 );
-                // Check if passcode is set up
-                final loginMethod = await _storage.read(key: 'login_method');
-                if (loginMethod == 'passcode') {
-                  // Already has passcode, go to dashboard
-                  Get.offAllNamed(AppRoutes.dashboard);
-                } else {
-                  // No passcode set up, prompt to set it up
+
+                // If coming from forgot passcode, always go to passcode setup
+                if (fromForgotPasscode) {
                   Get.offAllNamed(AppRoutes.passcodeSetup);
+                } else {
+                  // Check if passcode is set up
+                  final loginMethod = await _storage.read(key: 'login_method');
+                  if (loginMethod == 'passcode') {
+                    // Already has passcode, go to dashboard
+                    Get.offAllNamed(AppRoutes.dashboard);
+                  } else {
+                    // No passcode set up, prompt to set it up
+                    Get.offAllNamed(AppRoutes.passcodeSetup);
+                  }
                 }
                 break;
               case AuthenticationFailure(message: final msg):
@@ -140,7 +162,7 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
                       ),
                        SizedBox(height: 16.0.h),
                       Text(
-                        "Welcome Back!",
+                        fromForgotPasscode ? "Reset Your Passcode" : "Welcome Back!",
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 20.0.sp,
@@ -150,7 +172,9 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
                       ),
                       SizedBox(height: 8.0.h),
                       Text(
-                        "Sign in to continue",
+                        fromForgotPasscode
+                            ? "Sign in with email/password to reset your passcode"
+                            : "Sign in to continue",
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 16.0.sp,
@@ -183,19 +207,65 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
                                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16.sp),
                               ),
                             ),
+                      SizedBox(height: 12.0.h),
                       if (_hasPasscodeSetup && !isLoading)
-                        TextButton(
-                          onPressed: _switchToPasscodeLogin,
-                          child: Text(
-                            'Use Passcode Instead',
-                            style: TextStyle(
-                              fontSize: 16.sp,
-                              color: Colors.black87,
-                              fontWeight: FontWeight.w600,
+                        Center(
+                          child: TextButton(
+                            onPressed: _switchToPasscodeLogin,
+                            child: Text(
+                              'Use Passcode Instead',
+                              style: TextStyle(
+                                fontSize: 16.sp,
+                                color: Colors.black87,
+                                fontWeight: FontWeight.w600,
+                                decoration: TextDecoration.underline,
+                              ),
                             ),
                           ),
                         ),
-                      SizedBox(height: 24.0.h),
+                      SizedBox(height: 12.0.h),
+                      if (!isLoading)
+                        FutureBuilder<bool>(
+                          future: context.read<AuthenticationCubit>().checkFaceRegistration(),
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState == ConnectionState.waiting) {
+                              return const SizedBox.shrink();
+                            }
+                            if (snapshot.data == true) {
+                              return Center(
+                                child: OutlinedButton.icon(
+                                  onPressed: () async {
+                                    // TODO: Implement face capture and login
+                                    Get.snackbar(
+                                      'Coming Soon',
+                                      'Facial recognition login will be available soon',
+                                      snackPosition: SnackPosition.TOP,
+                                      backgroundColor: Colors.blue,
+                                      colorText: Colors.white,
+                                      margin: EdgeInsets.all(15.w),
+                                      borderRadius: 10.r,
+                                    );
+                                  },
+                                  icon: Icon(Icons.face, size: 24.sp),
+                                  label: Text(
+                                    'Login with Face Recognition',
+                                    style: TextStyle(fontSize: 14.sp),
+                                  ),
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: Colors.black87,
+                                    side: const BorderSide(color: Colors.black87, width: 1.5),
+                                    padding: EdgeInsets.symmetric(
+                                      vertical: 12.h,
+                                      horizontal: 20.w,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }
+                            return const SizedBox.shrink();
+                          },
+                        ),
+                      SizedBox(height: 12.0.h),
                       UniversalImageLoader(imagePath: AppData.orDivider),
                       SizedBox(height: 24.0.h),
                       Row(

@@ -5,6 +5,13 @@ class RecipientEntity {
   final String bankName;
   final String? profileImageUrl;
   final bool isFavorite;
+  final String? sortCode;
+  final String? countryCode;
+  final String? email;
+  final String? phoneNumber;
+  final String? currency;
+  final String? swiftCode;
+  final String? iban;
 
   RecipientEntity({
     required this.id,
@@ -13,6 +20,13 @@ class RecipientEntity {
     required this.bankName,
     this.profileImageUrl,
     this.isFavorite = false,
+    this.sortCode,
+    this.countryCode,
+    this.email,
+    this.phoneNumber,
+    this.currency,
+    this.swiftCode,
+    this.iban,
   });
 
   RecipientEntity copyWith({
@@ -22,6 +36,13 @@ class RecipientEntity {
     String? bankName,
     String? profileImageUrl,
     bool? isFavorite,
+    String? sortCode,
+    String? countryCode,
+    String? email,
+    String? phoneNumber,
+    String? currency,
+    String? swiftCode,
+    String? iban,
   }) {
     return RecipientEntity(
       id: id ?? this.id,
@@ -30,6 +51,13 @@ class RecipientEntity {
       bankName: bankName ?? this.bankName,
       profileImageUrl: profileImageUrl ?? this.profileImageUrl,
       isFavorite: isFavorite ?? this.isFavorite,
+      sortCode: sortCode ?? this.sortCode,
+      countryCode: countryCode ?? this.countryCode,
+      email: email ?? this.email,
+      phoneNumber: phoneNumber ?? this.phoneNumber,
+      currency: currency ?? this.currency,
+      swiftCode: swiftCode ?? this.swiftCode,
+      iban: iban ?? this.iban,
     );
   }
 
@@ -41,6 +69,13 @@ class RecipientEntity {
       'bankName': bankName,
       'profileImageUrl': profileImageUrl,
       'isFavorite': isFavorite,
+      'sortCode': sortCode,
+      'countryCode': countryCode,
+      'email': email,
+      'phoneNumber': phoneNumber,
+      'currency': currency,
+      'swiftCode': swiftCode,
+      'iban': iban,
     };
   }
 
@@ -51,7 +86,14 @@ class RecipientEntity {
       accountNumber: json['accountNumber'] as String,
       bankName: json['bankName'] as String,
       profileImageUrl: json['profileImageUrl'] as String?,
-      isFavorite: json['isFavorite'] as bool,
+      isFavorite: json['isFavorite'] as bool? ?? false,
+      sortCode: json['sortCode'] as String?,
+      countryCode: json['countryCode'] as String?,
+      email: json['email'] as String?,
+      phoneNumber: json['phoneNumber'] as String?,
+      currency: json['currency'] as String?,
+      swiftCode: json['swiftCode'] as String?,
+      iban: json['iban'] as String?,
     );
   }
 
@@ -64,7 +106,14 @@ class RecipientEntity {
         other.accountNumber == accountNumber &&
         other.bankName == bankName &&
         other.profileImageUrl == profileImageUrl &&
-        other.isFavorite == isFavorite;
+        other.isFavorite == isFavorite &&
+        other.sortCode == sortCode &&
+        other.countryCode == countryCode &&
+        other.email == email &&
+        other.phoneNumber == phoneNumber &&
+        other.currency == currency &&
+        other.swiftCode == swiftCode &&
+        other.iban == iban;
   }
 
   @override
@@ -74,6 +123,13 @@ class RecipientEntity {
         accountNumber.hashCode ^
         bankName.hashCode ^
         profileImageUrl.hashCode ^
-        isFavorite.hashCode;
+        isFavorite.hashCode ^
+        sortCode.hashCode ^
+        countryCode.hashCode ^
+        email.hashCode ^
+        phoneNumber.hashCode ^
+        currency.hashCode ^
+        swiftCode.hashCode ^
+        iban.hashCode;
   }
 } 

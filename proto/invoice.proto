@@ -2,203 +2,295 @@ syntax = "proto3";
 
 package pb;
 
-import "google/protobuf/timestamp.proto";
 import "google/api/annotations.proto";
-import "protoc-gen-openapiv2/options/annotations.proto";
+import "google/protobuf/timestamp.proto";
+import "invoice_payment.proto";
 
 option go_package = "lazervaultGo/pb";
 
-// --- OpenAPI Definitions ---
-option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
-	info: {
-		title: "LazerVault Invoice Service";
-		version: "1.0";
-		contact: {
-			name: "LazerVault";
-			url: "https://github.com/LazerVault";
-		};
-	};
-  // Define responses map using standard text format for maps
-  responses: { key: "400", value: {description: "Invalid request parameters."} }
-  responses: { key: "401", value: {description: "Authentication required."} }
-  responses: { key: "404", value: {description: "Resource not found."} }
-  responses: { key: "500", value: {description: "Internal server error."} }
-};
-
-// --- Messages ---
-
-// Represents customer details associated with an invoice
-message CustomerDetails {
-  string name = 1;
-  string email = 2;        // Optional
-  string address = 3;      // Optional
-  // string phone_number = 4; // Optional
+// AddressDetails represents address information for invoice participants
+message AddressDetails {
+	string company_name = 1;
+	string contact_name = 2;
+	string email = 3;
+	string phone = 4;
+	string address_line1 = 5;
+	string address_line2 = 6;
+	string city = 7;
+	string state = 8;
+	string postcode = 9;
+	string country = 10;
+	string bank_account = 11;
+	string bic_number = 12;
+	string iban = 13;
+	string routing_number = 14;
+	string tax_id = 15;
 }
 
-// Represents a single line item in an invoice
+// InvoiceItem represents a line item in an invoice
 message InvoiceItem {
-  string item_id = 1;      // Optional: ID if linked to a product catalog
-  string description = 2;
-  int32 quantity = 3;
-  double unit_price = 4;
-  double total_price = 5; // quantity * unit_price (calculated or provided)
+	string id = 1;
+	string name = 2;
+	string description = 3;
+	double quantity = 4;
+	double unit_price = 5;
+	double total_price = 6;
+	string category = 7;
 }
 
-// Enum for invoice status
-enum InvoiceStatus {
-  DRAFT = 0;
-  SENT = 1;
-  PAID = 2;
-  VOID = 3;
-  OVERDUE = 4;
-}
-
-// Represents an invoice
+// Invoice represents an invoice in the system
 message Invoice {
-  string invoice_id = 1;
-  string user_id = 2;           // ID of the user/business issuing the invoice
-  string invoice_number = 3;    // User-friendly invoice number (e.g., INV-001)
-  CustomerDetails customer_details = 4;
-  repeated InvoiceItem items = 5;
-  double subtotal = 6;          // Sum of item totals
-  double tax = 7;               // Optional tax amount
-  double total_amount = 8;      // subtotal + tax
-  string currency_code = 9;     // e.g., USD, GBP
-  google.protobuf.Timestamp issue_date = 10;
-  google.protobuf.Timestamp due_date = 11;
-  InvoiceStatus status = 12;
-  string notes = 13;            // Optional notes
-  google.protobuf.Timestamp created_at = 14;
-  google.protobuf.Timestamp updated_at = 15;
-  // google.protobuf.Timestamp paid_date = 16; // Optional
+	string id = 1;
+	string user_id = 2;
+	string recipient_id = 3;
+	string title = 4;
+	string description = 5;
+	double amount = 6;
+	string currency = 7;
+	string due_date = 8;
+	bool is_paid = 9;
+	string payment_method_id = 10;
+	string payment_reference = 11;
+	google.protobuf.Timestamp created_at = 12;
+	google.protobuf.Timestamp updated_at = 13;
+	repeated InvoiceItem items = 14;
+	string notes = 15;
+	double tax_amount = 16;
+	double discount_amount = 17;
+	double total_amount = 18;
+	AddressDetails recipient_details = 19;
+	AddressDetails payer_details = 20;
+	string to_email = 21;
+	string to_name = 22;
 }
 
-// Request to create a new invoice
+// GetInvoicesRequest represents a request to get all invoices for a user
+message GetInvoicesRequest {
+	int32 page = 1;
+	int32 limit = 2;
+}
+
+// GetInvoicesResponse represents a response containing a list of invoices
+message GetInvoicesResponse {
+	repeated Invoice invoices = 1;
+	int64 total = 2;
+}
+
+// GetInvoiceByIdRequest represents a request to get a specific invoice
+message GetInvoiceByIdRequest {
+	string invoice_id = 1;
+}
+
+// GetInvoiceByIdResponse represents a response containing a single invoice
+message GetInvoiceByIdResponse {
+	Invoice invoice = 1;
+}
+
+// CreateInvoiceRequest represents a request to create a new invoice
 message CreateInvoiceRequest {
-  option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
-		json_schema: {
-			title: "Create Invoice Request";
-			description: "Payload to create a new invoice.";
-			required: ["customer_details", "items", "currency_code", "due_date"];
-		}
-	};
-  // invoice_number can be auto-generated or provided
-  // string invoice_number = 1 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {description: "Optional custom invoice number."}];
-  CustomerDetails customer_details = 2 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {description: "Details of the customer being invoiced."}];
-  repeated InvoiceItem items = 3 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {description: "Line items for the invoice."}];
-  double tax = 4 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {description: "Optional tax amount."}];
-  string currency_code = 5 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {description: "3-letter currency code (e.g., USD)."}];
-  google.protobuf.Timestamp due_date = 6 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {description: "Payment due date."}];
-  string notes = 7 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {description: "Optional notes or terms."}];
-  // Status usually starts as DRAFT or SENT
+	string recipient_id = 1;
+	string title = 2;
+	string description = 3;
+	double amount = 4;
+	string currency = 5;
+	string due_date = 6;
+	repeated InvoiceItem items = 7;
+	string notes = 8;
+	double tax_amount = 9;
+	double discount_amount = 10;
+	double total_amount = 11;
+	AddressDetails recipient_details = 12;
+	AddressDetails payer_details = 13;
+	string to_email = 14;
+	string to_name = 15;
 }
 
-// Response after creating an invoice
+// CreateInvoiceResponse represents a response containing the created invoice
 message CreateInvoiceResponse {
-   option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
-		json_schema: {
-			title: "Create Invoice Response";
-			description: "Contains the details of the newly created invoice.";
-		}
-	};
-  Invoice invoice = 1;
+	Invoice invoice = 1;
 }
 
-// Request to get a specific invoice
-message GetInvoiceRequest {
-   option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
-		json_schema: {
-			title: "Get Invoice Request";
-			description: "Payload to retrieve a specific invoice by its ID.";
-			required: ["invoice_id"];
-		}
-	};
-  string invoice_id = 1 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {description: "The unique ID of the invoice to retrieve."}];
+// UpdateInvoiceRequest represents a request to update an existing invoice
+message UpdateInvoiceRequest {
+	string invoice_id = 1;
+	string recipient_id = 2;
+	string title = 3;
+	string description = 4;
+	double amount = 5;
+	string currency = 6;
+	string due_date = 7;
+	repeated InvoiceItem items = 8;
+	string notes = 9;
+	double tax_amount = 10;
+	double discount_amount = 11;
+	double total_amount = 12;
+	AddressDetails recipient_details = 13;
+	AddressDetails payer_details = 14;
+	string to_email = 15;
+	string to_name = 16;
 }
 
-// Response containing a single invoice
-// Uses the Invoice message directly
-
-// Request to list invoices for the authenticated user
-message ListInvoicesRequest {
-   option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
-		json_schema: {
-			title: "List Invoices Request";
-			description: "Payload to retrieve a list of invoices, with optional filtering and pagination.";
-		}
-	};
-  int32 page_size = 1 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {description: "Number of invoices per page. Default: 20."}];
-  string page_token = 2 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {description: "Token for fetching the next page. Optional."}];
-  InvoiceStatus status_filter = 3 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {description: "Optional filter by invoice status."}]; // Optional filter
+// UpdateInvoiceResponse represents a response containing the updated invoice
+message UpdateInvoiceResponse {
+	Invoice invoice = 1;
 }
 
-// Response containing a list of invoices
-message ListInvoicesResponse {
-   option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
-		json_schema: {
-			title: "List Invoices Response";
-			description: "Contains a list of invoices and pagination info.";
-		}
-	};
-  repeated Invoice invoices = 1;
-  string next_page_token = 2;
+// DeleteInvoiceRequest represents a request to delete an invoice
+message DeleteInvoiceRequest {
+	string invoice_id = 1;
 }
 
-// --- Service Definition ---
+// DeleteInvoiceResponse represents a response after deleting an invoice
+message DeleteInvoiceResponse {
+	bool success = 1;
+}
+
+// GetInvoicesByStatusRequest represents a request to get invoices by payment status
+message GetInvoicesByStatusRequest {
+	bool is_paid = 1;
+	int32 page = 2;
+	int32 limit = 3;
+}
+
+// GetInvoicesByStatusResponse represents a response containing a list of invoices filtered by status
+message GetInvoicesByStatusResponse {
+	repeated Invoice invoices = 1;
+	int64 total = 2;
+}
+
+// MarkInvoiceAsPaidRequest represents a request to mark an invoice as paid
+message MarkInvoiceAsPaidRequest {
+	string invoice_id = 1;
+	PaymentMethod payment_method = 2;
+	string payment_reference = 3;
+}
+
+// MarkInvoiceAsPaidResponse represents a response containing the updated invoice
+message MarkInvoiceAsPaidResponse {
+	Invoice invoice = 1;
+}
+
+// SendInvoiceRequest represents a request to send an invoice to the recipient
+message SendInvoiceRequest {
+	string invoice_id = 1;
+}
+
+// SendInvoiceResponse represents a response after sending an invoice
+message SendInvoiceResponse {
+	bool success = 1;
+}
+
+// TagUsersToInvoiceRequest represents a request to tag multiple users to an invoice
+message TagUsersToInvoiceRequest {
+	string invoice_id = 1;
+	repeated string user_ids = 2;
+	repeated string emails = 3; // For non-platform users
+	repeated string phone_numbers = 4; // For non-platform users
+}
+
+// TagUsersToInvoiceResponse represents a response after tagging users
+message TagUsersToInvoiceResponse {
+	bool success = 1;
+	repeated string tagged_user_ids = 2;
+	repeated string invited_emails = 3;
+	repeated string invited_phones = 4;
+	string message = 5;
+}
+
+// SearchInvoiceUsersRequest represents a request to search for users for invoice tagging
+message SearchInvoiceUsersRequest {
+	string query = 1;
+	int32 limit = 2;
+}
+
+// InvoiceUserResult represents a user in search results
+message InvoiceUserResult {
+	string id = 1;
+	string name = 2;
+	string email = 3;
+	string username = 4;
+	string phone = 5;
+	bool is_online = 6;
+}
+
+// SearchInvoiceUsersResponse represents a response containing search results
+message SearchInvoiceUsersResponse {
+	repeated InvoiceUserResult users = 1;
+}
+
+// InvoiceService provides methods for managing invoices
 service InvoiceService {
-
-  // Create a new invoice
-  rpc CreateInvoice (CreateInvoiceRequest) returns (CreateInvoiceResponse) {
-    option (google.api.http) = {
-      post: "/v1/invoices"
-      body: "*"
-    };
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-			description: "Creates a new invoice for the authenticated user.";
-			summary: "Create Invoice";
-            tags: ["Invoice"];
-            responses: {
-                key: "200"; value: {
-                    description: "Invoice Created Successfully"; schema: { json_schema: { ref: "#/definitions/pbCreateInvoiceResponse"; }}
-                }
-            }
+	// Get all invoices for a user
+	rpc GetInvoices(GetInvoicesRequest) returns (GetInvoicesResponse) {
+		option (google.api.http) = {
+			get: "/v1/invoices"
 		};
-  }
-
-  // Get a specific invoice by ID
-  rpc GetInvoice (GetInvoiceRequest) returns (Invoice) {
-    option (google.api.http) = {
-      get: "/v1/invoices/{invoice_id}"
-    };
-     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-			description: "Retrieves the details of a specific invoice by its ID.";
-			summary: "Get Invoice";
-            tags: ["Invoice"];
-            responses: {
-                key: "200"; value: {
-                    description: "OK"; schema: { json_schema: { ref: "#/definitions/pbInvoice"; }}
-                }
-            }
+	}
+	
+	// Get a specific invoice by ID
+	rpc GetInvoiceById(GetInvoiceByIdRequest) returns (GetInvoiceByIdResponse) {
+		option (google.api.http) = {
+			get: "/v1/invoices/{invoice_id}"
 		};
-  }
-
-  // List invoices for the authenticated user
-  rpc ListInvoices (ListInvoicesRequest) returns (ListInvoicesResponse) {
-    option (google.api.http) = {
-      get: "/v1/invoices"
-      // Query parameters mapped automatically
-    };
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-			description: "Retrieves a paginated list of invoices for the authenticated user, optionally filtered by status.";
-			summary: "List Invoices";
-            tags: ["Invoice"];
-             responses: {
-                key: "200"; value: {
-                    description: "OK"; schema: { json_schema: { ref: "#/definitions/pbListInvoicesResponse"; }}
-                }
-            }
+	}
+	
+	// Create a new invoice
+	rpc CreateInvoice(CreateInvoiceRequest) returns (CreateInvoiceResponse) {
+		option (google.api.http) = {
+			post: "/v1/invoices"
+			body: "*"
 		};
-  }
+	}
+	
+	// Update an existing invoice
+	rpc UpdateInvoice(UpdateInvoiceRequest) returns (UpdateInvoiceResponse) {
+		option (google.api.http) = {
+			put: "/v1/invoices/{invoice_id}"
+			body: "*"
+		};
+	}
+	
+	// Delete an invoice
+	rpc DeleteInvoice(DeleteInvoiceRequest) returns (DeleteInvoiceResponse) {
+		option (google.api.http) = {
+			delete: "/v1/invoices/{invoice_id}"
+		};
+	}
+	
+	// Get invoices by status
+	rpc GetInvoicesByStatus(GetInvoicesByStatusRequest) returns (GetInvoicesByStatusResponse) {
+		option (google.api.http) = {
+			get: "/v1/invoices/status"
+		};
+	}
+	
+	// Mark invoice as paid
+	rpc MarkInvoiceAsPaid(MarkInvoiceAsPaidRequest) returns (MarkInvoiceAsPaidResponse) {
+		option (google.api.http) = {
+			post: "/v1/invoices/{invoice_id}/mark-paid"
+			body: "*"
+		};
+	}
+	
+	// Send invoice to recipient
+	rpc SendInvoice(SendInvoiceRequest) returns (SendInvoiceResponse) {
+		option (google.api.http) = {
+			post: "/v1/invoices/{invoice_id}/send"
+		};
+	}
 
-  // Add UpdateInvoiceStatus, DeleteInvoice etc. later if needed
+	// Tag multiple users to an invoice
+	rpc TagUsersToInvoice(TagUsersToInvoiceRequest) returns (TagUsersToInvoiceResponse) {
+		option (google.api.http) = {
+			post: "/v1/invoices/{invoice_id}/tag-users"
+			body: "*"
+		};
+	}
+
+	// Search for users to tag in invoice
+	rpc SearchInvoiceUsers(SearchInvoiceUsersRequest) returns (SearchInvoiceUsersResponse) {
+		option (google.api.http) = {
+			get: "/v1/invoices/search-users"
+		};
+	}
 } 

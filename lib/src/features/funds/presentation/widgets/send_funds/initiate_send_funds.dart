@@ -31,6 +31,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds> {
   int selectedCardIndex = 0;
   String? selectedCategory;
   final TextEditingController _referenceController = TextEditingController();
+  final TextEditingController _amountController = TextEditingController();
   bool _isConfirmingTransfer = false; // State for dialog loading
 
   // Mock card data - Replace with actual data source
@@ -55,7 +56,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds> {
   //   },
   // ];
 
-  final List<int> quickAmounts = [20, 40, 60]; // Major units for display
+  final List<int> quickAmounts = [50, 100, 200, 500]; // Major units for display
 
   final List<String> categories = [
     'Food & Drinks',
@@ -118,6 +119,8 @@ class _InitiateSendFundsState extends State<InitiateSendFunds> {
           amount += value;
         }
       }
+      // Update controller to show formatted value
+      _amountController.text = _formatAmount();
     });
   }
 
@@ -125,6 +128,8 @@ class _InitiateSendFundsState extends State<InitiateSendFunds> {
     setState(() {
       // Convert major unit value to minor unit string (e.g., 20 -> "2000")
       amount = '${value}00';
+      // Update controller to show formatted value
+      _amountController.text = _formatAmount();
     });
   }
 
@@ -176,25 +181,34 @@ class _InitiateSendFundsState extends State<InitiateSendFunds> {
       }
 
       return SizedBox(
-        height: 80.h,
+        height: 100.h,
         child: ListView.builder(
           scrollDirection: Axis.horizontal,
           itemCount: accounts.length,
           itemBuilder: (context, index) {
             final account = accounts[index];
             final isSelected = selectedCardIndex == index;
-            // Basic icon mapping - enhance as needed
-            IconData cardIcon = Icons.credit_card; // Default
-            if (account.accountType.toLowerCase().contains('visa') ?? false) {
-              cardIcon = Icons.credit_card; // Specific Visa icon if available
-            } else if (account.accountType
-                    .toLowerCase()
-                    .contains('mastercard') ??
-                false) {
-              cardIcon =
-                  Icons.credit_card_outlined; // Specific MC icon if available
+
+            // Determine account type display
+            String accountTypeDisplay = 'Personal';
+            Color accountTypeColor = Colors.blue;
+            IconData accountIcon = Icons.account_balance_wallet;
+
+            final accountTypeLower = account.accountType.toLowerCase();
+            if (accountTypeLower.contains('saving')) {
+              accountTypeDisplay = 'Savings';
+              accountTypeColor = Colors.green;
+              accountIcon = Icons.savings;
+            } else if (accountTypeLower.contains('investment')) {
+              accountTypeDisplay = 'Investment';
+              accountTypeColor = Colors.orange;
+              accountIcon = Icons.trending_up;
+            } else if (accountTypeLower.contains('personal')) {
+              accountTypeDisplay = 'Personal';
+              accountTypeColor = Colors.blue;
+              accountIcon = Icons.account_balance_wallet;
             }
-            // Mask account number (assuming it's longer than 4 digits)
+
             String last4 = account.accountNumberLast4;
 
             return GestureDetector(
@@ -202,45 +216,64 @@ class _InitiateSendFundsState extends State<InitiateSendFunds> {
               child: Container(
                 margin: EdgeInsets.only(right: 12.w),
                 padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                width: 160.w,
                 decoration: BoxDecoration(
                   color: isSelected
-                      ? Colors.white.withOpacity(0.15)
-                      : Colors.white.withOpacity(0.05),
+                      ? Colors.white.withValues(alpha: 0.15)
+                      : Colors.white.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: isSelected
-                        ? Colors.white.withOpacity(0.3)
-                        : Colors.white.withOpacity(0.1),
-                    width: 1,
-                  ),
+                  border: isSelected
+                      ? Border.all(color: accountTypeColor.withValues(alpha: 0.5), width: 1.5)
+                      : null,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.08),
+                      blurRadius: 6,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Row(
-                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Icon(
-                          cardIcon, // Use dynamic icon
-                          color: Colors.white,
+                          accountIcon,
+                          color: accountTypeColor,
                           size: 20,
                         ),
-                        SizedBox(width: 8.w),
-                        Text(
-                          '•••• $last4', // Use dynamic last 4 digits
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 14,
-                            fontWeight: isSelected
-                                ? FontWeight.w600
-                                : FontWeight.normal,
+                        Container(
+                          padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                          decoration: BoxDecoration(
+                            color: accountTypeColor.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            accountTypeDisplay,
+                            style: TextStyle(
+                              color: accountTypeColor,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
                       ],
                     ),
+                    SizedBox(height: 8.h),
                     Text(
-                      // Format balance using account currency or default to GBP
+                      '•••• $last4',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: isSelected
+                            ? FontWeight.w600
+                            : FontWeight.normal,
+                      ),
+                    ),
+                    Text(
                       NumberFormat.currency(
                               symbol: account.currency ?? '£', decimalDigits: 2)
                           .format(account.balance ?? 0.0),
@@ -275,12 +308,16 @@ class _InitiateSendFundsState extends State<InitiateSendFunds> {
                     padding:
                         EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.05),
+                      color: Colors.white.withValues(alpha: 0.05),
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: Colors.white.withOpacity(0.1),
-                        width: 1,
-                      ),
+                      boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
                     ),
                     child: Text(
                       '£$amountValue',
@@ -301,15 +338,14 @@ class _InitiateSendFundsState extends State<InitiateSendFunds> {
     Get.bottomSheet(
       Container(
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.15),
+          color: Colors.white.withValues(alpha: 0.15),
           borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-          border: Border.all(color: Colors.white.withOpacity(0.1)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.5),
-              blurRadius: 10,
-              spreadRadius: 5,
-              offset: const Offset(0, -2),
+              color: Colors.black.withValues(alpha: 0.5),
+              blurRadius: 15,
+              spreadRadius: 2,
+              offset: const Offset(0, -3),
             ),
           ],
         ),
@@ -320,7 +356,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds> {
               padding: EdgeInsets.symmetric(vertical: 16.h),
               decoration: BoxDecoration(
                 border: Border(
-                    bottom: BorderSide(color: Colors.white.withOpacity(0.1))),
+                    bottom: BorderSide(color: Colors.white.withValues(alpha: 0.1))),
               ),
               child: const Center(
                 child: Text(
@@ -355,7 +391,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds> {
                         fontSize: 14,
                       ),
                     ),
-                    hoverColor: Colors.white.withOpacity(0.1),
+                    hoverColor: Colors.white.withValues(alpha: 0.1),
                   );
                 },
               ),
@@ -363,7 +399,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds> {
           ],
         ),
       ),
-      backgroundColor: Colors.black.withOpacity(0.7),
+      backgroundColor: Colors.black.withValues(alpha: 0.7),
       isDismissible: true,
       enableDrag: true,
     );
@@ -387,13 +423,13 @@ class _InitiateSendFundsState extends State<InitiateSendFunds> {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: ColorScheme.dark(
-              primary: const Color(0xFF2962FF).withOpacity(0.8),
+              primary: const Color(0xFF2962FF).withValues(alpha: 0.8),
               onPrimary: Colors.white,
               surface: Colors.black,
               onSurface: Colors.white,
             ),
             dialogTheme: DialogThemeData(
-                backgroundColor: Colors.black.withOpacity(0.95)),
+                backgroundColor: Colors.black.withValues(alpha: 0.95)),
           ),
           child: child!,
         );
@@ -411,13 +447,13 @@ class _InitiateSendFundsState extends State<InitiateSendFunds> {
           return Theme(
             data: Theme.of(context).copyWith(
               colorScheme: ColorScheme.dark(
-                primary: const Color(0xFF2962FF).withOpacity(0.8),
+                primary: const Color(0xFF2962FF).withValues(alpha: 0.8),
                 onPrimary: Colors.white,
                 surface: Colors.black,
                 onSurface: Colors.white,
               ),
               dialogTheme: DialogThemeData(
-                  backgroundColor: Colors.black.withOpacity(0.95)),
+                  backgroundColor: Colors.black.withValues(alpha: 0.95)),
             ),
             child: child!,
           );
@@ -448,33 +484,117 @@ class _InitiateSendFundsState extends State<InitiateSendFunds> {
 
   // Updated to use AccountSummaryEntity from AccountCardsSummaryCubit state
   void _showTransferConfirmation(AccountCardsSummaryState accountState) {
-    // No longer need to reset _isConfirmingTransfer here, dialog manages its own state
-    // setState(() {
-    //   _isConfirmingTransfer = false;
-    // });
+    // COMPREHENSIVE EDGE CASE VALIDATION
 
+    // 1. Validate amount is not empty and parseable
     if (amount.isEmpty || int.tryParse(amount) == null) {
-      Get.snackbar('Error', 'Please enter a valid amount.',
-          snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar(
+        'Invalid Amount',
+        'Please enter a valid amount.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.withValues(alpha: 0.7),
+        colorText: Colors.white,
+      );
       return;
     }
+
+    // 2. Validate account data is loaded
     if (accountState is! AccountCardsSummaryLoaded ||
         accountState.accountSummaries.isEmpty) {
-      Get.snackbar('Error', 'Account data not loaded. Cannot confirm.',
-          snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar(
+        'Account Error',
+        'Account data not loaded. Please try again.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.withValues(alpha: 0.7),
+        colorText: Colors.white,
+      );
       return;
     }
+
+    // 3. Validate selected card index
     if (selectedCardIndex >= accountState.accountSummaries.length) {
-      Get.snackbar('Error', 'Invalid card selected.',
-          snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar(
+        'Invalid Card',
+        'Please select a valid payment method.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.withValues(alpha: 0.7),
+        colorText: Colors.white,
+      );
       return;
     }
 
     final selectedAccount = accountState.accountSummaries[selectedCardIndex];
-    double transferAmount = double.parse(amount) / 100.0;
-    // TODO: Implement actual fee calculation based on account/transfer type
-    double transferFee = transferAmount * 0.005; // Example 0.5% fee
-    double totalAmount = transferAmount + transferFee;
+    double transferAmountMajor = double.parse(amount) / 100.0;
+
+    // 4. Validate minimum transfer amount (e.g., £0.01)
+    if (transferAmountMajor < 0.01) {
+      Get.snackbar(
+        'Amount Too Small',
+        'Minimum transfer amount is £0.01',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.orange.withValues(alpha: 0.7),
+        colorText: Colors.white,
+      );
+      return;
+    }
+
+    // 5. Validate maximum transfer amount (e.g., £10,000 per transaction)
+    const double maxTransferAmount = 10000.00;
+    if (transferAmountMajor > maxTransferAmount) {
+      Get.snackbar(
+        'Amount Too Large',
+        'Maximum transfer amount is £${NumberFormat('#,###.00').format(maxTransferAmount)}',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.orange.withValues(alpha: 0.7),
+        colorText: Colors.white,
+      );
+      return;
+    }
+
+    // 6. CRITICAL: Validate sufficient balance (including estimated fee)
+    double estimatedFee = transferAmountMajor * 0.005; // 0.5% fee
+    double estimatedTotal = transferAmountMajor + estimatedFee;
+    double availableBalance = selectedAccount.balance ?? 0.0;
+
+    if (estimatedTotal > availableBalance) {
+      Get.snackbar(
+        'Insufficient Funds',
+        'Your balance (£${NumberFormat('#,###.00').format(availableBalance)}) is insufficient. You need £${NumberFormat('#,###.00').format(estimatedTotal)} including fees.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.withValues(alpha: 0.7),
+        colorText: Colors.white,
+        duration: const Duration(seconds: 5),
+      );
+      return;
+    }
+
+    // 7. Validate recipient exists
+    if (widget.recipient.id == null || widget.recipient.name.isEmpty) {
+      Get.snackbar(
+        'Invalid Recipient',
+        'Recipient information is missing or invalid.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.withValues(alpha: 0.7),
+        colorText: Colors.white,
+      );
+      return;
+    }
+
+    // 8. Validate scheduled date is in future (if set)
+    if (scheduledDate != null && !scheduledDate!.isAfter(DateTime.now())) {
+      Get.snackbar(
+        'Invalid Schedule',
+        'Scheduled time must be in the future.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.orange.withValues(alpha: 0.7),
+        colorText: Colors.white,
+      );
+      return;
+    }
+
+    // All validations passed - calculate final amounts for confirmation
+    double transferFee = transferAmountMajor * 0.005; // Example 0.5% fee
+    double totalAmount = transferAmountMajor + transferFee;
     // Get source card details
     String sourceCardType = selectedAccount.accountType ?? 'Card';
     String sourceLast4 = selectedAccount.accountNumberLast4;
@@ -482,7 +602,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds> {
 
     showDialog(
       context: context,
-      barrierColor: Colors.black.withOpacity(0.85),
+      barrierColor: Colors.black.withValues(alpha: 0.85),
       builder: (dialogContext) => Dialog(
         backgroundColor: Colors.transparent,
         insetPadding: EdgeInsets.symmetric(horizontal: 16.w),
@@ -493,14 +613,14 @@ class _InitiateSendFundsState extends State<InitiateSendFunds> {
               maxHeight: MediaQuery.of(dialogContext).size.height * 0.85,
             ),
             decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.95),
+              color: Colors.black.withValues(alpha: 0.95),
               borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: Colors.white.withOpacity(0.1)),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.5),
-                  blurRadius: 20,
-                  spreadRadius: 5,
+                  color: Colors.black.withValues(alpha: 0.6),
+                  blurRadius: 24,
+                  spreadRadius: 3,
+                  offset: const Offset(0, 8),
                 ),
               ],
             ),
@@ -520,12 +640,12 @@ class _InitiateSendFundsState extends State<InitiateSendFunds> {
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                             colors: [
-                              Colors.white.withOpacity(0.2),
-                              Colors.white.withOpacity(0.05),
+                              Colors.white.withValues(alpha: 0.2),
+                              Colors.white.withValues(alpha: 0.05),
                             ],
                           ),
                           border:
-                              Border.all(color: Colors.white.withOpacity(0.2)),
+                              Border.all(color: Colors.white.withValues(alpha: 0.2)),
                         ),
                         child: const Icon(Icons.send_rounded,
                             color: Colors.white, size: 32),
@@ -549,7 +669,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds> {
                       children: [
                         Container(
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.05),
+                            color: Colors.white.withValues(alpha: 0.05),
                             borderRadius: BorderRadius.circular(16),
                           ),
                           padding: EdgeInsets.all(16.w),
@@ -579,7 +699,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds> {
                                 '',
                                 NumberFormat.currency(
                                         symbol: '£', decimalDigits: 2)
-                                    .format(transferAmount),
+                                    .format(transferAmountMajor),
                               ),
                               _buildConfirmationRow(
                                 'Transfer Fee',
@@ -605,12 +725,15 @@ class _InitiateSendFundsState extends State<InitiateSendFunds> {
                             child: Container(
                               padding: EdgeInsets.all(12.w),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF2962FF).withOpacity(0.1),
+                                color: const Color(0xFF2962FF).withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color:
-                                      const Color(0xFF2962FF).withOpacity(0.3),
-                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFF2962FF).withValues(alpha: 0.25),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
                               ),
                               child: Row(
                                 children: [
@@ -670,13 +793,13 @@ class _InitiateSendFundsState extends State<InitiateSendFunds> {
                                     },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor:
-                                    const Color(0xFF2962FF).withOpacity(0.9),
+                                    const Color(0xFF2962FF).withValues(alpha: 0.9),
                                 padding: EdgeInsets.symmetric(vertical: 16.h),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 disabledBackgroundColor:
-                                    Colors.grey.withOpacity(0.5),
+                                    Colors.grey.withValues(alpha: 0.5),
                                 elevation: 8,
                               ),
                               child: isDialogLoading
@@ -894,7 +1017,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds> {
         ),
         if (!isTotal)
           Divider(
-            color: Colors.white.withOpacity(0.1),
+            color: Colors.white.withValues(alpha: 0.1),
             height: 24.h,
             thickness: 1,
           ),
@@ -905,6 +1028,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds> {
   @override
   void dispose() {
     _referenceController.dispose();
+    _amountController.dispose();
     super.dispose();
   }
 
@@ -1032,7 +1156,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds> {
               'Transfer Initiated',
               'Status: ${transferState.response.status}',
               snackPosition: SnackPosition.BOTTOM,
-              backgroundColor: Colors.green.withOpacity(0.7),
+              backgroundColor: Colors.green.withValues(alpha: 0.7),
               colorText: Colors.white,
               duration: const Duration(seconds: 3),
             );
@@ -1064,7 +1188,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds> {
               'Error',
               'An internal error occurred while processing the transfer success.',
               snackPosition: SnackPosition.BOTTOM,
-              backgroundColor: Colors.orange.withOpacity(0.8),
+              backgroundColor: Colors.orange.withValues(alpha: 0.8),
               colorText: Colors.white,
             );
           }
@@ -1083,14 +1207,65 @@ class _InitiateSendFundsState extends State<InitiateSendFunds> {
             print('Listener: Closing dialog due to failure.'); // Debug print
             Get.back();
           }
-          // Show failure snackbar
+
+          // ENHANCED ERROR HANDLING - Provide specific feedback based on error type
+          String errorTitle = 'Transfer Failed';
+          String errorMessage = transferState.message;
+          Color errorColor = Colors.red.withValues(alpha: 0.7);
+          Duration errorDuration = const Duration(seconds: 4);
+
+          // Parse error message to provide better UX
+          final lowerMessage = transferState.message.toLowerCase();
+
+          if (lowerMessage.contains('insufficient') || lowerMessage.contains('balance')) {
+            errorTitle = 'Insufficient Funds';
+            errorMessage = 'Your account does not have sufficient funds for this transfer. Please check your balance and try again.';
+            errorDuration = const Duration(seconds: 5);
+          } else if (lowerMessage.contains('network') || lowerMessage.contains('connection') || lowerMessage.contains('timeout')) {
+            errorTitle = 'Network Error';
+            errorMessage = 'Unable to connect to server. Please check your internet connection and try again.';
+            errorColor = Colors.orange.withValues(alpha: 0.7);
+            errorDuration = const Duration(seconds: 5);
+          } else if (lowerMessage.contains('auth') || lowerMessage.contains('token') || lowerMessage.contains('unauthorized')) {
+            errorTitle = 'Session Expired';
+            errorMessage = 'Your session has expired. Please log in again.';
+            errorDuration = const Duration(seconds: 6);
+          } else if (lowerMessage.contains('recipient') || lowerMessage.contains('not found')) {
+            errorTitle = 'Recipient Not Found';
+            errorMessage = 'The recipient could not be found. Please verify the recipient details.';
+          } else if (lowerMessage.contains('account') && lowerMessage.contains('not found')) {
+            errorTitle = 'Account Error';
+            errorMessage = 'Source account not found or invalid. Please select another account.';
+          } else if (lowerMessage.contains('limit') || lowerMessage.contains('exceeded')) {
+            errorTitle = 'Transaction Limit Exceeded';
+            errorMessage = 'This transfer exceeds your transaction limits. Please contact support for assistance.';
+            errorDuration = const Duration(seconds: 6);
+          } else if (lowerMessage.contains('frozen') || lowerMessage.contains('locked') || lowerMessage.contains('suspended')) {
+            errorTitle = 'Account Restricted';
+            errorMessage = 'Your account has been temporarily restricted. Please contact support for assistance.';
+            errorDuration = const Duration(seconds: 6);
+          } else if (lowerMessage.contains('invalid') && lowerMessage.contains('amount')) {
+            errorTitle = 'Invalid Amount';
+            errorMessage = 'The transfer amount is invalid. Please enter a valid amount.';
+          } else if (lowerMessage.contains('grpc') || lowerMessage.contains('unavailable')) {
+            errorTitle = 'Service Unavailable';
+            errorMessage = 'The service is temporarily unavailable. Please try again in a few moments.';
+            errorColor = Colors.orange.withValues(alpha: 0.7);
+            errorDuration = const Duration(seconds: 5);
+          }
+
+          // Show enhanced error snackbar
           Get.snackbar(
-            'Transfer Failed',
-            transferState.message,
+            errorTitle,
+            errorMessage,
             snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.red.withOpacity(0.7),
+            backgroundColor: errorColor,
             colorText: Colors.white,
-            duration: const Duration(seconds: 3),
+            duration: errorDuration,
+            icon: Icon(
+              Icons.error_outline,
+              color: Colors.white,
+            ),
           );
         }
       },
@@ -1155,18 +1330,70 @@ class _InitiateSendFundsState extends State<InitiateSendFunds> {
                                           overflow: TextOverflow.ellipsis,
                                         ),
                                         SizedBox(height: 4.h),
-                                        Text(
-                                          widget.recipient.accountNumber
-                                                      .length >
-                                                  4
-                                              ? '•••• ${widget.recipient.accountNumber.substring(widget.recipient.accountNumber.length - 4)}'
-                                              : widget.recipient.accountNumber,
-                                          style: TextStyle(
-                                            color:
-                                                Colors.white.withOpacity(0.7),
-                                            fontSize: 12,
+                                        // Show selected account type and number
+                                        if (accountState is AccountCardsSummaryLoaded &&
+                                            accountState.accountSummaries.isNotEmpty &&
+                                            selectedCardIndex < accountState.accountSummaries.length)
+                                          Row(
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              // Account type badge
+                                              Builder(
+                                                builder: (context) {
+                                                  final account = accountState.accountSummaries[selectedCardIndex];
+                                                  String accountTypeDisplay = 'Personal';
+                                                  Color accountTypeColor = Colors.blue;
+
+                                                  final accountTypeLower = account.accountType.toLowerCase();
+                                                  if (accountTypeLower.contains('saving')) {
+                                                    accountTypeDisplay = 'Savings';
+                                                    accountTypeColor = Colors.green;
+                                                  } else if (accountTypeLower.contains('investment')) {
+                                                    accountTypeDisplay = 'Investment';
+                                                    accountTypeColor = Colors.orange;
+                                                  } else if (accountTypeLower.contains('personal')) {
+                                                    accountTypeDisplay = 'Personal';
+                                                    accountTypeColor = Colors.blue;
+                                                  }
+
+                                                  return Container(
+                                                    padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+                                                    decoration: BoxDecoration(
+                                                      color: accountTypeColor.withValues(alpha: 0.2),
+                                                      borderRadius: BorderRadius.circular(8),
+                                                    ),
+                                                    child: Text(
+                                                      accountTypeDisplay,
+                                                      style: TextStyle(
+                                                        color: accountTypeColor,
+                                                        fontSize: 10,
+                                                        fontWeight: FontWeight.w600,
+                                                      ),
+                                                    ),
+                                                  );
+                                                },
+                                              ),
+                                              SizedBox(width: 6.w),
+                                              Text(
+                                                '•••• ${accountState.accountSummaries[selectedCardIndex].accountNumberLast4}',
+                                                style: TextStyle(
+                                                  color: Colors.white.withValues(alpha: 0.7),
+                                                  fontSize: 12,
+                                                ),
+                                              ),
+                                            ],
+                                          )
+                                        else
+                                          Text(
+                                            widget.recipient.accountNumber.length > 4
+                                                ? '•••• ${widget.recipient.accountNumber.substring(widget.recipient.accountNumber.length - 4)}'
+                                                : widget.recipient.accountNumber,
+                                            style: TextStyle(
+                                              color: Colors.white.withValues(alpha: 0.7),
+                                              fontSize: 12,
+                                            ),
                                           ),
-                                        ),
                                       ],
                                     ),
                                   ),
@@ -1177,9 +1404,14 @@ class _InitiateSendFundsState extends State<InitiateSendFunds> {
                                   padding: const EdgeInsets.all(2.0),
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
-                                    border: Border.all(
-                                        color: Colors.white.withOpacity(0.3),
-                                        width: 2),
+                                    boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+
                                   ),
                                   child: CircleAvatar(
                                     backgroundColor: Colors
@@ -1220,7 +1452,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds> {
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 16.0, vertical: 10.0),
                               decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.05),
+                                color: Colors.white.withValues(alpha: 0.05),
                                 borderRadius: BorderRadius.circular(16),
                               ),
                               child: Column(
@@ -1237,7 +1469,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds> {
                                         padding: const EdgeInsets.symmetric(
                                             horizontal: 12, vertical: 6),
                                         decoration: BoxDecoration(
-                                          color: Colors.white.withOpacity(0.05),
+                                          color: Colors.white.withValues(alpha: 0.05),
                                           borderRadius:
                                               BorderRadius.circular(8),
                                         ),
@@ -1262,13 +1494,47 @@ class _InitiateSendFundsState extends State<InitiateSendFunds> {
                                         ),
                                       ),
                                       const SizedBox(width: 12),
-                                      // Display formatted amount
-                                      Text(
-                                        _formatAmount(),
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 24,
-                                          fontWeight: FontWeight.bold,
+                                      // Editable amount field
+                                      Expanded(
+                                        child: TextField(
+                                          controller: _amountController,
+                                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 24,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                          decoration: InputDecoration(
+                                            border: InputBorder.none,
+                                            hintText: '£0.00',
+                                            hintStyle: TextStyle(
+                                              color: Colors.white.withValues(alpha: 0.5),
+                                              fontSize: 24,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                            contentPadding: EdgeInsets.zero,
+                                          ),
+                                          onChanged: (value) {
+                                            // Parse user input and convert to minor units
+                                            // Remove currency symbols and parse
+                                            String cleanValue = value.replaceAll(RegExp(r'[^0-9.]'), '');
+                                            if (cleanValue.isNotEmpty) {
+                                              try {
+                                                double majorUnits = double.parse(cleanValue);
+                                                // Convert to minor units
+                                                int minorUnits = (majorUnits * 100).round();
+                                                setState(() {
+                                                  amount = minorUnits.toString();
+                                                });
+                                              } catch (e) {
+                                                // Invalid input, ignore
+                                              }
+                                            } else {
+                                              setState(() {
+                                                amount = '';
+                                              });
+                                            }
+                                          },
                                         ),
                                       ),
                                     ],
@@ -1289,7 +1555,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds> {
                                       padding: const EdgeInsets.symmetric(
                                           horizontal: 12, vertical: 12),
                                       decoration: BoxDecoration(
-                                        color: Colors.white.withOpacity(0.05),
+                                        color: Colors.white.withValues(alpha: 0.05),
                                         borderRadius: BorderRadius.circular(8),
                                       ),
                                       child: Row(
@@ -1327,7 +1593,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds> {
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 12, vertical: 0),
                                     decoration: BoxDecoration(
-                                      color: Colors.white.withOpacity(0.05),
+                                      color: Colors.white.withValues(alpha: 0.05),
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: Row(
@@ -1389,16 +1655,16 @@ class _InitiateSendFundsState extends State<InitiateSendFunds> {
                                             accountState), // Pass state
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: const Color(0xFF2962FF)
-                                          .withOpacity(0.8),
+                                          .withValues(alpha: 0.8),
                                       padding: const EdgeInsets.symmetric(
                                           vertical: 12.0),
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(12),
                                       ),
                                       disabledBackgroundColor:
-                                          Colors.grey.withOpacity(0.3),
+                                          Colors.grey.withValues(alpha: 0.3),
                                       disabledForegroundColor:
-                                          Colors.white.withOpacity(0.5),
+                                          Colors.white.withValues(alpha: 0.5),
                                     ),
                                     child: const Text(
                                       'Confirm Transfer',
@@ -1414,14 +1680,16 @@ class _InitiateSendFundsState extends State<InitiateSendFunds> {
                                 // Schedule Button
                                 Container(
                                   decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.05),
+                                    color: Colors.white.withValues(alpha: 0.05),
                                     borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(
-                                      color: scheduledDate != null
-                                          ? const Color(0xFF2962FF)
-                                              .withOpacity(0.8)
-                                          : Colors.white.withOpacity(0.1),
-                                    ),
+                                    boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
                                   ),
                                   child: IconButton(
                                     tooltip: scheduledDate == null
@@ -1433,7 +1701,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds> {
                                       Icons.schedule,
                                       color: scheduledDate != null
                                           ? const Color(0xFF2962FF)
-                                              .withOpacity(0.8)
+                                              .withValues(alpha: 0.8)
                                           : Colors.white70,
                                     ),
                                   ),
@@ -1468,7 +1736,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds> {
                         if (isLoading)
                           Positioned.fill(
                             child: Container(
-                              color: Colors.black.withOpacity(0.5),
+                              color: Colors.black.withValues(alpha: 0.5),
                               child: const Center(
                                 child: CircularProgressIndicator(
                                   valueColor: AlwaysStoppedAnimation<Color>(
@@ -1493,8 +1761,8 @@ class _InitiateSendFundsState extends State<InitiateSendFunds> {
     return TextButton(
       onPressed: () => _onNumberPress(number),
       style: TextButton.styleFrom(
-        foregroundColor: Colors.white.withOpacity(0.1), // Ripple color
-        backgroundColor: Colors.white.withOpacity(0.05),
+        foregroundColor: Colors.white.withValues(alpha: 0.1), // Ripple color
+        backgroundColor: Colors.white.withValues(alpha: 0.05),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         padding: EdgeInsets.zero, // Remove default padding
       ),

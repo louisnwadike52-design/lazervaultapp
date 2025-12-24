@@ -232,12 +232,8 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider(create: (_) => serviceLocator<DepositCubit>()),
-        // Create a new instance of AccountCardsSummaryCubit to use for refreshing account data
-        BlocProvider(create: (_) => serviceLocator<AccountCardsSummaryCubit>()),
-      ],
+    return BlocProvider(
+      create: (_) => serviceLocator<DepositCubit>(),
       child: BlocConsumer<AuthenticationCubit, AuthenticationState>(
         listener: (context, authState) {
           if (authState is! AuthenticationSuccess) {
@@ -289,53 +285,58 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
   
   void _blocListener(BuildContext context, DepositState state) {
     if (state is DepositFailure) {
-      Get.closeAllSnackbars(); // Close any existing snackbars
+      Get.closeAllSnackbars();
       Get.snackbar(
         'Deposit Failed',
         state.message,
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withOpacity(0.8),
+        backgroundColor: Colors.red.withOpacity(0.9),
         colorText: Colors.white,
         isDismissible: true,
         duration: const Duration(seconds: 5),
         margin: EdgeInsets.all(16.w),
-        borderRadius: 8.r,
+        borderRadius: 12.r,
         icon: Icon(
-          Icons.error_outline,
+          Icons.error_outline_rounded,
           color: Colors.white,
           size: 28.sp,
         ),
       );
+      // DO NOT navigate on error - stay on screen
     } else if (state is DepositSuccess) {
-      Get.closeAllSnackbars(); // Close any existing snackbars
+      Get.closeAllSnackbars();
       Get.snackbar(
         'Deposit Successful',
-        'Your deposit of £${_amountController.text} from $_selectedBank has been received. Transaction ID: ${state.depositDetails.depositId}',
+        'Your deposit of £${_amountController.text} from $_selectedBank has been received successfully.',
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.green.withOpacity(0.8),
+        backgroundColor: Colors.green.withOpacity(0.9),
         colorText: Colors.white,
         isDismissible: true,
-        duration: const Duration(seconds: 5),
+        duration: const Duration(seconds: 3),
         margin: EdgeInsets.all(16.w),
-        borderRadius: 8.r,
+        borderRadius: 12.r,
         icon: Icon(
-          Icons.check_circle,
+          Icons.check_circle_rounded,
           color: Colors.white,
           size: 28.sp,
         ),
       );
+
+      // Clear form
       _amountController.clear();
       setState(() {
         _selectedBank = '';
         _wasSelectedFromBottomSheet = false;
       });
-      
-      // Refresh account balances on both screens
+
+      // Refresh account balances
       _refreshAccountBalances(context);
-      
-      // Navigate back to previous screen after a short delay
+
+      // Navigate back to dashboard after delay
       Future.delayed(const Duration(seconds: 2), () {
-        Navigator.of(context).pop();
+        if (Navigator.canPop(context)) {
+          Navigator.of(context).pop();
+        }
       });
     }
   }
@@ -351,40 +352,13 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
         
         print('Refreshing account summaries after successful deposit');
         
-        // First, refresh the locally created AccountCardsSummaryCubit
-        // This ensures we have fresh data if needed on this screen
-        try {
-          // Only try to access the cubit if it's available (we're in the MultiBlocProvider context)
-          if (context.mounted) {
-            try {
-              // Safe access to the cubit
-              final localCubit = BlocProvider.of<AccountCardsSummaryCubit>(context, listen: false);
-              localCubit.fetchAccountSummaries(
-                userId: userId,
-                accessToken: accessToken,
-              );
-              print('Successfully refreshed local AccountCardsSummaryCubit');
-            } catch (e) {
-              // This will catch the case where the cubit isn't available
-              print('Local AccountCardsSummaryCubit not found: $e');
-            }
-          }
-        } catch (e) {
-          print('Error refreshing local cubit: $e');
-        }
-        
-        // Since AccountCardsSummaryCubit is now a singleton, this will update 
-        // the data used by all screens that use it
-        try {
-          final dashboardCubit = serviceLocator<AccountCardsSummaryCubit>();
-          dashboardCubit.fetchAccountSummaries(
-            userId: userId,
-            accessToken: accessToken,
-          );
-          print('Successfully refreshed AccountCardsSummaryCubit singleton instance');
-        } catch (e) {
-          print('Error refreshing singleton cubit instance: $e');
-        }
+        // Refresh the globally provided AccountCardsSummaryCubit
+        // This is the same instance used by the dashboard, so it will update reactively
+        context.read<AccountCardsSummaryCubit>().fetchAccountSummaries(
+          userId: userId,
+          accessToken: accessToken,
+        );
+        print('Successfully refreshed global AccountCardsSummaryCubit instance');
       }
     } catch (e) {
       print('Error refreshing account balances: $e');
@@ -531,9 +505,14 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
       decoration: BoxDecoration(
         color: const Color(0xFF3498DB).withOpacity(0.1),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-          color: const Color(0xFF3498DB),
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
       ),
       child: Row(
         children: [
@@ -695,9 +674,14 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
           decoration: BoxDecoration(
             color: Colors.white.withOpacity(0.05),
             borderRadius: BorderRadius.circular(16.r),
-            border: Border.all(
-              color: Colors.white.withOpacity(0.1),
-            ),
+            boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
           ),
           child: Row(
             children: [
@@ -786,9 +770,14 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
           decoration: BoxDecoration(
             color: Colors.white.withOpacity(0.05),
             borderRadius: BorderRadius.circular(12.r),
-            border: Border.all(
-              color: Colors.white.withOpacity(0.1),
-            ),
+            boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
           ),
           child: Text(
             amount,
@@ -804,22 +793,37 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
   }
 
   Widget _buildDepositButton(BuildContext buildContext, bool isLoading) {
+    final amount = double.tryParse(_amountController.text) ?? 0;
+    final isValid = _selectedBank.isNotEmpty && amount > 0;
+
     return Container(
       width: double.infinity,
       margin: EdgeInsets.only(bottom: 16.h),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16.r),
+        boxShadow: isValid && !isLoading
+            ? [
+                BoxShadow(
+                  color: const Color(0xFF10B981).withOpacity(0.3),
+                  blurRadius: 12,
+                  offset: const Offset(0, 6),
+                ),
+              ]
+            : [],
+      ),
       child: ElevatedButton(
-        onPressed:
-            _selectedBank.isEmpty || _amountController.text.isEmpty || isLoading
-                ? null
-                : () => _handleDeposit(buildContext),
+        onPressed: !isValid || isLoading ? null : () => _handleDeposit(buildContext),
         style: ElevatedButton.styleFrom(
-          backgroundColor: isLoading ? Colors.grey : Colors.green,
+          backgroundColor: isValid && !isLoading
+              ? const Color(0xFF10B981)
+              : Colors.grey.shade700,
           foregroundColor: Colors.white,
-          padding: EdgeInsets.symmetric(vertical: 16.h),
+          padding: EdgeInsets.symmetric(vertical: 18.h),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16.r),
           ),
           elevation: 0,
+          minimumSize: Size(double.infinity, 56.h),
         ),
         child: isLoading
             ? Row(
@@ -829,26 +833,41 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
                     height: 20.h,
                     width: 20.w,
                     child: const CircularProgressIndicator(
-                      strokeWidth: 2,
+                      strokeWidth: 2.5,
                       valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                     ),
                   ),
                   SizedBox(width: 12.w),
                   Text(
-                    'Processing...',
+                    'Processing Deposit...',
                     style: TextStyle(
                       fontSize: 16.sp,
                       fontWeight: FontWeight.w600,
+                      letterSpacing: 0.5,
                     ),
                   ),
                 ],
               )
-            : Text(
-                'Proceed with Deposit',
-                style: TextStyle(
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.w600,
-                ),
+            : Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Transform.rotate(
+                    angle: -0.785398, // -45 degrees in radians (up-right arrow)
+                    child: Icon(
+                      Icons.arrow_upward_rounded,
+                      size: 22.sp,
+                    ),
+                  ),
+                  SizedBox(width: 12.w),
+                  Text(
+                    amount > 0 ? 'Deposit £${amount.toStringAsFixed(2)}' : 'Deposit Funds',
+                    style: TextStyle(
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ],
               ),
       ),
     );

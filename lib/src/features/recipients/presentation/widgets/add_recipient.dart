@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:lazervault/core/models/device_contact.dart';
+import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_cubit.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_state.dart';
 import 'package:lazervault/src/features/recipients/data/models/recipient_model.dart';
@@ -11,6 +14,8 @@ import 'package:lazervault/src/features/authentication/cubit/authentication_cubi
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/enhanced_recipient_selection_bottom_sheet.dart';
 import 'package:lazervault/src/features/widgets/common/back_navigator.dart';
+import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
+import 'package:lazervault/src/features/profile/cubit/profile_state.dart';
 
 enum AddRecipientMethod { bankDetails, username, contacts }
 
@@ -23,15 +28,17 @@ class AddRecipient extends StatefulWidget {
 
 class _AddRecipientState extends State<AddRecipient> {
   AddRecipientMethod _selectedMethod = AddRecipientMethod.bankDetails;
-  
+
   // Bank Details Form Controllers
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _accountController = TextEditingController();
   final TextEditingController _sortCodeController = TextEditingController();
   final TextEditingController _bankController = TextEditingController(text: "Select Bank");
+  final TextEditingController _bankSearchController = TextEditingController();
   bool _isPersonal = true; // Personal or Business account
   bool _isFavorite = false;
-  
+  String _bankSearchQuery = '';
+
   // Username Form Controller
   final TextEditingController _usernameController = TextEditingController();
 
@@ -49,6 +56,7 @@ class _AddRecipientState extends State<AddRecipient> {
     _accountController.dispose();
     _sortCodeController.dispose();
     _bankController.dispose();
+    _bankSearchController.dispose();
     _usernameController.dispose();
     super.dispose();
   }
@@ -73,7 +81,17 @@ class _AddRecipientState extends State<AddRecipient> {
             backgroundColor: Colors.green.withOpacity(0.8),
             colorText: Colors.white,
           );
-          Get.back();
+
+          // Navigate to initiate send funds screen with the newly created recipient
+          if (state.recipient != null) {
+            Get.offNamed(
+              AppRoutes.initiateSendFunds,
+              arguments: state.recipient,
+            );
+          } else {
+            // If no recipient is returned (shouldn't happen), just go back
+            Get.back();
+          }
         }
       },
       builder: (context, state) {
@@ -366,22 +384,10 @@ class _AddRecipientState extends State<AddRecipient> {
                             ),
                             SizedBox(height: 16.h),
         
-                            _buildFormField(
-                              controller: _accountController,
-                              label: 'Account Number',
-                              hint: 'Enter account number',
-                              icon: Icons.account_balance_outlined,
-                              keyboardType: TextInputType.number,
-                            ),
+                            _buildAccountNumberField(),
                             SizedBox(height: 16.h),
         
-                            _buildFormField(
-                              controller: _sortCodeController,
-                              label: 'Sort Code',
-          hint: 'Enter sort code (6 digits)',
-                              icon: Icons.numbers_outlined,
-                              keyboardType: TextInputType.number,
-                            ),
+                            _buildSortCodeField(),
                             SizedBox(height: 16.h),
 
         // Bank Selection
@@ -815,6 +821,93 @@ class _AddRecipientState extends State<AddRecipient> {
     );
   }
 
+  Widget _buildSortCodeField() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Sort Code',
+          style: TextStyle(
+            color: Colors.black87,
+            fontSize: 14.sp,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        SizedBox(height: 8.h),
+        Container(
+          padding: EdgeInsets.symmetric(horizontal: 16.w),
+          decoration: BoxDecoration(
+            color: Colors.grey[50],
+            borderRadius: BorderRadius.circular(12.r),
+            border: Border.all(color: Colors.grey[200]!),
+          ),
+          child: TextField(
+            controller: _sortCodeController,
+            style: TextStyle(
+              color: Colors.black87,
+              fontSize: 16.sp,
+              letterSpacing: 1.5,
+            ),
+            keyboardType: TextInputType.number,
+            maxLength: 8, // 6 digits + 2 hyphens
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+              LengthLimitingTextInputFormatter(6),
+              TextInputFormatter.withFunction((oldValue, newValue) {
+                final text = newValue.text;
+                if (text.isEmpty) return newValue;
+
+                // Format as XX-XX-XX
+                String formatted = '';
+                for (int i = 0; i < text.length; i++) {
+                  if (i == 2 || i == 4) {
+                    formatted += '-';
+                  }
+                  formatted += text[i];
+                }
+
+                return TextEditingValue(
+                  text: formatted,
+                  selection: TextSelection.collapsed(offset: formatted.length),
+                );
+              }),
+            ],
+            decoration: InputDecoration(
+              hintText: 'XX-XX-XX',
+              hintStyle: TextStyle(
+                color: Colors.grey[600],
+                fontSize: 16.sp,
+                letterSpacing: 1.5,
+              ),
+              border: InputBorder.none,
+              counterText: '',
+              icon: Icon(
+                Icons.numbers_outlined,
+                color: Colors.grey[600],
+                size: 24.sp,
+              ),
+              suffixIcon: _sortCodeController.text.replaceAll('-', '').length == 6
+                  ? Icon(
+                      Icons.check_circle,
+                      color: Colors.green,
+                      size: 20.sp,
+                    )
+                  : null,
+            ),
+          ),
+        ),
+        SizedBox(height: 4.h),
+        Text(
+          'Enter 6 digits (formatted as XX-XX-XX)',
+          style: TextStyle(
+            color: Colors.grey[500],
+            fontSize: 12.sp,
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildActionButton(RecipientState state) {
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
@@ -873,35 +966,106 @@ class _AddRecipientState extends State<AddRecipient> {
   }
 
   void _addBankDetailsRecipient() {
-                    if (_nameController.text.isEmpty ||
-                        _accountController.text.isEmpty ||
-                        _sortCodeController.text.isEmpty ||
-                        _bankController.text == "Select Bank") {
+    // Trim all inputs
+    final name = _nameController.text.trim();
+    final accountNumber = _accountController.text.trim();
+    final sortCode = _sortCodeController.text.replaceAll('-', '').trim();
+    final bankName = _bankController.text;
+
+    // Validate required fields
+    if (name.isEmpty) {
       Get.snackbar(
-        'Incomplete Information',
-        'Please fill in all required fields',
+        'Name Required',
+        'Please enter the recipient\'s ${_isPersonal ? 'full name' : 'business name'}',
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.orange.withOpacity(0.8),
         colorText: Colors.white,
-                      );
-                      return;
-                    }
+      );
+      return;
+    }
 
-                    final authState = context.read<AuthenticationCubit>().state;
-                    if (authState is AuthenticationSuccess) {
+    if (accountNumber.isEmpty) {
+      Get.snackbar(
+        'Account Number Required',
+        'Please enter the account number',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.orange.withOpacity(0.8),
+        colorText: Colors.white,
+      );
+      return;
+    }
+
+    // Validate account number (8 digits for UK)
+    if (accountNumber.length != 8 || !RegExp(r'^\d+$').hasMatch(accountNumber)) {
+      Get.snackbar(
+        'Invalid Account Number',
+        'Account number must be exactly 8 digits',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.withOpacity(0.8),
+        colorText: Colors.white,
+      );
+      return;
+    }
+
+    if (sortCode.isEmpty) {
+      Get.snackbar(
+        'Sort Code Required',
+        'Please enter the sort code',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.orange.withOpacity(0.8),
+        colorText: Colors.white,
+      );
+      return;
+    }
+
+    // Validate sort code (6 digits)
+    if (sortCode.length != 6 || !RegExp(r'^\d+$').hasMatch(sortCode)) {
+      Get.snackbar(
+        'Invalid Sort Code',
+        'Sort code must be exactly 6 digits',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.withOpacity(0.8),
+        colorText: Colors.white,
+      );
+      return;
+    }
+
+    if (bankName == "Select Bank") {
+      Get.snackbar(
+        'Bank Required',
+        'Please select a bank',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.orange.withOpacity(0.8),
+        colorText: Colors.white,
+      );
+      return;
+    }
+
+    final authState = context.read<AuthenticationCubit>().state;
+    if (authState is AuthenticationSuccess) {
       final accessToken = authState.profile.session.accessToken;
 
-                    context.read<RecipientCubit>().addRecipient(
-                      recipient: RecipientModel(
-                        id: '',
-                        name: _nameController.text,
-                        accountNumber: _accountController.text,
-                        bankName: _bankController.text,
-                        sortCode: _sortCodeController.text,
-                        isFavorite: _isFavorite,
-                      ),
-                      accessToken: accessToken,
-                    );
+      // Get active country from profile preferences
+      String? countryCode;
+      final profileState = context.read<ProfileCubit>().state;
+      if (profileState is ProfileLoaded) {
+        countryCode = profileState.preferences.activeCountry.isNotEmpty
+            ? profileState.preferences.activeCountry
+            : null;
+      }
+
+      context.read<RecipientCubit>().addRecipient(
+        recipient: RecipientModel(
+          id: '',
+          name: name,
+          accountNumber: accountNumber,
+          bankName: bankName,
+          sortCode: sortCode, // Store without hyphens
+          isFavorite: _isFavorite,
+          countryCode: countryCode,
+        ),
+        accessToken: accessToken,
+      );
     }
   }
 
@@ -925,7 +1089,16 @@ class _AddRecipientState extends State<AddRecipient> {
       final authState = context.read<AuthenticationCubit>().state;
       if (authState is AuthenticationSuccess) {
         final accessToken = authState.profile.session.accessToken;
-        
+
+        // Get active country from profile preferences
+        String? countryCode;
+        final profileState = context.read<ProfileCubit>().state;
+        if (profileState is ProfileLoaded) {
+          countryCode = profileState.preferences.activeCountry.isNotEmpty
+              ? profileState.preferences.activeCountry
+              : null;
+        }
+
         context.read<RecipientCubit>().addRecipient(
           recipient: RecipientModel(
             id: mockUser['id']!,
@@ -934,6 +1107,7 @@ class _AddRecipientState extends State<AddRecipient> {
             bankName: 'LazerVault',
             sortCode: '',
             isFavorite: false,
+            countryCode: countryCode,
           ),
           accessToken: accessToken,
         );
@@ -1053,7 +1227,16 @@ class _AddRecipientState extends State<AddRecipient> {
                 final authState = context.read<AuthenticationCubit>().state;
                 if (authState is AuthenticationSuccess) {
                   final accessToken = authState.profile.session.accessToken;
-                  
+
+                  // Get active country from profile preferences
+                  String? countryCode;
+                  final profileState = context.read<ProfileCubit>().state;
+                  if (profileState is ProfileLoaded) {
+                    countryCode = profileState.preferences.activeCountry.isNotEmpty
+                        ? profileState.preferences.activeCountry
+                        : null;
+                  }
+
                   final recipient = RecipientModel(
                     id: contact.id,
                     name: nameController.text,
@@ -1061,8 +1244,9 @@ class _AddRecipientState extends State<AddRecipient> {
                     bankName: bankController.text,
                     sortCode: sortCodeController.text,
                     isFavorite: false,
+                    countryCode: countryCode,
                   );
-                  
+
                   Navigator.pop(dialogContext);
                   context.read<RecipientCubit>().addRecipient(
                     recipient: recipient,
@@ -1185,6 +1369,12 @@ class _AddRecipientState extends State<AddRecipient> {
                   border: Border.all(color: Colors.grey[200]!),
                 ),
                 child: TextField(
+                  controller: _bankSearchController,
+                  onChanged: (value) {
+                    setState(() {
+                      _bankSearchQuery = value.toLowerCase();
+                    });
+                  },
                   decoration: InputDecoration(
                     hintText: 'Search banks...',
                     hintStyle: TextStyle(
@@ -1245,11 +1435,51 @@ class _AddRecipientState extends State<AddRecipient> {
 
               // Banks List
               Expanded(
-                child: ListView.builder(
-                  padding: EdgeInsets.symmetric(horizontal: 24.w),
-                  itemCount: ukBanks.length,
-                  itemBuilder: (context, index) {
-                    final bank = ukBanks[index];
+                child: Builder(
+                  builder: (context) {
+                    final filteredBanks = _bankSearchQuery.isEmpty
+                        ? ukBanks
+                        : ukBanks.where((bank) =>
+                            bank["name"]!.toLowerCase().contains(_bankSearchQuery)
+                          ).toList();
+
+                    if (filteredBanks.isEmpty) {
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.search_off,
+                              size: 48.sp,
+                              color: Colors.grey[400],
+                            ),
+                            SizedBox(height: 16.h),
+                            Text(
+                              'No banks found',
+                              style: TextStyle(
+                                color: Colors.grey[600],
+                                fontSize: 16.sp,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            SizedBox(height: 8.h),
+                            Text(
+                              'Try a different search term',
+                              style: TextStyle(
+                                color: Colors.grey[500],
+                                fontSize: 14.sp,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+
+                    return ListView.builder(
+                      padding: EdgeInsets.symmetric(horizontal: 24.w),
+                      itemCount: filteredBanks.length,
+                      itemBuilder: (context, index) {
+                        final bank = filteredBanks[index];
                     final isSelected = _bankController.text == bank["name"];
                     
                     return Container(
@@ -1372,6 +1602,8 @@ class _AddRecipientState extends State<AddRecipient> {
                       ),
                     );
                   },
+                    );
+                  },
                 ),
               ),
 
@@ -1433,5 +1665,76 @@ class _AddRecipientState extends State<AddRecipient> {
       default:
         return 'Banking Services';
     }
+  }
+
+  Widget _buildAccountNumberField() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Account Number',
+          style: TextStyle(
+            color: Colors.black87,
+            fontSize: 14.sp,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        SizedBox(height: 8.h),
+        Container(
+          padding: EdgeInsets.symmetric(horizontal: 16.w),
+          decoration: BoxDecoration(
+            color: Colors.grey[50],
+            borderRadius: BorderRadius.circular(12.r),
+            border: Border.all(color: Colors.grey[200]!),
+          ),
+          child: TextField(
+            controller: _accountController,
+            style: TextStyle(
+              color: Colors.black87,
+              fontSize: 16.sp,
+              letterSpacing: 1.0,
+            ),
+            keyboardType: TextInputType.number,
+            maxLength: 8,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+              LengthLimitingTextInputFormatter(8),
+            ],
+            decoration: InputDecoration(
+              hintText: '12345678',
+              hintStyle: TextStyle(
+                color: Colors.grey[600],
+                fontSize: 16.sp,
+              ),
+              border: InputBorder.none,
+              counterText: '',
+              icon: Icon(
+                Icons.account_balance_outlined,
+                color: Colors.grey[600],
+                size: 24.sp,
+              ),
+              suffixIcon: _accountController.text.length == 8
+                  ? Icon(
+                      Icons.check_circle,
+                      color: Colors.green,
+                      size: 20.sp,
+                    )
+                  : null,
+            ),
+            onChanged: (value) {
+              setState(() {}); // Rebuild to show/hide check icon
+            },
+          ),
+        ),
+        SizedBox(height: 4.h),
+        Text(
+          'Enter 8 digits',
+          style: TextStyle(
+            color: Colors.grey[500],
+            fontSize: 12.sp,
+          ),
+        ),
+      ],
+    );
   }
 }

@@ -390,11 +390,7 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.1),
-        ),
-        boxShadow: [
+        borderRadius: BorderRadius.circular(20.r),        boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.1),
             blurRadius: 10,
@@ -486,11 +482,14 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
       decoration: BoxDecoration(
         color: const Color(0xFF0A0E27),
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(
-          color: isEmpty 
-            ? const Color(0xFF6C5CE7).withOpacity(0.5)
-            : Colors.white.withOpacity(0.1),
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -680,11 +679,7 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(
-          color: const Color(0xFF6C5CE7).withOpacity(0.3),
-        ),
-        boxShadow: [
+        borderRadius: BorderRadius.circular(20.r),        boxShadow: [
           BoxShadow(
             color: const Color(0xFF6C5CE7).withOpacity(0.1),
             blurRadius: 10,
@@ -794,11 +789,7 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(
-          color: const Color(0xFF6C5CE7).withOpacity(0.3),
-        ),
-        boxShadow: [
+        borderRadius: BorderRadius.circular(20.r),        boxShadow: [
           BoxShadow(
             color: const Color(0xFF6C5CE7).withOpacity(0.1),
             blurRadius: 10,
@@ -891,11 +882,7 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.1),
-        ),
-        boxShadow: [
+        borderRadius: BorderRadius.circular(20.r),        boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.1),
             blurRadius: 10,
@@ -974,9 +961,14 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
           ],
         ),
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(
-          color: Colors.orange.withOpacity(0.3),
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,

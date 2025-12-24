@@ -9,6 +9,8 @@ import 'package:lazervault/src/features/authentication/data/models/profile_model
 import 'package:lazervault/src/features/authentication/data/models/session_model.dart';
 import 'package:lazervault/src/features/authentication/data/models/user_model.dart';
 import 'package:lazervault/src/features/authentication/domain/entities/profile_entity.dart';
+import 'package:lazervault/src/features/authentication/domain/entities/phone_verification_entity.dart';
+import 'package:lazervault/src/features/authentication/data/models/phone_verification_model.dart';
 import 'package:lazervault/src/features/authentication/domain/repositories/i_auth_repository.dart';
 import 'package:lazervault/src/generated/auth.pbgrpc.dart';
 import 'package:lazervault/src/generated/user.pbgrpc.dart';
@@ -131,6 +133,7 @@ class AuthRepositoryImpl implements IAuthRepository {
     required String email,
     required String password,
     String? phoneNumber,
+    String? username,
   }) async {
     try {
       final createUserRequest = user_req_resp.CreateUserRequest(
@@ -139,6 +142,7 @@ class AuthRepositoryImpl implements IAuthRepository {
         email: email,
         password: password,
         phoneNumber: phoneNumber ?? '',
+        username: username ?? '',
       );
       print('Sending gRPC CreateUser request...');
       final createUserResponse = await _userServiceClient.createUser(createUserRequest);
@@ -388,6 +392,95 @@ class AuthRepositoryImpl implements IAuthRepository {
     } catch (e) {
       print('Unexpected error during checkEmailAvailability: $e');
       return Left(ServerFailure(message: 'An unexpected error occurred.', statusCode: 500));
+    }
+  }
+
+  @override
+  Future<Either<Failure, PhoneVerificationEntity>> requestPhoneVerification({
+    required String phoneNumber,
+  }) async {
+    try {
+      final request = auth_req_resp.RequestPhoneVerificationRequest(
+        phoneNumber: phoneNumber,
+      );
+      print('Sending gRPC RequestPhoneVerification request for: $phoneNumber');
+
+      // Use helper to get call options with authorization header from secure storage
+      final callOptions = await _callOptionsHelper.withAuth();
+      final response = await _authServiceClient.requestPhoneVerification(request, options: callOptions);
+
+      print('Phone verification request response: success=${response.success}, msg=${response.msg}');
+
+      if (response.success) {
+        return Right(PhoneVerificationModel(
+          success: true,
+          message: response.msg.isNotEmpty ? response.msg : 'Verification code sent to your phone',
+          verificationId: response.verificationId,
+          expiresIn: response.expiresIn,
+        ));
+      } else {
+        return Left(ServerFailure(
+          message: response.msg.isNotEmpty ? response.msg : 'Failed to send verification code.',
+          statusCode: 400,
+        ));
+      }
+    } on GrpcError catch (e) {
+      print('gRPC Error during requestPhoneVerification: ${e.codeName} - ${e.message}');
+      return Left(ServerFailure(
+        message: e.message ?? 'Failed to send verification code.',
+        statusCode: e.code,
+      ));
+    } catch (e) {
+      print('Unexpected error during requestPhoneVerification: $e');
+      return Left(ServerFailure(
+        message: 'An unexpected error occurred while sending verification code.',
+        statusCode: 500,
+      ));
+    }
+  }
+
+  @override
+  Future<Either<Failure, VerifyPhoneEntity>> verifyPhoneNumber({
+    required String phoneNumber,
+    required String verificationCode,
+  }) async {
+    try {
+      final request = auth_req_resp.VerifyPhoneNumberRequest(
+        phoneNumber: phoneNumber,
+        verificationCode: verificationCode,
+      );
+      print('Sending gRPC VerifyPhoneNumber request for: $phoneNumber');
+
+      // Use helper to get call options with authorization header from secure storage
+      final callOptions = await _callOptionsHelper.withAuth();
+      final response = await _authServiceClient.verifyPhoneNumber(request, options: callOptions);
+
+      print('Phone verification response: success=${response.success}, isVerified=${response.isVerified}, msg=${response.msg}');
+
+      if (response.success) {
+        return Right(VerifyPhoneModel(
+          success: true,
+          message: response.msg.isNotEmpty ? response.msg : 'Phone number verified successfully',
+          isVerified: response.isVerified,
+        ));
+      } else {
+        return Left(ServerFailure(
+          message: response.msg.isNotEmpty ? response.msg : 'Failed to verify phone number.',
+          statusCode: 400,
+        ));
+      }
+    } on GrpcError catch (e) {
+      print('gRPC Error during verifyPhoneNumber: ${e.codeName} - ${e.message}');
+      return Left(ServerFailure(
+        message: e.message ?? 'Failed to verify phone number.',
+        statusCode: e.code,
+      ));
+    } catch (e) {
+      print('Unexpected error during verifyPhoneNumber: $e');
+      return Left(ServerFailure(
+        message: 'An unexpected error occurred while verifying phone number.',
+        statusCode: 500,
+      ));
     }
   }
 }

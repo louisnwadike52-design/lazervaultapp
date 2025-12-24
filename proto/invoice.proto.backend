@@ -1,0 +1,186 @@
+syntax = "proto3";
+
+package pb;
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+import "invoice_payment.proto";
+
+option go_package = "lazervaultGo/pb";
+
+// Invoice represents an invoice in the system
+message Invoice {
+	string id = 1;
+	string user_id = 2;
+	string recipient_id = 3;
+	string title = 4;
+	string description = 5;
+	double amount = 6;
+	string currency = 7;
+	string due_date = 8;
+	bool is_paid = 9;
+	string payment_method_id = 10;
+	string payment_reference = 11;
+	google.protobuf.Timestamp created_at = 12;
+	google.protobuf.Timestamp updated_at = 13;
+}
+
+// GetInvoicesRequest represents a request to get all invoices for a user
+message GetInvoicesRequest {
+	int32 page = 1;
+	int32 limit = 2;
+}
+
+// GetInvoicesResponse represents a response containing a list of invoices
+message GetInvoicesResponse {
+	repeated Invoice invoices = 1;
+	int64 total = 2;
+}
+
+// GetInvoiceByIdRequest represents a request to get a specific invoice
+message GetInvoiceByIdRequest {
+	string invoice_id = 1;
+}
+
+// GetInvoiceByIdResponse represents a response containing a single invoice
+message GetInvoiceByIdResponse {
+	Invoice invoice = 1;
+}
+
+// CreateInvoiceRequest represents a request to create a new invoice
+message CreateInvoiceRequest {
+	string recipient_id = 1;
+	string title = 2;
+	string description = 3;
+	double amount = 4;
+	string currency = 5;
+	string due_date = 6;
+}
+
+// CreateInvoiceResponse represents a response containing the created invoice
+message CreateInvoiceResponse {
+	Invoice invoice = 1;
+}
+
+// UpdateInvoiceRequest represents a request to update an existing invoice
+message UpdateInvoiceRequest {
+	string invoice_id = 1;
+	string recipient_id = 2;
+	string title = 3;
+	string description = 4;
+	double amount = 5;
+	string currency = 6;
+	string due_date = 7;
+}
+
+// UpdateInvoiceResponse represents a response containing the updated invoice
+message UpdateInvoiceResponse {
+	Invoice invoice = 1;
+}
+
+// DeleteInvoiceRequest represents a request to delete an invoice
+message DeleteInvoiceRequest {
+	string invoice_id = 1;
+}
+
+// DeleteInvoiceResponse represents a response after deleting an invoice
+message DeleteInvoiceResponse {
+	bool success = 1;
+}
+
+// GetInvoicesByStatusRequest represents a request to get invoices by payment status
+message GetInvoicesByStatusRequest {
+	bool is_paid = 1;
+	int32 page = 2;
+	int32 limit = 3;
+}
+
+// GetInvoicesByStatusResponse represents a response containing a list of invoices filtered by status
+message GetInvoicesByStatusResponse {
+	repeated Invoice invoices = 1;
+	int64 total = 2;
+}
+
+// MarkInvoiceAsPaidRequest represents a request to mark an invoice as paid
+message MarkInvoiceAsPaidRequest {
+	string invoice_id = 1;
+	PaymentMethod payment_method = 2;
+	string payment_reference = 3;
+}
+
+// MarkInvoiceAsPaidResponse represents a response containing the updated invoice
+message MarkInvoiceAsPaidResponse {
+	Invoice invoice = 1;
+}
+
+// SendInvoiceRequest represents a request to send an invoice to the recipient
+message SendInvoiceRequest {
+	string invoice_id = 1;
+}
+
+// SendInvoiceResponse represents a response after sending an invoice
+message SendInvoiceResponse {
+	bool success = 1;
+}
+
+// InvoiceService provides methods for managing invoices
+service InvoiceService {
+	// Get all invoices for a user
+	rpc GetInvoices(GetInvoicesRequest) returns (GetInvoicesResponse) {
+		option (google.api.http) = {
+			get: "/v1/invoices"
+		};
+	}
+	
+	// Get a specific invoice by ID
+	rpc GetInvoiceById(GetInvoiceByIdRequest) returns (GetInvoiceByIdResponse) {
+		option (google.api.http) = {
+			get: "/v1/invoices/{invoice_id}"
+		};
+	}
+	
+	// Create a new invoice
+	rpc CreateInvoice(CreateInvoiceRequest) returns (CreateInvoiceResponse) {
+		option (google.api.http) = {
+			post: "/v1/invoices"
+			body: "*"
+		};
+	}
+	
+	// Update an existing invoice
+	rpc UpdateInvoice(UpdateInvoiceRequest) returns (UpdateInvoiceResponse) {
+		option (google.api.http) = {
+			put: "/v1/invoices/{invoice_id}"
+			body: "*"
+		};
+	}
+	
+	// Delete an invoice
+	rpc DeleteInvoice(DeleteInvoiceRequest) returns (DeleteInvoiceResponse) {
+		option (google.api.http) = {
+			delete: "/v1/invoices/{invoice_id}"
+		};
+	}
+	
+	// Get invoices by status
+	rpc GetInvoicesByStatus(GetInvoicesByStatusRequest) returns (GetInvoicesByStatusResponse) {
+		option (google.api.http) = {
+			get: "/v1/invoices/status"
+		};
+	}
+	
+	// Mark invoice as paid
+	rpc MarkInvoiceAsPaid(MarkInvoiceAsPaidRequest) returns (MarkInvoiceAsPaidResponse) {
+		option (google.api.http) = {
+			post: "/v1/invoices/{invoice_id}/mark-paid"
+			body: "*"
+		};
+	}
+	
+	// Send invoice to recipient
+	rpc SendInvoice(SendInvoiceRequest) returns (SendInvoiceResponse) {
+		option (google.api.http) = {
+			post: "/v1/invoices/{invoice_id}/send"
+		};
+	}
+} 

@@ -31,9 +31,6 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
         serviceName: AppServiceName.invoice,
         serviceImg: AppServiceImg.invoice),
     const AppService(
-        serviceName: AppServiceName.payInvoice,
-        serviceImg: AppServiceImg.payInvoice),
-    const AppService(
         serviceName: AppServiceName.payElectricityBill,
         serviceImg: AppServiceImg.payElectricityBill),
     const AppService(
@@ -51,6 +48,9 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
     const AppService(
         serviceName: AppServiceName.aiScanToPay,
         serviceImg: AppServiceImg.aiScanToPay),
+    const AppService(
+        serviceName: AppServiceName.barcodeQuickPay,
+        serviceImg: AppServiceImg.barcodeQuickPay),
     const AppService(
         serviceName: AppServiceName.groupAccount,
         serviceImg: AppServiceImg.groupAccount),
@@ -211,7 +211,7 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
 
           // Carousel Indicators (only show if more than 1 page)
           if (servicePages.length > 1) ...[
-            SizedBox(height: 6.h),
+            SizedBox(height: 3.h),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: List.generate(

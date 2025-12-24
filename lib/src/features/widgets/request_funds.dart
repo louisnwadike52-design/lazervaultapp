@@ -87,11 +87,7 @@ class _RequestFundsState extends State<RequestFunds> {
                     padding: EdgeInsets.all(16.w),
                     decoration: BoxDecoration(
                       color: Colors.white.withOpacity(0.08),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: Colors.white.withOpacity(0.15),
-                      ),
-                      boxShadow: [
+                      borderRadius: BorderRadius.circular(16),                      boxShadow: [
                         BoxShadow(
                           color: Colors.black.withOpacity(0.2),
                           blurRadius: 10,
@@ -106,10 +102,14 @@ class _RequestFundsState extends State<RequestFunds> {
                           height: 48.w,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            border: Border.all(
-                              color: Colors.white.withOpacity(0.2),
-                              width: 2,
-                            ),
+                            boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
                           ),
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(24.w),
@@ -160,9 +160,14 @@ class _RequestFundsState extends State<RequestFunds> {
                     decoration: BoxDecoration(
                       color: Colors.white.withOpacity(0.08),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: Colors.white.withOpacity(0.15),
-                      ),
+                      boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
                     ),
                     child: Row(
                       children: [
@@ -323,9 +328,14 @@ class _RequestFundsState extends State<RequestFunds> {
           decoration: BoxDecoration(
             color: backgroundColor ?? Colors.white.withOpacity(0.08),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: borderColor ?? Colors.white.withOpacity(0.15),
-            ),
+            boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
           ),
           child: TextField(
             controller: controller,

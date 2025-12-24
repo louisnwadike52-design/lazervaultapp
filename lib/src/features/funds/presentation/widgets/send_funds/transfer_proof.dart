@@ -5,6 +5,12 @@ import 'package:intl/intl.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'dart:math';
+import 'package:screenshot/screenshot.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:device_info_plus/device_info_plus.dart';
+import 'dart:io';
+import 'dart:typed_data';
 
 class TransferProof extends StatefulWidget {
   final Map<String, dynamic> transferDetails;
@@ -21,6 +27,7 @@ class _TransferProofState extends State<TransferProof>
   late Animation<double> _fadeAnimation;
   late Animation<double> _scaleAnimation;
   late Animation<double> _checkAnimation;
+  final ScreenshotController _screenshotController = ScreenshotController();
 
   @override
   void initState() {
@@ -76,32 +83,33 @@ class _TransferProofState extends State<TransferProof>
     final String status = widget.transferDetails['status'] as String? ?? 'completed';
     
     Get.bottomSheet(
-      Container(
-        height: Get.height * 0.8,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              const Color(0xFF1A1A3E),
-              const Color(0xFF0F0F23),
+      Screenshot(
+        controller: _screenshotController,
+        child: Container(
+          height: Get.height * 0.8,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                const Color(0xFF1A1A3E),
+                const Color(0xFF0F0F23),
+              ],
+            ),
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(20.r),
+              topRight: Radius.circular(20.r),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.blue.withValues(alpha: 0.3),
+                blurRadius: 24,
+                offset: const Offset(0, -8),
+                spreadRadius: 1,
+              ),
             ],
           ),
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(20.r),
-            topRight: Radius.circular(20.r),
-          ),
-          border: Border.all(color: Colors.blue.withValues(alpha: 0.3), width: 1),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.blue.withValues(alpha: 0.2),
-              blurRadius: 20,
-              offset: const Offset(0, -8),
-              spreadRadius: 0,
-            ),
-          ],
-        ),
-        child: Column(
+          child: Column(
           children: [
             // Handle bar
             Container(
@@ -201,7 +209,13 @@ class _TransferProofState extends State<TransferProof>
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.05),
                       borderRadius: BorderRadius.circular(12.r),
-                      border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                      boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
                     ),
                     child: Column(
                       children: [
@@ -227,6 +241,7 @@ class _TransferProofState extends State<TransferProof>
               ),
             ),
           ],
+        ),
         ),
       ),
       isDismissible: true,
@@ -262,85 +277,202 @@ class _TransferProofState extends State<TransferProof>
     );
   }
 
-  void _downloadReceipt(String transferId, double amount, String recipientName, DateTime timestamp) {
-    // Close the current bottom sheet
-    Get.back();
-    
-    // Simulate receipt generation and download
-    Future.delayed(const Duration(milliseconds: 500), () {
-      // Generate receipt content
-      final receiptContent = _generateReceiptContent(transferId, amount, recipientName, timestamp);
-      
-      // In a real app, you would save this to device storage or share it
-      // For now, we'll show a success message
-      Get.snackbar(
-        '',
-        '',
-        titleText: Container(),
-        messageText: Container(
-          padding: EdgeInsets.all(16.w),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Colors.green[700]!, Colors.green[500]!],
+  Future<void> _downloadReceipt(String transferId, double amount, String recipientName, DateTime timestamp) async {
+    try {
+      // Request storage permission
+      PermissionStatus status;
+
+      if (Platform.isAndroid) {
+        // For Android 13+ (API 33+), we need different permissions
+        final deviceInfo = await DeviceInfoPlugin().androidInfo;
+        if (deviceInfo.version.sdkInt >= 33) {
+          // Android 13+ doesn't need storage permission for app-specific directories
+          status = PermissionStatus.granted;
+        } else {
+          status = await Permission.storage.request();
+        }
+      } else if (Platform.isIOS) {
+        status = await Permission.photos.request();
+      } else {
+        status = PermissionStatus.granted;
+      }
+
+      if (status.isDenied || status.isPermanentlyDenied) {
+        _showErrorSnackbar('Storage permission is required to save the receipt');
+        return;
+      }
+
+      // Capture the screenshot
+      final Uint8List? imageBytes = await _screenshotController.capture();
+
+      if (imageBytes == null) {
+        _showErrorSnackbar('Failed to capture receipt');
+        return;
+      }
+
+      // Get the appropriate directory
+      Directory? directory;
+      if (Platform.isAndroid) {
+        directory = await getExternalStorageDirectory();
+      } else if (Platform.isIOS) {
+        directory = await getApplicationDocumentsDirectory();
+      } else {
+        directory = await getDownloadsDirectory();
+      }
+
+      if (directory == null) {
+        _showErrorSnackbar('Failed to access storage');
+        return;
+      }
+
+      // Create LazerVault folder if it doesn't exist
+      final lazerVaultDir = Directory('${directory.path}/LazerVault/Receipts');
+      if (!await lazerVaultDir.exists()) {
+        await lazerVaultDir.create(recursive: true);
+      }
+
+      // Save the file
+      final fileName = 'Receipt_${transferId}_${timestamp.millisecondsSinceEpoch}.png';
+      final filePath = '${lazerVaultDir.path}/$fileName';
+      final file = File(filePath);
+      await file.writeAsBytes(imageBytes);
+
+      // Close the bottom sheet
+      Get.back();
+
+      // Show success message
+      _showSuccessSnackbar('Receipt saved successfully', filePath);
+    } catch (e) {
+      _showErrorSnackbar('Error saving receipt: ${e.toString()}');
+    }
+  }
+
+  void _showSuccessSnackbar(String message, String filePath) {
+    Get.snackbar(
+      '',
+      '',
+      titleText: Container(),
+      messageText: Container(
+        padding: EdgeInsets.all(16.w),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.green[700]!, Colors.green[500]!],
+          ),
+          borderRadius: BorderRadius.circular(12.r),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.green.withValues(alpha: 0.3),
+              blurRadius: 12,
+              offset: const Offset(0, 6),
             ),
-            borderRadius: BorderRadius.circular(12.r),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.green.withValues(alpha: 0.3),
-                blurRadius: 12,
-                offset: const Offset(0, 6),
-              ),
-            ],
-          ),
-          child: Row(
-            children: [
-              Container(
-                padding: EdgeInsets.all(8.w),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(8.r),
-                ),
-                child: Icon(Icons.check_circle, color: Colors.white, size: 20.sp),
-              ),
-              SizedBox(width: 12.w),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      'Receipt Downloaded Successfully',
-                      style: GoogleFonts.inter(
-                        color: Colors.white,
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    Text(
-                      'Receipt_$transferId.pdf saved to Downloads',
-                      style: GoogleFonts.inter(
-                        color: Colors.white.withValues(alpha: 0.9),
-                        fontSize: 12.sp,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
+          ],
         ),
-        backgroundColor: Colors.transparent,
-        duration: const Duration(seconds: 3),
-        margin: EdgeInsets.only(
-          top: Get.height * 0.1,
-          left: 16.w,
-          right: 16.w,
+        child: Row(
+          children: [
+            Container(
+              padding: EdgeInsets.all(8.w),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(8.r),
+              ),
+              child: Icon(Icons.check_circle, color: Colors.white, size: 20.sp),
+            ),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    message,
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  Text(
+                    'Saved to: ${filePath.split('/').last}',
+                    style: GoogleFonts.inter(
+                      color: Colors.white.withValues(alpha: 0.9),
+                      fontSize: 12.sp,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
-        borderRadius: 12.r,
-        snackPosition: SnackPosition.TOP,
-      );
-    });
+      ),
+      backgroundColor: Colors.transparent,
+      duration: const Duration(seconds: 3),
+      margin: EdgeInsets.only(
+        top: Get.height * 0.1,
+        left: 16.w,
+        right: 16.w,
+      ),
+      borderRadius: 12.r,
+      snackPosition: SnackPosition.TOP,
+    );
+  }
+
+  void _showErrorSnackbar(String message) {
+    Get.snackbar(
+      '',
+      '',
+      titleText: Container(),
+      messageText: Container(
+        padding: EdgeInsets.all(16.w),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.red[700]!, Colors.red[500]!],
+          ),
+          borderRadius: BorderRadius.circular(12.r),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.red.withValues(alpha: 0.3),
+              blurRadius: 12,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: EdgeInsets.all(8.w),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(8.r),
+              ),
+              child: Icon(Icons.error_outline, color: Colors.white, size: 20.sp),
+            ),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: Text(
+                message,
+                style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+      backgroundColor: Colors.transparent,
+      duration: const Duration(seconds: 3),
+      margin: EdgeInsets.only(
+        top: Get.height * 0.1,
+        left: 16.w,
+        right: 16.w,
+      ),
+      borderRadius: 12.r,
+      snackPosition: SnackPosition.TOP,
+    );
   }
 
   String _generateReceiptContent(String transferId, double amount, String recipientName, DateTime timestamp) {
@@ -527,7 +659,13 @@ class _TransferProofState extends State<TransferProof>
           ],
         ),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.green.withValues(alpha: 0.3),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
             child: Column(
         children: [
@@ -576,7 +714,13 @@ class _TransferProofState extends State<TransferProof>
         decoration: BoxDecoration(
           color: Colors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(16.r),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+          boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
         ),
                   child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

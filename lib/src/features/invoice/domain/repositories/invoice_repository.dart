@@ -27,4 +27,44 @@ abstract class InvoiceRepository {
   // Payment tracking
   Future<void> recordPayment(String invoiceId, double amount, PaymentMethod method, String reference);
   Future<List<Map<String, dynamic>>> getPaymentHistory(String invoiceId);
+
+  // User tagging for invoices
+  Future<TagUsersResponse> tagUsersToInvoice(String invoiceId, List<String> userIds, List<String> emails, List<String> phoneNumbers);
+  Future<List<InvoiceUser>> searchUsers(String query, {int limit = 20});
+}
+
+// User model for search results
+class InvoiceUser {
+  final String id;
+  final String name;
+  final String email;
+  final String username;
+  final String phone;
+  final bool isOnline;
+
+  InvoiceUser({
+    required this.id,
+    required this.name,
+    required this.email,
+    required this.username,
+    required this.phone,
+    required this.isOnline,
+  });
+}
+
+// Response model for tag users operation
+class TagUsersResponse {
+  final bool success;
+  final List<String> taggedUserIds;
+  final List<String> invitedEmails;
+  final List<String> invitedPhones;
+  final String message;
+
+  TagUsersResponse({
+    required this.success,
+    required this.taggedUserIds,
+    required this.invitedEmails,
+    required this.invitedPhones,
+    required this.message,
+  });
 } 

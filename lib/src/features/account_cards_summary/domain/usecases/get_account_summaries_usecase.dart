@@ -10,12 +10,14 @@ class GetAccountSummariesUseCase {
   GetAccountSummariesUseCase(this._repository);
 
   Future<Either<Failure, List<AccountSummaryEntity>>> call({
-    required String userId, 
-    String? accessToken
+    required String userId,
+    String? accessToken,
+    String? country,
   }) async {
     return await _repository.getAccountSummaries(
       userId: userId,
-      accessToken: accessToken
+      accessToken: accessToken,
+      country: country,
     );
   }
 } 

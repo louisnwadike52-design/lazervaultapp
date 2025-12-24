@@ -473,6 +473,14 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
           onChanged: (value) => context.read<AuthenticationCubit>().signUpLastNameChanged(value),
         ),
         SizedBox(height: 8.0.h),
+        // Username field
+        BuildFormField(
+          name: "username",
+          placeholder: "Username (optional)",
+          prefixIcon: const Icon(Icons.alternate_email, color: Colors.black45),
+          onChanged: (value) => context.read<AuthenticationCubit>().signUpUsernameChanged(value),
+        ),
+        SizedBox(height: 8.0.h),
         // DOB field
          GestureDetector(
               onTap: _showDatePicker,

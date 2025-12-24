@@ -1,10 +1,13 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lazervault/core/data/app_data.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/presentation/views/notification_screen.dart';
 import 'package:lazervault/src/features/widgets/universal_image_loader.dart';
+import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
+import 'package:lazervault/src/features/profile/cubit/profile_state.dart';
 import 'package:get/get.dart';
 import 'package:flutter/services.dart';
 
@@ -85,12 +88,7 @@ class _DashboardCardSummaryState extends State<DashboardCardSummary> {
               children: [
                 Container(
                   decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: Colors.white.withOpacity(0.2),
-                      width: 2,
-                    ),
-                  ),
+                    shape: BoxShape.circle,                  ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(20.r),
                     child: UniversalImageLoader(
@@ -102,39 +100,7 @@ class _DashboardCardSummaryState extends State<DashboardCardSummary> {
                 ),
                 SizedBox(width: 16.w),
                 Expanded(
-                  child: Container(
-                    height: 40.h,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(20.r),
-                      border: Border.all(
-                        color: Colors.white.withOpacity(0.1),
-                      ),
-                    ),
-                    child: TextField(
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 14.sp,
-                      ),
-                      decoration: InputDecoration(
-                        hintText: 'Search transactions',
-                        hintStyle: TextStyle(
-                          color: Colors.white.withOpacity(0.5),
-                          fontSize: 14.sp,
-                        ),
-                        prefixIcon: Icon(
-                          Icons.search_rounded,
-                          color: Colors.white.withOpacity(0.5),
-                          size: 20.sp,
-                        ),
-                        border: InputBorder.none,
-                        contentPadding: EdgeInsets.symmetric(
-                          horizontal: 16.w,
-                          vertical: 10.h,
-                        ),
-                      ),
-                    ),
-                  ),
+                  child: _buildCountrySelector(),
                 ),
                 SizedBox(width: 16.w),
                 _buildIconButton(Icons.notifications_outlined),
@@ -174,10 +140,14 @@ class _DashboardCardSummaryState extends State<DashboardCardSummary> {
                           ],
                         ),
                         borderRadius: BorderRadius.circular(24.r),
-                        border: Border.all(
-                          color: Colors.white.withOpacity(0.1),
-                          width: 1,
-                        ),
+                        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -226,10 +196,14 @@ class _DashboardCardSummaryState extends State<DashboardCardSummary> {
                                       decoration: BoxDecoration(
                                         color: Colors.white.withOpacity(0.1),
                                         shape: BoxShape.circle,
-                                        border: Border.all(
-                                          color: Colors.white.withOpacity(0.2),
-                                          width: 1,
-                                        ),
+                                        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
                                       ),
                                       child: Icon(
                                         Icons.account_balance_outlined,
@@ -340,9 +314,14 @@ class _DashboardCardSummaryState extends State<DashboardCardSummary> {
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.1),
         shape: BoxShape.circle,
-        border: Border.all(
-          color: Colors.white.withOpacity(0.1),
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
       ),
       child: IconButton(
         icon: Icon(icon, color: Colors.white, size: 20.sp),
@@ -397,6 +376,136 @@ class _DashboardCardSummaryState extends State<DashboardCardSummary> {
     );
   }
 
+  Widget _buildCountrySelector() {
+    return BlocBuilder<ProfileCubit, ProfileState>(
+      builder: (context, state) {
+        if (state is! ProfileLoaded) {
+          return Container(
+            height: 40.h,
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(20.r),
+            ),
+          );
+        }
+
+        final preferences = state.preferences;
+
+        // If no preferred countries, show default or don't show anything
+        if (preferences.preferredCountries.isEmpty) {
+          return Container(
+            height: 40.h,
+            padding: EdgeInsets.symmetric(horizontal: 16.w),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(20.r),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.public,
+                  color: Colors.white.withOpacity(0.7),
+                  size: 18.sp,
+                ),
+                SizedBox(width: 8.w),
+                Text(
+                  'Global',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.9),
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+
+        final activeCountry = preferences.activeCountry.isNotEmpty
+            ? preferences.activeCountry
+            : preferences.preferredCountries.first;
+
+        return Container(
+          height: 40.h,
+          padding: EdgeInsets.symmetric(horizontal: 12.w),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.15),
+            borderRadius: BorderRadius.circular(20.r),
+            border: Border.all(
+              color: Colors.white.withOpacity(0.2),
+              width: 1,
+            ),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              value: activeCountry,
+              icon: Icon(
+                Icons.keyboard_arrow_down_rounded,
+                color: Colors.white,
+                size: 20.sp,
+              ),
+              dropdownColor: Color(0xFF2D1B69),
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w600,
+              ),
+              items: preferences.preferredCountries.map((countryCode) {
+                return DropdownMenuItem<String>(
+                  value: countryCode,
+                  child: Row(
+                    children: [
+                      Text(
+                        _getCountryFlag(countryCode),
+                        style: TextStyle(fontSize: 18.sp),
+                      ),
+                      SizedBox(width: 8.w),
+                      Text(
+                        countryCode,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
+              onChanged: (String? newCountry) {
+                if (newCountry != null) {
+                  context.read<ProfileCubit>().setActiveCountry(newCountry);
+                }
+              },
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  String _getCountryFlag(String countryCode) {
+    final flags = {
+      'US': '🇺🇸',
+      'GB': '🇬🇧',
+      'EU': '🇪🇺',
+      'CA': '🇨🇦',
+      'AU': '🇦🇺',
+      'NG': '🇳🇬',
+      'KE': '🇰🇪',
+      'ZA': '🇿🇦',
+      'IN': '🇮🇳',
+      'CN': '🇨🇳',
+      'JP': '🇯🇵',
+      'FR': '🇫🇷',
+      'DE': '🇩🇪',
+      'ES': '🇪🇸',
+      'IT': '🇮🇹',
+    };
+    return flags[countryCode] ?? '🌍';
+  }
+
   Widget _buildActionButton(String label, IconData icon,
       {required VoidCallback onTap}) {
     return Material(
@@ -409,9 +518,14 @@ class _DashboardCardSummaryState extends State<DashboardCardSummary> {
           decoration: BoxDecoration(
             color: Colors.white.withOpacity(0.1),
             borderRadius: BorderRadius.circular(20.r),
-            border: Border.all(
-              color: Colors.white.withOpacity(0.1),
-            ),
+            boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -928,9 +1042,14 @@ class _DashboardCardSummaryState extends State<DashboardCardSummary> {
                                 decoration: BoxDecoration(
                                   color: Colors.white.withOpacity(0.05),
                                   borderRadius: BorderRadius.circular(12.r),
-                                  border: Border.all(
-                                    color: Colors.white.withOpacity(0.1),
-                                  ),
+                                  boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
                                 ),
                                 child: Row(
                                   children: [
@@ -1007,9 +1126,14 @@ class _DashboardCardSummaryState extends State<DashboardCardSummary> {
           decoration: BoxDecoration(
             color: Colors.white.withOpacity(0.1),
             borderRadius: BorderRadius.circular(12.r),
-            border: Border.all(
-              color: Colors.white.withOpacity(0.1),
-            ),
+            boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -1080,9 +1204,14 @@ class _DashboardCardSummaryState extends State<DashboardCardSummary> {
           decoration: BoxDecoration(
             color: Colors.white.withOpacity(0.05),
             borderRadius: BorderRadius.circular(16.r),
-            border: Border.all(
-              color: Colors.white.withOpacity(0.1),
-            ),
+            boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
           ),
           child: Row(
             children: [
@@ -1223,9 +1352,14 @@ class _DashboardCardSummaryState extends State<DashboardCardSummary> {
           decoration: BoxDecoration(
             color: Colors.white.withOpacity(0.05),
             borderRadius: BorderRadius.circular(16.r),
-            border: Border.all(
-              color: Colors.white.withOpacity(0.1),
-            ),
+            boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
           ),
           child: Row(
             children: [
@@ -1290,9 +1424,14 @@ class _DashboardCardSummaryState extends State<DashboardCardSummary> {
           decoration: BoxDecoration(
             color: Colors.white.withOpacity(0.05),
             borderRadius: BorderRadius.circular(16.r),
-            border: Border.all(
-              color: Colors.white.withOpacity(0.1),
-            ),
+            boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
           ),
           child: Row(
             children: [
@@ -1340,9 +1479,14 @@ class _DashboardCardSummaryState extends State<DashboardCardSummary> {
             decoration: BoxDecoration(
               color: Colors.white.withOpacity(0.03),
               borderRadius: BorderRadius.circular(8.r),
-              border: Border.all(
-                color: Colors.white.withOpacity(0.1),
-              ),
+              boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
             ),
             child: Row(
               children: [
@@ -1556,9 +1700,14 @@ class _DashboardCardSummaryState extends State<DashboardCardSummary> {
           decoration: BoxDecoration(
             color: color.withOpacity(0.1),
             borderRadius: BorderRadius.circular(12.r),
-            border: Border.all(
-              color: color.withOpacity(0.2),
-            ),
+            boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
           ),
           child: Row(
             children: [
@@ -1626,9 +1775,14 @@ class _DashboardCardSummaryState extends State<DashboardCardSummary> {
           decoration: BoxDecoration(
             color: Color(0xFF1E1E1E),
             borderRadius: BorderRadius.circular(24.r),
-            border: Border.all(
-              color: Colors.white.withOpacity(0.1),
-            ),
+            boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -1665,9 +1819,14 @@ class _DashboardCardSummaryState extends State<DashboardCardSummary> {
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.05),
                   borderRadius: BorderRadius.circular(12.r),
-                  border: Border.all(
-                    color: Colors.white.withOpacity(0.1),
-                  ),
+                  boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
                 ),
                 child: TextField(
                   controller: reasonController,
@@ -1829,9 +1988,14 @@ class _DashboardCardSummaryState extends State<DashboardCardSummary> {
           decoration: BoxDecoration(
             color: Color(0xFF1E1E1E),
             borderRadius: BorderRadius.circular(24.r),
-            border: Border.all(
-              color: Colors.white.withOpacity(0.1),
-            ),
+            boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -1919,9 +2083,14 @@ class _DashboardCardSummaryState extends State<DashboardCardSummary> {
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.05),
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.1),
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
       ),
       child: Row(
         children: [
@@ -1972,9 +2141,14 @@ class _DashboardCardSummaryState extends State<DashboardCardSummary> {
           decoration: BoxDecoration(
             color: Color(0xFF1E1E1E),
             borderRadius: BorderRadius.circular(24.r),
-            border: Border.all(
-              color: Colors.white.withOpacity(0.1),
-            ),
+            boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -2104,9 +2278,14 @@ class _DashboardCardSummaryState extends State<DashboardCardSummary> {
           decoration: BoxDecoration(
             color: Color(0xFF1E1E1E),
             borderRadius: BorderRadius.circular(24.r),
-            border: Border.all(
-              color: Colors.white.withOpacity(0.1),
-            ),
+            boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -2204,9 +2383,14 @@ class _DashboardCardSummaryState extends State<DashboardCardSummary> {
               decoration: BoxDecoration(
                 color: Color(0xFF1E1E1E),
                 borderRadius: BorderRadius.circular(24.r),
-                border: Border.all(
-                  color: Colors.white.withOpacity(0.1),
-                ),
+                boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -2250,9 +2434,14 @@ class _DashboardCardSummaryState extends State<DashboardCardSummary> {
                         decoration: BoxDecoration(
                           color: Colors.blue.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(12.r),
-                          border: Border.all(
-                            color: Colors.blue.withOpacity(0.3),
-                          ),
+                          boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
                         ),
                         child: Center(
                           child: Text(
@@ -2273,9 +2462,14 @@ class _DashboardCardSummaryState extends State<DashboardCardSummary> {
                     decoration: BoxDecoration(
                       color: Colors.amber.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(12.r),
-                      border: Border.all(
-                        color: Colors.amber.withOpacity(0.3),
-                      ),
+                      boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
                     ),
                     child: Row(
                       children: [

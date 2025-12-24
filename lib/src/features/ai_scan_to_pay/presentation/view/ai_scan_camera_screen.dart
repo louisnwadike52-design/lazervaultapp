@@ -447,12 +447,7 @@ class _AiScanCameraScreenState extends State<AiScanCameraScreen>
                     color: (_isCapturing || !_isCameraInitialized)
                         ? Colors.grey
                         : const Color.fromARGB(255, 78, 3, 208),
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: Colors.white,
-                      width: 4,
-                    ),
-                    boxShadow: [
+                    shape: BoxShape.circle,                    boxShadow: [
                       BoxShadow(
                         color: const Color.fromARGB(255, 78, 3, 208).withOpacity(0.3),
                         blurRadius: 20,
@@ -532,10 +527,14 @@ class _AiScanCameraScreenState extends State<AiScanCameraScreen>
                   ? Colors.white.withOpacity(0.2)
                   : Colors.white.withOpacity(0.1),
               shape: BoxShape.circle,
-              border: Border.all(
-                color: Colors.white.withOpacity(0.3),
-                width: 2,
-              ),
+              boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
             ),
             child: Icon(
               icon,

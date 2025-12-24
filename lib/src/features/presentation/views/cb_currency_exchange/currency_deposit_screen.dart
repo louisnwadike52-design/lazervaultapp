@@ -216,7 +216,13 @@ class _CurrencyDepositScreenState extends State<CurrencyDepositScreen>
           ],
         ),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
       ),
       child: Row(
         children: [
@@ -225,7 +231,13 @@ class _CurrencyDepositScreenState extends State<CurrencyDepositScreen>
             height: 40.h,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8.r),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
+              boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(8.r),
@@ -394,9 +406,14 @@ class _CurrencyDepositScreenState extends State<CurrencyDepositScreen>
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(12.r),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.1),
-            ),
+            boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
           ),
           child: Row(
             children: [
@@ -490,7 +507,13 @@ class _CurrencyDepositScreenState extends State<CurrencyDepositScreen>
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(12.r),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+            boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
           ),
           child: Column(
             children: [

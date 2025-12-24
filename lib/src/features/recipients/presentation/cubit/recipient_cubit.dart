@@ -19,10 +19,20 @@ class RecipientCubit extends Cubit<RecipientState> {
         _toggleFavoriteUseCase = toggleFavoriteUseCase,
         super(RecipientInitial());
 
-  Future<void> getRecipients({required String accessToken}) async {
+  Future<void> getRecipients({
+    required String accessToken,
+    String? countryCode,
+    String? currency,
+    bool? favoritesOnly,
+  }) async {
     emit(RecipientLoading());
     try {
-      final result = await _getRecipientsUseCase(accessToken: accessToken);
+      final result = await _getRecipientsUseCase(
+        accessToken: accessToken,
+        countryCode: countryCode,
+        currency: currency,
+        favoritesOnly: favoritesOnly,
+      );
       result.fold(
         (failure) => emit(RecipientError(failure.message)),
         (recipients) => emit(RecipientLoaded(recipients)),
@@ -45,7 +55,7 @@ class RecipientCubit extends Cubit<RecipientState> {
       result.fold(
         (failure) => emit(RecipientError(failure.message)),
         (newRecipient) {
-          emit(RecipientSuccess('Recipient added successfully'));
+          emit(RecipientSuccess('Recipient added successfully', recipient: newRecipient));
           getRecipients(accessToken: accessToken);
         },
       );

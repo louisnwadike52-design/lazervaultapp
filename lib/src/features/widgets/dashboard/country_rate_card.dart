@@ -29,14 +29,18 @@ class _CountryRateCardState extends State<CountryRateCard> {
             end: Alignment.bottomRight,
             colors: [
               Colors.white,
-              Color.fromARGB(255, 78, 3, 208).withOpacity(0.05),
+              Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.05),
             ],
           ),
           borderRadius: BorderRadius.circular(20.r),
-          border: Border.all(
-            color: Color.fromARGB(255, 78, 3, 208).withOpacity(0.1),
-            width: 1,
-          ),
+          boxShadow: [
+            BoxShadow(
+              color: Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.08),
+              blurRadius: 8,
+              offset: Offset(0, 2),
+              spreadRadius: 0,
+            ),
+          ],
         ),
         child: LayoutBuilder(
           builder: (context, constraints) {

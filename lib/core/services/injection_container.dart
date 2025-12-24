@@ -3,6 +3,7 @@ import 'package:grpc/grpc.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:lazervault/core/services/grpc_call_options_helper.dart';
+import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:lazervault/core/types/electricity_bill_details.dart';
 import 'package:lazervault/core/types/recipient.dart' as core_recipient;
@@ -26,9 +27,20 @@ import 'package:lazervault/src/features/authentication/domain/usecases/reset_pas
 import 'package:lazervault/src/features/authentication/domain/usecases/check_email_availability_usecase.dart';
 import 'package:lazervault/src/features/authentication/domain/usecases/register_face_usecase.dart';
 import 'package:lazervault/src/features/authentication/domain/usecases/verify_face_usecase.dart';
+import 'package:lazervault/src/features/authentication/domain/usecases/request_phone_verification_usecase.dart';
+import 'package:lazervault/src/features/authentication/domain/usecases/verify_phone_number_usecase.dart';
+import 'package:lazervault/src/features/authentication/cubit/phone_verification_cubit.dart';
 import 'package:lazervault/src/features/authentication/data/repositories/face_recognition_repository.dart';
+import 'package:lazervault/src/features/statements/domain/repositories/i_statement_repository.dart';
+import 'package:lazervault/src/features/statements/data/repositories/statement_repository_impl.dart';
+import 'package:lazervault/src/features/statements/domain/usecases/download_statement_usecase.dart';
+import 'package:lazervault/src/features/statements/domain/usecases/get_statement_history_usecase.dart';
+import 'package:lazervault/src/features/statements/presentation/cubit/statement_cubit.dart';
 import 'package:lazervault/src/features/authentication/domain/repositories/i_face_recognition_repository.dart';
 import 'package:lazervault/src/features/authentication/presentation/views/email_sign_in_screen.dart';
+import 'package:lazervault/src/features/profile/data/repositories/profile_repository.dart';
+import 'package:lazervault/src/features/profile/domain/repositories/i_profile_repository.dart';
+import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
 import 'package:lazervault/src/features/funds/cubit/withdrawal_cubit.dart';
 import 'package:lazervault/src/features/recipients/data/models/recipient_model.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_cubit.dart';
@@ -45,16 +57,19 @@ import 'package:lazervault/src/features/recipients/presentation/view/add_recipie
 import 'package:lazervault/src/features/voice_session/cubit/voice_session_cubit.dart';
 import 'package:lazervault/src/generated/recipient.pbgrpc.dart';
 import 'package:lazervault/src/generated/transfer.pbgrpc.dart' hide TransferTransaction;
-import 'package:lazervault/src/generated/user.pbgrpc.dart';
+import 'package:lazervault/src/generated/user.pbgrpc.dart' as user_grpc;
 import 'package:lazervault/src/generated/auth.pbgrpc.dart';
 import 'package:lazervault/src/generated/deposit.pbgrpc.dart';
 import 'package:lazervault/src/generated/facial_recognition.pbgrpc.dart';
+import 'package:lazervault/src/generated/contact_sync.pbgrpc.dart';
+import 'package:lazervault/src/generated/group_account.pbgrpc.dart';
 import 'package:lazervault/src/features/presentation/views/cb_currency_exchange/cb_currency_exchange_screen.dart';
 import 'package:lazervault/src/features/presentation/views/cb_currency_exchange/currency_deposit_screen.dart';
 import 'package:lazervault/src/features/presentation/views/change_pin_screen.dart';
 import 'package:lazervault/src/features/presentation/views/create_new_password_screen.dart';
 import 'package:lazervault/src/features/presentation/views/enable_biometric_access_screen.dart';
 import 'package:lazervault/src/features/presentation/views/face_scan_screen.dart';
+import 'package:lazervault/src/features/authentication/presentation/views/facial_login_screen.dart';
 import 'package:lazervault/src/features/presentation/views/facial_biometric_verification_screen.dart';
 import 'package:lazervault/src/features/presentation/views/flights/flights_screen.dart';
 import 'package:lazervault/src/features/funds/presentation/view/deposit_funds_screen.dart';
@@ -111,6 +126,15 @@ import 'package:lazervault/src/features/account_cards_summary/domain/usecases/ge
 import 'package:lazervault/src/generated/account.pbgrpc.dart';
 import 'package:lazervault/src/features/funds/domain/usecases/initiate_withdrawal_usecase.dart';
 
+// Card Settings Imports
+import 'package:lazervault/src/features/card_settings/data/repositories/card_settings_repository_impl.dart';
+import 'package:lazervault/src/features/card_settings/domain/repositories/i_card_settings_repository.dart';
+import 'package:lazervault/src/features/card_settings/domain/usecases/get_account_details_usecase.dart';
+import 'package:lazervault/src/features/card_settings/domain/usecases/update_security_settings_usecase.dart';
+import 'package:lazervault/src/features/card_settings/domain/usecases/update_account_status_usecase.dart';
+import 'package:lazervault/src/features/card_settings/cubit/card_settings_cubit.dart';
+// End Card Settings Imports
+
 // AI Chat Imports
 import 'package:lazervault/src/generated/ai_chat.pbgrpc.dart';
 import 'package:lazervault/src/features/ai_chats/data/datasources/grpc_ai_chat_service.dart';
@@ -137,6 +161,16 @@ import 'package:lazervault/src/features/gift_cards/presentation/view/sell_to_con
 import 'package:lazervault/src/features/gift_cards/presentation/view/saved_recipients_screen.dart';
 import 'package:lazervault/src/features/gift_cards/presentation/view/quick_sell_screen.dart';
 // End Gift Cards Imports
+
+// Identity Verification Imports
+import 'package:lazervault/src/features/identity/data/repositories/identity_repository_impl.dart';
+import 'package:lazervault/src/features/identity/domain/repositories/i_identity_repository.dart';
+
+import 'package:lazervault/src/features/support/data/repositories/support_repository_impl.dart';
+import 'package:lazervault/src/features/support/domain/repositories/i_support_repository.dart';
+import 'package:lazervault/src/generated/support.pbgrpc.dart' as support_grpc;
+import 'package:lazervault/src/features/identity/cubit/identity_cubit.dart';
+// End Identity Verification Imports
 
 // Stocks Imports
 import 'package:lazervault/src/features/stocks/data/datasources/stock_remote_data_source.dart';
@@ -170,7 +204,7 @@ import 'package:lazervault/src/features/crypto/presentation/view/crypto_detail_s
 
 // Invoice Imports
 import 'package:lazervault/src/features/invoice/data/datasources/invoice_local_datasource.dart';
-import 'package:lazervault/src/features/invoice/data/repositories/invoice_repository_impl.dart';
+import 'package:lazervault/src/features/invoice/data/repositories/invoice_repository_grpc_impl.dart';
 import 'package:lazervault/src/features/invoice/domain/repositories/invoice_repository.dart';
 import 'package:lazervault/src/features/invoice/presentation/cubit/invoice_cubit.dart';
 import 'package:lazervault/src/features/invoice/presentation/view/invoice_list_screen.dart';
@@ -178,10 +212,24 @@ import 'package:lazervault/src/features/invoice/presentation/view/create_invoice
 import 'package:lazervault/src/features/invoice/presentation/view/invoice_details_screen.dart';
 import 'package:lazervault/src/features/pay_invoice/presentation/view/pay_invoice_screen.dart';
 import 'package:lazervault/src/features/pay_invoice/presentation/cubit/pay_invoice_cubit.dart';
-import 'package:lazervault/src/features/pay_invoice/data/repositories/pay_invoice_repository_impl.dart';
+import 'package:lazervault/src/features/pay_invoice/data/repositories/pay_invoice_repository_grpc_impl.dart';
 import 'package:lazervault/src/features/pay_invoice/data/datasources/pay_invoice_local_datasource.dart';
 import 'package:lazervault/src/features/pay_invoice/domain/repositories/pay_invoice_repository.dart';
 // End Invoice Imports
+
+// Tag Pay Imports
+import 'package:lazervault/src/features/tag_pay/data/repositories/tag_pay_repository_grpc_impl.dart';
+import 'package:lazervault/src/features/tag_pay/domain/repositories/tag_pay_repository.dart';
+import 'package:lazervault/src/features/tag_pay/presentation/cubit/tag_pay_cubit.dart';
+// End Tag Pay Imports
+
+// Barcode Payment Imports
+import 'package:lazervault/src/grpc_generated/barcode_payment.pbgrpc.dart' as barcode_grpc;
+import 'package:lazervault/src/features/barcode_payment/data/datasources/barcode_payment_remote_datasource.dart';
+import 'package:lazervault/src/features/barcode_payment/data/repositories/barcode_payment_repository_impl.dart';
+import 'package:lazervault/src/features/barcode_payment/domain/repositories/barcode_payment_repository.dart';
+import 'package:lazervault/src/features/barcode_payment/presentation/cubit/barcode_payment_cubit.dart';
+// End Barcode Payment Imports
 
 // Airtime Imports
 import 'package:lazervault/src/features/airtime/data/datasources/airtime_local_datasource.dart';
@@ -194,13 +242,15 @@ import 'package:lazervault/src/features/investments/presentation/view/investment
 
 // AI Scan to Pay Imports
 import 'package:lazervault/src/features/ai_scan_to_pay/data/datasources/ai_scan_datasource.dart';
-import 'package:lazervault/src/features/ai_scan_to_pay/data/repositories/ai_scan_repository_impl.dart';
+import 'package:lazervault/src/features/ai_scan_to_pay/data/datasources/ai_scan_remote_datasource.dart';
+import 'package:lazervault/src/features/ai_scan_to_pay/data/repositories/ai_scan_repository_impl_v2.dart';
 import 'package:lazervault/src/features/ai_scan_to_pay/domain/repositories/ai_scan_repository.dart';
 import 'package:lazervault/src/features/ai_scan_to_pay/domain/usecases/ai_scan_usecases.dart';
 import 'package:lazervault/src/features/ai_scan_to_pay/presentation/cubit/ai_scan_cubit.dart';
 
 // Group Account Imports
 import 'package:lazervault/src/features/group_account/data/datasources/group_account_remote_data_source.dart';
+import 'package:lazervault/src/features/group_account/data/datasources/group_account_grpc_data_source.dart';
 import 'package:lazervault/src/features/group_account/data/repositories/group_account_repository_impl.dart';
 import 'package:lazervault/src/features/group_account/domain/repositories/group_account_repository.dart';
 import 'package:lazervault/src/features/group_account/domain/usecases/group_account_usecases.dart';
@@ -213,6 +263,40 @@ import 'package:lazervault/src/features/insurance/data/repositories/insurance_re
 import 'package:lazervault/src/features/insurance/domain/repositories/insurance_repository.dart';
 import 'package:lazervault/src/features/insurance/presentation/cubit/insurance_cubit.dart';
 import 'package:lazervault/src/features/insurance/presentation/view/insurance_list_screen.dart';
+
+// Contact Sync Imports
+import 'package:lazervault/core/services/contact_service.dart';
+import 'package:lazervault/src/features/contacts/data/repositories/contact_sync_repository.dart';
+import 'package:lazervault/src/features/contacts/domain/usecases/sync_contacts_usecase.dart';
+import 'package:lazervault/src/features/contacts/domain/usecases/get_synced_contacts_usecase.dart';
+import 'package:lazervault/src/features/contacts/domain/usecases/find_lazervault_users_usecase.dart';
+import 'package:lazervault/src/features/contacts/domain/usecases/convert_contact_to_recipient_usecase.dart';
+import 'package:lazervault/src/features/contacts/presentation/cubit/contact_sync_cubit.dart';
+// End Contact Sync Imports
+
+// Statistics Imports
+import 'package:lazervault/src/core/network/grpc_client.dart';
+import 'package:lazervault/src/features/statistics/data/statistics_repository.dart';
+import 'package:lazervault/src/features/statistics/cubit/statistics_cubit.dart';
+import 'package:lazervault/src/features/statistics/presentation/screens/statistics_screen.dart';
+import 'package:lazervault/src/features/statistics/presentation/screens/add_expense_screen.dart';
+import 'package:lazervault/src/features/statistics/presentation/screens/add_budget_screen.dart';
+// End Statistics Imports
+
+// Auto-Save Imports
+import 'package:lazervault/src/generated/autosave.pbgrpc.dart';
+import 'package:lazervault/src/features/autosave/data/repositories/autosave_repository_impl.dart';
+import 'package:lazervault/src/features/autosave/domain/repositories/i_autosave_repository.dart';
+import 'package:lazervault/src/features/autosave/domain/usecases/create_autosave_rule_usecase.dart';
+import 'package:lazervault/src/features/autosave/domain/usecases/get_autosave_rules_usecase.dart';
+import 'package:lazervault/src/features/autosave/domain/usecases/update_autosave_rule_usecase.dart';
+import 'package:lazervault/src/features/autosave/domain/usecases/toggle_autosave_rule_usecase.dart';
+import 'package:lazervault/src/features/autosave/domain/usecases/delete_autosave_rule_usecase.dart';
+import 'package:lazervault/src/features/autosave/domain/usecases/get_autosave_transactions_usecase.dart';
+import 'package:lazervault/src/features/autosave/domain/usecases/get_autosave_statistics_usecase.dart';
+import 'package:lazervault/src/features/autosave/domain/usecases/trigger_autosave_usecase.dart';
+import 'package:lazervault/src/features/autosave/presentation/cubit/autosave_cubit.dart';
+// End Auto-Save Imports
 
 final serviceLocator = GetIt.instance;
 
@@ -233,9 +317,17 @@ Future<void> init() async {
     () => SecureStorageService(serviceLocator<FlutterSecureStorage>()),
   );
 
-  // Register gRPC Call Options Helper
+  // Register LocaleManager for centralized locale/country state management
+  serviceLocator.registerLazySingleton<LocaleManager>(
+    () => LocaleManager(serviceLocator<FlutterSecureStorage>()),
+  );
+
+  // Register gRPC Call Options Helper with LocaleManager
   serviceLocator.registerLazySingleton<GrpcCallOptionsHelper>(
-    () => GrpcCallOptionsHelper(serviceLocator<FlutterSecureStorage>()),
+    () => GrpcCallOptionsHelper(
+      serviceLocator<FlutterSecureStorage>(),
+      localeManager: serviceLocator<LocaleManager>(),
+    ),
   );
 
   serviceLocator.registerLazySingleton<ClientChannel>(() {
@@ -252,13 +344,20 @@ Future<void> init() async {
       port: port,
       options: const ChannelOptions(
         credentials: ChannelCredentials.insecure(), // Use insecure credentials for localhost
+        keepAlive: ClientKeepAliveOptions(
+          pingInterval: Duration(seconds: 30),
+          timeout: Duration(seconds: 10),
+          permitWithoutCalls: true,
+        ),
+        connectionTimeout: Duration(seconds: 10),
+        idleTimeout: Duration(minutes: 5),
       ),
     );
   });
 
   // Register gRPC Clients
-  serviceLocator.registerLazySingleton<UserServiceClient>(
-    () => UserServiceClient(serviceLocator<ClientChannel>()),
+  serviceLocator.registerLazySingleton<user_grpc.UserServiceClient>(
+    () => user_grpc.UserServiceClient(serviceLocator<ClientChannel>()),
   );
   serviceLocator.registerLazySingleton<AuthServiceClient>(
     () => AuthServiceClient(serviceLocator<ClientChannel>()),
@@ -284,6 +383,21 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton<FacialRecognitionServiceClient>(
     () => FacialRecognitionServiceClient(serviceLocator<ClientChannel>()),
   );
+  serviceLocator.registerLazySingleton<support_grpc.SupportServiceClient>(
+    () => support_grpc.SupportServiceClient(serviceLocator<ClientChannel>()),
+  );
+  serviceLocator.registerLazySingleton<ContactSyncServiceClient>(
+    () => ContactSyncServiceClient(serviceLocator<ClientChannel>()),
+  );
+  serviceLocator.registerLazySingleton<GroupAccountServiceClient>(
+    () => GroupAccountServiceClient(serviceLocator<ClientChannel>()),
+  );
+  serviceLocator.registerLazySingleton<AutoSaveServiceClient>(
+    () => AutoSaveServiceClient(serviceLocator<ClientChannel>()),
+  );
+  serviceLocator.registerLazySingleton<barcode_grpc.BarcodePaymentServiceClient>(
+    () => barcode_grpc.BarcodePaymentServiceClient(serviceLocator<ClientChannel>()),
+  );
 
 
   // ================== Feature: Authentication ==================
@@ -296,7 +410,7 @@ Future<void> init() async {
   // Repositories
   serviceLocator.registerLazySingleton<IAuthRepository>(
       () => AuthRepositoryImpl(
-          userServiceClient: serviceLocator<UserServiceClient>(),
+          userServiceClient: serviceLocator<user_grpc.UserServiceClient>(),
           authServiceClient: serviceLocator<AuthServiceClient>(),
           callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
         ));
@@ -321,6 +435,8 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton(() => CheckEmailAvailabilityUseCase(serviceLocator<IAuthRepository>()));
   serviceLocator.registerLazySingleton(() => RegisterFaceUseCase(serviceLocator<IFaceRecognitionRepository>()));
   serviceLocator.registerLazySingleton(() => VerifyFaceUseCase(serviceLocator<IFaceRecognitionRepository>()));
+  serviceLocator.registerLazySingleton(() => RequestPhoneVerificationUseCase(serviceLocator<IAuthRepository>()));
+  serviceLocator.registerLazySingleton(() => VerifyPhoneNumberUseCase(serviceLocator<IAuthRepository>()));
 
   // Blocs/Cubits
   serviceLocator.registerFactory(() => AuthenticationCubit(
@@ -347,6 +463,64 @@ Future<void> init() async {
         resendVerificationUseCase: serviceLocator<ResendVerificationUseCase>(),
       ));
 
+  serviceLocator.registerFactory(() => PhoneVerificationCubit(
+        requestPhoneVerificationUseCase: serviceLocator<RequestPhoneVerificationUseCase>(),
+        verifyPhoneNumberUseCase: serviceLocator<VerifyPhoneNumberUseCase>(),
+      ));
+
+
+  // ================== Feature: Profile ==================
+
+  // Repositories
+  serviceLocator.registerLazySingleton<IProfileRepository>(
+      () => ProfileRepositoryImpl(
+          userServiceClient: serviceLocator<user_grpc.UserServiceClient>(),
+          callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
+        ));
+
+  // Blocs/Cubits
+  serviceLocator.registerFactory(() => ProfileCubit(
+        repository: serviceLocator<IProfileRepository>(),
+      ));
+
+  // ================== Feature: Identity Verification ==================
+
+  // Repositories
+  serviceLocator.registerLazySingleton<IIdentityRepository>(
+      () => IdentityRepositoryImpl(
+          userServiceClient: serviceLocator<user_grpc.UserServiceClient>(),
+          callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
+        ));
+
+  // Blocs/Cubits
+  serviceLocator.registerFactory(() => IdentityCubit(
+        repository: serviceLocator<IIdentityRepository>(),
+      ));
+
+  // ================== Feature: Support & Help ==================
+
+  // Repositories
+  serviceLocator.registerLazySingleton<ISupportRepository>(
+      () => SupportRepositoryImpl(
+          supportServiceClient: serviceLocator<support_grpc.SupportServiceClient>(),
+          callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
+        ));
+
+  // ================== Feature: Statements ==================
+
+  // Repositories
+  serviceLocator.registerLazySingleton<IStatementRepository>(
+      () => StatementRepositoryImpl());
+
+  // Use Cases
+  serviceLocator.registerLazySingleton(() => DownloadStatementUseCase(serviceLocator<IStatementRepository>()));
+  serviceLocator.registerLazySingleton(() => GetStatementHistoryUseCase(serviceLocator<IStatementRepository>()));
+
+  // Blocs/Cubits
+  serviceLocator.registerFactory(() => StatementCubit(
+        downloadStatementUseCase: serviceLocator<DownloadStatementUseCase>(),
+        getStatementHistoryUseCase: serviceLocator<GetStatementHistoryUseCase>(),
+      ));
 
   // ================== Feature: Account Cards Summary ==================
 
@@ -362,6 +536,28 @@ Future<void> init() async {
 
   // Blocs/Cubits
   serviceLocator.registerLazySingleton(() => AccountCardsSummaryCubit(serviceLocator<GetAccountSummariesUseCase>()));
+
+
+  // ================== Feature: Card Settings ==================
+
+  // Repositories
+  serviceLocator.registerLazySingleton<ICardSettingsRepository>(
+      () => CardSettingsRepositoryImpl(
+        serviceLocator<AccountServiceClient>(),
+        serviceLocator<GrpcCallOptionsHelper>(),
+      ));
+
+  // Use Cases
+  serviceLocator.registerLazySingleton(() => GetAccountDetailsUseCase(serviceLocator<ICardSettingsRepository>()));
+  serviceLocator.registerLazySingleton(() => UpdateSecuritySettingsUseCase(serviceLocator<ICardSettingsRepository>()));
+  serviceLocator.registerLazySingleton(() => UpdateAccountStatusUseCase(serviceLocator<ICardSettingsRepository>()));
+
+  // Blocs/Cubits
+  serviceLocator.registerFactory(() => CardSettingsCubit(
+    serviceLocator<GetAccountDetailsUseCase>(),
+    serviceLocator<UpdateSecuritySettingsUseCase>(),
+    serviceLocator<UpdateAccountStatusUseCase>(),
+  ));
 
 
   // ================== Feature: Recipients ==================
@@ -447,7 +643,10 @@ Future<void> init() async {
 
   // Data Sources
   serviceLocator.registerLazySingleton<IBatchTransferRemoteDataSource>(
-    () => BatchTransferRemoteDataSourceImpl(),
+    () => BatchTransferRemoteDataSourceImpl(
+      serviceLocator<TransferServiceClient>(),
+      serviceLocator<GrpcCallOptionsHelper>(),
+    ),
   );
 
   // Repositories
@@ -458,11 +657,13 @@ Future<void> init() async {
   // Use Cases
   serviceLocator.registerLazySingleton(() => InitiateBatchTransferUseCase(serviceLocator<IBatchTransferRepository>()));
   serviceLocator.registerLazySingleton(() => GetBatchTransferHistoryUseCase(repository: serviceLocator<IBatchTransferRepository>()));
+  serviceLocator.registerLazySingleton(() => GetBatchTransferStatusUseCase(serviceLocator<IBatchTransferRepository>()));
 
   // Blocs/Cubits
   serviceLocator.registerFactory(() => BatchTransferCubit(
     initiateBatchTransferUseCase: serviceLocator<InitiateBatchTransferUseCase>(),
     getBatchTransferHistoryUseCase: serviceLocator<GetBatchTransferHistoryUseCase>(),
+    getBatchTransferStatusUseCase: serviceLocator<GetBatchTransferStatusUseCase>(),
   ));
 
 
@@ -562,7 +763,7 @@ Future<void> init() async {
 
   // ================== Feature: Invoice ==================
 
-  // Data Sources
+  // Data Sources (local - for offline fallback if needed)
   serviceLocator.registerLazySingleton<InvoiceLocalDataSource>(
     () {
       final dataSource = InvoiceLocalDataSourceImpl();
@@ -572,15 +773,53 @@ Future<void> init() async {
     },
   );
 
-  // Repositories
+  // Repositories - Using gRPC implementation for backend integration
   serviceLocator.registerLazySingleton<InvoiceRepository>(
-    () => InvoiceRepositoryImpl(localDataSource: serviceLocator<InvoiceLocalDataSource>()),
+    () => InvoiceRepositoryGrpcImpl(
+      grpcClient: serviceLocator<GrpcClient>(),
+      currentUserId: '', // User ID is extracted from auth token in grpcClient.callOptions
+    ),
   );
 
   // Blocs/Cubits
   serviceLocator.registerFactory(() => InvoiceCubit(
     repository: serviceLocator<InvoiceRepository>(),
     currentUserId: 'current_user_id', // This should be injected based on authenticated user
+  ));
+
+  // ================== Feature: Tag Pay ==================
+
+  // Repositories - Using gRPC implementation for backend integration
+  serviceLocator.registerLazySingleton<TagPayRepository>(
+    () => TagPayRepositoryGrpcImpl(
+      grpcClient: serviceLocator<GrpcClient>(),
+    ),
+  );
+
+  // Blocs/Cubits
+  serviceLocator.registerFactory(() => TagPayCubit(
+    repository: serviceLocator<TagPayRepository>(),
+  ));
+
+  // ================== Feature: Barcode QuickPay ==================
+
+  // Data Sources
+  serviceLocator.registerLazySingleton<BarcodePaymentRemoteDataSource>(
+    () => BarcodePaymentRemoteDataSourceImpl(
+      client: serviceLocator<barcode_grpc.BarcodePaymentServiceClient>(),
+    ),
+  );
+
+  // Repositories
+  serviceLocator.registerLazySingleton<BarcodePaymentRepository>(
+    () => BarcodePaymentRepositoryImpl(
+      remoteDataSource: serviceLocator<BarcodePaymentRemoteDataSource>(),
+    ),
+  );
+
+  // Blocs/Cubits
+  serviceLocator.registerFactory(() => BarcodePaymentCubit(
+    repository: serviceLocator<BarcodePaymentRepository>(),
   ));
 
   // ================== Feature: Airtime ==================
@@ -633,6 +872,7 @@ Future<void> init() async {
       ..registerFactory(() => SelectCountryScreen())
       ..registerFactory(() => FacialBiometricVerificationScreen())
       ..registerFactory(() => FaceScanScreen())
+      ..registerFactory(() => FacialLoginScreen())
       ..registerFactory(() => TransactionHistoryScreen())
       ..registerFactory(() => FlightsScreen())
       ..registerFactory(() => StocksScreen())
@@ -701,9 +941,13 @@ Future<void> init() async {
     () => PayInvoiceLocalDataSourceImpl(),
   );
 
-  // Repositories
+  // Repositories - Using gRPC implementation for backend integration
   serviceLocator.registerLazySingleton<PayInvoiceRepository>(
-    () => PayInvoiceRepositoryImpl(localDataSource: serviceLocator<PayInvoiceLocalDataSource>()),
+    () => PayInvoiceRepositoryGrpcImpl(
+      grpcClient: serviceLocator<GrpcClient>(),
+      currentUserId: '', // User ID is extracted from auth token in grpcClient.callOptions
+      invoiceRepository: serviceLocator<InvoiceRepository>(),
+    ),
   );
 
   // Blocs/Cubits
@@ -713,14 +957,24 @@ Future<void> init() async {
 
   // ================== Feature: AI Scan to Pay ==================
 
-  // Data Sources
+  // Data Sources - Using Remote (gRPC) implementation
+  serviceLocator.registerLazySingleton<AiScanRemoteDataSource>(
+    () => AiScanRemoteDataSourceImpl(
+      grpcClient: serviceLocator<GrpcClient>(),
+    ),
+  );
+
+  // Keep mock datasource for fallback/testing if needed
   serviceLocator.registerLazySingleton<AiScanDataSource>(
     () => AiScanDataSourceImpl(),
   );
 
-  // Repositories
+  // Repositories - Using V2 implementation with gRPC
   serviceLocator.registerLazySingleton<AiScanRepository>(
-    () => AiScanRepositoryImpl(serviceLocator<AiScanDataSource>()),
+    () => AiScanRepositoryImplV2(
+      remoteDataSource: serviceLocator<AiScanRemoteDataSource>(),
+      grpcClient: serviceLocator<GrpcClient>(),
+    ),
   );
 
   // Use Cases
@@ -745,7 +999,10 @@ Future<void> init() async {
 
   // Data Sources
   serviceLocator.registerLazySingleton<GroupAccountRemoteDataSource>(
-    () => GroupAccountRemoteDataSourceImpl(),
+    () => GroupAccountGrpcDataSource(
+      client: serviceLocator<GroupAccountServiceClient>(),
+      callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
+    ),
   );
 
   // Repositories
@@ -807,7 +1064,7 @@ Future<void> init() async {
 
   // ================== Feature: Insurance ==================
 
-  // Data Sources  
+  // Data Sources
   serviceLocator.registerLazySingleton<InsuranceLocalDataSource>(
     () {
       final dataSource = InsuranceLocalDataSourceImpl();
@@ -828,6 +1085,92 @@ Future<void> init() async {
       repository: serviceLocator<InsuranceRepository>(),
     ),
   );
+
+
+  // ================== Feature: Contact Sync ==================
+
+  // Services
+  serviceLocator.registerLazySingleton<ContactService>(
+    () => ContactService(),
+  );
+
+  // Repositories
+  serviceLocator.registerLazySingleton<ContactSyncRepository>(
+    () => ContactSyncRepository(serviceLocator<ContactSyncServiceClient>()),
+  );
+
+  // Use Cases
+  serviceLocator.registerLazySingleton(() => SyncContactsUseCase(serviceLocator<ContactSyncRepository>()));
+  serviceLocator.registerLazySingleton(() => GetSyncedContactsUseCase(serviceLocator<ContactSyncRepository>()));
+  serviceLocator.registerLazySingleton(() => FindLazerVaultUsersUseCase(serviceLocator<ContactSyncRepository>()));
+  serviceLocator.registerLazySingleton(() => ConvertContactToRecipientUseCase(serviceLocator<ContactSyncRepository>()));
+
+  // Blocs/Cubits
+  serviceLocator.registerFactory<ContactSyncCubit>(
+    () => ContactSyncCubit(
+      syncContactsUseCase: serviceLocator<SyncContactsUseCase>(),
+      getSyncedContactsUseCase: serviceLocator<GetSyncedContactsUseCase>(),
+      findLazerVaultUsersUseCase: serviceLocator<FindLazerVaultUsersUseCase>(),
+      convertContactToRecipientUseCase: serviceLocator<ConvertContactToRecipientUseCase>(),
+      repository: serviceLocator<ContactSyncRepository>(),
+      contactService: serviceLocator<ContactService>(),
+    ),
+  );
+
+  // ================== Feature: Auto-Save ==================
+
+  // Repositories
+  serviceLocator.registerLazySingleton<IAutoSaveRepository>(
+    () => AutoSaveRepositoryImpl(
+      autoSaveServiceClient: serviceLocator<AutoSaveServiceClient>(),
+      callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
+    ),
+  );
+
+  // Use Cases
+  serviceLocator.registerLazySingleton(() => CreateAutoSaveRuleUseCase(serviceLocator<IAutoSaveRepository>()));
+  serviceLocator.registerLazySingleton(() => GetAutoSaveRulesUseCase(serviceLocator<IAutoSaveRepository>()));
+  serviceLocator.registerLazySingleton(() => UpdateAutoSaveRuleUseCase(serviceLocator<IAutoSaveRepository>()));
+  serviceLocator.registerLazySingleton(() => ToggleAutoSaveRuleUseCase(serviceLocator<IAutoSaveRepository>()));
+  serviceLocator.registerLazySingleton(() => DeleteAutoSaveRuleUseCase(serviceLocator<IAutoSaveRepository>()));
+  serviceLocator.registerLazySingleton(() => GetAutoSaveTransactionsUseCase(serviceLocator<IAutoSaveRepository>()));
+  serviceLocator.registerLazySingleton(() => GetAutoSaveStatisticsUseCase(serviceLocator<IAutoSaveRepository>()));
+  serviceLocator.registerLazySingleton(() => TriggerAutoSaveUseCase(serviceLocator<IAutoSaveRepository>()));
+
+  // Blocs/Cubits
+  serviceLocator.registerFactory(() => AutoSaveCubit(
+    createAutoSaveRuleUseCase: serviceLocator<CreateAutoSaveRuleUseCase>(),
+    getAutoSaveRulesUseCase: serviceLocator<GetAutoSaveRulesUseCase>(),
+    updateAutoSaveRuleUseCase: serviceLocator<UpdateAutoSaveRuleUseCase>(),
+    toggleAutoSaveRuleUseCase: serviceLocator<ToggleAutoSaveRuleUseCase>(),
+    deleteAutoSaveRuleUseCase: serviceLocator<DeleteAutoSaveRuleUseCase>(),
+    getAutoSaveTransactionsUseCase: serviceLocator<GetAutoSaveTransactionsUseCase>(),
+    getAutoSaveStatisticsUseCase: serviceLocator<GetAutoSaveStatisticsUseCase>(),
+    triggerAutoSaveUseCase: serviceLocator<TriggerAutoSaveUseCase>(),
+  ));
+
+
+  // ================== Feature: Statistics ==================
+
+  // GrpcClient (for statistics and invoices) - Initialize asynchronously
+  final grpcClient = GrpcClient(secureStorage: serviceLocator<FlutterSecureStorage>());
+  await grpcClient.initialize();  // Properly await initialization
+  serviceLocator.registerLazySingleton<GrpcClient>(() => grpcClient);
+
+  // Repositories
+  serviceLocator.registerLazySingleton<StatisticsRepository>(
+    () => StatisticsRepository(grpcClient: serviceLocator<GrpcClient>()),
+  );
+
+  // Blocs/Cubits
+  serviceLocator.registerFactory<StatisticsCubit>(
+    () => StatisticsCubit(repository: serviceLocator<StatisticsRepository>()),
+  );
+
+  // Screens
+  serviceLocator.registerFactory(() => const StatisticsScreen());
+  serviceLocator.registerFactory(() => const AddExpenseScreen());
+  serviceLocator.registerFactory(() => const AddBudgetScreen());
 
   print("Dependency Injection Initialized with Hierarchical Order");
 }

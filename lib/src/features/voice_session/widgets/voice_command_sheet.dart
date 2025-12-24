@@ -126,12 +126,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
                 width: 120.w,
                 height: 120.h,
                 decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: Colors.blue.withOpacity(0.3),
-                    width: 3,
-                  ),
-                  boxShadow: [
+                  shape: BoxShape.circle,                  boxShadow: [
                     BoxShadow(
                       color: Colors.blue.withOpacity(0.2),
                       blurRadius: 20,
@@ -252,10 +247,14 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           color: Colors.red.withOpacity(0.1),
-          border: Border.all(
-            color: Colors.red.withOpacity(0.3),
-            width: 2,
+          boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
           ),
+        ],
+        
         ),
         child: Center(
           child: Icon(
@@ -415,10 +414,14 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
           decoration: BoxDecoration(
             color: color.withOpacity(0.1),
             borderRadius: BorderRadius.circular(16.r),
-            border: Border.all(
-              color: color.withOpacity(0.3),
-              width: 1,
-            ),
+            boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -476,10 +479,14 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
               end: Alignment.bottomRight,
             ),
             borderRadius: BorderRadius.circular(16.r),
-            border: Border.all(
-              color: Colors.blue.withOpacity(0.2),
-              width: 1,
-            ),
+            boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -533,12 +540,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(25.r),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.2),
-          width: 1,
-        ),
-        boxShadow: [
+        borderRadius: BorderRadius.circular(25.r),        boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.1),
             blurRadius: 4,

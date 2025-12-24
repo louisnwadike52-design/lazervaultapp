@@ -10,24 +10,24 @@ import 'dart:async' as $async;
 import 'dart:core' as $core;
 
 import 'package:grpc/service_api.dart' as $grpc;
-import 'tx_file.pb.dart' as $13;
+import 'tx_file.pb.dart' as $21;
 export 'tx_file.pb.dart';
 
 class TxFileServiceClient extends $grpc.Client {
   static final _$getUserTxFileUrl = $grpc.ClientMethod<
-          $13.GetUserTxFileUrlRequest, $13.GetUserTxFileUrlResponse>(
+          $21.GetUserTxFileUrlRequest, $21.GetUserTxFileUrlResponse>(
       '/pb.TxFileService/GetUserTxFileUrl',
-      ($13.GetUserTxFileUrlRequest value) => value.writeToBuffer(),
+      ($21.GetUserTxFileUrlRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $13.GetUserTxFileUrlResponse.fromBuffer(value));
+          $21.GetUserTxFileUrlResponse.fromBuffer(value));
 
   TxFileServiceClient($grpc.ClientChannel channel,
       {$grpc.CallOptions? options,
       $core.Iterable<$grpc.ClientInterceptor>? interceptors})
       : super(channel, options: options, interceptors: interceptors);
 
-  $grpc.ResponseFuture<$13.GetUserTxFileUrlResponse> getUserTxFileUrl(
-      $13.GetUserTxFileUrlRequest request,
+  $grpc.ResponseFuture<$21.GetUserTxFileUrlResponse> getUserTxFileUrl(
+      $21.GetUserTxFileUrlRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getUserTxFileUrl, request, options: options);
   }
@@ -37,23 +37,23 @@ abstract class TxFileServiceBase extends $grpc.Service {
   $core.String get $name => 'pb.TxFileService';
 
   TxFileServiceBase() {
-    $addMethod($grpc.ServiceMethod<$13.GetUserTxFileUrlRequest,
-            $13.GetUserTxFileUrlResponse>(
+    $addMethod($grpc.ServiceMethod<$21.GetUserTxFileUrlRequest,
+            $21.GetUserTxFileUrlResponse>(
         'GetUserTxFileUrl',
         getUserTxFileUrl_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $13.GetUserTxFileUrlRequest.fromBuffer(value),
-        ($13.GetUserTxFileUrlResponse value) => value.writeToBuffer()));
+            $21.GetUserTxFileUrlRequest.fromBuffer(value),
+        ($21.GetUserTxFileUrlResponse value) => value.writeToBuffer()));
   }
 
-  $async.Future<$13.GetUserTxFileUrlResponse> getUserTxFileUrl_Pre(
+  $async.Future<$21.GetUserTxFileUrlResponse> getUserTxFileUrl_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$13.GetUserTxFileUrlRequest> request) async {
+      $async.Future<$21.GetUserTxFileUrlRequest> request) async {
     return getUserTxFileUrl(call, await request);
   }
 
-  $async.Future<$13.GetUserTxFileUrlResponse> getUserTxFileUrl(
-      $grpc.ServiceCall call, $13.GetUserTxFileUrlRequest request);
+  $async.Future<$21.GetUserTxFileUrlResponse> getUserTxFileUrl(
+      $grpc.ServiceCall call, $21.GetUserTxFileUrlRequest request);
 }

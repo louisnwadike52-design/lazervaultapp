@@ -343,7 +343,13 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
       decoration: BoxDecoration(
         color: const Color(0xFF2A2A3E).withValues(alpha: 0.8),
         borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         children: [
@@ -456,7 +462,13 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
       decoration: BoxDecoration(
         color: const Color(0xFF2A2A3E).withValues(alpha: 0.8),
         borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -540,7 +552,13 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
       decoration: BoxDecoration(
         color: const Color(0xFF2A2A3E).withValues(alpha: 0.8),
         borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -787,7 +805,13 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
       decoration: BoxDecoration(
         color: const Color(0xFF2A2A3E).withValues(alpha: 0.8),
         borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -860,7 +884,13 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
               decoration: BoxDecoration(
         color: const Color(0xFF2A2A3E).withValues(alpha: 0.8),
         borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -991,7 +1021,13 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
       decoration: BoxDecoration(
         color: const Color(0xFF2A2A3E).withValues(alpha: 0.8),
         borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
                 ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1021,7 +1057,13 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
       decoration: BoxDecoration(
         color: const Color(0xFF2A2A3E).withValues(alpha: 0.8),
         borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1050,7 +1092,13 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
       decoration: BoxDecoration(
         color: const Color(0xFF2A2A3E).withValues(alpha: 0.8),
         borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1139,7 +1187,13 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
       decoration: BoxDecoration(
         color: const Color(0xFF2A2A3E).withValues(alpha: 0.8),
         borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1221,7 +1275,13 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
       decoration: BoxDecoration(
         color: const Color(0xFF2A2A3E).withValues(alpha: 0.8),
         borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1347,7 +1407,13 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
       decoration: BoxDecoration(
         color: const Color(0xFF2A2A3E).withValues(alpha: 0.8),
         borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
           ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1487,7 +1553,13 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
       decoration: BoxDecoration(
         color: const Color(0xFF2A2A3E).withValues(alpha: 0.8),
         borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

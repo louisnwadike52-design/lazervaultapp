@@ -139,9 +139,14 @@ class _PriceAlertsScreenState extends State<PriceAlertsScreen> {
       decoration: BoxDecoration(
         color: const Color(0xFF1E2746),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.1),
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -182,9 +187,14 @@ class _PriceAlertsScreenState extends State<PriceAlertsScreen> {
       decoration: BoxDecoration(
         color: const Color(0xFF1E2746),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.1),
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -263,11 +273,14 @@ class _PriceAlertsScreenState extends State<PriceAlertsScreen> {
             ? (isTriggered ? Colors.green.withOpacity(0.1) : const Color(0xFF0A0E27))
             : Colors.grey.withOpacity(0.1),
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(
-          color: alert.isActive 
-              ? (isTriggered ? Colors.green : const Color(0xFF6C5CE7).withOpacity(0.3))
-              : Colors.grey.withOpacity(0.3),
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
       ),
       child: Column(
         children: [
@@ -414,9 +427,14 @@ class _PriceAlertsScreenState extends State<PriceAlertsScreen> {
       decoration: BoxDecoration(
         color: const Color(0xFF1E2746),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.1),
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -727,9 +745,14 @@ class _CreateAlertBottomSheetState extends State<CreateAlertBottomSheet> {
                   decoration: BoxDecoration(
                     color: isSelected ? const Color(0xFF6C5CE7).withOpacity(0.2) : const Color(0xFF0A0E27),
                     borderRadius: BorderRadius.circular(12.r),
-                    border: Border.all(
-                      color: isSelected ? const Color(0xFF6C5CE7) : Colors.transparent,
-                    ),
+                    boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
                   ),
                   child: Row(
                     children: [
@@ -809,11 +832,14 @@ class _CreateAlertBottomSheetState extends State<CreateAlertBottomSheet> {
                         ? const Color(0xFF6C5CE7).withOpacity(0.2) 
                         : const Color(0xFF0A0E27),
                     borderRadius: BorderRadius.circular(12.r),
-                    border: Border.all(
-                      color: _selectedAlertType == AlertType.above 
-                          ? const Color(0xFF6C5CE7) 
-                          : Colors.transparent,
-                    ),
+                    boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
                   ),
                   child: Column(
                     children: [
@@ -847,11 +873,14 @@ class _CreateAlertBottomSheetState extends State<CreateAlertBottomSheet> {
                         ? const Color(0xFF6C5CE7).withOpacity(0.2) 
                         : const Color(0xFF0A0E27),
                     borderRadius: BorderRadius.circular(12.r),
-                    border: Border.all(
-                      color: _selectedAlertType == AlertType.below 
-                          ? const Color(0xFF6C5CE7) 
-                          : Colors.transparent,
-                    ),
+                    boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
                   ),
                   child: Column(
                     children: [

@@ -1,6 +1,7 @@
 import 'package:dartz/dartz.dart';
 import 'package:lazervault/core/error/failure.dart';
 import '../entities/profile_entity.dart';
+import '../entities/phone_verification_entity.dart';
 
 abstract class IAuthRepository {
   // Authentication methods - return ProfileEntity on success
@@ -24,6 +25,7 @@ abstract class IAuthRepository {
     required String email,
     required String password,
     String? phoneNumber,
+    String? username,
   });
 
   Future<Either<Failure, ProfileEntity>> signInWithGoogle();
@@ -56,5 +58,15 @@ abstract class IAuthRepository {
   // Token refresh
   Future<Either<Failure, ProfileEntity>> refreshToken({
     required String refreshToken,
+  });
+
+  // Phone verification methods
+  Future<Either<Failure, PhoneVerificationEntity>> requestPhoneVerification({
+    required String phoneNumber,
+  });
+
+  Future<Either<Failure, VerifyPhoneEntity>> verifyPhoneNumber({
+    required String phoneNumber,
+    required String verificationCode,
   });
 } 

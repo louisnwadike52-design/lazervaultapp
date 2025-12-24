@@ -262,3 +262,51 @@ const VerifyPinResponse$json = const {
 
 /// Descriptor for `VerifyPinResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List verifyPinResponseDescriptor = $convert.base64Decode('ChFWZXJpZnlQaW5SZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZXNzEhAKA21zZxgCIAEoCVIDbXNn');
+@$core.Deprecated('Use requestPhoneVerificationRequestDescriptor instead')
+const RequestPhoneVerificationRequest$json = const {
+  '1': 'RequestPhoneVerificationRequest',
+  '2': const [
+    const {'1': 'phone_number', '3': 1, '4': 1, '5': 9, '10': 'phoneNumber'},
+  ],
+  '7': const {},
+};
+
+/// Descriptor for `RequestPhoneVerificationRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List requestPhoneVerificationRequestDescriptor = $convert.base64Decode('Ch9SZXF1ZXN0UGhvbmVWZXJpZmljYXRpb25SZXF1ZXN0EiEKDHBob25lX251bWJlchgBIAEoCVILcGhvbmVOdW1iZXI6FJJBEQoP0gEMcGhvbmVfbnVtYmVy');
+@$core.Deprecated('Use requestPhoneVerificationResponseDescriptor instead')
+const RequestPhoneVerificationResponse$json = const {
+  '1': 'RequestPhoneVerificationResponse',
+  '2': const [
+    const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    const {'1': 'msg', '3': 2, '4': 1, '5': 9, '10': 'msg'},
+    const {'1': 'verification_id', '3': 3, '4': 1, '5': 9, '10': 'verificationId'},
+    const {'1': 'expires_in', '3': 4, '4': 1, '5': 5, '10': 'expiresIn'},
+  ],
+};
+
+/// Descriptor for `RequestPhoneVerificationResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List requestPhoneVerificationResponseDescriptor = $convert.base64Decode('CiBSZXF1ZXN0UGhvbmVWZXJpZmljYXRpb25SZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZXNzEhAKA21zZxgCIAEoCVIDbXNnEicKD3ZlcmlmaWNhdGlvbl9pZBgDIAEoCVIOdmVyaWZpY2F0aW9uSWQSHQoKZXhwaXJlc19pbhgEIAEoBVIJZXhwaXJlc0lu');
+@$core.Deprecated('Use verifyPhoneNumberRequestDescriptor instead')
+const VerifyPhoneNumberRequest$json = const {
+  '1': 'VerifyPhoneNumberRequest',
+  '2': const [
+    const {'1': 'phone_number', '3': 1, '4': 1, '5': 9, '10': 'phoneNumber'},
+    const {'1': 'verification_code', '3': 2, '4': 1, '5': 9, '10': 'verificationCode'},
+  ],
+  '7': const {},
+};
+
+/// Descriptor for `VerifyPhoneNumberRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List verifyPhoneNumberRequestDescriptor = $convert.base64Decode('ChhWZXJpZnlQaG9uZU51bWJlclJlcXVlc3QSIQoMcGhvbmVfbnVtYmVyGAEgASgJUgtwaG9uZU51bWJlchIrChF2ZXJpZmljYXRpb25fY29kZRgCIAEoCVIQdmVyaWZpY2F0aW9uQ29kZTookkElCiPSAQxwaG9uZV9udW1iZXLSARF2ZXJpZmljYXRpb25fY29kZQ==');
+@$core.Deprecated('Use verifyPhoneNumberResponseDescriptor instead')
+const VerifyPhoneNumberResponse$json = const {
+  '1': 'VerifyPhoneNumberResponse',
+  '2': const [
+    const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    const {'1': 'msg', '3': 2, '4': 1, '5': 9, '10': 'msg'},
+    const {'1': 'is_verified', '3': 3, '4': 1, '5': 8, '10': 'isVerified'},
+  ],
+};
+
+/// Descriptor for `VerifyPhoneNumberResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List verifyPhoneNumberResponseDescriptor = $convert.base64Decode('ChlWZXJpZnlQaG9uZU51bWJlclJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3MSEAoDbXNnGAIgASgJUgNtc2cSHwoLaXNfdmVyaWZpZWQYAyABKAhSCmlzVmVyaWZpZWQ=');

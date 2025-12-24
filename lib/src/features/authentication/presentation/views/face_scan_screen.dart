@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; // For SystemChrome
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/src/features/authentication/cubit/face_verification_cubit.dart';
 import 'package:lazervault/src/features/widgets/face_scan.dart';
 
 class FaceScanScreen extends StatefulWidget {
@@ -24,32 +27,35 @@ class _FaceScanScreenState extends State<FaceScanScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      extendBodyBehindAppBar: true,
-      body: Stack(
-        children: [
-          Container(
-            decoration: const BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage("assets/images/human-bg.png"),
-                fit: BoxFit.cover,
+    return BlocProvider<FaceVerificationCubit>(
+      create: (context) => serviceLocator<FaceVerificationCubit>(),
+      child: Scaffold(
+        extendBodyBehindAppBar: true,
+        body: Stack(
+          children: [
+            Container(
+              decoration: const BoxDecoration(
+                image: DecorationImage(
+                  image: AssetImage("assets/images/human-bg.png"),
+                  fit: BoxFit.cover,
+                ),
               ),
             ),
-          ),
-          // Container(
-          //   decoration: const BoxDecoration(
-          //     gradient: LinearGradient(
-          //       begin: Alignment.bottomCenter,
-          //       end: Alignment.topCenter,
-          //       colors: [
-          //         Color.fromARGB(0, 49, 9, 113),
-          //         Color.fromARGB(200, 232, 233, 234),
-          //       ],
-          //     ),
-          //   ),
-          // ),
-          const FaceScan(),
-        ],
+            // Container(
+            //   decoration: const BoxDecoration(
+            //     gradient: LinearGradient(
+            //       begin: Alignment.bottomCenter,
+            //       end: Alignment.topCenter,
+            //       colors: [
+            //         Color.fromARGB(0, 49, 9, 113),
+            //         Color.fromARGB(200, 232, 233, 234),
+            //       ],
+            //     ),
+            //   ),
+            // ),
+            const FaceScan(),
+          ],
+        ),
       ),
     );
   }

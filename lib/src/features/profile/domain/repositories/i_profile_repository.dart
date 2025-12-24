@@ -1,0 +1,39 @@
+import 'package:dartz/dartz.dart';
+import 'package:lazervault/core/error/failure.dart';
+import 'package:lazervault/src/features/authentication/domain/entities/user.dart';
+import '../entities/user_preferences.dart';
+
+abstract class IProfileRepository {
+  // Get user profile
+  Future<Either<Failure, Map<String, dynamic>>> getUserProfile();
+
+  // Update user profile
+  Future<Either<Failure, User>> updateUserProfile({
+    String? firstName,
+    String? lastName,
+    String? username,
+    String? phoneNumber,
+    String? language,
+    String? currency,
+    String? country,
+    String? profilePicture,
+  });
+
+  // Update password
+  Future<Either<Failure, void>> updatePassword({
+    required String currentPassword,
+    required String newPassword,
+  });
+
+  // Update preferences
+  Future<Either<Failure, UserPreferences>> updatePreferences({
+    bool? pushNotifications,
+    bool? emailNotifications,
+    bool? smsNotifications,
+    bool? darkMode,
+    String? language,
+    String? currency,
+    List<String>? preferredCountries,
+    String? activeCountry,
+  });
+}

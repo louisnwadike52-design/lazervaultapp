@@ -6,6 +6,7 @@ import 'package:lazervault/core/data/app_data.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
+import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
 import 'package:lazervault/src/features/widgets/avatar_with_details.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -202,6 +203,8 @@ class _PasscodeSignInState extends State<PasscodeSignIn> {
     return BlocConsumer<AuthenticationCubit, AuthenticationState>(
       listener: (context, state) {
         if (state is AuthenticationSuccess) {
+          // Load user profile after successful authentication
+          context.read<ProfileCubit>().getUserProfile();
           Get.offAllNamed(AppRoutes.dashboard);
         }
       },
@@ -297,7 +300,7 @@ class _PasscodeSignInState extends State<PasscodeSignIn> {
                       ),
                       SizedBox(height: 30.h),
                       TextButton(
-                        onPressed: isAuthenticating ? null : () => Get.toNamed(AppRoutes.passwordRecovery),
+                        onPressed: isAuthenticating ? null : () => Get.toNamed(AppRoutes.emailSignIn, arguments: {'fromForgotPasscode': true}),
                         child: Text(
                           'Forgot your passcode?',
                           style: textTheme.bodyMedium?.copyWith(
@@ -325,6 +328,30 @@ class _PasscodeSignInState extends State<PasscodeSignIn> {
                                   ),
                                 if (_canCheckBiometrics && _availableBiometricType != null)
                                   SizedBox(width: 20.w),
+                                FutureBuilder<bool>(
+                                  future: context.read<AuthenticationCubit>().checkFaceRegistration(),
+                                  builder: (context, snapshot) {
+                                    // Only show facial recognition icon if face is registered
+                                    if (snapshot.connectionState == ConnectionState.waiting) {
+                                      return const SizedBox.shrink();
+                                    }
+                                    if (snapshot.data == true) {
+                                      return Row(
+                                        children: [
+                                          _buildIconButton(
+                                            icon: Icons.face_retouching_natural,
+                                            onPressed: () => Get.toNamed(AppRoutes.facialLogin),
+                                            iconColor: Colors.white,
+                                            colorScheme: colorScheme,
+                                            tooltip: 'Use Facial Recognition',
+                                          ),
+                                          SizedBox(width: 20.w),
+                                        ],
+                                      );
+                                    }
+                                    return const SizedBox.shrink();
+                                  },
+                                ),
                                 _buildIconButton(
                                   icon: Icons.mic_none_outlined,
                                   onPressed: _onVoicePressed,

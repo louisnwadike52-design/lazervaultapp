@@ -352,10 +352,14 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
               height: 120.w * _pulseAnimation.value,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(
-                  color: const Color(0xFF6366F1).withValues(alpha: 0.3),
-                  width: 2,
-                ),
+                boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
               ),
             );
           },
@@ -372,7 +376,7 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   gradient: const LinearGradient(
-                    colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                    colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6)],
                   ),
                 ),
                 child: Icon(
@@ -394,9 +398,14 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
       ),
       child: Column(
         children: [
@@ -485,7 +494,7 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
                   color: isCompleted 
                       ? const Color(0xFF10B981)
                       : isCurrent
-                          ? const Color(0xFF6366F1)
+                          ? const Color(0xFF3B82F6)
                           : Colors.grey[600],
                 ),
                 child: Icon(
@@ -525,12 +534,12 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
                 height: 56.h,
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                    colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6)],
                   ),
                   borderRadius: BorderRadius.circular(16.r),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF6366F1).withValues(alpha: 0.3),
+                      color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
                       blurRadius: 12,
                       offset: const Offset(0, 4),
                     ),
@@ -560,11 +569,7 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
                   Expanded(
                     child: Container(
                       height: 56.h,
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.3),
-                        ),
-                        borderRadius: BorderRadius.circular(16.r),
+                      decoration: BoxDecoration(                        borderRadius: BorderRadius.circular(16.r),
                       ),
                       child: Material(
                         color: Colors.transparent,
@@ -591,7 +596,7 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
                       height: 56.h,
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
-                          colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                          colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6)],
                         ),
                         borderRadius: BorderRadius.circular(16.r),
                       ),

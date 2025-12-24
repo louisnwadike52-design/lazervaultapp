@@ -14,6 +14,7 @@ import '../domain/usecases/verify_email_usecase.dart';
 import '../domain/usecases/resend_verification_usecase.dart';
 import '../domain/usecases/check_email_availability_usecase.dart';
 import '../domain/entities/profile_entity.dart';
+import '../domain/entities/user.dart';
 import 'authentication_state.dart';
 
 class AuthenticationCubit extends Cubit<AuthenticationState> {
@@ -63,6 +64,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
   ProfileEntity? get currentProfile => _currentProfile;
   bool get isAuthenticated => _currentProfile != null;
   bool get isEmailVerified => _currentProfile?.user.isEmailVerified ?? false;
+  String? get userId => _currentProfile?.user.id;
 
   // Storage keys
   static const String _accessTokenKey = 'access_token';
@@ -260,7 +262,9 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
           );
         }
 
-        emit(AuthenticationSuccess(profile));
+        // Emit UserCreated state instead of AuthenticationSuccess
+        // to prevent conflict with login flow
+        emit(UserCreated());
       },
     );
   }
@@ -508,11 +512,24 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     );
   }
 
+  // --- Update User Profile ---
+  void updateCurrentUser(User updatedUser) {
+    if (_currentProfile != null) {
+      _currentProfile = ProfileEntity(
+        user: updatedUser,
+        session: _currentProfile!.session,
+      );
+      emit(AuthenticationSuccess(_currentProfile!));
+    }
+  }
+
   // --- Logout ---
   Future<void> logout() async {
     await _clearSession();
     _showInfoSnackbar('Logged Out', 'Come back soon!');
-    emit(AuthenticationInitial());
+    // Emit PasscodeLoginInProgress instead of AuthenticationInitial
+    // to prevent infinite loading spinner on passcode screen
+    emit(const PasscodeLoginInProgress());
   }
 
   // --- Sign Up Flow Methods ---
@@ -556,6 +573,13 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     if (state is SignUpInProgress) {
       final currentState = state as SignUpInProgress;
       emit(currentState.copyWith(lastName: value, clearErrorMessage: true, isLoading: false));
+    }
+  }
+
+  void signUpUsernameChanged(String value) {
+    if (state is SignUpInProgress) {
+      final currentState = state as SignUpInProgress;
+      emit(currentState.copyWith(username: value, clearErrorMessage: true, isLoading: false));
     }
   }
 
@@ -757,6 +781,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
         email: currentState.email,
         password: currentState.password,
         phoneNumber: currentState.phoneNumber,
+        username: currentState.username.isEmpty ? null : currentState.username,
       );
 
       result.fold(
@@ -783,7 +808,9 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
             );
           }
 
-          emit(AuthenticationSuccess(profile));
+          // Emit UserCreated state instead of AuthenticationSuccess
+          // to prevent conflict with login flow
+          emit(UserCreated());
         },
       );
     } else {
@@ -1074,8 +1101,14 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
 
     final currentState = state as PasscodeLoginInProgress;
 
-    // Get stored email
-    final email = await _storage.read(key: 'user_email');
+    // Try multiple keys for email (for backwards compatibility)
+    String? email = await _storage.read(key: _userEmailKey);
+    if (email == null || email.isEmpty) {
+      email = await _storage.read(key: 'stored_email');
+    }
+
+    print('🔐 Passcode login attempt - Email from storage: $email');
+
     if (email == null || email.isEmpty) {
       _showErrorSnackbar('Error', 'No stored email found. Please use email/password login.');
       emit(currentState.copyWith(enteredPasscode: '', clearError: true));
@@ -1084,6 +1117,8 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
 
     emit(currentState.copyWith(isAuthenticating: true, clearError: true));
 
+    print('🔐 Calling loginWithPasscode for email: $email');
+
     final result = await _loginWithPasscodeUseCase(
       email: email,
       passcode: passcode,
@@ -1091,6 +1126,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
 
     result.fold(
       (failure) {
+        print('🔐 Passcode login failed: ${failure.message}');
         _showErrorSnackbar('Login Failed', failure.message);
         emit(PasscodeLoginInProgress(
           enteredPasscode: '',
@@ -1099,6 +1135,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
         ));
       },
       (profile) async {
+        print('🔐 Passcode login successful for: ${profile.user.email}');
         await _saveSession(profile);
         await _storage.write(key: 'login_method', value: 'passcode');
         await _storage.write(key: 'stored_email', value: email);
@@ -1106,5 +1143,39 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
         emit(AuthenticationSuccess(profile));
       },
     );
+  }
+
+  // ========== Password Recovery Verification Methods ==========
+  // TODO: Implement with proper use cases
+
+  Future<void> verifyPasswordResetCode(String email, String code) async {
+    // Placeholder - needs use case implementation
+    emit(const PasswordRecoveryVerificationInProgress());
+    await Future.delayed(const Duration(seconds: 1));
+    emit(AuthenticationFailure('Password reset code verification not yet implemented'));
+  }
+
+  Future<void> resendPasswordResetCode(String email, String deliveryMethod) async {
+    // Placeholder - needs use case implementation
+    emit(const PasswordRecoveryResendInProgress());
+    await Future.delayed(const Duration(seconds: 1));
+    emit(AuthenticationFailure('Resend code not yet implemented'));
+  }
+
+  // ========== Facial Recognition Methods ==========
+  // TODO: Implement with proper use cases
+
+  Future<void> loginWithFace(String email, List<int> imageData) async {
+    // Placeholder - needs use case implementation
+    emit(const FacialRecognitionLoginInProgress());
+    await Future.delayed(const Duration(seconds: 1));
+    emit(AuthenticationFailure('Facial recognition login not yet implemented'));
+  }
+
+  Future<bool> checkFaceRegistration() async {
+    // Placeholder - needs use case implementation
+    // DON'T emit states here as it interferes with passcode login flow
+    await Future.delayed(const Duration(milliseconds: 100));
+    return false;
   }
 }

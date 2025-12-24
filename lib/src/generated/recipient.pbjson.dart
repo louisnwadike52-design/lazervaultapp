@@ -22,6 +22,11 @@ const Recipient$json = const {
     const {'1': 'sort_code', '3': 8, '4': 1, '5': 9, '10': 'sortCode'},
     const {'1': 'bank_name', '3': 9, '4': 1, '5': 9, '10': 'bankName'},
     const {'1': 'country_code', '3': 10, '4': 1, '5': 9, '10': 'countryCode'},
+    const {'1': 'email', '3': 13, '4': 1, '5': 9, '10': 'email'},
+    const {'1': 'phone_number', '3': 14, '4': 1, '5': 9, '10': 'phoneNumber'},
+    const {'1': 'currency', '3': 15, '4': 1, '5': 9, '10': 'currency'},
+    const {'1': 'swift_code', '3': 16, '4': 1, '5': 9, '10': 'swiftCode'},
+    const {'1': 'iban', '3': 17, '4': 1, '5': 9, '10': 'iban'},
     const {'1': 'created_at', '3': 11, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
     const {'1': 'updated_at', '3': 12, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'updatedAt'},
   ],
@@ -32,7 +37,7 @@ const Recipient$json = const {
 };
 
 /// Descriptor for `Recipient`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List recipientDescriptor = $convert.base64Decode('CglSZWNpcGllbnQSDgoCaWQYASABKARSAmlkEhIKBG5hbWUYAiABKAlSBG5hbWUSHwoLaXNfZmF2b3JpdGUYAyABKAhSCmlzRmF2b3JpdGUSEgoEdHlwZRgEIAEoCVIEdHlwZRIzChNpbnRlcm5hbF9hY2NvdW50X2lkGAUgASgESABSEWludGVybmFsQWNjb3VudElkiAEBEi0KEGludGVybmFsX3VzZXJfaWQYBiABKARIAVIOaW50ZXJuYWxVc2VySWSIAQESJQoOYWNjb3VudF9udW1iZXIYByABKAlSDWFjY291bnROdW1iZXISGwoJc29ydF9jb2RlGAggASgJUghzb3J0Q29kZRIbCgliYW5rX25hbWUYCSABKAlSCGJhbmtOYW1lEiEKDGNvdW50cnlfY29kZRgKIAEoCVILY291bnRyeUNvZGUSOQoKY3JlYXRlZF9hdBgLIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXBSCWNyZWF0ZWRBdBI5Cgp1cGRhdGVkX2F0GAwgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcFIJdXBkYXRlZEF0QhYKFF9pbnRlcm5hbF9hY2NvdW50X2lkQhMKEV9pbnRlcm5hbF91c2VyX2lk');
+final $typed_data.Uint8List recipientDescriptor = $convert.base64Decode('CglSZWNpcGllbnQSDgoCaWQYASABKARSAmlkEhIKBG5hbWUYAiABKAlSBG5hbWUSHwoLaXNfZmF2b3JpdGUYAyABKAhSCmlzRmF2b3JpdGUSEgoEdHlwZRgEIAEoCVIEdHlwZRIzChNpbnRlcm5hbF9hY2NvdW50X2lkGAUgASgESABSEWludGVybmFsQWNjb3VudElkiAEBEi0KEGludGVybmFsX3VzZXJfaWQYBiABKARIAVIOaW50ZXJuYWxVc2VySWSIAQESJQoOYWNjb3VudF9udW1iZXIYByABKAlSDWFjY291bnROdW1iZXISGwoJc29ydF9jb2RlGAggASgJUghzb3J0Q29kZRIbCgliYW5rX25hbWUYCSABKAlSCGJhbmtOYW1lEiEKDGNvdW50cnlfY29kZRgKIAEoCVILY291bnRyeUNvZGUSFAoFZW1haWwYDSABKAlSBWVtYWlsEiEKDHBob25lX251bWJlchgOIAEoCVILcGhvbmVOdW1iZXISGgoIY3VycmVuY3kYDyABKAlSCGN1cnJlbmN5Eh0KCnN3aWZ0X2NvZGUYECABKAlSCXN3aWZ0Q29kZRISCgRpYmFuGBEgASgJUgRpYmFuEjkKCmNyZWF0ZWRfYXQYCyABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUgljcmVhdGVkQXQSOQoKdXBkYXRlZF9hdBgMIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXBSCXVwZGF0ZWRBdEIWChRfaW50ZXJuYWxfYWNjb3VudF9pZEITChFfaW50ZXJuYWxfdXNlcl9pZA==');
 @$core.Deprecated('Use createRecipientRequestDescriptor instead')
 const CreateRecipientRequest$json = const {
   '1': 'CreateRecipientRequest',
@@ -45,6 +50,11 @@ const CreateRecipientRequest$json = const {
     const {'1': 'bank_name', '3': 6, '4': 1, '5': 9, '9': 4, '10': 'bankName', '17': true},
     const {'1': 'sort_code', '3': 7, '4': 1, '5': 9, '9': 5, '10': 'sortCode', '17': true},
     const {'1': 'country_code', '3': 8, '4': 1, '5': 9, '9': 6, '10': 'countryCode', '17': true},
+    const {'1': 'email', '3': 9, '4': 1, '5': 9, '9': 7, '10': 'email', '17': true},
+    const {'1': 'phone_number', '3': 10, '4': 1, '5': 9, '9': 8, '10': 'phoneNumber', '17': true},
+    const {'1': 'currency', '3': 11, '4': 1, '5': 9, '9': 9, '10': 'currency', '17': true},
+    const {'1': 'swift_code', '3': 12, '4': 1, '5': 9, '9': 10, '10': 'swiftCode', '17': true},
+    const {'1': 'iban', '3': 13, '4': 1, '5': 9, '9': 11, '10': 'iban', '17': true},
   ],
   '8': const [
     const {'1': '_is_favorite'},
@@ -54,11 +64,16 @@ const CreateRecipientRequest$json = const {
     const {'1': '_bank_name'},
     const {'1': '_sort_code'},
     const {'1': '_country_code'},
+    const {'1': '_email'},
+    const {'1': '_phone_number'},
+    const {'1': '_currency'},
+    const {'1': '_swift_code'},
+    const {'1': '_iban'},
   ],
 };
 
 /// Descriptor for `CreateRecipientRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List createRecipientRequestDescriptor = $convert.base64Decode('ChZDcmVhdGVSZWNpcGllbnRSZXF1ZXN0EhIKBG5hbWUYASABKAlSBG5hbWUSJAoLaXNfZmF2b3JpdGUYAiABKAhIAFIKaXNGYXZvcml0ZYgBARIXCgR0eXBlGAMgASgJSAFSBHR5cGWIAQESMwoTaW50ZXJuYWxfYWNjb3VudF9pZBgEIAEoBEgCUhFpbnRlcm5hbEFjY291bnRJZIgBARIqCg5hY2NvdW50X251bWJlchgFIAEoCUgDUg1hY2NvdW50TnVtYmVyiAEBEiAKCWJhbmtfbmFtZRgGIAEoCUgEUghiYW5rTmFtZYgBARIgCglzb3J0X2NvZGUYByABKAlIBVIIc29ydENvZGWIAQESJgoMY291bnRyeV9jb2RlGAggASgJSAZSC2NvdW50cnlDb2RliAEBQg4KDF9pc19mYXZvcml0ZUIHCgVfdHlwZUIWChRfaW50ZXJuYWxfYWNjb3VudF9pZEIRCg9fYWNjb3VudF9udW1iZXJCDAoKX2JhbmtfbmFtZUIMCgpfc29ydF9jb2RlQg8KDV9jb3VudHJ5X2NvZGU=');
+final $typed_data.Uint8List createRecipientRequestDescriptor = $convert.base64Decode('ChZDcmVhdGVSZWNpcGllbnRSZXF1ZXN0EhIKBG5hbWUYASABKAlSBG5hbWUSJAoLaXNfZmF2b3JpdGUYAiABKAhIAFIKaXNGYXZvcml0ZYgBARIXCgR0eXBlGAMgASgJSAFSBHR5cGWIAQESMwoTaW50ZXJuYWxfYWNjb3VudF9pZBgEIAEoBEgCUhFpbnRlcm5hbEFjY291bnRJZIgBARIqCg5hY2NvdW50X251bWJlchgFIAEoCUgDUg1hY2NvdW50TnVtYmVyiAEBEiAKCWJhbmtfbmFtZRgGIAEoCUgEUghiYW5rTmFtZYgBARIgCglzb3J0X2NvZGUYByABKAlIBVIIc29ydENvZGWIAQESJgoMY291bnRyeV9jb2RlGAggASgJSAZSC2NvdW50cnlDb2RliAEBEhkKBWVtYWlsGAkgASgJSAdSBWVtYWlsiAEBEiYKDHBob25lX251bWJlchgKIAEoCUgIUgtwaG9uZU51bWJlcogBARIfCghjdXJyZW5jeRgLIAEoCUgJUghjdXJyZW5jeYgBARIiCgpzd2lmdF9jb2RlGAwgASgJSApSCXN3aWZ0Q29kZYgBARIXCgRpYmFuGA0gASgJSAtSBGliYW6IAQFCDgoMX2lzX2Zhdm9yaXRlQgcKBV90eXBlQhYKFF9pbnRlcm5hbF9hY2NvdW50X2lkQhEKD19hY2NvdW50X251bWJlckIMCgpfYmFua19uYW1lQgwKCl9zb3J0X2NvZGVCDwoNX2NvdW50cnlfY29kZUIICgZfZW1haWxCDwoNX3Bob25lX251bWJlckILCglfY3VycmVuY3lCDQoLX3N3aWZ0X2NvZGVCBwoFX2liYW4=');
 @$core.Deprecated('Use createRecipientResponseDescriptor instead')
 const CreateRecipientResponse$json = const {
   '1': 'CreateRecipientResponse',
@@ -72,10 +87,20 @@ final $typed_data.Uint8List createRecipientResponseDescriptor = $convert.base64D
 @$core.Deprecated('Use listRecipientsRequestDescriptor instead')
 const ListRecipientsRequest$json = const {
   '1': 'ListRecipientsRequest',
+  '2': const [
+    const {'1': 'country_code', '3': 1, '4': 1, '5': 9, '9': 0, '10': 'countryCode', '17': true},
+    const {'1': 'currency', '3': 2, '4': 1, '5': 9, '9': 1, '10': 'currency', '17': true},
+    const {'1': 'favorites_only', '3': 3, '4': 1, '5': 8, '9': 2, '10': 'favoritesOnly', '17': true},
+  ],
+  '8': const [
+    const {'1': '_country_code'},
+    const {'1': '_currency'},
+    const {'1': '_favorites_only'},
+  ],
 };
 
 /// Descriptor for `ListRecipientsRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List listRecipientsRequestDescriptor = $convert.base64Decode('ChVMaXN0UmVjaXBpZW50c1JlcXVlc3Q=');
+final $typed_data.Uint8List listRecipientsRequestDescriptor = $convert.base64Decode('ChVMaXN0UmVjaXBpZW50c1JlcXVlc3QSJgoMY291bnRyeV9jb2RlGAEgASgJSABSC2NvdW50cnlDb2RliAEBEh8KCGN1cnJlbmN5GAIgASgJSAFSCGN1cnJlbmN5iAEBEioKDmZhdm9yaXRlc19vbmx5GAMgASgISAJSDWZhdm9yaXRlc09ubHmIAQFCDwoNX2NvdW50cnlfY29kZUILCglfY3VycmVuY3lCEQoPX2Zhdm9yaXRlc19vbmx5');
 @$core.Deprecated('Use listRecipientsResponseDescriptor instead')
 const ListRecipientsResponse$json = const {
   '1': 'ListRecipientsResponse',
@@ -191,3 +216,29 @@ const GetSimilarRecipientsByNameResponse$json = const {
 
 /// Descriptor for `GetSimilarRecipientsByNameResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List getSimilarRecipientsByNameResponseDescriptor = $convert.base64Decode('CiJHZXRTaW1pbGFyUmVjaXBpZW50c0J5TmFtZVJlc3BvbnNlEkMKEGZvdW5kX3JlY2lwaWVudHMYASADKAsyGC5wYi5Gb3VuZFJlY2lwaWVudFJlc3VsdFIPZm91bmRSZWNpcGllbnRz');
+@$core.Deprecated('Use searchRecipientsByAccountRequestDescriptor instead')
+const SearchRecipientsByAccountRequest$json = const {
+  '1': 'SearchRecipientsByAccountRequest',
+  '2': const [
+    const {'1': 'account_number', '3': 1, '4': 1, '5': 9, '10': 'accountNumber'},
+    const {'1': 'sort_code', '3': 2, '4': 1, '5': 9, '9': 0, '10': 'sortCode', '17': true},
+    const {'1': 'bank_name', '3': 3, '4': 1, '5': 9, '9': 1, '10': 'bankName', '17': true},
+  ],
+  '8': const [
+    const {'1': '_sort_code'},
+    const {'1': '_bank_name'},
+  ],
+};
+
+/// Descriptor for `SearchRecipientsByAccountRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List searchRecipientsByAccountRequestDescriptor = $convert.base64Decode('CiBTZWFyY2hSZWNpcGllbnRzQnlBY2NvdW50UmVxdWVzdBIlCg5hY2NvdW50X251bWJlchgBIAEoCVINYWNjb3VudE51bWJlchIgCglzb3J0X2NvZGUYAiABKAlIAFIIc29ydENvZGWIAQESIAoJYmFua19uYW1lGAMgASgJSAFSCGJhbmtOYW1liAEBQgwKCl9zb3J0X2NvZGVCDAoKX2JhbmtfbmFtZQ==');
+@$core.Deprecated('Use searchRecipientsByAccountResponseDescriptor instead')
+const SearchRecipientsByAccountResponse$json = const {
+  '1': 'SearchRecipientsByAccountResponse',
+  '2': const [
+    const {'1': 'recipients', '3': 1, '4': 3, '5': 11, '6': '.pb.Recipient', '10': 'recipients'},
+  ],
+};
+
+/// Descriptor for `SearchRecipientsByAccountResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List searchRecipientsByAccountResponseDescriptor = $convert.base64Decode('CiFTZWFyY2hSZWNpcGllbnRzQnlBY2NvdW50UmVzcG9uc2USLQoKcmVjaXBpZW50cxgBIAMoCzINLnBiLlJlY2lwaWVudFIKcmVjaXBpZW50cw==');

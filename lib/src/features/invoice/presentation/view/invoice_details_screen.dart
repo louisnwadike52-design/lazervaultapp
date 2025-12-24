@@ -58,7 +58,7 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
           builder: (context, state) {
             if (state is InvoiceLoading) {
               return const Center(
-                child: CircularProgressIndicator(color: Color(0xFF6366F1)),
+                child: CircularProgressIndicator(color: Color(0xFF3B82F6)),
               );
             }
 
@@ -148,7 +148,7 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
                 Text(
                   invoice.title,
                   style: GoogleFonts.inter(
-                    color: Colors.grey[400],
+                    color: const Color(0xFF9CA3AF),
                     fontSize: 14.sp,
                   ),
                 ),
@@ -226,7 +226,7 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
               Text(
                 '\$${invoice.totalAmount.toStringAsFixed(2)}',
                 style: GoogleFonts.inter(
-                  color: const Color(0xFF6366F1),
+                  color: const Color(0xFF3B82F6),
                   fontSize: 24.sp,
                   fontWeight: FontWeight.bold,
                 ),
@@ -288,7 +288,7 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
           Text(
             label,
             style: GoogleFonts.inter(
-              color: Colors.grey[400],
+              color: const Color(0xFF9CA3AF),
               fontSize: 14.sp,
             ),
           ),
@@ -357,7 +357,7 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
                   Text(
                     item.description!,
                     style: GoogleFonts.inter(
-                      color: Colors.grey[400],
+                      color: const Color(0xFF9CA3AF),
                       fontSize: 12.sp,
                     ),
                   ),
@@ -424,7 +424,7 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
             _buildAmountRow('Tax', invoice.taxAmount!),
           if (invoice.discountAmount != null && invoice.discountAmount! > 0)
             _buildAmountRow('Discount', -invoice.discountAmount!),
-          Divider(color: Colors.grey[600], height: 24.h),
+          Divider(color: const Color(0xFF6B7280), height: 24.h),
           _buildAmountRow('Total', invoice.totalAmount, isTotal: true),
         ],
       ),
@@ -473,7 +473,7 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
             icon: const Icon(Icons.preview),
             label: const Text('Preview Invoice'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF6366F1),
+              backgroundColor: const Color(0xFF3B82F6),
               foregroundColor: Colors.white,
               padding: EdgeInsets.symmetric(vertical: 16.h),
               shape: RoundedRectangleBorder(
@@ -493,8 +493,8 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
               icon: const Icon(Icons.qr_code),
               label: const Text('Generate QR Code'),
               style: OutlinedButton.styleFrom(
-                side: const BorderSide(color: Color(0xFF6366F1)),
-                foregroundColor: const Color(0xFF6366F1),
+                side: const BorderSide(color: Color(0xFF3B82F6)),
+                foregroundColor: const Color(0xFF3B82F6),
                 padding: EdgeInsets.symmetric(vertical: 16.h),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12.r),
@@ -514,7 +514,7 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
                 icon: const Icon(Icons.share),
                 label: const Text('Share'),
                 style: OutlinedButton.styleFrom(
-                  side: BorderSide(color: Colors.grey[600]!),
+                  side: BorderSide(color: const Color(0xFF6B7280)!),
                   foregroundColor: Colors.white,
                   padding: EdgeInsets.symmetric(vertical: 16.h),
                   shape: RoundedRectangleBorder(
@@ -616,7 +616,7 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
                   onPressed: () => _shareQRCode(context, qrKey, 'Payment QR Code', invoice),
                   icon: Icon(
                     Icons.share,
-                    color: const Color(0xFF6366F1),
+                    color: const Color(0xFF3B82F6),
                     size: 18.sp,
                   ),
                   label: Text(
@@ -624,11 +624,11 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
                     style: GoogleFonts.inter(
                       fontSize: 14.sp,
                       fontWeight: FontWeight.w600,
-                      color: const Color(0xFF6366F1),
+                      color: const Color(0xFF3B82F6),
                     ),
                   ),
                   style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: Color(0xFF6366F1)),
+                    side: const BorderSide(color: Color(0xFF3B82F6)),
                     padding: EdgeInsets.symmetric(vertical: 16.h),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12.r),
@@ -642,7 +642,7 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
                   onPressed: () => context.read<InvoiceCubit>().loadInvoiceDetails(widget.invoiceId),
                   child: const Text('Close'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF6366F1),
+                    backgroundColor: const Color(0xFF3B82F6),
                     foregroundColor: Colors.white,
                     padding: EdgeInsets.symmetric(vertical: 16.h),
                     shape: RoundedRectangleBorder(
@@ -716,7 +716,7 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
             onPressed: () => context.read<InvoiceCubit>().loadInvoiceDetails(widget.invoiceId),
             child: const Text('Retry'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF6366F1),
+              backgroundColor: const Color(0xFF3B82F6),
               foregroundColor: Colors.white,
             ),
           ),
@@ -760,12 +760,12 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
                   Container(
                     padding: EdgeInsets.all(8.w),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF6366F1).withOpacity(0.1),
+                      color: const Color(0xFF3B82F6).withOpacity(0.1),
                       borderRadius: BorderRadius.circular(8.r),
                     ),
                     child: Icon(
                       Icons.person_outline,
-                      color: const Color(0xFF6366F1),
+                      color: const Color(0xFF3B82F6),
                       size: 20.sp,
                     ),
                   ),
@@ -927,7 +927,7 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
               Text('Preparing QR code...'),
             ],
           ),
-          backgroundColor: const Color(0xFF6366F1),
+          backgroundColor: const Color(0xFF3B82F6),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
           behavior: SnackBarBehavior.floating,
           duration: Duration(seconds: 2),

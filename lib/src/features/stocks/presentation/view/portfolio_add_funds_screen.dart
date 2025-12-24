@@ -182,12 +182,11 @@ class _PortfolioAddFundsScreenState extends State<PortfolioAddFundsScreen> with 
           ],
         ),
         borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.3),
-            blurRadius: 15,
-            offset: const Offset(0, 6),
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 6,
+            offset: Offset(0, 2),
           ),
         ],
       ),
@@ -274,7 +273,13 @@ class _PortfolioAddFundsScreenState extends State<PortfolioAddFundsScreen> with 
               ],
             ),
             borderRadius: BorderRadius.circular(20.r),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+            boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
           ),
           child: Row(
             children: [
@@ -360,9 +365,14 @@ class _PortfolioAddFundsScreenState extends State<PortfolioAddFundsScreen> with 
               : null,
           color: isSelected ? null : Colors.white.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(16.r),
-          border: Border.all(
-            color: isSelected ? Colors.green : Colors.white.withValues(alpha: 0.2),
+          boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
           ),
+        ],
+        
         ),
         child: Text(
           '\$${amount.toStringAsFixed(0)}',
@@ -434,9 +444,14 @@ class _PortfolioAddFundsScreenState extends State<PortfolioAddFundsScreen> with 
             : null,
         color: isSelected ? null : Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-          color: isSelected ? color : Colors.white.withValues(alpha: 0.1),
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
       ),
       child: Material(
         color: Colors.transparent,
@@ -504,7 +519,13 @@ class _PortfolioAddFundsScreenState extends State<PortfolioAddFundsScreen> with 
           ],
         ),
         borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

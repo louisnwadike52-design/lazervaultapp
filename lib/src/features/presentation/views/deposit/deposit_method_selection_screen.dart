@@ -432,7 +432,13 @@ class _DepositMethodSelectionScreenState extends State<DepositMethodSelectionScr
           ],
         ),
         borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
       ),
       child: Row(
         children: [
@@ -1028,7 +1034,13 @@ class _DepositMethodSelectionScreenState extends State<DepositMethodSelectionScr
       height: size * 0.7,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(4.r),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(4.r),

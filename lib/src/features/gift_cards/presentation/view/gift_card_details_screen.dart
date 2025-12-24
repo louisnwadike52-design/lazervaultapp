@@ -130,10 +130,14 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
               decoration: BoxDecoration(
                 color: Colors.white.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12.r),
-                border: Border.all(
-                  color: Colors.white.withOpacity(0.2),
-                  width: 1,
-                ),
+                boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
               ),
               child: IconButton(
                 onPressed: () => Navigator.of(context).pop(),
@@ -159,10 +163,14 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
               decoration: BoxDecoration(
                 color: Colors.white.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12.r),
-                border: Border.all(
-                  color: Colors.white.withOpacity(0.2),
-                  width: 1,
-                ),
+                boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
               ),
               child: IconButton(
                 onPressed: () => _shareGiftCard(),
@@ -195,12 +203,7 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
               _getStatusColor(widget.giftCard.status).withOpacity(0.6),
             ],
           ),
-          borderRadius: BorderRadius.circular(28.r),
-          border: Border.all(
-            color: Colors.white.withOpacity(0.2),
-            width: 1,
-          ),
-          boxShadow: [
+          borderRadius: BorderRadius.circular(28.r),          boxShadow: [
             BoxShadow(
               color: _getStatusColor(widget.giftCard.status).withOpacity(0.4),
               blurRadius: 24,
@@ -220,10 +223,14 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
                   decoration: BoxDecoration(
                     color: Colors.white.withOpacity(0.2),
                     borderRadius: BorderRadius.circular(16.r),
-                    border: Border.all(
-                      color: Colors.white.withOpacity(0.3),
-                      width: 1,
-                    ),
+                    boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(16.r),
@@ -249,10 +256,14 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
                   decoration: BoxDecoration(
                     color: Colors.white.withOpacity(0.2),
                     borderRadius: BorderRadius.circular(12.r),
-                    border: Border.all(
-                      color: Colors.white.withOpacity(0.3),
-                      width: 1,
-                    ),
+                    boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
                   ),
                   child: Text(
                     _getStatusText(widget.giftCard.status),
@@ -314,12 +325,7 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
             Colors.white.withOpacity(0.06),
           ],
         ),
-        borderRadius: BorderRadius.circular(24.r),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.2),
-          width: 1,
-        ),
-        boxShadow: [
+        borderRadius: BorderRadius.circular(24.r),        boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.2),
             blurRadius: 16,
@@ -371,12 +377,7 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
             Colors.white.withOpacity(0.06),
           ],
         ),
-        borderRadius: BorderRadius.circular(24.r),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.2),
-          width: 1,
-        ),
-        boxShadow: [
+        borderRadius: BorderRadius.circular(24.r),        boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.2),
             blurRadius: 16,
@@ -402,10 +403,14 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
             decoration: BoxDecoration(
               color: Colors.white.withOpacity(0.1),
               borderRadius: BorderRadius.circular(16.r),
-              border: Border.all(
-                color: Colors.white.withOpacity(0.2),
-                width: 1,
-              ),
+              boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
             ),
             child: Row(
               children: [
@@ -459,10 +464,14 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
               decoration: BoxDecoration(
                 color: Colors.white.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(16.r),
-                border: Border.all(
-                  color: Colors.white.withOpacity(0.2),
-                  width: 1,
-                ),
+                boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
               ),
               child: Row(
                 children: [
@@ -519,12 +528,7 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
             Colors.white.withOpacity(0.06),
           ],
         ),
-        borderRadius: BorderRadius.circular(24.r),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.2),
-          width: 1,
-        ),
-        boxShadow: [
+        borderRadius: BorderRadius.circular(24.r),        boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.2),
             blurRadius: 16,
@@ -589,12 +593,7 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
             Colors.white.withOpacity(0.06),
           ],
         ),
-        borderRadius: BorderRadius.circular(24.r),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.2),
-          width: 1,
-        ),
-        boxShadow: [
+        borderRadius: BorderRadius.circular(24.r),        boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.2),
             blurRadius: 16,
@@ -681,12 +680,7 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
                 child: Container(
                   decoration: BoxDecoration(
                     color: Colors.orange.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(16.r),
-                    border: Border.all(
-                      color: Colors.orange.withOpacity(0.3),
-                      width: 1,
-                    ),
-                  ),
+                    borderRadius: BorderRadius.circular(16.r),                  ),
                   child: ElevatedButton.icon(
                     onPressed: () => Get.toNamed(AppRoutes.sellToContact, arguments: widget.giftCard),
                     icon: Icon(Icons.sell_rounded, size: 18.sp),
@@ -715,10 +709,14 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
                   decoration: BoxDecoration(
                     color: Colors.purple.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(16.r),
-                    border: Border.all(
-                      color: Colors.purple.withOpacity(0.3),
-                      width: 1,
-                    ),
+                    boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
                   ),
                   child: ElevatedButton.icon(
                     onPressed: () => Get.toNamed(AppRoutes.quickSell, arguments: widget.giftCard),
@@ -753,10 +751,14 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(16.r),
-                  border: Border.all(
-                    color: Colors.white.withOpacity(0.2),
-                    width: 1,
-                  ),
+                  boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
                 ),
                 child: OutlinedButton.icon(
                   onPressed: () => _shareGiftCard(),
@@ -786,10 +788,14 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(16.r),
-                  border: Border.all(
-                    color: Colors.white.withOpacity(0.2),
-                    width: 1,
-                  ),
+                  boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
                 ),
                 child: OutlinedButton.icon(
                   onPressed: () => _downloadGiftCard(),

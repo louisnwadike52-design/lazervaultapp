@@ -17,12 +17,28 @@ class RecipientRepositoryImpl implements IRecipientRepository {
   );
 
   @override
-  Future<Either<Failure, List<RecipientModel>>> getRecipients(
-      {required String accessToken}) async {
+  Future<Either<Failure, List<RecipientModel>>> getRecipients({
+    required String accessToken,
+    String? countryCode,
+    String? currency,
+    bool? favoritesOnly,
+  }) async {
     try {
       final callOptions = await _callOptionsHelper.withAuth();
+      final request = grpc.ListRecipientsRequest();
+
+      if (countryCode != null) {
+        request.countryCode = countryCode;
+      }
+      if (currency != null) {
+        request.currency = currency;
+      }
+      if (favoritesOnly != null) {
+        request.favoritesOnly = favoritesOnly;
+      }
+
       final response = await _client.listRecipients(
-        grpc.ListRecipientsRequest(),
+        request,
         options: callOptions,
       );
       return Right(response.recipients.map(RecipientModel.fromProto).toList());
@@ -41,7 +57,27 @@ class RecipientRepositoryImpl implements IRecipientRepository {
         ..accountNumber = recipient.accountNumber
         ..bankName = recipient.bankName
         ..sortCode = recipient.sortCode
-        ..isFavorite = recipient.isFavorite;
+        ..isFavorite = recipient.isFavorite
+        ..type = 'external'; // Default to external recipient
+
+      if (recipient.countryCode != null) {
+        request.countryCode = recipient.countryCode!;
+      }
+      if (recipient.email != null) {
+        request.email = recipient.email!;
+      }
+      if (recipient.phoneNumber != null) {
+        request.phoneNumber = recipient.phoneNumber!;
+      }
+      if (recipient.currency != null) {
+        request.currency = recipient.currency!;
+      }
+      if (recipient.swiftCode != null) {
+        request.swiftCode = recipient.swiftCode!;
+      }
+      if (recipient.iban != null) {
+        request.iban = recipient.iban!;
+      }
 
       final callOptions = await _callOptionsHelper.withAuth();
       final response = await _client.createRecipient(

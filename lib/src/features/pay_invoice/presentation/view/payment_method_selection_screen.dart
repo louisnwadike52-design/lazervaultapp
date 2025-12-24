@@ -37,7 +37,7 @@ class _PaymentMethodSelectionScreenState extends State<PaymentMethodSelectionScr
       'balance': 15450.00,
       'currency': 'GBP',
       'icon': Icons.account_balance_wallet,
-      'color': const Color(0xFF6366F1),
+      'color': const Color(0xFF3B82F6),
     },
     {
       'id': 'savings_account',
@@ -252,9 +252,14 @@ class _PaymentMethodSelectionScreenState extends State<PaymentMethodSelectionScr
           ],
         ),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -264,12 +269,12 @@ class _PaymentMethodSelectionScreenState extends State<PaymentMethodSelectionScr
               Container(
                 padding: EdgeInsets.all(8.w),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF6366F1).withValues(alpha: 0.2),
+                  color: const Color(0xFF3B82F6).withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(8.r),
                 ),
                 child: Icon(
                   Icons.receipt_long_outlined,
-                  color: const Color(0xFF6366F1),
+                  color: const Color(0xFF3B82F6),
                   size: 20.sp,
                 ),
               ),
@@ -686,7 +691,7 @@ class _PaymentMethodSelectionScreenState extends State<PaymentMethodSelectionScr
           decoration: BoxDecoration(
             gradient: canPay
                 ? const LinearGradient(
-                    colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                    colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6)],
                   )
                 : LinearGradient(
                     colors: [
@@ -698,7 +703,7 @@ class _PaymentMethodSelectionScreenState extends State<PaymentMethodSelectionScr
             boxShadow: canPay
                 ? [
                     BoxShadow(
-                      color: const Color(0xFF6366F1).withValues(alpha: 0.3),
+                      color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
                       blurRadius: 12,
                       offset: const Offset(0, 4),
                     ),

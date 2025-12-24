@@ -190,11 +190,7 @@ class _InsurancePaymentConfirmationScreenState extends State<InsurancePaymentCon
             const Color(0xFF1F1F35).withValues(alpha: 0.9),
           ],
         ),
-        borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
-        ),
-        boxShadow: [
+        borderRadius: BorderRadius.circular(20.r),        boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.2),
             blurRadius: 20,
@@ -269,9 +265,14 @@ class _InsurancePaymentConfirmationScreenState extends State<InsurancePaymentCon
           decoration: BoxDecoration(
             color: const Color(0xFF10B981).withValues(alpha: 0.2),
             borderRadius: BorderRadius.circular(12.r),
-            border: Border.all(
-              color: const Color(0xFF10B981).withValues(alpha: 0.3),
-            ),
+            boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
           ),
           child: Text(
             'PAID',
@@ -326,9 +327,14 @@ class _InsurancePaymentConfirmationScreenState extends State<InsurancePaymentCon
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(12.r),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.1),
-            ),
+            boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
           ),
           child: Row(
             children: [
@@ -424,9 +430,14 @@ class _InsurancePaymentConfirmationScreenState extends State<InsurancePaymentCon
       decoration: BoxDecoration(
         color: const Color(0xFF6366F1).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(
-          color: const Color(0xFF6366F1).withValues(alpha: 0.2),
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
       ),
       child: Column(
         children: [
@@ -462,9 +473,14 @@ class _InsurancePaymentConfirmationScreenState extends State<InsurancePaymentCon
               child: Container(
                 height: 56.h,
                 decoration: BoxDecoration(
-                  border: Border.all(
-                    color: const Color(0xFF6366F1).withValues(alpha: 0.5),
-                  ),
+                  boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
                   borderRadius: BorderRadius.circular(16.r),
                 ),
                 child: Material(

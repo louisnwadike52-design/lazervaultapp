@@ -300,10 +300,14 @@ class _StockTradePaymentScreenState extends State<StockTradePaymentScreen>
           ],
         ),
         borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(
-          color: Colors.grey[800]!,
-          width: 1,
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
       ),
       child: Column(
         children: [
@@ -475,10 +479,14 @@ class _StockTradePaymentScreenState extends State<StockTradePaymentScreen>
         decoration: BoxDecoration(
           color: isSelected ? Colors.blue.withValues(alpha: 0.1) : Colors.grey[900],
           borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(
-            color: isSelected ? Colors.blue : Colors.grey[800]!,
-            width: 1,
+          boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
           ),
+        ],
+        
         ),
         child: Row(
           children: [
@@ -583,10 +591,14 @@ class _StockTradePaymentScreenState extends State<StockTradePaymentScreen>
         decoration: BoxDecoration(
           color: isSelected ? Colors.blue.withValues(alpha: 0.1) : Colors.grey[900],
           borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(
-            color: isSelected ? Colors.blue : Colors.grey[800]!,
-            width: 1,
+          boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
           ),
+        ],
+        
         ),
         child: Row(
           children: [
@@ -696,10 +708,14 @@ class _StockTradePaymentScreenState extends State<StockTradePaymentScreen>
         decoration: BoxDecoration(
           color: isSelected ? Colors.blue.withValues(alpha: 0.1) : Colors.grey[900],
           borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(
-            color: isSelected ? Colors.blue : Colors.grey[800]!,
-            width: 1,
+          boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
           ),
+        ],
+        
         ),
         child: Row(
           children: [

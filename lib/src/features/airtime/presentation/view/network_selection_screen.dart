@@ -90,7 +90,7 @@ class _NetworkSelectionScreenState extends State<NetworkSelectionScreen> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Color(0xFF1A1A3E),
+              Color(0xFF1F1F1F),
               Color(0xFF0A0E27),
               Color(0xFF0F0F23),
             ],
@@ -152,10 +152,14 @@ class _NetworkSelectionScreenState extends State<NetworkSelectionScreen> {
               decoration: BoxDecoration(
                 color: Colors.white.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12.r),
-                border: Border.all(
-                  color: Colors.white.withOpacity(0.2),
-                  width: 1,
-                ),
+                boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
               ),
               child: Icon(
                 Icons.arrow_back_ios_new,
@@ -266,12 +270,7 @@ class _NetworkSelectionScreenState extends State<NetworkSelectionScreen> {
         padding: EdgeInsets.all(20.w),
         decoration: BoxDecoration(
           color: Colors.white.withOpacity(0.05),
-          borderRadius: BorderRadius.circular(16.r),
-          border: Border.all(
-            color: Colors.white.withOpacity(0.1),
-            width: 1,
-          ),
-          boxShadow: [
+          borderRadius: BorderRadius.circular(16.r),          boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.1),
               blurRadius: 10,
@@ -436,7 +435,7 @@ class _NetworkSelectionScreenState extends State<NetworkSelectionScreen> {
           ElevatedButton(
             onPressed: () => Get.back(),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Color(0xFF6366F1),
+              backgroundColor: Color(0xFF3B82F6),
               padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12.r),
@@ -463,7 +462,7 @@ class _NetworkSelectionScreenState extends State<NetworkSelectionScreen> {
         children: [
           CircularProgressIndicator(
             strokeWidth: 3,
-            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF6366F1)),
+            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
           ),
           SizedBox(height: 24.h),
           Text(
@@ -528,7 +527,7 @@ class _NetworkSelectionScreenState extends State<NetworkSelectionScreen> {
                   }
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Color(0xFF6366F1),
+                  backgroundColor: Color(0xFF3B82F6),
                   padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12.r),

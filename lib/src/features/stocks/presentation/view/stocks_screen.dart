@@ -332,7 +332,13 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
           colors: [Colors.blue.withValues(alpha: 0.2), Colors.purple.withValues(alpha: 0.2)],
         ),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
       ),
       child: BlocBuilder<StockCubit, StockState>(
         builder: (context, state) {
@@ -411,11 +417,14 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
                         decoration: BoxDecoration(
                           color: Colors.white.withValues(alpha: 0.05),
                           borderRadius: BorderRadius.circular(12.r),
-                        border: Border.all(
-                          color: isPositive 
-                              ? Colors.green.withValues(alpha: 0.2)
-                              : Colors.red.withValues(alpha: 0.2),
-                        ),
+                        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -489,15 +498,11 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
           ],
         ),
         borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
-          width: 1,
-        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.3),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 8,
+            offset: Offset(0, 2),
           ),
         ],
       ),
@@ -742,12 +747,11 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
           ],
         ),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.2),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 6,
+            offset: Offset(0, 2),
           ),
         ],
       ),
@@ -864,14 +868,7 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
                               const Color(0xFF1F1F35).withValues(alpha: 0.8),
                             ],
                           ),
-                    borderRadius: BorderRadius.circular(25.r),
-                    border: Border.all(
-                      color: isSelected 
-                          ? const Color(0xFF4A90E2).withValues(alpha: 0.5)
-                          : Colors.white.withValues(alpha: 0.1),
-                      width: 1,
-                    ),
-                    boxShadow: isSelected
+                    borderRadius: BorderRadius.circular(25.r),                    boxShadow: isSelected
                         ? [
                             BoxShadow(
                               color: const Color(0xFF4A90E2).withValues(alpha: 0.3),
@@ -980,15 +977,11 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
           ],
         ),
         borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
-          width: 1,
-        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.3),
-            blurRadius: 15,
-            offset: const Offset(0, 6),
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 8,
+            offset: Offset(0, 2),
           ),
         ],
       ),
@@ -1256,15 +1249,11 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
           ],
         ),
         borderRadius: BorderRadius.circular(24.r),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.15),
-          width: 1,
-        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.3),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 8,
+            offset: Offset(0, 2),
           ),
         ],
       ),
@@ -1385,10 +1374,13 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
           ],
         ),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
-          width: 1,
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 8,
+            offset: Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1463,12 +1455,11 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
           ],
         ),
         borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.3),
-            blurRadius: 15,
-            offset: const Offset(0, 6),
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 6,
+            offset: Offset(0, 2),
           ),
         ],
       ),
@@ -1628,15 +1619,11 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
           ],
         ),
         borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
-          width: 1,
-        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.3),
-            blurRadius: 15,
-            offset: const Offset(0, 6),
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 8,
+            offset: Offset(0, 2),
           ),
         ],
       ),
@@ -1690,10 +1677,14 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
                       ],
                     ),
                     borderRadius: BorderRadius.circular(16.r),
-                    border: Border.all(
-                      color: _getColorForSymbol(holding.symbol).withValues(alpha: 0.5),
-                      width: 1,
-                    ),
+                    boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
                   ),
                   child: Center(
                     child: Text(
@@ -1894,12 +1885,7 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
             color.withValues(alpha: 0.05),
           ],
         ),
-        borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(
-          color: color.withValues(alpha: 0.3),
-          width: 1,
-        ),
-        boxShadow: [
+        borderRadius: BorderRadius.circular(20.r),        boxShadow: [
           BoxShadow(
             color: color.withValues(alpha: 0.2),
             blurRadius: 12,
@@ -1980,12 +1966,11 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
           ],
         ),
         borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.3),
-            blurRadius: 15,
-            offset: const Offset(0, 6),
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 6,
+            offset: Offset(0, 2),
           ),
         ],
       ),
@@ -2074,9 +2059,14 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
       ),
       child: Row(
         children: [
@@ -2150,12 +2140,11 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
           ],
         ),
         borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.3),
-            blurRadius: 15,
-            offset: const Offset(0, 6),
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 6,
+            offset: Offset(0, 2),
           ),
         ],
       ),
@@ -2226,9 +2215,14 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-          color: rankColor.withValues(alpha: 0.3),
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
       ),
       child: Row(
         children: [
@@ -2329,12 +2323,11 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
           ],
         ),
         borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.3),
-            blurRadius: 15,
-            offset: const Offset(0, 6),
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 6,
+            offset: Offset(0, 2),
           ),
         ],
       ),
@@ -2409,9 +2402,14 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
           ],
         ),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-          color: color.withValues(alpha: 0.3),
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
       ),
       child: Material(
         color: Colors.transparent,
@@ -2739,15 +2737,11 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
           ],
         ),
         borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
-          width: 1,
-        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.3),
-            blurRadius: 15,
-            offset: const Offset(0, 6),
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 8,
+            offset: Offset(0, 2),
           ),
         ],
       ),
@@ -2950,9 +2944,14 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.05),
                       borderRadius: BorderRadius.circular(12.r),
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.1),
-                      ),
+                      boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -2980,9 +2979,14 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
                                   ],
                                 ),
                                 borderRadius: BorderRadius.circular(12.r),
-                                border: Border.all(
-                                  color: const Color(0xFF4A90E2).withValues(alpha: 0.5),
-                                ),
+                                boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
                   ),
                   child: Text(
                     symbol,
@@ -3016,9 +3020,14 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
                     decoration: BoxDecoration(
                       color: Colors.grey[800]!.withValues(alpha: 0.3),
                       borderRadius: BorderRadius.circular(12.r),
-                      border: Border.all(
-                        color: Colors.grey[600]!.withValues(alpha: 0.3),
-                      ),
+                      boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
                     ),
                     child: Row(
                       children: [
@@ -3114,7 +3123,13 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
       decoration: BoxDecoration(
         color: const Color(0xFF2D2D2D),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -3257,7 +3272,13 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
       decoration: BoxDecoration(
         color: const Color(0xFF2D2D2D),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -3639,9 +3660,14 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
               ],
             ),
             borderRadius: BorderRadius.circular(24.r),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.1),
-            ),
+            boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -3798,9 +3824,14 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
       ),
       child: Row(
         children: [
@@ -3988,9 +4019,14 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
                 ],
               ),
               borderRadius: BorderRadius.circular(24.r),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.1),
-              ),
+              boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -4081,9 +4117,14 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
                               decoration: BoxDecoration(
                                 color: Colors.white.withValues(alpha: 0.05),
                                 borderRadius: BorderRadius.circular(12.r),
-                                border: Border.all(
-                                  color: Colors.white.withValues(alpha: 0.1),
-                                ),
+                                boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
                               ),
                               child: Row(
                                 children: [
@@ -4611,12 +4652,11 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
           ],
         ),
         borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.3),
-            blurRadius: 15,
-            offset: const Offset(0, 6),
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 6,
+            offset: Offset(0, 2),
           ),
         ],
       ),
@@ -4843,12 +4883,7 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
                             padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
                             decoration: BoxDecoration(
                               color: iconColor.withValues(alpha: 0.2),
-                              borderRadius: BorderRadius.circular(6.r),
-                              border: Border.all(
-                                color: iconColor.withValues(alpha: 0.4),
-                                width: 1,
-                              ),
-                            ),
+                              borderRadius: BorderRadius.circular(6.r),                            ),
                             child: Text(
                               symbol,
                               style: GoogleFonts.inter(
@@ -4961,12 +4996,11 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
           ],
         ),
         borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.3),
-            blurRadius: 15,
-            offset: const Offset(0, 6),
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 6,
+            offset: Offset(0, 2),
           ),
         ],
       ),
@@ -5041,13 +5075,7 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
                             )
                           : null,
                       color: _showGainers ? null : Colors.transparent,
-                      borderRadius: BorderRadius.circular(24.r),
-                      border: Border.all(
-                        color: _showGainers 
-                            ? const Color(0xFF4CAF50).withValues(alpha: 0.5)
-                            : Colors.white.withValues(alpha: 0.1),
-                      ),
-                    ),
+                      borderRadius: BorderRadius.circular(24.r),                    ),
                     child: Center(
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -5089,11 +5117,14 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
                           : null,
                       color: !_showGainers ? null : Colors.transparent,
                       borderRadius: BorderRadius.circular(24.r),
-                      border: Border.all(
-                        color: !_showGainers 
-                            ? const Color(0xFFE53E3E).withValues(alpha: 0.5)
-                            : Colors.white.withValues(alpha: 0.1),
-                      ),
+                      boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
                     ),
                     child: Center(
                       child: Row(
@@ -5170,15 +5201,11 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
           ],
         ),
         borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
-          width: 1,
-        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.3),
-            blurRadius: 15,
-            offset: const Offset(0, 6),
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 8,
+            offset: Offset(0, 2),
           ),
         ],
       ),
@@ -5429,9 +5456,14 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(16.r),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.1),
-            ),
+            boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
           ),
           child: InkWell(
             onTap: () {
@@ -5602,9 +5634,14 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
           ],
         ),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-          color: accentColor.withValues(alpha: 0.3),
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -5705,9 +5742,14 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
       ),
       child: Row(
         children: [

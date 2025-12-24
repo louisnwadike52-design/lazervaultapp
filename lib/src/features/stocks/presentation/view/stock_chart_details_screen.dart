@@ -391,10 +391,14 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
               decoration: BoxDecoration(
                 color: Colors.black.withValues(alpha: 0.7),
                 borderRadius: BorderRadius.circular(8.r),
-                border: Border.all(
-                  color: widget.stock.isPositive ? Colors.green : Colors.red,
-                  width: 1,
-                ),
+                boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.end,

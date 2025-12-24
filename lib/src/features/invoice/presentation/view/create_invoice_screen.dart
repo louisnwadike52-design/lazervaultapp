@@ -11,6 +11,7 @@ import '../../domain/entities/invoice_entity.dart';
 import '../cubit/invoice_cubit.dart';
 import '../cubit/invoice_state.dart';
 import '../../../../../core/types/app_routes.dart';
+import '../../../authentication/cubit/authentication_cubit.dart';
 
 class CreateInvoiceScreen extends StatefulWidget {
   final Invoice? editingInvoice;
@@ -86,7 +87,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
       _discountController.text = invoice.discountAmount?.toString() ?? '';
       _selectedType = invoice.type;
       _selectedDueDate = invoice.dueDate;
-      
+
       // Initialize recipient address details
       if (invoice.recipientDetails != null) {
         final recipient = invoice.recipientDetails!;
@@ -101,7 +102,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
         _recipientPostcodeController.text = recipient.postcode ?? '';
         _recipientCountryController.text = recipient.country ?? '';
       }
-      
+
       // Initialize payer address details
       if (invoice.payerDetails != null) {
         final payer = invoice.payerDetails!;
@@ -116,12 +117,37 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
         _payerPostcodeController.text = payer.postcode ?? '';
         _payerCountryController.text = payer.country ?? '';
       }
-      
+
       // Initialize form state with existing invoice
       context.read<InvoiceCubit>().initializeForm(editingInvoice: invoice);
     } else {
-      // Initialize empty form
+      // Initialize empty form and prefill recipient with logged-in user info
+      _prefillRecipientWithCurrentUser();
       context.read<InvoiceCubit>().initializeForm();
+    }
+  }
+
+  Future<void> _prefillRecipientWithCurrentUser() async {
+    try {
+      // Try to get current user from AuthenticationCubit
+      final authCubit = context.read<AuthenticationCubit>();
+      final profile = authCubit.currentProfile;
+
+      if (profile != null) {
+        final user = profile.user;
+        _toNameController.text = '${user.firstName} ${user.lastName}';
+        _toEmailController.text = user.email;
+
+        // Also set recipient contact details
+        _recipientContactController.text = '${user.firstName} ${user.lastName}';
+        _recipientEmailController.text = user.email;
+        if (user.phoneNumber?.isNotEmpty == true) {
+          _recipientPhoneController.text = user.phoneNumber!;
+        }
+      }
+    } catch (e) {
+      // If auth cubit is not available or fails, silently continue
+      print('Could not prefill recipient: $e');
     }
   }
 
@@ -241,7 +267,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
               ),
               child: Icon(
                 Icons.arrow_back_ios_new,
-                color: Colors.white,
+                color: const Color(0xFF1F1F1F),
                 size: 18.sp,
               ),
             ),
@@ -254,7 +280,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                 Text(
                   widget.editingInvoice != null ? 'Edit Invoice' : 'Create Invoice',
                   style: GoogleFonts.inter(
-                    color: Colors.white,
+                    color: const Color(0xFF1F1F1F),
                     fontSize: 24.sp,
                     fontWeight: FontWeight.w700,
                   ),
@@ -411,7 +437,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
     return Container(
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+          colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6)],
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,
         ),
@@ -429,13 +455,13 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
         ),
         icon: Icon(
           Icons.add,
-          color: Colors.white,
+          color: const Color(0xFF1F1F1F),
           size: 16.sp,
         ),
         label: Text(
           'Add',
           style: GoogleFonts.inter(
-            color: Colors.white,
+            color: const Color(0xFF1F1F1F),
             fontSize: 12.sp,
             fontWeight: FontWeight.w600,
           ),
@@ -450,7 +476,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
     return Container(
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+          colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6)],
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,
         ),
@@ -468,13 +494,13 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
         ),
         icon: Icon(
           Icons.add,
-          color: Colors.white,
+          color: const Color(0xFF1F1F1F),
           size: 16.sp,
         ),
         label: Text(
           'Add',
           style: GoogleFonts.inter(
-            color: Colors.white,
+            color: const Color(0xFF1F1F1F),
             fontSize: 12.sp,
             fontWeight: FontWeight.w600,
           ),
@@ -491,20 +517,20 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
           Container(
             padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
-              color: const Color(0xFF6366F1).withOpacity(0.1),
+              color: const Color(0xFF3B82F6).withOpacity(0.1),
               borderRadius: BorderRadius.circular(16.r),
             ),
             child: Icon(
               Icons.person_outline,
               size: 48.sp,
-              color: const Color(0xFF6366F1),
+              color: const Color(0xFF3B82F6),
             ),
           ),
           SizedBox(height: 20.h),
           Text(
             'No recipient details added',
             style: GoogleFonts.inter(
-              color: Colors.white,
+              color: const Color(0xFF1F1F1F),
               fontSize: 18.sp,
               fontWeight: FontWeight.w600,
             ),
@@ -532,20 +558,20 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
           Container(
             padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
-              color: const Color(0xFF6366F1).withOpacity(0.1),
+              color: const Color(0xFF3B82F6).withOpacity(0.1),
               borderRadius: BorderRadius.circular(16.r),
             ),
             child: Icon(
               Icons.business_outlined,
               size: 48.sp,
-              color: const Color(0xFF6366F1),
+              color: const Color(0xFF3B82F6),
             ),
           ),
           SizedBox(height: 20.h),
           Text(
             'No payer details added',
             style: GoogleFonts.inter(
-              color: Colors.white,
+              color: const Color(0xFF1F1F1F),
               fontSize: 18.sp,
               fontWeight: FontWeight.w600,
             ),
@@ -581,12 +607,12 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
               Container(
                 padding: EdgeInsets.all(8.w),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF6366F1).withOpacity(0.1),
+                  color: const Color(0xFF3B82F6).withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8.r),
                 ),
                 child: Icon(
                   Icons.person_outline,
-                  color: const Color(0xFF6366F1),
+                  color: const Color(0xFF3B82F6),
                   size: 20.sp,
                 ),
               ),
@@ -598,7 +624,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                     Text(
                       'Recipient Details',
                       style: GoogleFonts.inter(
-                        color: Colors.white,
+                        color: const Color(0xFF1F1F1F),
                         fontSize: 16.sp,
                         fontWeight: FontWeight.w600,
                       ),
@@ -699,12 +725,12 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                 Container(
                   padding: EdgeInsets.all(8.w),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF6366F1).withOpacity(0.1),
+                    color: const Color(0xFF3B82F6).withOpacity(0.1),
                     borderRadius: BorderRadius.circular(8.r),
                   ),
                   child: Icon(
                     Icons.business_outlined,
-                    color: const Color(0xFF6366F1),
+                    color: const Color(0xFF3B82F6),
                     size: 20.sp,
                   ),
                 ),
@@ -717,7 +743,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                     Text(
                       'Payer Details',
                       style: GoogleFonts.inter(
-                        color: Colors.white,
+                        color: const Color(0xFF1F1F1F),
                         fontSize: 16.sp,
                         fontWeight: FontWeight.w600,
                       ),
@@ -919,7 +945,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                       Text(
                         'Please fill in the following required fields:',
                         style: GoogleFonts.inter(
-                          color: Colors.white,
+                          color: const Color(0xFF1F1F1F),
                           fontSize: 14.sp,
                           fontWeight: FontWeight.w600,
                         ),
@@ -930,7 +956,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                         child: Text(
                           '• $field',
                           style: GoogleFonts.inter(
-                            color: Colors.white,
+                            color: const Color(0xFF1F1F1F),
                             fontSize: 13.sp,
                             fontWeight: FontWeight.w400,
                           ),
@@ -977,12 +1003,12 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                         Container(
                           padding: EdgeInsets.all(8.w),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF6366F1).withOpacity(0.1),
+                            color: const Color(0xFF3B82F6).withOpacity(0.1),
                             borderRadius: BorderRadius.circular(8.r),
                           ),
                           child: Icon(
                             Icons.person_outline,
-                            color: const Color(0xFF6366F1),
+                            color: const Color(0xFF3B82F6),
                             size: 20.sp,
                           ),
                         ),
@@ -990,7 +1016,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                         Text(
                           'Recipient Details',
                           style: GoogleFonts.inter(
-                            color: Colors.white,
+                            color: const Color(0xFF1F1F1F),
                             fontSize: 20.sp,
                             fontWeight: FontWeight.w600,
                           ),
@@ -1062,7 +1088,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                         Container(
                           decoration: BoxDecoration(
                             gradient: const LinearGradient(
-                              colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                              colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6)],
                               begin: Alignment.centerLeft,
                               end: Alignment.centerRight,
                             ),
@@ -1081,7 +1107,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                             child: Text(
                               'Save',
                               style: GoogleFonts.inter(
-                                color: Colors.white,
+                                color: const Color(0xFF1F1F1F),
                                 fontSize: 16.sp,
                                 fontWeight: FontWeight.w600,
                               ),
@@ -1130,7 +1156,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                       Text(
                         'Please fill in the following required fields:',
                         style: GoogleFonts.inter(
-                          color: Colors.white,
+                          color: const Color(0xFF1F1F1F),
                           fontSize: 14.sp,
                           fontWeight: FontWeight.w600,
                         ),
@@ -1141,7 +1167,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                         child: Text(
                           '• $field',
                           style: GoogleFonts.inter(
-                            color: Colors.white,
+                            color: const Color(0xFF1F1F1F),
                             fontSize: 13.sp,
                             fontWeight: FontWeight.w400,
                           ),
@@ -1188,12 +1214,12 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                         Container(
                           padding: EdgeInsets.all(8.w),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF6366F1).withOpacity(0.1),
+                            color: const Color(0xFF3B82F6).withOpacity(0.1),
                             borderRadius: BorderRadius.circular(8.r),
                           ),
                           child: Icon(
                             Icons.business_outlined,
-                            color: const Color(0xFF6366F1),
+                            color: const Color(0xFF3B82F6),
                             size: 20.sp,
                           ),
                         ),
@@ -1201,7 +1227,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                         Text(
                           'Payer Details',
                           style: GoogleFonts.inter(
-                            color: Colors.white,
+                            color: const Color(0xFF1F1F1F),
                             fontSize: 20.sp,
                             fontWeight: FontWeight.w600,
                           ),
@@ -1241,7 +1267,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                                         children: [
                                           Icon(
                                             Icons.add_photo_alternate_outlined,
-                                            color: const Color(0xFF6366F1),
+                                            color: const Color(0xFF3B82F6),
                                             size: 32.sp,
                                           ),
                                           SizedBox(height: 8.h),
@@ -1314,7 +1340,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                         Container(
                           decoration: BoxDecoration(
                             gradient: const LinearGradient(
-                              colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                              colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6)],
                               begin: Alignment.centerLeft,
                               end: Alignment.centerRight,
                             ),
@@ -1333,7 +1359,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                             child: Text(
                               'Save',
                               style: GoogleFonts.inter(
-                                color: Colors.white,
+                                color: const Color(0xFF1F1F1F),
                                 fontSize: 16.sp,
                                 fontWeight: FontWeight.w600,
                               ),
@@ -1361,7 +1387,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
             Text(
               label,
               style: GoogleFonts.inter(
-                color: Colors.white,
+                color: const Color(0xFF1F1F1F),
                 fontSize: 14.sp,
                 fontWeight: FontWeight.w500,
               ),
@@ -1409,7 +1435,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                 ),
                 Icon(
                   Icons.expand_more,
-                  color: const Color(0xFF6366F1),
+                  color: const Color(0xFF3B82F6),
                   size: 20.sp,
                 ),
               ],
@@ -1628,14 +1654,14 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
           height: 52.h,
           decoration: BoxDecoration(
             gradient: const LinearGradient(
-              colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+              colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6)],
               begin: Alignment.centerLeft,
               end: Alignment.centerRight,
             ),
             borderRadius: BorderRadius.circular(12.r),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF6366F1).withOpacity(0.3),
+                color: const Color(0xFF3B82F6).withOpacity(0.3),
                 offset: const Offset(0, 4),
                 blurRadius: 12,
               ),
@@ -1662,7 +1688,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                 : Text(
                     widget.editingInvoice != null ? 'Update & Send Invoice' : 'Create & Send Invoice',
                     style: GoogleFonts.inter(
-                      color: Colors.white,
+                      color: const Color(0xFF1F1F1F),
                       fontSize: 16.sp,
                       fontWeight: FontWeight.w600,
                     ),
@@ -1676,7 +1702,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
           decoration: BoxDecoration(
             color: const Color(0xFF1F1F1F),
             borderRadius: BorderRadius.circular(12.r),
-            border: Border.all(color: const Color(0xFF6366F1), width: 1.5),
+            border: Border.all(color: const Color(0xFF3B82F6), width: 1.5),
           ),
           child: ElevatedButton(
             onPressed: _isLoading ? null : () => _saveInvoice(sendImmediately: false),
@@ -1690,7 +1716,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
             child: Text(
               widget.editingInvoice != null ? 'Update Draft' : 'Save as Draft',
               style: GoogleFonts.inter(
-                color: const Color(0xFF6366F1),
+                color: const Color(0xFF3B82F6),
                 fontSize: 16.sp,
                 fontWeight: FontWeight.w600,
               ),
@@ -1717,7 +1743,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
           BoxShadow(
             color: Colors.black.withOpacity(0.1),
             offset: const Offset(0, 2),
-            blurRadius: 8,
+            blurRadius: 12,
           ),
         ],
       ),
@@ -1730,12 +1756,12 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                 Container(
                   padding: EdgeInsets.all(8.w),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF6366F1).withOpacity(0.1),
+                    color: const Color(0xFF3B82F6).withOpacity(0.1),
                     borderRadius: BorderRadius.circular(8.r),
                   ),
                   child: Icon(
                     icon,
-                    color: const Color(0xFF6366F1),
+                    color: const Color(0xFF3B82F6),
                     size: 20.sp,
                   ),
                 ),
@@ -1745,7 +1771,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                 child: Text(
                   title,
                   style: GoogleFonts.inter(
-                    color: Colors.white,
+                    color: const Color(0xFF1F1F1F),
                     fontSize: 18.sp,
                     fontWeight: FontWeight.w600,
                   ),
@@ -1779,7 +1805,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
             Text(
               label,
               style: GoogleFonts.inter(
-                color: Colors.white,
+                color: const Color(0xFF1F1F1F),
                 fontSize: 14.sp,
                 fontWeight: FontWeight.w500,
               ),
@@ -1801,7 +1827,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
         TextFormField(
           controller: controller,
           style: GoogleFonts.inter(
-            color: Colors.white,
+            color: const Color(0xFF1F1F1F),
             fontSize: 16.sp,
             fontWeight: FontWeight.w400,
           ),
@@ -1834,7 +1860,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r),
-              borderSide: const BorderSide(color: Color(0xFF6366F1), width: 2),
+              borderSide: const BorderSide(color: Color(0xFF3B82F6), width: 2),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r),
@@ -1863,7 +1889,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
         Text(
           label,
           style: GoogleFonts.inter(
-            color: Colors.white,
+            color: const Color(0xFF1F1F1F),
             fontSize: 14.sp,
             fontWeight: FontWeight.w500,
           ),
@@ -1872,7 +1898,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
         DropdownButtonFormField<T>(
           value: value,
           style: GoogleFonts.inter(
-            color: Colors.white,
+            color: const Color(0xFF1F1F1F),
             fontSize: 16.sp,
             fontWeight: FontWeight.w400,
           ),
@@ -1891,7 +1917,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r),
-              borderSide: const BorderSide(color: Color(0xFF6366F1), width: 2),
+              borderSide: const BorderSide(color: Color(0xFF3B82F6), width: 2),
             ),
           ),
           items: items.map((item) {
@@ -1900,7 +1926,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
               child: Text(
                 itemBuilder(item),
                 style: GoogleFonts.inter(
-                  color: Colors.white,
+                  color: const Color(0xFF1F1F1F),
                   fontSize: 16.sp,
                   fontWeight: FontWeight.w400,
                 ),
@@ -1920,7 +1946,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
         Text(
           'Due Date',
           style: GoogleFonts.inter(
-            color: Colors.white,
+            color: const Color(0xFF1F1F1F),
             fontSize: 14.sp,
             fontWeight: FontWeight.w500,
           ),
@@ -1951,7 +1977,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                 ),
                 Icon(
                   Icons.calendar_month_outlined,
-                  color: const Color(0xFF6366F1),
+                  color: const Color(0xFF3B82F6),
                   size: 20.sp,
                 ),
               ],
@@ -1966,7 +1992,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
     return Container(
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+          colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6)],
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,
         ),
@@ -1984,13 +2010,13 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
         ),
         icon: Icon(
           Icons.add,
-          color: Colors.white,
+          color: const Color(0xFF1F1F1F),
           size: 18.sp,
         ),
         label: Text(
           'Add Item',
           style: GoogleFonts.inter(
-            color: Colors.white,
+            color: const Color(0xFF1F1F1F),
             fontSize: 14.sp,
             fontWeight: FontWeight.w600,
           ),
@@ -2007,20 +2033,20 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
           Container(
             padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
-              color: const Color(0xFF6366F1).withOpacity(0.1),
+              color: const Color(0xFF3B82F6).withOpacity(0.1),
               borderRadius: BorderRadius.circular(16.r),
             ),
             child: Icon(
               Icons.receipt_long_outlined,
               size: 48.sp,
-              color: const Color(0xFF6366F1),
+              color: const Color(0xFF3B82F6),
             ),
           ),
           SizedBox(height: 20.h),
           Text(
             'No items added yet',
             style: GoogleFonts.inter(
-              color: Colors.white,
+              color: const Color(0xFF1F1F1F),
               fontSize: 18.sp,
               fontWeight: FontWeight.w600,
             ),
@@ -2055,12 +2081,12 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
           Container(
             padding: EdgeInsets.all(8.w),
             decoration: BoxDecoration(
-              color: const Color(0xFF6366F1).withOpacity(0.1),
+              color: const Color(0xFF3B82F6).withOpacity(0.1),
               borderRadius: BorderRadius.circular(8.r),
             ),
             child: Icon(
               Icons.inventory_2_outlined,
-              color: const Color(0xFF6366F1),
+              color: const Color(0xFF3B82F6),
               size: 20.sp,
             ),
           ),
@@ -2073,7 +2099,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                 Text(
                   item.name,
                   style: GoogleFonts.inter(
-                    color: Colors.white,
+                    color: const Color(0xFF1F1F1F),
                     fontSize: 16.sp,
                     fontWeight: FontWeight.w600,
                   ),
@@ -2142,7 +2168,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                 Text(
                   '\$${item.totalPrice.toStringAsFixed(2)}',
                   style: GoogleFonts.inter(
-                    color: Colors.white,
+                    color: const Color(0xFF1F1F1F),
                     fontSize: 16.sp,
                     fontWeight: FontWeight.bold,
                   ),
@@ -2272,7 +2298,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: const ColorScheme.dark(
-              primary: Color(0xFF6366F1),
+              primary: Color(0xFF3B82F6),
               onPrimary: Colors.white,
               surface: Color(0xFF1F1F1F),
               onSurface: Colors.white,
@@ -2309,12 +2335,12 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
             Container(
               padding: EdgeInsets.all(8.w),
               decoration: BoxDecoration(
-                color: const Color(0xFF6366F1).withOpacity(0.1),
+                color: const Color(0xFF3B82F6).withOpacity(0.1),
                 borderRadius: BorderRadius.circular(8.r),
               ),
               child: Icon(
                 Icons.add_shopping_cart_outlined,
-                color: const Color(0xFF6366F1),
+                color: const Color(0xFF3B82F6),
                 size: 20.sp,
               ),
             ),
@@ -2322,7 +2348,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
             Text(
               'Add New Item',
               style: GoogleFonts.inter(
-                color: Colors.white,
+                color: const Color(0xFF1F1F1F),
                 fontSize: 20.sp,
                 fontWeight: FontWeight.w600,
               ),
@@ -2373,7 +2399,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
           Container(
             decoration: BoxDecoration(
               gradient: const LinearGradient(
-                colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6)],
                 begin: Alignment.centerLeft,
                 end: Alignment.centerRight,
               ),
@@ -2404,7 +2430,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
               child: Text(
                 'Add Item',
                 style: GoogleFonts.inter(
-                  color: Colors.white,
+                  color: const Color(0xFF1F1F1F),
                   fontSize: 16.sp,
                   fontWeight: FontWeight.w600,
                 ),
@@ -2432,7 +2458,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
             Text(
               label,
               style: GoogleFonts.inter(
-                color: Colors.white,
+                color: const Color(0xFF1F1F1F),
                 fontSize: 14.sp,
                 fontWeight: FontWeight.w500,
               ),
@@ -2462,7 +2488,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
         TextField(
           controller: controller,
           style: GoogleFonts.inter(
-            color: Colors.white,
+            color: const Color(0xFF1F1F1F),
             fontSize: 16.sp,
             fontWeight: FontWeight.w400,
           ),
@@ -2500,7 +2526,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r),
               borderSide: BorderSide(
-                color: hasError ? const Color(0xFFEF4444) : const Color(0xFF6366F1), 
+                color: hasError ? const Color(0xFFEF4444) : const Color(0xFF3B82F6), 
                 width: 2,
               ),
             ),
@@ -2521,10 +2547,14 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
             decoration: BoxDecoration(
               color: const Color(0xFFEF4444).withOpacity(0.1),
               borderRadius: BorderRadius.circular(8.r),
-              border: Border.all(
-                color: const Color(0xFFEF4444).withOpacity(0.3),
-                width: 1,
-              ),
+              boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
             ),
             child: Row(
               children: [
@@ -2611,7 +2641,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
             onPressed: () => Navigator.pop(context),
             child: Text(
               'Cancel',
-              style: GoogleFonts.inter(color: Colors.grey[400]),
+              style: GoogleFonts.inter(color: const Color(0xFF9CA3AF)),
             ),
           ),
           ElevatedButton(
@@ -2632,7 +2662,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
               }
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF6366F1),
+              backgroundColor: const Color(0xFF3B82F6),
               foregroundColor: Colors.white,
             ),
             child: const Text('Update'),
@@ -2929,12 +2959,12 @@ class _CountrySelectionSheetState extends State<_CountrySelectionSheet> {
                     Container(
                       padding: EdgeInsets.all(8.w),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF6366F1).withOpacity(0.1),
+                        color: const Color(0xFF3B82F6).withOpacity(0.1),
                         borderRadius: BorderRadius.circular(8.r),
                       ),
                       child: Icon(
                         Icons.public,
-                        color: const Color(0xFF6366F1),
+                        color: const Color(0xFF3B82F6),
                         size: 20.sp,
                       ),
                     ),
@@ -2943,7 +2973,7 @@ class _CountrySelectionSheetState extends State<_CountrySelectionSheet> {
                       child: Text(
                         'Select Country',
                         style: GoogleFonts.inter(
-                          color: Colors.white,
+                          color: const Color(0xFF1F1F1F),
                           fontSize: 20.sp,
                           fontWeight: FontWeight.w600,
                         ),
@@ -2959,7 +2989,7 @@ class _CountrySelectionSheetState extends State<_CountrySelectionSheet> {
                         ),
                         child: Icon(
                           Icons.close,
-                          color: Colors.white,
+                          color: const Color(0xFF1F1F1F),
                           size: 18.sp,
                         ),
                       ),
@@ -2972,7 +3002,7 @@ class _CountrySelectionSheetState extends State<_CountrySelectionSheet> {
                 TextField(
                   controller: _searchController,
                   style: GoogleFonts.inter(
-                    color: Colors.white,
+                    color: const Color(0xFF1F1F1F),
                     fontSize: 16.sp,
                   ),
                   decoration: InputDecoration(
@@ -2983,7 +3013,7 @@ class _CountrySelectionSheetState extends State<_CountrySelectionSheet> {
                     ),
                     prefixIcon: Icon(
                       Icons.search,
-                      color: const Color(0xFF6366F1),
+                      color: const Color(0xFF3B82F6),
                       size: 20.sp,
                     ),
                     filled: true,
@@ -2999,7 +3029,7 @@ class _CountrySelectionSheetState extends State<_CountrySelectionSheet> {
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12.r),
-                      borderSide: const BorderSide(color: Color(0xFF6366F1), width: 2),
+                      borderSide: const BorderSide(color: Color(0xFF3B82F6), width: 2),
                     ),
                   ),
                 ),
@@ -3026,12 +3056,12 @@ class _CountrySelectionSheetState extends State<_CountrySelectionSheet> {
                     padding: EdgeInsets.all(16.w),
                     decoration: BoxDecoration(
                       color: isSelected 
-                          ? const Color(0xFF6366F1).withOpacity(0.1)
+                          ? const Color(0xFF3B82F6).withOpacity(0.1)
                           : const Color(0xFF111111),
                       borderRadius: BorderRadius.circular(12.r),
                       border: Border.all(
                         color: isSelected 
-                            ? const Color(0xFF6366F1)
+                            ? const Color(0xFF3B82F6)
                             : const Color(0xFF2D2D2D),
                         width: isSelected ? 2 : 1,
                       ),
@@ -3048,7 +3078,7 @@ class _CountrySelectionSheetState extends State<_CountrySelectionSheet> {
                           child: Text(
                             country['name']!,
                             style: GoogleFonts.inter(
-                              color: Colors.white,
+                              color: const Color(0xFF1F1F1F),
                               fontSize: 16.sp,
                               fontWeight: FontWeight.w500,
                             ),
@@ -3058,12 +3088,12 @@ class _CountrySelectionSheetState extends State<_CountrySelectionSheet> {
                           Container(
                             padding: EdgeInsets.all(4.w),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF6366F1),
+                              color: const Color(0xFF3B82F6),
                               shape: BoxShape.circle,
                             ),
                             child: Icon(
                               Icons.check,
-                              color: Colors.white,
+                              color: const Color(0xFF1F1F1F),
                               size: 16.sp,
                             ),
                           ),

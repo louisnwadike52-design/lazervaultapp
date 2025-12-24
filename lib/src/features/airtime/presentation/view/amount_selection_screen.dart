@@ -122,7 +122,7 @@ class _AmountSelectionScreenState extends State<AmountSelectionScreen> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Color(0xFF1A1A3E),
+              Color(0xFF1F1F1F),
               Color(0xFF0A0E27),
               Color(0xFF0F0F23),
             ],
@@ -207,10 +207,14 @@ class _AmountSelectionScreenState extends State<AmountSelectionScreen> {
               decoration: BoxDecoration(
                 color: Colors.white.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12.r),
-                border: Border.all(
-                  color: Colors.white.withOpacity(0.2),
-                  width: 1,
-                ),
+                boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
               ),
               child: Icon(
                 Icons.arrow_back_ios_new,
@@ -259,10 +263,14 @@ class _AmountSelectionScreenState extends State<AmountSelectionScreen> {
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.05),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.1),
-          width: 1,
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
       ),
       child: Row(
         children: [
@@ -343,12 +351,14 @@ class _AmountSelectionScreenState extends State<AmountSelectionScreen> {
           decoration: BoxDecoration(
             color: Colors.white.withOpacity(0.05),
             borderRadius: BorderRadius.circular(16.r),
-            border: Border.all(
-              color: _amountFocusNode.hasFocus 
-                ? Color(0xFF6366F1) 
-                : Colors.white.withOpacity(0.1),
-              width: 1,
-            ),
+            boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
           ),
           child: TextField(
             controller: _amountController,
@@ -444,15 +454,17 @@ class _AmountSelectionScreenState extends State<AmountSelectionScreen> {
                 padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
                 decoration: BoxDecoration(
                   color: isSelected 
-                    ? Color(0xFF6366F1) 
+                    ? Color(0xFF3B82F6) 
                     : Colors.white.withOpacity(0.05),
                   borderRadius: BorderRadius.circular(12.r),
-                  border: Border.all(
-                    color: isSelected 
-                      ? Color(0xFF6366F1) 
-                      : Colors.white.withOpacity(0.1),
-                    width: 1,
-                  ),
+                  boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
                 ),
                 child: Text(
                   '₦${amount.toStringAsFixed(0)}',
@@ -483,10 +495,14 @@ class _AmountSelectionScreenState extends State<AmountSelectionScreen> {
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.05),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.1),
-          width: 1,
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+        
       ),
       child: Column(
         children: [
@@ -543,7 +559,7 @@ class _AmountSelectionScreenState extends State<AmountSelectionScreen> {
           onPressed: selectedAmount != null && selectedAmount! >= 50 ? _validateAndProceed : null,
           style: ElevatedButton.styleFrom(
             backgroundColor: selectedAmount != null && selectedAmount! >= 50 
-              ? Color(0xFF6366F1) 
+              ? Color(0xFF3B82F6) 
               : Colors.white.withOpacity(0.1),
             padding: EdgeInsets.symmetric(vertical: 16.h),
             shape: RoundedRectangleBorder(
@@ -578,7 +594,7 @@ class _AmountSelectionScreenState extends State<AmountSelectionScreen> {
       case NetworkProviderType.ninemobile:
         return Color(0xFF00AA4F);
       default:
-        return Color(0xFF6366F1); // Default blue color
+        return Color(0xFF3B82F6); // Default blue color
     }
   }
 } 

@@ -472,9 +472,14 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen>
         decoration: BoxDecoration(
           color: chipColor,
           borderRadius: BorderRadius.circular(20.r),
-          border: Border.all(
-            color: isSelected ? chipColor : Colors.white.withOpacity(0.1),
+          boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 6,
+            offset: Offset(0, 2),
           ),
+        ],
+        
         ),
         child: Text(
           label,

@@ -56,12 +56,10 @@ class DashboardHeader extends StatelessWidget {
             ),
           ),
         ),
-        SizedBox(width: 16.w),
+        Spacer(),
         // Country Selector
-        Expanded(
-          child: _buildCountrySelector(context),
-        ),
-        SizedBox(width: 16.w),
+        _buildCountrySelector(context),
+        SizedBox(width: 12.w),
         // Action Icons
         _buildIconButton(Icons.notifications_outlined, context),
         SizedBox(width: 12.w),

@@ -4,15 +4,15 @@ import '../../domain/entities/scan_entities.dart';
 import '../models/scan_models.dart';
 
 abstract class AiScanDataSource {
-  Future<ScanSessionModel> createScanSession(ScanType scanType);
+  Future<ScanSessionModel> createScanSession(ScanType scanType, String userId);
   Future<ScanSessionModel> updateScanSession(ScanSessionModel session);
-  Future<List<ScanSessionModel>> getScanHistory();
+  Future<List<ScanSessionModel>> getScanHistory(String userId);
   Future<void> deleteScanSession(String sessionId);
-  Future<Map<String, dynamic>> extractDataFromImage(String imagePath, ScanType scanType);
+  Future<Map<String, dynamic>> extractDataFromImage(String imagePath, ScanType scanType, String sessionId);
   Future<List<AiChatMessageModel>> getChatHistory(String sessionId);
   Future<AiChatMessageModel> processAiResponse(String sessionId, String userMessage, Map<String, dynamic>? extractedData);
-  Future<PaymentInstructionModel> generatePaymentInstruction(Map<String, dynamic> extractedData, ScanType scanType);
-  Future<bool> processPayment(PaymentInstructionModel instruction);
+  Future<PaymentInstructionModel> generatePaymentInstruction(Map<String, dynamic> extractedData, ScanType scanType, String sessionId);
+  Future<bool> processPayment(PaymentInstructionModel instruction, String userId, String sessionId);
 }
 
 class AiScanDataSourceImpl implements AiScanDataSource {
@@ -20,21 +20,21 @@ class AiScanDataSourceImpl implements AiScanDataSource {
   final Map<String, List<AiChatMessageModel>> _chatHistory = {};
 
   @override
-  Future<ScanSessionModel> createScanSession(ScanType scanType) async {
+  Future<ScanSessionModel> createScanSession(ScanType scanType, String userId) async {
     final session = ScanSessionModel(
       id: 'scan_${DateTime.now().millisecondsSinceEpoch}_${math.Random().nextInt(1000)}',
       scanType: scanType,
       createdAt: DateTime.now(),
       status: ScanStatus.pending,
     );
-    
+
     _scanSessions.add(session);
     _chatHistory[session.id] = [];
-    
+
     // Add initial AI greeting message
     final greeting = _generateGreeting(scanType);
     _chatHistory[session.id]!.add(greeting);
-    
+
     return session;
   }
 
@@ -48,7 +48,7 @@ class AiScanDataSourceImpl implements AiScanDataSource {
   }
 
   @override
-  Future<List<ScanSessionModel>> getScanHistory() async {
+  Future<List<ScanSessionModel>> getScanHistory(String userId) async {
     return List.from(_scanSessions);
   }
 
@@ -59,10 +59,10 @@ class AiScanDataSourceImpl implements AiScanDataSource {
   }
 
   @override
-  Future<Map<String, dynamic>> extractDataFromImage(String imagePath, ScanType scanType) async {
+  Future<Map<String, dynamic>> extractDataFromImage(String imagePath, ScanType scanType, String sessionId) async {
     // Simulate AI processing delay
     await Future.delayed(const Duration(seconds: 2));
-    
+
     // Mock data extraction based on scan type
     return _mockDataExtraction(scanType);
   }
@@ -103,7 +103,7 @@ class AiScanDataSourceImpl implements AiScanDataSource {
   }
 
   @override
-  Future<PaymentInstructionModel> generatePaymentInstruction(Map<String, dynamic> extractedData, ScanType scanType) async {
+  Future<PaymentInstructionModel> generatePaymentInstruction(Map<String, dynamic> extractedData, ScanType scanType, String sessionId) async {
     return PaymentInstructionModel(
       id: 'payment_${DateTime.now().millisecondsSinceEpoch}',
       recipient: extractedData['recipient'] ?? 'Unknown Recipient',
@@ -116,10 +116,10 @@ class AiScanDataSourceImpl implements AiScanDataSource {
   }
 
   @override
-  Future<bool> processPayment(PaymentInstructionModel instruction) async {
+  Future<bool> processPayment(PaymentInstructionModel instruction, String userId, String sessionId) async {
     // Simulate payment processing
     await Future.delayed(const Duration(seconds: 3));
-    
+
     // Mock success/failure (90% success rate)
     return math.Random().nextDouble() > 0.1;
   }
