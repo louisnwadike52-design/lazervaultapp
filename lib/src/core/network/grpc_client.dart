@@ -7,6 +7,7 @@ import '../../generated/statistics.pbgrpc.dart';
 import '../../generated/ai_scan.pbgrpc.dart';
 import '../../generated/tag_pay.pbgrpc.dart';
 import '../../generated/exchange.pbgrpc.dart';
+import '../../generated/barcode_payment.pbgrpc.dart';
 
 class GrpcClient {
   late ClientChannel _channel;
@@ -16,6 +17,7 @@ class GrpcClient {
   late AiScanServiceClient _aiScanClient;
   late TagPayServiceClient _tagPayClient;
   late ExchangeServiceClient _exchangeClient;
+  late BarcodePaymentServiceClient _barcodePaymentClient;
 
   final FlutterSecureStorage _secureStorage;
   static const String _accessTokenKey = 'access_token';
@@ -46,6 +48,7 @@ class GrpcClient {
     _aiScanClient = AiScanServiceClient(_channel);
     _tagPayClient = TagPayServiceClient(_channel);
     _exchangeClient = ExchangeServiceClient(_channel);
+    _barcodePaymentClient = BarcodePaymentServiceClient(_channel);
   }
 
   InvoiceServiceClient get invoiceClient => _invoiceClient;
@@ -54,6 +57,7 @@ class GrpcClient {
   AiScanServiceClient get aiScanClient => _aiScanClient;
   TagPayServiceClient get tagPayClient => _tagPayClient;
   ExchangeServiceClient get exchangeClient => _exchangeClient;
+  BarcodePaymentServiceClient get barcodePaymentClient => _barcodePaymentClient;
 
   /// Get call options with authentication token
   Future<CallOptions> get callOptions async {

@@ -263,16 +263,19 @@ class TagPayCubit extends Cubit<TagPayState> {
     required String sourceAccountId,
   }) async {
     try {
+      print('🏷️ [TagPayCubit] Starting payTag - tagId: $tagId, accountId: $sourceAccountId');
       emit(TagPayLoading());
       final transaction = await repository.payTag(
         tagId: tagId,
         sourceAccountId: sourceAccountId,
       );
+      print('✅ [TagPayCubit] Tag payment successful - transaction ID: ${transaction.id}');
       emit(TagPaidSuccess(
         transaction: transaction,
         message: 'Tag paid successfully!',
       ));
     } catch (e) {
+      print('❌ [TagPayCubit] Tag payment failed: $e');
       emit(TagPayError(e.toString()));
     }
   }

@@ -10,24 +10,24 @@ import 'dart:async' as $async;
 import 'dart:core' as $core;
 
 import 'package:grpc/service_api.dart' as $grpc;
-import 'voice_session.pb.dart' as $23;
+import 'voice_session.pb.dart' as $24;
 export 'voice_session.pb.dart';
 
 class VoiceSessionServiceClient extends $grpc.Client {
   static final _$startVoiceSession = $grpc.ClientMethod<
-          $23.StartVoiceSessionRequest, $23.StartVoiceSessionResponse>(
+          $24.StartVoiceSessionRequest, $24.StartVoiceSessionResponse>(
       '/pb.VoiceSessionService/StartVoiceSession',
-      ($23.StartVoiceSessionRequest value) => value.writeToBuffer(),
+      ($24.StartVoiceSessionRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $23.StartVoiceSessionResponse.fromBuffer(value));
+          $24.StartVoiceSessionResponse.fromBuffer(value));
 
   VoiceSessionServiceClient($grpc.ClientChannel channel,
       {$grpc.CallOptions? options,
       $core.Iterable<$grpc.ClientInterceptor>? interceptors})
       : super(channel, options: options, interceptors: interceptors);
 
-  $grpc.ResponseFuture<$23.StartVoiceSessionResponse> startVoiceSession(
-      $23.StartVoiceSessionRequest request,
+  $grpc.ResponseFuture<$24.StartVoiceSessionResponse> startVoiceSession(
+      $24.StartVoiceSessionRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$startVoiceSession, request, options: options);
   }
@@ -37,23 +37,23 @@ abstract class VoiceSessionServiceBase extends $grpc.Service {
   $core.String get $name => 'pb.VoiceSessionService';
 
   VoiceSessionServiceBase() {
-    $addMethod($grpc.ServiceMethod<$23.StartVoiceSessionRequest,
-            $23.StartVoiceSessionResponse>(
+    $addMethod($grpc.ServiceMethod<$24.StartVoiceSessionRequest,
+            $24.StartVoiceSessionResponse>(
         'StartVoiceSession',
         startVoiceSession_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $23.StartVoiceSessionRequest.fromBuffer(value),
-        ($23.StartVoiceSessionResponse value) => value.writeToBuffer()));
+            $24.StartVoiceSessionRequest.fromBuffer(value),
+        ($24.StartVoiceSessionResponse value) => value.writeToBuffer()));
   }
 
-  $async.Future<$23.StartVoiceSessionResponse> startVoiceSession_Pre(
+  $async.Future<$24.StartVoiceSessionResponse> startVoiceSession_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$23.StartVoiceSessionRequest> request) async {
+      $async.Future<$24.StartVoiceSessionRequest> request) async {
     return startVoiceSession(call, await request);
   }
 
-  $async.Future<$23.StartVoiceSessionResponse> startVoiceSession(
-      $grpc.ServiceCall call, $23.StartVoiceSessionRequest request);
+  $async.Future<$24.StartVoiceSessionResponse> startVoiceSession(
+      $grpc.ServiceCall call, $24.StartVoiceSessionRequest request);
 }

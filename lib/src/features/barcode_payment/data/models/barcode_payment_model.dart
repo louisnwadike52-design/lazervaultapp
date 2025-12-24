@@ -1,6 +1,6 @@
 import '../../domain/entities/barcode_payment_entity.dart';
-import 'package:lazervault/src/grpc_generated/barcode_payment.pb.dart' as pb;
-import 'package:lazervault/src/grpc_generated/google/protobuf/timestamp.pb.dart' as $timestamp;
+import 'package:lazervault/src/generated/barcode_payment.pb.dart' as pb;
+import 'package:lazervault/src/generated/google/protobuf/timestamp.pb.dart' as $timestamp;
 
 class BarcodePaymentModel extends BarcodePaymentEntity {
   const BarcodePaymentModel({

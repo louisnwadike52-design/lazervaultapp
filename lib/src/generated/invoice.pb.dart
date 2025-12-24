@@ -10,8 +10,8 @@ import 'dart:core' as $core;
 import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'google/protobuf/timestamp.pb.dart' as $25;
-import 'invoice_payment.pb.dart' as $14;
+import 'google/protobuf/timestamp.pb.dart' as $26;
+import 'invoice_payment.pb.dart' as $15;
 
 class AddressDetails extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'AddressDetails', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
@@ -30,6 +30,14 @@ class AddressDetails extends $pb.GeneratedMessage {
     ..aOS(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'iban')
     ..aOS(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'routingNumber')
     ..aOS(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'taxId')
+    ..aOS(16, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'bankName')
+    ..aOS(17, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accountType')
+    ..aOS(18, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'swiftCode')
+    ..aOS(19, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sortCode')
+    ..aOS(20, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'bankAddress')
+    ..aOS(21, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'intermediaryBankName')
+    ..aOS(22, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'intermediaryBankSwift')
+    ..aOS(23, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accountHolderName')
     ..hasRequiredFields = false
   ;
 
@@ -50,6 +58,14 @@ class AddressDetails extends $pb.GeneratedMessage {
     $core.String? iban,
     $core.String? routingNumber,
     $core.String? taxId,
+    $core.String? bankName,
+    $core.String? accountType,
+    $core.String? swiftCode,
+    $core.String? sortCode,
+    $core.String? bankAddress,
+    $core.String? intermediaryBankName,
+    $core.String? intermediaryBankSwift,
+    $core.String? accountHolderName,
   }) {
     final _result = create();
     if (companyName != null) {
@@ -96,6 +112,30 @@ class AddressDetails extends $pb.GeneratedMessage {
     }
     if (taxId != null) {
       _result.taxId = taxId;
+    }
+    if (bankName != null) {
+      _result.bankName = bankName;
+    }
+    if (accountType != null) {
+      _result.accountType = accountType;
+    }
+    if (swiftCode != null) {
+      _result.swiftCode = swiftCode;
+    }
+    if (sortCode != null) {
+      _result.sortCode = sortCode;
+    }
+    if (bankAddress != null) {
+      _result.bankAddress = bankAddress;
+    }
+    if (intermediaryBankName != null) {
+      _result.intermediaryBankName = intermediaryBankName;
+    }
+    if (intermediaryBankSwift != null) {
+      _result.intermediaryBankSwift = intermediaryBankSwift;
+    }
+    if (accountHolderName != null) {
+      _result.accountHolderName = accountHolderName;
     }
     return _result;
   }
@@ -254,6 +294,78 @@ class AddressDetails extends $pb.GeneratedMessage {
   $core.bool hasTaxId() => $_has(14);
   @$pb.TagNumber(15)
   void clearTaxId() => clearField(15);
+
+  @$pb.TagNumber(16)
+  $core.String get bankName => $_getSZ(15);
+  @$pb.TagNumber(16)
+  set bankName($core.String v) { $_setString(15, v); }
+  @$pb.TagNumber(16)
+  $core.bool hasBankName() => $_has(15);
+  @$pb.TagNumber(16)
+  void clearBankName() => clearField(16);
+
+  @$pb.TagNumber(17)
+  $core.String get accountType => $_getSZ(16);
+  @$pb.TagNumber(17)
+  set accountType($core.String v) { $_setString(16, v); }
+  @$pb.TagNumber(17)
+  $core.bool hasAccountType() => $_has(16);
+  @$pb.TagNumber(17)
+  void clearAccountType() => clearField(17);
+
+  @$pb.TagNumber(18)
+  $core.String get swiftCode => $_getSZ(17);
+  @$pb.TagNumber(18)
+  set swiftCode($core.String v) { $_setString(17, v); }
+  @$pb.TagNumber(18)
+  $core.bool hasSwiftCode() => $_has(17);
+  @$pb.TagNumber(18)
+  void clearSwiftCode() => clearField(18);
+
+  @$pb.TagNumber(19)
+  $core.String get sortCode => $_getSZ(18);
+  @$pb.TagNumber(19)
+  set sortCode($core.String v) { $_setString(18, v); }
+  @$pb.TagNumber(19)
+  $core.bool hasSortCode() => $_has(18);
+  @$pb.TagNumber(19)
+  void clearSortCode() => clearField(19);
+
+  @$pb.TagNumber(20)
+  $core.String get bankAddress => $_getSZ(19);
+  @$pb.TagNumber(20)
+  set bankAddress($core.String v) { $_setString(19, v); }
+  @$pb.TagNumber(20)
+  $core.bool hasBankAddress() => $_has(19);
+  @$pb.TagNumber(20)
+  void clearBankAddress() => clearField(20);
+
+  @$pb.TagNumber(21)
+  $core.String get intermediaryBankName => $_getSZ(20);
+  @$pb.TagNumber(21)
+  set intermediaryBankName($core.String v) { $_setString(20, v); }
+  @$pb.TagNumber(21)
+  $core.bool hasIntermediaryBankName() => $_has(20);
+  @$pb.TagNumber(21)
+  void clearIntermediaryBankName() => clearField(21);
+
+  @$pb.TagNumber(22)
+  $core.String get intermediaryBankSwift => $_getSZ(21);
+  @$pb.TagNumber(22)
+  set intermediaryBankSwift($core.String v) { $_setString(21, v); }
+  @$pb.TagNumber(22)
+  $core.bool hasIntermediaryBankSwift() => $_has(21);
+  @$pb.TagNumber(22)
+  void clearIntermediaryBankSwift() => clearField(22);
+
+  @$pb.TagNumber(23)
+  $core.String get accountHolderName => $_getSZ(22);
+  @$pb.TagNumber(23)
+  set accountHolderName($core.String v) { $_setString(22, v); }
+  @$pb.TagNumber(23)
+  $core.bool hasAccountHolderName() => $_has(22);
+  @$pb.TagNumber(23)
+  void clearAccountHolderName() => clearField(23);
 }
 
 class InvoiceItem extends $pb.GeneratedMessage {
@@ -400,8 +512,8 @@ class Invoice extends $pb.GeneratedMessage {
     ..aOB(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isPaid')
     ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'paymentMethodId')
     ..aOS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'paymentReference')
-    ..aOM<$25.Timestamp>(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $25.Timestamp.create)
-    ..aOM<$25.Timestamp>(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $25.Timestamp.create)
+    ..aOM<$26.Timestamp>(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $26.Timestamp.create)
+    ..aOM<$26.Timestamp>(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $26.Timestamp.create)
     ..pc<InvoiceItem>(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'items', $pb.PbFieldType.PM, subBuilder: InvoiceItem.create)
     ..aOS(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'notes')
     ..a<$core.double>(16, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'taxAmount', $pb.PbFieldType.OD)
@@ -427,8 +539,8 @@ class Invoice extends $pb.GeneratedMessage {
     $core.bool? isPaid,
     $core.String? paymentMethodId,
     $core.String? paymentReference,
-    $25.Timestamp? createdAt,
-    $25.Timestamp? updatedAt,
+    $26.Timestamp? createdAt,
+    $26.Timestamp? updatedAt,
     $core.Iterable<InvoiceItem>? items,
     $core.String? notes,
     $core.double? taxAmount,
@@ -629,26 +741,26 @@ class Invoice extends $pb.GeneratedMessage {
   void clearPaymentReference() => clearField(11);
 
   @$pb.TagNumber(12)
-  $25.Timestamp get createdAt => $_getN(11);
+  $26.Timestamp get createdAt => $_getN(11);
   @$pb.TagNumber(12)
-  set createdAt($25.Timestamp v) { setField(12, v); }
+  set createdAt($26.Timestamp v) { setField(12, v); }
   @$pb.TagNumber(12)
   $core.bool hasCreatedAt() => $_has(11);
   @$pb.TagNumber(12)
   void clearCreatedAt() => clearField(12);
   @$pb.TagNumber(12)
-  $25.Timestamp ensureCreatedAt() => $_ensure(11);
+  $26.Timestamp ensureCreatedAt() => $_ensure(11);
 
   @$pb.TagNumber(13)
-  $25.Timestamp get updatedAt => $_getN(12);
+  $26.Timestamp get updatedAt => $_getN(12);
   @$pb.TagNumber(13)
-  set updatedAt($25.Timestamp v) { setField(13, v); }
+  set updatedAt($26.Timestamp v) { setField(13, v); }
   @$pb.TagNumber(13)
   $core.bool hasUpdatedAt() => $_has(12);
   @$pb.TagNumber(13)
   void clearUpdatedAt() => clearField(13);
   @$pb.TagNumber(13)
-  $25.Timestamp ensureUpdatedAt() => $_ensure(12);
+  $26.Timestamp ensureUpdatedAt() => $_ensure(12);
 
   @$pb.TagNumber(14)
   $core.List<InvoiceItem> get items => $_getList(13);
@@ -1763,7 +1875,7 @@ class GetInvoicesByStatusResponse extends $pb.GeneratedMessage {
 class MarkInvoiceAsPaidRequest extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'MarkInvoiceAsPaidRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
     ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'invoiceId')
-    ..aOM<$14.PaymentMethod>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'paymentMethod', subBuilder: $14.PaymentMethod.create)
+    ..aOM<$15.PaymentMethod>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'paymentMethod', subBuilder: $15.PaymentMethod.create)
     ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'paymentReference')
     ..hasRequiredFields = false
   ;
@@ -1771,7 +1883,7 @@ class MarkInvoiceAsPaidRequest extends $pb.GeneratedMessage {
   MarkInvoiceAsPaidRequest._() : super();
   factory MarkInvoiceAsPaidRequest({
     $core.String? invoiceId,
-    $14.PaymentMethod? paymentMethod,
+    $15.PaymentMethod? paymentMethod,
     $core.String? paymentReference,
   }) {
     final _result = create();
@@ -1817,15 +1929,15 @@ class MarkInvoiceAsPaidRequest extends $pb.GeneratedMessage {
   void clearInvoiceId() => clearField(1);
 
   @$pb.TagNumber(2)
-  $14.PaymentMethod get paymentMethod => $_getN(1);
+  $15.PaymentMethod get paymentMethod => $_getN(1);
   @$pb.TagNumber(2)
-  set paymentMethod($14.PaymentMethod v) { setField(2, v); }
+  set paymentMethod($15.PaymentMethod v) { setField(2, v); }
   @$pb.TagNumber(2)
   $core.bool hasPaymentMethod() => $_has(1);
   @$pb.TagNumber(2)
   void clearPaymentMethod() => clearField(2);
   @$pb.TagNumber(2)
-  $14.PaymentMethod ensurePaymentMethod() => $_ensure(1);
+  $15.PaymentMethod ensurePaymentMethod() => $_ensure(1);
 
   @$pb.TagNumber(3)
   $core.String get paymentReference => $_getSZ(2);

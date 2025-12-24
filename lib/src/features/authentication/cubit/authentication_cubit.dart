@@ -160,12 +160,14 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     required String email,
     required String password,
   }) async {
+    print('🔐 Login attempt with email: $email (length: ${email.length})');
     emit(AuthenticationLoading());
 
     final result = await _loginUseCase(email: email, password: password);
 
     result.fold(
       (failure) {
+        print('❌ Login failed for email: $email - ${failure.message}');
         // Show generic error message for security
         const genericError = 'Invalid email or password';
         emit(AuthenticationFailure(
@@ -174,6 +176,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
         ));
       },
       (profile) async {
+        print('✅ Login successful for email: ${profile.user.email}');
         await _saveSession(profile);
         emit(AuthenticationSuccess(profile));
       },

@@ -8,7 +8,9 @@ import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'dart:io';
+import '../../../../../core/theme/invoice_theme_colors.dart';
 import '../../domain/entities/tagged_invoice_entity.dart';
+import '../../../../../core/theme/invoice_theme_colors.dart';
 import '../../domain/repositories/pay_invoice_repository.dart';
 
 class TransactionReceiptScreen extends StatefulWidget {
@@ -189,7 +191,7 @@ class _TransactionReceiptScreenState extends State<TransactionReceiptScreen>
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF10B981).withValues(alpha: 0.3),
+            color: InvoiceThemeColors.successGreen.withValues(alpha: 0.3),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -258,12 +260,12 @@ class _TransactionReceiptScreenState extends State<TransactionReceiptScreen>
             Container(
               padding: EdgeInsets.all(8.w),
               decoration: BoxDecoration(
-                color: const Color(0xFF3B82F6).withValues(alpha: 0.2),
+                color: InvoiceThemeColors.infoBlue.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(8.r),
               ),
               child: Icon(
                 Icons.receipt_long,
-                color: const Color(0xFF3B82F6),
+                color: InvoiceThemeColors.infoBlue,
                 size: 24.sp,
               ),
             ),
@@ -285,14 +287,14 @@ class _TransactionReceiptScreenState extends State<TransactionReceiptScreen>
           style: GoogleFonts.inter(
             fontSize: 16.sp,
             fontWeight: FontWeight.w600,
-            color: const Color(0xFF3B82F6),
+            color: InvoiceThemeColors.infoBlue,
           ),
         ),
         SizedBox(height: 8.h),
         Container(
           padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
           decoration: BoxDecoration(
-            color: const Color(0xFF10B981).withValues(alpha: 0.2),
+            color: InvoiceThemeColors.successGreen.withValues(alpha: 0.2),
             borderRadius: BorderRadius.circular(12.r),
             boxShadow: [
           BoxShadow(
@@ -308,7 +310,7 @@ class _TransactionReceiptScreenState extends State<TransactionReceiptScreen>
             style: GoogleFonts.inter(
               fontSize: 12.sp,
               fontWeight: FontWeight.w700,
-              color: const Color(0xFF10B981),
+              color: InvoiceThemeColors.successGreen,
               letterSpacing: 0.8,
             ),
           ),
@@ -467,7 +469,7 @@ class _TransactionReceiptScreenState extends State<TransactionReceiptScreen>
                 style: GoogleFonts.inter(
                   fontSize: 24.sp,
                   fontWeight: FontWeight.bold,
-                  color: const Color(0xFF10B981),
+                  color: InvoiceThemeColors.successGreen,
                 ),
               ),
             ],
@@ -481,7 +483,7 @@ class _TransactionReceiptScreenState extends State<TransactionReceiptScreen>
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
+        color: InvoiceThemeColors.infoBlue.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12.r),
         boxShadow: [
           BoxShadow(
@@ -499,7 +501,7 @@ class _TransactionReceiptScreenState extends State<TransactionReceiptScreen>
             style: GoogleFonts.inter(
               fontSize: 14.sp,
               fontWeight: FontWeight.w600,
-              color: const Color(0xFF3B82F6),
+              color: InvoiceThemeColors.infoBlue,
             ),
             textAlign: TextAlign.center,
           ),
@@ -534,7 +536,7 @@ class _TransactionReceiptScreenState extends State<TransactionReceiptScreen>
               ? Container(
                   padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF10B981).withValues(alpha: 0.2),
+                    color: InvoiceThemeColors.successGreen.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(8.r),
                   ),
                   child: Text(
@@ -542,7 +544,7 @@ class _TransactionReceiptScreenState extends State<TransactionReceiptScreen>
                     style: GoogleFonts.inter(
                       fontSize: 12.sp,
                       fontWeight: FontWeight.w600,
-                      color: const Color(0xFF10B981),
+                      color: InvoiceThemeColors.successGreen,
                     ),
                   ),
                 )
@@ -596,7 +598,7 @@ class _TransactionReceiptScreenState extends State<TransactionReceiptScreen>
                         children: [
                           Icon(
                             Icons.share,
-                            color: const Color(0xFF3B82F6),
+                            color: InvoiceThemeColors.infoBlue,
                             size: 20.sp,
                           ),
                           SizedBox(width: 8.w),
@@ -605,7 +607,7 @@ class _TransactionReceiptScreenState extends State<TransactionReceiptScreen>
                             style: GoogleFonts.inter(
                               fontSize: 16.sp,
                               fontWeight: FontWeight.w600,
-                              color: const Color(0xFF3B82F6),
+                              color: InvoiceThemeColors.infoBlue,
                             ),
                           ),
                         ],
@@ -626,7 +628,7 @@ class _TransactionReceiptScreenState extends State<TransactionReceiptScreen>
                   borderRadius: BorderRadius.circular(16.r),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
+                      color: InvoiceThemeColors.infoBlue.withValues(alpha: 0.3),
                       blurRadius: 12,
                       offset: const Offset(0, 4),
                     ),
@@ -709,7 +711,7 @@ class _TransactionReceiptScreenState extends State<TransactionReceiptScreen>
           'name': 'Account Balance',
           'description': widget.selectedAccount ?? 'Main Account',
           'icon': Icons.account_balance_wallet,
-          'color': const Color(0xFF3B82F6),
+          'color': InvoiceThemeColors.infoBlue,
         };
       case PaymentMethod.bitcoin:
         return {
@@ -878,7 +880,7 @@ Thank you for your payment!
       Get.snackbar(
         'Success',
         'Receipt downloaded successfully',
-        backgroundColor: const Color(0xFF10B981),
+        backgroundColor: InvoiceThemeColors.successGreen,
         colorText: Colors.white,
         snackPosition: SnackPosition.TOP,
         margin: EdgeInsets.all(20.w),
@@ -889,7 +891,7 @@ Thank you for your payment!
       Get.snackbar(
         'Error',
         'Failed to download receipt',
-        backgroundColor: const Color(0xFFEF4444),
+        backgroundColor: InvoiceThemeColors.errorRed,
         colorText: Colors.white,
         snackPosition: SnackPosition.TOP,
         margin: EdgeInsets.all(20.w),

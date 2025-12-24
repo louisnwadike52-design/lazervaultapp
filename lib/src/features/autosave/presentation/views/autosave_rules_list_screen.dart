@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
+import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/autosave/domain/entities/autosave_rule_entity.dart';
 import 'package:lazervault/src/features/autosave/presentation/cubit/autosave_cubit.dart';
 import 'package:lazervault/src/features/autosave/presentation/cubit/autosave_state.dart';
@@ -23,9 +25,9 @@ class _AutoSaveRulesListScreenState extends State<AutoSaveRulesListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0F0F0F),
+      backgroundColor: const Color(0xFF0A0A0A),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF0F0F0F),
+        backgroundColor: const Color(0xFF0A0A0A),
         elevation: 0,
         title: Text(
           'Auto-Save Rules',
@@ -62,7 +64,7 @@ class _AutoSaveRulesListScreenState extends State<AutoSaveRulesListScreen> {
         builder: (context, state) {
           if (state is AutoSaveLoading) {
             return const Center(
-              child: CircularProgressIndicator(color: Color(0xFF3B82F6)),
+              child: CircularProgressIndicator(color: Color.fromARGB(255, 78, 3, 208)),
             );
           }
 
@@ -88,7 +90,7 @@ class _AutoSaveRulesListScreenState extends State<AutoSaveRulesListScreen> {
             ),
           ).then((_) => context.read<AutoSaveCubit>().getRules());
         },
-        backgroundColor: const Color(0xFF3B82F6),
+        backgroundColor: const Color.fromARGB(255, 78, 3, 208),
         child: const Icon(Icons.add, color: Colors.white),
       ),
     );
@@ -141,16 +143,30 @@ class _AutoSaveRulesListScreenState extends State<AutoSaveRulesListScreen> {
   Widget _buildRuleCard(AutoSaveRuleEntity rule) {
     return Container(
       margin: EdgeInsets.only(bottom: 12.h),
-      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
-          color: rule.isActive ? const Color(0xFF3B82F6) : const Color(0xFF374151),
+          color: rule.isActive ? const Color.fromARGB(255, 78, 3, 208) : const Color(0xFF2D2D2D),
           width: 1,
         ),
       ),
-      child: Column(
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12.r),
+          onTap: () {
+            Get.toNamed(
+              AppRoutes.autoSaveDetails,
+              arguments: rule,
+            )?.then((_) {
+              // Refresh rules list when coming back from details
+              context.read<AutoSaveCubit>().getRules();
+            });
+          },
+          child: Padding(
+            padding: EdgeInsets.all(16.w),
+            child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
@@ -234,8 +250,8 @@ class _AutoSaveRulesListScreenState extends State<AutoSaveRulesListScreen> {
                   borderRadius: BorderRadius.circular(4.r),
                   child: LinearProgressIndicator(
                     value: rule.progressPercentage / 100,
-                    backgroundColor: const Color(0xFF374151),
-                    valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
+                    backgroundColor: const Color(0xFF2D2D2D),
+                    valueColor: const AlwaysStoppedAnimation<Color>(Color.fromARGB(255, 78, 3, 208)),
                     minHeight: 6.h,
                   ),
                 ),
@@ -257,12 +273,12 @@ class _AutoSaveRulesListScreenState extends State<AutoSaveRulesListScreen> {
                 icon: Icon(
                   rule.isActive ? Icons.pause : Icons.play_arrow,
                   size: 16.sp,
-                  color: const Color(0xFF3B82F6),
+                  color: const Color.fromARGB(255, 78, 3, 208),
                 ),
                 label: Text(
                   rule.isActive ? 'Pause' : 'Resume',
                   style: TextStyle(
-                    color: const Color(0xFF3B82F6),
+                    color: const Color.fromARGB(255, 78, 3, 208),
                     fontSize: 12.sp,
                   ),
                 ),
@@ -288,6 +304,9 @@ class _AutoSaveRulesListScreenState extends State<AutoSaveRulesListScreen> {
           ),
         ],
       ),
+          ),
+        ),
+      ),
     );
   }
 
@@ -295,7 +314,7 @@ class _AutoSaveRulesListScreenState extends State<AutoSaveRulesListScreen> {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
       decoration: BoxDecoration(
-        color: const Color(0xFF374151),
+        color: const Color(0xFF2D2D2D),
         borderRadius: BorderRadius.circular(6.r),
       ),
       child: Row(

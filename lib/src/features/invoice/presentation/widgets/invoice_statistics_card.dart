@@ -1,4 +1,6 @@
+import '../../../../../core/theme/invoice_theme_colors.dart';
 import 'package:flutter/material.dart';
+import '../../../../../core/theme/invoice_theme_colors.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -15,9 +17,9 @@ class InvoiceStatisticsCard extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: Colors.grey[900],
+        color: InvoiceThemeColors.secondaryBackground,
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: Colors.grey[800]!),
+        border: Border.all(color: InvoiceThemeColors.borderColor!),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -83,17 +85,17 @@ class InvoiceStatisticsCard extends StatelessWidget {
         Container(
           padding: EdgeInsets.all(12.w),
           decoration: BoxDecoration(
-            color: const Color(0xFF6366F1).withOpacity(0.1),
+            color: InvoiceThemeColors.primaryPurple.withOpacity(0.1),
             borderRadius: BorderRadius.circular(8.r),
             border: Border.all(
-              color: const Color(0xFF6366F1).withOpacity(0.3),
+              color: InvoiceThemeColors.primaryPurple.withOpacity(0.3),
             ),
           ),
           child: Row(
             children: [
               Icon(
                 Icons.trending_up,
-                color: const Color(0xFF6366F1),
+                color: InvoiceThemeColors.primaryPurple,
                 size: 20.sp,
               ),
               SizedBox(width: 8.w),
@@ -112,7 +114,7 @@ class InvoiceStatisticsCard extends StatelessWidget {
                     Text(
                       '${(statistics['collection_rate'] ?? 0.0).toStringAsFixed(1)}%',
                       style: GoogleFonts.inter(
-                        color: const Color(0xFF6366F1),
+                        color: InvoiceThemeColors.primaryPurple,
                         fontSize: 18.sp,
                         fontWeight: FontWeight.bold,
                       ),

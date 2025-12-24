@@ -1,5 +1,6 @@
 import 'package:grpc/grpc.dart';
-import '../../../../grpc_generated/barcode_payment.pbgrpc.dart' as pb;
+import '../../../../generated/barcode_payment.pbgrpc.dart' as pb;
+import '../../../../core/network/grpc_client.dart';
 import '../models/barcode_payment_model.dart';
 import '../models/barcode_transaction_model.dart';
 
@@ -36,9 +37,9 @@ abstract class BarcodePaymentRemoteDataSource {
 }
 
 class BarcodePaymentRemoteDataSourceImpl implements BarcodePaymentRemoteDataSource {
-  final pb.BarcodePaymentServiceClient client;
+  final GrpcClient grpcClient;
 
-  BarcodePaymentRemoteDataSourceImpl({required this.client});
+  BarcodePaymentRemoteDataSourceImpl({required this.grpcClient});
 
   @override
   Future<BarcodePaymentModel> generateBarcode({
@@ -53,7 +54,11 @@ class BarcodePaymentRemoteDataSourceImpl implements BarcodePaymentRemoteDataSour
       ..description = description ?? ''
       ..validityMinutes = validityMinutes ?? 30;
 
-    final response = await client.generateBarcode(request);
+    final options = await grpcClient.callOptions;
+    final response = await grpcClient.barcodePaymentClient.generateBarcode(
+      request,
+      options: options,
+    );
 
     // Fetch the full barcode details
     return await getBarcodeDetails(barcodeCode: response.barcodeCode);
@@ -66,7 +71,11 @@ class BarcodePaymentRemoteDataSourceImpl implements BarcodePaymentRemoteDataSour
     final request = pb.GetBarcodeDetailsRequest()
       ..barcodeCode = barcodeCode;
 
-    final response = await client.getBarcodeDetails(request);
+    final options = await grpcClient.callOptions;
+    final response = await grpcClient.barcodePaymentClient.getBarcodeDetails(
+      request,
+      options: options,
+    );
     return BarcodePaymentModel.fromProto(response.barcode);
   }
 
@@ -79,7 +88,11 @@ class BarcodePaymentRemoteDataSourceImpl implements BarcodePaymentRemoteDataSour
       ..barcodeCode = barcodeCode
       ..sourceAccountId = sourceAccountId;
 
-    final response = await client.processBarcodePayment(request);
+    final options = await grpcClient.callOptions;
+    final response = await grpcClient.barcodePaymentClient.processBarcodePayment(
+      request,
+      options: options,
+    );
     return BarcodeTransactionModel.fromProto(response.transaction);
   }
 
@@ -92,7 +105,11 @@ class BarcodePaymentRemoteDataSourceImpl implements BarcodePaymentRemoteDataSour
       ..limit = limit ?? 50
       ..offset = offset ?? 0;
 
-    final response = await client.getMyGeneratedBarcodes(request);
+    final options = await grpcClient.callOptions;
+    final response = await grpcClient.barcodePaymentClient.getMyGeneratedBarcodes(
+      request,
+      options: options,
+    );
     return response.barcodes
         .map((barcode) => BarcodePaymentModel.fromProto(barcode))
         .toList();
@@ -107,7 +124,11 @@ class BarcodePaymentRemoteDataSourceImpl implements BarcodePaymentRemoteDataSour
       ..limit = limit ?? 50
       ..offset = offset ?? 0;
 
-    final response = await client.getMyScannedBarcodes(request);
+    final options = await grpcClient.callOptions;
+    final response = await grpcClient.barcodePaymentClient.getMyScannedBarcodes(
+      request,
+      options: options,
+    );
     return response.transactions
         .map((transaction) => BarcodeTransactionModel.fromProto(transaction))
         .toList();
@@ -120,6 +141,10 @@ class BarcodePaymentRemoteDataSourceImpl implements BarcodePaymentRemoteDataSour
     final request = pb.CancelBarcodeRequest()
       ..barcodeId = barcodeId;
 
-    await client.cancelBarcode(request);
+    final options = await grpcClient.callOptions;
+    await grpcClient.barcodePaymentClient.cancelBarcode(
+      request,
+      options: options,
+    );
   }
 }

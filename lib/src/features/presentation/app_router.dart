@@ -150,6 +150,10 @@ import 'package:lazervault/src/features/autosave/presentation/cubit/autosave_cub
 import 'package:lazervault/src/features/autosave/presentation/views/autosave_dashboard_screen.dart';
 import 'package:lazervault/src/features/autosave/presentation/views/autosave_transactions_screen.dart';
 import 'package:lazervault/src/features/autosave/presentation/views/create_autosave_rule_screen.dart';
+import 'package:lazervault/src/features/autosave/presentation/views/autosave_rule_review_screen.dart';
+import 'package:lazervault/src/features/autosave/presentation/views/autosave_rule_processing_screen.dart';
+import 'package:lazervault/src/features/autosave/presentation/views/autosave_rule_receipt_screen.dart';
+import 'package:lazervault/src/features/autosave/presentation/views/autosave_rule_details_screen.dart';
 
 // Batch Transfer imports
 import 'package:lazervault/src/features/funds/cubit/batch_transfer_cubit.dart';
@@ -331,6 +335,14 @@ class AppRouter {
     GetPage(
       name: AppRoutes.invoice,
       page: () => const InvoiceServiceScreen(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.invoiceList,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<InvoiceCubit>(),
+        child: const InvoiceListScreen(),
+      ),
       transition: Transition.rightToLeft,
     ),
     GetPage(
@@ -1114,10 +1126,36 @@ class AppRouter {
       transition: Transition.rightToLeft,
     ),
     GetPage(
+      name: AppRoutes.autoSaveRuleReview,
+      page: () => const AutoSaveRuleReviewScreen(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.autoSaveRuleProcessing,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<AutoSaveCubit>(),
+        child: const AutoSaveRuleProcessingScreen(),
+      ),
+      transition: Transition.fadeIn,
+    ),
+    GetPage(
+      name: AppRoutes.autoSaveRuleReceipt,
+      page: () => const AutoSaveRuleReceiptScreen(),
+      transition: Transition.fadeIn,
+    ),
+    GetPage(
       name: AppRoutes.autoSaveTransactions,
       page: () => BlocProvider(
         create: (_) => serviceLocator<AutoSaveCubit>(),
         child: const AutoSaveTransactionsScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.autoSaveDetails,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<AutoSaveCubit>(),
+        child: const AutoSaveRuleDetailsScreen(),
       ),
       transition: Transition.rightToLeft,
     ),
@@ -1271,8 +1309,8 @@ class AppRouter {
         final tag = Get.arguments as UserTagEntity;
         return MultiBlocProvider(
           providers: [
-            BlocProvider.value(value: serviceLocator<TagPayCubit>()),
-            BlocProvider.value(value: serviceLocator<AccountCardsSummaryCubit>()),
+            BlocProvider(create: (_) => serviceLocator<TagPayCubit>()),
+            BlocProvider(create: (_) => serviceLocator<AccountCardsSummaryCubit>()),
           ],
           child: TagPaymentConfirmationScreen(tag: tag),
         );
@@ -1282,8 +1320,8 @@ class AppRouter {
     GetPage(
       name: AppRoutes.tagPayProcessing,
       page: () {
-        return BlocProvider.value(
-          value: serviceLocator<TagPayCubit>(),
+        return BlocProvider(
+          create: (_) => serviceLocator<TagPayCubit>(),
           child: const TagPayProcessingScreen(),
         );
       },
@@ -1297,8 +1335,8 @@ class AppRouter {
     GetPage(
       name: AppRoutes.tagCreationProcessing,
       page: () {
-        return BlocProvider.value(
-          value: serviceLocator<TagPayCubit>(),
+        return BlocProvider(
+          create: (_) => serviceLocator<TagPayCubit>(),
           child: const TagCreationProcessingScreen(),
         );
       },
@@ -1374,8 +1412,8 @@ class AppRouter {
     GetPage(
       name: AppRoutes.generatedBarcodesHistory,
       page: () {
-        return BlocProvider.value(
-          value: serviceLocator<BarcodePaymentCubit>(),
+        return BlocProvider(
+          create: (_) => serviceLocator<BarcodePaymentCubit>(),
           child: const GeneratedBarcodesHistoryScreen(),
         );
       },
@@ -1384,8 +1422,8 @@ class AppRouter {
     GetPage(
       name: AppRoutes.scannedBarcodesHistory,
       page: () {
-        return BlocProvider.value(
-          value: serviceLocator<BarcodePaymentCubit>(),
+        return BlocProvider(
+          create: (_) => serviceLocator<BarcodePaymentCubit>(),
           child: const ScannedBarcodesHistoryScreen(),
         );
       },

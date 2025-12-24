@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:lazervault/src/features/autosave/domain/entities/autosave_rule_entity.dart';
 import 'package:lazervault/src/features/autosave/presentation/cubit/autosave_cubit.dart';
@@ -14,21 +15,32 @@ class AutoSaveTransactionsScreen extends StatefulWidget {
 }
 
 class _AutoSaveTransactionsScreenState extends State<AutoSaveTransactionsScreen> {
+  String? ruleId;
+  String? ruleName;
+
   @override
   void initState() {
     super.initState();
-    context.read<AutoSaveCubit>().getTransactions();
+    // Get arguments if passed
+    final args = Get.arguments as Map<String, dynamic>?;
+    if (args != null) {
+      ruleId = args['ruleId'] as String?;
+      ruleName = args['ruleName'] as String?;
+    }
+
+    // Fetch transactions with optional ruleId filter
+    context.read<AutoSaveCubit>().getTransactions(ruleId: ruleId);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0F0F0F),
+      backgroundColor: const Color(0xFF0A0A0A),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF0F0F0F),
+        backgroundColor: const Color(0xFF0A0A0A),
         elevation: 0,
         title: Text(
-          'Transaction History',
+          ruleName != null ? '$ruleName Transactions' : 'Transaction History',
           style: TextStyle(
             color: Colors.white,
             fontSize: 20.sp,
@@ -54,7 +66,7 @@ class _AutoSaveTransactionsScreenState extends State<AutoSaveTransactionsScreen>
         builder: (context, state) {
           if (state is AutoSaveLoading) {
             return const Center(
-              child: CircularProgressIndicator(color: Color(0xFF3B82F6)),
+              child: CircularProgressIndicator(color: Color.fromARGB(255, 78, 3, 208)),
             );
           }
 
@@ -109,7 +121,7 @@ class _AutoSaveTransactionsScreenState extends State<AutoSaveTransactionsScreen>
       onRefresh: () async {
         context.read<AutoSaveCubit>().getTransactions();
       },
-      color: const Color(0xFF3B82F6),
+      color: const Color.fromARGB(255, 78, 3, 208),
       backgroundColor: const Color(0xFF1F1F1F),
       child: ListView.builder(
         padding: EdgeInsets.all(16.w),
@@ -213,7 +225,7 @@ class _AutoSaveTransactionsScreenState extends State<AutoSaveTransactionsScreen>
 
           // Divider
           Divider(
-            color: const Color(0xFF374151),
+            color: const Color(0xFF2D2D2D),
             height: 1.h,
           ),
 
@@ -308,9 +320,9 @@ class _AutoSaveTransactionsScreenState extends State<AutoSaveTransactionsScreen>
   Color _getTriggerTypeColor(TriggerType type) {
     switch (type) {
       case TriggerType.onDeposit:
-        return const Color(0xFF3B82F6);
+        return const Color.fromARGB(255, 78, 3, 208);
       case TriggerType.scheduled:
-        return const Color(0xFF8B5CF6);
+        return const Color.fromARGB(255, 98, 33, 224);
       case TriggerType.roundUp:
         return const Color(0xFF10B981);
       default:

@@ -12,7 +12,9 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import '../../../../../core/theme/invoice_theme_colors.dart';
 import '../../domain/entities/invoice_entity.dart';
+import '../../../../../core/theme/invoice_theme_colors.dart';
 import '../../domain/repositories/invoice_repository.dart';
 import '../../services/invoice_pdf_service.dart';
 import '../../services/invoice_qr_service.dart';
@@ -31,7 +33,7 @@ class InvoicePreviewScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0A0A0A),
+      backgroundColor: InvoiceThemeColors.primaryBackground,
       body: SafeArea(
         child: Column(
           children: [
@@ -60,7 +62,7 @@ class InvoicePreviewScreen extends StatelessWidget {
               width: 44.w,
               height: 44.w,
               decoration: BoxDecoration(
-                color: const Color(0xFF1F1F1F),
+                color: InvoiceThemeColors.secondaryBackground,
                 borderRadius: BorderRadius.circular(22.r),
                 border: Border.all(color: const Color(0xFF2D2D2D)),
               ),
@@ -99,14 +101,14 @@ class InvoicePreviewScreen extends StatelessWidget {
           Container(
             padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
             decoration: BoxDecoration(
-              color: const Color(0xFF10B981).withOpacity(0.1),
+              color: InvoiceThemeColors.successGreen.withOpacity(0.1),
               borderRadius: BorderRadius.circular(20.r),
-              border: Border.all(color: const Color(0xFF10B981)),
+              border: Border.all(color: InvoiceThemeColors.successGreen),
             ),
             child: Text(
               invoice.statusDisplayName,
               style: GoogleFonts.inter(
-                color: const Color(0xFF10B981),
+                color: InvoiceThemeColors.successGreen,
                 fontSize: 12.sp,
                 fontWeight: FontWeight.w600,
               ),
@@ -163,7 +165,7 @@ class InvoicePreviewScreen extends StatelessWidget {
             Text(
               'INVOICE',
               style: GoogleFonts.inter(
-                color: const Color(0xFF3B82F6),
+                color: InvoiceThemeColors.infoBlue,
                 fontSize: 32.sp,
                 fontWeight: FontWeight.w900,
                 letterSpacing: 2,
@@ -582,7 +584,7 @@ class InvoicePreviewScreen extends StatelessWidget {
               Text(
                 '\$${invoice.totalAmount.toStringAsFixed(2)}',
                 style: GoogleFonts.inter(
-                  color: const Color(0xFF3B82F6),
+                  color: InvoiceThemeColors.infoBlue,
                   fontSize: 24.sp,
                   fontWeight: FontWeight.w900,
                 ),
@@ -660,7 +662,7 @@ class InvoicePreviewScreen extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF0A0A0A),
+        color: InvoiceThemeColors.primaryBackground,
         border: Border(
           top: BorderSide(color: const Color(0xFF2D2D2D)),
         ),
@@ -694,13 +696,13 @@ class InvoicePreviewScreen extends StatelessWidget {
               ),
               icon: Icon(
                 Icons.person_add_outlined,
-                color: const Color(0xFF10B981),
+                color: InvoiceThemeColors.successGreen,
                 size: 20.sp,
               ),
               label: Text(
                 'Tag User for Payment',
                 style: GoogleFonts.inter(
-                  color: const Color(0xFF10B981),
+                  color: InvoiceThemeColors.successGreen,
                   fontSize: 16.sp,
                   fontWeight: FontWeight.w600,
                 ),
@@ -825,13 +827,13 @@ class InvoicePreviewScreen extends StatelessWidget {
                     ),
                     icon: Icon(
                       Icons.share_outlined,
-                      color: const Color(0xFF3B82F6),
+                      color: InvoiceThemeColors.infoBlue,
                       size: 18.sp,
                     ),
                     label: Text(
                       'Share',
                       style: GoogleFonts.inter(
-                        color: const Color(0xFF3B82F6),
+                        color: InvoiceThemeColors.infoBlue,
                         fontSize: 12.sp,
                         fontWeight: FontWeight.w600,
                       ),
@@ -875,7 +877,7 @@ class InvoicePreviewScreen extends StatelessWidget {
               Text('Generating PDF...'),
             ],
           ),
-          backgroundColor: const Color(0xFF3B82F6),
+          backgroundColor: InvoiceThemeColors.infoBlue,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
           behavior: SnackBarBehavior.floating,
           duration: Duration(seconds: 2),
@@ -890,7 +892,7 @@ class InvoicePreviewScreen extends StatelessWidget {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Invoice PDF downloaded successfully!'),
-          backgroundColor: const Color(0xFF10B981),
+          backgroundColor: InvoiceThemeColors.successGreen,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
           behavior: SnackBarBehavior.floating,
         ),
@@ -901,7 +903,7 @@ class InvoicePreviewScreen extends StatelessWidget {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Failed to download PDF: ${e.toString().replaceFirst('Exception: ', '')}'),
-          backgroundColor: const Color(0xFFEF4444),
+          backgroundColor: InvoiceThemeColors.errorRed,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
           behavior: SnackBarBehavior.floating,
         ),
@@ -929,7 +931,7 @@ class InvoicePreviewScreen extends StatelessWidget {
               Text('Preparing to share...'),
             ],
           ),
-          backgroundColor: const Color(0xFF3B82F6),
+          backgroundColor: InvoiceThemeColors.infoBlue,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
           behavior: SnackBarBehavior.floating,
           duration: Duration(seconds: 2),
@@ -947,7 +949,7 @@ class InvoicePreviewScreen extends StatelessWidget {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Failed to share invoice: ${e.toString().replaceFirst('Exception: ', '')}'),
-          backgroundColor: const Color(0xFFEF4444),
+          backgroundColor: InvoiceThemeColors.errorRed,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
           behavior: SnackBarBehavior.floating,
         ),
@@ -988,7 +990,7 @@ class InvoicePreviewScreen extends StatelessWidget {
         child: Container(
           padding: EdgeInsets.all(24.w),
           decoration: BoxDecoration(
-            color: const Color(0xFF1F1F1F),
+            color: InvoiceThemeColors.secondaryBackground,
             borderRadius: BorderRadius.circular(20.r),
             border: Border.all(color: const Color(0xFF2D2D2D)),
           ),
@@ -1221,7 +1223,7 @@ class InvoicePreviewScreen extends StatelessWidget {
               Text('Preparing QR code...'),
             ],
           ),
-          backgroundColor: const Color(0xFF3B82F6),
+          backgroundColor: InvoiceThemeColors.infoBlue,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
           behavior: SnackBarBehavior.floating,
           duration: Duration(seconds: 2),
@@ -1271,7 +1273,7 @@ class InvoicePreviewScreen extends StatelessWidget {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Failed to share QR code: ${e.toString().replaceFirst('Exception: ', '')}'),
-          backgroundColor: const Color(0xFFEF4444),
+          backgroundColor: InvoiceThemeColors.errorRed,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
           behavior: SnackBarBehavior.floating,
         ),
@@ -1361,7 +1363,7 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
       height: MediaQuery.of(context).size.height * 0.92,
       width: MediaQuery.of(context).size.width,
       decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
+        color: InvoiceThemeColors.secondaryBackground,
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(24.r),
           topRight: Radius.circular(24.r),
@@ -1409,7 +1411,7 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      const Color(0xFF10B981).withValues(alpha: 0.2),
+                      InvoiceThemeColors.successGreen.withValues(alpha: 0.2),
                       const Color(0xFF059669).withValues(alpha: 0.2),
                     ],
                   ),
@@ -1425,7 +1427,7 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
                 ),
                 child: Icon(
                   Icons.group_add,
-                  color: const Color(0xFF10B981),
+                  color: InvoiceThemeColors.successGreen,
                   size: 24.sp,
                 ),
               ),
@@ -1475,7 +1477,7 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
             Container(
               padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
               decoration: BoxDecoration(
-                color: const Color(0xFF10B981).withValues(alpha: 0.1),
+                color: InvoiceThemeColors.successGreen.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(20.r),
                 boxShadow: [
           BoxShadow(
@@ -1489,7 +1491,7 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
               child: Text(
                 '${_selectedUserIds.length} user${_selectedUserIds.length == 1 ? '' : 's'} selected',
                 style: GoogleFonts.inter(
-                  color: const Color(0xFF10B981),
+                  color: InvoiceThemeColors.successGreen,
                   fontSize: 14.sp,
                   fontWeight: FontWeight.w600,
                 ),
@@ -1521,7 +1523,7 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
         indicator: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              const Color(0xFF10B981),
+              InvoiceThemeColors.successGreen,
               const Color(0xFF059669),
             ],
           ),
@@ -1614,7 +1616,7 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
                 ),
                 prefixIcon: Icon(
                   Icons.search,
-                  color: const Color(0xFF10B981),
+                  color: InvoiceThemeColors.successGreen,
                   size: 20.sp,
                 ),
                 border: InputBorder.none,
@@ -1641,7 +1643,7 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
     if (_loadingSearch) {
       return Center(
         child: CircularProgressIndicator(
-          color: const Color(0xFF3B82F6),
+          color: InvoiceThemeColors.infoBlue,
         ),
       );
     }
@@ -1684,12 +1686,12 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
           color: isSelected 
-              ? const Color(0xFF10B981).withValues(alpha: 0.1)
+              ? InvoiceThemeColors.successGreen.withValues(alpha: 0.1)
               : Colors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(16.r),
           border: Border.all(
             color: isSelected 
-                ? const Color(0xFF10B981) 
+                ? InvoiceThemeColors.successGreen 
                 : Colors.white.withValues(alpha: 0.1),
             width: isSelected ? 2 : 1,
           ),
@@ -1721,7 +1723,7 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [
-                            const Color(0xFF10B981),
+                            InvoiceThemeColors.successGreen,
                             const Color(0xFF059669),
                           ],
                         ),
@@ -1750,7 +1752,7 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
                       width: 14.w,
                       height: 14.w,
                       decoration: BoxDecoration(
-                        color: const Color(0xFF10B981),
+                        color: InvoiceThemeColors.successGreen,
                         shape: BoxShape.circle,
                         boxShadow: [
           BoxShadow(
@@ -1791,7 +1793,7 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
                             vertical: 4.h,
                           ),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF10B981).withValues(alpha: 0.1),
+                            color: InvoiceThemeColors.successGreen.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(8.r),
                             boxShadow: [
           BoxShadow(
@@ -1805,7 +1807,7 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
                           child: Text(
                             'Online',
                             style: GoogleFonts.inter(
-                              color: const Color(0xFF10B981),
+                              color: InvoiceThemeColors.successGreen,
                               fontSize: 10.sp,
                               fontWeight: FontWeight.w600,
                             ),
@@ -1839,7 +1841,7 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
               height: 24.w,
               decoration: BoxDecoration(
                 color: isSelected 
-                    ? const Color(0xFF10B981) 
+                    ? InvoiceThemeColors.successGreen 
                     : Colors.transparent,
                 borderRadius: BorderRadius.circular(6.r),
                 boxShadow: [
@@ -1916,14 +1918,14 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  const Color(0xFF10B981),
+                  InvoiceThemeColors.successGreen,
                   const Color(0xFF059669),
                 ],
               ),
               borderRadius: BorderRadius.circular(12.r),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF10B981).withValues(alpha: 0.3),
+                  color: InvoiceThemeColors.successGreen.withValues(alpha: 0.3),
                   offset: const Offset(0, 4),
                   blurRadius: 12,
                 ),
@@ -1959,13 +1961,13 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
           Container(
             padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
-              color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
+              color: InvoiceThemeColors.infoBlue.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12.r),            ),
             child: Row(
               children: [
                 Icon(
                   Icons.info_outline,
-                  color: const Color(0xFF3B82F6),
+                  color: InvoiceThemeColors.infoBlue,
                   size: 20.sp,
                 ),
                 SizedBox(width: 12.w),
@@ -1973,7 +1975,7 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
                   child: Text(
                     'Users not on LazerVault will receive an invitation link',
                     style: GoogleFonts.inter(
-                      color: const Color(0xFF3B82F6),
+                      color: InvoiceThemeColors.infoBlue,
                       fontSize: 12.sp,
                       fontWeight: FontWeight.w500,
                     ),
@@ -2022,7 +2024,7 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      const Color(0xFF3B82F6),
+                      InvoiceThemeColors.infoBlue,
                       const Color(0xFF1D4ED8),
                     ],
                   ),
@@ -2117,7 +2119,7 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
               ),
               prefixIcon: Icon(
                 icon,
-                color: const Color(0xFF10B981),
+                color: InvoiceThemeColors.successGreen,
                 size: 20.sp,
               ),
               border: InputBorder.none,
@@ -2146,7 +2148,7 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
             child: Icon(
               Icons.search,
               size: 48.sp,
-              color: const Color(0xFF3B82F6),
+              color: InvoiceThemeColors.infoBlue,
             ),
           ),
           SizedBox(height: 16.h),
@@ -2216,7 +2218,7 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(const Color(0xFF10B981)),
+            valueColor: AlwaysStoppedAnimation<Color>(InvoiceThemeColors.successGreen),
           ),
           SizedBox(height: 16.h),
           Text(
@@ -2318,12 +2320,12 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
           color: isSelected 
-              ? const Color(0xFF10B981).withValues(alpha: 0.1)
+              ? InvoiceThemeColors.successGreen.withValues(alpha: 0.1)
               : Colors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(16.r),
           border: Border.all(
             color: isSelected 
-                ? const Color(0xFF10B981) 
+                ? InvoiceThemeColors.successGreen 
                 : Colors.white.withValues(alpha: 0.1),
             width: isSelected ? 2 : 1,
           ),
@@ -2384,17 +2386,17 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF3B82F6).withValues(alpha: 0.2),
+                  color: InvoiceThemeColors.infoBlue.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(6.r),
                   border: Border.all(
-                    color: const Color(0xFF3B82F6),
+                    color: InvoiceThemeColors.infoBlue,
                     width: 1,
                   ),
                 ),
                 child: Text(
                   'Invite',
                   style: GoogleFonts.inter(
-                    color: const Color(0xFF3B82F6),
+                    color: InvoiceThemeColors.infoBlue,
                     fontSize: 10.sp,
                     fontWeight: FontWeight.w600,
                   ),
@@ -2407,7 +2409,7 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
               height: 24.w,
               decoration: BoxDecoration(
                 color: isSelected
-                    ? const Color(0xFF10B981)
+                    ? InvoiceThemeColors.successGreen
                     : Colors.transparent,
                 borderRadius: BorderRadius.circular(6.r),
                 boxShadow: [
@@ -2437,7 +2439,7 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
     return Container(
       padding: EdgeInsets.all(24.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
+        color: InvoiceThemeColors.secondaryBackground,
         border: Border(
           top: BorderSide(
             color: Colors.white.withValues(alpha: 0.1),
@@ -2477,13 +2479,13 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: _selectedUserIds.isNotEmpty
-                        ? [const Color(0xFF10B981), const Color(0xFF059669)]
+                        ? [InvoiceThemeColors.successGreen, const Color(0xFF059669)]
                         : [Colors.grey.shade700, Colors.grey.shade800],
                   ),
                   borderRadius: BorderRadius.circular(12.r),
                   boxShadow: _selectedUserIds.isNotEmpty ? [
                     BoxShadow(
-                      color: const Color(0xFF10B981).withValues(alpha: 0.3),
+                      color: InvoiceThemeColors.successGreen.withValues(alpha: 0.3),
                       offset: const Offset(0, 4),
                       blurRadius: 12,
                     ),
@@ -2710,7 +2712,7 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
                 ),
               ],
             ),
-            backgroundColor: const Color(0xFF10B981),
+            backgroundColor: InvoiceThemeColors.successGreen,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16.r),
             ),
@@ -2737,7 +2739,7 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: const Color(0xFFEF4444),
+        backgroundColor: InvoiceThemeColors.errorRed,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8.r),
         ),
@@ -2750,7 +2752,7 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: const Color(0xFF10B981),
+        backgroundColor: InvoiceThemeColors.successGreen,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8.r),
         ),

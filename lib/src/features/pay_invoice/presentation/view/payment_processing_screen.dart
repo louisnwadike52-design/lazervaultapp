@@ -3,7 +3,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
+import '../../../../../core/theme/invoice_theme_colors.dart';
 import '../../domain/entities/tagged_invoice_entity.dart';
+import '../../../../../core/theme/invoice_theme_colors.dart';
 import '../../domain/repositories/pay_invoice_repository.dart';
 import 'transaction_receipt_screen.dart';
 
@@ -319,12 +321,12 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
             shape: BoxShape.circle,
             gradient: LinearGradient(
               colors: _isSuccess 
-                  ? [const Color(0xFF10B981), const Color(0xFF059669)]
-                  : [const Color(0xFFEF4444), const Color(0xFFDC2626)],
+                  ? [InvoiceThemeColors.successGreen, const Color(0xFF059669)]
+                  : [InvoiceThemeColors.errorRed, const Color(0xFFDC2626)],
             ),
             boxShadow: [
               BoxShadow(
-                color: (_isSuccess ? const Color(0xFF10B981) : const Color(0xFFEF4444))
+                color: (_isSuccess ? InvoiceThemeColors.successGreen : InvoiceThemeColors.errorRed)
                     .withValues(alpha: 0.3),
                 blurRadius: 20,
                 offset: const Offset(0, 8),
@@ -429,7 +431,7 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
                   style: GoogleFonts.inter(
                     fontSize: 18.sp,
                     fontWeight: FontWeight.w600,
-                    color: const Color(0xFF10B981),
+                    color: InvoiceThemeColors.successGreen,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -452,7 +454,7 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
                   style: GoogleFonts.inter(
                     fontSize: 18.sp,
                     fontWeight: FontWeight.w600,
-                    color: const Color(0xFFEF4444),
+                    color: InvoiceThemeColors.errorRed,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -492,9 +494,9 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: isCompleted 
-                      ? const Color(0xFF10B981)
+                      ? InvoiceThemeColors.successGreen
                       : isCurrent
-                          ? const Color(0xFF3B82F6)
+                          ? InvoiceThemeColors.infoBlue
                           : Colors.grey[600],
                 ),
                 child: Icon(
@@ -539,7 +541,7 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
                   borderRadius: BorderRadius.circular(16.r),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
+                      color: InvoiceThemeColors.infoBlue.withValues(alpha: 0.3),
                       blurRadius: 12,
                       offset: const Offset(0, 4),
                     ),

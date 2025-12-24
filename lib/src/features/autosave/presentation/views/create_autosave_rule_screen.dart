@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_state.dart';
 import 'package:lazervault/src/features/autosave/domain/entities/autosave_rule_entity.dart';
@@ -32,6 +34,7 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
   String? _selectedDestinationAccountId;
   TimeOfDay? _selectedTime;
   int? _selectedDay;
+  String? _accountValidationError;
 
   @override
   void initState() {
@@ -54,24 +57,36 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
     super.dispose();
   }
 
+  void _validateAccounts() {
+    setState(() {
+      if (_selectedSourceAccountId != null &&
+          _selectedDestinationAccountId != null &&
+          _selectedSourceAccountId == _selectedDestinationAccountId) {
+        _accountValidationError = 'Source and destination accounts cannot be the same';
+      } else {
+        _accountValidationError = null;
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
+      backgroundColor: const Color(0xFF0A0A0A),
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: const Color(0xFF0A0A0A),
         elevation: 0,
         shadowColor: Colors.black.withOpacity(0.05),
         title: Text(
           'Create Auto-Save Rule',
           style: GoogleFonts.inter(
-            color: const Color(0xFF1A1D1F),
+            color: Colors.white,
             fontSize: 20.sp,
             fontWeight: FontWeight.w700,
           ),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF1A1D1F)),
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -208,12 +223,12 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
                       height: 56.h,
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
-                          colors: [Color(0xFF00C853), Color(0xFF00A843)],
+                          colors: [Color.fromARGB(255, 78, 3, 208), Color.fromARGB(255, 98, 33, 224)],
                         ),
                         borderRadius: BorderRadius.circular(16.r),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF00C853).withOpacity(0.3),
+                            color: const Color.fromARGB(255, 78, 3, 208).withOpacity(0.3),
                             blurRadius: 12,
                             offset: const Offset(0, 4),
                           ),
@@ -267,12 +282,12 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
   Widget _buildSectionHeader(String title, IconData icon) {
     return Row(
       children: [
-        Icon(icon, color: const Color(0xFF2A85FF), size: 20.sp),
+        Icon(icon, color: const Color.fromARGB(255, 78, 3, 208), size: 20.sp),
         SizedBox(width: 8.w),
         Text(
           title,
           style: GoogleFonts.inter(
-            color: const Color(0xFF1A1D1F),
+            color: Colors.white,
             fontSize: 18.sp,
             fontWeight: FontWeight.w700,
           ),
@@ -295,7 +310,7 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
         Text(
           label,
           style: GoogleFonts.inter(
-            color: const Color(0xFF6F767E),
+            color: Colors.grey[400],
             fontSize: 14.sp,
             fontWeight: FontWeight.w500,
           ),
@@ -303,12 +318,13 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
         SizedBox(height: 8.h),
         Container(
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: const Color(0xFF1F1F1F),
             borderRadius: BorderRadius.circular(12.r),
+            border: Border.all(color: const Color(0xFF2D2D2D)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.04),
-                blurRadius: 8,
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 10,
                 offset: const Offset(0, 2),
               ),
             ],
@@ -319,17 +335,17 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
             keyboardType: keyboardType,
             validator: validator,
             style: GoogleFonts.inter(
-              color: const Color(0xFF1A1D1F),
+              color: Colors.white,
               fontSize: 15.sp,
             ),
             decoration: InputDecoration(
               hintText: hint,
               hintStyle: GoogleFonts.inter(
-                color: const Color(0xFF9A9FA5),
+                color: Colors.grey[500],
                 fontSize: 15.sp,
               ),
               filled: true,
-              fillColor: Colors.white,
+              fillColor: const Color(0xFF1F1F1F),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12.r),
                 borderSide: BorderSide.none,
@@ -340,7 +356,7 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12.r),
-                borderSide: const BorderSide(color: Color(0xFF2A85FF), width: 2),
+                borderSide: const BorderSide(color: Color.fromARGB(255, 78, 3, 208), width: 2),
               ),
               contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
             ),
@@ -357,7 +373,7 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
         Text(
           'How would you like to save?',
           style: GoogleFonts.inter(
-            color: const Color(0xFF6F767E),
+            color: Colors.grey[400],
             fontSize: 14.sp,
             fontWeight: FontWeight.w500,
           ),
@@ -383,16 +399,16 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
       child: Container(
         padding: EdgeInsets.symmetric(vertical: 16.h),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF2A85FF).withOpacity(0.1) : Colors.white,
+          color: isSelected ? const Color.fromARGB(255, 78, 3, 208).withOpacity(0.1) : const Color(0xFF1F1F1F),
           borderRadius: BorderRadius.circular(12.r),
           border: Border.all(
-            color: isSelected ? const Color(0xFF2A85FF) : Colors.transparent,
+            color: isSelected ? const Color.fromARGB(255, 78, 3, 208) : const Color(0xFF2D2D2D),
             width: 2,
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
-              blurRadius: 8,
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 10,
               offset: const Offset(0, 2),
             ),
           ],
@@ -401,14 +417,14 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
           children: [
             Icon(
               icon,
-              color: isSelected ? const Color(0xFF2A85FF) : const Color(0xFF6F767E),
+              color: isSelected ? const Color.fromARGB(255, 78, 3, 208) : Colors.grey[500],
               size: 28.sp,
             ),
             SizedBox(height: 8.h),
             Text(
               label,
               style: GoogleFonts.inter(
-                color: isSelected ? const Color(0xFF2A85FF) : const Color(0xFF6F767E),
+                color: isSelected ? const Color.fromARGB(255, 78, 3, 208) : Colors.grey[500],
                 fontSize: 12.sp,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
               ),
@@ -423,12 +439,13 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
   Widget _buildAmountTypeSelector() {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: const Color(0xFF2D2D2D)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 8,
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
             offset: const Offset(0, 2),
           ),
         ],
@@ -440,7 +457,7 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
               title: Text(
                 'Fixed Amount',
                 style: GoogleFonts.inter(
-                  color: const Color(0xFF1A1D1F),
+                  color: Colors.white,
                   fontSize: 14.sp,
                   fontWeight: FontWeight.w500,
                 ),
@@ -448,7 +465,7 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
               value: AmountType.fixed,
               groupValue: _selectedAmountType,
               onChanged: (value) => setState(() => _selectedAmountType = value!),
-              activeColor: const Color(0xFF2A85FF),
+              activeColor: const Color.fromARGB(255, 78, 3, 208),
               contentPadding: EdgeInsets.zero,
             ),
           ),
@@ -457,7 +474,7 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
               title: Text(
                 'Percentage',
                 style: GoogleFonts.inter(
-                  color: const Color(0xFF1A1D1F),
+                  color: Colors.white,
                   fontSize: 14.sp,
                   fontWeight: FontWeight.w500,
                 ),
@@ -465,7 +482,7 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
               value: AmountType.percentage,
               groupValue: _selectedAmountType,
               onChanged: (value) => setState(() => _selectedAmountType = value!),
-              activeColor: const Color(0xFF2A85FF),
+              activeColor: const Color.fromARGB(255, 78, 3, 208),
               contentPadding: EdgeInsets.zero,
             ),
           ),
@@ -481,7 +498,7 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
         Text(
           'How often?',
           style: GoogleFonts.inter(
-            color: const Color(0xFF6F767E),
+            color: Colors.grey[400],
             fontSize: 14.sp,
             fontWeight: FontWeight.w500,
           ),
@@ -512,16 +529,16 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
       child: Container(
         padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 16.w),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF2A85FF).withOpacity(0.1) : Colors.white,
+          color: isSelected ? const Color.fromARGB(255, 78, 3, 208).withOpacity(0.1) : const Color(0xFF1F1F1F),
           borderRadius: BorderRadius.circular(12.r),
           border: Border.all(
-            color: isSelected ? const Color(0xFF2A85FF) : Colors.transparent,
+            color: isSelected ? const Color.fromARGB(255, 78, 3, 208) : const Color(0xFF2D2D2D),
             width: 2,
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
-              blurRadius: 8,
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 10,
               offset: const Offset(0, 2),
             ),
           ],
@@ -530,7 +547,7 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
           child: Text(
             label,
             style: GoogleFonts.inter(
-              color: isSelected ? const Color(0xFF2A85FF) : const Color(0xFF6F767E),
+              color: isSelected ? const Color.fromARGB(255, 78, 3, 208) : Colors.grey[400],
               fontSize: 13.sp,
               fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
             ),
@@ -554,12 +571,13 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
       child: Container(
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: const Color(0xFF1F1F1F),
           borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(color: const Color(0xFF2D2D2D)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
-              blurRadius: 8,
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 10,
               offset: const Offset(0, 2),
             ),
           ],
@@ -572,14 +590,14 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
                   ? 'Select Time'
                   : '${_selectedTime!.hour.toString().padLeft(2, '0')}:${_selectedTime!.minute.toString().padLeft(2, '0')}',
               style: GoogleFonts.inter(
-                color: _selectedTime == null ? const Color(0xFF9A9FA5) : const Color(0xFF1A1D1F),
+                color: _selectedTime == null ? Colors.grey[500] : Colors.white,
                 fontSize: 15.sp,
                 fontWeight: FontWeight.w500,
               ),
             ),
             Icon(
               Icons.access_time,
-              color: const Color(0xFF2A85FF),
+              color: const Color.fromARGB(255, 78, 3, 208),
               size: 20.sp,
             ),
           ],
@@ -620,7 +638,10 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
                   'id': a.id.toString(),
                   'name': '${a.accountType} (****${a.accountNumberLast4})'
                 }).toList(),
-                onChanged: (value) => setState(() => _selectedSourceAccountId = value),
+                onChanged: (value) {
+                  setState(() => _selectedSourceAccountId = value);
+                  _validateAccounts();
+                },
               ),
               SizedBox(height: 16.h),
               _buildAccountDropdown(
@@ -631,9 +652,45 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
                   'id': a.id.toString(),
                   'name': '${a.accountType} (****${a.accountNumberLast4})'
                 }).toList(),
-                onChanged: (value) => setState(() => _selectedDestinationAccountId = value),
+                onChanged: (value) {
+                  setState(() => _selectedDestinationAccountId = value);
+                  _validateAccounts();
+                },
                 showSavingsBadge: true,
               ),
+              if (_accountValidationError != null) ...[
+                SizedBox(height: 8.h),
+                Container(
+                  padding: EdgeInsets.all(12.w),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEF4444).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8.r),
+                    border: Border.all(
+                      color: const Color(0xFFEF4444).withOpacity(0.3),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.error_outline,
+                        color: const Color(0xFFEF4444),
+                        size: 18.sp,
+                      ),
+                      SizedBox(width: 8.w),
+                      Expanded(
+                        child: Text(
+                          _accountValidationError!,
+                          style: GoogleFonts.inter(
+                            color: const Color(0xFFEF4444),
+                            fontSize: 13.sp,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ],
           );
         }
@@ -642,7 +699,7 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
             padding: EdgeInsets.all(24.w),
             child: const CircularProgressIndicator(
               strokeWidth: 2,
-              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2A85FF)),
+              valueColor: AlwaysStoppedAnimation<Color>(Color.fromARGB(255, 78, 3, 208)),
             ),
           ),
         );
@@ -666,7 +723,7 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
             Text(
               label,
               style: GoogleFonts.inter(
-                color: const Color(0xFF6F767E),
+                color: Colors.grey[400],
                 fontSize: 14.sp,
                 fontWeight: FontWeight.w500,
               ),
@@ -695,12 +752,13 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
         Container(
           padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: const Color(0xFF1F1F1F),
             borderRadius: BorderRadius.circular(12.r),
+            border: Border.all(color: const Color(0xFF2D2D2D)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.04),
-                blurRadius: 8,
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 10,
                 offset: const Offset(0, 2),
               ),
             ],
@@ -712,13 +770,13 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
               hint: Text(
                 hint,
                 style: GoogleFonts.inter(
-                  color: const Color(0xFF9A9FA5),
+                  color: Colors.grey[500],
                   fontSize: 15.sp,
                 ),
               ),
-              dropdownColor: Colors.white,
+              dropdownColor: const Color(0xFF1F1F1F),
               style: GoogleFonts.inter(
-                color: const Color(0xFF1A1D1F),
+                color: Colors.white,
                 fontSize: 15.sp,
                 fontWeight: FontWeight.w500,
               ),
@@ -729,7 +787,7 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
                 );
               }).toList(),
               onChanged: onChanged,
-              icon: const Icon(Icons.arrow_drop_down, color: Color(0xFF2A85FF)),
+              icon: const Icon(Icons.arrow_drop_down, color: Color.fromARGB(255, 78, 3, 208)),
             ),
           ),
         ),
@@ -738,58 +796,157 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
   }
 
   void _createRule() {
-    if (!_formKey.currentState!.validate()) return;
-
-    if (_selectedSourceAccountId == null || _selectedDestinationAccountId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Please select both source and destination accounts',
-            style: GoogleFonts.inter(fontWeight: FontWeight.w500),
-          ),
-          backgroundColor: const Color(0xFFFF6B6B),
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
-        ),
-      );
+    // Validate form fields
+    if (!_formKey.currentState!.validate()) {
+      _showErrorSnackBar('Please fill in all required fields correctly');
       return;
     }
 
-    if (_selectedTriggerType == TriggerType.scheduled && _selectedFrequency == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Please select a frequency for scheduled savings',
-            style: GoogleFonts.inter(fontWeight: FontWeight.w500),
-          ),
-          backgroundColor: const Color(0xFFFF6B6B),
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
-        ),
-      );
+    // Validate accounts are selected
+    if (_selectedSourceAccountId == null || _selectedDestinationAccountId == null) {
+      _showErrorSnackBar('Please select both source and destination accounts');
       return;
+    }
+
+    // Validate accounts are different
+    if (_selectedSourceAccountId == _selectedDestinationAccountId) {
+      _showErrorSnackBar('Source and destination accounts cannot be the same');
+      return;
+    }
+
+    // Validate scheduled trigger requirements
+    if (_selectedTriggerType == TriggerType.scheduled) {
+      if (_selectedFrequency == null) {
+        _showErrorSnackBar('Please select a frequency for scheduled savings');
+        return;
+      }
+      if (_selectedTime == null) {
+        _showErrorSnackBar('Please select a time for scheduled savings');
+        return;
+      }
+    }
+
+    // Validate round up trigger requirements
+    if (_selectedTriggerType == TriggerType.roundUp) {
+      if (_roundUpToController.text.isEmpty) {
+        _showErrorSnackBar('Please enter the round up amount');
+        return;
+      }
+      final roundUpAmount = int.tryParse(_roundUpToController.text);
+      if (roundUpAmount == null || roundUpAmount <= 0) {
+        _showErrorSnackBar('Round up amount must be a positive number');
+        return;
+      }
+    }
+
+    // Validate amount
+    final amount = double.tryParse(_amountController.text);
+    if (amount == null || amount <= 0) {
+      _showErrorSnackBar('Please enter a valid amount greater than zero');
+      return;
+    }
+
+    // Validate percentage is not greater than 100
+    if (_selectedAmountType == AmountType.percentage && amount > 100) {
+      _showErrorSnackBar('Percentage cannot exceed 100%');
+      return;
+    }
+
+    // Validate optional amounts if provided
+    if (_targetAmountController.text.isNotEmpty) {
+      final targetAmount = double.tryParse(_targetAmountController.text);
+      if (targetAmount == null || targetAmount <= 0) {
+        _showErrorSnackBar('Target amount must be a positive number');
+        return;
+      }
+    }
+
+    if (_minimumBalanceController.text.isNotEmpty) {
+      final minBalance = double.tryParse(_minimumBalanceController.text);
+      if (minBalance == null || minBalance < 0) {
+        _showErrorSnackBar('Minimum balance must be zero or greater');
+        return;
+      }
+    }
+
+    if (_maximumPerSaveController.text.isNotEmpty) {
+      final maxPerSave = double.tryParse(_maximumPerSaveController.text);
+      if (maxPerSave == null || maxPerSave <= 0) {
+        _showErrorSnackBar('Maximum per save must be a positive number');
+        return;
+      }
+      // Validate max per save is greater than or equal to the save amount
+      if (_selectedAmountType == AmountType.fixed && maxPerSave < amount) {
+        _showErrorSnackBar('Maximum per save cannot be less than the save amount');
+        return;
+      }
     }
 
     final scheduleTime = _selectedTime != null
         ? '${_selectedTime!.hour.toString().padLeft(2, '0')}:${_selectedTime!.minute.toString().padLeft(2, '0')}'
         : null;
 
-    // Call the cubit to create the rule with backend integration
-    context.read<AutoSaveCubit>().createRule(
-          name: _nameController.text,
-          description: _descriptionController.text,
-          triggerType: _selectedTriggerType,
-          amountType: _selectedAmountType,
-          amountValue: double.parse(_amountController.text),
-          sourceAccountId: _selectedSourceAccountId!,
-          destinationAccountId: _selectedDestinationAccountId!,
-          frequency: _selectedFrequency,
-          scheduleTime: scheduleTime,
-          scheduleDay: _selectedDay,
-          roundUpTo: _roundUpToController.text.isEmpty ? null : int.parse(_roundUpToController.text),
-          targetAmount: _targetAmountController.text.isEmpty ? null : double.parse(_targetAmountController.text),
-          minimumBalance: _minimumBalanceController.text.isEmpty ? null : double.parse(_minimumBalanceController.text),
-          maximumPerSave: _maximumPerSaveController.text.isEmpty ? null : double.parse(_maximumPerSaveController.text),
-        );
+    // All validations passed - navigate to review screen
+    // First, get the account names for display
+    context.read<AccountCardsSummaryCubit>().fetchAccountSummaries(
+      userId: 'current_user',
+      accessToken: null,
+    );
+
+    final accountsState = context.read<AccountCardsSummaryCubit>().state;
+    String sourceAccountName = 'Unknown Account';
+    String destinationAccountName = 'Unknown Account';
+
+    if (accountsState is AccountCardsSummaryLoaded) {
+      final sourceAccount = accountsState.accountSummaries.firstWhere(
+        (a) => a.id.toString() == _selectedSourceAccountId,
+        orElse: () => accountsState.accountSummaries.first,
+      );
+      final destinationAccount = accountsState.accountSummaries.firstWhere(
+        (a) => a.id.toString() == _selectedDestinationAccountId,
+        orElse: () => accountsState.accountSummaries.first,
+      );
+
+      sourceAccountName = '${sourceAccount.accountType} (****${sourceAccount.accountNumberLast4})';
+      destinationAccountName = '${destinationAccount.accountType} (****${destinationAccount.accountNumberLast4})';
+    }
+
+    // Navigate to review screen with all rule data
+    Get.toNamed(
+      AppRoutes.autoSaveRuleReview,
+      arguments: {
+        'name': _nameController.text,
+        'description': _descriptionController.text,
+        'triggerType': _selectedTriggerType,
+        'amountType': _selectedAmountType,
+        'amountValue': double.parse(_amountController.text),
+        'sourceAccountId': _selectedSourceAccountId!,
+        'destinationAccountId': _selectedDestinationAccountId!,
+        'sourceAccountName': sourceAccountName,
+        'destinationAccountName': destinationAccountName,
+        'frequency': _selectedFrequency,
+        'scheduleTime': scheduleTime,
+        'scheduleDay': _selectedDay,
+        'roundUpTo': _roundUpToController.text.isEmpty ? null : int.parse(_roundUpToController.text),
+        'targetAmount': _targetAmountController.text.isEmpty ? null : double.parse(_targetAmountController.text),
+        'minimumBalance': _minimumBalanceController.text.isEmpty ? null : double.parse(_minimumBalanceController.text),
+        'maximumPerSave': _maximumPerSaveController.text.isEmpty ? null : double.parse(_maximumPerSaveController.text),
+      },
+    );
+  }
+
+  void _showErrorSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          message,
+          style: GoogleFonts.inter(fontWeight: FontWeight.w500),
+        ),
+        backgroundColor: const Color(0xFFEF4444),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+        duration: const Duration(seconds: 3),
+      ),
+    );
   }
 }

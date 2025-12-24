@@ -517,6 +517,7 @@ class TagPayRepositoryGrpcImpl implements TagPayRepository {
   }) async {
     return retryWithBackoff(
       operation: () async {
+        print('🌐 [TagPayRepository] Calling backend payTag - tagId: $tagId, accountId: $sourceAccountId');
         final request = pb.PayTagRequest()
           ..tagId = tagId
           ..sourceAccountId = sourceAccountId
@@ -528,11 +529,16 @@ class TagPayRepositoryGrpcImpl implements TagPayRepository {
           options: options,
         );
 
+        print('📡 [TagPayRepository] Backend response - success: ${response.success}, message: ${response.message}');
+
         if (!response.success) {
+          print('❌ [TagPayRepository] Backend returned error: ${response.message}');
           throw Exception(response.message);
         }
 
-        return _transactionFromProto(response.transaction);
+        final transaction = _transactionFromProto(response.transaction);
+        print('✅ [TagPayRepository] Transaction created - ID: ${transaction.id}');
+        return transaction;
       },
     );
   }

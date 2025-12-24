@@ -9,6 +9,7 @@ import '../cubit/tag_pay_state.dart';
 import '../../../../../core/types/app_routes.dart';
 import '../../../account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import '../../../account_cards_summary/cubit/account_cards_summary_state.dart';
+import '../widgets/tag_details_bottom_sheet.dart';
 
 class IncomingTagsScreen extends StatefulWidget {
   const IncomingTagsScreen({Key? key}) : super(key: key);
@@ -164,20 +165,32 @@ class _IncomingTagsScreenState extends State<IncomingTagsScreen> {
   Widget _buildTagItem(UserTagEntity tag) {
     final isPending = tag.status == TagStatus.pending;
 
-    return Container(
-      margin: EdgeInsets.only(bottom: 16.h),
-      padding: EdgeInsets.all(20.w),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-          color: isPending
-              ? const Color(0xFF3B82F6)
-              : const Color(0xFF10B981),
-          width: 1,
+    return GestureDetector(
+      onTap: () {
+        showModalBottomSheet(
+          context: context,
+          backgroundColor: Colors.transparent,
+          isScrollControlled: true,
+          builder: (context) => TagDetailsBottomSheet(
+            tag: tag,
+            isOutgoing: false,
+          ),
+        );
+      },
+      child: Container(
+        margin: EdgeInsets.only(bottom: 16.h),
+        padding: EdgeInsets.all(20.w),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1F1F1F),
+          borderRadius: BorderRadius.circular(16.r),
+          border: Border.all(
+            color: isPending
+                ? const Color(0xFF3B82F6)
+                : const Color(0xFF10B981),
+            width: 1,
+          ),
         ),
-      ),
-      child: Column(
+        child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
@@ -317,6 +330,7 @@ class _IncomingTagsScreenState extends State<IncomingTagsScreen> {
           ],
         ],
       ),
+      ),
     );
   }
 
@@ -336,7 +350,8 @@ class _IncomingTagsScreenState extends State<IncomingTagsScreen> {
   }
 
   void _processPayment(UserTagEntity tag, String accountId) {
-    // Navigate to processing screen
+    print('💳 [IncomingTagsScreen] Navigating to processing screen for tag ${tag.id} from account $accountId');
+    // Navigate to processing screen - it will trigger the payment in its initState
     Get.toNamed(
       AppRoutes.tagPayProcessing,
       arguments: {
@@ -344,14 +359,6 @@ class _IncomingTagsScreenState extends State<IncomingTagsScreen> {
         'accountId': accountId,
       },
     );
-
-    // Trigger payment after navigation
-    Future.delayed(const Duration(milliseconds: 500), () {
-      context.read<TagPayCubit>().payTag(
-        tagId: tag.id,
-        sourceAccountId: accountId,
-      );
-    });
   }
 }
 

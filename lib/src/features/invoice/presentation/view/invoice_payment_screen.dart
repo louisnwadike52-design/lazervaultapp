@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
 import 'package:flutter/services.dart';
 
+import '../../../../../core/theme/invoice_theme_colors.dart';
 import '../../domain/entities/invoice_entity.dart';
 import '../../../../../core/types/app_routes.dart';
 
@@ -133,7 +134,7 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0A0A0A),
+      backgroundColor: InvoiceThemeColors.primaryBackground,
       body: SafeArea(
         child: FadeTransition(
           opacity: _fadeAnimation,
@@ -175,7 +176,7 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
               width: 44.w,
               height: 44.w,
               decoration: BoxDecoration(
-                color: const Color(0xFF1F1F1F),
+                color: InvoiceThemeColors.secondaryBackground,
                 borderRadius: BorderRadius.circular(22.r),
                 border: Border.all(color: const Color(0xFF2D2D2D)),
               ),
@@ -346,7 +347,7 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: Colors.grey[900],
+        color: InvoiceThemeColors.secondaryBackground,
         borderRadius: BorderRadius.circular(12.r),
         border: Border.all(color: Colors.grey[800]!),
       ),
@@ -473,7 +474,7 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
         decoration: BoxDecoration(
           color: isSelected 
               ? Color(0xFF3B82F6).withOpacity(0.1) 
-              : Colors.grey[900],
+              : InvoiceThemeColors.secondaryBackground,
           borderRadius: BorderRadius.circular(12.r),
           border: Border.all(
             color: isSelected 
@@ -577,7 +578,7 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
         decoration: BoxDecoration(
           color: isSelected 
               ? Color(0xFF3B82F6).withOpacity(0.1) 
-              : Colors.grey[900],
+              : InvoiceThemeColors.secondaryBackground,
           borderRadius: BorderRadius.circular(12.r),
           border: Border.all(
             color: isSelected ? Color(0xFF3B82F6) : Colors.grey[700]!,
@@ -682,7 +683,7 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
         decoration: BoxDecoration(
           color: isSelected 
               ? Color(0xFF3B82F6).withOpacity(0.1) 
-              : Colors.grey[900],
+              : InvoiceThemeColors.secondaryBackground,
           borderRadius: BorderRadius.circular(12.r),
           border: Border.all(
             color: isSelected ? Color(0xFF3B82F6) : Colors.grey[700]!,
@@ -751,7 +752,7 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF0A0A0A),
+        color: InvoiceThemeColors.primaryBackground,
         border: Border(
           top: BorderSide(color: const Color(0xFF2D2D2D)),
         ),

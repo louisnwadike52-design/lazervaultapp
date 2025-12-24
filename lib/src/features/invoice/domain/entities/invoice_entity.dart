@@ -38,6 +38,14 @@ class AddressDetails extends Equatable {
   final String? iban;
   final String? routingNumber;
   final String? taxId;
+  final String? bankName;
+  final String? accountType;
+  final String? swiftCode;
+  final String? sortCode;
+  final String? bankAddress;
+  final String? intermediaryBankName;
+  final String? intermediaryBankSwift;
+  final String? accountHolderName;
 
   const AddressDetails({
     this.companyName,
@@ -55,6 +63,14 @@ class AddressDetails extends Equatable {
     this.iban,
     this.routingNumber,
     this.taxId,
+    this.bankName,
+    this.accountType,
+    this.swiftCode,
+    this.sortCode,
+    this.bankAddress,
+    this.intermediaryBankName,
+    this.intermediaryBankSwift,
+    this.accountHolderName,
   });
 
   @override
@@ -74,6 +90,14 @@ class AddressDetails extends Equatable {
         iban,
         routingNumber,
         taxId,
+        bankName,
+        accountType,
+        swiftCode,
+        sortCode,
+        bankAddress,
+        intermediaryBankName,
+        intermediaryBankSwift,
+        accountHolderName,
       ];
 
   AddressDetails copyWith({
@@ -92,6 +116,14 @@ class AddressDetails extends Equatable {
     String? iban,
     String? routingNumber,
     String? taxId,
+    String? bankName,
+    String? accountType,
+    String? swiftCode,
+    String? sortCode,
+    String? bankAddress,
+    String? intermediaryBankName,
+    String? intermediaryBankSwift,
+    String? accountHolderName,
   }) {
     return AddressDetails(
       companyName: companyName ?? this.companyName,
@@ -109,6 +141,14 @@ class AddressDetails extends Equatable {
       iban: iban ?? this.iban,
       routingNumber: routingNumber ?? this.routingNumber,
       taxId: taxId ?? this.taxId,
+      bankName: bankName ?? this.bankName,
+      accountType: accountType ?? this.accountType,
+      swiftCode: swiftCode ?? this.swiftCode,
+      sortCode: sortCode ?? this.sortCode,
+      bankAddress: bankAddress ?? this.bankAddress,
+      intermediaryBankName: intermediaryBankName ?? this.intermediaryBankName,
+      intermediaryBankSwift: intermediaryBankSwift ?? this.intermediaryBankSwift,
+      accountHolderName: accountHolderName ?? this.accountHolderName,
     );
   }
 
@@ -127,7 +167,15 @@ class AddressDetails extends Equatable {
         bicNumber == null &&
         iban == null &&
         routingNumber == null &&
-        taxId == null;
+        taxId == null &&
+        bankName == null &&
+        accountType == null &&
+        swiftCode == null &&
+        sortCode == null &&
+        bankAddress == null &&
+        intermediaryBankName == null &&
+        intermediaryBankSwift == null &&
+        accountHolderName == null;
   }
 
   String get formattedAddress {
