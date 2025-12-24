@@ -45,7 +45,7 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
   Future<void> _checkPasscodeAvailability() async {
     final loginMethod = await _storage.read(key: 'login_method');
     final storedEmail = await _storage.read(key: 'stored_email');
-    final storedPasscode = await _storage.read(key: 'passcode');
+    final storedPasscode = await _storage.read(key: 'user_passcode');
 
     if (mounted) {
       setState(() {
