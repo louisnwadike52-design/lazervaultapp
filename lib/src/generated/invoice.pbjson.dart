@@ -27,11 +27,19 @@ const AddressDetails$json = const {
     const {'1': 'iban', '3': 13, '4': 1, '5': 9, '10': 'iban'},
     const {'1': 'routing_number', '3': 14, '4': 1, '5': 9, '10': 'routingNumber'},
     const {'1': 'tax_id', '3': 15, '4': 1, '5': 9, '10': 'taxId'},
+    const {'1': 'bank_name', '3': 16, '4': 1, '5': 9, '10': 'bankName'},
+    const {'1': 'account_type', '3': 17, '4': 1, '5': 9, '10': 'accountType'},
+    const {'1': 'swift_code', '3': 18, '4': 1, '5': 9, '10': 'swiftCode'},
+    const {'1': 'sort_code', '3': 19, '4': 1, '5': 9, '10': 'sortCode'},
+    const {'1': 'bank_address', '3': 20, '4': 1, '5': 9, '10': 'bankAddress'},
+    const {'1': 'intermediary_bank_name', '3': 21, '4': 1, '5': 9, '10': 'intermediaryBankName'},
+    const {'1': 'intermediary_bank_swift', '3': 22, '4': 1, '5': 9, '10': 'intermediaryBankSwift'},
+    const {'1': 'account_holder_name', '3': 23, '4': 1, '5': 9, '10': 'accountHolderName'},
   ],
 };
 
 /// Descriptor for `AddressDetails`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List addressDetailsDescriptor = $convert.base64Decode('Cg5BZGRyZXNzRGV0YWlscxIhCgxjb21wYW55X25hbWUYASABKAlSC2NvbXBhbnlOYW1lEiEKDGNvbnRhY3RfbmFtZRgCIAEoCVILY29udGFjdE5hbWUSFAoFZW1haWwYAyABKAlSBWVtYWlsEhQKBXBob25lGAQgASgJUgVwaG9uZRIjCg1hZGRyZXNzX2xpbmUxGAUgASgJUgxhZGRyZXNzTGluZTESIwoNYWRkcmVzc19saW5lMhgGIAEoCVIMYWRkcmVzc0xpbmUyEhIKBGNpdHkYByABKAlSBGNpdHkSFAoFc3RhdGUYCCABKAlSBXN0YXRlEhoKCHBvc3Rjb2RlGAkgASgJUghwb3N0Y29kZRIYCgdjb3VudHJ5GAogASgJUgdjb3VudHJ5EiEKDGJhbmtfYWNjb3VudBgLIAEoCVILYmFua0FjY291bnQSHQoKYmljX251bWJlchgMIAEoCVIJYmljTnVtYmVyEhIKBGliYW4YDSABKAlSBGliYW4SJQoOcm91dGluZ19udW1iZXIYDiABKAlSDXJvdXRpbmdOdW1iZXISFQoGdGF4X2lkGA8gASgJUgV0YXhJZA==');
+final $typed_data.Uint8List addressDetailsDescriptor = $convert.base64Decode('Cg5BZGRyZXNzRGV0YWlscxIhCgxjb21wYW55X25hbWUYASABKAlSC2NvbXBhbnlOYW1lEiEKDGNvbnRhY3RfbmFtZRgCIAEoCVILY29udGFjdE5hbWUSFAoFZW1haWwYAyABKAlSBWVtYWlsEhQKBXBob25lGAQgASgJUgVwaG9uZRIjCg1hZGRyZXNzX2xpbmUxGAUgASgJUgxhZGRyZXNzTGluZTESIwoNYWRkcmVzc19saW5lMhgGIAEoCVIMYWRkcmVzc0xpbmUyEhIKBGNpdHkYByABKAlSBGNpdHkSFAoFc3RhdGUYCCABKAlSBXN0YXRlEhoKCHBvc3Rjb2RlGAkgASgJUghwb3N0Y29kZRIYCgdjb3VudHJ5GAogASgJUgdjb3VudHJ5EiEKDGJhbmtfYWNjb3VudBgLIAEoCVILYmFua0FjY291bnQSHQoKYmljX251bWJlchgMIAEoCVIJYmljTnVtYmVyEhIKBGliYW4YDSABKAlSBGliYW4SJQoOcm91dGluZ19udW1iZXIYDiABKAlSDXJvdXRpbmdOdW1iZXISFQoGdGF4X2lkGA8gASgJUgV0YXhJZBIbCgliYW5rX25hbWUYECABKAlSCGJhbmtOYW1lEiEKDGFjY291bnRfdHlwZRgRIAEoCVILYWNjb3VudFR5cGUSHQoKc3dpZnRfY29kZRgSIAEoCVIJc3dpZnRDb2RlEhsKCXNvcnRfY29kZRgTIAEoCVIIc29ydENvZGUSIQoMYmFua19hZGRyZXNzGBQgASgJUgtiYW5rQWRkcmVzcxI0ChZpbnRlcm1lZGlhcnlfYmFua19uYW1lGBUgASgJUhRpbnRlcm1lZGlhcnlCYW5rTmFtZRI2ChdpbnRlcm1lZGlhcnlfYmFua19zd2lmdBgWIAEoCVIVaW50ZXJtZWRpYXJ5QmFua1N3aWZ0Ei4KE2FjY291bnRfaG9sZGVyX25hbWUYFyABKAlSEWFjY291bnRIb2xkZXJOYW1l');
 @$core.Deprecated('Use invoiceItemDescriptor instead')
 const InvoiceItem$json = const {
   '1': 'InvoiceItem',

@@ -10,395 +10,395 @@ import 'dart:async' as $async;
 import 'dart:core' as $core;
 
 import 'package:grpc/service_api.dart' as $grpc;
-import 'invoice_payment.pb.dart' as $14;
+import 'invoice_payment.pb.dart' as $15;
 export 'invoice_payment.pb.dart';
 
 class InvoicePaymentServiceClient extends $grpc.Client {
   static final _$processInvoicePayment = $grpc.ClientMethod<
-          $14.ProcessInvoicePaymentRequest, $14.ProcessInvoicePaymentResponse>(
+          $15.ProcessInvoicePaymentRequest, $15.ProcessInvoicePaymentResponse>(
       '/pb.InvoicePaymentService/ProcessInvoicePayment',
-      ($14.ProcessInvoicePaymentRequest value) => value.writeToBuffer(),
+      ($15.ProcessInvoicePaymentRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $14.ProcessInvoicePaymentResponse.fromBuffer(value));
+          $15.ProcessInvoicePaymentResponse.fromBuffer(value));
   static final _$processPartialInvoicePayment = $grpc.ClientMethod<
-          $14.ProcessPartialInvoicePaymentRequest,
-          $14.ProcessPartialInvoicePaymentResponse>(
+          $15.ProcessPartialInvoicePaymentRequest,
+          $15.ProcessPartialInvoicePaymentResponse>(
       '/pb.InvoicePaymentService/ProcessPartialInvoicePayment',
-      ($14.ProcessPartialInvoicePaymentRequest value) => value.writeToBuffer(),
+      ($15.ProcessPartialInvoicePaymentRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $14.ProcessPartialInvoicePaymentResponse.fromBuffer(value));
+          $15.ProcessPartialInvoicePaymentResponse.fromBuffer(value));
   static final _$validateInvoicePayment = $grpc.ClientMethod<
-          $14.ValidateInvoicePaymentRequest,
-          $14.ValidateInvoicePaymentResponse>(
+          $15.ValidateInvoicePaymentRequest,
+          $15.ValidateInvoicePaymentResponse>(
       '/pb.InvoicePaymentService/ValidateInvoicePayment',
-      ($14.ValidateInvoicePaymentRequest value) => value.writeToBuffer(),
+      ($15.ValidateInvoicePaymentRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $14.ValidateInvoicePaymentResponse.fromBuffer(value));
+          $15.ValidateInvoicePaymentResponse.fromBuffer(value));
   static final _$getInvoicePaymentStatus = $grpc.ClientMethod<
-          $14.GetInvoicePaymentStatusRequest,
-          $14.GetInvoicePaymentStatusResponse>(
+          $15.GetInvoicePaymentStatusRequest,
+          $15.GetInvoicePaymentStatusResponse>(
       '/pb.InvoicePaymentService/GetInvoicePaymentStatus',
-      ($14.GetInvoicePaymentStatusRequest value) => value.writeToBuffer(),
+      ($15.GetInvoicePaymentStatusRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $14.GetInvoicePaymentStatusResponse.fromBuffer(value));
+          $15.GetInvoicePaymentStatusResponse.fromBuffer(value));
   static final _$cancelInvoicePayment = $grpc.ClientMethod<
-          $14.CancelInvoicePaymentRequest, $14.CancelInvoicePaymentResponse>(
+          $15.CancelInvoicePaymentRequest, $15.CancelInvoicePaymentResponse>(
       '/pb.InvoicePaymentService/CancelInvoicePayment',
-      ($14.CancelInvoicePaymentRequest value) => value.writeToBuffer(),
+      ($15.CancelInvoicePaymentRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $14.CancelInvoicePaymentResponse.fromBuffer(value));
+          $15.CancelInvoicePaymentResponse.fromBuffer(value));
   static final _$getUserInvoicePaymentMethods = $grpc.ClientMethod<
-          $14.GetUserInvoicePaymentMethodsRequest,
-          $14.GetUserInvoicePaymentMethodsResponse>(
+          $15.GetUserInvoicePaymentMethodsRequest,
+          $15.GetUserInvoicePaymentMethodsResponse>(
       '/pb.InvoicePaymentService/GetUserInvoicePaymentMethods',
-      ($14.GetUserInvoicePaymentMethodsRequest value) => value.writeToBuffer(),
+      ($15.GetUserInvoicePaymentMethodsRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $14.GetUserInvoicePaymentMethodsResponse.fromBuffer(value));
+          $15.GetUserInvoicePaymentMethodsResponse.fromBuffer(value));
   static final _$addInvoicePaymentMethod = $grpc.ClientMethod<
-          $14.AddInvoicePaymentMethodRequest,
-          $14.AddInvoicePaymentMethodResponse>(
+          $15.AddInvoicePaymentMethodRequest,
+          $15.AddInvoicePaymentMethodResponse>(
       '/pb.InvoicePaymentService/AddInvoicePaymentMethod',
-      ($14.AddInvoicePaymentMethodRequest value) => value.writeToBuffer(),
+      ($15.AddInvoicePaymentMethodRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $14.AddInvoicePaymentMethodResponse.fromBuffer(value));
+          $15.AddInvoicePaymentMethodResponse.fromBuffer(value));
   static final _$removeInvoicePaymentMethod = $grpc.ClientMethod<
-          $14.RemoveInvoicePaymentMethodRequest,
-          $14.RemoveInvoicePaymentMethodResponse>(
+          $15.RemoveInvoicePaymentMethodRequest,
+          $15.RemoveInvoicePaymentMethodResponse>(
       '/pb.InvoicePaymentService/RemoveInvoicePaymentMethod',
-      ($14.RemoveInvoicePaymentMethodRequest value) => value.writeToBuffer(),
+      ($15.RemoveInvoicePaymentMethodRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $14.RemoveInvoicePaymentMethodResponse.fromBuffer(value));
+          $15.RemoveInvoicePaymentMethodResponse.fromBuffer(value));
   static final _$validateInvoicePaymentMethod = $grpc.ClientMethod<
-          $14.ValidateInvoicePaymentMethodRequest,
-          $14.ValidateInvoicePaymentMethodResponse>(
+          $15.ValidateInvoicePaymentMethodRequest,
+          $15.ValidateInvoicePaymentMethodResponse>(
       '/pb.InvoicePaymentService/ValidateInvoicePaymentMethod',
-      ($14.ValidateInvoicePaymentMethodRequest value) => value.writeToBuffer(),
+      ($15.ValidateInvoicePaymentMethodRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $14.ValidateInvoicePaymentMethodResponse.fromBuffer(value));
+          $15.ValidateInvoicePaymentMethodResponse.fromBuffer(value));
   static final _$updateInvoicePaymentMethod = $grpc.ClientMethod<
-          $14.UpdateInvoicePaymentMethodRequest,
-          $14.UpdateInvoicePaymentMethodResponse>(
+          $15.UpdateInvoicePaymentMethodRequest,
+          $15.UpdateInvoicePaymentMethodResponse>(
       '/pb.InvoicePaymentService/UpdateInvoicePaymentMethod',
-      ($14.UpdateInvoicePaymentMethodRequest value) => value.writeToBuffer(),
+      ($15.UpdateInvoicePaymentMethodRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $14.UpdateInvoicePaymentMethodResponse.fromBuffer(value));
+          $15.UpdateInvoicePaymentMethodResponse.fromBuffer(value));
   static final _$getUserAccountBalance = $grpc.ClientMethod<
-          $14.GetUserAccountBalanceRequest, $14.GetUserAccountBalanceResponse>(
+          $15.GetUserAccountBalanceRequest, $15.GetUserAccountBalanceResponse>(
       '/pb.InvoicePaymentService/GetUserAccountBalance',
-      ($14.GetUserAccountBalanceRequest value) => value.writeToBuffer(),
+      ($15.GetUserAccountBalanceRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $14.GetUserAccountBalanceResponse.fromBuffer(value));
+          $15.GetUserAccountBalanceResponse.fromBuffer(value));
   static final _$getAccountBalanceHistory = $grpc.ClientMethod<
-          $14.GetAccountBalanceHistoryRequest,
-          $14.GetAccountBalanceHistoryResponse>(
+          $15.GetAccountBalanceHistoryRequest,
+          $15.GetAccountBalanceHistoryResponse>(
       '/pb.InvoicePaymentService/GetAccountBalanceHistory',
-      ($14.GetAccountBalanceHistoryRequest value) => value.writeToBuffer(),
+      ($15.GetAccountBalanceHistoryRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $14.GetAccountBalanceHistoryResponse.fromBuffer(value));
+          $15.GetAccountBalanceHistoryResponse.fromBuffer(value));
   static final _$transferFundsForInvoicePayment = $grpc.ClientMethod<
-          $14.TransferFundsForInvoicePaymentRequest,
-          $14.TransferFundsForInvoicePaymentResponse>(
+          $15.TransferFundsForInvoicePaymentRequest,
+          $15.TransferFundsForInvoicePaymentResponse>(
       '/pb.InvoicePaymentService/TransferFundsForInvoicePayment',
-      ($14.TransferFundsForInvoicePaymentRequest value) =>
+      ($15.TransferFundsForInvoicePaymentRequest value) =>
           value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $14.TransferFundsForInvoicePaymentResponse.fromBuffer(value));
+          $15.TransferFundsForInvoicePaymentResponse.fromBuffer(value));
   static final _$processCryptoInvoicePayment = $grpc.ClientMethod<
-          $14.ProcessCryptoInvoicePaymentRequest,
-          $14.ProcessCryptoInvoicePaymentResponse>(
+          $15.ProcessCryptoInvoicePaymentRequest,
+          $15.ProcessCryptoInvoicePaymentResponse>(
       '/pb.InvoicePaymentService/ProcessCryptoInvoicePayment',
-      ($14.ProcessCryptoInvoicePaymentRequest value) => value.writeToBuffer(),
+      ($15.ProcessCryptoInvoicePaymentRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $14.ProcessCryptoInvoicePaymentResponse.fromBuffer(value));
+          $15.ProcessCryptoInvoicePaymentResponse.fromBuffer(value));
   static final _$getCryptoWalletBalance = $grpc.ClientMethod<
-          $14.GetCryptoWalletBalanceRequest,
-          $14.GetCryptoWalletBalanceResponse>(
+          $15.GetCryptoWalletBalanceRequest,
+          $15.GetCryptoWalletBalanceResponse>(
       '/pb.InvoicePaymentService/GetCryptoWalletBalance',
-      ($14.GetCryptoWalletBalanceRequest value) => value.writeToBuffer(),
+      ($15.GetCryptoWalletBalanceRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $14.GetCryptoWalletBalanceResponse.fromBuffer(value));
+          $15.GetCryptoWalletBalanceResponse.fromBuffer(value));
   static final _$validateCryptoWallet = $grpc.ClientMethod<
-          $14.ValidateCryptoWalletRequest, $14.ValidateCryptoWalletResponse>(
+          $15.ValidateCryptoWalletRequest, $15.ValidateCryptoWalletResponse>(
       '/pb.InvoicePaymentService/ValidateCryptoWallet',
-      ($14.ValidateCryptoWalletRequest value) => value.writeToBuffer(),
+      ($15.ValidateCryptoWalletRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $14.ValidateCryptoWalletResponse.fromBuffer(value));
+          $15.ValidateCryptoWalletResponse.fromBuffer(value));
   static final _$getCryptoInvoicePaymentStatus = $grpc.ClientMethod<
-          $14.GetCryptoInvoicePaymentStatusRequest,
-          $14.GetCryptoInvoicePaymentStatusResponse>(
+          $15.GetCryptoInvoicePaymentStatusRequest,
+          $15.GetCryptoInvoicePaymentStatusResponse>(
       '/pb.InvoicePaymentService/GetCryptoInvoicePaymentStatus',
-      ($14.GetCryptoInvoicePaymentStatusRequest value) => value.writeToBuffer(),
+      ($15.GetCryptoInvoicePaymentStatusRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $14.GetCryptoInvoicePaymentStatusResponse.fromBuffer(value));
+          $15.GetCryptoInvoicePaymentStatusResponse.fromBuffer(value));
   static final _$requestInvoicePaymentExtension = $grpc.ClientMethod<
-          $14.RequestInvoicePaymentExtensionRequest,
-          $14.RequestInvoicePaymentExtensionResponse>(
+          $15.RequestInvoicePaymentExtensionRequest,
+          $15.RequestInvoicePaymentExtensionResponse>(
       '/pb.InvoicePaymentService/RequestInvoicePaymentExtension',
-      ($14.RequestInvoicePaymentExtensionRequest value) =>
+      ($15.RequestInvoicePaymentExtensionRequest value) =>
           value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $14.RequestInvoicePaymentExtensionResponse.fromBuffer(value));
+          $15.RequestInvoicePaymentExtensionResponse.fromBuffer(value));
   static final _$approveInvoicePaymentExtension = $grpc.ClientMethod<
-          $14.ApproveInvoicePaymentExtensionRequest,
-          $14.ApproveInvoicePaymentExtensionResponse>(
+          $15.ApproveInvoicePaymentExtensionRequest,
+          $15.ApproveInvoicePaymentExtensionResponse>(
       '/pb.InvoicePaymentService/ApproveInvoicePaymentExtension',
-      ($14.ApproveInvoicePaymentExtensionRequest value) =>
+      ($15.ApproveInvoicePaymentExtensionRequest value) =>
           value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $14.ApproveInvoicePaymentExtensionResponse.fromBuffer(value));
+          $15.ApproveInvoicePaymentExtensionResponse.fromBuffer(value));
   static final _$disputeInvoicePayment = $grpc.ClientMethod<
-          $14.DisputeInvoicePaymentRequest, $14.DisputeInvoicePaymentResponse>(
+          $15.DisputeInvoicePaymentRequest, $15.DisputeInvoicePaymentResponse>(
       '/pb.InvoicePaymentService/DisputeInvoicePayment',
-      ($14.DisputeInvoicePaymentRequest value) => value.writeToBuffer(),
+      ($15.DisputeInvoicePaymentRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $14.DisputeInvoicePaymentResponse.fromBuffer(value));
+          $15.DisputeInvoicePaymentResponse.fromBuffer(value));
   static final _$resolveInvoicePaymentDispute = $grpc.ClientMethod<
-          $14.ResolveInvoicePaymentDisputeRequest,
-          $14.ResolveInvoicePaymentDisputeResponse>(
+          $15.ResolveInvoicePaymentDisputeRequest,
+          $15.ResolveInvoicePaymentDisputeResponse>(
       '/pb.InvoicePaymentService/ResolveInvoicePaymentDispute',
-      ($14.ResolveInvoicePaymentDisputeRequest value) => value.writeToBuffer(),
+      ($15.ResolveInvoicePaymentDisputeRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $14.ResolveInvoicePaymentDisputeResponse.fromBuffer(value));
+          $15.ResolveInvoicePaymentDisputeResponse.fromBuffer(value));
   static final _$getInvoicePaymentHistory = $grpc.ClientMethod<
-          $14.GetInvoicePaymentHistoryRequest,
-          $14.GetInvoicePaymentHistoryResponse>(
+          $15.GetInvoicePaymentHistoryRequest,
+          $15.GetInvoicePaymentHistoryResponse>(
       '/pb.InvoicePaymentService/GetInvoicePaymentHistory',
-      ($14.GetInvoicePaymentHistoryRequest value) => value.writeToBuffer(),
+      ($15.GetInvoicePaymentHistoryRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $14.GetInvoicePaymentHistoryResponse.fromBuffer(value));
+          $15.GetInvoicePaymentHistoryResponse.fromBuffer(value));
   static final _$getInvoicePaymentStatistics = $grpc.ClientMethod<
-          $14.GetInvoicePaymentStatisticsRequest,
-          $14.GetInvoicePaymentStatisticsResponse>(
+          $15.GetInvoicePaymentStatisticsRequest,
+          $15.GetInvoicePaymentStatisticsResponse>(
       '/pb.InvoicePaymentService/GetInvoicePaymentStatistics',
-      ($14.GetInvoicePaymentStatisticsRequest value) => value.writeToBuffer(),
+      ($15.GetInvoicePaymentStatisticsRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $14.GetInvoicePaymentStatisticsResponse.fromBuffer(value));
+          $15.GetInvoicePaymentStatisticsResponse.fromBuffer(value));
   static final _$getRecentInvoicePaymentTransactions = $grpc.ClientMethod<
-          $14.GetRecentInvoicePaymentTransactionsRequest,
-          $14.GetRecentInvoicePaymentTransactionsResponse>(
+          $15.GetRecentInvoicePaymentTransactionsRequest,
+          $15.GetRecentInvoicePaymentTransactionsResponse>(
       '/pb.InvoicePaymentService/GetRecentInvoicePaymentTransactions',
-      ($14.GetRecentInvoicePaymentTransactionsRequest value) =>
+      ($15.GetRecentInvoicePaymentTransactionsRequest value) =>
           value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $14.GetRecentInvoicePaymentTransactionsResponse.fromBuffer(value));
+          $15.GetRecentInvoicePaymentTransactionsResponse.fromBuffer(value));
   static final _$generateInvoicePaymentReceipt = $grpc.ClientMethod<
-          $14.GenerateInvoicePaymentReceiptRequest,
-          $14.GenerateInvoicePaymentReceiptResponse>(
+          $15.GenerateInvoicePaymentReceiptRequest,
+          $15.GenerateInvoicePaymentReceiptResponse>(
       '/pb.InvoicePaymentService/GenerateInvoicePaymentReceipt',
-      ($14.GenerateInvoicePaymentReceiptRequest value) => value.writeToBuffer(),
+      ($15.GenerateInvoicePaymentReceiptRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $14.GenerateInvoicePaymentReceiptResponse.fromBuffer(value));
+          $15.GenerateInvoicePaymentReceiptResponse.fromBuffer(value));
   static final _$emailInvoicePaymentReceipt = $grpc.ClientMethod<
-          $14.EmailInvoicePaymentReceiptRequest,
-          $14.EmailInvoicePaymentReceiptResponse>(
+          $15.EmailInvoicePaymentReceiptRequest,
+          $15.EmailInvoicePaymentReceiptResponse>(
       '/pb.InvoicePaymentService/EmailInvoicePaymentReceipt',
-      ($14.EmailInvoicePaymentReceiptRequest value) => value.writeToBuffer(),
+      ($15.EmailInvoicePaymentReceiptRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $14.EmailInvoicePaymentReceiptResponse.fromBuffer(value));
+          $15.EmailInvoicePaymentReceiptResponse.fromBuffer(value));
   static final _$getInvoicePaymentReceipt = $grpc.ClientMethod<
-          $14.GetInvoicePaymentReceiptRequest,
-          $14.GetInvoicePaymentReceiptResponse>(
+          $15.GetInvoicePaymentReceiptRequest,
+          $15.GetInvoicePaymentReceiptResponse>(
       '/pb.InvoicePaymentService/GetInvoicePaymentReceipt',
-      ($14.GetInvoicePaymentReceiptRequest value) => value.writeToBuffer(),
+      ($15.GetInvoicePaymentReceiptRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $14.GetInvoicePaymentReceiptResponse.fromBuffer(value));
+          $15.GetInvoicePaymentReceiptResponse.fromBuffer(value));
 
   InvoicePaymentServiceClient($grpc.ClientChannel channel,
       {$grpc.CallOptions? options,
       $core.Iterable<$grpc.ClientInterceptor>? interceptors})
       : super(channel, options: options, interceptors: interceptors);
 
-  $grpc.ResponseFuture<$14.ProcessInvoicePaymentResponse> processInvoicePayment(
-      $14.ProcessInvoicePaymentRequest request,
+  $grpc.ResponseFuture<$15.ProcessInvoicePaymentResponse> processInvoicePayment(
+      $15.ProcessInvoicePaymentRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$processInvoicePayment, request, options: options);
   }
 
-  $grpc.ResponseFuture<$14.ProcessPartialInvoicePaymentResponse>
+  $grpc.ResponseFuture<$15.ProcessPartialInvoicePaymentResponse>
       processPartialInvoicePayment(
-          $14.ProcessPartialInvoicePaymentRequest request,
+          $15.ProcessPartialInvoicePaymentRequest request,
           {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$processPartialInvoicePayment, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$14.ValidateInvoicePaymentResponse>
-      validateInvoicePayment($14.ValidateInvoicePaymentRequest request,
+  $grpc.ResponseFuture<$15.ValidateInvoicePaymentResponse>
+      validateInvoicePayment($15.ValidateInvoicePaymentRequest request,
           {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$validateInvoicePayment, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$14.GetInvoicePaymentStatusResponse>
-      getInvoicePaymentStatus($14.GetInvoicePaymentStatusRequest request,
+  $grpc.ResponseFuture<$15.GetInvoicePaymentStatusResponse>
+      getInvoicePaymentStatus($15.GetInvoicePaymentStatusRequest request,
           {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getInvoicePaymentStatus, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$14.CancelInvoicePaymentResponse> cancelInvoicePayment(
-      $14.CancelInvoicePaymentRequest request,
+  $grpc.ResponseFuture<$15.CancelInvoicePaymentResponse> cancelInvoicePayment(
+      $15.CancelInvoicePaymentRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$cancelInvoicePayment, request, options: options);
   }
 
-  $grpc.ResponseFuture<$14.GetUserInvoicePaymentMethodsResponse>
+  $grpc.ResponseFuture<$15.GetUserInvoicePaymentMethodsResponse>
       getUserInvoicePaymentMethods(
-          $14.GetUserInvoicePaymentMethodsRequest request,
+          $15.GetUserInvoicePaymentMethodsRequest request,
           {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getUserInvoicePaymentMethods, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$14.AddInvoicePaymentMethodResponse>
-      addInvoicePaymentMethod($14.AddInvoicePaymentMethodRequest request,
+  $grpc.ResponseFuture<$15.AddInvoicePaymentMethodResponse>
+      addInvoicePaymentMethod($15.AddInvoicePaymentMethodRequest request,
           {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$addInvoicePaymentMethod, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$14.RemoveInvoicePaymentMethodResponse>
-      removeInvoicePaymentMethod($14.RemoveInvoicePaymentMethodRequest request,
+  $grpc.ResponseFuture<$15.RemoveInvoicePaymentMethodResponse>
+      removeInvoicePaymentMethod($15.RemoveInvoicePaymentMethodRequest request,
           {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$removeInvoicePaymentMethod, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$14.ValidateInvoicePaymentMethodResponse>
+  $grpc.ResponseFuture<$15.ValidateInvoicePaymentMethodResponse>
       validateInvoicePaymentMethod(
-          $14.ValidateInvoicePaymentMethodRequest request,
+          $15.ValidateInvoicePaymentMethodRequest request,
           {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$validateInvoicePaymentMethod, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$14.UpdateInvoicePaymentMethodResponse>
-      updateInvoicePaymentMethod($14.UpdateInvoicePaymentMethodRequest request,
+  $grpc.ResponseFuture<$15.UpdateInvoicePaymentMethodResponse>
+      updateInvoicePaymentMethod($15.UpdateInvoicePaymentMethodRequest request,
           {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$updateInvoicePaymentMethod, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$14.GetUserAccountBalanceResponse> getUserAccountBalance(
-      $14.GetUserAccountBalanceRequest request,
+  $grpc.ResponseFuture<$15.GetUserAccountBalanceResponse> getUserAccountBalance(
+      $15.GetUserAccountBalanceRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getUserAccountBalance, request, options: options);
   }
 
-  $grpc.ResponseFuture<$14.GetAccountBalanceHistoryResponse>
-      getAccountBalanceHistory($14.GetAccountBalanceHistoryRequest request,
+  $grpc.ResponseFuture<$15.GetAccountBalanceHistoryResponse>
+      getAccountBalanceHistory($15.GetAccountBalanceHistoryRequest request,
           {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getAccountBalanceHistory, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$14.TransferFundsForInvoicePaymentResponse>
+  $grpc.ResponseFuture<$15.TransferFundsForInvoicePaymentResponse>
       transferFundsForInvoicePayment(
-          $14.TransferFundsForInvoicePaymentRequest request,
+          $15.TransferFundsForInvoicePaymentRequest request,
           {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$transferFundsForInvoicePayment, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$14.ProcessCryptoInvoicePaymentResponse>
+  $grpc.ResponseFuture<$15.ProcessCryptoInvoicePaymentResponse>
       processCryptoInvoicePayment(
-          $14.ProcessCryptoInvoicePaymentRequest request,
+          $15.ProcessCryptoInvoicePaymentRequest request,
           {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$processCryptoInvoicePayment, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$14.GetCryptoWalletBalanceResponse>
-      getCryptoWalletBalance($14.GetCryptoWalletBalanceRequest request,
+  $grpc.ResponseFuture<$15.GetCryptoWalletBalanceResponse>
+      getCryptoWalletBalance($15.GetCryptoWalletBalanceRequest request,
           {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getCryptoWalletBalance, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$14.ValidateCryptoWalletResponse> validateCryptoWallet(
-      $14.ValidateCryptoWalletRequest request,
+  $grpc.ResponseFuture<$15.ValidateCryptoWalletResponse> validateCryptoWallet(
+      $15.ValidateCryptoWalletRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$validateCryptoWallet, request, options: options);
   }
 
-  $grpc.ResponseFuture<$14.GetCryptoInvoicePaymentStatusResponse>
+  $grpc.ResponseFuture<$15.GetCryptoInvoicePaymentStatusResponse>
       getCryptoInvoicePaymentStatus(
-          $14.GetCryptoInvoicePaymentStatusRequest request,
+          $15.GetCryptoInvoicePaymentStatusRequest request,
           {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getCryptoInvoicePaymentStatus, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$14.RequestInvoicePaymentExtensionResponse>
+  $grpc.ResponseFuture<$15.RequestInvoicePaymentExtensionResponse>
       requestInvoicePaymentExtension(
-          $14.RequestInvoicePaymentExtensionRequest request,
+          $15.RequestInvoicePaymentExtensionRequest request,
           {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$requestInvoicePaymentExtension, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$14.ApproveInvoicePaymentExtensionResponse>
+  $grpc.ResponseFuture<$15.ApproveInvoicePaymentExtensionResponse>
       approveInvoicePaymentExtension(
-          $14.ApproveInvoicePaymentExtensionRequest request,
+          $15.ApproveInvoicePaymentExtensionRequest request,
           {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$approveInvoicePaymentExtension, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$14.DisputeInvoicePaymentResponse> disputeInvoicePayment(
-      $14.DisputeInvoicePaymentRequest request,
+  $grpc.ResponseFuture<$15.DisputeInvoicePaymentResponse> disputeInvoicePayment(
+      $15.DisputeInvoicePaymentRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$disputeInvoicePayment, request, options: options);
   }
 
-  $grpc.ResponseFuture<$14.ResolveInvoicePaymentDisputeResponse>
+  $grpc.ResponseFuture<$15.ResolveInvoicePaymentDisputeResponse>
       resolveInvoicePaymentDispute(
-          $14.ResolveInvoicePaymentDisputeRequest request,
+          $15.ResolveInvoicePaymentDisputeRequest request,
           {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$resolveInvoicePaymentDispute, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$14.GetInvoicePaymentHistoryResponse>
-      getInvoicePaymentHistory($14.GetInvoicePaymentHistoryRequest request,
+  $grpc.ResponseFuture<$15.GetInvoicePaymentHistoryResponse>
+      getInvoicePaymentHistory($15.GetInvoicePaymentHistoryRequest request,
           {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getInvoicePaymentHistory, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$14.GetInvoicePaymentStatisticsResponse>
+  $grpc.ResponseFuture<$15.GetInvoicePaymentStatisticsResponse>
       getInvoicePaymentStatistics(
-          $14.GetInvoicePaymentStatisticsRequest request,
+          $15.GetInvoicePaymentStatisticsRequest request,
           {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getInvoicePaymentStatistics, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$14.GetRecentInvoicePaymentTransactionsResponse>
+  $grpc.ResponseFuture<$15.GetRecentInvoicePaymentTransactionsResponse>
       getRecentInvoicePaymentTransactions(
-          $14.GetRecentInvoicePaymentTransactionsRequest request,
+          $15.GetRecentInvoicePaymentTransactionsRequest request,
           {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getRecentInvoicePaymentTransactions, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$14.GenerateInvoicePaymentReceiptResponse>
+  $grpc.ResponseFuture<$15.GenerateInvoicePaymentReceiptResponse>
       generateInvoicePaymentReceipt(
-          $14.GenerateInvoicePaymentReceiptRequest request,
+          $15.GenerateInvoicePaymentReceiptRequest request,
           {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$generateInvoicePaymentReceipt, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$14.EmailInvoicePaymentReceiptResponse>
-      emailInvoicePaymentReceipt($14.EmailInvoicePaymentReceiptRequest request,
+  $grpc.ResponseFuture<$15.EmailInvoicePaymentReceiptResponse>
+      emailInvoicePaymentReceipt($15.EmailInvoicePaymentReceiptRequest request,
           {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$emailInvoicePaymentReceipt, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$14.GetInvoicePaymentReceiptResponse>
-      getInvoicePaymentReceipt($14.GetInvoicePaymentReceiptRequest request,
+  $grpc.ResponseFuture<$15.GetInvoicePaymentReceiptResponse>
+      getInvoicePaymentReceipt($15.GetInvoicePaymentReceiptRequest request,
           {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getInvoicePaymentReceipt, request,
         options: options);
@@ -409,516 +409,516 @@ abstract class InvoicePaymentServiceBase extends $grpc.Service {
   $core.String get $name => 'pb.InvoicePaymentService';
 
   InvoicePaymentServiceBase() {
-    $addMethod($grpc.ServiceMethod<$14.ProcessInvoicePaymentRequest,
-            $14.ProcessInvoicePaymentResponse>(
+    $addMethod($grpc.ServiceMethod<$15.ProcessInvoicePaymentRequest,
+            $15.ProcessInvoicePaymentResponse>(
         'ProcessInvoicePayment',
         processInvoicePayment_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $14.ProcessInvoicePaymentRequest.fromBuffer(value),
-        ($14.ProcessInvoicePaymentResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$14.ProcessPartialInvoicePaymentRequest,
-            $14.ProcessPartialInvoicePaymentResponse>(
+            $15.ProcessInvoicePaymentRequest.fromBuffer(value),
+        ($15.ProcessInvoicePaymentResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$15.ProcessPartialInvoicePaymentRequest,
+            $15.ProcessPartialInvoicePaymentResponse>(
         'ProcessPartialInvoicePayment',
         processPartialInvoicePayment_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $14.ProcessPartialInvoicePaymentRequest.fromBuffer(value),
-        ($14.ProcessPartialInvoicePaymentResponse value) =>
+            $15.ProcessPartialInvoicePaymentRequest.fromBuffer(value),
+        ($15.ProcessPartialInvoicePaymentResponse value) =>
             value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$14.ValidateInvoicePaymentRequest,
-            $14.ValidateInvoicePaymentResponse>(
+    $addMethod($grpc.ServiceMethod<$15.ValidateInvoicePaymentRequest,
+            $15.ValidateInvoicePaymentResponse>(
         'ValidateInvoicePayment',
         validateInvoicePayment_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $14.ValidateInvoicePaymentRequest.fromBuffer(value),
-        ($14.ValidateInvoicePaymentResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$14.GetInvoicePaymentStatusRequest,
-            $14.GetInvoicePaymentStatusResponse>(
+            $15.ValidateInvoicePaymentRequest.fromBuffer(value),
+        ($15.ValidateInvoicePaymentResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$15.GetInvoicePaymentStatusRequest,
+            $15.GetInvoicePaymentStatusResponse>(
         'GetInvoicePaymentStatus',
         getInvoicePaymentStatus_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $14.GetInvoicePaymentStatusRequest.fromBuffer(value),
-        ($14.GetInvoicePaymentStatusResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$14.CancelInvoicePaymentRequest,
-            $14.CancelInvoicePaymentResponse>(
+            $15.GetInvoicePaymentStatusRequest.fromBuffer(value),
+        ($15.GetInvoicePaymentStatusResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$15.CancelInvoicePaymentRequest,
+            $15.CancelInvoicePaymentResponse>(
         'CancelInvoicePayment',
         cancelInvoicePayment_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $14.CancelInvoicePaymentRequest.fromBuffer(value),
-        ($14.CancelInvoicePaymentResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$14.GetUserInvoicePaymentMethodsRequest,
-            $14.GetUserInvoicePaymentMethodsResponse>(
+            $15.CancelInvoicePaymentRequest.fromBuffer(value),
+        ($15.CancelInvoicePaymentResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$15.GetUserInvoicePaymentMethodsRequest,
+            $15.GetUserInvoicePaymentMethodsResponse>(
         'GetUserInvoicePaymentMethods',
         getUserInvoicePaymentMethods_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $14.GetUserInvoicePaymentMethodsRequest.fromBuffer(value),
-        ($14.GetUserInvoicePaymentMethodsResponse value) =>
+            $15.GetUserInvoicePaymentMethodsRequest.fromBuffer(value),
+        ($15.GetUserInvoicePaymentMethodsResponse value) =>
             value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$14.AddInvoicePaymentMethodRequest,
-            $14.AddInvoicePaymentMethodResponse>(
+    $addMethod($grpc.ServiceMethod<$15.AddInvoicePaymentMethodRequest,
+            $15.AddInvoicePaymentMethodResponse>(
         'AddInvoicePaymentMethod',
         addInvoicePaymentMethod_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $14.AddInvoicePaymentMethodRequest.fromBuffer(value),
-        ($14.AddInvoicePaymentMethodResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$14.RemoveInvoicePaymentMethodRequest,
-            $14.RemoveInvoicePaymentMethodResponse>(
+            $15.AddInvoicePaymentMethodRequest.fromBuffer(value),
+        ($15.AddInvoicePaymentMethodResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$15.RemoveInvoicePaymentMethodRequest,
+            $15.RemoveInvoicePaymentMethodResponse>(
         'RemoveInvoicePaymentMethod',
         removeInvoicePaymentMethod_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $14.RemoveInvoicePaymentMethodRequest.fromBuffer(value),
-        ($14.RemoveInvoicePaymentMethodResponse value) =>
+            $15.RemoveInvoicePaymentMethodRequest.fromBuffer(value),
+        ($15.RemoveInvoicePaymentMethodResponse value) =>
             value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$14.ValidateInvoicePaymentMethodRequest,
-            $14.ValidateInvoicePaymentMethodResponse>(
+    $addMethod($grpc.ServiceMethod<$15.ValidateInvoicePaymentMethodRequest,
+            $15.ValidateInvoicePaymentMethodResponse>(
         'ValidateInvoicePaymentMethod',
         validateInvoicePaymentMethod_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $14.ValidateInvoicePaymentMethodRequest.fromBuffer(value),
-        ($14.ValidateInvoicePaymentMethodResponse value) =>
+            $15.ValidateInvoicePaymentMethodRequest.fromBuffer(value),
+        ($15.ValidateInvoicePaymentMethodResponse value) =>
             value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$14.UpdateInvoicePaymentMethodRequest,
-            $14.UpdateInvoicePaymentMethodResponse>(
+    $addMethod($grpc.ServiceMethod<$15.UpdateInvoicePaymentMethodRequest,
+            $15.UpdateInvoicePaymentMethodResponse>(
         'UpdateInvoicePaymentMethod',
         updateInvoicePaymentMethod_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $14.UpdateInvoicePaymentMethodRequest.fromBuffer(value),
-        ($14.UpdateInvoicePaymentMethodResponse value) =>
+            $15.UpdateInvoicePaymentMethodRequest.fromBuffer(value),
+        ($15.UpdateInvoicePaymentMethodResponse value) =>
             value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$14.GetUserAccountBalanceRequest,
-            $14.GetUserAccountBalanceResponse>(
+    $addMethod($grpc.ServiceMethod<$15.GetUserAccountBalanceRequest,
+            $15.GetUserAccountBalanceResponse>(
         'GetUserAccountBalance',
         getUserAccountBalance_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $14.GetUserAccountBalanceRequest.fromBuffer(value),
-        ($14.GetUserAccountBalanceResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$14.GetAccountBalanceHistoryRequest,
-            $14.GetAccountBalanceHistoryResponse>(
+            $15.GetUserAccountBalanceRequest.fromBuffer(value),
+        ($15.GetUserAccountBalanceResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$15.GetAccountBalanceHistoryRequest,
+            $15.GetAccountBalanceHistoryResponse>(
         'GetAccountBalanceHistory',
         getAccountBalanceHistory_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $14.GetAccountBalanceHistoryRequest.fromBuffer(value),
-        ($14.GetAccountBalanceHistoryResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$14.TransferFundsForInvoicePaymentRequest,
-            $14.TransferFundsForInvoicePaymentResponse>(
+            $15.GetAccountBalanceHistoryRequest.fromBuffer(value),
+        ($15.GetAccountBalanceHistoryResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$15.TransferFundsForInvoicePaymentRequest,
+            $15.TransferFundsForInvoicePaymentResponse>(
         'TransferFundsForInvoicePayment',
         transferFundsForInvoicePayment_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $14.TransferFundsForInvoicePaymentRequest.fromBuffer(value),
-        ($14.TransferFundsForInvoicePaymentResponse value) =>
+            $15.TransferFundsForInvoicePaymentRequest.fromBuffer(value),
+        ($15.TransferFundsForInvoicePaymentResponse value) =>
             value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$14.ProcessCryptoInvoicePaymentRequest,
-            $14.ProcessCryptoInvoicePaymentResponse>(
+    $addMethod($grpc.ServiceMethod<$15.ProcessCryptoInvoicePaymentRequest,
+            $15.ProcessCryptoInvoicePaymentResponse>(
         'ProcessCryptoInvoicePayment',
         processCryptoInvoicePayment_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $14.ProcessCryptoInvoicePaymentRequest.fromBuffer(value),
-        ($14.ProcessCryptoInvoicePaymentResponse value) =>
+            $15.ProcessCryptoInvoicePaymentRequest.fromBuffer(value),
+        ($15.ProcessCryptoInvoicePaymentResponse value) =>
             value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$14.GetCryptoWalletBalanceRequest,
-            $14.GetCryptoWalletBalanceResponse>(
+    $addMethod($grpc.ServiceMethod<$15.GetCryptoWalletBalanceRequest,
+            $15.GetCryptoWalletBalanceResponse>(
         'GetCryptoWalletBalance',
         getCryptoWalletBalance_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $14.GetCryptoWalletBalanceRequest.fromBuffer(value),
-        ($14.GetCryptoWalletBalanceResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$14.ValidateCryptoWalletRequest,
-            $14.ValidateCryptoWalletResponse>(
+            $15.GetCryptoWalletBalanceRequest.fromBuffer(value),
+        ($15.GetCryptoWalletBalanceResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$15.ValidateCryptoWalletRequest,
+            $15.ValidateCryptoWalletResponse>(
         'ValidateCryptoWallet',
         validateCryptoWallet_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $14.ValidateCryptoWalletRequest.fromBuffer(value),
-        ($14.ValidateCryptoWalletResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$14.GetCryptoInvoicePaymentStatusRequest,
-            $14.GetCryptoInvoicePaymentStatusResponse>(
+            $15.ValidateCryptoWalletRequest.fromBuffer(value),
+        ($15.ValidateCryptoWalletResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$15.GetCryptoInvoicePaymentStatusRequest,
+            $15.GetCryptoInvoicePaymentStatusResponse>(
         'GetCryptoInvoicePaymentStatus',
         getCryptoInvoicePaymentStatus_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $14.GetCryptoInvoicePaymentStatusRequest.fromBuffer(value),
-        ($14.GetCryptoInvoicePaymentStatusResponse value) =>
+            $15.GetCryptoInvoicePaymentStatusRequest.fromBuffer(value),
+        ($15.GetCryptoInvoicePaymentStatusResponse value) =>
             value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$14.RequestInvoicePaymentExtensionRequest,
-            $14.RequestInvoicePaymentExtensionResponse>(
+    $addMethod($grpc.ServiceMethod<$15.RequestInvoicePaymentExtensionRequest,
+            $15.RequestInvoicePaymentExtensionResponse>(
         'RequestInvoicePaymentExtension',
         requestInvoicePaymentExtension_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $14.RequestInvoicePaymentExtensionRequest.fromBuffer(value),
-        ($14.RequestInvoicePaymentExtensionResponse value) =>
+            $15.RequestInvoicePaymentExtensionRequest.fromBuffer(value),
+        ($15.RequestInvoicePaymentExtensionResponse value) =>
             value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$14.ApproveInvoicePaymentExtensionRequest,
-            $14.ApproveInvoicePaymentExtensionResponse>(
+    $addMethod($grpc.ServiceMethod<$15.ApproveInvoicePaymentExtensionRequest,
+            $15.ApproveInvoicePaymentExtensionResponse>(
         'ApproveInvoicePaymentExtension',
         approveInvoicePaymentExtension_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $14.ApproveInvoicePaymentExtensionRequest.fromBuffer(value),
-        ($14.ApproveInvoicePaymentExtensionResponse value) =>
+            $15.ApproveInvoicePaymentExtensionRequest.fromBuffer(value),
+        ($15.ApproveInvoicePaymentExtensionResponse value) =>
             value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$14.DisputeInvoicePaymentRequest,
-            $14.DisputeInvoicePaymentResponse>(
+    $addMethod($grpc.ServiceMethod<$15.DisputeInvoicePaymentRequest,
+            $15.DisputeInvoicePaymentResponse>(
         'DisputeInvoicePayment',
         disputeInvoicePayment_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $14.DisputeInvoicePaymentRequest.fromBuffer(value),
-        ($14.DisputeInvoicePaymentResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$14.ResolveInvoicePaymentDisputeRequest,
-            $14.ResolveInvoicePaymentDisputeResponse>(
+            $15.DisputeInvoicePaymentRequest.fromBuffer(value),
+        ($15.DisputeInvoicePaymentResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$15.ResolveInvoicePaymentDisputeRequest,
+            $15.ResolveInvoicePaymentDisputeResponse>(
         'ResolveInvoicePaymentDispute',
         resolveInvoicePaymentDispute_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $14.ResolveInvoicePaymentDisputeRequest.fromBuffer(value),
-        ($14.ResolveInvoicePaymentDisputeResponse value) =>
+            $15.ResolveInvoicePaymentDisputeRequest.fromBuffer(value),
+        ($15.ResolveInvoicePaymentDisputeResponse value) =>
             value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$14.GetInvoicePaymentHistoryRequest,
-            $14.GetInvoicePaymentHistoryResponse>(
+    $addMethod($grpc.ServiceMethod<$15.GetInvoicePaymentHistoryRequest,
+            $15.GetInvoicePaymentHistoryResponse>(
         'GetInvoicePaymentHistory',
         getInvoicePaymentHistory_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $14.GetInvoicePaymentHistoryRequest.fromBuffer(value),
-        ($14.GetInvoicePaymentHistoryResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$14.GetInvoicePaymentStatisticsRequest,
-            $14.GetInvoicePaymentStatisticsResponse>(
+            $15.GetInvoicePaymentHistoryRequest.fromBuffer(value),
+        ($15.GetInvoicePaymentHistoryResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$15.GetInvoicePaymentStatisticsRequest,
+            $15.GetInvoicePaymentStatisticsResponse>(
         'GetInvoicePaymentStatistics',
         getInvoicePaymentStatistics_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $14.GetInvoicePaymentStatisticsRequest.fromBuffer(value),
-        ($14.GetInvoicePaymentStatisticsResponse value) =>
+            $15.GetInvoicePaymentStatisticsRequest.fromBuffer(value),
+        ($15.GetInvoicePaymentStatisticsResponse value) =>
             value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<
-            $14.GetRecentInvoicePaymentTransactionsRequest,
-            $14.GetRecentInvoicePaymentTransactionsResponse>(
+            $15.GetRecentInvoicePaymentTransactionsRequest,
+            $15.GetRecentInvoicePaymentTransactionsResponse>(
         'GetRecentInvoicePaymentTransactions',
         getRecentInvoicePaymentTransactions_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $14.GetRecentInvoicePaymentTransactionsRequest.fromBuffer(value),
-        ($14.GetRecentInvoicePaymentTransactionsResponse value) =>
+            $15.GetRecentInvoicePaymentTransactionsRequest.fromBuffer(value),
+        ($15.GetRecentInvoicePaymentTransactionsResponse value) =>
             value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$14.GenerateInvoicePaymentReceiptRequest,
-            $14.GenerateInvoicePaymentReceiptResponse>(
+    $addMethod($grpc.ServiceMethod<$15.GenerateInvoicePaymentReceiptRequest,
+            $15.GenerateInvoicePaymentReceiptResponse>(
         'GenerateInvoicePaymentReceipt',
         generateInvoicePaymentReceipt_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $14.GenerateInvoicePaymentReceiptRequest.fromBuffer(value),
-        ($14.GenerateInvoicePaymentReceiptResponse value) =>
+            $15.GenerateInvoicePaymentReceiptRequest.fromBuffer(value),
+        ($15.GenerateInvoicePaymentReceiptResponse value) =>
             value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$14.EmailInvoicePaymentReceiptRequest,
-            $14.EmailInvoicePaymentReceiptResponse>(
+    $addMethod($grpc.ServiceMethod<$15.EmailInvoicePaymentReceiptRequest,
+            $15.EmailInvoicePaymentReceiptResponse>(
         'EmailInvoicePaymentReceipt',
         emailInvoicePaymentReceipt_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $14.EmailInvoicePaymentReceiptRequest.fromBuffer(value),
-        ($14.EmailInvoicePaymentReceiptResponse value) =>
+            $15.EmailInvoicePaymentReceiptRequest.fromBuffer(value),
+        ($15.EmailInvoicePaymentReceiptResponse value) =>
             value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$14.GetInvoicePaymentReceiptRequest,
-            $14.GetInvoicePaymentReceiptResponse>(
+    $addMethod($grpc.ServiceMethod<$15.GetInvoicePaymentReceiptRequest,
+            $15.GetInvoicePaymentReceiptResponse>(
         'GetInvoicePaymentReceipt',
         getInvoicePaymentReceipt_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $14.GetInvoicePaymentReceiptRequest.fromBuffer(value),
-        ($14.GetInvoicePaymentReceiptResponse value) => value.writeToBuffer()));
+            $15.GetInvoicePaymentReceiptRequest.fromBuffer(value),
+        ($15.GetInvoicePaymentReceiptResponse value) => value.writeToBuffer()));
   }
 
-  $async.Future<$14.ProcessInvoicePaymentResponse> processInvoicePayment_Pre(
+  $async.Future<$15.ProcessInvoicePaymentResponse> processInvoicePayment_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$14.ProcessInvoicePaymentRequest> request) async {
+      $async.Future<$15.ProcessInvoicePaymentRequest> request) async {
     return processInvoicePayment(call, await request);
   }
 
-  $async.Future<$14.ProcessPartialInvoicePaymentResponse>
+  $async.Future<$15.ProcessPartialInvoicePaymentResponse>
       processPartialInvoicePayment_Pre(
           $grpc.ServiceCall call,
-          $async.Future<$14.ProcessPartialInvoicePaymentRequest>
+          $async.Future<$15.ProcessPartialInvoicePaymentRequest>
               request) async {
     return processPartialInvoicePayment(call, await request);
   }
 
-  $async.Future<$14.ValidateInvoicePaymentResponse> validateInvoicePayment_Pre(
+  $async.Future<$15.ValidateInvoicePaymentResponse> validateInvoicePayment_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$14.ValidateInvoicePaymentRequest> request) async {
+      $async.Future<$15.ValidateInvoicePaymentRequest> request) async {
     return validateInvoicePayment(call, await request);
   }
 
-  $async.Future<$14.GetInvoicePaymentStatusResponse>
+  $async.Future<$15.GetInvoicePaymentStatusResponse>
       getInvoicePaymentStatus_Pre($grpc.ServiceCall call,
-          $async.Future<$14.GetInvoicePaymentStatusRequest> request) async {
+          $async.Future<$15.GetInvoicePaymentStatusRequest> request) async {
     return getInvoicePaymentStatus(call, await request);
   }
 
-  $async.Future<$14.CancelInvoicePaymentResponse> cancelInvoicePayment_Pre(
+  $async.Future<$15.CancelInvoicePaymentResponse> cancelInvoicePayment_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$14.CancelInvoicePaymentRequest> request) async {
+      $async.Future<$15.CancelInvoicePaymentRequest> request) async {
     return cancelInvoicePayment(call, await request);
   }
 
-  $async.Future<$14.GetUserInvoicePaymentMethodsResponse>
+  $async.Future<$15.GetUserInvoicePaymentMethodsResponse>
       getUserInvoicePaymentMethods_Pre(
           $grpc.ServiceCall call,
-          $async.Future<$14.GetUserInvoicePaymentMethodsRequest>
+          $async.Future<$15.GetUserInvoicePaymentMethodsRequest>
               request) async {
     return getUserInvoicePaymentMethods(call, await request);
   }
 
-  $async.Future<$14.AddInvoicePaymentMethodResponse>
+  $async.Future<$15.AddInvoicePaymentMethodResponse>
       addInvoicePaymentMethod_Pre($grpc.ServiceCall call,
-          $async.Future<$14.AddInvoicePaymentMethodRequest> request) async {
+          $async.Future<$15.AddInvoicePaymentMethodRequest> request) async {
     return addInvoicePaymentMethod(call, await request);
   }
 
-  $async.Future<$14.RemoveInvoicePaymentMethodResponse>
+  $async.Future<$15.RemoveInvoicePaymentMethodResponse>
       removeInvoicePaymentMethod_Pre($grpc.ServiceCall call,
-          $async.Future<$14.RemoveInvoicePaymentMethodRequest> request) async {
+          $async.Future<$15.RemoveInvoicePaymentMethodRequest> request) async {
     return removeInvoicePaymentMethod(call, await request);
   }
 
-  $async.Future<$14.ValidateInvoicePaymentMethodResponse>
+  $async.Future<$15.ValidateInvoicePaymentMethodResponse>
       validateInvoicePaymentMethod_Pre(
           $grpc.ServiceCall call,
-          $async.Future<$14.ValidateInvoicePaymentMethodRequest>
+          $async.Future<$15.ValidateInvoicePaymentMethodRequest>
               request) async {
     return validateInvoicePaymentMethod(call, await request);
   }
 
-  $async.Future<$14.UpdateInvoicePaymentMethodResponse>
+  $async.Future<$15.UpdateInvoicePaymentMethodResponse>
       updateInvoicePaymentMethod_Pre($grpc.ServiceCall call,
-          $async.Future<$14.UpdateInvoicePaymentMethodRequest> request) async {
+          $async.Future<$15.UpdateInvoicePaymentMethodRequest> request) async {
     return updateInvoicePaymentMethod(call, await request);
   }
 
-  $async.Future<$14.GetUserAccountBalanceResponse> getUserAccountBalance_Pre(
+  $async.Future<$15.GetUserAccountBalanceResponse> getUserAccountBalance_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$14.GetUserAccountBalanceRequest> request) async {
+      $async.Future<$15.GetUserAccountBalanceRequest> request) async {
     return getUserAccountBalance(call, await request);
   }
 
-  $async.Future<$14.GetAccountBalanceHistoryResponse>
+  $async.Future<$15.GetAccountBalanceHistoryResponse>
       getAccountBalanceHistory_Pre($grpc.ServiceCall call,
-          $async.Future<$14.GetAccountBalanceHistoryRequest> request) async {
+          $async.Future<$15.GetAccountBalanceHistoryRequest> request) async {
     return getAccountBalanceHistory(call, await request);
   }
 
-  $async.Future<$14.TransferFundsForInvoicePaymentResponse>
+  $async.Future<$15.TransferFundsForInvoicePaymentResponse>
       transferFundsForInvoicePayment_Pre(
           $grpc.ServiceCall call,
-          $async.Future<$14.TransferFundsForInvoicePaymentRequest>
+          $async.Future<$15.TransferFundsForInvoicePaymentRequest>
               request) async {
     return transferFundsForInvoicePayment(call, await request);
   }
 
-  $async.Future<$14.ProcessCryptoInvoicePaymentResponse>
+  $async.Future<$15.ProcessCryptoInvoicePaymentResponse>
       processCryptoInvoicePayment_Pre($grpc.ServiceCall call,
-          $async.Future<$14.ProcessCryptoInvoicePaymentRequest> request) async {
+          $async.Future<$15.ProcessCryptoInvoicePaymentRequest> request) async {
     return processCryptoInvoicePayment(call, await request);
   }
 
-  $async.Future<$14.GetCryptoWalletBalanceResponse> getCryptoWalletBalance_Pre(
+  $async.Future<$15.GetCryptoWalletBalanceResponse> getCryptoWalletBalance_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$14.GetCryptoWalletBalanceRequest> request) async {
+      $async.Future<$15.GetCryptoWalletBalanceRequest> request) async {
     return getCryptoWalletBalance(call, await request);
   }
 
-  $async.Future<$14.ValidateCryptoWalletResponse> validateCryptoWallet_Pre(
+  $async.Future<$15.ValidateCryptoWalletResponse> validateCryptoWallet_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$14.ValidateCryptoWalletRequest> request) async {
+      $async.Future<$15.ValidateCryptoWalletRequest> request) async {
     return validateCryptoWallet(call, await request);
   }
 
-  $async.Future<$14.GetCryptoInvoicePaymentStatusResponse>
+  $async.Future<$15.GetCryptoInvoicePaymentStatusResponse>
       getCryptoInvoicePaymentStatus_Pre(
           $grpc.ServiceCall call,
-          $async.Future<$14.GetCryptoInvoicePaymentStatusRequest>
+          $async.Future<$15.GetCryptoInvoicePaymentStatusRequest>
               request) async {
     return getCryptoInvoicePaymentStatus(call, await request);
   }
 
-  $async.Future<$14.RequestInvoicePaymentExtensionResponse>
+  $async.Future<$15.RequestInvoicePaymentExtensionResponse>
       requestInvoicePaymentExtension_Pre(
           $grpc.ServiceCall call,
-          $async.Future<$14.RequestInvoicePaymentExtensionRequest>
+          $async.Future<$15.RequestInvoicePaymentExtensionRequest>
               request) async {
     return requestInvoicePaymentExtension(call, await request);
   }
 
-  $async.Future<$14.ApproveInvoicePaymentExtensionResponse>
+  $async.Future<$15.ApproveInvoicePaymentExtensionResponse>
       approveInvoicePaymentExtension_Pre(
           $grpc.ServiceCall call,
-          $async.Future<$14.ApproveInvoicePaymentExtensionRequest>
+          $async.Future<$15.ApproveInvoicePaymentExtensionRequest>
               request) async {
     return approveInvoicePaymentExtension(call, await request);
   }
 
-  $async.Future<$14.DisputeInvoicePaymentResponse> disputeInvoicePayment_Pre(
+  $async.Future<$15.DisputeInvoicePaymentResponse> disputeInvoicePayment_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$14.DisputeInvoicePaymentRequest> request) async {
+      $async.Future<$15.DisputeInvoicePaymentRequest> request) async {
     return disputeInvoicePayment(call, await request);
   }
 
-  $async.Future<$14.ResolveInvoicePaymentDisputeResponse>
+  $async.Future<$15.ResolveInvoicePaymentDisputeResponse>
       resolveInvoicePaymentDispute_Pre(
           $grpc.ServiceCall call,
-          $async.Future<$14.ResolveInvoicePaymentDisputeRequest>
+          $async.Future<$15.ResolveInvoicePaymentDisputeRequest>
               request) async {
     return resolveInvoicePaymentDispute(call, await request);
   }
 
-  $async.Future<$14.GetInvoicePaymentHistoryResponse>
+  $async.Future<$15.GetInvoicePaymentHistoryResponse>
       getInvoicePaymentHistory_Pre($grpc.ServiceCall call,
-          $async.Future<$14.GetInvoicePaymentHistoryRequest> request) async {
+          $async.Future<$15.GetInvoicePaymentHistoryRequest> request) async {
     return getInvoicePaymentHistory(call, await request);
   }
 
-  $async.Future<$14.GetInvoicePaymentStatisticsResponse>
+  $async.Future<$15.GetInvoicePaymentStatisticsResponse>
       getInvoicePaymentStatistics_Pre($grpc.ServiceCall call,
-          $async.Future<$14.GetInvoicePaymentStatisticsRequest> request) async {
+          $async.Future<$15.GetInvoicePaymentStatisticsRequest> request) async {
     return getInvoicePaymentStatistics(call, await request);
   }
 
-  $async.Future<$14.GetRecentInvoicePaymentTransactionsResponse>
+  $async.Future<$15.GetRecentInvoicePaymentTransactionsResponse>
       getRecentInvoicePaymentTransactions_Pre(
           $grpc.ServiceCall call,
-          $async.Future<$14.GetRecentInvoicePaymentTransactionsRequest>
+          $async.Future<$15.GetRecentInvoicePaymentTransactionsRequest>
               request) async {
     return getRecentInvoicePaymentTransactions(call, await request);
   }
 
-  $async.Future<$14.GenerateInvoicePaymentReceiptResponse>
+  $async.Future<$15.GenerateInvoicePaymentReceiptResponse>
       generateInvoicePaymentReceipt_Pre(
           $grpc.ServiceCall call,
-          $async.Future<$14.GenerateInvoicePaymentReceiptRequest>
+          $async.Future<$15.GenerateInvoicePaymentReceiptRequest>
               request) async {
     return generateInvoicePaymentReceipt(call, await request);
   }
 
-  $async.Future<$14.EmailInvoicePaymentReceiptResponse>
+  $async.Future<$15.EmailInvoicePaymentReceiptResponse>
       emailInvoicePaymentReceipt_Pre($grpc.ServiceCall call,
-          $async.Future<$14.EmailInvoicePaymentReceiptRequest> request) async {
+          $async.Future<$15.EmailInvoicePaymentReceiptRequest> request) async {
     return emailInvoicePaymentReceipt(call, await request);
   }
 
-  $async.Future<$14.GetInvoicePaymentReceiptResponse>
+  $async.Future<$15.GetInvoicePaymentReceiptResponse>
       getInvoicePaymentReceipt_Pre($grpc.ServiceCall call,
-          $async.Future<$14.GetInvoicePaymentReceiptRequest> request) async {
+          $async.Future<$15.GetInvoicePaymentReceiptRequest> request) async {
     return getInvoicePaymentReceipt(call, await request);
   }
 
-  $async.Future<$14.ProcessInvoicePaymentResponse> processInvoicePayment(
-      $grpc.ServiceCall call, $14.ProcessInvoicePaymentRequest request);
-  $async.Future<$14.ProcessPartialInvoicePaymentResponse>
+  $async.Future<$15.ProcessInvoicePaymentResponse> processInvoicePayment(
+      $grpc.ServiceCall call, $15.ProcessInvoicePaymentRequest request);
+  $async.Future<$15.ProcessPartialInvoicePaymentResponse>
       processPartialInvoicePayment($grpc.ServiceCall call,
-          $14.ProcessPartialInvoicePaymentRequest request);
-  $async.Future<$14.ValidateInvoicePaymentResponse> validateInvoicePayment(
-      $grpc.ServiceCall call, $14.ValidateInvoicePaymentRequest request);
-  $async.Future<$14.GetInvoicePaymentStatusResponse> getInvoicePaymentStatus(
-      $grpc.ServiceCall call, $14.GetInvoicePaymentStatusRequest request);
-  $async.Future<$14.CancelInvoicePaymentResponse> cancelInvoicePayment(
-      $grpc.ServiceCall call, $14.CancelInvoicePaymentRequest request);
-  $async.Future<$14.GetUserInvoicePaymentMethodsResponse>
+          $15.ProcessPartialInvoicePaymentRequest request);
+  $async.Future<$15.ValidateInvoicePaymentResponse> validateInvoicePayment(
+      $grpc.ServiceCall call, $15.ValidateInvoicePaymentRequest request);
+  $async.Future<$15.GetInvoicePaymentStatusResponse> getInvoicePaymentStatus(
+      $grpc.ServiceCall call, $15.GetInvoicePaymentStatusRequest request);
+  $async.Future<$15.CancelInvoicePaymentResponse> cancelInvoicePayment(
+      $grpc.ServiceCall call, $15.CancelInvoicePaymentRequest request);
+  $async.Future<$15.GetUserInvoicePaymentMethodsResponse>
       getUserInvoicePaymentMethods($grpc.ServiceCall call,
-          $14.GetUserInvoicePaymentMethodsRequest request);
-  $async.Future<$14.AddInvoicePaymentMethodResponse> addInvoicePaymentMethod(
-      $grpc.ServiceCall call, $14.AddInvoicePaymentMethodRequest request);
-  $async.Future<$14.RemoveInvoicePaymentMethodResponse>
+          $15.GetUserInvoicePaymentMethodsRequest request);
+  $async.Future<$15.AddInvoicePaymentMethodResponse> addInvoicePaymentMethod(
+      $grpc.ServiceCall call, $15.AddInvoicePaymentMethodRequest request);
+  $async.Future<$15.RemoveInvoicePaymentMethodResponse>
       removeInvoicePaymentMethod($grpc.ServiceCall call,
-          $14.RemoveInvoicePaymentMethodRequest request);
-  $async.Future<$14.ValidateInvoicePaymentMethodResponse>
+          $15.RemoveInvoicePaymentMethodRequest request);
+  $async.Future<$15.ValidateInvoicePaymentMethodResponse>
       validateInvoicePaymentMethod($grpc.ServiceCall call,
-          $14.ValidateInvoicePaymentMethodRequest request);
-  $async.Future<$14.UpdateInvoicePaymentMethodResponse>
+          $15.ValidateInvoicePaymentMethodRequest request);
+  $async.Future<$15.UpdateInvoicePaymentMethodResponse>
       updateInvoicePaymentMethod($grpc.ServiceCall call,
-          $14.UpdateInvoicePaymentMethodRequest request);
-  $async.Future<$14.GetUserAccountBalanceResponse> getUserAccountBalance(
-      $grpc.ServiceCall call, $14.GetUserAccountBalanceRequest request);
-  $async.Future<$14.GetAccountBalanceHistoryResponse> getAccountBalanceHistory(
-      $grpc.ServiceCall call, $14.GetAccountBalanceHistoryRequest request);
-  $async.Future<$14.TransferFundsForInvoicePaymentResponse>
+          $15.UpdateInvoicePaymentMethodRequest request);
+  $async.Future<$15.GetUserAccountBalanceResponse> getUserAccountBalance(
+      $grpc.ServiceCall call, $15.GetUserAccountBalanceRequest request);
+  $async.Future<$15.GetAccountBalanceHistoryResponse> getAccountBalanceHistory(
+      $grpc.ServiceCall call, $15.GetAccountBalanceHistoryRequest request);
+  $async.Future<$15.TransferFundsForInvoicePaymentResponse>
       transferFundsForInvoicePayment($grpc.ServiceCall call,
-          $14.TransferFundsForInvoicePaymentRequest request);
-  $async.Future<$14.ProcessCryptoInvoicePaymentResponse>
+          $15.TransferFundsForInvoicePaymentRequest request);
+  $async.Future<$15.ProcessCryptoInvoicePaymentResponse>
       processCryptoInvoicePayment($grpc.ServiceCall call,
-          $14.ProcessCryptoInvoicePaymentRequest request);
-  $async.Future<$14.GetCryptoWalletBalanceResponse> getCryptoWalletBalance(
-      $grpc.ServiceCall call, $14.GetCryptoWalletBalanceRequest request);
-  $async.Future<$14.ValidateCryptoWalletResponse> validateCryptoWallet(
-      $grpc.ServiceCall call, $14.ValidateCryptoWalletRequest request);
-  $async.Future<$14.GetCryptoInvoicePaymentStatusResponse>
+          $15.ProcessCryptoInvoicePaymentRequest request);
+  $async.Future<$15.GetCryptoWalletBalanceResponse> getCryptoWalletBalance(
+      $grpc.ServiceCall call, $15.GetCryptoWalletBalanceRequest request);
+  $async.Future<$15.ValidateCryptoWalletResponse> validateCryptoWallet(
+      $grpc.ServiceCall call, $15.ValidateCryptoWalletRequest request);
+  $async.Future<$15.GetCryptoInvoicePaymentStatusResponse>
       getCryptoInvoicePaymentStatus($grpc.ServiceCall call,
-          $14.GetCryptoInvoicePaymentStatusRequest request);
-  $async.Future<$14.RequestInvoicePaymentExtensionResponse>
+          $15.GetCryptoInvoicePaymentStatusRequest request);
+  $async.Future<$15.RequestInvoicePaymentExtensionResponse>
       requestInvoicePaymentExtension($grpc.ServiceCall call,
-          $14.RequestInvoicePaymentExtensionRequest request);
-  $async.Future<$14.ApproveInvoicePaymentExtensionResponse>
+          $15.RequestInvoicePaymentExtensionRequest request);
+  $async.Future<$15.ApproveInvoicePaymentExtensionResponse>
       approveInvoicePaymentExtension($grpc.ServiceCall call,
-          $14.ApproveInvoicePaymentExtensionRequest request);
-  $async.Future<$14.DisputeInvoicePaymentResponse> disputeInvoicePayment(
-      $grpc.ServiceCall call, $14.DisputeInvoicePaymentRequest request);
-  $async.Future<$14.ResolveInvoicePaymentDisputeResponse>
+          $15.ApproveInvoicePaymentExtensionRequest request);
+  $async.Future<$15.DisputeInvoicePaymentResponse> disputeInvoicePayment(
+      $grpc.ServiceCall call, $15.DisputeInvoicePaymentRequest request);
+  $async.Future<$15.ResolveInvoicePaymentDisputeResponse>
       resolveInvoicePaymentDispute($grpc.ServiceCall call,
-          $14.ResolveInvoicePaymentDisputeRequest request);
-  $async.Future<$14.GetInvoicePaymentHistoryResponse> getInvoicePaymentHistory(
-      $grpc.ServiceCall call, $14.GetInvoicePaymentHistoryRequest request);
-  $async.Future<$14.GetInvoicePaymentStatisticsResponse>
+          $15.ResolveInvoicePaymentDisputeRequest request);
+  $async.Future<$15.GetInvoicePaymentHistoryResponse> getInvoicePaymentHistory(
+      $grpc.ServiceCall call, $15.GetInvoicePaymentHistoryRequest request);
+  $async.Future<$15.GetInvoicePaymentStatisticsResponse>
       getInvoicePaymentStatistics($grpc.ServiceCall call,
-          $14.GetInvoicePaymentStatisticsRequest request);
-  $async.Future<$14.GetRecentInvoicePaymentTransactionsResponse>
+          $15.GetInvoicePaymentStatisticsRequest request);
+  $async.Future<$15.GetRecentInvoicePaymentTransactionsResponse>
       getRecentInvoicePaymentTransactions($grpc.ServiceCall call,
-          $14.GetRecentInvoicePaymentTransactionsRequest request);
-  $async.Future<$14.GenerateInvoicePaymentReceiptResponse>
+          $15.GetRecentInvoicePaymentTransactionsRequest request);
+  $async.Future<$15.GenerateInvoicePaymentReceiptResponse>
       generateInvoicePaymentReceipt($grpc.ServiceCall call,
-          $14.GenerateInvoicePaymentReceiptRequest request);
-  $async.Future<$14.EmailInvoicePaymentReceiptResponse>
+          $15.GenerateInvoicePaymentReceiptRequest request);
+  $async.Future<$15.EmailInvoicePaymentReceiptResponse>
       emailInvoicePaymentReceipt($grpc.ServiceCall call,
-          $14.EmailInvoicePaymentReceiptRequest request);
-  $async.Future<$14.GetInvoicePaymentReceiptResponse> getInvoicePaymentReceipt(
-      $grpc.ServiceCall call, $14.GetInvoicePaymentReceiptRequest request);
+          $15.EmailInvoicePaymentReceiptRequest request);
+  $async.Future<$15.GetInvoicePaymentReceiptResponse> getInvoicePaymentReceipt(
+      $grpc.ServiceCall call, $15.GetInvoicePaymentReceiptRequest request);
 }

@@ -12,6 +12,7 @@ abstract class AppRoutes {
   static const String qrScanner = '/qr-scanner';
   static const String splitBills = '/split-bills';
   static const String invoice = '/invoice';
+  static const String invoiceList = '/invoice/list';
   static const String createInvoice = '/invoice/create';
   static const String invoiceDetails = '/invoice/details';
   static const String invoicePreview = '/invoice/preview';
@@ -159,7 +160,11 @@ abstract class AppRoutes {
 
   // AutoSave Routes
   static const String autoSave = '/auto-save';
+  static const String autoSaveDashboard = '/auto-save';
   static const String createAutoSaveRule = '/auto-save/create';
+  static const String autoSaveRuleReview = '/auto-save/review';
+  static const String autoSaveRuleProcessing = '/auto-save/processing';
+  static const String autoSaveRuleReceipt = '/auto-save/receipt';
   static const String autoSaveDetails = '/auto-save/details';
   static const String autoSaveTransactions = '/auto-save/transactions';
 

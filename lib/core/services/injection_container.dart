@@ -224,7 +224,6 @@ import 'package:lazervault/src/features/tag_pay/presentation/cubit/tag_pay_cubit
 // End Tag Pay Imports
 
 // Barcode Payment Imports
-import 'package:lazervault/src/grpc_generated/barcode_payment.pbgrpc.dart' as barcode_grpc;
 import 'package:lazervault/src/features/barcode_payment/data/datasources/barcode_payment_remote_datasource.dart';
 import 'package:lazervault/src/features/barcode_payment/data/repositories/barcode_payment_repository_impl.dart';
 import 'package:lazervault/src/features/barcode_payment/domain/repositories/barcode_payment_repository.dart';
@@ -395,9 +394,6 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton<AutoSaveServiceClient>(
     () => AutoSaveServiceClient(serviceLocator<ClientChannel>()),
   );
-  serviceLocator.registerLazySingleton<barcode_grpc.BarcodePaymentServiceClient>(
-    () => barcode_grpc.BarcodePaymentServiceClient(serviceLocator<ClientChannel>()),
-  );
 
 
   // ================== Feature: Authentication ==================
@@ -451,6 +447,7 @@ Future<void> init() async {
         verifyEmail: serviceLocator<VerifyEmailUseCase>(),
         resendVerification: serviceLocator<ResendVerificationUseCase>(),
         checkEmailAvailability: serviceLocator<CheckEmailAvailabilityUseCase>(),
+        storage: serviceLocator<FlutterSecureStorage>(),
       ));
 
   serviceLocator.registerFactory(() => FaceVerificationCubit(
@@ -806,7 +803,7 @@ Future<void> init() async {
   // Data Sources
   serviceLocator.registerLazySingleton<BarcodePaymentRemoteDataSource>(
     () => BarcodePaymentRemoteDataSourceImpl(
-      client: serviceLocator<barcode_grpc.BarcodePaymentServiceClient>(),
+      grpcClient: serviceLocator<GrpcClient>(),
     ),
   );
 

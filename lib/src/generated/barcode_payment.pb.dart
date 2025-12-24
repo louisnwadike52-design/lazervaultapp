@@ -9,7 +9,7 @@ import 'dart:core' as $core;
 
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'google/protobuf/timestamp.pb.dart' as $1;
+import 'google/protobuf/timestamp.pb.dart' as $26;
 
 class GenerateBarcodeRequest extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GenerateBarcodeRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'barcode_payment'), createEmptyInstance: create)
@@ -105,7 +105,7 @@ class GenerateBarcodeResponse extends $pb.GeneratedMessage {
     ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'barcodeId')
     ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'barcodeCode')
     ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'qrData')
-    ..aOM<$1.Timestamp>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'expiresAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$26.Timestamp>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'expiresAt', subBuilder: $26.Timestamp.create)
     ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
     ..hasRequiredFields = false
   ;
@@ -115,7 +115,7 @@ class GenerateBarcodeResponse extends $pb.GeneratedMessage {
     $core.String? barcodeId,
     $core.String? barcodeCode,
     $core.String? qrData,
-    $1.Timestamp? expiresAt,
+    $26.Timestamp? expiresAt,
     $core.String? message,
   }) {
     final _result = create();
@@ -185,15 +185,15 @@ class GenerateBarcodeResponse extends $pb.GeneratedMessage {
   void clearQrData() => clearField(3);
 
   @$pb.TagNumber(4)
-  $1.Timestamp get expiresAt => $_getN(3);
+  $26.Timestamp get expiresAt => $_getN(3);
   @$pb.TagNumber(4)
-  set expiresAt($1.Timestamp v) { setField(4, v); }
+  set expiresAt($26.Timestamp v) { setField(4, v); }
   @$pb.TagNumber(4)
   $core.bool hasExpiresAt() => $_has(3);
   @$pb.TagNumber(4)
   void clearExpiresAt() => clearField(4);
   @$pb.TagNumber(4)
-  $1.Timestamp ensureExpiresAt() => $_ensure(3);
+  $26.Timestamp ensureExpiresAt() => $_ensure(3);
 
   @$pb.TagNumber(5)
   $core.String get message => $_getSZ(4);
@@ -762,9 +762,9 @@ class BarcodePayment extends $pb.GeneratedMessage {
     ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
     ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
     ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status')
-    ..aOM<$1.Timestamp>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
-    ..aOM<$1.Timestamp>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'expiresAt', subBuilder: $1.Timestamp.create)
-    ..aOM<$1.Timestamp>(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'paidAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$26.Timestamp>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $26.Timestamp.create)
+    ..aOM<$26.Timestamp>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'expiresAt', subBuilder: $26.Timestamp.create)
+    ..aOM<$26.Timestamp>(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'paidAt', subBuilder: $26.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -779,9 +779,9 @@ class BarcodePayment extends $pb.GeneratedMessage {
     $core.String? currency,
     $core.String? description,
     $core.String? status,
-    $1.Timestamp? createdAt,
-    $1.Timestamp? expiresAt,
-    $1.Timestamp? paidAt,
+    $26.Timestamp? createdAt,
+    $26.Timestamp? expiresAt,
+    $26.Timestamp? paidAt,
   }) {
     final _result = create();
     if (id != null) {
@@ -925,37 +925,37 @@ class BarcodePayment extends $pb.GeneratedMessage {
   void clearStatus() => clearField(9);
 
   @$pb.TagNumber(10)
-  $1.Timestamp get createdAt => $_getN(9);
+  $26.Timestamp get createdAt => $_getN(9);
   @$pb.TagNumber(10)
-  set createdAt($1.Timestamp v) { setField(10, v); }
+  set createdAt($26.Timestamp v) { setField(10, v); }
   @$pb.TagNumber(10)
   $core.bool hasCreatedAt() => $_has(9);
   @$pb.TagNumber(10)
   void clearCreatedAt() => clearField(10);
   @$pb.TagNumber(10)
-  $1.Timestamp ensureCreatedAt() => $_ensure(9);
+  $26.Timestamp ensureCreatedAt() => $_ensure(9);
 
   @$pb.TagNumber(11)
-  $1.Timestamp get expiresAt => $_getN(10);
+  $26.Timestamp get expiresAt => $_getN(10);
   @$pb.TagNumber(11)
-  set expiresAt($1.Timestamp v) { setField(11, v); }
+  set expiresAt($26.Timestamp v) { setField(11, v); }
   @$pb.TagNumber(11)
   $core.bool hasExpiresAt() => $_has(10);
   @$pb.TagNumber(11)
   void clearExpiresAt() => clearField(11);
   @$pb.TagNumber(11)
-  $1.Timestamp ensureExpiresAt() => $_ensure(10);
+  $26.Timestamp ensureExpiresAt() => $_ensure(10);
 
   @$pb.TagNumber(12)
-  $1.Timestamp get paidAt => $_getN(11);
+  $26.Timestamp get paidAt => $_getN(11);
   @$pb.TagNumber(12)
-  set paidAt($1.Timestamp v) { setField(12, v); }
+  set paidAt($26.Timestamp v) { setField(12, v); }
   @$pb.TagNumber(12)
   $core.bool hasPaidAt() => $_has(11);
   @$pb.TagNumber(12)
   void clearPaidAt() => clearField(12);
   @$pb.TagNumber(12)
-  $1.Timestamp ensurePaidAt() => $_ensure(11);
+  $26.Timestamp ensurePaidAt() => $_ensure(11);
 }
 
 class BarcodeTransaction extends $pb.GeneratedMessage {
@@ -973,7 +973,7 @@ class BarcodeTransaction extends $pb.GeneratedMessage {
     ..aOS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
     ..aOS(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'referenceNumber')
     ..aOS(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status')
-    ..aOM<$1.Timestamp>(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$26.Timestamp>(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $26.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -992,7 +992,7 @@ class BarcodeTransaction extends $pb.GeneratedMessage {
     $core.String? description,
     $core.String? referenceNumber,
     $core.String? status,
-    $1.Timestamp? createdAt,
+    $26.Timestamp? createdAt,
   }) {
     final _result = create();
     if (id != null) {
@@ -1178,14 +1178,14 @@ class BarcodeTransaction extends $pb.GeneratedMessage {
   void clearStatus() => clearField(13);
 
   @$pb.TagNumber(14)
-  $1.Timestamp get createdAt => $_getN(13);
+  $26.Timestamp get createdAt => $_getN(13);
   @$pb.TagNumber(14)
-  set createdAt($1.Timestamp v) { setField(14, v); }
+  set createdAt($26.Timestamp v) { setField(14, v); }
   @$pb.TagNumber(14)
   $core.bool hasCreatedAt() => $_has(13);
   @$pb.TagNumber(14)
   void clearCreatedAt() => clearField(14);
   @$pb.TagNumber(14)
-  $1.Timestamp ensureCreatedAt() => $_ensure(13);
+  $26.Timestamp ensureCreatedAt() => $_ensure(13);
 }
 

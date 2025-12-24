@@ -3,7 +3,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
+import '../../../../../core/theme/invoice_theme_colors.dart';
 import '../../domain/entities/tagged_invoice_entity.dart';
+import '../../../../../core/theme/invoice_theme_colors.dart';
 import '../../domain/repositories/pay_invoice_repository.dart';
 import 'payment_processing_screen.dart';
 
@@ -37,7 +39,7 @@ class _PaymentMethodSelectionScreenState extends State<PaymentMethodSelectionScr
       'balance': 15450.00,
       'currency': 'GBP',
       'icon': Icons.account_balance_wallet,
-      'color': const Color(0xFF3B82F6),
+      'color': InvoiceThemeColors.infoBlue,
     },
     {
       'id': 'savings_account',
@@ -46,7 +48,7 @@ class _PaymentMethodSelectionScreenState extends State<PaymentMethodSelectionScr
       'balance': 8900.50,
       'currency': 'GBP',
       'icon': Icons.savings,
-      'color': const Color(0xFF10B981),
+      'color': InvoiceThemeColors.successGreen,
     },
     {
       'id': 'business_account',
@@ -269,12 +271,12 @@ class _PaymentMethodSelectionScreenState extends State<PaymentMethodSelectionScr
               Container(
                 padding: EdgeInsets.all(8.w),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF3B82F6).withValues(alpha: 0.2),
+                  color: InvoiceThemeColors.infoBlue.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(8.r),
                 ),
                 child: Icon(
                   Icons.receipt_long_outlined,
-                  color: const Color(0xFF3B82F6),
+                  color: InvoiceThemeColors.infoBlue,
                   size: 20.sp,
                 ),
               ),
@@ -703,7 +705,7 @@ class _PaymentMethodSelectionScreenState extends State<PaymentMethodSelectionScr
             boxShadow: canPay
                 ? [
                     BoxShadow(
-                      color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
+                      color: InvoiceThemeColors.infoBlue.withValues(alpha: 0.3),
                       blurRadius: 12,
                       offset: const Offset(0, 4),
                     ),

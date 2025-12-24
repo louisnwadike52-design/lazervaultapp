@@ -6,6 +6,8 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../../../core/types/app_routes.dart';
 import '../cubit/barcode_payment_cubit.dart';
 import '../cubit/barcode_payment_state.dart';
+import '../../../profile/cubit/profile_cubit.dart';
+import '../../../profile/cubit/profile_state.dart';
 
 class GenerateBarcodeScreen extends StatefulWidget {
   const GenerateBarcodeScreen({super.key});
@@ -14,20 +16,50 @@ class GenerateBarcodeScreen extends StatefulWidget {
   State<GenerateBarcodeScreen> createState() => _GenerateBarcodeScreenState();
 }
 
-class _GenerateBarcodeScreenState extends State<GenerateBarcodeScreen> {
+class _GenerateBarcodeScreenState extends State<GenerateBarcodeScreen>
+    with TickerProviderStateMixin {
   final _amountController = TextEditingController();
   final _descriptionController = TextEditingController();
-  String _currency = 'NGN';
   int _validityMinutes = 30;
+  late AnimationController _fadeController;
+  late Animation<double> _fadeAnimation;
+
+  // Currency mapping from country code
+  final Map<String, String> _currencyMap = {
+    'NG': 'NGN',
+    'GB': 'GBP',
+    'US': 'USD',
+    'ZA': 'ZAR',
+    'KE': 'KES',
+    'GH': 'GHS',
+  };
+
+  @override
+  void initState() {
+    super.initState();
+    _fadeController = AnimationController(
+      duration: const Duration(milliseconds: 600),
+      vsync: this,
+    );
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _fadeController, curve: Curves.easeOut),
+    );
+    _fadeController.forward();
+  }
 
   @override
   void dispose() {
     _amountController.dispose();
     _descriptionController.dispose();
+    _fadeController.dispose();
     super.dispose();
   }
 
-  void _generateBarcode() {
+  String _getCurrencyFromActiveCountry(String activeCountry) {
+    return _currencyMap[activeCountry] ?? 'USD';
+  }
+
+  void _generateBarcode(String currency) {
     final amount = double.tryParse(_amountController.text);
 
     if (amount == null || amount <= 0) {
@@ -36,16 +68,21 @@ class _GenerateBarcodeScreenState extends State<GenerateBarcodeScreen> {
         'Please enter a valid amount',
         backgroundColor: const Color(0xFFEF4444),
         colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
       );
       return;
     }
 
     context.read<BarcodePaymentCubit>().generateBarcode(
           amount: amount,
-          currency: _currency,
+          currency: currency,
           description: _descriptionController.text.trim(),
           validityMinutes: _validityMinutes,
         );
+  }
+
+  void _setQuickAmount(String amount) {
+    _amountController.text = amount;
   }
 
   @override
@@ -68,6 +105,7 @@ class _GenerateBarcodeScreenState extends State<GenerateBarcodeScreen> {
               state.message,
               backgroundColor: const Color(0xFFEF4444),
               colorText: Colors.white,
+              snackPosition: SnackPosition.TOP,
             );
           }
         },
@@ -78,36 +116,49 @@ class _GenerateBarcodeScreenState extends State<GenerateBarcodeScreen> {
               end: Alignment.bottomRight,
               colors: [
                 const Color(0xFF1A1A3E),
-                const Color(0xFF0A0E27),
                 const Color(0xFF0F0F23),
+                const Color(0xFF0A0A1A),
               ],
             ),
           ),
           child: SafeArea(
-            child: Column(
-              children: [
-                _buildHeader(),
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: EdgeInsets.all(20.w),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        SizedBox(height: 20.h),
-                        _buildAmountSection(),
-                        SizedBox(height: 24.h),
-                        _buildCurrencySection(),
-                        SizedBox(height: 24.h),
-                        _buildValiditySection(),
-                        SizedBox(height: 24.h),
-                        _buildDescriptionSection(),
-                        SizedBox(height: 40.h),
-                        _buildGenerateButton(),
-                      ],
+            child: FadeTransition(
+              opacity: _fadeAnimation,
+              child: Column(
+                children: [
+                  _buildHeader(),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: EdgeInsets.all(24.w),
+                      child: BlocBuilder<ProfileCubit, ProfileState>(
+                        builder: (context, profileState) {
+                          String currency = 'USD';
+                          if (profileState is ProfileLoaded) {
+                            currency = _getCurrencyFromActiveCountry(
+                                profileState.preferences.activeCountry);
+                          }
+
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              SizedBox(height: 8.h),
+                              _buildAmountSection(currency),
+                              SizedBox(height: 20.h),
+                              _buildQuickAmounts(),
+                              SizedBox(height: 24.h),
+                              _buildValiditySection(),
+                              SizedBox(height: 24.h),
+                              _buildDescriptionSection(),
+                              SizedBox(height: 32.h),
+                              _buildGenerateButton(currency),
+                            ],
+                          );
+                        },
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -169,104 +220,143 @@ class _GenerateBarcodeScreenState extends State<GenerateBarcodeScreen> {
     );
   }
 
-  Widget _buildAmountSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Amount',
-          style: GoogleFonts.inter(
-            color: Colors.white,
-            fontSize: 16.sp,
-            fontWeight: FontWeight.w600,
-          ),
+  Widget _buildAmountSection(String currency) {
+    return Container(
+      padding: EdgeInsets.all(24.w),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(20.r),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.1),
+          width: 1,
         ),
-        SizedBox(height: 12.h),
-        Container(
-          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.05),
-            borderRadius: BorderRadius.circular(12.r),
-            border: Border.all(
-              color: Colors.white.withOpacity(0.1),
-              width: 1,
-            ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF4E03D0).withOpacity(0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
           ),
-          child: Row(
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
             children: [
-              Text(
-                _currency,
-                style: GoogleFonts.inter(
-                  color: const Color(0xFF4E03D0),
-                  fontSize: 20.sp,
-                  fontWeight: FontWeight.w700,
+              Container(
+                padding: EdgeInsets.all(10.w),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      const Color(0xFF4E03D0),
+                      const Color(0xFF6B21E0),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                child: Icon(
+                  Icons.payments,
+                  color: Colors.white,
+                  size: 20.sp,
                 ),
               ),
               SizedBox(width: 12.w),
+              Text(
+                'Amount',
+                style: GoogleFonts.inter(
+                  color: Colors.white.withOpacity(0.7),
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 20.h),
+          Row(
+            children: [
+              Text(
+                currency,
+                style: GoogleFonts.inter(
+                  color: const Color(0xFF6B21E0),
+                  fontSize: 24.sp,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              SizedBox(width: 16.w),
               Expanded(
                 child: TextField(
                   controller: _amountController,
                   keyboardType: TextInputType.numberWithOptions(decimal: true),
                   style: GoogleFonts.inter(
                     color: Colors.white,
-                    fontSize: 24.sp,
+                    fontSize: 32.sp,
                     fontWeight: FontWeight.w700,
                   ),
                   decoration: InputDecoration(
                     hintText: '0.00',
                     hintStyle: GoogleFonts.inter(
-                      color: Colors.white.withOpacity(0.3),
-                      fontSize: 24.sp,
+                      color: Colors.white.withOpacity(0.2),
+                      fontSize: 32.sp,
                       fontWeight: FontWeight.w700,
                     ),
                     border: InputBorder.none,
+                    contentPadding: EdgeInsets.zero,
                   ),
                 ),
               ),
             ],
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
-  Widget _buildCurrencySection() {
+  Widget _buildQuickAmounts() {
+    final amounts = ['100', '500', '1000', '2000', '5000', '10000'];
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Currency',
+          'Quick Amounts',
           style: GoogleFonts.inter(
-            color: Colors.white,
-            fontSize: 16.sp,
+            color: Colors.white.withOpacity(0.7),
+            fontSize: 14.sp,
             fontWeight: FontWeight.w600,
           ),
         ),
         SizedBox(height: 12.h),
         Wrap(
-          spacing: 12.w,
-          children: ['NGN', 'USD', 'GBP', 'EUR', 'ZAR'].map((currency) {
-            final isSelected = _currency == currency;
+          spacing: 10.w,
+          runSpacing: 10.h,
+          children: amounts.map((amount) {
+            final isSelected = _amountController.text == amount;
             return GestureDetector(
-              onTap: () => setState(() => _currency = currency),
+              onTap: () => _setQuickAmount(amount),
               child: Container(
                 padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
                 decoration: BoxDecoration(
-                  color: isSelected
-                      ? const Color(0xFF4E03D0).withOpacity(0.2)
-                      : Colors.white.withOpacity(0.05),
+                  gradient: isSelected
+                      ? LinearGradient(
+                          colors: [
+                            const Color(0xFF4E03D0),
+                            const Color(0xFF6B21E0),
+                          ],
+                        )
+                      : null,
+                  color: isSelected ? null : Colors.white.withOpacity(0.05),
                   borderRadius: BorderRadius.circular(12.r),
                   border: Border.all(
                     color: isSelected
-                        ? const Color(0xFF4E03D0)
+                        ? Colors.transparent
                         : Colors.white.withOpacity(0.1),
-                    width: 1.5,
+                    width: 1,
                   ),
                 ),
                 child: Text(
-                  currency,
+                  amount,
                   style: GoogleFonts.inter(
-                    color: isSelected ? const Color(0xFF4E03D0) : Colors.white,
+                    color: isSelected ? Colors.white : Colors.white.withOpacity(0.7),
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w600,
                   ),
@@ -283,17 +373,28 @@ class _GenerateBarcodeScreenState extends State<GenerateBarcodeScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Validity Period',
-          style: GoogleFonts.inter(
-            color: Colors.white,
-            fontSize: 16.sp,
-            fontWeight: FontWeight.w600,
-          ),
+        Row(
+          children: [
+            Icon(
+              Icons.schedule,
+              color: const Color(0xFF6B21E0),
+              size: 18.sp,
+            ),
+            SizedBox(width: 8.w),
+            Text(
+              'Validity Period',
+              style: GoogleFonts.inter(
+                color: Colors.white.withOpacity(0.7),
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
         ),
         SizedBox(height: 12.h),
         Wrap(
-          spacing: 12.w,
+          spacing: 10.w,
+          runSpacing: 10.h,
           children: [15, 30, 60, 120].map((minutes) {
             final isSelected = _validityMinutes == minutes;
             return GestureDetector(
@@ -301,21 +402,27 @@ class _GenerateBarcodeScreenState extends State<GenerateBarcodeScreen> {
               child: Container(
                 padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
                 decoration: BoxDecoration(
-                  color: isSelected
-                      ? const Color(0xFF4E03D0).withOpacity(0.2)
-                      : Colors.white.withOpacity(0.05),
+                  gradient: isSelected
+                      ? LinearGradient(
+                          colors: [
+                            const Color(0xFF10B981),
+                            const Color(0xFF059669),
+                          ],
+                        )
+                      : null,
+                  color: isSelected ? null : Colors.white.withOpacity(0.05),
                   borderRadius: BorderRadius.circular(12.r),
                   border: Border.all(
                     color: isSelected
-                        ? const Color(0xFF4E03D0)
+                        ? Colors.transparent
                         : Colors.white.withOpacity(0.1),
-                    width: 1.5,
+                    width: 1,
                   ),
                 ),
                 child: Text(
                   '$minutes min',
                   style: GoogleFonts.inter(
-                    color: isSelected ? const Color(0xFF4E03D0) : Colors.white,
+                    color: isSelected ? Colors.white : Colors.white.withOpacity(0.7),
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w600,
                   ),
@@ -332,20 +439,30 @@ class _GenerateBarcodeScreenState extends State<GenerateBarcodeScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Description (Optional)',
-          style: GoogleFonts.inter(
-            color: Colors.white,
-            fontSize: 16.sp,
-            fontWeight: FontWeight.w600,
-          ),
+        Row(
+          children: [
+            Icon(
+              Icons.description,
+              color: const Color(0xFF6B21E0),
+              size: 18.sp,
+            ),
+            SizedBox(width: 8.w),
+            Text(
+              'Description (Optional)',
+              style: GoogleFonts.inter(
+                color: Colors.white.withOpacity(0.7),
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
         ),
         SizedBox(height: 12.h),
         Container(
           padding: EdgeInsets.all(16.w),
           decoration: BoxDecoration(
             color: Colors.white.withOpacity(0.05),
-            borderRadius: BorderRadius.circular(12.r),
+            borderRadius: BorderRadius.circular(16.r),
             border: Border.all(
               color: Colors.white.withOpacity(0.1),
               width: 1,
@@ -356,15 +473,16 @@ class _GenerateBarcodeScreenState extends State<GenerateBarcodeScreen> {
             maxLines: 3,
             style: GoogleFonts.inter(
               color: Colors.white,
-              fontSize: 16.sp,
+              fontSize: 15.sp,
             ),
             decoration: InputDecoration(
               hintText: 'What is this payment for?',
               hintStyle: GoogleFonts.inter(
                 color: Colors.white.withOpacity(0.3),
-                fontSize: 16.sp,
+                fontSize: 15.sp,
               ),
               border: InputBorder.none,
+              contentPadding: EdgeInsets.zero,
             ),
           ),
         ),
@@ -372,40 +490,67 @@ class _GenerateBarcodeScreenState extends State<GenerateBarcodeScreen> {
     );
   }
 
-  Widget _buildGenerateButton() {
+  Widget _buildGenerateButton(String currency) {
     return BlocBuilder<BarcodePaymentCubit, BarcodePaymentState>(
       builder: (context, state) {
         final isLoading = state is BarcodePaymentLoading;
 
-        return SizedBox(
+        return Container(
           width: double.infinity,
-          child: ElevatedButton(
-            onPressed: isLoading ? null : _generateBarcode,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF4E03D0),
-              disabledBackgroundColor: const Color(0xFF4E03D0).withOpacity(0.5),
-              padding: EdgeInsets.symmetric(vertical: 16.h),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12.r),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                const Color(0xFF4E03D0),
+                const Color(0xFF6B21E0),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(16.r),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF4E03D0).withOpacity(0.4),
+                blurRadius: 20,
+                offset: const Offset(0, 10),
               ),
-              elevation: 0,
+            ],
+          ),
+          child: ElevatedButton(
+            onPressed: isLoading ? null : () => _generateBarcode(currency),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.transparent,
+              shadowColor: Colors.transparent,
+              padding: EdgeInsets.symmetric(vertical: 18.h),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16.r),
+              ),
             ),
             child: isLoading
                 ? SizedBox(
-                    height: 20.h,
-                    width: 20.w,
+                    height: 24.h,
+                    width: 24.w,
                     child: CircularProgressIndicator(
-                      strokeWidth: 2,
+                      strokeWidth: 2.5,
                       valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                     ),
                   )
-                : Text(
-                    'Generate Barcode',
-                    style: GoogleFonts.inter(
-                      color: Colors.white,
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.w700,
-                    ),
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.qr_code_2,
+                        color: Colors.white,
+                        size: 24.sp,
+                      ),
+                      SizedBox(width: 12.w),
+                      Text(
+                        'Generate Barcode',
+                        style: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontSize: 17.sp,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ],
                   ),
           ),
         );

@@ -484,47 +484,50 @@ class _TagPayHomeViewState extends State<_TagPayHomeView> {
   }
 
   Widget _buildEmptyTransactions() {
-    return Container(
-      padding: EdgeInsets.all(32.w),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.circular(16.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
-            spreadRadius: 0,
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Icon(
-            Icons.history_outlined,
-            size: 48.sp,
-            color: const Color(0xFF6B7280),
-          ),
-          SizedBox(height: 16.h),
-          Text(
-            'No Transactions Yet',
-            style: GoogleFonts.inter(
-              color: Colors.white,
-              fontSize: 16.sp,
-              fontWeight: FontWeight.w600,
+    return Center(
+      child: Container(
+        padding: EdgeInsets.all(32.w),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1F1F1F),
+          borderRadius: BorderRadius.circular(16.r),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+              spreadRadius: 0,
             ),
-          ),
-          SizedBox(height: 8.h),
-          Text(
-            'Your tag pay transactions will appear here',
-            textAlign: TextAlign.center,
-            style: GoogleFonts.inter(
-              color: const Color(0xFF9CA3AF),
-              fontSize: 13.sp,
-              fontWeight: FontWeight.w400,
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.history_outlined,
+              size: 48.sp,
+              color: const Color(0xFF6B7280),
             ),
-          ),
-        ],
+            SizedBox(height: 16.h),
+            Text(
+              'No Transactions Yet',
+              style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 16.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            SizedBox(height: 8.h),
+            Text(
+              'Your tag pay transactions will appear here',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(
+                color: const Color(0xFF9CA3AF),
+                fontSize: 13.sp,
+                fontWeight: FontWeight.w400,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

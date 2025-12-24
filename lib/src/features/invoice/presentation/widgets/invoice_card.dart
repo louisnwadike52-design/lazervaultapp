@@ -1,4 +1,6 @@
+import '../../../../../core/theme/invoice_theme_colors.dart';
 import 'package:flutter/material.dart';
+import '../../../../../core/theme/invoice_theme_colors.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
@@ -24,7 +26,7 @@ class InvoiceCard extends StatelessWidget {
       child: Container(
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
-          color: Colors.grey[900],
+          color: InvoiceThemeColors.secondaryBackground,
           borderRadius: BorderRadius.circular(12.r),
           border: Border.all(
             color: _getStatusColor().withOpacity(0.3),
@@ -67,7 +69,7 @@ class InvoiceCard extends StatelessWidget {
         Container(
           padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
           decoration: BoxDecoration(
-            color: Colors.grey[800],
+            color: InvoiceThemeColors.borderColor,
             borderRadius: BorderRadius.circular(6.r),
           ),
           child: Text(

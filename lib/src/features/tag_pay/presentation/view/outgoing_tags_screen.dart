@@ -7,6 +7,7 @@ import '../../domain/entities/user_tag_entity.dart';
 import '../cubit/tag_pay_cubit.dart';
 import '../cubit/tag_pay_state.dart';
 import '../../../../../core/types/app_routes.dart';
+import '../widgets/tag_details_bottom_sheet.dart';
 
 class OutgoingTagsScreen extends StatefulWidget {
   const OutgoingTagsScreen({Key? key}) : super(key: key);
@@ -201,20 +202,32 @@ class _OutgoingTagsScreenState extends State<OutgoingTagsScreen> {
   Widget _buildTagItem(UserTagEntity tag) {
     final isPending = tag.status == TagStatus.pending;
 
-    return Container(
-      margin: EdgeInsets.only(bottom: 16.h),
-      padding: EdgeInsets.all(20.w),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-          color: isPending
-              ? const Color(0xFFFB923C)
-              : const Color(0xFF10B981),
-          width: 1,
+    return GestureDetector(
+      onTap: () {
+        showModalBottomSheet(
+          context: context,
+          backgroundColor: Colors.transparent,
+          isScrollControlled: true,
+          builder: (context) => TagDetailsBottomSheet(
+            tag: tag,
+            isOutgoing: true,
+          ),
+        );
+      },
+      child: Container(
+        margin: EdgeInsets.only(bottom: 16.h),
+        padding: EdgeInsets.all(20.w),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1F1F1F),
+          borderRadius: BorderRadius.circular(16.r),
+          border: Border.all(
+            color: isPending
+                ? const Color(0xFFFB923C)
+                : const Color(0xFF10B981),
+            width: 1,
+          ),
         ),
-      ),
-      child: Column(
+        child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
@@ -304,6 +317,7 @@ class _OutgoingTagsScreenState extends State<OutgoingTagsScreen> {
             ),
           ],
         ],
+      ),
       ),
     );
   }

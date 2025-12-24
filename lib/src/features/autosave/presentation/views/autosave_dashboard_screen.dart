@@ -43,9 +43,9 @@ class _AutoSaveDashboardScreenState extends State<AutoSaveDashboardScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0F0F0F),
+      backgroundColor: const Color(0xFF0A0A0A),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF0F0F0F),
+        backgroundColor: const Color(0xFF0A0A0A),
         elevation: 0,
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -108,7 +108,7 @@ class _AutoSaveDashboardScreenState extends State<AutoSaveDashboardScreen> {
         },
         child: RefreshIndicator(
           onRefresh: _loadDashboardData,
-          color: const Color(0xFF3B82F6),
+          color: const Color.fromARGB(255, 78, 3, 208),
           backgroundColor: const Color(0xFF1F1F1F),
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
@@ -151,7 +151,7 @@ class _AutoSaveDashboardScreenState extends State<AutoSaveDashboardScreen> {
                         child: Text(
                           'View All',
                           style: TextStyle(
-                            color: const Color(0xFF3B82F6),
+                            color: const Color.fromARGB(255, 78, 3, 208),
                             fontSize: 14.sp,
                           ),
                         ),
@@ -184,7 +184,7 @@ class _AutoSaveDashboardScreenState extends State<AutoSaveDashboardScreen> {
         borderRadius: BorderRadius.circular(12.r),
       ),
       child: const Center(
-        child: CircularProgressIndicator(color: Color(0xFF3B82F6)),
+        child: CircularProgressIndicator(color: Color.fromARGB(255, 78, 3, 208)),
       ),
     );
   }
@@ -196,7 +196,7 @@ class _AutoSaveDashboardScreenState extends State<AutoSaveDashboardScreen> {
           child: _buildActionButton(
             label: 'Create Rule',
             icon: Icons.add_circle_outline,
-            color: const Color(0xFF3B82F6),
+            color: const Color.fromARGB(255, 78, 3, 208),
             onTap: () {
               Get.toNamed(AppRoutes.createAutoSaveRule);
             },
@@ -252,54 +252,58 @@ class _AutoSaveDashboardScreenState extends State<AutoSaveDashboardScreen> {
   }
 
   Widget _buildEmptyRulesState() {
-    return Container(
-      padding: EdgeInsets.all(32.w),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.circular(12.r),
-      ),
-      child: Column(
-        children: [
-          Icon(
-            Icons.auto_awesome,
-            size: 48.sp,
-            color: const Color(0xFF6B7280),
-          ),
-          SizedBox(height: 12.h),
-          Text(
-            'No Active Rules',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 16.sp,
-              fontWeight: FontWeight.w600,
+    return Center(
+      child: Container(
+        margin: EdgeInsets.symmetric(vertical: 40.h),
+        padding: EdgeInsets.all(32.w),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1F1F1F),
+          borderRadius: BorderRadius.circular(12.r),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.auto_awesome,
+              size: 48.sp,
+              color: const Color(0xFF6B7280),
             ),
-          ),
-          SizedBox(height: 8.h),
-          Text(
-            'Create your first rule to start\nsaving automatically',
-            style: TextStyle(
-              color: const Color(0xFF9CA3AF),
-              fontSize: 13.sp,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          SizedBox(height: 16.h),
-          ElevatedButton.icon(
-            onPressed: () {
-              Get.toNamed(AppRoutes.createAutoSaveRule);
-            },
-            icon: const Icon(Icons.add),
-            label: const Text('Create Rule'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF3B82F6),
-              foregroundColor: Colors.white,
-              padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8.r),
+            SizedBox(height: 12.h),
+            Text(
+              'No Active Rules',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 16.sp,
+                fontWeight: FontWeight.w600,
               ),
             ),
-          ),
-        ],
+            SizedBox(height: 8.h),
+            Text(
+              'Create your first rule to start\nsaving automatically',
+              style: TextStyle(
+                color: const Color(0xFF9CA3AF),
+                fontSize: 13.sp,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 16.h),
+            ElevatedButton.icon(
+              onPressed: () {
+                Get.toNamed(AppRoutes.createAutoSaveRule);
+              },
+              icon: const Icon(Icons.add),
+              label: const Text('Create Rule'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color.fromARGB(255, 78, 3, 208),
+                foregroundColor: Colors.white,
+                padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8.r),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -312,7 +316,7 @@ class _AutoSaveDashboardScreenState extends State<AutoSaveDashboardScreen> {
         color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
-          color: rule.isActive ? const Color(0xFF3B82F6) : const Color(0xFF374151),
+          color: rule.isActive ? const Color.fromARGB(255, 78, 3, 208) : const Color(0xFF2D2D2D),
           width: 1,
         ),
       ),
@@ -402,8 +406,8 @@ class _AutoSaveDashboardScreenState extends State<AutoSaveDashboardScreen> {
                   borderRadius: BorderRadius.circular(4.r),
                   child: LinearProgressIndicator(
                     value: rule.progressPercentage / 100,
-                    backgroundColor: const Color(0xFF374151),
-                    valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
+                    backgroundColor: const Color(0xFF2D2D2D),
+                    valueColor: const AlwaysStoppedAnimation<Color>(Color.fromARGB(255, 78, 3, 208)),
                     minHeight: 6.h,
                   ),
                 ),
@@ -425,12 +429,12 @@ class _AutoSaveDashboardScreenState extends State<AutoSaveDashboardScreen> {
                 icon: Icon(
                   rule.isActive ? Icons.pause : Icons.play_arrow,
                   size: 16.sp,
-                  color: const Color(0xFF3B82F6),
+                  color: const Color.fromARGB(255, 78, 3, 208),
                 ),
                 label: Text(
                   rule.isActive ? 'Pause' : 'Resume',
                   style: TextStyle(
-                    color: const Color(0xFF3B82F6),
+                    color: const Color.fromARGB(255, 78, 3, 208),
                     fontSize: 12.sp,
                   ),
                 ),
@@ -463,7 +467,7 @@ class _AutoSaveDashboardScreenState extends State<AutoSaveDashboardScreen> {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
       decoration: BoxDecoration(
-        color: const Color(0xFF374151),
+        color: const Color(0xFF2D2D2D),
         borderRadius: BorderRadius.circular(6.r),
       ),
       child: Row(

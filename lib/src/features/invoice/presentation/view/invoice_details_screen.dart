@@ -15,6 +15,7 @@ import '../../domain/entities/invoice_entity.dart';
 import '../cubit/invoice_cubit.dart';
 import '../cubit/invoice_state.dart';
 import '../../../../../core/types/app_routes.dart';
+import '../../../../../core/theme/invoice_theme_colors.dart';
 
 class InvoiceDetailsScreen extends StatefulWidget {
   final String invoiceId;
@@ -42,7 +43,7 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0A0A0A),
+      backgroundColor: InvoiceThemeColors.primaryBackground,
       body: SafeArea(
         child: BlocConsumer<InvoiceCubit, InvoiceState>(
           listener: (context, state) {
@@ -122,7 +123,7 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
             child: Container(
               padding: EdgeInsets.all(12.w),
               decoration: BoxDecoration(
-                color: Colors.grey[900],
+                color: InvoiceThemeColors.secondaryBackground,
                 borderRadius: BorderRadius.circular(12.r),
               ),
               child: Icon(
@@ -206,7 +207,7 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: Colors.grey[900],
+        color: InvoiceThemeColors.secondaryBackground,
         borderRadius: BorderRadius.circular(12.r),
       ),
       child: Column(
@@ -250,7 +251,7 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: Colors.grey[900],
+        color: InvoiceThemeColors.secondaryBackground,
         borderRadius: BorderRadius.circular(12.r),
       ),
       child: Column(
@@ -309,7 +310,7 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: Colors.grey[900],
+        color: InvoiceThemeColors.secondaryBackground,
         borderRadius: BorderRadius.circular(12.r),
       ),
       child: Column(
@@ -404,7 +405,7 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: Colors.grey[900],
+        color: InvoiceThemeColors.secondaryBackground,
         borderRadius: BorderRadius.circular(12.r),
       ),
       child: Column(
@@ -668,7 +669,7 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
             child: Container(
               padding: EdgeInsets.all(12.w),
               decoration: BoxDecoration(
-                color: Colors.grey[900],
+                color: InvoiceThemeColors.secondaryBackground,
                 borderRadius: BorderRadius.circular(12.r),
               ),
               child: Icon(
@@ -749,7 +750,7 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
         Container(
           padding: EdgeInsets.all(16.w),
           decoration: BoxDecoration(
-            color: Colors.grey[900],
+            color: InvoiceThemeColors.secondaryBackground,
             borderRadius: BorderRadius.circular(12.r),
           ),
           child: Column(
@@ -794,7 +795,7 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
         Container(
           padding: EdgeInsets.all(16.w),
           decoration: BoxDecoration(
-            color: Colors.grey[900],
+            color: InvoiceThemeColors.secondaryBackground,
             borderRadius: BorderRadius.circular(12.r),
           ),
           child: Column(
@@ -805,12 +806,12 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
                   Container(
                     padding: EdgeInsets.all(8.w),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF10B981).withOpacity(0.1),
+                      color: InvoiceThemeColors.successGreen.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(8.r),
                     ),
                     child: Icon(
                       Icons.business_outlined,
-                      color: const Color(0xFF10B981),
+                      color: InvoiceThemeColors.successGreen,
                       size: 20.sp,
                     ),
                   ),
@@ -879,7 +880,7 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: Colors.grey[900],
+        color: InvoiceThemeColors.secondaryBackground,
         borderRadius: BorderRadius.circular(12.r),
       ),
       child: Column(
@@ -977,7 +978,7 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Failed to share QR code: ${e.toString().replaceFirst('Exception: ', '')}'),
-          backgroundColor: const Color(0xFFEF4444),
+          backgroundColor: InvoiceThemeColors.errorRed,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
           behavior: SnackBarBehavior.floating,
         ),

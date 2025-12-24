@@ -10,8 +10,8 @@ import 'dart:core' as $core;
 import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'google/protobuf/timestamp.pb.dart' as $25;
-import 'google/protobuf/wrappers.pb.dart' as $27;
+import 'google/protobuf/timestamp.pb.dart' as $26;
+import 'google/protobuf/wrappers.pb.dart' as $28;
 
 class Recipient extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'Recipient', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
@@ -25,8 +25,8 @@ class Recipient extends $pb.GeneratedMessage {
     ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sortCode')
     ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'bankName')
     ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'countryCode')
-    ..aOM<$25.Timestamp>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $25.Timestamp.create)
-    ..aOM<$25.Timestamp>(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $25.Timestamp.create)
+    ..aOM<$26.Timestamp>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $26.Timestamp.create)
+    ..aOM<$26.Timestamp>(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $26.Timestamp.create)
     ..aOS(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'email')
     ..aOS(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'phoneNumber')
     ..aOS(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
@@ -47,8 +47,8 @@ class Recipient extends $pb.GeneratedMessage {
     $core.String? sortCode,
     $core.String? bankName,
     $core.String? countryCode,
-    $25.Timestamp? createdAt,
-    $25.Timestamp? updatedAt,
+    $26.Timestamp? createdAt,
+    $26.Timestamp? updatedAt,
     $core.String? email,
     $core.String? phoneNumber,
     $core.String? currency,
@@ -221,26 +221,26 @@ class Recipient extends $pb.GeneratedMessage {
   void clearCountryCode() => clearField(10);
 
   @$pb.TagNumber(11)
-  $25.Timestamp get createdAt => $_getN(10);
+  $26.Timestamp get createdAt => $_getN(10);
   @$pb.TagNumber(11)
-  set createdAt($25.Timestamp v) { setField(11, v); }
+  set createdAt($26.Timestamp v) { setField(11, v); }
   @$pb.TagNumber(11)
   $core.bool hasCreatedAt() => $_has(10);
   @$pb.TagNumber(11)
   void clearCreatedAt() => clearField(11);
   @$pb.TagNumber(11)
-  $25.Timestamp ensureCreatedAt() => $_ensure(10);
+  $26.Timestamp ensureCreatedAt() => $_ensure(10);
 
   @$pb.TagNumber(12)
-  $25.Timestamp get updatedAt => $_getN(11);
+  $26.Timestamp get updatedAt => $_getN(11);
   @$pb.TagNumber(12)
-  set updatedAt($25.Timestamp v) { setField(12, v); }
+  set updatedAt($26.Timestamp v) { setField(12, v); }
   @$pb.TagNumber(12)
   $core.bool hasUpdatedAt() => $_has(11);
   @$pb.TagNumber(12)
   void clearUpdatedAt() => clearField(12);
   @$pb.TagNumber(12)
-  $25.Timestamp ensureUpdatedAt() => $_ensure(11);
+  $26.Timestamp ensureUpdatedAt() => $_ensure(11);
 
   @$pb.TagNumber(13)
   $core.String get email => $_getSZ(12);
@@ -671,24 +671,24 @@ class ListRecipientsResponse extends $pb.GeneratedMessage {
 class UpdateRecipientRequest extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UpdateRecipientRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
     ..a<$fixnum.Int64>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recipientId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..aOM<$27.StringValue>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'name', subBuilder: $27.StringValue.create)
-    ..aOM<$27.BoolValue>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isFavorite', subBuilder: $27.BoolValue.create)
-    ..aOM<$27.StringValue>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accountNumber', subBuilder: $27.StringValue.create)
-    ..aOM<$27.StringValue>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sortCode', subBuilder: $27.StringValue.create)
-    ..aOM<$27.StringValue>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'bankName', subBuilder: $27.StringValue.create)
-    ..aOM<$27.StringValue>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'countryCode', subBuilder: $27.StringValue.create)
+    ..aOM<$28.StringValue>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'name', subBuilder: $28.StringValue.create)
+    ..aOM<$28.BoolValue>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isFavorite', subBuilder: $28.BoolValue.create)
+    ..aOM<$28.StringValue>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accountNumber', subBuilder: $28.StringValue.create)
+    ..aOM<$28.StringValue>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sortCode', subBuilder: $28.StringValue.create)
+    ..aOM<$28.StringValue>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'bankName', subBuilder: $28.StringValue.create)
+    ..aOM<$28.StringValue>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'countryCode', subBuilder: $28.StringValue.create)
     ..hasRequiredFields = false
   ;
 
   UpdateRecipientRequest._() : super();
   factory UpdateRecipientRequest({
     $fixnum.Int64? recipientId,
-    $27.StringValue? name,
-    $27.BoolValue? isFavorite,
-    $27.StringValue? accountNumber,
-    $27.StringValue? sortCode,
-    $27.StringValue? bankName,
-    $27.StringValue? countryCode,
+    $28.StringValue? name,
+    $28.BoolValue? isFavorite,
+    $28.StringValue? accountNumber,
+    $28.StringValue? sortCode,
+    $28.StringValue? bankName,
+    $28.StringValue? countryCode,
   }) {
     final _result = create();
     if (recipientId != null) {
@@ -745,70 +745,70 @@ class UpdateRecipientRequest extends $pb.GeneratedMessage {
   void clearRecipientId() => clearField(1);
 
   @$pb.TagNumber(2)
-  $27.StringValue get name => $_getN(1);
+  $28.StringValue get name => $_getN(1);
   @$pb.TagNumber(2)
-  set name($27.StringValue v) { setField(2, v); }
+  set name($28.StringValue v) { setField(2, v); }
   @$pb.TagNumber(2)
   $core.bool hasName() => $_has(1);
   @$pb.TagNumber(2)
   void clearName() => clearField(2);
   @$pb.TagNumber(2)
-  $27.StringValue ensureName() => $_ensure(1);
+  $28.StringValue ensureName() => $_ensure(1);
 
   @$pb.TagNumber(3)
-  $27.BoolValue get isFavorite => $_getN(2);
+  $28.BoolValue get isFavorite => $_getN(2);
   @$pb.TagNumber(3)
-  set isFavorite($27.BoolValue v) { setField(3, v); }
+  set isFavorite($28.BoolValue v) { setField(3, v); }
   @$pb.TagNumber(3)
   $core.bool hasIsFavorite() => $_has(2);
   @$pb.TagNumber(3)
   void clearIsFavorite() => clearField(3);
   @$pb.TagNumber(3)
-  $27.BoolValue ensureIsFavorite() => $_ensure(2);
+  $28.BoolValue ensureIsFavorite() => $_ensure(2);
 
   @$pb.TagNumber(4)
-  $27.StringValue get accountNumber => $_getN(3);
+  $28.StringValue get accountNumber => $_getN(3);
   @$pb.TagNumber(4)
-  set accountNumber($27.StringValue v) { setField(4, v); }
+  set accountNumber($28.StringValue v) { setField(4, v); }
   @$pb.TagNumber(4)
   $core.bool hasAccountNumber() => $_has(3);
   @$pb.TagNumber(4)
   void clearAccountNumber() => clearField(4);
   @$pb.TagNumber(4)
-  $27.StringValue ensureAccountNumber() => $_ensure(3);
+  $28.StringValue ensureAccountNumber() => $_ensure(3);
 
   @$pb.TagNumber(5)
-  $27.StringValue get sortCode => $_getN(4);
+  $28.StringValue get sortCode => $_getN(4);
   @$pb.TagNumber(5)
-  set sortCode($27.StringValue v) { setField(5, v); }
+  set sortCode($28.StringValue v) { setField(5, v); }
   @$pb.TagNumber(5)
   $core.bool hasSortCode() => $_has(4);
   @$pb.TagNumber(5)
   void clearSortCode() => clearField(5);
   @$pb.TagNumber(5)
-  $27.StringValue ensureSortCode() => $_ensure(4);
+  $28.StringValue ensureSortCode() => $_ensure(4);
 
   @$pb.TagNumber(6)
-  $27.StringValue get bankName => $_getN(5);
+  $28.StringValue get bankName => $_getN(5);
   @$pb.TagNumber(6)
-  set bankName($27.StringValue v) { setField(6, v); }
+  set bankName($28.StringValue v) { setField(6, v); }
   @$pb.TagNumber(6)
   $core.bool hasBankName() => $_has(5);
   @$pb.TagNumber(6)
   void clearBankName() => clearField(6);
   @$pb.TagNumber(6)
-  $27.StringValue ensureBankName() => $_ensure(5);
+  $28.StringValue ensureBankName() => $_ensure(5);
 
   @$pb.TagNumber(7)
-  $27.StringValue get countryCode => $_getN(6);
+  $28.StringValue get countryCode => $_getN(6);
   @$pb.TagNumber(7)
-  set countryCode($27.StringValue v) { setField(7, v); }
+  set countryCode($28.StringValue v) { setField(7, v); }
   @$pb.TagNumber(7)
   $core.bool hasCountryCode() => $_has(6);
   @$pb.TagNumber(7)
   void clearCountryCode() => clearField(7);
   @$pb.TagNumber(7)
-  $27.StringValue ensureCountryCode() => $_ensure(6);
+  $28.StringValue ensureCountryCode() => $_ensure(6);
 }
 
 class UpdateRecipientResponse extends $pb.GeneratedMessage {
