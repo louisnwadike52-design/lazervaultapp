@@ -112,6 +112,11 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
         key: _userEmailKey,
         value: profile.user.email,
       );
+      // Also store email in fallback key for passcode login consistency
+      await _storage.write(
+        key: 'stored_email',
+        value: profile.user.email,
+      );
       // Store user profile data for passcode screen
       await _storage.write(
         key: 'user_first_name',
@@ -121,6 +126,13 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
         key: 'user_last_name',
         value: profile.user.lastName,
       );
+      // Store profile picture if available
+      if (profile.user.profilePicture != null && profile.user.profilePicture!.isNotEmpty) {
+        await _storage.write(
+          key: 'user_avatar_url',
+          value: profile.user.profilePicture!,
+        );
+      }
       _currentProfile = profile;
     } catch (e) {
       print('Error saving session: $e');
@@ -133,6 +145,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       await _storage.delete(key: _refreshTokenKey);
       await _storage.delete(key: _userIdKey);
       await _storage.delete(key: _userEmailKey);
+      // Keep 'stored_email' for passcode login after logout
       await _storage.delete(key: 'user_first_name');
       await _storage.delete(key: 'user_last_name');
       await _storage.delete(key: 'user_avatar_url');
