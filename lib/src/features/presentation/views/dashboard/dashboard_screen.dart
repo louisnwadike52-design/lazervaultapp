@@ -10,9 +10,8 @@ class DashboardScreen extends StatefulWidget {
   static final List<Screen> tabItems = [
     ScreenName.dashboard,
     ScreenName.statistics,
-        ScreenName.aiChat,
+    ScreenName.aiChat,
     ScreenName.lifeStyle,
-
   ].map((name) => Screen(name: name)).toList();
 
   const DashboardScreen({super.key});
@@ -74,7 +73,7 @@ class _DashboardScreenState extends State<DashboardScreen>
       initialIndex: _currentIndex,
       length: DashboardScreen.tabItems.length,
       child: Scaffold(
-        backgroundColor: _currentIndex == 2 ? Color(0xFF1E1E1E) : Colors.white,
+        backgroundColor: Colors.white,
         drawer: ThemedDrawer(),
         onDrawerChanged: (isOpened) {
           setState(() {

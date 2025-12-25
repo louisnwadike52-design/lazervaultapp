@@ -61,6 +61,7 @@ import 'package:lazervault/src/features/recipients/data/models/recipient_model.d
 import 'package:lazervault/src/features/recipients/presentation/view/add_recipient_screen.dart';
 import 'package:lazervault/src/features/recipients/presentation/view/select_recipient_screen.dart';
 import 'package:lazervault/src/features/recipients/presentation/view/qr_scanner_screen.dart';
+import 'package:lazervault/src/features/recipients/presentation/view/my_qr_code_screen.dart';
 import 'package:lazervault/src/features/funds/presentation/view/split_bills/split_bills_screen.dart';
 import 'package:lazervault/src/features/presentation/views/send_fund_receipt_screen.dart';
 import 'package:lazervault/src/features/presentation/views/send_fund_screen.dart';
@@ -92,12 +93,16 @@ import 'package:lazervault/src/features/crypto/cubit/crypto_cubit.dart';
 import 'package:lazervault/src/features/crypto/presentation/view/crypto_detail_screen.dart';
 import 'package:lazervault/src/features/crypto/domain/entities/crypto_entity.dart';
 import 'package:lazervault/src/features/crypto/presentation/view/crypto_chart_details_screen.dart';
+import 'package:lazervault/src/features/invoice/presentation/view/invoice_home_screen.dart';
 import 'package:lazervault/src/features/invoice/presentation/view/invoice_list_screen.dart';
 import 'package:lazervault/src/features/invoice/presentation/view/invoice_service_screen.dart';
 import 'package:lazervault/src/features/invoice/presentation/cubit/invoice_cubit.dart';
 import 'package:lazervault/src/features/invoice/presentation/view/create_invoice_screen.dart';
 import 'package:lazervault/src/features/invoice/presentation/view/invoice_details_screen.dart';
 import 'package:lazervault/src/features/invoice/domain/entities/invoice_entity.dart';
+import 'package:lazervault/src/features/invoice/presentation/view/incoming_tagged_invoices_screen.dart';
+import 'package:lazervault/src/features/invoice/presentation/view/outgoing_tagged_invoices_screen.dart';
+import 'package:lazervault/src/features/invoice/presentation/cubit/tagged_invoice_cubit.dart';
 import 'package:lazervault/src/features/invoice/presentation/view/invoice_preview_screen.dart';
 import 'package:lazervault/src/features/invoice/presentation/view/invoice_payment_screen.dart';
 import 'package:lazervault/src/features/pay_invoice/presentation/view/pay_invoice_screen.dart';
@@ -150,6 +155,7 @@ import 'package:lazervault/src/features/autosave/presentation/cubit/autosave_cub
 import 'package:lazervault/src/features/autosave/presentation/views/autosave_dashboard_screen.dart';
 import 'package:lazervault/src/features/autosave/presentation/views/autosave_transactions_screen.dart';
 import 'package:lazervault/src/features/autosave/presentation/views/create_autosave_rule_screen.dart';
+import 'package:lazervault/src/features/autosave/presentation/views/edit_autosave_rule_screen.dart';
 import 'package:lazervault/src/features/autosave/presentation/views/autosave_rule_review_screen.dart';
 import 'package:lazervault/src/features/autosave/presentation/views/autosave_rule_processing_screen.dart';
 import 'package:lazervault/src/features/autosave/presentation/views/autosave_rule_receipt_screen.dart';
@@ -202,6 +208,17 @@ import 'package:lazervault/src/features/barcode_payment/presentation/view/barcod
 import 'package:lazervault/src/features/barcode_payment/presentation/view/barcode_payment_receipt_screen.dart';
 import 'package:lazervault/src/features/barcode_payment/presentation/view/generated_barcodes_history_screen.dart';
 import 'package:lazervault/src/features/barcode_payment/presentation/view/scanned_barcodes_history_screen.dart';
+
+// Crowdfund imports
+import 'package:lazervault/src/features/crowdfund/presentation/cubit/crowdfund_cubit.dart';
+import 'package:lazervault/src/features/crowdfund/presentation/views/crowdfund_home_screen.dart';
+import 'package:lazervault/src/features/crowdfund/presentation/views/crowdfund_list_screen.dart';
+import 'package:lazervault/src/features/crowdfund/presentation/views/crowdfund_details_screen.dart';
+import 'package:lazervault/src/features/crowdfund/presentation/views/create_crowdfund_screen.dart';
+import 'package:lazervault/src/features/crowdfund/presentation/views/donation_payment_screen.dart';
+import 'package:lazervault/src/features/crowdfund/presentation/views/donation_processing_screen.dart';
+import 'package:lazervault/src/features/crowdfund/presentation/views/donation_receipt_screen.dart';
+import 'package:lazervault/src/features/crowdfund/domain/entities/crowdfund_entities.dart';
 
 // Currency Exchange imports
 import 'package:lazervault/src/features/currency_exchange/presentation/views/exchange_screen.dart';
@@ -322,6 +339,11 @@ class AppRouter {
       transition: Transition.rightToLeft,
     ),
     GetPage(
+      name: AppRoutes.myQRCode,
+      page: () => const MyQRCodeScreen(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
       name: AppRoutes.splitBills,
       page: () => MultiBlocProvider(
         providers: [
@@ -334,7 +356,13 @@ class AppRouter {
     ),
     GetPage(
       name: AppRoutes.invoice,
-      page: () => const InvoiceServiceScreen(),
+      page: () => MultiBlocProvider(
+        providers: [
+          BlocProvider(create: (_) => serviceLocator<InvoiceCubit>()..loadInvoices()),
+          BlocProvider(create: (_) => serviceLocator<TaggedInvoiceCubit>()..loadIncomingInvoices()),
+        ],
+        child: const InvoiceHomeScreen(),
+      ),
       transition: Transition.rightToLeft,
     ),
     GetPage(
@@ -381,6 +409,22 @@ class AppRouter {
         final invoice = Get.arguments as Invoice;
         return InvoicePaymentScreen(invoice: invoice);
       },
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.incomingTaggedInvoices,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<TaggedInvoiceCubit>(),
+        child: const IncomingTaggedInvoicesScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.outgoingTaggedInvoices,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<TaggedInvoiceCubit>(),
+        child: const OutgoingTaggedInvoicesScreen(),
+      ),
       transition: Transition.rightToLeft,
     ),
     GetPage(
@@ -1126,6 +1170,14 @@ class AppRouter {
       transition: Transition.rightToLeft,
     ),
     GetPage(
+      name: AppRoutes.editAutoSaveRule,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<AutoSaveCubit>(),
+        child: const EditAutoSaveRuleScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
       name: AppRoutes.autoSaveRuleReview,
       page: () => const AutoSaveRuleReviewScreen(),
       transition: Transition.rightToLeft,
@@ -1445,6 +1497,80 @@ class AppRouter {
       name: '/contact-us',
       page: () => const ContactUsScreen(),
       transition: Transition.rightToLeft,
+    ),
+
+    // Crowdfund routes
+    GetPage(
+      name: AppRoutes.crowdfund,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<CrowdfundCubit>()..loadCrowdfunds(),
+        child: const CrowdfundHomeScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.crowdfundList,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<CrowdfundCubit>()..loadCrowdfunds(),
+        child: const CrowdfundListScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.crowdfundDetails,
+      page: () {
+        final crowdfundId = Get.arguments as String;
+        return BlocProvider(
+          create: (_) => serviceLocator<CrowdfundCubit>()..loadCrowdfundDetails(crowdfundId),
+          child: CrowdfundDetailsScreen(crowdfundId: crowdfundId),
+        );
+      },
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.createCrowdfund,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<CrowdfundCubit>(),
+        child: const CreateCrowdfundScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.donationPayment,
+      page: () {
+        final crowdfund = Get.arguments as Crowdfund;
+        return BlocProvider(
+          create: (_) => serviceLocator<CrowdfundCubit>(),
+          child: DonationPaymentScreen(crowdfund: crowdfund),
+        );
+      },
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.donationProcessing,
+      page: () {
+        final crowdfund = Get.arguments as Crowdfund;
+        return BlocProvider.value(
+          value: serviceLocator<CrowdfundCubit>(),
+          child: DonationProcessingScreen(crowdfund: crowdfund),
+        );
+      },
+      transition: Transition.fadeIn,
+    ),
+    GetPage(
+      name: AppRoutes.donationReceipt,
+      page: () {
+        final args = Get.arguments as Map<String, dynamic>;
+        return BlocProvider.value(
+          value: serviceLocator<CrowdfundCubit>(),
+          child: DonationReceiptScreen(
+            donation: args['donation'] as CrowdfundDonation,
+            receipt: args['receipt'] as CrowdfundReceipt?,
+            crowdfund: args['crowdfund'] as Crowdfund,
+          ),
+        );
+      },
+      transition: Transition.zoom,
     ),
   ];
 }

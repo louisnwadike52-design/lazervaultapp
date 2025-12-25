@@ -118,6 +118,8 @@ class _NotificationsBuilderState extends State<NotificationsBuilder> {
         return Icons.phone_android;
       case AppServiceName.barcodeQuickPay:
         return Icons.qr_code_2;
+      case AppServiceName.crowdfund:
+        return Icons.volunteer_activism;
       default:
         return Icons.help_outline;
     }
@@ -156,6 +158,8 @@ class _NotificationsBuilderState extends State<NotificationsBuilder> {
       case AppServiceName.autoSave:
         return const Color(0xFF10B981);
       case AppServiceName.barcodeQuickPay:
+        return const Color.fromARGB(255, 78, 3, 208);
+      case AppServiceName.crowdfund:
         return const Color.fromARGB(255, 78, 3, 208);
     }
   }

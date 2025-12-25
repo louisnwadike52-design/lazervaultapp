@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/autosave/domain/entities/autosave_rule_entity.dart';
 import 'package:lazervault/src/features/autosave/presentation/cubit/autosave_cubit.dart';
@@ -18,12 +19,25 @@ class AutoSaveRuleDetailsScreen extends StatefulWidget {
 
 class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> {
   late AutoSaveRuleEntity rule;
-  bool _isLoading = false;
+  bool _isTogglingRule = false;
+  bool _isDeletingRule = false;
+  bool _isTriggeringRule = false;
+  String? _sourceAccountName;
+  String? _destinationAccountName;
 
   @override
   void initState() {
     super.initState();
     rule = Get.arguments as AutoSaveRuleEntity;
+    _fetchAccountNames();
+  }
+
+  Future<void> _fetchAccountNames() async {
+    // For now, use account type as name (can be enhanced later to fetch actual names)
+    setState(() {
+      _sourceAccountName = 'Account ${rule.sourceAccountId.substring(0, 8)}...';
+      _destinationAccountName = 'Account ${rule.destinationAccountId.substring(0, 8)}...';
+    });
   }
 
   void _showConfirmationDialog({
@@ -112,8 +126,8 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> {
       confirmColor: rule.isActive ? const Color(0xFFF59E0B) : const Color(0xFF10B981),
       confirmText: actionText,
       onConfirm: () {
-        setState(() => _isLoading = true);
-        context.read<AutoSaveCubit>().toggleRule(
+        setState(() => _isTogglingRule = true);
+        context.read<AutoSaveCubit>().toggleRuleOptimistic(
           ruleId: rule.id,
           action: action,
         );
@@ -128,7 +142,7 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> {
       confirmColor: const Color(0xFFEF4444),
       confirmText: 'Delete',
       onConfirm: () {
-        setState(() => _isLoading = true);
+        setState(() => _isDeletingRule = true);
         context.read<AutoSaveCubit>().deleteRule(ruleId: rule.id);
       },
     );
@@ -141,10 +155,72 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> {
       confirmColor: const Color.fromARGB(255, 78, 3, 208),
       confirmText: 'Trigger Save',
       onConfirm: () {
-        setState(() => _isLoading = true);
+        setState(() => _isTriggeringRule = true);
         context.read<AutoSaveCubit>().triggerSave(ruleId: rule.id);
       },
     );
+  }
+
+  void _duplicateRule() {
+    // Navigate to create screen with pre-filled data
+    Get.toNamed(
+      AppRoutes.createAutoSaveRule,
+      arguments: {'duplicateFrom': rule},
+    )?.then((_) {
+      Navigator.pop(context);
+    });
+  }
+
+  void _exportRule() {
+    final details = '''
+Auto-Save Rule Details
+
+Name: ${rule.name}
+Description: ${rule.description}
+Status: ${_getStatusText(rule.status)}
+
+Trigger: ${_getTriggerDescription()}
+Amount: ${_getAmountDescription()}
+
+Source Account: ${_sourceAccountName ?? rule.sourceAccountId}
+Destination Account: ${_destinationAccountName ?? rule.destinationAccountId}
+
+Total Saved: \$${rule.totalSaved.toStringAsFixed(2)}
+Times Triggered: ${rule.triggerCount}
+${rule.targetAmount != null ? 'Target: \$${rule.targetAmount!.toStringAsFixed(2)}' : ''}
+${rule.minimumBalance != null ? 'Min Balance: \$${rule.minimumBalance!.toStringAsFixed(2)}' : ''}
+${rule.maximumPerSave != null ? 'Max Per Save: \$${rule.maximumPerSave!.toStringAsFixed(2)}' : ''}
+
+Created: ${DateFormat('MMM dd, yyyy').format(rule.createdAt)}
+${rule.lastTriggeredAt != null ? 'Last Triggered: ${DateFormat('MMM dd, yyyy').format(rule.lastTriggeredAt!)}' : ''}
+''';
+
+    Share.share(details, subject: 'Auto-Save Rule: ${rule.name}');
+  }
+
+  void _navigateToEdit() {
+    Get.toNamed(
+      AppRoutes.editAutoSaveRule,
+      arguments: rule,
+    )?.then((_) {
+      // Refresh data when returning from edit screen
+      context.read<AutoSaveCubit>().getRulesWithCache(forceRefresh: true);
+    });
+  }
+
+  String _getStatusText(AutoSaveStatus status) {
+    switch (status) {
+      case AutoSaveStatus.active:
+        return 'Active';
+      case AutoSaveStatus.paused:
+        return 'Paused';
+      case AutoSaveStatus.completed:
+        return 'Completed';
+      case AutoSaveStatus.cancelled:
+        return 'Cancelled';
+      default:
+        return 'Unknown';
+    }
   }
 
   void _viewTransactions() {
@@ -201,9 +277,9 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> {
   Widget build(BuildContext context) {
     return BlocListener<AutoSaveCubit, AutoSaveState>(
       listener: (context, state) {
-        if (state is AutoSaveRuleUpdated) {
+        if (state is AutoSaveRuleToggleSuccess) {
           setState(() {
-            _isLoading = false;
+            _isTogglingRule = false;
             rule = state.rule;
           });
 
@@ -215,8 +291,22 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> {
             snackPosition: SnackPosition.TOP,
             duration: const Duration(seconds: 2),
           );
-        } else if (state is AutoSaveRuleDeleted) {
-          setState(() => _isLoading = false);
+        } else if (state is AutoSaveRuleUpdated) {
+          setState(() {
+            _isTogglingRule = false;
+            rule = state.rule;
+          });
+
+          Get.snackbar(
+            'Success',
+            'Rule updated successfully',
+            backgroundColor: const Color(0xFF10B981),
+            colorText: Colors.white,
+            snackPosition: SnackPosition.TOP,
+            duration: const Duration(seconds: 2),
+          );
+        } else if (state is AutoSaveRuleDeleted || state is AutoSaveRuleDeleteSuccess) {
+          setState(() => _isDeletingRule = false);
 
           Get.snackbar(
             'Success',
@@ -227,13 +317,14 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> {
             duration: const Duration(seconds: 2),
           );
 
+          // Fixed: Just pop instead of clearing entire stack
           Future.delayed(const Duration(milliseconds: 500), () {
             if (mounted) {
-              Get.offAllNamed(AppRoutes.autoSaveDashboard);
+              Navigator.pop(context);
             }
           });
         } else if (state is AutoSaveTransactionTriggered) {
-          setState(() => _isLoading = false);
+          setState(() => _isTriggeringRule = false);
 
           Get.snackbar(
             'Success',
@@ -245,9 +336,13 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> {
           );
 
           // Refresh rule data to show updated totalSaved
-          context.read<AutoSaveCubit>().getRules();
+          context.read<AutoSaveCubit>().getRulesWithCache(forceRefresh: true);
         } else if (state is AutoSaveError) {
-          setState(() => _isLoading = false);
+          setState(() {
+            _isTogglingRule = false;
+            _isDeletingRule = false;
+            _isTriggeringRule = false;
+          });
 
           Get.snackbar(
             'Error',
@@ -348,6 +443,60 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> {
                   ),
               ],
             ),
+          ),
+          // Edit button
+          IconButton(
+            onPressed: _navigateToEdit,
+            icon: Icon(
+              Icons.edit,
+              color: const Color.fromARGB(255, 78, 3, 208),
+              size: 20.sp,
+            ),
+            tooltip: 'Edit Rule',
+          ),
+          // More options menu
+          PopupMenuButton<String>(
+            icon: Icon(Icons.more_vert, color: Colors.white, size: 20.sp),
+            color: const Color(0xFF1F1F1F),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12.r),
+              side: const BorderSide(color: Color(0xFF2D2D2D)),
+            ),
+            onSelected: (value) {
+              if (value == 'duplicate') {
+                _duplicateRule();
+              } else if (value == 'export') {
+                _exportRule();
+              }
+            },
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                value: 'duplicate',
+                child: Row(
+                  children: [
+                    Icon(Icons.copy, size: 18.sp, color: Colors.white),
+                    SizedBox(width: 12.w),
+                    Text(
+                      'Duplicate Rule',
+                      style: TextStyle(color: Colors.white, fontSize: 14.sp),
+                    ),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: 'export',
+                child: Row(
+                  children: [
+                    Icon(Icons.share, size: 18.sp, color: Colors.white),
+                    SizedBox(width: 12.w),
+                    Text(
+                      'Export Details',
+                      style: TextStyle(color: Colors.white, fontSize: 14.sp),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -513,9 +662,9 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> {
             ],
           ),
           SizedBox(height: 20.h),
-          _buildDetailRow('Source Account', rule.sourceAccountId),
+          _buildDetailRow('Source Account', _sourceAccountName ?? rule.sourceAccountId),
           SizedBox(height: 12.h),
-          _buildDetailRow('Destination Account', rule.destinationAccountId),
+          _buildDetailRow('Destination Account', _destinationAccountName ?? rule.destinationAccountId),
         ],
       ),
     );
@@ -753,7 +902,8 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> {
             label: 'Trigger Manual Save',
             icon: Icons.play_circle_outline,
             color: const Color.fromARGB(255, 78, 3, 208),
-            onPressed: _isLoading ? null : _triggerManualSave,
+            onPressed: (_isTogglingRule || _isDeletingRule || _isTriggeringRule) ? null : _triggerManualSave,
+            isLoading: _isTriggeringRule,
           ),
         if (rule.isActive) SizedBox(height: 12.h),
 
@@ -762,7 +912,8 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> {
           label: rule.isActive ? 'Pause Rule' : 'Resume Rule',
           icon: rule.isActive ? Icons.pause_circle_outline : Icons.play_circle_filled,
           color: rule.isActive ? const Color(0xFFF59E0B) : const Color(0xFF10B981),
-          onPressed: _isLoading ? null : _toggleRule,
+          onPressed: (_isTogglingRule || _isDeletingRule || _isTriggeringRule) ? null : _toggleRule,
+          isLoading: _isTogglingRule,
         ),
         SizedBox(height: 12.h),
 
@@ -771,7 +922,8 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> {
           label: 'Delete Rule',
           icon: Icons.delete_outline,
           color: const Color(0xFFEF4444),
-          onPressed: _isLoading ? null : _deleteRule,
+          onPressed: (_isTogglingRule || _isDeletingRule || _isTriggeringRule) ? null : _deleteRule,
+          isLoading: _isDeletingRule,
         ),
       ],
     );
@@ -782,6 +934,7 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> {
     required IconData icon,
     required Color color,
     required VoidCallback? onPressed,
+    bool isLoading = false,
   }) {
     return Container(
       width: double.infinity,
@@ -803,7 +956,7 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> {
           borderRadius: BorderRadius.circular(16.r),
           onTap: onPressed,
           child: Center(
-            child: _isLoading && onPressed != null
+            child: isLoading
                 ? SizedBox(
                     width: 20.w,
                     height: 20.w,

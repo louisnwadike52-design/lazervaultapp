@@ -435,79 +435,157 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
 
   Widget _buildAddRecipientAddressButton() {
     if (_hasRecipientAddress()) return Container();
-    
-    return Container(
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6)],
-          begin: Alignment.centerLeft,
-          end: Alignment.centerRight,
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Scan QR Button
+        GestureDetector(
+          onTap: _scanRecipientQRCode,
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF4E03D0), Color(0xFF6B21E0)],
+              ),
+              borderRadius: BorderRadius.circular(8.r),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.qr_code_scanner,
+                  color: InvoiceThemeColors.textWhite,
+                  size: 16.sp,
+                ),
+                SizedBox(width: 4.w),
+                Text(
+                  'Scan',
+                  style: GoogleFonts.inter(
+                    color: InvoiceThemeColors.textWhite,
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
-        borderRadius: BorderRadius.circular(8.r),
-      ),
-      child: ElevatedButton.icon(
-        onPressed: _showAddRecipientAddressDialog,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.transparent,
-          shadowColor: Colors.transparent,
-          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-          shape: RoundedRectangleBorder(
+        SizedBox(width: 8.w),
+        // Add Manually Button
+        Container(
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6)],
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+            ),
             borderRadius: BorderRadius.circular(8.r),
           ),
-        ),
-        icon: Icon(
-          Icons.add,
-          color: InvoiceThemeColors.textWhite,
-          size: 16.sp,
-        ),
-        label: Text(
-          'Add',
-          style: GoogleFonts.inter(
-            color: InvoiceThemeColors.textWhite,
-            fontSize: 12.sp,
-            fontWeight: FontWeight.w600,
+          child: ElevatedButton.icon(
+            onPressed: _showAddRecipientAddressDialog,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.transparent,
+              shadowColor: Colors.transparent,
+              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8.r),
+              ),
+            ),
+            icon: Icon(
+              Icons.add,
+              color: InvoiceThemeColors.textWhite,
+              size: 16.sp,
+            ),
+            label: Text(
+              'Add',
+              style: GoogleFonts.inter(
+                color: InvoiceThemeColors.textWhite,
+                fontSize: 12.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
         ),
-      ),
+      ],
     );
   }
 
   Widget _buildAddPayerAddressButton() {
     if (_hasPayerAddress()) return Container();
-    
-    return Container(
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6)],
-          begin: Alignment.centerLeft,
-          end: Alignment.centerRight,
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Scan QR Button
+        GestureDetector(
+          onTap: _scanPayerQRCode,
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF4E03D0), Color(0xFF6B21E0)],
+              ),
+              borderRadius: BorderRadius.circular(8.r),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.qr_code_scanner,
+                  color: InvoiceThemeColors.textWhite,
+                  size: 16.sp,
+                ),
+                SizedBox(width: 4.w),
+                Text(
+                  'Scan',
+                  style: GoogleFonts.inter(
+                    color: InvoiceThemeColors.textWhite,
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
-        borderRadius: BorderRadius.circular(8.r),
-      ),
-      child: ElevatedButton.icon(
-        onPressed: _showAddPayerAddressDialog,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.transparent,
-          shadowColor: Colors.transparent,
-          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-          shape: RoundedRectangleBorder(
+        SizedBox(width: 8.w),
+        // Add Manually Button
+        Container(
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6)],
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+            ),
             borderRadius: BorderRadius.circular(8.r),
           ),
-        ),
-        icon: Icon(
-          Icons.add,
-          color: InvoiceThemeColors.textWhite,
-          size: 16.sp,
-        ),
-        label: Text(
-          'Add',
-          style: GoogleFonts.inter(
-            color: InvoiceThemeColors.textWhite,
-            fontSize: 12.sp,
-            fontWeight: FontWeight.w600,
+          child: ElevatedButton.icon(
+            onPressed: _showAddPayerAddressDialog,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.transparent,
+              shadowColor: Colors.transparent,
+              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8.r),
+              ),
+            ),
+            icon: Icon(
+              Icons.add,
+              color: InvoiceThemeColors.textWhite,
+              size: 16.sp,
+            ),
+            label: Text(
+              'Add',
+              style: GoogleFonts.inter(
+                color: InvoiceThemeColors.textWhite,
+                fontSize: 12.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
         ),
-      ),
+      ],
     );
   }
 
@@ -911,6 +989,98 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
       info.add(_payerCountryController.text);
     }
     return info;
+  }
+
+  // Scan QR Code to auto-fill recipient details
+  Future<void> _scanRecipientQRCode() async {
+    try {
+      // Navigate to QR scanner and wait for result
+      final result = await Get.toNamed(AppRoutes.qrScanner);
+
+      if (result != null && result is Map<String, dynamic>) {
+        // Extract user data from scanned QR code
+        final recipientName = result['name'] ?? '';
+        final recipientUsername = result['username'] ?? '';
+        final recipientEmail = recipientUsername.contains('@')
+            ? recipientUsername
+            : '$recipientUsername@lazervault.com';
+
+        // Auto-fill recipient fields
+        setState(() {
+          _recipientContactController.text = recipientName;
+          _recipientEmailController.text = recipientEmail;
+          _toNameController.text = recipientName;
+          _toEmailController.text = recipientEmail;
+        });
+
+        // Show success message
+        Get.snackbar(
+          'Success',
+          'Recipient details filled from QR code',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: const Color(0xFF10B981),
+          colorText: Colors.white,
+          icon: Icon(Icons.check_circle, color: Colors.white),
+          duration: Duration(seconds: 2),
+        );
+      }
+    } catch (e) {
+      // Show error message
+      Get.snackbar(
+        'Error',
+        'Failed to scan QR code: ${e.toString()}',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: const Color(0xFFEF4444),
+        colorText: Colors.white,
+        icon: Icon(Icons.error_outline, color: Colors.white),
+        duration: Duration(seconds: 3),
+      );
+    }
+  }
+
+  // Scan QR Code to auto-fill payer details
+  Future<void> _scanPayerQRCode() async {
+    try {
+      // Navigate to QR scanner and wait for result
+      final result = await Get.toNamed(AppRoutes.qrScanner);
+
+      if (result != null && result is Map<String, dynamic>) {
+        // Extract user data from scanned QR code
+        final payerName = result['name'] ?? '';
+        final payerUsername = result['username'] ?? '';
+        final payerEmail = payerUsername.contains('@')
+            ? payerUsername
+            : '$payerUsername@lazervault.com';
+
+        // Auto-fill payer fields
+        setState(() {
+          _payerContactController.text = payerName;
+          _payerEmailController.text = payerEmail;
+        });
+
+        // Show success message
+        Get.snackbar(
+          'Success',
+          'Payer details filled from QR code',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: const Color(0xFF10B981),
+          colorText: Colors.white,
+          icon: Icon(Icons.check_circle, color: Colors.white),
+          duration: Duration(seconds: 2),
+        );
+      }
+    } catch (e) {
+      // Show error message
+      Get.snackbar(
+        'Error',
+        'Failed to scan QR code: ${e.toString()}',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: const Color(0xFFEF4444),
+        colorText: Colors.white,
+        icon: Icon(Icons.error_outline, color: Colors.white),
+        duration: Duration(seconds: 3),
+      );
+    }
   }
 
   void _showAddRecipientAddressDialog() {

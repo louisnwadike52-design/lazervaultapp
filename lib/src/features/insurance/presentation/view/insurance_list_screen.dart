@@ -9,7 +9,8 @@ import 'package:lazervault/src/features/authentication/cubit/authentication_stat
 import '../../domain/entities/insurance_entity.dart';
 import '../cubit/insurance_cubit.dart';
 import '../cubit/insurance_state.dart';
-import 'create_insurance_policy_view.dart';
+import '../cubit/create_policy_cubit.dart';
+import 'create_insurance_policy_carousel.dart';
 
 class InsuranceListScreen extends StatefulWidget {
   const InsuranceListScreen({super.key});
@@ -807,94 +808,22 @@ class _InsuranceListScreenState extends State<InsuranceListScreen> with TickerPr
   }
 
   void _showCreateInsuranceDialog() {
-    final insuranceCubit = context.read<InsuranceCubit>();
-    
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (bottomSheetContext) => _buildCreateInsuranceBottomSheet(insuranceCubit),
-    );
-  }
-
-  Widget _buildCreateInsuranceBottomSheet(InsuranceCubit insuranceCubit) {
-    return DraggableScrollableSheet(
-      initialChildSize: 0.9,
-      minChildSize: 0.5,
-      maxChildSize: 0.95,
-      builder: (context, scrollController) {
-        return Container(
-          decoration: BoxDecoration(
-            color: const Color(0xFF1A1A1A),
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(24.r),
-              topRight: Radius.circular(24.r),
-            ),
-          ),
-          child: Column(
-            children: [
-              // Handle bar
-              Container(
-                margin: EdgeInsets.symmetric(vertical: 12.h),
-                width: 40.w,
-                height: 4.h,
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.3),
-                  borderRadius: BorderRadius.circular(2.r),
-          ),
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MultiBlocProvider(
+          providers: [
+            BlocProvider.value(value: context.read<InsuranceCubit>()),
+            BlocProvider.value(value: context.read<AuthenticationCubit>()),
+            BlocProvider(create: (context) => CreatePolicyCubit()),
+          ],
+          child: const CreateInsurancePolicyCarousel(),
         ),
-              // Header
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20.w),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'New Insurance Policy',
-          style: GoogleFonts.inter(
-                        fontSize: 20.sp,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white,
-          ),
-        ),
-                    GestureDetector(
-                      onTap: () => Navigator.of(context).pop(),
-                      child: Container(
-                        width: 32.w,
-                        height: 32.w,
-            decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(16.r),
-            ),
-                        child: Icon(
-                          Icons.close,
-                          color: Colors.white,
-                          size: 18.sp,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(height: 24.h),
-              // Content
-              Expanded(
-                child: BlocProvider.value(
-                  value: insuranceCubit,
-                  child: CreateInsurancePolicyView(
-                    scrollController: scrollController,
-                    onPolicyCreated: () {
-                Navigator.of(context).pop();
-                      insuranceCubit.loadInsurances();
-              },
-              ),
-            ),
-          ),
-        ],
       ),
-        );
-      },
-    );
+    ).then((_) {
+      // Refresh insurance list after carousel closes
+      context.read<InsuranceCubit>().loadInsurances();
+    });
   }
 
   void _navigateToInsuranceDetails(Insurance insurance) async {

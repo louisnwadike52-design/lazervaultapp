@@ -27,6 +27,8 @@ import 'package:lazervault/src/features/authentication/presentation/views/passco
 import 'package:lazervault/src/features/authentication/presentation/views/sign_up_screen.dart';
 import 'package:lazervault/src/features/presentation/views/transfer_funds_screen.dart';
 import 'package:lazervault/src/features/ai_chats/presentation/view/ai_chats_screen.dart';
+import 'package:lazervault/src/features/crowdfund/presentation/views/crowdfund_list_screen.dart';
+import 'package:lazervault/src/features/crowdfund/presentation/cubit/crowdfund_cubit.dart';
 
 import 'package:lazervault/src/features/widgets/dashboard/dashboard.dart';
 import 'package:lazervault/src/features/widgets/my_cards.dart';
@@ -122,6 +124,11 @@ class Screen {
         return const CBCurrencyExchangeScreen();
       case ScreenName.lifeStyle:
         return const LifeStyleScreen();
+      case ScreenName.crowdfund:
+        return BlocProvider(
+          create: (context) => serviceLocator<CrowdfundCubit>()..loadCrowdfunds(),
+          child: const CrowdfundListScreen(),
+        );
     }
   }
 }
@@ -154,7 +161,8 @@ enum ScreenName {
   transactionHistory('Transaction History'),
   aiChat('AI Chat'),
   currencyExchange('Currency Exchange'),
-  lifeStyle('Life Style');
+  lifeStyle('Life Style'),
+  crowdfund('Crowdfunding');
 
   final String displayName;
 

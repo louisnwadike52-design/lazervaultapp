@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lazervault/core/types/services.dart';
 import 'package:lazervault/src/features/widgets/app_service_builder.dart';
+import 'package:lazervault/src/features/widgets/all_services_bottom_sheet.dart';
 
 // Quick Services carousel - 3 rows with reduced indicator spacing
 class AppServicesBuilder extends StatefulWidget {
@@ -63,6 +64,9 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
     const AppService(
         serviceName: AppServiceName.autoSave,
         serviceImg: AppServiceImg.autoSave),
+    const AppService(
+        serviceName: AppServiceName.crowdfund,
+        serviceImg: AppServiceImg.crowdfund),
   ];
 
   // Split services into pages
@@ -120,7 +124,7 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
         borderRadius: BorderRadius.circular(20.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 15,
             offset: Offset(0, 3),
           ),
@@ -143,33 +147,36 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
                   letterSpacing: 0.5,
                 ),
               ),
-              Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: 10.w,
-                  vertical: 4.h,
-                ),
-                decoration: BoxDecoration(
-                  color: Color.fromARGB(255, 78, 3, 208).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(16.r),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      "View All",
-                      style: TextStyle(
-                        fontSize: 12.sp,
-                        fontWeight: FontWeight.w600,
+              GestureDetector(
+                onTap: () => showAllServicesBottomSheet(context, appServices),
+                child: Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 10.w,
+                    vertical: 4.h,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(16.r),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        "View All",
+                        style: TextStyle(
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.w600,
+                          color: Color.fromARGB(255, 78, 3, 208),
+                        ),
+                      ),
+                      SizedBox(width: 4.w),
+                      Icon(
+                        Icons.arrow_forward_rounded,
+                        size: 14.sp,
                         color: Color.fromARGB(255, 78, 3, 208),
                       ),
-                    ),
-                    SizedBox(width: 4.w),
-                    Icon(
-                      Icons.arrow_forward_rounded,
-                      size: 14.sp,
-                      color: Color.fromARGB(255, 78, 3, 208),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -224,7 +231,7 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
                   decoration: BoxDecoration(
                     color: _currentIndex == index
                         ? Color.fromARGB(255, 78, 3, 208)
-                        : Color.fromARGB(255, 78, 3, 208).withOpacity(0.3),
+                        : Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(4.r),
                   ),
                 ),

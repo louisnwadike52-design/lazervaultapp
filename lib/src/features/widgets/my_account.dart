@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/types/screen.dart';
+import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/widgets/themed_app_bar.dart';
 import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
@@ -328,7 +329,7 @@ class _MyAccountViewState extends State<_MyAccountView> {
               icon: Icons.qr_code_2,
               label: 'My QR',
               onTap: () {
-                // Show QR code
+                Get.toNamed(AppRoutes.myQRCode);
               },
             ),
           ),

@@ -63,6 +63,9 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
       case AppServiceName.tagPay:
         Get.toNamed(AppRoutes.tagPay);
         break;
+      case AppServiceName.crowdfund:
+        Get.toNamed(AppRoutes.crowdfund);
+        break;
       case AppServiceName.sendFunds:
       default:
         Get.toNamed(AppRoutes.selectRecipient);
@@ -198,6 +201,9 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
         break;
       case AppServiceName.autoSave:
         iconData = Icons.auto_awesome;
+        break;
+      case AppServiceName.crowdfund:
+        iconData = Icons.volunteer_activism;
         break;
     }
 

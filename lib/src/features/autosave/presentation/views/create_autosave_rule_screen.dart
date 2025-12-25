@@ -43,6 +43,59 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
           userId: 'current_user',
           accessToken: null,
         );
+
+    // Check if duplicating from an existing rule
+    final args = Get.arguments;
+    if (args is Map && args.containsKey('duplicateFrom')) {
+      final AutoSaveRuleEntity duplicateRule = args['duplicateFrom'];
+      _populateFromDuplicate(duplicateRule);
+    }
+  }
+
+  void _populateFromDuplicate(AutoSaveRuleEntity rule) {
+    _nameController.text = 'Copy of ${rule.name}';
+    _descriptionController.text = rule.description;
+    _amountController.text = rule.amountValue.toString();
+    _selectedAmountType = rule.amountType;
+    _selectedTriggerType = rule.triggerType;
+
+    // Set source and destination accounts
+    _selectedSourceAccountId = rule.sourceAccountId;
+    _selectedDestinationAccountId = rule.destinationAccountId;
+
+    // Set optional fields
+    if (rule.targetAmount != null) {
+      _targetAmountController.text = rule.targetAmount.toString();
+    }
+    if (rule.minimumBalance != null) {
+      _minimumBalanceController.text = rule.minimumBalance.toString();
+    }
+    if (rule.maximumPerSave != null) {
+      _maximumPerSaveController.text = rule.maximumPerSave.toString();
+    }
+
+    // Set schedule fields if applicable
+    if (rule.triggerType == TriggerType.scheduled) {
+      _selectedFrequency = rule.frequency;
+      _selectedDay = rule.scheduleDay;
+
+      if (rule.scheduleTime != null) {
+        final timeParts = rule.scheduleTime!.split(':');
+        if (timeParts.length == 2) {
+          _selectedTime = TimeOfDay(
+            hour: int.parse(timeParts[0]),
+            minute: int.parse(timeParts[1]),
+          );
+        }
+      }
+    }
+
+    // Set round up field if applicable
+    if (rule.triggerType == TriggerType.roundUp && rule.roundUpTo != null) {
+      _roundUpToController.text = rule.roundUpTo.toString();
+    }
+
+    setState(() {});
   }
 
   @override

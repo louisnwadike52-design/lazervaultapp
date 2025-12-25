@@ -164,13 +164,24 @@ class _BarcodePaymentConfirmationScreenState
       ),
       child: Column(
         children: [
-          Text(
-            'Amount to Pay',
-            style: GoogleFonts.inter(
-              color: Colors.white.withOpacity(0.9),
-              fontSize: 14.sp,
-              fontWeight: FontWeight.w400,
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'Amount to Pay',
+                style: GoogleFonts.inter(
+                  color: Colors.white.withOpacity(0.9),
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+              SizedBox(width: 8.w),
+              Icon(
+                Icons.lock_outline,
+                color: Colors.white.withOpacity(0.7),
+                size: 14.sp,
+              ),
+            ],
           ),
           SizedBox(height: 8.h),
           Text(
@@ -200,13 +211,23 @@ class _BarcodePaymentConfirmationScreenState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Recipient',
-            style: GoogleFonts.inter(
-              color: Colors.white.withOpacity(0.6),
-              fontSize: 14.sp,
-              fontWeight: FontWeight.w400,
-            ),
+          Row(
+            children: [
+              Text(
+                'Recipient',
+                style: GoogleFonts.inter(
+                  color: Colors.white.withOpacity(0.6),
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+              SizedBox(width: 8.w),
+              Icon(
+                Icons.lock_outline,
+                color: Colors.white.withOpacity(0.4),
+                size: 14.sp,
+              ),
+            ],
           ),
           SizedBox(height: 12.h),
           Row(
@@ -341,13 +362,23 @@ class _BarcodePaymentConfirmationScreenState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Description',
-            style: GoogleFonts.inter(
-              color: Colors.white.withOpacity(0.6),
-              fontSize: 14.sp,
-              fontWeight: FontWeight.w400,
-            ),
+          Row(
+            children: [
+              Text(
+                'Description',
+                style: GoogleFonts.inter(
+                  color: Colors.white.withOpacity(0.6),
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+              SizedBox(width: 8.w),
+              Icon(
+                Icons.lock_outline,
+                color: Colors.white.withOpacity(0.4),
+                size: 14.sp,
+              ),
+            ],
           ),
           SizedBox(height: 8.h),
           Text(

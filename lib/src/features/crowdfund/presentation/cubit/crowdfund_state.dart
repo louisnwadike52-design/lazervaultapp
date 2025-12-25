@@ -1,0 +1,173 @@
+import 'package:equatable/equatable.dart';
+import '../../domain/entities/crowdfund_entities.dart';
+
+/// Base state for crowdfund feature
+abstract class CrowdfundState extends Equatable {
+  const CrowdfundState();
+
+  @override
+  List<Object?> get props => [];
+}
+
+/// Initial state
+class CrowdfundInitial extends CrowdfundState {
+  const CrowdfundInitial();
+}
+
+/// Loading state with optional message
+class CrowdfundLoading extends CrowdfundState {
+  final String? message;
+
+  const CrowdfundLoading({this.message});
+
+  @override
+  List<Object?> get props => [message];
+}
+
+/// Crowdfunds list loaded successfully
+class CrowdfundLoaded extends CrowdfundState {
+  final List<Crowdfund> crowdfunds;
+  final int totalCount;
+  final int currentPage;
+
+  const CrowdfundLoaded({
+    required this.crowdfunds,
+    this.totalCount = 0,
+    this.currentPage = 1,
+  });
+
+  @override
+  List<Object?> get props => [crowdfunds, totalCount, currentPage];
+}
+
+/// Single crowdfund details loaded with donations
+class CrowdfundDetailsLoaded extends CrowdfundState {
+  final Crowdfund crowdfund;
+  final List<CrowdfundDonation> donations;
+  final CrowdfundStatistics? statistics;
+
+  const CrowdfundDetailsLoaded({
+    required this.crowdfund,
+    required this.donations,
+    this.statistics,
+  });
+
+  @override
+  List<Object?> get props => [crowdfund, donations, statistics];
+}
+
+/// Crowdfund created successfully
+class CrowdfundCreated extends CrowdfundState {
+  final Crowdfund crowdfund;
+
+  const CrowdfundCreated(this.crowdfund);
+
+  @override
+  List<Object?> get props => [crowdfund];
+}
+
+/// Crowdfund updated successfully
+class CrowdfundUpdated extends CrowdfundState {
+  final Crowdfund crowdfund;
+
+  const CrowdfundUpdated(this.crowdfund);
+
+  @override
+  List<Object?> get props => [crowdfund];
+}
+
+/// Donation processing state with step indicator
+class DonationProcessing extends CrowdfundState {
+  final String step;
+  final int currentStepIndex;
+  final int totalSteps;
+
+  const DonationProcessing({
+    required this.step,
+    this.currentStepIndex = 0,
+    this.totalSteps = 4,
+  });
+
+  @override
+  List<Object?> get props => [step, currentStepIndex, totalSteps];
+}
+
+/// Donation completed successfully
+class DonationCompleted extends CrowdfundState {
+  final CrowdfundDonation donation;
+  final CrowdfundReceipt? receipt;
+
+  const DonationCompleted({
+    required this.donation,
+    this.receipt,
+  });
+
+  @override
+  List<Object?> get props => [donation, receipt];
+}
+
+/// Receipt generated successfully
+class ReceiptGenerated extends CrowdfundState {
+  final CrowdfundReceipt receipt;
+
+  const ReceiptGenerated(this.receipt);
+
+  @override
+  List<Object?> get props => [receipt];
+}
+
+/// User's receipts loaded
+class UserReceiptsLoaded extends CrowdfundState {
+  final List<CrowdfundReceipt> receipts;
+  final int totalCount;
+  final int currentPage;
+
+  const UserReceiptsLoaded({
+    required this.receipts,
+    this.totalCount = 0,
+    this.currentPage = 1,
+  });
+
+  @override
+  List<Object?> get props => [receipts, totalCount, currentPage];
+}
+
+/// User's donations loaded
+class UserDonationsLoaded extends CrowdfundState {
+  final List<CrowdfundDonation> donations;
+  final int totalCount;
+  final int currentPage;
+
+  const UserDonationsLoaded({
+    required this.donations,
+    this.totalCount = 0,
+    this.currentPage = 1,
+  });
+
+  @override
+  List<Object?> get props => [donations, totalCount, currentPage];
+}
+
+/// Statistics loaded
+class StatisticsLoaded extends CrowdfundState {
+  final CrowdfundStatistics statistics;
+
+  const StatisticsLoaded(this.statistics);
+
+  @override
+  List<Object?> get props => [statistics];
+}
+
+/// Error state
+class CrowdfundError extends CrowdfundState {
+  final String message;
+  final String? errorCode;
+
+  const CrowdfundError({
+    required this.message,
+    this.errorCode,
+  });
+
+  @override
+  List<Object?> get props => [message, errorCode];
+}

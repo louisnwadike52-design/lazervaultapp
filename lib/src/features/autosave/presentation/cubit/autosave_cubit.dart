@@ -20,6 +20,17 @@ class AutoSaveCubit extends Cubit<AutoSaveState> {
   final GetAutoSaveStatisticsUseCase getAutoSaveStatisticsUseCase;
   final TriggerAutoSaveUseCase triggerAutoSaveUseCase;
 
+  // Cache management
+  List<AutoSaveRuleEntity> _cachedRules = [];
+  Map<String, String> _accountNamesCache = {};
+  DateTime? _lastFetch;
+  static const _cacheDuration = Duration(minutes: 5);
+
+  // Current filters/search/sort
+  AutoSaveStatus? _currentFilter;
+  String? _currentSearch;
+  RuleSortOption _currentSort = RuleSortOption.dateCreatedDesc;
+
   AutoSaveCubit({
     required this.createAutoSaveRuleUseCase,
     required this.getAutoSaveRulesUseCase,
@@ -192,7 +203,7 @@ class AutoSaveCubit extends Cubit<AutoSaveState> {
     required String ruleId,
     double? customAmount,
   }) async {
-    emit(AutoSaveLoading());
+    emit(AutoSaveRuleTriggeringState(ruleId));
 
     final result = await triggerAutoSaveUseCase(
       ruleId: ruleId,
@@ -203,5 +214,274 @@ class AutoSaveCubit extends Cubit<AutoSaveState> {
       (failure) => emit(AutoSaveError(failure.message)),
       (transaction) => emit(AutoSaveTransactionTriggered(transaction)),
     );
+  }
+
+  // Enhanced getRules with caching
+  Future<void> getRulesWithCache({
+    bool forceRefresh = false,
+    AutoSaveStatus? filter,
+    String? searchQuery,
+    RuleSortOption? sort,
+  }) async {
+    // Check cache validity
+    if (!forceRefresh &&
+        _lastFetch != null &&
+        DateTime.now().difference(_lastFetch!) < _cacheDuration &&
+        _cachedRules.isNotEmpty) {
+      _emitFilteredAndSorted(filter, searchQuery, sort);
+      return;
+    }
+
+    emit(AutoSaveRulesLoadingState(cachedRules: _cachedRules));
+
+    final result = await getAutoSaveRulesUseCase(
+      accountId: null,
+      status: filter,
+    );
+
+    result.fold(
+      (failure) => emit(AutoSaveError(failure.message)),
+      (rules) {
+        _cachedRules = rules;
+        _lastFetch = DateTime.now();
+        _currentFilter = filter;
+        _currentSearch = searchQuery;
+        _currentSort = sort ?? _currentSort;
+
+        _emitFilteredAndSorted(filter, searchQuery, sort);
+      },
+    );
+  }
+
+  void searchRules(String query) {
+    _currentSearch = query;
+    _emitFilteredAndSorted(_currentFilter, query, _currentSort);
+  }
+
+  void filterRules(AutoSaveStatus? status) {
+    _currentFilter = status;
+    _emitFilteredAndSorted(status, _currentSearch, _currentSort);
+  }
+
+  void sortRules(RuleSortOption option) {
+    _currentSort = option;
+    _emitFilteredAndSorted(_currentFilter, _currentSearch, option);
+  }
+
+  void _emitFilteredAndSorted(
+    AutoSaveStatus? filter,
+    String? search,
+    RuleSortOption? sort,
+  ) {
+    var filtered = List<AutoSaveRuleEntity>.from(_cachedRules);
+
+    // Apply filter
+    if (filter != null) {
+      filtered = filtered.where((r) => r.status == filter).toList();
+    }
+
+    // Apply search
+    if (search != null && search.isNotEmpty) {
+      final lower = search.toLowerCase();
+      filtered = filtered.where((r) {
+        return r.name.toLowerCase().contains(lower) ||
+            r.description.toLowerCase().contains(lower);
+      }).toList();
+    }
+
+    // Apply sort
+    filtered = _sortRules(filtered, sort ?? _currentSort);
+
+    emit(AutoSaveRulesLoadedState(
+      rules: filtered,
+      accountNames: _accountNamesCache,
+      appliedFilter: filter,
+      appliedSearch: search,
+      appliedSort: sort,
+      lastRefreshed: _lastFetch ?? DateTime.now(),
+    ));
+  }
+
+  List<AutoSaveRuleEntity> _sortRules(
+    List<AutoSaveRuleEntity> rules,
+    RuleSortOption option,
+  ) {
+    final sorted = List<AutoSaveRuleEntity>.from(rules);
+    switch (option) {
+      case RuleSortOption.nameAsc:
+        sorted.sort((a, b) => a.name.compareTo(b.name));
+        break;
+      case RuleSortOption.nameDesc:
+        sorted.sort((a, b) => b.name.compareTo(a.name));
+        break;
+      case RuleSortOption.dateCreatedDesc:
+        sorted.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+        break;
+      case RuleSortOption.dateCreatedAsc:
+        sorted.sort((a, b) => a.createdAt.compareTo(b.createdAt));
+        break;
+      case RuleSortOption.totalSavedDesc:
+        sorted.sort((a, b) => b.totalSaved.compareTo(a.totalSaved));
+        break;
+      case RuleSortOption.totalSavedAsc:
+        sorted.sort((a, b) => a.totalSaved.compareTo(b.totalSaved));
+        break;
+      case RuleSortOption.statusActive:
+        sorted.sort((a, b) {
+          if (a.isActive && !b.isActive) return -1;
+          if (!a.isActive && b.isActive) return 1;
+          return 0;
+        });
+        break;
+    }
+    return sorted;
+  }
+
+  // Optimistic toggle
+  Future<void> toggleRuleOptimistic({
+    required String ruleId,
+    required String action,
+  }) async {
+    // Find rule in cache
+    final index = _cachedRules.indexWhere((r) => r.id == ruleId);
+    if (index == -1) {
+      // Rule not in cache, fallback to regular toggle
+      await toggleRule(ruleId: ruleId, action: action);
+      return;
+    }
+
+    final oldRule = _cachedRules[index];
+
+    // Emit toggling state
+    emit(AutoSaveRuleTogglingState(ruleId, action == 'resume'));
+
+    // Optimistically update cache
+    final optimisticRule = AutoSaveRuleEntity(
+      id: oldRule.id,
+      userId: oldRule.userId,
+      name: oldRule.name,
+      description: oldRule.description,
+      triggerType: oldRule.triggerType,
+      amountType: oldRule.amountType,
+      amountValue: oldRule.amountValue,
+      sourceAccountId: oldRule.sourceAccountId,
+      destinationAccountId: oldRule.destinationAccountId,
+      status: action == 'resume'
+          ? AutoSaveStatus.active
+          : AutoSaveStatus.paused,
+      frequency: oldRule.frequency,
+      scheduleTime: oldRule.scheduleTime,
+      scheduleDay: oldRule.scheduleDay,
+      roundUpTo: oldRule.roundUpTo,
+      targetAmount: oldRule.targetAmount,
+      minimumBalance: oldRule.minimumBalance,
+      maximumPerSave: oldRule.maximumPerSave,
+      createdAt: oldRule.createdAt,
+      updatedAt: DateTime.now(),
+      lastTriggeredAt: oldRule.lastTriggeredAt,
+      triggerCount: oldRule.triggerCount,
+      totalSaved: oldRule.totalSaved,
+    );
+
+    _cachedRules[index] = optimisticRule;
+    _emitFilteredAndSorted(_currentFilter, _currentSearch, _currentSort);
+
+    // Make actual API call
+    final result = await toggleAutoSaveRuleUseCase(
+      ruleId: ruleId,
+      action: action,
+    );
+
+    result.fold(
+      (failure) {
+        // Revert optimistic update
+        _cachedRules[index] = oldRule;
+        emit(AutoSaveError(failure.message));
+        _emitFilteredAndSorted(_currentFilter, _currentSearch, _currentSort);
+      },
+      (rule) {
+        // Update cache with actual result
+        _cachedRules[index] = rule;
+        emit(AutoSaveRuleToggleSuccess(rule));
+        _emitFilteredAndSorted(_currentFilter, _currentSearch, _currentSort);
+      },
+    );
+  }
+
+  // Bulk operations
+  Future<void> bulkPause(List<String> ruleIds) async {
+    await _performBulkOperation(
+      ruleIds,
+      BulkOperationType.pause,
+      (id) => toggleAutoSaveRuleUseCase(ruleId: id, action: 'pause'),
+    );
+  }
+
+  Future<void> bulkResume(List<String> ruleIds) async {
+    await _performBulkOperation(
+      ruleIds,
+      BulkOperationType.resume,
+      (id) => toggleAutoSaveRuleUseCase(ruleId: id, action: 'resume'),
+    );
+  }
+
+  Future<void> bulkDelete(List<String> ruleIds) async {
+    await _performBulkOperation(
+      ruleIds,
+      BulkOperationType.delete,
+      (id) => deleteAutoSaveRuleUseCase(ruleId: id),
+    );
+  }
+
+  Future<void> _performBulkOperation(
+    List<String> ruleIds,
+    BulkOperationType operation,
+    Future<dynamic> Function(String) operationFn,
+  ) async {
+    emit(AutoSaveLoading());
+
+    int successCount = 0;
+    for (final id in ruleIds) {
+      final result = await operationFn(id);
+      if (result != null) {
+        // Check if operation succeeded
+        result.fold(
+          (failure) {
+            // Operation failed for this rule
+          },
+          (_) {
+            successCount++;
+          },
+        );
+      }
+    }
+
+    // Refresh list
+    await getRulesWithCache(forceRefresh: true);
+
+    if (successCount > 0) {
+      emit(AutoSaveBulkOperationSuccess(operation, successCount));
+      _emitFilteredAndSorted(_currentFilter, _currentSearch, _currentSort);
+    } else {
+      emit(AutoSaveError('Bulk operation failed for all selected rules'));
+    }
+  }
+
+  // Set account names cache (called from UI)
+  void setAccountNames(Map<String, String> accountNames) {
+    _accountNamesCache = accountNames;
+    if (state is AutoSaveRulesLoadedState) {
+      _emitFilteredAndSorted(_currentFilter, _currentSearch, _currentSort);
+    }
+  }
+
+  // Clear cache
+  void clearCache() {
+    _cachedRules = [];
+    _accountNamesCache = {};
+    _lastFetch = null;
+    _currentFilter = null;
+    _currentSearch = null;
+    _currentSort = RuleSortOption.dateCreatedDesc;
   }
 }

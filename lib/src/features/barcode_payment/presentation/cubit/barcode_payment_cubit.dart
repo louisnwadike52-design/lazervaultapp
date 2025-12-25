@@ -26,13 +26,16 @@ class BarcodePaymentCubit extends Cubit<BarcodePaymentState> {
     result.fold(
       (failure) => emit(BarcodePaymentError(message: failure.message)),
       (barcode) {
-        // Create QR data JSON
+        // Create QR data JSON with complete transaction metadata
         final qrData = {
           'type': 'barcode_payment',
+          'barcode_id': barcode.id,
           'barcode_code': barcode.barcodeCode,
           'amount': barcode.amount,
           'currency': barcode.currency,
           'recipient': barcode.username,
+          'recipient_id': barcode.userId,
+          'description': barcode.description,
           'expires_at': barcode.expiresAt.millisecondsSinceEpoch ~/ 1000,
         };
         emit(BarcodeGenerated(

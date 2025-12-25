@@ -9,7 +9,7 @@ import 'dart:core' as $core;
 
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'google/protobuf/timestamp.pb.dart' as $26;
+import 'google/protobuf/timestamp.pb.dart' as $28;
 
 class RegisterFaceRequest extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'RegisterFaceRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
@@ -848,7 +848,7 @@ class HealthCheckResponse extends $pb.GeneratedMessage {
     ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'healthy')
     ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
     ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'service_version')
-    ..aOM<$26.Timestamp>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'timestamp', subBuilder: $26.Timestamp.create)
+    ..aOM<$28.Timestamp>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'timestamp', subBuilder: $28.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -857,7 +857,7 @@ class HealthCheckResponse extends $pb.GeneratedMessage {
     $core.bool? healthy,
     $core.String? message,
     $core.String? serviceVersion,
-    $26.Timestamp? timestamp,
+    $28.Timestamp? timestamp,
   }) {
     final _result = create();
     if (healthy != null) {
@@ -923,14 +923,14 @@ class HealthCheckResponse extends $pb.GeneratedMessage {
   void clearServiceVersion() => clearField(3);
 
   @$pb.TagNumber(4)
-  $26.Timestamp get timestamp => $_getN(3);
+  $28.Timestamp get timestamp => $_getN(3);
   @$pb.TagNumber(4)
-  set timestamp($26.Timestamp v) { setField(4, v); }
+  set timestamp($28.Timestamp v) { setField(4, v); }
   @$pb.TagNumber(4)
   $core.bool hasTimestamp() => $_has(3);
   @$pb.TagNumber(4)
   void clearTimestamp() => clearField(4);
   @$pb.TagNumber(4)
-  $26.Timestamp ensureTimestamp() => $_ensure(3);
+  $28.Timestamp ensureTimestamp() => $_ensure(3);
 }
 
