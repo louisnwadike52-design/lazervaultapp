@@ -3,6 +3,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../generated/invoice.pbgrpc.dart';
 import '../../generated/invoice_payment.pbgrpc.dart';
+import '../../generated/tagged_invoice.pbgrpc.dart';
 import '../../generated/statistics.pbgrpc.dart';
 import '../../generated/ai_scan.pbgrpc.dart';
 import '../../generated/tag_pay.pbgrpc.dart';
@@ -13,6 +14,7 @@ class GrpcClient {
   late ClientChannel _channel;
   late InvoiceServiceClient _invoiceClient;
   late InvoicePaymentServiceClient _paymentClient;
+  late TaggedInvoiceServiceClient _taggedInvoiceClient;
   late StatisticsServiceClient _statisticsClient;
   late AiScanServiceClient _aiScanClient;
   late TagPayServiceClient _tagPayClient;
@@ -44,6 +46,7 @@ class GrpcClient {
 
     _invoiceClient = InvoiceServiceClient(_channel);
     _paymentClient = InvoicePaymentServiceClient(_channel);
+    _taggedInvoiceClient = TaggedInvoiceServiceClient(_channel);
     _statisticsClient = StatisticsServiceClient(_channel);
     _aiScanClient = AiScanServiceClient(_channel);
     _tagPayClient = TagPayServiceClient(_channel);
@@ -53,6 +56,8 @@ class GrpcClient {
 
   InvoiceServiceClient get invoiceClient => _invoiceClient;
   InvoicePaymentServiceClient get paymentClient => _paymentClient;
+  InvoicePaymentServiceClient get invoicePaymentClient => _paymentClient;
+  TaggedInvoiceServiceClient get taggedInvoiceClient => _taggedInvoiceClient;
   StatisticsServiceClient get statisticsClient => _statisticsClient;
   AiScanServiceClient get aiScanClient => _aiScanClient;
   TagPayServiceClient get tagPayClient => _tagPayClient;

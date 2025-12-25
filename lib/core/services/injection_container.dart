@@ -202,6 +202,16 @@ import 'package:lazervault/src/features/crypto/presentation/view/crypto_chart_de
 import 'package:lazervault/src/features/crypto/presentation/view/crypto_detail_screen.dart';
 // End Crypto Imports
 
+// Crowdfund Imports
+import 'package:lazervault/src/generated/crowdfund.pbgrpc.dart' as crowdfund_grpc;
+import 'package:lazervault/src/features/crowdfund/data/datasources/crowdfund_grpc_data_source.dart';
+import 'package:lazervault/src/features/crowdfund/data/repositories/crowdfund_repository_impl.dart';
+import 'package:lazervault/src/features/crowdfund/data/services/crowdfund_pdf_service.dart';
+import 'package:lazervault/src/features/crowdfund/domain/repositories/crowdfund_repository.dart';
+import 'package:lazervault/src/features/crowdfund/domain/usecases/crowdfund_usecases.dart';
+import 'package:lazervault/src/features/crowdfund/presentation/cubit/crowdfund_cubit.dart';
+// End Crowdfund Imports
+
 // Invoice Imports
 import 'package:lazervault/src/features/invoice/data/datasources/invoice_local_datasource.dart';
 import 'package:lazervault/src/features/invoice/data/repositories/invoice_repository_grpc_impl.dart';
@@ -215,6 +225,15 @@ import 'package:lazervault/src/features/pay_invoice/presentation/cubit/pay_invoi
 import 'package:lazervault/src/features/pay_invoice/data/repositories/pay_invoice_repository_grpc_impl.dart';
 import 'package:lazervault/src/features/pay_invoice/data/datasources/pay_invoice_local_datasource.dart';
 import 'package:lazervault/src/features/pay_invoice/domain/repositories/pay_invoice_repository.dart';
+
+// Tagged Invoice Imports
+import 'package:lazervault/src/features/invoice/domain/repositories/tagged_invoice_repository.dart';
+import 'package:lazervault/src/features/invoice/data/repositories/tagged_invoice_repository_grpc_impl.dart';
+import 'package:lazervault/src/features/invoice/presentation/cubit/tagged_invoice_cubit.dart';
+import 'package:lazervault/src/features/invoice/presentation/view/incoming_tagged_invoices_screen.dart';
+import 'package:lazervault/src/features/invoice/presentation/view/outgoing_tagged_invoices_screen.dart';
+// End Tagged Invoice Imports
+
 // End Invoice Imports
 
 // Tag Pay Imports
@@ -393,6 +412,9 @@ Future<void> init() async {
   );
   serviceLocator.registerLazySingleton<AutoSaveServiceClient>(
     () => AutoSaveServiceClient(serviceLocator<ClientChannel>()),
+  );
+  serviceLocator.registerLazySingleton<crowdfund_grpc.CrowdfundServiceClient>(
+    () => crowdfund_grpc.CrowdfundServiceClient(serviceLocator<ClientChannel>()),
   );
 
 
@@ -758,6 +780,59 @@ Future<void> init() async {
   ));
 
 
+  // ================== Feature: Crowdfund ==================
+
+  // gRPC Data Source
+  serviceLocator.registerLazySingleton<CrowdfundGrpcDataSource>(
+    () => CrowdfundGrpcDataSource(
+      client: serviceLocator<crowdfund_grpc.CrowdfundServiceClient>(),
+      callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
+    ),
+  );
+
+  // Repositories
+  serviceLocator.registerLazySingleton<CrowdfundRepository>(
+    () => CrowdfundRepositoryImpl(
+      serviceLocator<CrowdfundGrpcDataSource>(),
+    ),
+  );
+
+  // PDF Service
+  serviceLocator.registerLazySingleton<CrowdfundPdfService>(
+    () => CrowdfundPdfService(),
+  );
+
+  // Use Cases
+  serviceLocator.registerLazySingleton(() => CreateCrowdfundUseCase(serviceLocator<CrowdfundRepository>()));
+  serviceLocator.registerLazySingleton(() => GetCrowdfundUseCase(serviceLocator<CrowdfundRepository>()));
+  serviceLocator.registerLazySingleton(() => ListCrowdfundsUseCase(serviceLocator<CrowdfundRepository>()));
+  serviceLocator.registerLazySingleton(() => SearchCrowdfundsUseCase(serviceLocator<CrowdfundRepository>()));
+  serviceLocator.registerLazySingleton(() => UpdateCrowdfundUseCase(serviceLocator<CrowdfundRepository>()));
+  serviceLocator.registerLazySingleton(() => DeleteCrowdfundUseCase(serviceLocator<CrowdfundRepository>()));
+  serviceLocator.registerLazySingleton(() => MakeDonationUseCase(serviceLocator<CrowdfundRepository>()));
+  serviceLocator.registerLazySingleton(() => GetCrowdfundDonationsUseCase(serviceLocator<CrowdfundRepository>()));
+  serviceLocator.registerLazySingleton(() => GetUserDonationsUseCase(serviceLocator<CrowdfundRepository>()));
+  serviceLocator.registerLazySingleton(() => GenerateDonationReceiptUseCase(serviceLocator<CrowdfundRepository>()));
+  serviceLocator.registerLazySingleton(() => GetUserReceiptsUseCase(serviceLocator<CrowdfundRepository>()));
+  serviceLocator.registerLazySingleton(() => GetCrowdfundStatisticsUseCase(serviceLocator<CrowdfundRepository>()));
+
+  // Blocs/Cubits
+  serviceLocator.registerFactory(() => CrowdfundCubit(
+    createCrowdfundUseCase: serviceLocator<CreateCrowdfundUseCase>(),
+    getCrowdfundUseCase: serviceLocator<GetCrowdfundUseCase>(),
+    listCrowdfundsUseCase: serviceLocator<ListCrowdfundsUseCase>(),
+    searchCrowdfundsUseCase: serviceLocator<SearchCrowdfundsUseCase>(),
+    updateCrowdfundUseCase: serviceLocator<UpdateCrowdfundUseCase>(),
+    deleteCrowdfundUseCase: serviceLocator<DeleteCrowdfundUseCase>(),
+    makeDonationUseCase: serviceLocator<MakeDonationUseCase>(),
+    getCrowdfundDonationsUseCase: serviceLocator<GetCrowdfundDonationsUseCase>(),
+    getUserDonationsUseCase: serviceLocator<GetUserDonationsUseCase>(),
+    generateDonationReceiptUseCase: serviceLocator<GenerateDonationReceiptUseCase>(),
+    getUserReceiptsUseCase: serviceLocator<GetUserReceiptsUseCase>(),
+    getCrowdfundStatisticsUseCase: serviceLocator<GetCrowdfundStatisticsUseCase>(),
+  ));
+
+
   // ================== Feature: Invoice ==================
 
   // Data Sources (local - for offline fallback if needed)
@@ -782,6 +857,20 @@ Future<void> init() async {
   serviceLocator.registerFactory(() => InvoiceCubit(
     repository: serviceLocator<InvoiceRepository>(),
     currentUserId: 'current_user_id', // This should be injected based on authenticated user
+  ));
+
+  // ================== Feature: Tagged Invoice ==================
+
+  // Repositories - Using gRPC implementation for backend integration
+  serviceLocator.registerLazySingleton<TaggedInvoiceRepository>(
+    () => TaggedInvoiceRepositoryGrpcImpl(
+      grpcClient: serviceLocator<GrpcClient>(),
+    ),
+  );
+
+  // Blocs/Cubits
+  serviceLocator.registerFactory(() => TaggedInvoiceCubit(
+    repository: serviceLocator<TaggedInvoiceRepository>(),
   ));
 
   // ================== Feature: Tag Pay ==================

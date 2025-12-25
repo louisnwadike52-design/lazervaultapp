@@ -10,8 +10,8 @@ import 'dart:core' as $core;
 import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'common.pb.dart' as $27;
-import 'google/protobuf/timestamp.pb.dart' as $26;
+import 'common.pb.dart' as $29;
+import 'google/protobuf/timestamp.pb.dart' as $28;
 
 import 'user.pbenum.dart';
 
@@ -166,7 +166,7 @@ class CreateUserResponse extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CreateUserResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
     ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
     ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
-    ..aOM<$27.Data>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'data', subBuilder: $27.Data.create)
+    ..aOM<$29.Data>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'data', subBuilder: $29.Data.create)
     ..hasRequiredFields = false
   ;
 
@@ -174,7 +174,7 @@ class CreateUserResponse extends $pb.GeneratedMessage {
   factory CreateUserResponse({
     $core.bool? success,
     $core.String? message,
-    $27.Data? data,
+    $29.Data? data,
   }) {
     final _result = create();
     if (success != null) {
@@ -228,15 +228,15 @@ class CreateUserResponse extends $pb.GeneratedMessage {
   void clearMessage() => clearField(2);
 
   @$pb.TagNumber(3)
-  $27.Data get data => $_getN(2);
+  $29.Data get data => $_getN(2);
   @$pb.TagNumber(3)
-  set data($27.Data v) { setField(3, v); }
+  set data($29.Data v) { setField(3, v); }
   @$pb.TagNumber(3)
   $core.bool hasData() => $_has(2);
   @$pb.TagNumber(3)
   void clearData() => clearField(3);
   @$pb.TagNumber(3)
-  $27.Data ensureData() => $_ensure(2);
+  $29.Data ensureData() => $_ensure(2);
 }
 
 class GetUserProfileRequest extends $pb.GeneratedMessage {
@@ -272,7 +272,7 @@ class GetUserProfileResponse extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetUserProfileResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
     ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
     ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
-    ..aOM<$27.User>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'user', subBuilder: $27.User.create)
+    ..aOM<$29.User>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'user', subBuilder: $29.User.create)
     ..aOM<UserPreferences>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'preferences', subBuilder: UserPreferences.create)
     ..hasRequiredFields = false
   ;
@@ -281,7 +281,7 @@ class GetUserProfileResponse extends $pb.GeneratedMessage {
   factory GetUserProfileResponse({
     $core.bool? success,
     $core.String? message,
-    $27.User? user,
+    $29.User? user,
     UserPreferences? preferences,
   }) {
     final _result = create();
@@ -339,15 +339,15 @@ class GetUserProfileResponse extends $pb.GeneratedMessage {
   void clearMessage() => clearField(2);
 
   @$pb.TagNumber(3)
-  $27.User get user => $_getN(2);
+  $29.User get user => $_getN(2);
   @$pb.TagNumber(3)
-  set user($27.User v) { setField(3, v); }
+  set user($29.User v) { setField(3, v); }
   @$pb.TagNumber(3)
   $core.bool hasUser() => $_has(2);
   @$pb.TagNumber(3)
   void clearUser() => clearField(3);
   @$pb.TagNumber(3)
-  $27.User ensureUser() => $_ensure(2);
+  $29.User ensureUser() => $_ensure(2);
 
   @$pb.TagNumber(4)
   UserPreferences get preferences => $_getN(3);
@@ -510,7 +510,7 @@ class UpdateUserProfileResponse extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UpdateUserProfileResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
     ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
     ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
-    ..aOM<$27.User>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'user', subBuilder: $27.User.create)
+    ..aOM<$29.User>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'user', subBuilder: $29.User.create)
     ..hasRequiredFields = false
   ;
 
@@ -518,7 +518,7 @@ class UpdateUserProfileResponse extends $pb.GeneratedMessage {
   factory UpdateUserProfileResponse({
     $core.bool? success,
     $core.String? message,
-    $27.User? user,
+    $29.User? user,
   }) {
     final _result = create();
     if (success != null) {
@@ -572,15 +572,15 @@ class UpdateUserProfileResponse extends $pb.GeneratedMessage {
   void clearMessage() => clearField(2);
 
   @$pb.TagNumber(3)
-  $27.User get user => $_getN(2);
+  $29.User get user => $_getN(2);
   @$pb.TagNumber(3)
-  set user($27.User v) { setField(3, v); }
+  set user($29.User v) { setField(3, v); }
   @$pb.TagNumber(3)
   $core.bool hasUser() => $_has(2);
   @$pb.TagNumber(3)
   void clearUser() => clearField(3);
   @$pb.TagNumber(3)
-  $27.User ensureUser() => $_ensure(2);
+  $29.User ensureUser() => $_ensure(2);
 }
 
 class UpdatePasswordRequest extends $pb.GeneratedMessage {
@@ -1103,8 +1103,8 @@ class IDDocument extends $pb.GeneratedMessage {
     ..aOS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'documentBackUrl')
     ..e<VerificationStatus>(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'verificationStatus', $pb.PbFieldType.OE, defaultOrMaker: VerificationStatus.VERIFICATION_STATUS_PENDING, valueOf: VerificationStatus.valueOf, enumValues: VerificationStatus.values)
     ..aOS(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'rejectionReason')
-    ..aOM<$26.Timestamp>(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $26.Timestamp.create)
-    ..aOM<$26.Timestamp>(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'verifiedAt', subBuilder: $26.Timestamp.create)
+    ..aOM<$28.Timestamp>(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $28.Timestamp.create)
+    ..aOM<$28.Timestamp>(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'verifiedAt', subBuilder: $28.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -1123,8 +1123,8 @@ class IDDocument extends $pb.GeneratedMessage {
     $core.String? documentBackUrl,
     VerificationStatus? verificationStatus,
     $core.String? rejectionReason,
-    $26.Timestamp? createdAt,
-    $26.Timestamp? verifiedAt,
+    $28.Timestamp? createdAt,
+    $28.Timestamp? verifiedAt,
   }) {
     final _result = create();
     if (id != null) {
@@ -1313,26 +1313,26 @@ class IDDocument extends $pb.GeneratedMessage {
   void clearRejectionReason() => clearField(13);
 
   @$pb.TagNumber(14)
-  $26.Timestamp get createdAt => $_getN(13);
+  $28.Timestamp get createdAt => $_getN(13);
   @$pb.TagNumber(14)
-  set createdAt($26.Timestamp v) { setField(14, v); }
+  set createdAt($28.Timestamp v) { setField(14, v); }
   @$pb.TagNumber(14)
   $core.bool hasCreatedAt() => $_has(13);
   @$pb.TagNumber(14)
   void clearCreatedAt() => clearField(14);
   @$pb.TagNumber(14)
-  $26.Timestamp ensureCreatedAt() => $_ensure(13);
+  $28.Timestamp ensureCreatedAt() => $_ensure(13);
 
   @$pb.TagNumber(15)
-  $26.Timestamp get verifiedAt => $_getN(14);
+  $28.Timestamp get verifiedAt => $_getN(14);
   @$pb.TagNumber(15)
-  set verifiedAt($26.Timestamp v) { setField(15, v); }
+  set verifiedAt($28.Timestamp v) { setField(15, v); }
   @$pb.TagNumber(15)
   $core.bool hasVerifiedAt() => $_has(14);
   @$pb.TagNumber(15)
   void clearVerifiedAt() => clearField(15);
   @$pb.TagNumber(15)
-  $26.Timestamp ensureVerifiedAt() => $_ensure(14);
+  $28.Timestamp ensureVerifiedAt() => $_ensure(14);
 }
 
 class UploadIDDocumentRequest extends $pb.GeneratedMessage {
@@ -1717,8 +1717,8 @@ class FacialData extends $pb.GeneratedMessage {
     ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'faceEncoding')
     ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'imageUrl')
     ..aOB(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isVerified')
-    ..aOM<$26.Timestamp>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $26.Timestamp.create)
-    ..aOM<$26.Timestamp>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastVerifiedAt', subBuilder: $26.Timestamp.create)
+    ..aOM<$28.Timestamp>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $28.Timestamp.create)
+    ..aOM<$28.Timestamp>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastVerifiedAt', subBuilder: $28.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -1730,8 +1730,8 @@ class FacialData extends $pb.GeneratedMessage {
     $core.String? faceEncoding,
     $core.String? imageUrl,
     $core.bool? isVerified,
-    $26.Timestamp? createdAt,
-    $26.Timestamp? lastVerifiedAt,
+    $28.Timestamp? createdAt,
+    $28.Timestamp? lastVerifiedAt,
   }) {
     final _result = create();
     if (id != null) {
@@ -1836,26 +1836,26 @@ class FacialData extends $pb.GeneratedMessage {
   void clearIsVerified() => clearField(6);
 
   @$pb.TagNumber(7)
-  $26.Timestamp get createdAt => $_getN(6);
+  $28.Timestamp get createdAt => $_getN(6);
   @$pb.TagNumber(7)
-  set createdAt($26.Timestamp v) { setField(7, v); }
+  set createdAt($28.Timestamp v) { setField(7, v); }
   @$pb.TagNumber(7)
   $core.bool hasCreatedAt() => $_has(6);
   @$pb.TagNumber(7)
   void clearCreatedAt() => clearField(7);
   @$pb.TagNumber(7)
-  $26.Timestamp ensureCreatedAt() => $_ensure(6);
+  $28.Timestamp ensureCreatedAt() => $_ensure(6);
 
   @$pb.TagNumber(8)
-  $26.Timestamp get lastVerifiedAt => $_getN(7);
+  $28.Timestamp get lastVerifiedAt => $_getN(7);
   @$pb.TagNumber(8)
-  set lastVerifiedAt($26.Timestamp v) { setField(8, v); }
+  set lastVerifiedAt($28.Timestamp v) { setField(8, v); }
   @$pb.TagNumber(8)
   $core.bool hasLastVerifiedAt() => $_has(7);
   @$pb.TagNumber(8)
   void clearLastVerifiedAt() => clearField(8);
   @$pb.TagNumber(8)
-  $26.Timestamp ensureLastVerifiedAt() => $_ensure(7);
+  $28.Timestamp ensureLastVerifiedAt() => $_ensure(7);
 }
 
 class UserRegisterFaceRequest extends $pb.GeneratedMessage {
@@ -2670,7 +2670,7 @@ class DevicePermission extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'DevicePermission', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
     ..e<PermissionType>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'permissionType', $pb.PbFieldType.OE, defaultOrMaker: PermissionType.PERMISSION_TYPE_CAMERA, valueOf: PermissionType.valueOf, enumValues: PermissionType.values)
     ..aOB(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isGranted')
-    ..aOM<$26.Timestamp>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'grantedAt', subBuilder: $26.Timestamp.create)
+    ..aOM<$28.Timestamp>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'grantedAt', subBuilder: $28.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -2678,7 +2678,7 @@ class DevicePermission extends $pb.GeneratedMessage {
   factory DevicePermission({
     PermissionType? permissionType,
     $core.bool? isGranted,
-    $26.Timestamp? grantedAt,
+    $28.Timestamp? grantedAt,
   }) {
     final _result = create();
     if (permissionType != null) {
@@ -2732,15 +2732,15 @@ class DevicePermission extends $pb.GeneratedMessage {
   void clearIsGranted() => clearField(2);
 
   @$pb.TagNumber(3)
-  $26.Timestamp get grantedAt => $_getN(2);
+  $28.Timestamp get grantedAt => $_getN(2);
   @$pb.TagNumber(3)
-  set grantedAt($26.Timestamp v) { setField(3, v); }
+  set grantedAt($28.Timestamp v) { setField(3, v); }
   @$pb.TagNumber(3)
   $core.bool hasGrantedAt() => $_has(2);
   @$pb.TagNumber(3)
   void clearGrantedAt() => clearField(3);
   @$pb.TagNumber(3)
-  $26.Timestamp ensureGrantedAt() => $_ensure(2);
+  $28.Timestamp ensureGrantedAt() => $_ensure(2);
 }
 
 class UpdateDevicePermissionsRequest extends $pb.GeneratedMessage {

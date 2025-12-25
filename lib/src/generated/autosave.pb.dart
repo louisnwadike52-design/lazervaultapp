@@ -9,7 +9,7 @@ import 'dart:core' as $core;
 
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'google/protobuf/timestamp.pb.dart' as $26;
+import 'google/protobuf/timestamp.pb.dart' as $28;
 
 import 'autosave.pbenum.dart';
 
@@ -34,9 +34,9 @@ class AutoSaveRule extends $pb.GeneratedMessage {
     ..a<$core.double>(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'targetAmount', $pb.PbFieldType.OD)
     ..a<$core.double>(16, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'minimumBalance', $pb.PbFieldType.OD)
     ..a<$core.double>(17, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'maximumPerSave', $pb.PbFieldType.OD)
-    ..aOM<$26.Timestamp>(18, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $26.Timestamp.create)
-    ..aOM<$26.Timestamp>(19, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $26.Timestamp.create)
-    ..aOM<$26.Timestamp>(20, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastTriggeredAt', subBuilder: $26.Timestamp.create)
+    ..aOM<$28.Timestamp>(18, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $28.Timestamp.create)
+    ..aOM<$28.Timestamp>(19, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $28.Timestamp.create)
+    ..aOM<$28.Timestamp>(20, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastTriggeredAt', subBuilder: $28.Timestamp.create)
     ..a<$core.int>(21, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'triggerCount', $pb.PbFieldType.O3)
     ..a<$core.double>(22, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalSaved', $pb.PbFieldType.OD)
     ..hasRequiredFields = false
@@ -61,9 +61,9 @@ class AutoSaveRule extends $pb.GeneratedMessage {
     $core.double? targetAmount,
     $core.double? minimumBalance,
     $core.double? maximumPerSave,
-    $26.Timestamp? createdAt,
-    $26.Timestamp? updatedAt,
-    $26.Timestamp? lastTriggeredAt,
+    $28.Timestamp? createdAt,
+    $28.Timestamp? updatedAt,
+    $28.Timestamp? lastTriggeredAt,
     $core.int? triggerCount,
     $core.double? totalSaved,
   }) {
@@ -311,37 +311,37 @@ class AutoSaveRule extends $pb.GeneratedMessage {
   void clearMaximumPerSave() => clearField(17);
 
   @$pb.TagNumber(18)
-  $26.Timestamp get createdAt => $_getN(17);
+  $28.Timestamp get createdAt => $_getN(17);
   @$pb.TagNumber(18)
-  set createdAt($26.Timestamp v) { setField(18, v); }
+  set createdAt($28.Timestamp v) { setField(18, v); }
   @$pb.TagNumber(18)
   $core.bool hasCreatedAt() => $_has(17);
   @$pb.TagNumber(18)
   void clearCreatedAt() => clearField(18);
   @$pb.TagNumber(18)
-  $26.Timestamp ensureCreatedAt() => $_ensure(17);
+  $28.Timestamp ensureCreatedAt() => $_ensure(17);
 
   @$pb.TagNumber(19)
-  $26.Timestamp get updatedAt => $_getN(18);
+  $28.Timestamp get updatedAt => $_getN(18);
   @$pb.TagNumber(19)
-  set updatedAt($26.Timestamp v) { setField(19, v); }
+  set updatedAt($28.Timestamp v) { setField(19, v); }
   @$pb.TagNumber(19)
   $core.bool hasUpdatedAt() => $_has(18);
   @$pb.TagNumber(19)
   void clearUpdatedAt() => clearField(19);
   @$pb.TagNumber(19)
-  $26.Timestamp ensureUpdatedAt() => $_ensure(18);
+  $28.Timestamp ensureUpdatedAt() => $_ensure(18);
 
   @$pb.TagNumber(20)
-  $26.Timestamp get lastTriggeredAt => $_getN(19);
+  $28.Timestamp get lastTriggeredAt => $_getN(19);
   @$pb.TagNumber(20)
-  set lastTriggeredAt($26.Timestamp v) { setField(20, v); }
+  set lastTriggeredAt($28.Timestamp v) { setField(20, v); }
   @$pb.TagNumber(20)
   $core.bool hasLastTriggeredAt() => $_has(19);
   @$pb.TagNumber(20)
   void clearLastTriggeredAt() => clearField(20);
   @$pb.TagNumber(20)
-  $26.Timestamp ensureLastTriggeredAt() => $_ensure(19);
+  $28.Timestamp ensureLastTriggeredAt() => $_ensure(19);
 
   @$pb.TagNumber(21)
   $core.int get triggerCount => $_getIZ(20);
@@ -1334,7 +1334,7 @@ class AutoSaveTransaction extends $pb.GeneratedMessage {
     ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'triggerReason')
     ..aOB(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
     ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'errorMessage')
-    ..aOM<$26.Timestamp>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $26.Timestamp.create)
+    ..aOM<$28.Timestamp>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $28.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -1350,7 +1350,7 @@ class AutoSaveTransaction extends $pb.GeneratedMessage {
     $core.String? triggerReason,
     $core.bool? success,
     $core.String? errorMessage,
-    $26.Timestamp? createdAt,
+    $28.Timestamp? createdAt,
   }) {
     final _result = create();
     if (id != null) {
@@ -1500,15 +1500,15 @@ class AutoSaveTransaction extends $pb.GeneratedMessage {
   void clearErrorMessage() => clearField(10);
 
   @$pb.TagNumber(11)
-  $26.Timestamp get createdAt => $_getN(10);
+  $28.Timestamp get createdAt => $_getN(10);
   @$pb.TagNumber(11)
-  set createdAt($26.Timestamp v) { setField(11, v); }
+  set createdAt($28.Timestamp v) { setField(11, v); }
   @$pb.TagNumber(11)
   $core.bool hasCreatedAt() => $_has(10);
   @$pb.TagNumber(11)
   void clearCreatedAt() => clearField(11);
   @$pb.TagNumber(11)
-  $26.Timestamp ensureCreatedAt() => $_ensure(10);
+  $28.Timestamp ensureCreatedAt() => $_ensure(10);
 }
 
 class GetAutoSaveTransactionsRequest extends $pb.GeneratedMessage {

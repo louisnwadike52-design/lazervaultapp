@@ -10,7 +10,7 @@ import 'dart:core' as $core;
 import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'google/protobuf/timestamp.pb.dart' as $26;
+import 'google/protobuf/timestamp.pb.dart' as $28;
 import 'account.pb.dart' as $2;
 
 import 'deposit.pbenum.dart';
@@ -236,10 +236,10 @@ class GetDepositDetailsResponse extends $pb.GeneratedMessage {
     ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
     ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'source_bank_name')
     ..e<DepositStatus>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: DepositStatus.DEPOSIT_STATUS_UNSPECIFIED, valueOf: DepositStatus.valueOf, enumValues: DepositStatus.values)
-    ..aOM<$26.Timestamp>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'created_at', subBuilder: $26.Timestamp.create)
-    ..aOM<$26.Timestamp>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'processing_at', subBuilder: $26.Timestamp.create)
-    ..aOM<$26.Timestamp>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'completed_at', subBuilder: $26.Timestamp.create)
-    ..aOM<$26.Timestamp>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'failed_at', subBuilder: $26.Timestamp.create)
+    ..aOM<$28.Timestamp>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'created_at', subBuilder: $28.Timestamp.create)
+    ..aOM<$28.Timestamp>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'processing_at', subBuilder: $28.Timestamp.create)
+    ..aOM<$28.Timestamp>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'completed_at', subBuilder: $28.Timestamp.create)
+    ..aOM<$28.Timestamp>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'failed_at', subBuilder: $28.Timestamp.create)
     ..aOS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'failure_reason')
     ..aOS(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'external_transaction_id')
     ..aOM<$2.AccountDetails>(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updated_account', subBuilder: $2.AccountDetails.create)
@@ -254,10 +254,10 @@ class GetDepositDetailsResponse extends $pb.GeneratedMessage {
     $core.String? currency,
     $core.String? sourceBankName,
     DepositStatus? status,
-    $26.Timestamp? createdAt,
-    $26.Timestamp? processingAt,
-    $26.Timestamp? completedAt,
-    $26.Timestamp? failedAt,
+    $28.Timestamp? createdAt,
+    $28.Timestamp? processingAt,
+    $28.Timestamp? completedAt,
+    $28.Timestamp? failedAt,
     $core.String? failureReason,
     $core.String? externalTransactionId,
     $2.AccountDetails? updatedAccount,
@@ -380,48 +380,48 @@ class GetDepositDetailsResponse extends $pb.GeneratedMessage {
   void clearStatus() => clearField(6);
 
   @$pb.TagNumber(7)
-  $26.Timestamp get createdAt => $_getN(6);
+  $28.Timestamp get createdAt => $_getN(6);
   @$pb.TagNumber(7)
-  set createdAt($26.Timestamp v) { setField(7, v); }
+  set createdAt($28.Timestamp v) { setField(7, v); }
   @$pb.TagNumber(7)
   $core.bool hasCreatedAt() => $_has(6);
   @$pb.TagNumber(7)
   void clearCreatedAt() => clearField(7);
   @$pb.TagNumber(7)
-  $26.Timestamp ensureCreatedAt() => $_ensure(6);
+  $28.Timestamp ensureCreatedAt() => $_ensure(6);
 
   @$pb.TagNumber(8)
-  $26.Timestamp get processingAt => $_getN(7);
+  $28.Timestamp get processingAt => $_getN(7);
   @$pb.TagNumber(8)
-  set processingAt($26.Timestamp v) { setField(8, v); }
+  set processingAt($28.Timestamp v) { setField(8, v); }
   @$pb.TagNumber(8)
   $core.bool hasProcessingAt() => $_has(7);
   @$pb.TagNumber(8)
   void clearProcessingAt() => clearField(8);
   @$pb.TagNumber(8)
-  $26.Timestamp ensureProcessingAt() => $_ensure(7);
+  $28.Timestamp ensureProcessingAt() => $_ensure(7);
 
   @$pb.TagNumber(9)
-  $26.Timestamp get completedAt => $_getN(8);
+  $28.Timestamp get completedAt => $_getN(8);
   @$pb.TagNumber(9)
-  set completedAt($26.Timestamp v) { setField(9, v); }
+  set completedAt($28.Timestamp v) { setField(9, v); }
   @$pb.TagNumber(9)
   $core.bool hasCompletedAt() => $_has(8);
   @$pb.TagNumber(9)
   void clearCompletedAt() => clearField(9);
   @$pb.TagNumber(9)
-  $26.Timestamp ensureCompletedAt() => $_ensure(8);
+  $28.Timestamp ensureCompletedAt() => $_ensure(8);
 
   @$pb.TagNumber(10)
-  $26.Timestamp get failedAt => $_getN(9);
+  $28.Timestamp get failedAt => $_getN(9);
   @$pb.TagNumber(10)
-  set failedAt($26.Timestamp v) { setField(10, v); }
+  set failedAt($28.Timestamp v) { setField(10, v); }
   @$pb.TagNumber(10)
   $core.bool hasFailedAt() => $_has(9);
   @$pb.TagNumber(10)
   void clearFailedAt() => clearField(10);
   @$pb.TagNumber(10)
-  $26.Timestamp ensureFailedAt() => $_ensure(9);
+  $28.Timestamp ensureFailedAt() => $_ensure(9);
 
   @$pb.TagNumber(11)
   $core.String get failureReason => $_getSZ(10);

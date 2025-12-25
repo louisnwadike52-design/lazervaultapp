@@ -23,7 +23,7 @@ class _BottomNavMenuState extends State<BottomNavMenu>
     setState(() {
       _motionTabBarController = MotionTabBarController(
         initialIndex: widget.initialIndex,
-        length: 4,
+        length: 5,
         vsync: this,
       );
     });
@@ -46,12 +46,13 @@ class _BottomNavMenuState extends State<BottomNavMenu>
     return MotionTabBar(
       controller: _motionTabBarController,
       initialSelectedTab: "Dashboard",
-      labels: const ["Dashboard", "Home", "Profile", "Settings"],
+      labels: const ["Dashboard", "Statistics", "Crowdfund", "AI Chat", "Lifestyle"],
       icons: const [
         Icons.dashboard,
-        Icons.home,
-        Icons.people_alt,
-        Icons.settings
+        Icons.show_chart,
+        Icons.volunteer_activism,
+        Icons.chat,
+        Icons.grid_view
       ],
       tabSize: 50,
       tabBarHeight: 55,

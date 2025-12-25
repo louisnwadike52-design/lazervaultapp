@@ -10,7 +10,7 @@ import 'dart:core' as $core;
 import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'google/protobuf/timestamp.pb.dart' as $26;
+import 'google/protobuf/timestamp.pb.dart' as $28;
 
 class AccountCard extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'AccountCard', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
@@ -22,8 +22,8 @@ class AccountCard extends $pb.GeneratedMessage {
     ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'cardExpiry')
     ..aOB(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isActive')
     ..aOB(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isDefault')
-    ..aOM<$26.Timestamp>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $26.Timestamp.create)
-    ..aOM<$26.Timestamp>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $26.Timestamp.create)
+    ..aOM<$28.Timestamp>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $28.Timestamp.create)
+    ..aOM<$28.Timestamp>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $28.Timestamp.create)
     ..aOS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'cardType')
     ..hasRequiredFields = false
   ;
@@ -38,8 +38,8 @@ class AccountCard extends $pb.GeneratedMessage {
     $core.String? cardExpiry,
     $core.bool? isActive,
     $core.bool? isDefault,
-    $26.Timestamp? createdAt,
-    $26.Timestamp? updatedAt,
+    $28.Timestamp? createdAt,
+    $28.Timestamp? updatedAt,
     $core.String? cardType,
   }) {
     final _result = create();
@@ -172,26 +172,26 @@ class AccountCard extends $pb.GeneratedMessage {
   void clearIsDefault() => clearField(8);
 
   @$pb.TagNumber(9)
-  $26.Timestamp get createdAt => $_getN(8);
+  $28.Timestamp get createdAt => $_getN(8);
   @$pb.TagNumber(9)
-  set createdAt($26.Timestamp v) { setField(9, v); }
+  set createdAt($28.Timestamp v) { setField(9, v); }
   @$pb.TagNumber(9)
   $core.bool hasCreatedAt() => $_has(8);
   @$pb.TagNumber(9)
   void clearCreatedAt() => clearField(9);
   @$pb.TagNumber(9)
-  $26.Timestamp ensureCreatedAt() => $_ensure(8);
+  $28.Timestamp ensureCreatedAt() => $_ensure(8);
 
   @$pb.TagNumber(10)
-  $26.Timestamp get updatedAt => $_getN(9);
+  $28.Timestamp get updatedAt => $_getN(9);
   @$pb.TagNumber(10)
-  set updatedAt($26.Timestamp v) { setField(10, v); }
+  set updatedAt($28.Timestamp v) { setField(10, v); }
   @$pb.TagNumber(10)
   $core.bool hasUpdatedAt() => $_has(9);
   @$pb.TagNumber(10)
   void clearUpdatedAt() => clearField(10);
   @$pb.TagNumber(10)
-  $26.Timestamp ensureUpdatedAt() => $_ensure(9);
+  $28.Timestamp ensureUpdatedAt() => $_ensure(9);
 
   @$pb.TagNumber(11)
   $core.String get cardType => $_getSZ(10);

@@ -15,6 +15,7 @@ enum AppServiceName {
   insurance,
   airtime,
   autoSave,
+  crowdfund,
 }
 
 extension AppServiceNameExtension on AppServiceName {
@@ -52,6 +53,8 @@ extension AppServiceNameExtension on AppServiceName {
         return 'Airtime';
       case AppServiceName.autoSave:
         return 'Auto-Save';
+      case AppServiceName.crowdfund:
+        return 'Crowdfund';
     }
   }
 }
@@ -80,6 +83,7 @@ enum AppServiceImg {
   insurance,
   airtime,
   autoSave,
+  crowdfund,
 }
 
 extension AppServiceImgExtension on AppServiceImg {
@@ -117,6 +121,8 @@ extension AppServiceImgExtension on AppServiceImg {
         return 'assets/images/airtime.png';
       case AppServiceImg.autoSave:
         return 'assets/images/auto-save.png';
+      case AppServiceImg.crowdfund:
+        return 'assets/images/volunteer_activism.png';
     }
   }
 }

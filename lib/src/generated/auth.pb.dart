@@ -9,7 +9,7 @@ import 'dart:core' as $core;
 
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'common.pb.dart' as $27;
+import 'common.pb.dart' as $29;
 
 class LoginRequest extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'LoginRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
@@ -243,7 +243,7 @@ class RegisterPasscodeResponse extends $pb.GeneratedMessage {
 
 class LoginResponse extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'LoginResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<$27.Data>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'data', subBuilder: $27.Data.create)
+    ..aOM<$29.Data>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'data', subBuilder: $29.Data.create)
     ..aOB(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
     ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'msg')
     ..hasRequiredFields = false
@@ -251,7 +251,7 @@ class LoginResponse extends $pb.GeneratedMessage {
 
   LoginResponse._() : super();
   factory LoginResponse({
-    $27.Data? data,
+    $29.Data? data,
     $core.bool? success,
     $core.String? msg,
   }) {
@@ -289,15 +289,15 @@ class LoginResponse extends $pb.GeneratedMessage {
   static LoginResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $27.Data get data => $_getN(0);
+  $29.Data get data => $_getN(0);
   @$pb.TagNumber(1)
-  set data($27.Data v) { setField(1, v); }
+  set data($29.Data v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasData() => $_has(0);
   @$pb.TagNumber(1)
   void clearData() => clearField(1);
   @$pb.TagNumber(1)
-  $27.Data ensureData() => $_ensure(0);
+  $29.Data ensureData() => $_ensure(0);
 
   @$pb.TagNumber(2)
   $core.bool get success => $_getBF(1);
@@ -367,7 +367,7 @@ class RefreshTokenRequest extends $pb.GeneratedMessage {
 
 class RefreshTokenResponse extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'RefreshTokenResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<$27.Data>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'data', subBuilder: $27.Data.create)
+    ..aOM<$29.Data>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'data', subBuilder: $29.Data.create)
     ..aOB(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
     ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'msg')
     ..hasRequiredFields = false
@@ -375,7 +375,7 @@ class RefreshTokenResponse extends $pb.GeneratedMessage {
 
   RefreshTokenResponse._() : super();
   factory RefreshTokenResponse({
-    $27.Data? data,
+    $29.Data? data,
     $core.bool? success,
     $core.String? msg,
   }) {
@@ -413,15 +413,15 @@ class RefreshTokenResponse extends $pb.GeneratedMessage {
   static RefreshTokenResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $27.Data get data => $_getN(0);
+  $29.Data get data => $_getN(0);
   @$pb.TagNumber(1)
-  set data($27.Data v) { setField(1, v); }
+  set data($29.Data v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasData() => $_has(0);
   @$pb.TagNumber(1)
   void clearData() => clearField(1);
   @$pb.TagNumber(1)
-  $27.Data ensureData() => $_ensure(0);
+  $29.Data ensureData() => $_ensure(0);
 
   @$pb.TagNumber(2)
   $core.bool get success => $_getBF(1);

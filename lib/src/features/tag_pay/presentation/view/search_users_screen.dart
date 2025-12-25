@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../../core/services/injection_container.dart';
+import '../../../../../core/types/app_routes.dart';
 import '../cubit/tag_pay_cubit.dart';
 import '../cubit/tag_pay_state.dart';
 
@@ -211,6 +212,42 @@ class _SearchUsersViewState extends State<_SearchUsersView> {
                 color: Colors.white,
                 fontSize: 24.sp,
                 fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+          SizedBox(width: 16.w),
+          GestureDetector(
+            onTap: () async {
+              // Navigate to QR scanner and wait for result
+              final result = await Get.toNamed(AppRoutes.qrScanner);
+              if (result != null && result is Map<String, dynamic>) {
+                // User scanned a QR code successfully
+                // Create a tag pay object from the scanned data
+                final scannedUser = {
+                  'displayName': result['name'] ?? result['username'],
+                  'formattedTagPay': '\$${result['username']}',
+                  'recipientId': result['recipientId'],
+                  'username': result['username'],
+                };
+                _selectUser(scannedUser);
+              }
+            },
+            child: Container(
+              width: 44.w,
+              height: 44.w,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [
+                    Color(0xFF4E03D0),
+                    Color(0xFF6B21E0),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(22.r),
+              ),
+              child: Icon(
+                Icons.qr_code_scanner,
+                color: Colors.white,
+                size: 22.sp,
               ),
             ),
           ),
