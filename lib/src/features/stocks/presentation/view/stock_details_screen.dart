@@ -13,6 +13,7 @@ import '../widgets/technical_indicators_bottom_sheet.dart';
 import '../widgets/analyst_ratings_section.dart';
 import '../widgets/stock_events_section.dart';
 import '../widgets/advanced_chart_widget.dart';
+import 'create_stock_trade_carousel.dart';
 
 class StockDetailsScreen extends StatefulWidget {
   final Stock stock;
@@ -1661,10 +1662,10 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
                 borderRadius: BorderRadius.circular(25.r),
               ),
               child: ElevatedButton(
-                onPressed: () => Get.toNamed(AppRoutes.stockTradeAmount, arguments: {
-                  'stock': widget.stock,
-                  'tradeType': 'sell',
-                }),
+                onPressed: () => Get.to(() => CreateStockTradeCarousel(
+                  stock: widget.stock,
+                  initialSide: OrderSide.sell,
+                )),
               style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.transparent,
                   elevation: 0,
@@ -1692,10 +1693,10 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
                 borderRadius: BorderRadius.circular(25.r),
               ),
               child: ElevatedButton(
-                onPressed: () => Get.toNamed(AppRoutes.stockTradeAmount, arguments: {
-                  'stock': widget.stock,
-                  'tradeType': 'buy',
-                }),
+                onPressed: () => Get.to(() => CreateStockTradeCarousel(
+                  stock: widget.stock,
+                  initialSide: OrderSide.buy,
+                )),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.transparent,
                   elevation: 0,

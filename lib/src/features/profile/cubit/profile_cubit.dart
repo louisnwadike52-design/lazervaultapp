@@ -10,9 +10,11 @@ class ProfileCubit extends Cubit<ProfileState> {
         super(const ProfileInitial());
 
   Future<void> getUserProfile() async {
+    if (isClosed) return;
     emit(const ProfileLoading());
     final result = await _repository.getUserProfile();
 
+    if (isClosed) return;
     result.fold(
       (failure) => emit(ProfileError(failure.message)),
       (data) {
@@ -35,6 +37,7 @@ class ProfileCubit extends Cubit<ProfileState> {
   }) async {
     if (state is! ProfileLoaded) return;
 
+    if (isClosed) return;
     emit(const ProfileLoading());
     final result = await _repository.updateUserProfile(
       firstName: firstName,
@@ -47,6 +50,7 @@ class ProfileCubit extends Cubit<ProfileState> {
       profilePicture: profilePicture,
     );
 
+    if (isClosed) return;
     result.fold(
       (failure) => emit(ProfileError(failure.message)),
       (user) {
@@ -66,12 +70,14 @@ class ProfileCubit extends Cubit<ProfileState> {
     required String currentPassword,
     required String newPassword,
   }) async {
+    if (isClosed) return;
     emit(const ProfileLoading());
     final result = await _repository.updatePassword(
       currentPassword: currentPassword,
       newPassword: newPassword,
     );
 
+    if (isClosed) return;
     result.fold(
       (failure) => emit(ProfileError(failure.message)),
       (_) => emit(const PasswordUpdateSuccess('Password updated successfully')),
@@ -90,6 +96,7 @@ class ProfileCubit extends Cubit<ProfileState> {
   }) async {
     if (state is! ProfileLoaded) return;
 
+    if (isClosed) return;
     emit(const ProfileLoading());
     final result = await _repository.updatePreferences(
       pushNotifications: pushNotifications,
@@ -102,6 +109,7 @@ class ProfileCubit extends Cubit<ProfileState> {
       activeCountry: activeCountry,
     );
 
+    if (isClosed) return;
     result.fold(
       (failure) => emit(ProfileError(failure.message)),
       (preferences) {
@@ -155,6 +163,7 @@ class ProfileCubit extends Cubit<ProfileState> {
   }
 
   void resetState() {
+    if (isClosed) return;
     emit(const ProfileInitial());
   }
 }

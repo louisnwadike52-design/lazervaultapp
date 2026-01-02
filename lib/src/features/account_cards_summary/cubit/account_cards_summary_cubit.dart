@@ -14,12 +14,14 @@ class AccountCardsSummaryCubit extends Cubit<AccountCardsSummaryState> {
     String? accessToken,
     String? country,
   }) async {
+    if (isClosed) return;
     emit(AccountCardsSummaryLoading());
     final result = await _getAccountSummariesUseCase.call(
       userId: userId,
       accessToken: accessToken,
       country: country,
     );
+    if (isClosed) return;
     result.fold(
       (failure) => emit(AccountCardsSummaryError(
         failure.message,

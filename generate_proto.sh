@@ -39,7 +39,30 @@ echo "Proto dependencies downloaded."
 
 # Generate Dart code from proto files
 echo "Generating Dart code from proto files..."
-protoc --dart_out=grpc:lib/src/generated -Iproto proto/*.proto proto/google/protobuf/*.proto
+protoc --dart_out=grpc:lib/src/generated -Iproto proto/*.proto proto/google/protobuf/*.proto proto/stocks/*.proto
+
+# Generate crypto.proto from crypto-microservice
+echo "Generating Dart code from crypto.proto..."
+protoc --dart_out=grpc:lib/src/generated \
+  -I../crypto-microservice/proto \
+  -Iproto \
+  ../crypto-microservice/proto/crypto.proto
+
+# Generate voice_session.proto from lazervault-golang
+echo "Generating Dart code from voice_session.proto..."
+protoc --dart_out=grpc:lib/src/generated \
+  -I../lazervault-golang/proto \
+  -Iproto \
+  ../lazervault-golang/proto/voice_session.proto
+
+# Generate insurance.proto from insurance-microservice
+echo "Generating Dart code from insurance.proto..."
+protoc --dart_out=grpc:lib/src/generated \
+  -I../insurance-microservice/proto \
+  -I../lazervault-golang/proto \
+  -Iproto \
+  ../insurance-microservice/proto/insurance.proto \
+  ../insurance-microservice/proto/common.proto
 
 if [ $? -eq 0 ]; then
     echo "Dart code generation successful."

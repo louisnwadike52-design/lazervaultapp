@@ -28,6 +28,22 @@ abstract class AppRoutes {
   static const String sendFundReceipt = '/send-funds-receipts';
   static const String reviewFundsTransfer = '/review-funds-transfer';
   static const String payElectricityBill = '/pay-electricity-bill';
+
+  // Electricity Bill Payment Routes
+  static const String electricityBillHome = '/electricity-bill';
+  static const String electricityBillMeterInput = '/electricity-bill/meter-input';
+  static const String electricityBillConfirmation = '/electricity-bill/confirmation';
+  static const String electricityBillProcessing = '/electricity-bill/processing';
+  static const String electricityBillReceipt = '/electricity-bill/receipt';
+  static const String electricityBillHistory = '/electricity-bill/history';
+  static const String electricityBillBeneficiaries = '/electricity-bill/beneficiaries';
+  static const String electricityBillAddBeneficiary = '/electricity-bill/beneficiaries/add';
+  static const String electricityBillAutoRecharge = '/electricity-bill/auto-recharge';
+  static const String electricityBillCreateAutoRecharge = '/electricity-bill/auto-recharge/create';
+  static const String electricityBillEditAutoRecharge = '/electricity-bill/auto-recharge/edit';
+  static const String electricityBillReminders = '/electricity-bill/reminders';
+  static const String electricityBillCreateReminder = '/electricity-bill/reminders/create';
+
   static const String flights = '/flights';
   static const String reviewElectricityBillDetails =
       '/validate-electricity-bill-details';
@@ -71,6 +87,7 @@ abstract class AppRoutes {
   static const String emailSignIn = '/auth/email-sign-in';
   static const String passcodeLogin = '/auth/passcode-login';
   static const String passcodeSetup = '/auth/passcode-setup';
+  static const String changePasscode = '/auth/change-passcode';
   static const String emailVerification = '/auth/email-verification';
   static const String otpVerification = '/auth/otp-verification';
   static const String enableBiometricAccess = '/auth/enable-biometric-access';
@@ -83,11 +100,20 @@ abstract class AppRoutes {
   static const String faceScan = '/auth/face-scan';
   static const String facialLogin = '/auth/facial-login';
   static const String proofOfResidence = '/auth/proof-of-residence';
+
+  // Referral Routes
+  static const String referralDashboard = '/referral/dashboard';
+
+  // Gift Card Routes
   static const String giftCards = '/gift-cards';
   static const String purchaseGiftCard = '/gift-cards/purchase';
+  static const String giftCardPaymentMethod = '/gift-cards/payment-method';
+  static const String giftCardPurchaseProcessing = '/gift-cards/purchase-processing';
+  static const String giftCardPurchaseConfirmation = '/gift-cards/purchase-confirmation';
   static const String giftCardDetails = '/gift-card-details';
   static const String redeemGiftCard = '/gift-cards/redeem';
   static const String myGiftCards = '/gift-cards/my-cards';
+  static const String giftCardTransactions = '/gift-cards/transactions';
   static const String sellToContact = '/gift-cards/sell/contact';
   static const String savedRecipients = '/gift-cards/sell/recipients';
   static const String quickSell = '/gift-cards/sell/quick';
@@ -104,7 +130,10 @@ abstract class AppRoutes {
   static const String stockOrders = '/stocks/orders';
   static const String stockNews = '/stocks/news';
   static const String stockChartDetails = '/stock-chart-details';
-  
+
+  // Portfolio Routes
+  static const String portfolioDetails = '/portfolio/details';
+
   // Crypto Routes
   static const String cryptoDetails = '/crypto/details';
   static const String buyCrypto = '/crypto/buy';
@@ -223,4 +252,15 @@ abstract class AppRoutes {
   static const String barcodePaymentReceipt = '/barcode/payment-receipt';
   static const String generatedBarcodesHistory = '/barcode/generated-history';
   static const String scannedBarcodesHistory = '/barcode/scanned-history';
+
+  // Card Management Routes
+  static const String cardCreationForm = '/cards/create';
+  static const String cardCreationReceipt = '/cards/receipt';
+  static const String cardsList = '/cards/list';
+  static const String cardDetails = '/cards/details';
+
+  // Lock Funds Routes
+  static const String lockFunds = '/lock-funds';
+  static const String createLockFund = '/lock-funds/create';
+  static const String lockFundDetails = '/lock-funds/details';
 }

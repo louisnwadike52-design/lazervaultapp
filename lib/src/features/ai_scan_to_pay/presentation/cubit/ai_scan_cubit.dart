@@ -22,19 +22,23 @@ class AiScanCubit extends Cubit<AiScanState> {
 
   // Initialize and show scan type selection
   void initializeScanTypes() {
+    if (isClosed) return;
     emit(AiScanTypeSelection(ScanType.values));
   }
 
   // Start a new scan session with selected type
   Future<void> startScanSession(ScanType scanType) async {
     try {
+      if (isClosed) return;
       emit(const AiScanLoading(message: 'Initializing scan session...'));
       
       final session = await startScanSessionUseCase(scanType);
       
       // Navigate to camera for scanning
+      if (isClosed) return;
       emit(AiScanCamera(session: session));
     } catch (e) {
+      if (isClosed) return;
       emit(AiScanError(message: 'Failed to start scan session: ${e.toString()}'));
     }
   }
@@ -45,9 +49,11 @@ class AiScanCubit extends Cubit<AiScanState> {
     if (currentState is! AiScanCamera) return;
 
     try {
+      if (isClosed) return;
       emit(AiScanCamera(session: currentState.session, isCapturing: true));
       
       // Update session status
+      if (isClosed) return;
       emit(AiScanProcessing(
         session: currentState.session,
         status: 'Processing image...',
@@ -57,6 +63,7 @@ class AiScanCubit extends Cubit<AiScanState> {
       // Extract data from image
       final extractedData = await processScanUseCase(imagePath, currentState.session.scanType);
       
+      if (isClosed) return;
       emit(AiScanProcessing(
         session: currentState.session,
         status: 'Analyzing content...',
@@ -76,12 +83,14 @@ class AiScanCubit extends Cubit<AiScanState> {
       chatHistory.add(aiResponse);
 
       // Transition to chat with extracted data
+      if (isClosed) return;
       emit(AiScanChatActive(
         session: currentState.session,
         messages: chatHistory,
         extractedData: extractedData,
       ));
     } catch (e) {
+      if (isClosed) return;
       emit(AiScanError(message: 'Failed to process image: ${e.toString()}'));
     }
   }
@@ -102,6 +111,7 @@ class AiScanCubit extends Cubit<AiScanState> {
 
       final updatedMessages = [...currentState.messages, userMessage];
       
+      if (isClosed) return;
       emit(currentState.copyWith(
         messages: updatedMessages,
         isTyping: true,
@@ -116,11 +126,13 @@ class AiScanCubit extends Cubit<AiScanState> {
 
       final finalMessages = [...updatedMessages, aiResponse];
 
+      if (isClosed) return;
       emit(currentState.copyWith(
         messages: finalMessages,
         isTyping: false,
       ));
     } catch (e) {
+      if (isClosed) return;
       emit(AiScanError(message: 'Failed to send message: ${e.toString()}'));
     }
   }
@@ -131,6 +143,7 @@ class AiScanCubit extends Cubit<AiScanState> {
     if (currentState is! AiScanChatActive || currentState.extractedData == null) return;
 
     try {
+      if (isClosed) return;
       emit(const AiScanLoading(message: 'Generating payment instructions...'));
 
       final paymentInstruction = await generatePaymentUseCase(
@@ -138,6 +151,7 @@ class AiScanCubit extends Cubit<AiScanState> {
         currentState.session.scanType,
       );
 
+      if (isClosed) return;
       emit(AiScanPaymentProcessing(
         instruction: paymentInstruction,
         status: 'Processing payment...',
@@ -146,14 +160,17 @@ class AiScanCubit extends Cubit<AiScanState> {
       final success = await processPaymentUseCase(paymentInstruction);
 
       if (success) {
+        if (isClosed) return;
         emit(AiScanPaymentSuccess(
           instruction: paymentInstruction,
           transactionId: 'txn_${DateTime.now().millisecondsSinceEpoch}',
         ));
       } else {
+        if (isClosed) return;
         emit(const AiScanError(message: 'Payment processing failed. Please try again.'));
       }
     } catch (e) {
+      if (isClosed) return;
       emit(AiScanError(message: 'Payment failed: ${e.toString()}'));
     }
   }
@@ -161,18 +178,22 @@ class AiScanCubit extends Cubit<AiScanState> {
   // Load scan history
   Future<void> loadScanHistory() async {
     try {
+      if (isClosed) return;
       emit(const AiScanLoading(message: 'Loading scan history...'));
       
       final sessions = await getScanHistoryUseCase();
       
+      if (isClosed) return;
       emit(AiScanHistoryLoaded(sessions));
     } catch (e) {
+      if (isClosed) return;
       emit(AiScanError(message: 'Failed to load scan history: ${e.toString()}'));
     }
   }
 
   // Return to scan type selection
   void returnToScanTypeSelection() {
+    if (isClosed) return;
     emit(AiScanTypeSelection(ScanType.values));
   }
 
@@ -180,12 +201,14 @@ class AiScanCubit extends Cubit<AiScanState> {
   void returnToCamera() {
     final currentState = state;
     if (currentState is AiScanChatActive) {
+      if (isClosed) return;
       emit(AiScanCamera(session: currentState.session));
     }
   }
 
   // Reset to initial state
   void reset() {
+    if (isClosed) return;
     emit(AiScanInitial());
   }
 
@@ -215,8 +238,10 @@ class AiScanCubit extends Cubit<AiScanState> {
       
       // Emit updated state based on current state type
       if (currentState is AiScanCamera) {
+        if (isClosed) return;
         emit(AiScanCamera(session: updatedSession));
       } else if (currentState is AiScanChatActive) {
+        if (isClosed) return;
         emit(currentState.copyWith(session: updatedSession));
       }
     }

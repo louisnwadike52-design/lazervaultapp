@@ -202,13 +202,13 @@ class _DashboardScreenState extends State<DashboardScreen>
   String _getTabLabel(int index) {
     switch (index) {
       case 0:
-        return 'Home';
+        return 'Dashboard';
       case 1:
-        return 'Stats';
+        return 'Statistics';
       case 2:
         return 'AI Chat';
       case 3:
-        return 'Life Style';
+        return 'Lifestyle';
       default:
         return '';
     }

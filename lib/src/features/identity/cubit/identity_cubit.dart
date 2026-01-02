@@ -18,6 +18,7 @@ class IdentityCubit extends Cubit<IdentityState> {
     required Uint8List frontImage,
     Uint8List? backImage,
   }) async {
+    if (isClosed) return;
     emit(const IdentityLoading());
     final result = await _repository.uploadIDDocument(
       documentType: documentType,
@@ -25,6 +26,7 @@ class IdentityCubit extends Cubit<IdentityState> {
       backImage: backImage,
     );
 
+    if (isClosed) return;
     result.fold(
       (failure) => emit(IdentityError(failure.message)),
       (document) => emit(IDDocumentUploaded(
@@ -35,9 +37,11 @@ class IdentityCubit extends Cubit<IdentityState> {
   }
 
   Future<void> getIDDocuments() async {
+    if (isClosed) return;
     emit(const IdentityLoading());
     final result = await _repository.getIDDocuments();
 
+    if (isClosed) return;
     result.fold(
       (failure) => emit(IdentityError(failure.message)),
       (documents) => emit(IDDocumentsLoaded(documents)),
@@ -45,11 +49,13 @@ class IdentityCubit extends Cubit<IdentityState> {
   }
 
   Future<void> verifyIDDocument({required String documentId}) async {
+    if (isClosed) return;
     emit(const IdentityLoading());
     final result = await _repository.verifyIDDocument(
       documentId: documentId,
     );
 
+    if (isClosed) return;
     result.fold(
       (failure) => emit(IdentityError(failure.message)),
       (document) => emit(IDDocumentVerified(
@@ -61,11 +67,13 @@ class IdentityCubit extends Cubit<IdentityState> {
 
   // Facial Recognition Methods
   Future<void> registerFace({required Uint8List faceImage}) async {
+    if (isClosed) return;
     emit(const IdentityLoading());
     final result = await _repository.registerFace(
       faceImage: faceImage,
     );
 
+    if (isClosed) return;
     result.fold(
       (failure) => emit(IdentityError(failure.message)),
       (facialData) => emit(FaceRegistered(
@@ -76,11 +84,13 @@ class IdentityCubit extends Cubit<IdentityState> {
   }
 
   Future<void> verifyFace({required Uint8List faceImage}) async {
+    if (isClosed) return;
     emit(const IdentityLoading());
     final result = await _repository.verifyFace(
       faceImage: faceImage,
     );
 
+    if (isClosed) return;
     result.fold(
       (failure) => emit(IdentityError(failure.message)),
       (verified) => emit(FaceVerified(
@@ -93,9 +103,11 @@ class IdentityCubit extends Cubit<IdentityState> {
   }
 
   Future<void> getFacialData() async {
+    if (isClosed) return;
     emit(const IdentityLoading());
     final result = await _repository.getFacialData();
 
+    if (isClosed) return;
     result.fold(
       (failure) => emit(IdentityError(failure.message)),
       (facialData) => emit(FacialDataLoaded(facialData)),
@@ -107,12 +119,14 @@ class IdentityCubit extends Cubit<IdentityState> {
     required String passcode,
     required String password,
   }) async {
+    if (isClosed) return;
     emit(const IdentityLoading());
     final result = await _repository.setPasscode(
       passcode: passcode,
       password: password,
     );
 
+    if (isClosed) return;
     result.fold(
       (failure) => emit(IdentityError(failure.message)),
       (_) => emit(const PasscodeSet('Passcode set successfully')),
@@ -120,11 +134,13 @@ class IdentityCubit extends Cubit<IdentityState> {
   }
 
   Future<void> verifyPasscode({required String passcode}) async {
+    if (isClosed) return;
     emit(const IdentityLoading());
     final result = await _repository.verifyPasscode(
       passcode: passcode,
     );
 
+    if (isClosed) return;
     result.fold(
       (failure) => emit(IdentityError(failure.message)),
       (verified) => emit(PasscodeVerified(
@@ -137,11 +153,13 @@ class IdentityCubit extends Cubit<IdentityState> {
   }
 
   Future<void> removePasscode({required String password}) async {
+    if (isClosed) return;
     emit(const IdentityLoading());
     final result = await _repository.removePasscode(
       password: password,
     );
 
+    if (isClosed) return;
     result.fold(
       (failure) => emit(IdentityError(failure.message)),
       (_) => emit(const PasscodeRemoved('Passcode removed successfully')),
@@ -149,9 +167,11 @@ class IdentityCubit extends Cubit<IdentityState> {
   }
 
   Future<void> checkPasscodeExists() async {
+    if (isClosed) return;
     emit(const IdentityLoading());
     final result = await _repository.checkPasscodeExists();
 
+    if (isClosed) return;
     result.fold(
       (failure) => emit(IdentityError(failure.message)),
       (exists) => emit(PasscodeExistsChecked(exists)),
@@ -162,11 +182,13 @@ class IdentityCubit extends Cubit<IdentityState> {
   Future<void> updatePermissions({
     required List<DevicePermission> permissions,
   }) async {
+    if (isClosed) return;
     emit(const IdentityLoading());
     final result = await _repository.updatePermissions(
       permissions: permissions,
     );
 
+    if (isClosed) return;
     result.fold(
       (failure) => emit(IdentityError(failure.message)),
       (_) => emit(const PermissionsUpdated('Permissions updated successfully')),
@@ -174,9 +196,11 @@ class IdentityCubit extends Cubit<IdentityState> {
   }
 
   Future<void> getPermissions() async {
+    if (isClosed) return;
     emit(const IdentityLoading());
     final result = await _repository.getPermissions();
 
+    if (isClosed) return;
     result.fold(
       (failure) => emit(IdentityError(failure.message)),
       (permissions) => emit(PermissionsLoaded(permissions)),
@@ -185,6 +209,7 @@ class IdentityCubit extends Cubit<IdentityState> {
 
   // Reset to initial state
   void reset() {
+    if (isClosed) return;
     emit(const IdentityInitial());
   }
 }

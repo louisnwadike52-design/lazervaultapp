@@ -297,17 +297,32 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
 
   @override
   Future<Map<String, dynamic>> getInvoiceStatistics(String userId) async {
+    // Get all SENT invoices (created by this user)
     final invoices = await getInvoicesByUserId(userId);
+
+    // Calculate statistics for sent invoices only
     final paidInvoices = invoices.where((inv) => inv.status == InvoiceStatus.paid).toList();
+    final pendingInvoices = invoices.where((inv) => inv.status == InvoiceStatus.pending).toList();
+    final overdueInvoices = invoices.where((inv) => inv.isOverdue && inv.status != InvoiceStatus.paid).toList();
     final unpaidInvoices = invoices.where((inv) => inv.status != InvoiceStatus.paid).toList();
+
+    final totalAmount = invoices.fold<double>(0, (sum, inv) => sum + inv.amount);
+    final totalPaid = paidInvoices.fold<double>(0, (sum, inv) => sum + inv.amount);
+    final totalUnpaid = unpaidInvoices.fold<double>(0, (sum, inv) => sum + inv.amount);
+
+    // Calculate collection rate (percentage of paid amount vs total amount)
+    final collectionRate = totalAmount > 0 ? (totalPaid / totalAmount) * 100 : 0.0;
 
     return {
       'total_invoices': invoices.length,
       'paid_invoices': paidInvoices.length,
+      'pending_invoices': pendingInvoices.length,
+      'overdue_invoices': overdueInvoices.length,
       'unpaid_invoices': unpaidInvoices.length,
-      'total_amount': invoices.fold<double>(0, (sum, inv) => sum + inv.amount),
-      'total_paid': paidInvoices.fold<double>(0, (sum, inv) => sum + inv.amount),
-      'total_unpaid': unpaidInvoices.fold<double>(0, (sum, inv) => sum + inv.amount),
+      'total_amount': totalAmount,
+      'total_paid': totalPaid,
+      'total_unpaid': totalUnpaid,
+      'collection_rate': collectionRate,
     };
   }
 

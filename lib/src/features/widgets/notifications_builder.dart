@@ -139,6 +139,8 @@ class _NotificationsBuilderState extends State<NotificationsBuilder> {
         return Colors.green;
       case AppServiceName.invest:
         return Colors.purple;
+      case AppServiceName.stocks:
+        return const Color(0xFF3B82F6);
       case AppServiceName.exchange:
         return Colors.teal;
       case AppServiceName.crypto:
@@ -161,6 +163,8 @@ class _NotificationsBuilderState extends State<NotificationsBuilder> {
         return const Color.fromARGB(255, 78, 3, 208);
       case AppServiceName.crowdfund:
         return const Color.fromARGB(255, 78, 3, 208);
+      case AppServiceName.lockFunds:
+        return const Color(0xFF10B981);
     }
   }
 

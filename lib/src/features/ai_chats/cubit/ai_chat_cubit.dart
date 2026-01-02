@@ -27,6 +27,7 @@ class AIChatCubit extends Cubit<AIChatState> {
      // This method is now mainly for ensuring the cubit starts in an initial state.
      // The UI adds the first message or loads history.
      if (state is! AIChatInitial) {
+       if (isClosed) return;
        emit(const AIChatInitial());
      }
   }
@@ -34,18 +35,20 @@ class AIChatCubit extends Cubit<AIChatState> {
   // Load chat history
   Future<void> loadChatHistory({required String accessToken}) async {
     // Emit loading state with current messages (if any) and isTyping=true
-    emit(AIChatHistoryLoading(messages: _currentMessages)); 
+    if (isClosed) return;
+    emit(AIChatHistoryLoading(messages: _currentMessages));
     final result = await _getAIChatHistoryUseCase(accessToken: accessToken);
 
+    if (isClosed) return;
     result.fold(
       (failure) {
         // Emit error state, keeping existing messages, set isTyping=false
-        emit(AIChatHistoryError(failure.message, messages: _currentMessages)); 
+        emit(AIChatHistoryError(failure.message, messages: _currentMessages));
       },
       (history) {
         // Update internal messages and emit success state
         _currentMessages = history;
-        emit(AIChatHistorySuccess(messages: _currentMessages)); 
+        emit(AIChatHistorySuccess(messages: _currentMessages));
       },
     );
   }
@@ -64,11 +67,13 @@ class AIChatCubit extends Cubit<AIChatState> {
     _currentMessages.add(userMessageEntity);
 
     // Emit loading state with updated messages list and isTyping=true
-    emit(AIChatMessageLoading(messages: List.from(_currentMessages))); 
+    if (isClosed) return;
+    emit(AIChatMessageLoading(messages: List.from(_currentMessages)));
 
     // TODO: Pass image bytes to use case if needed
     final result = await _processChatUseCase(query: text, accessToken: accessToken);
 
+    if (isClosed) return;
     result.fold(
       (failure) {
         // Emit error state, keeping existing messages, set isTyping=false
@@ -99,6 +104,7 @@ class AIChatCubit extends Cubit<AIChatState> {
   // Clear chat history (Only resets Cubit state)
   void clearChat() {
     _currentMessages = []; // Clear internal list
+    if (isClosed) return;
     emit(AIChatInitial(messages: _currentMessages, isTyping: false)); // Emit initial state with empty messages
   }
 } 

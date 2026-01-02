@@ -17,6 +17,7 @@ class StatisticsCubit extends Cubit<StatisticsState> {
     ExpenseCategory? category,
   }) async {
     try {
+      if (isClosed) return;
       emit(const StatisticsLoading(loadingMessage: 'Loading statistics...'));
 
       // Default to current month if no dates provided
@@ -40,6 +41,14 @@ class StatisticsCubit extends Cubit<StatisticsState> {
         repository.getFinancialGoals(status: GoalStatus.GOAL_STATUS_IN_PROGRESS),
         repository.getSavingsGoal(),
         repository.getUpcomingBills(daysAhead: 30),
+        // Tracked transactions (automatic)
+        repository.getComprehensiveFinancialSummary(startDate: start, endDate: end),
+        repository.getTrackedIncome(startDate: start, endDate: end),
+        repository.getTrackedExpenditure(startDate: start, endDate: end),
+        repository.getTrackedIncomeBreakdown(startDate: start, endDate: end),
+        repository.getTrackedExpenditureBreakdown(startDate: start, endDate: end),
+        repository.getTrackedIncomeTransactions(startDate: start, endDate: end),
+        repository.getTrackedExpenditureTransactions(startDate: start, endDate: end),
       ]);
 
       final incomeSourcesResponse = results[5] as GetIncomeSourcesResponse;
@@ -48,7 +57,15 @@ class StatisticsCubit extends Cubit<StatisticsState> {
       final financialGoalsResponse = results[8] as GetFinancialGoalsResponse;
       final savingsGoalResponse = results[9] as GetSavingsGoalResponse;
       final upcomingBillsResponse = results[10] as GetUpcomingBillsResponse;
+      final comprehensiveSummary = results[11] as ComprehensiveFinancialSummary;
+      final trackedIncome = results[12] as double;
+      final trackedExpenditure = results[13] as double;
+      final trackedIncomeBreakdown = results[14] as Map<String, double>;
+      final trackedExpenditureBreakdown = results[15] as Map<String, double>;
+      final trackedIncomeTransactions = results[16] as List<TrackedIncomeTransaction>;
+      final trackedExpenditureTransactions = results[17] as List<TrackedExpenditureTransaction>;
 
+      if (isClosed) return;
       emit(StatisticsLoaded(
         expenses: results[0] as List<ExpenseMessage>,
         budgets: results[1] as List<BudgetMessage>,
@@ -66,8 +83,16 @@ class StatisticsCubit extends Cubit<StatisticsState> {
         financialGoals: financialGoalsResponse.goalsList.goals,
         savingsGoal: savingsGoalResponse.hasGoal ? savingsGoalResponse.savingsGoal : null,
         upcomingBills: upcomingBillsResponse.billsList,
+        comprehensiveSummary: comprehensiveSummary,
+        trackedIncome: trackedIncome,
+        trackedExpenditure: trackedExpenditure,
+        trackedIncomeBreakdown: trackedIncomeBreakdown,
+        trackedExpenditureBreakdown: trackedExpenditureBreakdown,
+        trackedIncomeTransactions: trackedIncomeTransactions,
+        trackedExpenditureTransactions: trackedExpenditureTransactions,
       ));
     } catch (e, stackTrace) {
+      if (isClosed) return;
       emit(StatisticsError(
         message: 'Failed to load statistics: ${e.toString()}',
         stackTrace: stackTrace,
@@ -84,6 +109,7 @@ class StatisticsCubit extends Cubit<StatisticsState> {
     try {
       if (state is StatisticsLoaded) {
         final currentState = state as StatisticsLoaded;
+        if (isClosed) return;
         emit(currentState.copyWith(isRefreshing: true));
 
         final start = startDate ?? currentState.startDate;
@@ -96,6 +122,7 @@ class StatisticsCubit extends Cubit<StatisticsState> {
           category: cat,
         );
 
+        if (isClosed) return;
         emit(currentState.copyWith(
           expenses: expenses,
           startDate: start,
@@ -111,6 +138,7 @@ class StatisticsCubit extends Cubit<StatisticsState> {
         );
       }
     } catch (e, stackTrace) {
+      if (isClosed) return;
       emit(StatisticsError(
         message: 'Failed to load expenses: ${e.toString()}',
         stackTrace: stackTrace,
@@ -136,6 +164,7 @@ class StatisticsCubit extends Cubit<StatisticsState> {
     String? recurrencePattern,
   }) async {
     try {
+      if (isClosed) return;
       emit(ExpenseCreating(amount: amount, category: category));
 
       final expense = await repository.createExpense(
@@ -155,11 +184,13 @@ class StatisticsCubit extends Cubit<StatisticsState> {
         recurrencePattern: recurrencePattern,
       );
 
+      if (isClosed) return;
       emit(ExpenseCreated(expense: expense));
 
       // Reload all statistics to reflect the new expense
       await loadStatistics();
     } catch (e, stackTrace) {
+      if (isClosed) return;
       emit(StatisticsError(
         message: 'Failed to create expense: ${e.toString()}',
         stackTrace: stackTrace,
@@ -186,6 +217,7 @@ class StatisticsCubit extends Cubit<StatisticsState> {
     String? recurrencePattern,
   }) async {
     try {
+      if (isClosed) return;
       emit(ExpenseUpdating(expenseId: expenseId));
 
       final expense = await repository.updateExpense(
@@ -206,11 +238,13 @@ class StatisticsCubit extends Cubit<StatisticsState> {
         recurrencePattern: recurrencePattern,
       );
 
+      if (isClosed) return;
       emit(ExpenseUpdated(expense: expense));
 
       // Reload statistics
       await loadStatistics();
     } catch (e, stackTrace) {
+      if (isClosed) return;
       emit(StatisticsError(
         message: 'Failed to update expense: ${e.toString()}',
         stackTrace: stackTrace,
@@ -221,15 +255,18 @@ class StatisticsCubit extends Cubit<StatisticsState> {
   /// Delete an expense
   Future<void> deleteExpense(String expenseId) async {
     try {
+      if (isClosed) return;
       emit(ExpenseDeleting(expenseId: expenseId));
 
       await repository.deleteExpense(expenseId);
 
+      if (isClosed) return;
       emit(ExpenseDeleted(expenseId: expenseId));
 
       // Reload statistics
       await loadStatistics();
     } catch (e, stackTrace) {
+      if (isClosed) return;
       emit(StatisticsError(
         message: 'Failed to delete expense: ${e.toString()}',
         stackTrace: stackTrace,
@@ -245,6 +282,7 @@ class StatisticsCubit extends Cubit<StatisticsState> {
     try {
       if (state is StatisticsLoaded) {
         final currentState = state as StatisticsLoaded;
+        if (isClosed) return;
         emit(currentState.copyWith(isRefreshing: true));
 
         final budgets = await repository.getBudgets(
@@ -254,6 +292,7 @@ class StatisticsCubit extends Cubit<StatisticsState> {
 
         final budgetProgress = await repository.getBudgetProgress();
 
+        if (isClosed) return;
         emit(currentState.copyWith(
           budgets: budgets,
           budgetProgress: budgetProgress,
@@ -263,6 +302,7 @@ class StatisticsCubit extends Cubit<StatisticsState> {
         await loadStatistics(category: category);
       }
     } catch (e, stackTrace) {
+      if (isClosed) return;
       emit(StatisticsError(
         message: 'Failed to load budgets: ${e.toString()}',
         stackTrace: stackTrace,
@@ -283,6 +323,7 @@ class StatisticsCubit extends Cubit<StatisticsState> {
     String? description,
   }) async {
     try {
+      if (isClosed) return;
       emit(BudgetCreating(name: name, amount: amount, period: period));
 
       final budget = await repository.createBudget(
@@ -297,11 +338,13 @@ class StatisticsCubit extends Cubit<StatisticsState> {
         description: description,
       );
 
+      if (isClosed) return;
       emit(BudgetCreated(budget: budget));
 
       // Reload statistics
       await loadStatistics();
     } catch (e, stackTrace) {
+      if (isClosed) return;
       emit(StatisticsError(
         message: 'Failed to create budget: ${e.toString()}',
         stackTrace: stackTrace,
@@ -323,6 +366,7 @@ class StatisticsCubit extends Cubit<StatisticsState> {
     String? description,
   }) async {
     try {
+      if (isClosed) return;
       emit(BudgetUpdating(budgetId: budgetId));
 
       final budget = await repository.updateBudget(
@@ -338,11 +382,13 @@ class StatisticsCubit extends Cubit<StatisticsState> {
         description: description,
       );
 
+      if (isClosed) return;
       emit(BudgetUpdated(budget: budget));
 
       // Reload statistics
       await loadStatistics();
     } catch (e, stackTrace) {
+      if (isClosed) return;
       emit(StatisticsError(
         message: 'Failed to update budget: ${e.toString()}',
         stackTrace: stackTrace,
@@ -353,15 +399,18 @@ class StatisticsCubit extends Cubit<StatisticsState> {
   /// Delete a budget
   Future<void> deleteBudget(String budgetId) async {
     try {
+      if (isClosed) return;
       emit(BudgetDeleting(budgetId: budgetId));
 
       await repository.deleteBudget(budgetId);
 
+      if (isClosed) return;
       emit(BudgetDeleted(budgetId: budgetId));
 
       // Reload statistics
       await loadStatistics();
     } catch (e, stackTrace) {
+      if (isClosed) return;
       emit(StatisticsError(
         message: 'Failed to delete budget: ${e.toString()}',
         stackTrace: stackTrace,
@@ -377,6 +426,7 @@ class StatisticsCubit extends Cubit<StatisticsState> {
     try {
       if (state is StatisticsLoaded) {
         final currentState = state as StatisticsLoaded;
+        if (isClosed) return;
         emit(currentState.copyWith(isRefreshing: true));
 
         final start = startDate ?? currentState.startDate;
@@ -388,6 +438,7 @@ class StatisticsCubit extends Cubit<StatisticsState> {
           repository.getBudgetProgress(),
         ]);
 
+        if (isClosed) return;
         emit(currentState.copyWith(
           analytics: results[0] as SpendingAnalytics,
           categoryBreakdown: results[1] as List<CategorySpending>,
@@ -400,6 +451,7 @@ class StatisticsCubit extends Cubit<StatisticsState> {
         await loadStatistics(startDate: startDate, endDate: endDate);
       }
     } catch (e, stackTrace) {
+      if (isClosed) return;
       emit(StatisticsError(
         message: 'Failed to load analytics: ${e.toString()}',
         stackTrace: stackTrace,
@@ -469,6 +521,7 @@ class StatisticsCubit extends Cubit<StatisticsState> {
     if (state is StatisticsLoaded) {
       try {
         final currentState = state as StatisticsLoaded;
+        if (isClosed) return;
         emit(currentState.copyWith(isLoadingAIInsights: true, clearAIError: true));
 
         final start = startDate ?? currentState.startDate;
@@ -480,12 +533,14 @@ class StatisticsCubit extends Cubit<StatisticsState> {
           focusArea: focusArea,
         );
 
+        if (isClosed) return;
         emit(currentState.copyWith(
           aiSpendingInsights: response,
           isLoadingAIInsights: false,
         ));
       } catch (e) {
         if (state is StatisticsLoaded) {
+          if (isClosed) return;
           emit((state as StatisticsLoaded).copyWith(
             isLoadingAIInsights: false,
             aiError: 'Failed to get AI insights: ${e.toString()}',
@@ -508,6 +563,7 @@ class StatisticsCubit extends Cubit<StatisticsState> {
     if (state is StatisticsLoaded) {
       try {
         final currentState = state as StatisticsLoaded;
+        if (isClosed) return;
         emit(currentState.copyWith(isLoadingAIRecommendations: true, clearAIError: true));
 
         final response = await repository.getAIBudgetingRecommendations(
@@ -516,12 +572,14 @@ class StatisticsCubit extends Cubit<StatisticsState> {
           riskTolerance: riskTolerance,
         );
 
+        if (isClosed) return;
         emit(currentState.copyWith(
           aiBudgetingRecommendations: response,
           isLoadingAIRecommendations: false,
         ));
       } catch (e) {
         if (state is StatisticsLoaded) {
+          if (isClosed) return;
           emit((state as StatisticsLoaded).copyWith(
             isLoadingAIRecommendations: false,
             aiError: 'Failed to get AI recommendations: ${e.toString()}',
@@ -545,6 +603,7 @@ class StatisticsCubit extends Cubit<StatisticsState> {
     if (state is StatisticsLoaded) {
       try {
         final currentState = state as StatisticsLoaded;
+        if (isClosed) return;
         emit(currentState.copyWith(isLoadingAICategorization: true, clearAIError: true));
 
         final response = await repository.autoCategorizeExpense(
@@ -554,12 +613,14 @@ class StatisticsCubit extends Cubit<StatisticsState> {
           notes: notes,
         );
 
+        if (isClosed) return;
         emit(currentState.copyWith(
           aiCategorySuggestions: response,
           isLoadingAICategorization: false,
         ));
       } catch (e) {
         if (state is StatisticsLoaded) {
+          if (isClosed) return;
           emit((state as StatisticsLoaded).copyWith(
             isLoadingAICategorization: false,
             aiError: 'Failed to categorize expense: ${e.toString()}',
@@ -581,6 +642,7 @@ class StatisticsCubit extends Cubit<StatisticsState> {
     if (state is StatisticsLoaded) {
       try {
         final currentState = state as StatisticsLoaded;
+        if (isClosed) return;
         emit(currentState.copyWith(isLoadingAIAdvice: true, clearAIError: true));
 
         final response = await repository.getAIFinancialAdvice(
@@ -588,12 +650,14 @@ class StatisticsCubit extends Cubit<StatisticsState> {
           contextAreas: contextAreas,
         );
 
+        if (isClosed) return;
         emit(currentState.copyWith(
           aiFinancialAdvice: response,
           isLoadingAIAdvice: false,
         ));
       } catch (e) {
         if (state is StatisticsLoaded) {
+          if (isClosed) return;
           emit((state as StatisticsLoaded).copyWith(
             isLoadingAIAdvice: false,
             aiError: 'Failed to get AI advice: ${e.toString()}',

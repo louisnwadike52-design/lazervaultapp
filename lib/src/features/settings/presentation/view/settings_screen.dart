@@ -178,6 +178,19 @@ class _SettingsViewState extends State<_SettingsView> {
           },
         ),
         _buildSettingsTile(
+          icon: Icons.edit_outlined,
+          title: 'Change Passcode',
+          subtitle: 'Update your login passcode',
+          trailing: Icon(
+            Icons.arrow_forward_ios,
+            size: 16.sp,
+            color: const Color(0xFF9CA3AF),
+          ),
+          onTap: () {
+            Get.toNamed(AppRoutes.changePasscode);
+          },
+        ),
+        _buildSettingsTile(
           icon: Icons.fingerprint,
           title: 'Biometric Settings',
           subtitle: 'Use fingerprint or face to unlock',

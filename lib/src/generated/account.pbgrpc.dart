@@ -10,72 +10,72 @@ import 'dart:async' as $async;
 import 'dart:core' as $core;
 
 import 'package:grpc/service_api.dart' as $grpc;
-import 'account.pb.dart' as $2;
+import 'account.pb.dart' as $1;
 export 'account.pb.dart';
 
 class AccountServiceClient extends $grpc.Client {
   static final _$createAccount =
-      $grpc.ClientMethod<$2.CreateAccountRequest, $2.CreateAccountResponse>(
+      $grpc.ClientMethod<$1.CreateAccountRequest, $1.CreateAccountResponse>(
           '/pb.AccountService/CreateAccount',
-          ($2.CreateAccountRequest value) => value.writeToBuffer(),
+          ($1.CreateAccountRequest value) => value.writeToBuffer(),
           ($core.List<$core.int> value) =>
-              $2.CreateAccountResponse.fromBuffer(value));
+              $1.CreateAccountResponse.fromBuffer(value));
   static final _$getUserAccounts =
-      $grpc.ClientMethod<$2.GetUserAccountsRequest, $2.GetUserAccountsResponse>(
+      $grpc.ClientMethod<$1.GetUserAccountsRequest, $1.GetUserAccountsResponse>(
           '/pb.AccountService/GetUserAccounts',
-          ($2.GetUserAccountsRequest value) => value.writeToBuffer(),
+          ($1.GetUserAccountsRequest value) => value.writeToBuffer(),
           ($core.List<$core.int> value) =>
-              $2.GetUserAccountsResponse.fromBuffer(value));
+              $1.GetUserAccountsResponse.fromBuffer(value));
   static final _$getAccountDetails = $grpc.ClientMethod<
-          $2.GetAccountDetailsRequest, $2.GetAccountDetailsResponse>(
+          $1.GetAccountDetailsRequest, $1.GetAccountDetailsResponse>(
       '/pb.AccountService/GetAccountDetails',
-      ($2.GetAccountDetailsRequest value) => value.writeToBuffer(),
+      ($1.GetAccountDetailsRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $2.GetAccountDetailsResponse.fromBuffer(value));
+          $1.GetAccountDetailsResponse.fromBuffer(value));
   static final _$updateAccountStatus = $grpc.ClientMethod<
-          $2.UpdateAccountStatusRequest, $2.UpdateAccountStatusResponse>(
+          $1.UpdateAccountStatusRequest, $1.UpdateAccountStatusResponse>(
       '/pb.AccountService/UpdateAccountStatus',
-      ($2.UpdateAccountStatusRequest value) => value.writeToBuffer(),
+      ($1.UpdateAccountStatusRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $2.UpdateAccountStatusResponse.fromBuffer(value));
+          $1.UpdateAccountStatusResponse.fromBuffer(value));
   static final _$updateSecuritySettings = $grpc.ClientMethod<
-          $2.UpdateSecuritySettingsRequest, $2.UpdateSecuritySettingsResponse>(
+          $1.UpdateSecuritySettingsRequest, $1.UpdateSecuritySettingsResponse>(
       '/pb.AccountService/UpdateSecuritySettings',
-      ($2.UpdateSecuritySettingsRequest value) => value.writeToBuffer(),
+      ($1.UpdateSecuritySettingsRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $2.UpdateSecuritySettingsResponse.fromBuffer(value));
+          $1.UpdateSecuritySettingsResponse.fromBuffer(value));
 
   AccountServiceClient($grpc.ClientChannel channel,
       {$grpc.CallOptions? options,
       $core.Iterable<$grpc.ClientInterceptor>? interceptors})
       : super(channel, options: options, interceptors: interceptors);
 
-  $grpc.ResponseFuture<$2.CreateAccountResponse> createAccount(
-      $2.CreateAccountRequest request,
+  $grpc.ResponseFuture<$1.CreateAccountResponse> createAccount(
+      $1.CreateAccountRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$createAccount, request, options: options);
   }
 
-  $grpc.ResponseFuture<$2.GetUserAccountsResponse> getUserAccounts(
-      $2.GetUserAccountsRequest request,
+  $grpc.ResponseFuture<$1.GetUserAccountsResponse> getUserAccounts(
+      $1.GetUserAccountsRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getUserAccounts, request, options: options);
   }
 
-  $grpc.ResponseFuture<$2.GetAccountDetailsResponse> getAccountDetails(
-      $2.GetAccountDetailsRequest request,
+  $grpc.ResponseFuture<$1.GetAccountDetailsResponse> getAccountDetails(
+      $1.GetAccountDetailsRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getAccountDetails, request, options: options);
   }
 
-  $grpc.ResponseFuture<$2.UpdateAccountStatusResponse> updateAccountStatus(
-      $2.UpdateAccountStatusRequest request,
+  $grpc.ResponseFuture<$1.UpdateAccountStatusResponse> updateAccountStatus(
+      $1.UpdateAccountStatusRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$updateAccountStatus, request, options: options);
   }
 
-  $grpc.ResponseFuture<$2.UpdateSecuritySettingsResponse>
-      updateSecuritySettings($2.UpdateSecuritySettingsRequest request,
+  $grpc.ResponseFuture<$1.UpdateSecuritySettingsResponse>
+      updateSecuritySettings($1.UpdateSecuritySettingsRequest request,
           {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$updateSecuritySettings, request,
         options: options);
@@ -87,90 +87,90 @@ abstract class AccountServiceBase extends $grpc.Service {
 
   AccountServiceBase() {
     $addMethod(
-        $grpc.ServiceMethod<$2.CreateAccountRequest, $2.CreateAccountResponse>(
+        $grpc.ServiceMethod<$1.CreateAccountRequest, $1.CreateAccountResponse>(
             'CreateAccount',
             createAccount_Pre,
             false,
             false,
             ($core.List<$core.int> value) =>
-                $2.CreateAccountRequest.fromBuffer(value),
-            ($2.CreateAccountResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$2.GetUserAccountsRequest,
-            $2.GetUserAccountsResponse>(
+                $1.CreateAccountRequest.fromBuffer(value),
+            ($1.CreateAccountResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$1.GetUserAccountsRequest,
+            $1.GetUserAccountsResponse>(
         'GetUserAccounts',
         getUserAccounts_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $2.GetUserAccountsRequest.fromBuffer(value),
-        ($2.GetUserAccountsResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$2.GetAccountDetailsRequest,
-            $2.GetAccountDetailsResponse>(
+            $1.GetUserAccountsRequest.fromBuffer(value),
+        ($1.GetUserAccountsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$1.GetAccountDetailsRequest,
+            $1.GetAccountDetailsResponse>(
         'GetAccountDetails',
         getAccountDetails_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $2.GetAccountDetailsRequest.fromBuffer(value),
-        ($2.GetAccountDetailsResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$2.UpdateAccountStatusRequest,
-            $2.UpdateAccountStatusResponse>(
+            $1.GetAccountDetailsRequest.fromBuffer(value),
+        ($1.GetAccountDetailsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$1.UpdateAccountStatusRequest,
+            $1.UpdateAccountStatusResponse>(
         'UpdateAccountStatus',
         updateAccountStatus_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $2.UpdateAccountStatusRequest.fromBuffer(value),
-        ($2.UpdateAccountStatusResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$2.UpdateSecuritySettingsRequest,
-            $2.UpdateSecuritySettingsResponse>(
+            $1.UpdateAccountStatusRequest.fromBuffer(value),
+        ($1.UpdateAccountStatusResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$1.UpdateSecuritySettingsRequest,
+            $1.UpdateSecuritySettingsResponse>(
         'UpdateSecuritySettings',
         updateSecuritySettings_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $2.UpdateSecuritySettingsRequest.fromBuffer(value),
-        ($2.UpdateSecuritySettingsResponse value) => value.writeToBuffer()));
+            $1.UpdateSecuritySettingsRequest.fromBuffer(value),
+        ($1.UpdateSecuritySettingsResponse value) => value.writeToBuffer()));
   }
 
-  $async.Future<$2.CreateAccountResponse> createAccount_Pre(
+  $async.Future<$1.CreateAccountResponse> createAccount_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$2.CreateAccountRequest> request) async {
+      $async.Future<$1.CreateAccountRequest> request) async {
     return createAccount(call, await request);
   }
 
-  $async.Future<$2.GetUserAccountsResponse> getUserAccounts_Pre(
+  $async.Future<$1.GetUserAccountsResponse> getUserAccounts_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$2.GetUserAccountsRequest> request) async {
+      $async.Future<$1.GetUserAccountsRequest> request) async {
     return getUserAccounts(call, await request);
   }
 
-  $async.Future<$2.GetAccountDetailsResponse> getAccountDetails_Pre(
+  $async.Future<$1.GetAccountDetailsResponse> getAccountDetails_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$2.GetAccountDetailsRequest> request) async {
+      $async.Future<$1.GetAccountDetailsRequest> request) async {
     return getAccountDetails(call, await request);
   }
 
-  $async.Future<$2.UpdateAccountStatusResponse> updateAccountStatus_Pre(
+  $async.Future<$1.UpdateAccountStatusResponse> updateAccountStatus_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$2.UpdateAccountStatusRequest> request) async {
+      $async.Future<$1.UpdateAccountStatusRequest> request) async {
     return updateAccountStatus(call, await request);
   }
 
-  $async.Future<$2.UpdateSecuritySettingsResponse> updateSecuritySettings_Pre(
+  $async.Future<$1.UpdateSecuritySettingsResponse> updateSecuritySettings_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$2.UpdateSecuritySettingsRequest> request) async {
+      $async.Future<$1.UpdateSecuritySettingsRequest> request) async {
     return updateSecuritySettings(call, await request);
   }
 
-  $async.Future<$2.CreateAccountResponse> createAccount(
-      $grpc.ServiceCall call, $2.CreateAccountRequest request);
-  $async.Future<$2.GetUserAccountsResponse> getUserAccounts(
-      $grpc.ServiceCall call, $2.GetUserAccountsRequest request);
-  $async.Future<$2.GetAccountDetailsResponse> getAccountDetails(
-      $grpc.ServiceCall call, $2.GetAccountDetailsRequest request);
-  $async.Future<$2.UpdateAccountStatusResponse> updateAccountStatus(
-      $grpc.ServiceCall call, $2.UpdateAccountStatusRequest request);
-  $async.Future<$2.UpdateSecuritySettingsResponse> updateSecuritySettings(
-      $grpc.ServiceCall call, $2.UpdateSecuritySettingsRequest request);
+  $async.Future<$1.CreateAccountResponse> createAccount(
+      $grpc.ServiceCall call, $1.CreateAccountRequest request);
+  $async.Future<$1.GetUserAccountsResponse> getUserAccounts(
+      $grpc.ServiceCall call, $1.GetUserAccountsRequest request);
+  $async.Future<$1.GetAccountDetailsResponse> getAccountDetails(
+      $grpc.ServiceCall call, $1.GetAccountDetailsRequest request);
+  $async.Future<$1.UpdateAccountStatusResponse> updateAccountStatus(
+      $grpc.ServiceCall call, $1.UpdateAccountStatusRequest request);
+  $async.Future<$1.UpdateSecuritySettingsResponse> updateSecuritySettings(
+      $grpc.ServiceCall call, $1.UpdateSecuritySettingsRequest request);
 }

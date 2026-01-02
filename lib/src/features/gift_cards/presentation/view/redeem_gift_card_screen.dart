@@ -7,6 +7,7 @@ import '../../cubit/gift_card_cubit.dart';
 import '../../cubit/gift_card_state.dart';
 import '../../domain/entities/gift_card_entity.dart';
 import 'package:get/get.dart';
+import 'widgets/qr_scanner_widget.dart';
 
 class RedeemGiftCardScreen extends StatefulWidget {
   final GiftCard? giftCard;
@@ -615,34 +616,68 @@ class _RedeemGiftCardScreenState extends State<RedeemGiftCardScreen>
     );
   }
 
-  void _startScanning() {
+  void _startScanning() async {
     setState(() {
       _isScanning = true;
     });
-    
-    // Simulate QR scanning - in a real app, you'd use a QR scanner package
-    Future.delayed(const Duration(seconds: 3), () {
-      if (mounted && _isScanning) {
-        setState(() {
-          _isScanning = false;
-          _codeController.text = 'SCANNED123456789'; // Simulated scanned code
-        });
-        Get.snackbar(
-          'Code Scanned',
-          'Gift card code has been scanned successfully',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: const Color(0xFF10B981),
-          colorText: Colors.white,
-          borderRadius: 12.r,
-          margin: EdgeInsets.all(16.w),
-          icon: Icon(
-            Icons.check_circle_rounded,
-            color: Colors.white,
-            size: 24.sp,
+
+    // Open full-screen QR scanner
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        fullscreenDialog: true,
+        builder: (context) => Scaffold(
+          backgroundColor: Colors.black,
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            leading: IconButton(
+              icon: Icon(Icons.close, color: Colors.white, size: 28.sp),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+            title: Text(
+              'Scan Gift Card',
+              style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 18.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
-        );
-      }
-    });
+          body: QRScannerWidget(
+            title: 'Scan Gift Card QR Code',
+            subtitle: 'Position the QR code within the frame',
+            onCodeScanned: (code) {
+              Navigator.of(context).pop();
+              setState(() {
+                _isScanning = false;
+                _codeController.text = code;
+              });
+              Get.snackbar(
+                'Code Scanned',
+                'Gift card code has been scanned successfully',
+                snackPosition: SnackPosition.BOTTOM,
+                backgroundColor: const Color(0xFF10B981),
+                colorText: Colors.white,
+                borderRadius: 12.r,
+                margin: EdgeInsets.all(16.w),
+                icon: Icon(
+                  Icons.check_circle_rounded,
+                  color: Colors.white,
+                  size: 24.sp,
+                ),
+              );
+            },
+          ),
+        ),
+      ),
+    );
+
+    // If scanner was closed without scanning
+    if (mounted) {
+      setState(() {
+        _isScanning = false;
+      });
+    }
   }
 
   void _stopScanning() {

@@ -62,11 +62,12 @@ const CreateUserRequest$json = const {
     const {'1': 'role', '3': 6, '4': 1, '5': 9, '10': 'role'},
     const {'1': 'login_passcode', '3': 7, '4': 1, '5': 9, '10': 'loginPasscode'},
     const {'1': 'username', '3': 8, '4': 1, '5': 9, '10': 'username'},
+    const {'1': 'referral_code', '3': 9, '4': 1, '5': 9, '10': 'referralCode'},
   ],
 };
 
 /// Descriptor for `CreateUserRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List createUserRequestDescriptor = $convert.base64Decode('ChFDcmVhdGVVc2VyUmVxdWVzdBIdCgpmaXJzdF9uYW1lGAEgASgJUglmaXJzdE5hbWUSGwoJbGFzdF9uYW1lGAIgASgJUghsYXN0TmFtZRIUCgVlbWFpbBgDIAEoCVIFZW1haWwSGgoIcGFzc3dvcmQYBCABKAlSCHBhc3N3b3JkEiEKDHBob25lX251bWJlchgFIAEoCVILcGhvbmVOdW1iZXISEgoEcm9sZRgGIAEoCVIEcm9sZRIlCg5sb2dpbl9wYXNzY29kZRgHIAEoCVINbG9naW5QYXNzY29kZRIaCgh1c2VybmFtZRgIIAEoCVIIdXNlcm5hbWU=');
+final $typed_data.Uint8List createUserRequestDescriptor = $convert.base64Decode('ChFDcmVhdGVVc2VyUmVxdWVzdBIdCgpmaXJzdF9uYW1lGAEgASgJUglmaXJzdE5hbWUSGwoJbGFzdF9uYW1lGAIgASgJUghsYXN0TmFtZRIUCgVlbWFpbBgDIAEoCVIFZW1haWwSGgoIcGFzc3dvcmQYBCABKAlSCHBhc3N3b3JkEiEKDHBob25lX251bWJlchgFIAEoCVILcGhvbmVOdW1iZXISEgoEcm9sZRgGIAEoCVIEcm9sZRIlCg5sb2dpbl9wYXNzY29kZRgHIAEoCVINbG9naW5QYXNzY29kZRIaCgh1c2VybmFtZRgIIAEoCVIIdXNlcm5hbWUSIwoNcmVmZXJyYWxfY29kZRgJIAEoCVIMcmVmZXJyYWxDb2Rl');
 @$core.Deprecated('Use createUserResponseDescriptor instead')
 const CreateUserResponse$json = const {
   '1': 'CreateUserResponse',

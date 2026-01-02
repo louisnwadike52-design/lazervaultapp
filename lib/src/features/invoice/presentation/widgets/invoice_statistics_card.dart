@@ -25,7 +25,7 @@ class InvoiceStatisticsCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Invoice Statistics',
+            'Sent Invoice Statistics',
             style: GoogleFonts.inter(
               color: Colors.white,
               fontSize: 16.sp,

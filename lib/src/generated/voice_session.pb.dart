@@ -7,6 +7,7 @@
 
 import 'dart:core' as $core;
 
+import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
 class StartVoiceSessionRequest extends $pb.GeneratedMessage {
@@ -111,5 +112,155 @@ class StartVoiceSessionResponse extends $pb.GeneratedMessage {
   $core.bool hasAgentId() => $_has(2);
   @$pb.TagNumber(3)
   void clearAgentId() => clearField(3);
+}
+
+class ProcessVoiceNoteRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ProcessVoiceNoteRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'txHistory')
+    ..hasRequiredFields = false
+  ;
+
+  ProcessVoiceNoteRequest._() : super();
+  factory ProcessVoiceNoteRequest({
+    $core.String? txHistory,
+  }) {
+    final _result = create();
+    if (txHistory != null) {
+      _result.txHistory = txHistory;
+    }
+    return _result;
+  }
+  factory ProcessVoiceNoteRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory ProcessVoiceNoteRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  ProcessVoiceNoteRequest clone() => ProcessVoiceNoteRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  ProcessVoiceNoteRequest copyWith(void Function(ProcessVoiceNoteRequest) updates) => super.copyWith((message) => updates(message as ProcessVoiceNoteRequest)) as ProcessVoiceNoteRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static ProcessVoiceNoteRequest create() => ProcessVoiceNoteRequest._();
+  ProcessVoiceNoteRequest createEmptyInstance() => create();
+  static $pb.PbList<ProcessVoiceNoteRequest> createRepeated() => $pb.PbList<ProcessVoiceNoteRequest>();
+  @$core.pragma('dart2js:noInline')
+  static ProcessVoiceNoteRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ProcessVoiceNoteRequest>(create);
+  static ProcessVoiceNoteRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get txHistory => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set txHistory($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasTxHistory() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearTxHistory() => clearField(1);
+}
+
+class ProcessVoiceNoteResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ProcessVoiceNoteResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'msg')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'response')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transcribedText')
+    ..aInt64(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'processingTimeMs')
+    ..hasRequiredFields = false
+  ;
+
+  ProcessVoiceNoteResponse._() : super();
+  factory ProcessVoiceNoteResponse({
+    $core.bool? success,
+    $core.String? msg,
+    $core.String? response,
+    $core.String? transcribedText,
+    $fixnum.Int64? processingTimeMs,
+  }) {
+    final _result = create();
+    if (success != null) {
+      _result.success = success;
+    }
+    if (msg != null) {
+      _result.msg = msg;
+    }
+    if (response != null) {
+      _result.response = response;
+    }
+    if (transcribedText != null) {
+      _result.transcribedText = transcribedText;
+    }
+    if (processingTimeMs != null) {
+      _result.processingTimeMs = processingTimeMs;
+    }
+    return _result;
+  }
+  factory ProcessVoiceNoteResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory ProcessVoiceNoteResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  ProcessVoiceNoteResponse clone() => ProcessVoiceNoteResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  ProcessVoiceNoteResponse copyWith(void Function(ProcessVoiceNoteResponse) updates) => super.copyWith((message) => updates(message as ProcessVoiceNoteResponse)) as ProcessVoiceNoteResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static ProcessVoiceNoteResponse create() => ProcessVoiceNoteResponse._();
+  ProcessVoiceNoteResponse createEmptyInstance() => create();
+  static $pb.PbList<ProcessVoiceNoteResponse> createRepeated() => $pb.PbList<ProcessVoiceNoteResponse>();
+  @$core.pragma('dart2js:noInline')
+  static ProcessVoiceNoteResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ProcessVoiceNoteResponse>(create);
+  static ProcessVoiceNoteResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool v) { $_setBool(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get msg => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set msg($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasMsg() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMsg() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get response => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set response($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasResponse() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearResponse() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get transcribedText => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set transcribedText($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasTranscribedText() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearTranscribedText() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $fixnum.Int64 get processingTimeMs => $_getI64(4);
+  @$pb.TagNumber(5)
+  set processingTimeMs($fixnum.Int64 v) { $_setInt64(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasProcessingTimeMs() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearProcessingTimeMs() => clearField(5);
 }
 

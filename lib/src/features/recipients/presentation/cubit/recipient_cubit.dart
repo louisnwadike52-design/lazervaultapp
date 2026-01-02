@@ -25,6 +25,7 @@ class RecipientCubit extends Cubit<RecipientState> {
     String? currency,
     bool? favoritesOnly,
   }) async {
+    if (isClosed) return;
     emit(RecipientLoading());
     try {
       final result = await _getRecipientsUseCase(
@@ -33,11 +34,13 @@ class RecipientCubit extends Cubit<RecipientState> {
         currency: currency,
         favoritesOnly: favoritesOnly,
       );
+      if (isClosed) return;
       result.fold(
         (failure) => emit(RecipientError(failure.message)),
         (recipients) => emit(RecipientLoaded(recipients)),
       );
     } catch (e) {
+      if (isClosed) return;
       emit(RecipientError(e.toString()));
     }
   }
@@ -46,12 +49,14 @@ class RecipientCubit extends Cubit<RecipientState> {
     required RecipientModel recipient,
     required String accessToken,
   }) async {
+    if (isClosed) return;
     emit(RecipientLoading());
     try {
       final result = await _addRecipientUseCase(
         recipient: recipient,
         accessToken: accessToken,
       );
+      if (isClosed) return;
       result.fold(
         (failure) => emit(RecipientError(failure.message)),
         (newRecipient) {
@@ -60,6 +65,7 @@ class RecipientCubit extends Cubit<RecipientState> {
         },
       );
     } catch (e) {
+      if (isClosed) return;
       emit(RecipientError(e.toString()));
     }
   }
@@ -76,21 +82,24 @@ class RecipientCubit extends Cubit<RecipientState> {
          }
          return r;
        }).toList();
+       if (isClosed) return;
        emit(RecipientLoaded(updatedRecipients));
     }
 
     try {
       final result = await _toggleFavoriteUseCase(
           recipientId: recipientId, accessToken: accessToken);
+      if (isClosed) return;
       result.fold(
         (failure) {
             emit(previousState);
             emit(RecipientError(failure.message));
          },
-        (_) { 
+        (_) {
         },
       );
     } catch (e) {
+       if (isClosed) return;
        emit(previousState);
        emit(RecipientError(e.toString()));
     }

@@ -26,6 +26,7 @@ class BatchTransferCubit extends Cubit<BatchTransferState> {
     DateTime? scheduledAt,
   }) async {
     print("BatchTransferCubit: initiateBatchTransfer method entered.");
+    if (isClosed) return;
     emit(const BatchTransferLoading());
 
     final params = InitiateBatchTransferParams(
@@ -44,6 +45,7 @@ class BatchTransferCubit extends Cubit<BatchTransferState> {
       final result = await initiateBatchTransferUseCase(params);
       print("BatchTransferCubit: Use case call completed. Result: $result");
 
+      if (isClosed) return;
       result.fold(
         (failure) {
           print("BatchTransferCubit: Emitting Failure - ${failure.message}");
@@ -57,6 +59,7 @@ class BatchTransferCubit extends Cubit<BatchTransferState> {
       );
     } catch (e, stackTrace) {
       print("BatchTransferCubit: Error caught BEFORE result.fold: $e\n$stackTrace");
+      if (isClosed) return;
       emit(BatchTransferFailure(
           message: 'Error during batch transfer process: ${e.toString()}'));
     }
@@ -68,6 +71,7 @@ class BatchTransferCubit extends Cubit<BatchTransferState> {
     int offset = 0,
   }) async {
     print("BatchTransferCubit: getBatchTransferHistory method entered.");
+    if (isClosed) return;
     emit(const BatchTransferHistoryLoading());
 
     final params = GetBatchTransferHistoryParams(
@@ -82,6 +86,7 @@ class BatchTransferCubit extends Cubit<BatchTransferState> {
       final result = await getBatchTransferHistoryUseCase(params);
       print("BatchTransferCubit: History use case call completed. Result: $result");
 
+      if (isClosed) return;
       result.fold(
         (failure) {
           print("BatchTransferCubit: Emitting History Failure - ${failure.message}");
@@ -95,6 +100,7 @@ class BatchTransferCubit extends Cubit<BatchTransferState> {
       );
     } catch (e, stackTrace) {
       print("BatchTransferCubit: Error caught in history fetch: $e\n$stackTrace");
+      if (isClosed) return;
       emit(BatchTransferFailure(
           message: 'Error during batch transfer history fetch: ${e.toString()}'));
     }
@@ -111,6 +117,7 @@ class BatchTransferCubit extends Cubit<BatchTransferState> {
         ? (state as BatchTransferHistorySuccess).history
         : <BatchTransferEntity>[];
 
+    if (isClosed) return;
     emit(BatchTransferStatusLoading(history: currentHistory));
 
     final params = GetBatchTransferStatusParams(
@@ -124,6 +131,7 @@ class BatchTransferCubit extends Cubit<BatchTransferState> {
       final result = await getBatchTransferStatusUseCase(params);
       print("BatchTransferCubit: Status use case call completed. Result: $result");
 
+      if (isClosed) return;
       result.fold(
         (failure) {
           print("BatchTransferCubit: Emitting Status Failure - ${failure.message}");
@@ -137,6 +145,7 @@ class BatchTransferCubit extends Cubit<BatchTransferState> {
       );
     } catch (e, stackTrace) {
       print("BatchTransferCubit: Error caught in status fetch: $e\n$stackTrace");
+      if (isClosed) return;
       emit(BatchTransferFailure(
           message: 'Error during batch transfer status fetch: ${e.toString()}'));
     }

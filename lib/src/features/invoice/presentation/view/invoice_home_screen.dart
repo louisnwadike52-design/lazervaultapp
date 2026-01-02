@@ -6,10 +6,13 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../../../core/services/injection_container.dart';
 import '../../../../../core/types/app_routes.dart';
 import '../../../../../core/theme/invoice_theme_colors.dart';
+import '../../../authentication/cubit/authentication_cubit.dart';
+import '../../../authentication/cubit/authentication_state.dart';
 import '../cubit/invoice_cubit.dart';
 import '../cubit/invoice_state.dart';
 import '../cubit/tagged_invoice_cubit.dart';
 import '../cubit/tagged_invoice_state.dart';
+import '../widgets/invoice_voice_agent_button.dart';
 
 class InvoiceHomeScreen extends StatefulWidget {
   const InvoiceHomeScreen({super.key});
@@ -103,6 +106,66 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen> {
                 ),
               ],
             ),
+          ),
+          SizedBox(width: 12.w),
+          // Voice Agent Button
+          BlocBuilder<AuthenticationCubit, AuthenticationState>(
+            builder: (context, authState) {
+              final accessToken = authState is AuthenticationSuccess
+                  ? authState.profile.session.accessToken
+                  : null;
+
+              return GestureDetector(
+                onTap: () {
+                  // Show the full voice control widget in a bottom sheet
+                  showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    backgroundColor: Colors.transparent,
+                    builder: (context) => Container(
+                      height: MediaQuery.of(context).size.height * 0.35,
+                      decoration: BoxDecoration(
+                        color: InvoiceThemeColors.secondaryBackground,
+                        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+                      ),
+                      child: InvoiceVoiceAgentControl(
+                        accessToken: accessToken,
+                        onConnected: () {
+                          // Refresh invoices when connected
+                          context.read<InvoiceCubit>().loadInvoices();
+                          context.read<TaggedInvoiceCubit>().loadIncomingInvoices();
+                        },
+                      ),
+                    ),
+                  );
+                },
+                child: Container(
+                  width: 44.w,
+                  height: 44.w,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF8B5CF6), Color(0xFF6366F1)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(22.r),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF8B5CF6).withValues(alpha: 0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                        spreadRadius: 0,
+                      ),
+                    ],
+                  ),
+                  child: Icon(
+                    Icons.mic,
+                    color: Colors.white,
+                    size: 20.sp,
+                  ),
+                ),
+              );
+            },
           ),
         ],
       ),

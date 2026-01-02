@@ -4,10 +4,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/data/app_data.dart';
+import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/utilities/responsive_controller.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
+import 'package:lazervault/src/features/identity/cubit/identity_cubit.dart';
+import 'package:lazervault/src/features/identity/cubit/identity_state.dart';
 import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
 import 'package:lazervault/src/features/widgets/build_form_field.dart';
 import 'package:lazervault/src/features/widgets/universal_image_loader.dart';
@@ -77,9 +80,11 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
     final arguments = Get.arguments as Map<String, dynamic>?;
     final fromForgotPasscode = arguments?['fromForgotPasscode'] == true;
 
-    return Scaffold(
-      extendBodyBehindAppBar: true,
-      body: Stack(
+    return BlocProvider(
+      create: (context) => serviceLocator<IdentityCubit>(),
+      child: Scaffold(
+        extendBodyBehindAppBar: true,
+        body: Stack(
         children: [
           Container(
             decoration: const BoxDecoration(
@@ -89,53 +94,76 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
               ),
             ),
           ),
-          BlocListener<AuthenticationCubit, AuthenticationState>(
-            listener: (context, state) async {
-              switch (state) {
-              case AuthenticationSuccess():
-                // Load user profile after successful authentication
-                context.read<ProfileCubit>().getUserProfile();
+          MultiBlocListener(
+            listeners: [
+              BlocListener<AuthenticationCubit, AuthenticationState>(
+                listener: (context, state) async {
+                  switch (state) {
+                  case AuthenticationSuccess():
+                    // Load user profile after successful authentication
+                    context.read<ProfileCubit>().getUserProfile();
 
-                Get.snackbar(
-                  'Success',
-                  'Login Successful!',
-                  snackPosition: SnackPosition.TOP,
-                  backgroundColor: Colors.green,
-                  colorText: Colors.white,
-                  margin: EdgeInsets.all(15.w),
-                  borderRadius: 10.r,
-                );
+                    Get.snackbar(
+                      'Success',
+                      'Login Successful!',
+                      snackPosition: SnackPosition.TOP,
+                      backgroundColor: Colors.green,
+                      colorText: Colors.white,
+                      margin: EdgeInsets.all(15.w),
+                      borderRadius: 10.r,
+                    );
 
-                // If coming from forgot passcode, always go to passcode setup
-                if (fromForgotPasscode) {
-                  Get.offAllNamed(AppRoutes.passcodeSetup);
-                } else {
-                  // Check if passcode is set up
-                  final loginMethod = await _storage.read(key: 'login_method');
-                  if (loginMethod == 'passcode') {
-                    // Already has passcode, go to dashboard
-                    Get.offAllNamed(AppRoutes.dashboard);
-                  } else {
-                    // No passcode set up, prompt to set it up
+                    // Handle navigation based on scenario
+                    if (fromForgotPasscode) {
+                      // Always go to passcode setup when resetting
+                      Get.offAllNamed(AppRoutes.passcodeSetup);
+                    } else {
+                      // Check backend for passcode status
+                      context.read<IdentityCubit>().checkPasscodeExists();
+                    }
+                    break;
+                  case AuthenticationFailure(message: final msg):
+                    Get.snackbar(
+                      'Login Error',
+                      msg,
+                      snackPosition: SnackPosition.TOP,
+                      backgroundColor: Colors.redAccent,
+                      colorText: Colors.white,
+                      margin: EdgeInsets.all(15.w),
+                      borderRadius: 10.r,
+                    );
+                    break;
+                    default:
+                      break;
+                  }
+                },
+              ),
+              BlocListener<IdentityCubit, IdentityState>(
+                listener: (context, state) {
+                  if (state is PasscodeExistsChecked) {
+                    if (state.exists) {
+                      // User has passcode, go to dashboard
+                      Get.offAllNamed(AppRoutes.dashboard);
+                    } else {
+                      // No passcode set, prompt to set up
+                      Get.offAllNamed(AppRoutes.passcodeSetup);
+                    }
+                  } else if (state is IdentityError) {
+                    // API error - default to passcode setup for safety
+                    Get.snackbar(
+                      'Warning',
+                      'Could not verify passcode status. Please set up your passcode.',
+                      snackPosition: SnackPosition.TOP,
+                      backgroundColor: Colors.orange,
+                      colorText: Colors.white,
+                      margin: EdgeInsets.all(15.w),
+                      borderRadius: 10.r,
+                    );
                     Get.offAllNamed(AppRoutes.passcodeSetup);
                   }
-                }
-                break;
-              case AuthenticationFailure(message: final msg):
-                Get.snackbar(
-                  'Login Error',
-                  msg,
-                  snackPosition: SnackPosition.TOP,
-                  backgroundColor: Colors.redAccent,
-                  colorText: Colors.white,
-                  margin: EdgeInsets.all(15.w),
-                  borderRadius: 10.r,
-                );
-                break;
-                default:
-                  break;
-              }
-            },
+                },
+              ),
+            ],
             child: BlocBuilder<AuthenticationCubit, AuthenticationState>(
               builder: (context, state) {
                 final isLoading = state is AuthenticationLoading;
@@ -292,6 +320,7 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
             ),
           ),
         ],
+      ),
       ),
     );
   }

@@ -696,6 +696,8 @@ class _MyGiftCardsScreenState extends State<MyGiftCardsScreen> with TickerProvid
         return Colors.red;
       case GiftCardStatus.cancelled:
         return Colors.red;
+      case GiftCardStatus.partiallyRedeemed:
+        return Colors.blue;
     }
   }
 

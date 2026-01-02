@@ -21,6 +21,7 @@ class StatementCubit extends Cubit<StatementState> {
     required DateTime endDate,
     required StatementFormat format,
   }) async {
+    if (isClosed) return;
     emit(StatementDownloading());
 
     final result = await _downloadStatementUseCase.call(
@@ -30,6 +31,7 @@ class StatementCubit extends Cubit<StatementState> {
       format: format,
     );
 
+    if (isClosed) return;
     result.fold(
       (failure) => emit(StatementDownloadFailure(message: failure.message)),
       (statement) => emit(StatementDownloadSuccess(statement: statement)),
@@ -40,6 +42,7 @@ class StatementCubit extends Cubit<StatementState> {
     required String accountId,
     int? limit,
   }) async {
+    if (isClosed) return;
     emit(StatementHistoryLoading());
 
     final result = await _getStatementHistoryUseCase.call(
@@ -47,6 +50,7 @@ class StatementCubit extends Cubit<StatementState> {
       limit: limit,
     );
 
+    if (isClosed) return;
     result.fold(
       (failure) => emit(StatementHistoryFailure(message: failure.message)),
       (statements) => emit(StatementHistoryLoaded(statements: statements)),
@@ -54,6 +58,7 @@ class StatementCubit extends Cubit<StatementState> {
   }
 
   void reset() {
+    if (isClosed) return;
     emit(StatementInitial());
   }
 }

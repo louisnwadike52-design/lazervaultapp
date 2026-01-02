@@ -127,6 +127,45 @@ class AuthRepositoryImpl implements IAuthRepository {
   }
 
   @override
+  Future<Either<Failure, void>> changePasscode({
+    required String oldPasscode,
+    required String newPasscode,
+  }) async {
+    try {
+      final request = auth_req_resp.ChangePasscodeRequest(
+        oldPasscode: oldPasscode,
+        newPasscode: newPasscode,
+      );
+      final callOptions = await _callOptionsHelper.withAuth();
+      final response = await _authServiceClient.changePasscode(
+        request,
+        options: callOptions,
+      );
+
+      if (response.success) {
+        return const Right(null);
+      } else {
+        return Left(ServerFailure(
+          message: response.msg.isNotEmpty
+              ? response.msg
+              : 'Failed to change passcode',
+          statusCode: 400,
+        ));
+      }
+    } on GrpcError catch (e) {
+      return Left(ServerFailure(
+        message: e.message ?? 'gRPC error during passcode change',
+        statusCode: e.code,
+      ));
+    } catch (e) {
+      return Left(ServerFailure(
+        message: 'Unexpected error during passcode change: $e',
+        statusCode: 500,
+      ));
+    }
+  }
+
+  @override
   Future<Either<Failure, ProfileEntity>> signUp({
     required String firstName,
     required String lastName,
@@ -134,6 +173,7 @@ class AuthRepositoryImpl implements IAuthRepository {
     required String password,
     String? phoneNumber,
     String? username,
+    String? referralCode,
   }) async {
     try {
       final createUserRequest = user_req_resp.CreateUserRequest(
@@ -143,6 +183,7 @@ class AuthRepositoryImpl implements IAuthRepository {
         password: password,
         phoneNumber: phoneNumber ?? '',
         username: username ?? '',
+        referralCode: referralCode ?? '',
       );
       print('Sending gRPC CreateUser request...');
       final createUserResponse = await _userServiceClient.createUser(createUserRequest);

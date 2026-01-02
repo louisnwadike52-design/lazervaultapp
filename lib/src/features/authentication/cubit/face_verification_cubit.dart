@@ -26,6 +26,7 @@ class FaceVerificationCubit extends Cubit<FaceVerificationState> {
     bool allowDuplicates = false,
     double duplicateThreshold = 0.6,
   }) async {
+    if (isClosed) return;
     emit(const FaceVerificationLoading());
 
     final result = await _registerFaceUseCase(
@@ -40,14 +41,17 @@ class FaceVerificationCubit extends Cubit<FaceVerificationState> {
     result.fold(
       (failure) {
         _showErrorSnackbar('Face Registration Failed', failure.message);
+        if (isClosed) return;
         emit(FaceRegistrationFailure(failure.message, statusCode: failure.statusCode));
       },
       (registration) {
         if (registration.success) {
           _showSuccessSnackbar('Success!', registration.message);
+          if (isClosed) return;
           emit(FaceRegistrationSuccess(registration));
         } else {
           _showErrorSnackbar('Registration Failed', registration.message);
+          if (isClosed) return;
           emit(FaceRegistrationFailure(registration.message));
         }
       },
@@ -61,6 +65,7 @@ class FaceVerificationCubit extends Cubit<FaceVerificationState> {
     required String imageFilename,
     double threshold = 0.5,
   }) async {
+    if (isClosed) return;
     emit(const FaceVerificationLoading());
 
     final result = await _verifyFaceUseCase(
@@ -73,6 +78,7 @@ class FaceVerificationCubit extends Cubit<FaceVerificationState> {
     result.fold(
       (failure) {
         _showErrorSnackbar('Face Verification Failed', failure.message);
+        if (isClosed) return;
         emit(FaceVerificationFailure(failure.message, statusCode: failure.statusCode));
       },
       (verification) {
@@ -81,15 +87,18 @@ class FaceVerificationCubit extends Cubit<FaceVerificationState> {
             'Verified!',
             'Face verified with ${(verification.confidence * 100).toStringAsFixed(1)}% confidence',
           );
+          if (isClosed) return;
           emit(FaceVerified(verification));
         } else if (verification.success && !verification.verified) {
           final reason = verification.message.isNotEmpty
               ? verification.message
               : 'Face could not be verified. Confidence: ${(verification.confidence * 100).toStringAsFixed(1)}%';
           _showWarningSnackbar('Verification Failed', reason);
+          if (isClosed) return;
           emit(FaceVerificationRejected(verification, reason));
         } else {
           _showErrorSnackbar('Verification Error', verification.message);
+          if (isClosed) return;
           emit(FaceVerificationFailure(verification.message));
         }
       },
@@ -98,6 +107,7 @@ class FaceVerificationCubit extends Cubit<FaceVerificationState> {
 
   /// Reset state to initial
   void reset() {
+    if (isClosed) return;
     emit(const FaceVerificationInitial());
   }
 

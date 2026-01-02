@@ -10,27 +10,27 @@ import 'dart:core' as $core;
 import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'google/protobuf/timestamp.pb.dart' as $28;
+import 'google/protobuf/timestamp.pb.dart' as $34;
 
-import 'common.pbenum.dart' as $29;
+import 'common.pbenum.dart' as $35;
 
 class TaggedInvoice extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'TaggedInvoice', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
     ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
     ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'invoiceId')
     ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
-    ..e<$29.InvoicePaymentStatus>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'paymentStatus', $pb.PbFieldType.OE, defaultOrMaker: $29.InvoicePaymentStatus.INVOICE_PAYMENT_STATUS_PENDING, valueOf: $29.InvoicePaymentStatus.valueOf, enumValues: $29.InvoicePaymentStatus.values)
-    ..e<$29.InvoicePriority>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'priority', $pb.PbFieldType.OE, defaultOrMaker: $29.InvoicePriority.INVOICE_PRIORITY_LOW, valueOf: $29.InvoicePriority.valueOf, enumValues: $29.InvoicePriority.values)
+    ..e<$35.InvoicePaymentStatus>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'paymentStatus', $pb.PbFieldType.OE, defaultOrMaker: $35.InvoicePaymentStatus.INVOICE_PAYMENT_STATUS_PENDING, valueOf: $35.InvoicePaymentStatus.valueOf, enumValues: $35.InvoicePaymentStatus.values)
+    ..e<$35.InvoicePriority>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'priority', $pb.PbFieldType.OE, defaultOrMaker: $35.InvoicePriority.INVOICE_PRIORITY_LOW, valueOf: $35.InvoicePriority.valueOf, enumValues: $35.InvoicePriority.values)
     ..aOB(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isViewed')
-    ..aOM<$28.Timestamp>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'taggedAt', subBuilder: $28.Timestamp.create)
-    ..aOM<$28.Timestamp>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'viewedAt', subBuilder: $28.Timestamp.create)
-    ..aOM<$28.Timestamp>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'reminderDate', subBuilder: $28.Timestamp.create)
+    ..aOM<$34.Timestamp>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'taggedAt', subBuilder: $34.Timestamp.create)
+    ..aOM<$34.Timestamp>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'viewedAt', subBuilder: $34.Timestamp.create)
+    ..aOM<$34.Timestamp>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'reminderDate', subBuilder: $34.Timestamp.create)
     ..aOB(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'reminderSent')
     ..aOS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'notes')
     ..a<$core.double>(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
     ..aOS(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
-    ..aOM<$28.Timestamp>(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $28.Timestamp.create)
-    ..aOM<$28.Timestamp>(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $28.Timestamp.create)
+    ..aOM<$34.Timestamp>(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $34.Timestamp.create)
+    ..aOM<$34.Timestamp>(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $34.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -39,18 +39,18 @@ class TaggedInvoice extends $pb.GeneratedMessage {
     $core.String? id,
     $core.String? invoiceId,
     $core.String? userId,
-    $29.InvoicePaymentStatus? paymentStatus,
-    $29.InvoicePriority? priority,
+    $35.InvoicePaymentStatus? paymentStatus,
+    $35.InvoicePriority? priority,
     $core.bool? isViewed,
-    $28.Timestamp? taggedAt,
-    $28.Timestamp? viewedAt,
-    $28.Timestamp? reminderDate,
+    $34.Timestamp? taggedAt,
+    $34.Timestamp? viewedAt,
+    $34.Timestamp? reminderDate,
     $core.bool? reminderSent,
     $core.String? notes,
     $core.double? amount,
     $core.String? currency,
-    $28.Timestamp? createdAt,
-    $28.Timestamp? updatedAt,
+    $34.Timestamp? createdAt,
+    $34.Timestamp? updatedAt,
   }) {
     final _result = create();
     if (id != null) {
@@ -149,18 +149,18 @@ class TaggedInvoice extends $pb.GeneratedMessage {
   void clearUserId() => clearField(3);
 
   @$pb.TagNumber(4)
-  $29.InvoicePaymentStatus get paymentStatus => $_getN(3);
+  $35.InvoicePaymentStatus get paymentStatus => $_getN(3);
   @$pb.TagNumber(4)
-  set paymentStatus($29.InvoicePaymentStatus v) { setField(4, v); }
+  set paymentStatus($35.InvoicePaymentStatus v) { setField(4, v); }
   @$pb.TagNumber(4)
   $core.bool hasPaymentStatus() => $_has(3);
   @$pb.TagNumber(4)
   void clearPaymentStatus() => clearField(4);
 
   @$pb.TagNumber(5)
-  $29.InvoicePriority get priority => $_getN(4);
+  $35.InvoicePriority get priority => $_getN(4);
   @$pb.TagNumber(5)
-  set priority($29.InvoicePriority v) { setField(5, v); }
+  set priority($35.InvoicePriority v) { setField(5, v); }
   @$pb.TagNumber(5)
   $core.bool hasPriority() => $_has(4);
   @$pb.TagNumber(5)
@@ -176,37 +176,37 @@ class TaggedInvoice extends $pb.GeneratedMessage {
   void clearIsViewed() => clearField(6);
 
   @$pb.TagNumber(7)
-  $28.Timestamp get taggedAt => $_getN(6);
+  $34.Timestamp get taggedAt => $_getN(6);
   @$pb.TagNumber(7)
-  set taggedAt($28.Timestamp v) { setField(7, v); }
+  set taggedAt($34.Timestamp v) { setField(7, v); }
   @$pb.TagNumber(7)
   $core.bool hasTaggedAt() => $_has(6);
   @$pb.TagNumber(7)
   void clearTaggedAt() => clearField(7);
   @$pb.TagNumber(7)
-  $28.Timestamp ensureTaggedAt() => $_ensure(6);
+  $34.Timestamp ensureTaggedAt() => $_ensure(6);
 
   @$pb.TagNumber(8)
-  $28.Timestamp get viewedAt => $_getN(7);
+  $34.Timestamp get viewedAt => $_getN(7);
   @$pb.TagNumber(8)
-  set viewedAt($28.Timestamp v) { setField(8, v); }
+  set viewedAt($34.Timestamp v) { setField(8, v); }
   @$pb.TagNumber(8)
   $core.bool hasViewedAt() => $_has(7);
   @$pb.TagNumber(8)
   void clearViewedAt() => clearField(8);
   @$pb.TagNumber(8)
-  $28.Timestamp ensureViewedAt() => $_ensure(7);
+  $34.Timestamp ensureViewedAt() => $_ensure(7);
 
   @$pb.TagNumber(9)
-  $28.Timestamp get reminderDate => $_getN(8);
+  $34.Timestamp get reminderDate => $_getN(8);
   @$pb.TagNumber(9)
-  set reminderDate($28.Timestamp v) { setField(9, v); }
+  set reminderDate($34.Timestamp v) { setField(9, v); }
   @$pb.TagNumber(9)
   $core.bool hasReminderDate() => $_has(8);
   @$pb.TagNumber(9)
   void clearReminderDate() => clearField(9);
   @$pb.TagNumber(9)
-  $28.Timestamp ensureReminderDate() => $_ensure(8);
+  $34.Timestamp ensureReminderDate() => $_ensure(8);
 
   @$pb.TagNumber(10)
   $core.bool get reminderSent => $_getBF(9);
@@ -245,33 +245,33 @@ class TaggedInvoice extends $pb.GeneratedMessage {
   void clearCurrency() => clearField(13);
 
   @$pb.TagNumber(14)
-  $28.Timestamp get createdAt => $_getN(13);
+  $34.Timestamp get createdAt => $_getN(13);
   @$pb.TagNumber(14)
-  set createdAt($28.Timestamp v) { setField(14, v); }
+  set createdAt($34.Timestamp v) { setField(14, v); }
   @$pb.TagNumber(14)
   $core.bool hasCreatedAt() => $_has(13);
   @$pb.TagNumber(14)
   void clearCreatedAt() => clearField(14);
   @$pb.TagNumber(14)
-  $28.Timestamp ensureCreatedAt() => $_ensure(13);
+  $34.Timestamp ensureCreatedAt() => $_ensure(13);
 
   @$pb.TagNumber(15)
-  $28.Timestamp get updatedAt => $_getN(14);
+  $34.Timestamp get updatedAt => $_getN(14);
   @$pb.TagNumber(15)
-  set updatedAt($28.Timestamp v) { setField(15, v); }
+  set updatedAt($34.Timestamp v) { setField(15, v); }
   @$pb.TagNumber(15)
   $core.bool hasUpdatedAt() => $_has(14);
   @$pb.TagNumber(15)
   void clearUpdatedAt() => clearField(15);
   @$pb.TagNumber(15)
-  $28.Timestamp ensureUpdatedAt() => $_ensure(14);
+  $34.Timestamp ensureUpdatedAt() => $_ensure(14);
 }
 
 class PaymentReminder extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'PaymentReminder', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
     ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'invoiceId')
     ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
-    ..aOM<$28.Timestamp>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'reminderDate', subBuilder: $28.Timestamp.create)
+    ..aOM<$34.Timestamp>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'reminderDate', subBuilder: $34.Timestamp.create)
     ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status')
     ..hasRequiredFields = false
   ;
@@ -280,7 +280,7 @@ class PaymentReminder extends $pb.GeneratedMessage {
   factory PaymentReminder({
     $core.String? invoiceId,
     $core.String? userId,
-    $28.Timestamp? reminderDate,
+    $34.Timestamp? reminderDate,
     $core.String? status,
   }) {
     final _result = create();
@@ -338,15 +338,15 @@ class PaymentReminder extends $pb.GeneratedMessage {
   void clearUserId() => clearField(2);
 
   @$pb.TagNumber(3)
-  $28.Timestamp get reminderDate => $_getN(2);
+  $34.Timestamp get reminderDate => $_getN(2);
   @$pb.TagNumber(3)
-  set reminderDate($28.Timestamp v) { setField(3, v); }
+  set reminderDate($34.Timestamp v) { setField(3, v); }
   @$pb.TagNumber(3)
   $core.bool hasReminderDate() => $_has(2);
   @$pb.TagNumber(3)
   void clearReminderDate() => clearField(3);
   @$pb.TagNumber(3)
-  $28.Timestamp ensureReminderDate() => $_ensure(2);
+  $34.Timestamp ensureReminderDate() => $_ensure(2);
 
   @$pb.TagNumber(4)
   $core.String get status => $_getSZ(3);
@@ -367,8 +367,8 @@ class InvoicePaymentNotification extends $pb.GeneratedMessage {
     ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'title')
     ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
     ..aOB(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isRead')
-    ..aOM<$28.Timestamp>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $28.Timestamp.create)
-    ..aOM<$28.Timestamp>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'readAt', subBuilder: $28.Timestamp.create)
+    ..aOM<$34.Timestamp>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $34.Timestamp.create)
+    ..aOM<$34.Timestamp>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'readAt', subBuilder: $34.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -381,8 +381,8 @@ class InvoicePaymentNotification extends $pb.GeneratedMessage {
     $core.String? title,
     $core.String? message,
     $core.bool? isRead,
-    $28.Timestamp? createdAt,
-    $28.Timestamp? readAt,
+    $34.Timestamp? createdAt,
+    $34.Timestamp? readAt,
   }) {
     final _result = create();
     if (notificationId != null) {
@@ -499,34 +499,34 @@ class InvoicePaymentNotification extends $pb.GeneratedMessage {
   void clearIsRead() => clearField(7);
 
   @$pb.TagNumber(8)
-  $28.Timestamp get createdAt => $_getN(7);
+  $34.Timestamp get createdAt => $_getN(7);
   @$pb.TagNumber(8)
-  set createdAt($28.Timestamp v) { setField(8, v); }
+  set createdAt($34.Timestamp v) { setField(8, v); }
   @$pb.TagNumber(8)
   $core.bool hasCreatedAt() => $_has(7);
   @$pb.TagNumber(8)
   void clearCreatedAt() => clearField(8);
   @$pb.TagNumber(8)
-  $28.Timestamp ensureCreatedAt() => $_ensure(7);
+  $34.Timestamp ensureCreatedAt() => $_ensure(7);
 
   @$pb.TagNumber(9)
-  $28.Timestamp get readAt => $_getN(8);
+  $34.Timestamp get readAt => $_getN(8);
   @$pb.TagNumber(9)
-  set readAt($28.Timestamp v) { setField(9, v); }
+  set readAt($34.Timestamp v) { setField(9, v); }
   @$pb.TagNumber(9)
   $core.bool hasReadAt() => $_has(8);
   @$pb.TagNumber(9)
   void clearReadAt() => clearField(9);
   @$pb.TagNumber(9)
-  $28.Timestamp ensureReadAt() => $_ensure(8);
+  $34.Timestamp ensureReadAt() => $_ensure(8);
 }
 
 class GetTaggedInvoicesRequest extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetTaggedInvoicesRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
     ..a<$core.int>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pageSize', $pb.PbFieldType.O3)
     ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pageToken')
-    ..e<$29.InvoicePaymentStatus>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'statusFilter', $pb.PbFieldType.OE, defaultOrMaker: $29.InvoicePaymentStatus.INVOICE_PAYMENT_STATUS_PENDING, valueOf: $29.InvoicePaymentStatus.valueOf, enumValues: $29.InvoicePaymentStatus.values)
-    ..e<$29.InvoicePriority>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'priorityFilter', $pb.PbFieldType.OE, defaultOrMaker: $29.InvoicePriority.INVOICE_PRIORITY_LOW, valueOf: $29.InvoicePriority.valueOf, enumValues: $29.InvoicePriority.values)
+    ..e<$35.InvoicePaymentStatus>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'statusFilter', $pb.PbFieldType.OE, defaultOrMaker: $35.InvoicePaymentStatus.INVOICE_PAYMENT_STATUS_PENDING, valueOf: $35.InvoicePaymentStatus.valueOf, enumValues: $35.InvoicePaymentStatus.values)
+    ..e<$35.InvoicePriority>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'priorityFilter', $pb.PbFieldType.OE, defaultOrMaker: $35.InvoicePriority.INVOICE_PRIORITY_LOW, valueOf: $35.InvoicePriority.valueOf, enumValues: $35.InvoicePriority.values)
     ..hasRequiredFields = false
   ;
 
@@ -534,8 +534,8 @@ class GetTaggedInvoicesRequest extends $pb.GeneratedMessage {
   factory GetTaggedInvoicesRequest({
     $core.int? pageSize,
     $core.String? pageToken,
-    $29.InvoicePaymentStatus? statusFilter,
-    $29.InvoicePriority? priorityFilter,
+    $35.InvoicePaymentStatus? statusFilter,
+    $35.InvoicePriority? priorityFilter,
   }) {
     final _result = create();
     if (pageSize != null) {
@@ -592,18 +592,18 @@ class GetTaggedInvoicesRequest extends $pb.GeneratedMessage {
   void clearPageToken() => clearField(2);
 
   @$pb.TagNumber(3)
-  $29.InvoicePaymentStatus get statusFilter => $_getN(2);
+  $35.InvoicePaymentStatus get statusFilter => $_getN(2);
   @$pb.TagNumber(3)
-  set statusFilter($29.InvoicePaymentStatus v) { setField(3, v); }
+  set statusFilter($35.InvoicePaymentStatus v) { setField(3, v); }
   @$pb.TagNumber(3)
   $core.bool hasStatusFilter() => $_has(2);
   @$pb.TagNumber(3)
   void clearStatusFilter() => clearField(3);
 
   @$pb.TagNumber(4)
-  $29.InvoicePriority get priorityFilter => $_getN(3);
+  $35.InvoicePriority get priorityFilter => $_getN(3);
   @$pb.TagNumber(4)
-  set priorityFilter($29.InvoicePriority v) { setField(4, v); }
+  set priorityFilter($35.InvoicePriority v) { setField(4, v); }
   @$pb.TagNumber(4)
   $core.bool hasPriorityFilter() => $_has(3);
   @$pb.TagNumber(4)
@@ -828,7 +828,7 @@ class TaggedInvoicesSummary extends $pb.GeneratedMessage {
 
 class GetTaggedInvoicesByStatusRequest extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetTaggedInvoicesByStatusRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..e<$29.InvoicePaymentStatus>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: $29.InvoicePaymentStatus.INVOICE_PAYMENT_STATUS_PENDING, valueOf: $29.InvoicePaymentStatus.valueOf, enumValues: $29.InvoicePaymentStatus.values)
+    ..e<$35.InvoicePaymentStatus>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: $35.InvoicePaymentStatus.INVOICE_PAYMENT_STATUS_PENDING, valueOf: $35.InvoicePaymentStatus.valueOf, enumValues: $35.InvoicePaymentStatus.values)
     ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pageSize', $pb.PbFieldType.O3)
     ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pageToken')
     ..hasRequiredFields = false
@@ -836,7 +836,7 @@ class GetTaggedInvoicesByStatusRequest extends $pb.GeneratedMessage {
 
   GetTaggedInvoicesByStatusRequest._() : super();
   factory GetTaggedInvoicesByStatusRequest({
-    $29.InvoicePaymentStatus? status,
+    $35.InvoicePaymentStatus? status,
     $core.int? pageSize,
     $core.String? pageToken,
   }) {
@@ -874,9 +874,9 @@ class GetTaggedInvoicesByStatusRequest extends $pb.GeneratedMessage {
   static GetTaggedInvoicesByStatusRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $29.InvoicePaymentStatus get status => $_getN(0);
+  $35.InvoicePaymentStatus get status => $_getN(0);
   @$pb.TagNumber(1)
-  set status($29.InvoicePaymentStatus v) { setField(1, v); }
+  set status($35.InvoicePaymentStatus v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasStatus() => $_has(0);
   @$pb.TagNumber(1)
@@ -1373,10 +1373,10 @@ class SearchTaggedInvoicesRequest extends $pb.GeneratedMessage {
     ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'query')
     ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pageSize', $pb.PbFieldType.O3)
     ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pageToken')
-    ..pc<$29.InvoicePaymentStatus>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'statuses', $pb.PbFieldType.KE, valueOf: $29.InvoicePaymentStatus.valueOf, enumValues: $29.InvoicePaymentStatus.values, defaultEnumValue: $29.InvoicePaymentStatus.INVOICE_PAYMENT_STATUS_PENDING)
-    ..pc<$29.InvoicePriority>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'priorities', $pb.PbFieldType.KE, valueOf: $29.InvoicePriority.valueOf, enumValues: $29.InvoicePriority.values, defaultEnumValue: $29.InvoicePriority.INVOICE_PRIORITY_LOW)
-    ..aOM<$28.Timestamp>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'startDate', subBuilder: $28.Timestamp.create)
-    ..aOM<$28.Timestamp>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'endDate', subBuilder: $28.Timestamp.create)
+    ..pc<$35.InvoicePaymentStatus>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'statuses', $pb.PbFieldType.KE, valueOf: $35.InvoicePaymentStatus.valueOf, enumValues: $35.InvoicePaymentStatus.values, defaultEnumValue: $35.InvoicePaymentStatus.INVOICE_PAYMENT_STATUS_PENDING)
+    ..pc<$35.InvoicePriority>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'priorities', $pb.PbFieldType.KE, valueOf: $35.InvoicePriority.valueOf, enumValues: $35.InvoicePriority.values, defaultEnumValue: $35.InvoicePriority.INVOICE_PRIORITY_LOW)
+    ..aOM<$34.Timestamp>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'startDate', subBuilder: $34.Timestamp.create)
+    ..aOM<$34.Timestamp>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'endDate', subBuilder: $34.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -1385,10 +1385,10 @@ class SearchTaggedInvoicesRequest extends $pb.GeneratedMessage {
     $core.String? query,
     $core.int? pageSize,
     $core.String? pageToken,
-    $core.Iterable<$29.InvoicePaymentStatus>? statuses,
-    $core.Iterable<$29.InvoicePriority>? priorities,
-    $28.Timestamp? startDate,
-    $28.Timestamp? endDate,
+    $core.Iterable<$35.InvoicePaymentStatus>? statuses,
+    $core.Iterable<$35.InvoicePriority>? priorities,
+    $34.Timestamp? startDate,
+    $34.Timestamp? endDate,
   }) {
     final _result = create();
     if (query != null) {
@@ -1463,32 +1463,32 @@ class SearchTaggedInvoicesRequest extends $pb.GeneratedMessage {
   void clearPageToken() => clearField(3);
 
   @$pb.TagNumber(4)
-  $core.List<$29.InvoicePaymentStatus> get statuses => $_getList(3);
+  $core.List<$35.InvoicePaymentStatus> get statuses => $_getList(3);
 
   @$pb.TagNumber(5)
-  $core.List<$29.InvoicePriority> get priorities => $_getList(4);
+  $core.List<$35.InvoicePriority> get priorities => $_getList(4);
 
   @$pb.TagNumber(6)
-  $28.Timestamp get startDate => $_getN(5);
+  $34.Timestamp get startDate => $_getN(5);
   @$pb.TagNumber(6)
-  set startDate($28.Timestamp v) { setField(6, v); }
+  set startDate($34.Timestamp v) { setField(6, v); }
   @$pb.TagNumber(6)
   $core.bool hasStartDate() => $_has(5);
   @$pb.TagNumber(6)
   void clearStartDate() => clearField(6);
   @$pb.TagNumber(6)
-  $28.Timestamp ensureStartDate() => $_ensure(5);
+  $34.Timestamp ensureStartDate() => $_ensure(5);
 
   @$pb.TagNumber(7)
-  $28.Timestamp get endDate => $_getN(6);
+  $34.Timestamp get endDate => $_getN(6);
   @$pb.TagNumber(7)
-  set endDate($28.Timestamp v) { setField(7, v); }
+  set endDate($34.Timestamp v) { setField(7, v); }
   @$pb.TagNumber(7)
   $core.bool hasEndDate() => $_has(6);
   @$pb.TagNumber(7)
   void clearEndDate() => clearField(7);
   @$pb.TagNumber(7)
-  $28.Timestamp ensureEndDate() => $_ensure(6);
+  $34.Timestamp ensureEndDate() => $_ensure(6);
 }
 
 class SearchTaggedInvoicesResponse extends $pb.GeneratedMessage {
@@ -1562,7 +1562,7 @@ class SearchTaggedInvoicesResponse extends $pb.GeneratedMessage {
 
 class FilterTaggedInvoicesByPriorityRequest extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'FilterTaggedInvoicesByPriorityRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..e<$29.InvoicePriority>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'priority', $pb.PbFieldType.OE, defaultOrMaker: $29.InvoicePriority.INVOICE_PRIORITY_LOW, valueOf: $29.InvoicePriority.valueOf, enumValues: $29.InvoicePriority.values)
+    ..e<$35.InvoicePriority>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'priority', $pb.PbFieldType.OE, defaultOrMaker: $35.InvoicePriority.INVOICE_PRIORITY_LOW, valueOf: $35.InvoicePriority.valueOf, enumValues: $35.InvoicePriority.values)
     ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pageSize', $pb.PbFieldType.O3)
     ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pageToken')
     ..hasRequiredFields = false
@@ -1570,7 +1570,7 @@ class FilterTaggedInvoicesByPriorityRequest extends $pb.GeneratedMessage {
 
   FilterTaggedInvoicesByPriorityRequest._() : super();
   factory FilterTaggedInvoicesByPriorityRequest({
-    $29.InvoicePriority? priority,
+    $35.InvoicePriority? priority,
     $core.int? pageSize,
     $core.String? pageToken,
   }) {
@@ -1608,9 +1608,9 @@ class FilterTaggedInvoicesByPriorityRequest extends $pb.GeneratedMessage {
   static FilterTaggedInvoicesByPriorityRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $29.InvoicePriority get priority => $_getN(0);
+  $35.InvoicePriority get priority => $_getN(0);
   @$pb.TagNumber(1)
-  set priority($29.InvoicePriority v) { setField(1, v); }
+  set priority($35.InvoicePriority v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasPriority() => $_has(0);
   @$pb.TagNumber(1)
@@ -1706,8 +1706,8 @@ class FilterTaggedInvoicesByPriorityResponse extends $pb.GeneratedMessage {
 
 class FilterTaggedInvoicesByDateRangeRequest extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'FilterTaggedInvoicesByDateRangeRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<$28.Timestamp>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'startDate', subBuilder: $28.Timestamp.create)
-    ..aOM<$28.Timestamp>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'endDate', subBuilder: $28.Timestamp.create)
+    ..aOM<$34.Timestamp>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'startDate', subBuilder: $34.Timestamp.create)
+    ..aOM<$34.Timestamp>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'endDate', subBuilder: $34.Timestamp.create)
     ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pageSize', $pb.PbFieldType.O3)
     ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pageToken')
     ..hasRequiredFields = false
@@ -1715,8 +1715,8 @@ class FilterTaggedInvoicesByDateRangeRequest extends $pb.GeneratedMessage {
 
   FilterTaggedInvoicesByDateRangeRequest._() : super();
   factory FilterTaggedInvoicesByDateRangeRequest({
-    $28.Timestamp? startDate,
-    $28.Timestamp? endDate,
+    $34.Timestamp? startDate,
+    $34.Timestamp? endDate,
     $core.int? pageSize,
     $core.String? pageToken,
   }) {
@@ -1757,26 +1757,26 @@ class FilterTaggedInvoicesByDateRangeRequest extends $pb.GeneratedMessage {
   static FilterTaggedInvoicesByDateRangeRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $28.Timestamp get startDate => $_getN(0);
+  $34.Timestamp get startDate => $_getN(0);
   @$pb.TagNumber(1)
-  set startDate($28.Timestamp v) { setField(1, v); }
+  set startDate($34.Timestamp v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasStartDate() => $_has(0);
   @$pb.TagNumber(1)
   void clearStartDate() => clearField(1);
   @$pb.TagNumber(1)
-  $28.Timestamp ensureStartDate() => $_ensure(0);
+  $34.Timestamp ensureStartDate() => $_ensure(0);
 
   @$pb.TagNumber(2)
-  $28.Timestamp get endDate => $_getN(1);
+  $34.Timestamp get endDate => $_getN(1);
   @$pb.TagNumber(2)
-  set endDate($28.Timestamp v) { setField(2, v); }
+  set endDate($34.Timestamp v) { setField(2, v); }
   @$pb.TagNumber(2)
   $core.bool hasEndDate() => $_has(1);
   @$pb.TagNumber(2)
   void clearEndDate() => clearField(2);
   @$pb.TagNumber(2)
-  $28.Timestamp ensureEndDate() => $_ensure(1);
+  $34.Timestamp ensureEndDate() => $_ensure(1);
 
   @$pb.TagNumber(3)
   $core.int get pageSize => $_getIZ(2);
@@ -2151,14 +2151,14 @@ class MarkTaggedInvoiceAsViewedResponse extends $pb.GeneratedMessage {
 class SetInvoicePaymentReminderRequest extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'SetInvoicePaymentReminderRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
     ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'invoiceId')
-    ..aOM<$28.Timestamp>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'reminderDate', subBuilder: $28.Timestamp.create)
+    ..aOM<$34.Timestamp>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'reminderDate', subBuilder: $34.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
   SetInvoicePaymentReminderRequest._() : super();
   factory SetInvoicePaymentReminderRequest({
     $core.String? invoiceId,
-    $28.Timestamp? reminderDate,
+    $34.Timestamp? reminderDate,
   }) {
     final _result = create();
     if (invoiceId != null) {
@@ -2200,15 +2200,15 @@ class SetInvoicePaymentReminderRequest extends $pb.GeneratedMessage {
   void clearInvoiceId() => clearField(1);
 
   @$pb.TagNumber(2)
-  $28.Timestamp get reminderDate => $_getN(1);
+  $34.Timestamp get reminderDate => $_getN(1);
   @$pb.TagNumber(2)
-  set reminderDate($28.Timestamp v) { setField(2, v); }
+  set reminderDate($34.Timestamp v) { setField(2, v); }
   @$pb.TagNumber(2)
   $core.bool hasReminderDate() => $_has(1);
   @$pb.TagNumber(2)
   void clearReminderDate() => clearField(2);
   @$pb.TagNumber(2)
-  $28.Timestamp ensureReminderDate() => $_ensure(1);
+  $34.Timestamp ensureReminderDate() => $_ensure(1);
 }
 
 class SetInvoicePaymentReminderResponse extends $pb.GeneratedMessage {
@@ -2571,7 +2571,7 @@ class GetInvoicePaymentNotificationsResponse extends $pb.GeneratedMessage {
 class UpdateTaggedInvoiceStatusRequest extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UpdateTaggedInvoiceStatusRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
     ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'invoiceId')
-    ..e<$29.InvoicePaymentStatus>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'newStatus', $pb.PbFieldType.OE, defaultOrMaker: $29.InvoicePaymentStatus.INVOICE_PAYMENT_STATUS_PENDING, valueOf: $29.InvoicePaymentStatus.valueOf, enumValues: $29.InvoicePaymentStatus.values)
+    ..e<$35.InvoicePaymentStatus>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'newStatus', $pb.PbFieldType.OE, defaultOrMaker: $35.InvoicePaymentStatus.INVOICE_PAYMENT_STATUS_PENDING, valueOf: $35.InvoicePaymentStatus.valueOf, enumValues: $35.InvoicePaymentStatus.values)
     ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'notes')
     ..hasRequiredFields = false
   ;
@@ -2579,7 +2579,7 @@ class UpdateTaggedInvoiceStatusRequest extends $pb.GeneratedMessage {
   UpdateTaggedInvoiceStatusRequest._() : super();
   factory UpdateTaggedInvoiceStatusRequest({
     $core.String? invoiceId,
-    $29.InvoicePaymentStatus? newStatus,
+    $35.InvoicePaymentStatus? newStatus,
     $core.String? notes,
   }) {
     final _result = create();
@@ -2625,9 +2625,9 @@ class UpdateTaggedInvoiceStatusRequest extends $pb.GeneratedMessage {
   void clearInvoiceId() => clearField(1);
 
   @$pb.TagNumber(2)
-  $29.InvoicePaymentStatus get newStatus => $_getN(1);
+  $35.InvoicePaymentStatus get newStatus => $_getN(1);
   @$pb.TagNumber(2)
-  set newStatus($29.InvoicePaymentStatus v) { setField(2, v); }
+  set newStatus($35.InvoicePaymentStatus v) { setField(2, v); }
   @$pb.TagNumber(2)
   $core.bool hasNewStatus() => $_has(1);
   @$pb.TagNumber(2)
@@ -2947,14 +2947,14 @@ class MarkMultipleInvoicesAsViewedResponse extends $pb.GeneratedMessage {
 class BulkSetPaymentRemindersRequest extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'BulkSetPaymentRemindersRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
     ..pPS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'invoiceIds')
-    ..aOM<$28.Timestamp>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'reminderDate', subBuilder: $28.Timestamp.create)
+    ..aOM<$34.Timestamp>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'reminderDate', subBuilder: $34.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
   BulkSetPaymentRemindersRequest._() : super();
   factory BulkSetPaymentRemindersRequest({
     $core.Iterable<$core.String>? invoiceIds,
-    $28.Timestamp? reminderDate,
+    $34.Timestamp? reminderDate,
   }) {
     final _result = create();
     if (invoiceIds != null) {
@@ -2990,15 +2990,15 @@ class BulkSetPaymentRemindersRequest extends $pb.GeneratedMessage {
   $core.List<$core.String> get invoiceIds => $_getList(0);
 
   @$pb.TagNumber(2)
-  $28.Timestamp get reminderDate => $_getN(1);
+  $34.Timestamp get reminderDate => $_getN(1);
   @$pb.TagNumber(2)
-  set reminderDate($28.Timestamp v) { setField(2, v); }
+  set reminderDate($34.Timestamp v) { setField(2, v); }
   @$pb.TagNumber(2)
   $core.bool hasReminderDate() => $_has(1);
   @$pb.TagNumber(2)
   void clearReminderDate() => clearField(2);
   @$pb.TagNumber(2)
-  $28.Timestamp ensureReminderDate() => $_ensure(1);
+  $34.Timestamp ensureReminderDate() => $_ensure(1);
 }
 
 class BulkSetPaymentRemindersResponse extends $pb.GeneratedMessage {
@@ -3165,7 +3165,7 @@ class TaggedInvoiceStatistics extends $pb.GeneratedMessage {
     ..a<$core.double>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'overdueAmount', $pb.PbFieldType.OD)
     ..a<$core.double>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'completedAmount', $pb.PbFieldType.OD)
     ..a<$core.double>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'averageAmount', $pb.PbFieldType.OD)
-    ..e<$29.InvoicePriority>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'mostCommonPriority', $pb.PbFieldType.OE, defaultOrMaker: $29.InvoicePriority.INVOICE_PRIORITY_LOW, valueOf: $29.InvoicePriority.valueOf, enumValues: $29.InvoicePriority.values)
+    ..e<$35.InvoicePriority>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'mostCommonPriority', $pb.PbFieldType.OE, defaultOrMaker: $35.InvoicePriority.INVOICE_PRIORITY_LOW, valueOf: $35.InvoicePriority.valueOf, enumValues: $35.InvoicePriority.values)
     ..hasRequiredFields = false
   ;
 
@@ -3180,7 +3180,7 @@ class TaggedInvoiceStatistics extends $pb.GeneratedMessage {
     $core.double? overdueAmount,
     $core.double? completedAmount,
     $core.double? averageAmount,
-    $29.InvoicePriority? mostCommonPriority,
+    $35.InvoicePriority? mostCommonPriority,
   }) {
     final _result = create();
     if (totalInvoices != null) {
@@ -3318,9 +3318,9 @@ class TaggedInvoiceStatistics extends $pb.GeneratedMessage {
   void clearAverageAmount() => clearField(9);
 
   @$pb.TagNumber(10)
-  $29.InvoicePriority get mostCommonPriority => $_getN(9);
+  $35.InvoicePriority get mostCommonPriority => $_getN(9);
   @$pb.TagNumber(10)
-  set mostCommonPriority($29.InvoicePriority v) { setField(10, v); }
+  set mostCommonPriority($35.InvoicePriority v) { setField(10, v); }
   @$pb.TagNumber(10)
   $core.bool hasMostCommonPriority() => $_has(9);
   @$pb.TagNumber(10)

@@ -46,6 +46,7 @@ class CreatePolicyCubit extends Cubit<CreatePolicyState> {
 
   /// Initialize form with auto-fill data from user profile
   void initializeWithUserData(User user) {
+    if (isClosed) return;
     emit(const CreatePolicyLoading());
 
     _policyHolderName = '${user.firstName} ${user.lastName}'.trim();
@@ -186,6 +187,7 @@ class CreatePolicyCubit extends Cubit<CreatePolicyState> {
     }
 
     if (errors.isNotEmpty) {
+      if (isClosed) return false;
       emit(CreatePolicyValidationError(
         message: 'Please complete all required fields',
         fieldErrors: errors,
@@ -219,6 +221,7 @@ class CreatePolicyCubit extends Cubit<CreatePolicyState> {
     }
 
     if (errors.isNotEmpty) {
+      if (isClosed) return false;
       emit(CreatePolicyValidationError(
         message: 'Please fix the errors in the form',
         fieldErrors: errors,
@@ -285,6 +288,7 @@ class CreatePolicyCubit extends Cubit<CreatePolicyState> {
     }
 
     if (errors.isNotEmpty) {
+      if (isClosed) return false;
       emit(CreatePolicyValidationError(
         message: 'Please fix the errors in the form',
         fieldErrors: errors,
@@ -378,11 +382,13 @@ class CreatePolicyCubit extends Cubit<CreatePolicyState> {
     _optionalFields = {};
     _isAutoFilled = false;
 
+    if (isClosed) return;
     emit(const CreatePolicyInitial());
   }
 
   /// Emit form updated state
   void _emitFormUpdated() {
+    if (isClosed) return;
     emit(CreatePolicyFormUpdated(
       insuranceType: _insuranceType,
       provider: _provider,

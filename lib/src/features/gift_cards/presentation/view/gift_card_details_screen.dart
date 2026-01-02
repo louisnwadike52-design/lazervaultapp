@@ -916,6 +916,8 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
         return const Color(0xFFF59E0B);
       case GiftCardStatus.cancelled:
         return const Color(0xFFEF4444);
+      case GiftCardStatus.partiallyRedeemed:
+        return const Color(0xFF3B82F6);
     }
   }
 
@@ -931,6 +933,8 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
         return 'PENDING';
       case GiftCardStatus.cancelled:
         return 'CANCELLED';
+      case GiftCardStatus.partiallyRedeemed:
+        return 'PARTIALLY REDEEMED';
     }
   }
 } 

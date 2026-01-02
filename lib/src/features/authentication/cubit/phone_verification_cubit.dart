@@ -17,9 +17,11 @@ class PhoneVerificationCubit extends Cubit<PhoneVerificationState> {
   // Update phone number
   void updatePhoneNumber(String phoneNumber) {
     if (state is PhoneVerificationInProgress) {
+      if (isClosed) return;
       emit((state as PhoneVerificationInProgress)
           .copyWith(phoneNumber: phoneNumber));
     } else {
+      if (isClosed) return;
       emit(PhoneVerificationInProgress(phoneNumber: phoneNumber));
     }
   }
@@ -27,21 +29,25 @@ class PhoneVerificationCubit extends Cubit<PhoneVerificationState> {
   // Update verification code
   void updateVerificationCode(String code) {
     if (state is PhoneVerificationInProgress) {
+      if (isClosed) return;
       emit((state as PhoneVerificationInProgress)
           .copyWith(verificationCode: code));
     } else {
+      if (isClosed) return;
       emit(PhoneVerificationInProgress(verificationCode: code));
     }
   }
 
   // Request phone verification (send SMS)
   Future<void> requestPhoneVerification({required String phoneNumber}) async {
+    if (isClosed) return;
     emit(PhoneVerificationSending());
 
     final result = await _requestPhoneVerificationUseCase.call(
       phoneNumber: phoneNumber,
     );
 
+    if (isClosed) return;
     result.fold(
       (failure) {
         emit(PhoneVerificationFailure(message: failure.message));
@@ -79,6 +85,7 @@ class PhoneVerificationCubit extends Cubit<PhoneVerificationState> {
     required String phoneNumber,
     required String verificationCode,
   }) async {
+    if (isClosed) return;
     emit(PhoneVerificationVerifying());
 
     final result = await _verifyPhoneNumberUseCase.call(
@@ -86,6 +93,7 @@ class PhoneVerificationCubit extends Cubit<PhoneVerificationState> {
       verificationCode: verificationCode,
     );
 
+    if (isClosed) return;
     result.fold(
       (failure) {
         emit(PhoneVerificationFailure(message: failure.message));
@@ -113,6 +121,7 @@ class PhoneVerificationCubit extends Cubit<PhoneVerificationState> {
 
   // Resend verification code
   Future<void> resendVerificationCode({required String phoneNumber}) async {
+    if (isClosed) return;
     emit(PhoneVerificationInProgress(
       phoneNumber: phoneNumber,
       isSending: true,
@@ -124,11 +133,13 @@ class PhoneVerificationCubit extends Cubit<PhoneVerificationState> {
 
   // Skip phone verification
   void skipVerification() {
+    if (isClosed) return;
     emit(PhoneVerificationSkipped());
   }
 
   // Reset state
   void reset() {
+    if (isClosed) return;
     emit(PhoneVerificationInitial());
   }
 }

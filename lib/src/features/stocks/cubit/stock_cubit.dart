@@ -32,6 +32,7 @@ class StockCubit extends Cubit<StockState> {
     int limit = 20,
   }) async {
     try {
+      if (isClosed) return;
       emit(StockLoading());
       
       final result = await getStocksUseCase(
@@ -40,46 +41,67 @@ class StockCubit extends Cubit<StockState> {
         page: page,
         limit: limit,
       );
-      
+
       result.fold(
-        (failure) => emit(StockError(failure.message)),
-        (stocks) => emit(StockLoaded(stocks, sector: sector)),
+        (failure) {
+          if (isClosed) return;
+          emit(StockError(failure.message));
+        },
+        (stocks) {
+          if (isClosed) return;
+          emit(StockLoaded(stocks, sector: sector));
+        },
       );
     } catch (e) {
+      if (isClosed) return;
       emit(StockError('Failed to load stocks: ${e.toString()}'));
     }
   }
 
   Future<void> loadStockDetails(String symbol, {String timeframe = '1M'}) async {
     try {
+      if (isClosed) return;
       emit(StockDetailsLoading());
       
       final stockResult = await repository.getStockDetails(symbol);
       final priceHistoryResult = await repository.getStockPriceHistory(symbol, timeframe);
       final analysisResult = await repository.getStockAnalysis(symbol);
-      
+
       stockResult.fold(
-        (failure) => emit(StockDetailsError(failure.message)),
+        (failure) {
+          if (isClosed) return;
+          emit(StockDetailsError(failure.message));
+        },
         (stock) {
           priceHistoryResult.fold(
-            (failure) => emit(StockDetailsError(failure.message)),
+            (failure) {
+              if (isClosed) return;
+              emit(StockDetailsError(failure.message));
+            },
             (priceHistory) {
               analysisResult.fold(
-                (failure) => emit(StockDetailsLoaded(
-                  stock: stock,
-                  priceHistory: priceHistory,
-                )),
-                (analysis) => emit(StockDetailsLoaded(
-                  stock: stock,
-                  priceHistory: priceHistory,
-                  analysis: analysis,
-                )),
+                (failure) {
+                  if (isClosed) return;
+                  emit(StockDetailsLoaded(
+                    stock: stock,
+                    priceHistory: priceHistory,
+                  ));
+                },
+                (analysis) {
+                  if (isClosed) return;
+                  emit(StockDetailsLoaded(
+                    stock: stock,
+                    priceHistory: priceHistory,
+                    analysis: analysis,
+                  ));
+                },
               );
             },
           );
         },
       );
     } catch (e) {
+      if (isClosed) return;
       emit(StockDetailsError('Failed to load stock details: ${e.toString()}'));
     }
   }
@@ -87,34 +109,51 @@ class StockCubit extends Cubit<StockState> {
   Future<void> searchStocks(String query) async {
     try {
       if (query.isEmpty) {
+        if (isClosed) return;
         emit(StockSearchLoaded([], query));
         return;
       }
-      
+
+      if (isClosed) return;
       emit(StockSearchLoading());
       
       final result = await repository.searchStocks(query);
-      
+
       result.fold(
-        (failure) => emit(StockSearchError(failure.message)),
-        (stocks) => emit(StockSearchLoaded(stocks, query)),
+        (failure) {
+          if (isClosed) return;
+          emit(StockSearchError(failure.message));
+        },
+        (stocks) {
+          if (isClosed) return;
+          emit(StockSearchLoaded(stocks, query));
+        },
       );
     } catch (e) {
+      if (isClosed) return;
       emit(StockSearchError('Failed to search stocks: ${e.toString()}'));
     }
   }
 
   Future<void> loadTopMovers() async {
     try {
+      if (isClosed) return;
       emit(StockLoading());
       
       final result = await repository.getTopMovers();
-      
+
       result.fold(
-        (failure) => emit(StockError(failure.message)),
-        (stocks) => emit(StockLoaded(stocks)),
+        (failure) {
+          if (isClosed) return;
+          emit(StockError(failure.message));
+        },
+        (stocks) {
+          if (isClosed) return;
+          emit(StockLoaded(stocks));
+        },
       );
     } catch (e) {
+      if (isClosed) return;
       emit(StockError('Failed to load top movers: ${e.toString()}'));
     }
   }
@@ -122,30 +161,46 @@ class StockCubit extends Cubit<StockState> {
   // Portfolio Methods
   Future<void> loadPortfolio() async {
     try {
+      if (isClosed) return;
       emit(PortfolioLoading());
       
       final result = await getPortfolioUseCase();
-      
+
       result.fold(
-        (failure) => emit(PortfolioError(failure.message)),
-        (portfolio) => emit(PortfolioLoaded(portfolio)),
+        (failure) {
+          if (isClosed) return;
+          emit(PortfolioError(failure.message));
+        },
+        (portfolio) {
+          if (isClosed) return;
+          emit(PortfolioLoaded(portfolio));
+        },
       );
     } catch (e) {
+      if (isClosed) return;
       emit(PortfolioError('Failed to load portfolio: ${e.toString()}'));
     }
   }
 
   Future<void> loadHoldings() async {
     try {
+      if (isClosed) return;
       emit(HoldingsLoading());
       
       final result = await repository.getHoldings();
-      
+
       result.fold(
-        (failure) => emit(HoldingsError(failure.message)),
-        (holdings) => emit(HoldingsLoaded(holdings)),
+        (failure) {
+          if (isClosed) return;
+          emit(HoldingsError(failure.message));
+        },
+        (holdings) {
+          if (isClosed) return;
+          emit(HoldingsLoaded(holdings));
+        },
       );
     } catch (e) {
+      if (isClosed) return;
       emit(HoldingsError('Failed to load holdings: ${e.toString()}'));
     }
   }
@@ -160,6 +215,7 @@ class StockCubit extends Cubit<StockState> {
     String? notes,
   }) async {
     try {
+      if (isClosed) return;
       emit(OrderPlacing());
       
       final result = await placeOrderUseCase(
@@ -169,42 +225,65 @@ class StockCubit extends Cubit<StockState> {
         quantity: quantity,
         price: price,
       );
-      
+
       result.fold(
-        (failure) => emit(OrderError(failure.message)),
-        (order) => emit(OrderPlaced(order)),
+        (failure) {
+          if (isClosed) return;
+          emit(OrderError(failure.message));
+        },
+        (order) {
+          if (isClosed) return;
+          emit(OrderPlaced(order));
+        },
       );
     } catch (e) {
+      if (isClosed) return;
       emit(OrderError('Failed to place order: ${e.toString()}'));
     }
   }
 
   Future<void> loadOrders({OrderStatus? status, String? symbol}) async {
     try {
+      if (isClosed) return;
       emit(OrdersLoading());
       
       final result = await repository.getOrders(status: status, symbol: symbol);
-      
+
       result.fold(
-        (failure) => emit(StockError(failure.message)),
-        (orders) => emit(OrdersLoaded(orders)),
+        (failure) {
+          if (isClosed) return;
+          emit(StockError(failure.message));
+        },
+        (orders) {
+          if (isClosed) return;
+          emit(OrdersLoaded(orders));
+        },
       );
     } catch (e) {
+      if (isClosed) return;
       emit(StockError('Failed to load orders: ${e.toString()}'));
     }
   }
 
   Future<void> cancelOrder(String orderId) async {
     try {
+      if (isClosed) return;
       emit(OrderCancelling());
       
       final result = await repository.cancelOrder(orderId);
-      
+
       result.fold(
-        (failure) => emit(OrderError(failure.message)),
-        (order) => emit(OrderCancelled(order)),
+        (failure) {
+          if (isClosed) return;
+          emit(OrderError(failure.message));
+        },
+        (order) {
+          if (isClosed) return;
+          emit(OrderCancelled(order));
+        },
       );
     } catch (e) {
+      if (isClosed) return;
       emit(OrderError('Failed to cancel order: ${e.toString()}'));
     }
   }
@@ -212,60 +291,92 @@ class StockCubit extends Cubit<StockState> {
   // Watchlist Methods
   Future<void> loadWatchlists() async {
     try {
+      if (isClosed) return;
       emit(WatchlistsLoading());
       
       final result = await getWatchlistsUseCase();
-      
+
       result.fold(
-        (failure) => emit(WatchlistsError(failure.message)),
-        (watchlists) => emit(WatchlistsLoaded(watchlists)),
+        (failure) {
+          if (isClosed) return;
+          emit(WatchlistsError(failure.message));
+        },
+        (watchlists) {
+          if (isClosed) return;
+          emit(WatchlistsLoaded(watchlists));
+        },
       );
     } catch (e) {
+      if (isClosed) return;
       emit(WatchlistsError('Failed to load watchlists: ${e.toString()}'));
     }
   }
 
   Future<void> createWatchlist(String name, List<String> symbols) async {
     try {
+      if (isClosed) return;
       emit(WatchlistCreating());
       
       final result = await repository.createWatchlist(name, symbols);
-      
+
       result.fold(
-        (failure) => emit(WatchlistsError(failure.message)),
-        (watchlist) => emit(WatchlistCreated(watchlist)),
+        (failure) {
+          if (isClosed) return;
+          emit(WatchlistsError(failure.message));
+        },
+        (watchlist) {
+          if (isClosed) return;
+          emit(WatchlistCreated(watchlist));
+        },
       );
     } catch (e) {
+      if (isClosed) return;
       emit(WatchlistsError('Failed to create watchlist: ${e.toString()}'));
     }
   }
 
   Future<void> updateWatchlist(String watchlistId, String name, List<String> symbols) async {
     try {
+      if (isClosed) return;
       emit(WatchlistUpdating());
       
       final result = await repository.updateWatchlist(watchlistId, name, symbols);
-      
+
       result.fold(
-        (failure) => emit(WatchlistsError(failure.message)),
-        (watchlist) => emit(WatchlistUpdated(watchlist)),
+        (failure) {
+          if (isClosed) return;
+          emit(WatchlistsError(failure.message));
+        },
+        (watchlist) {
+          if (isClosed) return;
+          emit(WatchlistUpdated(watchlist));
+        },
       );
     } catch (e) {
+      if (isClosed) return;
       emit(WatchlistsError('Failed to update watchlist: ${e.toString()}'));
     }
   }
 
   Future<void> deleteWatchlist(String watchlistId) async {
     try {
+      if (isClosed) return;
       emit(WatchlistDeleting());
       
       final result = await repository.deleteWatchlist(watchlistId);
-      
+
       result.fold(
-        (failure) => emit(WatchlistsError(failure.message)),
-        (_) => emit(WatchlistDeleted(watchlistId)),
+        (failure) {
+          if (isClosed) return;
+          emit(WatchlistsError(failure.message));
+        },
+        (_) {
+          if (isClosed) return;
+          emit(WatchlistDeleted(watchlistId));
+        },
       );
     } catch (e) {
+      if (isClosed) return;
       emit(WatchlistsError('Failed to delete watchlist: ${e.toString()}'));
     }
   }
@@ -273,12 +384,19 @@ class StockCubit extends Cubit<StockState> {
   Future<void> addToWatchlist(String watchlistId, String symbol) async {
     try {
       final result = await repository.addToWatchlist(watchlistId, symbol);
-      
+
       result.fold(
-        (failure) => emit(WatchlistsError(failure.message)),
-        (watchlist) => emit(WatchlistUpdated(watchlist)),
+        (failure) {
+          if (isClosed) return;
+          emit(WatchlistsError(failure.message));
+        },
+        (watchlist) {
+          if (isClosed) return;
+          emit(WatchlistUpdated(watchlist));
+        },
       );
     } catch (e) {
+      if (isClosed) return;
       emit(WatchlistsError('Failed to add to watchlist: ${e.toString()}'));
     }
   }
@@ -286,12 +404,19 @@ class StockCubit extends Cubit<StockState> {
   Future<void> removeFromWatchlist(String watchlistId, String symbol) async {
     try {
       final result = await repository.removeFromWatchlist(watchlistId, symbol);
-      
+
       result.fold(
-        (failure) => emit(WatchlistsError(failure.message)),
-        (watchlist) => emit(WatchlistUpdated(watchlist)),
+        (failure) {
+          if (isClosed) return;
+          emit(WatchlistsError(failure.message));
+        },
+        (watchlist) {
+          if (isClosed) return;
+          emit(WatchlistUpdated(watchlist));
+        },
       );
     } catch (e) {
+      if (isClosed) return;
       emit(WatchlistsError('Failed to remove from watchlist: ${e.toString()}'));
     }
   }
@@ -299,45 +424,69 @@ class StockCubit extends Cubit<StockState> {
   // Market Data Methods
   Future<void> loadMarketNews({NewsCategory? category, List<String>? symbols}) async {
     try {
+      if (isClosed) return;
       emit(MarketNewsLoading());
       
       final result = await repository.getMarketNews(category: category, symbols: symbols);
-      
+
       result.fold(
-        (failure) => emit(MarketNewsError(failure.message)),
-        (news) => emit(MarketNewsLoaded(news)),
+        (failure) {
+          if (isClosed) return;
+          emit(MarketNewsError(failure.message));
+        },
+        (news) {
+          if (isClosed) return;
+          emit(MarketNewsLoaded(news));
+        },
       );
     } catch (e) {
+      if (isClosed) return;
       emit(MarketNewsError('Failed to load market news: ${e.toString()}'));
     }
   }
 
   Future<void> loadMarketIndices() async {
     try {
+      if (isClosed) return;
       emit(MarketIndicesLoading());
       
       final result = await repository.getMarketIndices();
-      
+
       result.fold(
-        (failure) => emit(MarketIndicesError(failure.message)),
-        (indices) => emit(MarketIndicesLoaded(indices)),
+        (failure) {
+          if (isClosed) return;
+          emit(MarketIndicesError(failure.message));
+        },
+        (indices) {
+          if (isClosed) return;
+          emit(MarketIndicesLoaded(indices));
+        },
       );
     } catch (e) {
+      if (isClosed) return;
       emit(MarketIndicesError('Failed to load market indices: ${e.toString()}'));
     }
   }
 
   Future<void> loadSectorPerformance() async {
     try {
+      if (isClosed) return;
       emit(SectorPerformanceLoading());
       
       final result = await repository.getSectorPerformance();
-      
+
       result.fold(
-        (failure) => emit(SectorPerformanceError(failure.message)),
-        (sectors) => emit(SectorPerformanceLoaded(sectors)),
+        (failure) {
+          if (isClosed) return;
+          emit(SectorPerformanceError(failure.message));
+        },
+        (sectors) {
+          if (isClosed) return;
+          emit(SectorPerformanceLoaded(sectors));
+        },
       );
     } catch (e) {
+      if (isClosed) return;
       emit(SectorPerformanceError('Failed to load sector performance: ${e.toString()}'));
     }
   }
@@ -345,15 +494,23 @@ class StockCubit extends Cubit<StockState> {
   // Alert Methods
   Future<void> loadAlerts() async {
     try {
+      if (isClosed) return;
       emit(AlertsLoading());
       
       final result = await repository.getAlerts();
-      
+
       result.fold(
-        (failure) => emit(AlertsError(failure.message)),
-        (alerts) => emit(AlertsLoaded(alerts)),
+        (failure) {
+          if (isClosed) return;
+          emit(AlertsError(failure.message));
+        },
+        (alerts) {
+          if (isClosed) return;
+          emit(AlertsLoaded(alerts));
+        },
       );
     } catch (e) {
+      if (isClosed) return;
       emit(AlertsError('Failed to load alerts: ${e.toString()}'));
     }
   }
@@ -365,6 +522,7 @@ class StockCubit extends Cubit<StockState> {
     required AlertCondition condition,
   }) async {
     try {
+      if (isClosed) return;
       emit(AlertCreating());
       
       final result = await repository.createAlert(
@@ -373,12 +531,19 @@ class StockCubit extends Cubit<StockState> {
         targetValue: targetValue,
         condition: condition,
       );
-      
+
       result.fold(
-        (failure) => emit(AlertsError(failure.message)),
-        (alert) => emit(AlertCreated(alert)),
+        (failure) {
+          if (isClosed) return;
+          emit(AlertsError(failure.message));
+        },
+        (alert) {
+          if (isClosed) return;
+          emit(AlertCreated(alert));
+        },
       );
     } catch (e) {
+      if (isClosed) return;
       emit(AlertsError('Failed to create alert: ${e.toString()}'));
     }
   }
@@ -390,6 +555,7 @@ class StockCubit extends Cubit<StockState> {
     bool? isActive,
   }) async {
     try {
+      if (isClosed) return;
       emit(AlertUpdating());
       
       final result = await repository.updateAlert(
@@ -399,27 +565,42 @@ class StockCubit extends Cubit<StockState> {
         condition: condition,
         isActive: isActive,
       );
-      
+
       result.fold(
-        (failure) => emit(AlertsError(failure.message)),
-        (alert) => emit(AlertUpdated(alert)),
+        (failure) {
+          if (isClosed) return;
+          emit(AlertsError(failure.message));
+        },
+        (alert) {
+          if (isClosed) return;
+          emit(AlertUpdated(alert));
+        },
       );
     } catch (e) {
+      if (isClosed) return;
       emit(AlertsError('Failed to update alert: ${e.toString()}'));
     }
   }
 
   Future<void> deleteAlert(String alertId) async {
     try {
+      if (isClosed) return;
       emit(AlertDeleting());
       
       final result = await repository.deleteAlert(alertId);
-      
+
       result.fold(
-        (failure) => emit(AlertsError(failure.message)),
-        (_) => emit(AlertDeleted(alertId)),
+        (failure) {
+          if (isClosed) return;
+          emit(AlertsError(failure.message));
+        },
+        (_) {
+          if (isClosed) return;
+          emit(AlertDeleted(alertId));
+        },
       );
     } catch (e) {
+      if (isClosed) return;
       emit(AlertsError('Failed to delete alert: ${e.toString()}'));
     }
   }
@@ -427,45 +608,69 @@ class StockCubit extends Cubit<StockState> {
   // Trading Session Methods
   Future<void> loadTradingSession() async {
     try {
+      if (isClosed) return;
       emit(TradingSessionLoading());
       
       final result = await repository.getCurrentTradingSession();
-      
+
       result.fold(
-        (failure) => emit(TradingSessionError(failure.message)),
-        (session) => emit(TradingSessionLoaded(session)),
+        (failure) {
+          if (isClosed) return;
+          emit(TradingSessionError(failure.message));
+        },
+        (session) {
+          if (isClosed) return;
+          emit(TradingSessionLoaded(session));
+        },
       );
     } catch (e) {
+      if (isClosed) return;
       emit(TradingSessionError('Failed to load trading session: ${e.toString()}'));
     }
   }
 
   Future<void> startTradingSession(double startingBalance) async {
     try {
+      if (isClosed) return;
       emit(TradingSessionStarting());
       
       final result = await repository.startTradingSession(startingBalance);
-      
+
       result.fold(
-        (failure) => emit(TradingSessionError(failure.message)),
-        (session) => emit(TradingSessionStarted(session)),
+        (failure) {
+          if (isClosed) return;
+          emit(TradingSessionError(failure.message));
+        },
+        (session) {
+          if (isClosed) return;
+          emit(TradingSessionStarted(session));
+        },
       );
     } catch (e) {
+      if (isClosed) return;
       emit(TradingSessionError('Failed to start trading session: ${e.toString()}'));
     }
   }
 
   Future<void> endTradingSession(String sessionId) async {
     try {
+      if (isClosed) return;
       emit(TradingSessionEnding());
       
       final result = await repository.endTradingSession(sessionId);
-      
+
       result.fold(
-        (failure) => emit(TradingSessionError(failure.message)),
-        (session) => emit(TradingSessionEnded(session)),
+        (failure) {
+          if (isClosed) return;
+          emit(TradingSessionError(failure.message));
+        },
+        (session) {
+          if (isClosed) return;
+          emit(TradingSessionEnded(session));
+        },
       );
     } catch (e) {
+      if (isClosed) return;
       emit(TradingSessionError('Failed to end trading session: ${e.toString()}'));
     }
   }
@@ -473,15 +678,23 @@ class StockCubit extends Cubit<StockState> {
   // Analysis Methods
   Future<void> loadStockAnalysis(String symbol) async {
     try {
+      if (isClosed) return;
       emit(AnalysisLoading());
       
       final result = await repository.getStockAnalysis(symbol);
-      
+
       result.fold(
-        (failure) => emit(AnalysisError(failure.message)),
-        (analysis) => emit(AnalysisLoaded(analysis)),
+        (failure) {
+          if (isClosed) return;
+          emit(AnalysisError(failure.message));
+        },
+        (analysis) {
+          if (isClosed) return;
+          emit(AnalysisLoaded(analysis));
+        },
       );
     } catch (e) {
+      if (isClosed) return;
       emit(AnalysisError('Failed to load stock analysis: ${e.toString()}'));
     }
   }
@@ -489,15 +702,23 @@ class StockCubit extends Cubit<StockState> {
   // Options Methods
   Future<void> loadOptions(String underlyingSymbol, {DateTime? expirationDate}) async {
     try {
+      if (isClosed) return;
       emit(OptionsLoading());
       
       final result = await repository.getOptions(underlyingSymbol, expirationDate: expirationDate);
-      
+
       result.fold(
-        (failure) => emit(OptionsError(failure.message)),
-        (options) => emit(OptionsLoaded(options)),
+        (failure) {
+          if (isClosed) return;
+          emit(OptionsError(failure.message));
+        },
+        (options) {
+          if (isClosed) return;
+          emit(OptionsLoaded(options));
+        },
       );
     } catch (e) {
+      if (isClosed) return;
       emit(OptionsError('Failed to load options: ${e.toString()}'));
     }
   }
@@ -505,6 +726,7 @@ class StockCubit extends Cubit<StockState> {
   // Dashboard Methods
   Future<void> loadDashboard() async {
     try {
+      if (isClosed) return;
       emit(StockLoading());
       
       // Load all dashboard data concurrently
@@ -522,6 +744,7 @@ class StockCubit extends Cubit<StockState> {
       final news = futures[3] as List<MarketNews>;
       final sectors = futures[4] as List<SectorPerformance>;
 
+      if (isClosed) return;
       emit(StockDashboardLoaded(
         stocks: stocks,
         portfolio: portfolio,
@@ -530,6 +753,7 @@ class StockCubit extends Cubit<StockState> {
         sectors: sectors,
       ));
     } catch (e) {
+      if (isClosed) return;
       emit(StockError('Failed to load dashboard: ${e.toString()}'));
     }
   }
@@ -553,10 +777,12 @@ class StockCubit extends Cubit<StockState> {
   }
 
   void clearSearch() {
+    if (isClosed) return;
     emit(StockSearchLoaded([], ''));
   }
 
   void resetToInitial() {
+    if (isClosed) return;
     emit(StockInitial());
   }
 
@@ -564,7 +790,9 @@ class StockCubit extends Cubit<StockState> {
     try {
       // Simulate loading analyst ratings
       await Future.delayed(const Duration(milliseconds: 500));
-      
+
+      if (isClosed) return;
+
       // In a real implementation, you would fetch this data from your API
       final analystRatings = AnalystRatings(
         symbol: symbol,
@@ -575,12 +803,14 @@ class StockCubit extends Cubit<StockState> {
         sellRating: 21,
         analystCount: 48,
       );
-      
+
       if (state is StockDetailsLoaded) {
+        if (isClosed) return;
         final currentState = state as StockDetailsLoaded;
         emit(currentState.copyWith(analystRatings: analystRatings));
       }
     } catch (error) {
+      if (isClosed) return;
       emit(StockError('Failed to load analyst ratings: $error'));
     }
   }
@@ -589,7 +819,9 @@ class StockCubit extends Cubit<StockState> {
     try {
       // Simulate loading stock events
       await Future.delayed(const Duration(milliseconds: 300));
-      
+
+      if (isClosed) return;
+
       // In a real implementation, you would fetch this data from your API
       final events = [
         StockEvent(
@@ -607,12 +839,14 @@ class StockCubit extends Cubit<StockState> {
           description: 'Regular dividend payment',
         ),
       ];
-      
+
       if (state is StockDetailsLoaded) {
+        if (isClosed) return;
         final currentState = state as StockDetailsLoaded;
         emit(currentState.copyWith(events: events));
       }
     } catch (error) {
+      if (isClosed) return;
       emit(StockError('Failed to load stock events: $error'));
     }
   }
@@ -630,8 +864,9 @@ class StockCubit extends Cubit<StockState> {
       
       // For now, we'll just complete the future since we're using mock data
       // In a real implementation, you would emit a new state with updated chart data
-      
+
     } catch (e) {
+      if (isClosed) return;
       emit(StockError('Failed to load chart data: $e'));
     }
   }

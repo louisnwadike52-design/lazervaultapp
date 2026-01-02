@@ -42,11 +42,13 @@ class ContactSyncCubit extends Cubit<ContactSyncState> {
       final contacts = await _contactService.getContacts();
 
       if (contacts.isEmpty) {
+        if (isClosed) return;
         emit(const ContactSyncError('No contacts found on device'));
         return;
       }
 
       // Emit syncing state
+      if (isClosed) return;
       emit(ContactSyncSyncing(totalContacts: contacts.length));
 
       // Sync to backend
@@ -56,6 +58,7 @@ class ContactSyncCubit extends Cubit<ContactSyncState> {
       );
 
       // Emit success state
+      if (isClosed) return;
       emit(ContactSyncSuccess(
         syncedContacts: result.syncedContacts,
         totalSynced: result.totalSynced,
@@ -63,8 +66,10 @@ class ContactSyncCubit extends Cubit<ContactSyncState> {
         matchedUsers: result.matchedUsers,
       ));
     } on ContactSyncException catch (e) {
+      if (isClosed) return;
       emit(ContactSyncError(e.message, errorCode: e.code));
     } catch (e) {
+      if (isClosed) return;
       emit(ContactSyncError('Failed to sync contacts: $e'));
     }
   }
@@ -74,10 +79,12 @@ class ContactSyncCubit extends Cubit<ContactSyncState> {
       {bool replaceAll = false}) async {
     try {
       if (contacts.isEmpty) {
+        if (isClosed) return;
         emit(const ContactSyncError('No contacts provided'));
         return;
       }
 
+      if (isClosed) return;
       emit(ContactSyncSyncing(totalContacts: contacts.length));
 
       final result = await _syncContactsUseCase(
@@ -85,6 +92,7 @@ class ContactSyncCubit extends Cubit<ContactSyncState> {
         replaceAll: replaceAll,
       );
 
+      if (isClosed) return;
       emit(ContactSyncSuccess(
         syncedContacts: result.syncedContacts,
         totalSynced: result.totalSynced,
@@ -92,8 +100,10 @@ class ContactSyncCubit extends Cubit<ContactSyncState> {
         matchedUsers: result.matchedUsers,
       ));
     } on ContactSyncException catch (e) {
+      if (isClosed) return;
       emit(ContactSyncError(e.message, errorCode: e.code));
     } catch (e) {
+      if (isClosed) return;
       emit(ContactSyncError('Failed to sync contacts: $e'));
     }
   }
@@ -111,6 +121,7 @@ class ContactSyncCubit extends Cubit<ContactSyncState> {
     bool onlyLazervaultUsers = false,
   }) async {
     try {
+      if (isClosed) return;
       emit(const ContactSyncLoading());
 
       final result = await _getSyncedContactsUseCase(
@@ -120,6 +131,7 @@ class ContactSyncCubit extends Cubit<ContactSyncState> {
         onlyLazervaultUsers: onlyLazervaultUsers,
       );
 
+      if (isClosed) return;
       emit(ContactSyncLoaded(
         contacts: result.contacts,
         totalCount: result.totalCount,
@@ -128,8 +140,10 @@ class ContactSyncCubit extends Cubit<ContactSyncState> {
         hasMore: result.hasMore,
       ));
     } on ContactSyncException catch (e) {
+      if (isClosed) return;
       emit(ContactSyncError(e.message, errorCode: e.code));
     } catch (e) {
+      if (isClosed) return;
       emit(ContactSyncError('Failed to get synced contacts: $e'));
     }
   }
@@ -143,6 +157,7 @@ class ContactSyncCubit extends Cubit<ContactSyncState> {
     List<String>? emails,
   }) async {
     try {
+      if (isClosed) return;
       emit(const ContactSyncFindingUsers());
 
       final matchedUsers = await _findLazerVaultUsersUseCase(
@@ -150,10 +165,13 @@ class ContactSyncCubit extends Cubit<ContactSyncState> {
         emails: emails,
       );
 
+      if (isClosed) return;
       emit(ContactSyncUsersFound(matchedUsers));
     } on ContactSyncException catch (e) {
+      if (isClosed) return;
       emit(ContactSyncError(e.message, errorCode: e.code));
     } catch (e) {
+      if (isClosed) return;
       emit(ContactSyncError('Failed to find LazerVault users: $e'));
     }
   }
@@ -161,12 +179,14 @@ class ContactSyncCubit extends Cubit<ContactSyncState> {
   /// Finds LazerVault users from all device contacts
   Future<void> findLazerVaultUsersFromDeviceContacts() async {
     try {
+      if (isClosed) return;
       emit(const ContactSyncFindingUsers());
 
       // Get all contacts
       final contacts = await _contactService.getContacts();
 
       if (contacts.isEmpty) {
+        if (isClosed) return;
         emit(const ContactSyncUsersFound([]));
         return;
       }
@@ -186,10 +206,13 @@ class ContactSyncCubit extends Cubit<ContactSyncState> {
         emails: emails,
       );
 
+      if (isClosed) return;
       emit(ContactSyncUsersFound(matchedUsers));
     } on ContactSyncException catch (e) {
+      if (isClosed) return;
       emit(ContactSyncError(e.message, errorCode: e.code));
     } catch (e) {
+      if (isClosed) return;
       emit(ContactSyncError('Failed to find LazerVault users: $e'));
     }
   }
@@ -203,6 +226,7 @@ class ContactSyncCubit extends Cubit<ContactSyncState> {
     bool autoDetectLazervault = true,
   }) async {
     try {
+      if (isClosed) return;
       emit(const ContactSyncConverting());
 
       final result = await _convertContactToRecipientUseCase(
@@ -213,6 +237,7 @@ class ContactSyncCubit extends Cubit<ContactSyncState> {
         autoDetectLazervault: autoDetectLazervault,
       );
 
+      if (isClosed) return;
       emit(ContactSyncConverted(
         recipientId: result.recipientId,
         isLazervaultUser: result.isLazervaultUser,
@@ -220,8 +245,10 @@ class ContactSyncCubit extends Cubit<ContactSyncState> {
         lazervaultUsername: result.lazervaultUsername,
       ));
     } on ContactSyncException catch (e) {
+      if (isClosed) return;
       emit(ContactSyncError(e.message, errorCode: e.code));
     } catch (e) {
+      if (isClosed) return;
       emit(ContactSyncError('Failed to convert contact: $e'));
     }
   }
@@ -232,6 +259,7 @@ class ContactSyncCubit extends Cubit<ContactSyncState> {
     bool deleteAll = false,
   }) async {
     try {
+      if (isClosed) return;
       emit(const ContactSyncDeleting());
 
       final result = await _repository.deleteSyncedContacts(
@@ -239,10 +267,13 @@ class ContactSyncCubit extends Cubit<ContactSyncState> {
         deleteAll: deleteAll,
       );
 
+      if (isClosed) return;
       emit(ContactSyncDeleted(result.deletedCount));
     } on ContactSyncException catch (e) {
+      if (isClosed) return;
       emit(ContactSyncError(e.message, errorCode: e.code));
     } catch (e) {
+      if (isClosed) return;
       emit(ContactSyncError('Failed to delete synced contacts: $e'));
     }
   }
@@ -255,6 +286,7 @@ class ContactSyncCubit extends Cubit<ContactSyncState> {
     bool? syncPhotos,
   }) async {
     try {
+      if (isClosed) return;
       emit(const ContactSyncUpdatingPreferences());
 
       final preferences = await _repository.updateSyncPreferences(
@@ -264,16 +296,20 @@ class ContactSyncCubit extends Cubit<ContactSyncState> {
         syncPhotos: syncPhotos,
       );
 
+      if (isClosed) return;
       emit(ContactSyncPreferencesUpdated(preferences));
     } on ContactSyncException catch (e) {
+      if (isClosed) return;
       emit(ContactSyncError(e.message, errorCode: e.code));
     } catch (e) {
+      if (isClosed) return;
       emit(ContactSyncError('Failed to update sync preferences: $e'));
     }
   }
 
   /// Resets state to initial
   void reset() {
+    if (isClosed) return;
     emit(const ContactSyncInitial());
   }
 }

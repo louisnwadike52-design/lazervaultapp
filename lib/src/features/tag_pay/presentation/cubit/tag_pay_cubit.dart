@@ -14,36 +14,45 @@ class TagPayCubit extends Cubit<TagPayState> {
     String? avatarUrl,
   }) async {
     try {
+      if (isClosed) return;
       emit(TagPayLoading());
       final result = await repository.createTagPay(
         tagPay: tagPay,
         displayName: displayName,
         avatarUrl: avatarUrl,
       );
+      if (isClosed) return;
       emit(TagPayLoaded(result));
     } catch (e) {
+      if (isClosed) return;
       emit(TagPayError(e.toString()));
     }
   }
 
   Future<void> getTagPay(String tagPay) async {
     try {
+      if (isClosed) return;
       emit(TagPayLoading());
       final result = await repository.getTagPay(tagPay);
       if (result != null) {
+        if (isClosed) return;
         emit(TagPayLoaded(result));
       } else {
+        if (isClosed) return;
         emit(const TagPayError('Tag pay not found'));
       }
     } catch (e) {
+      if (isClosed) return;
       emit(TagPayError(e.toString()));
     }
   }
 
   Future<void> checkAvailability(String tagPay) async {
     try {
+      if (isClosed) return;
       emit(TagPayLoading());
       final result = await repository.checkTagPayAvailability(tagPay);
+      if (isClosed) return;
       emit(TagPayAvailabilityChecked(
         available: result['available'] as bool,
         message: result['message'] as String,
@@ -52,16 +61,20 @@ class TagPayCubit extends Cubit<TagPayState> {
             .toList(),
       ));
     } catch (e) {
+      if (isClosed) return;
       emit(TagPayError(e.toString()));
     }
   }
 
   Future<void> searchTagPay(String query, {int limit = 20}) async {
     try {
+      if (isClosed) return;
       emit(TagPayLoading());
       final results = await repository.searchTagPay(query, limit: limit);
+      if (isClosed) return;
       emit(TagPaySearchResults(results));
     } catch (e) {
+      if (isClosed) return;
       emit(TagPayError(e.toString()));
     }
   }
@@ -75,6 +88,7 @@ class TagPayCubit extends Cubit<TagPayState> {
     required String transactionPin,
   }) async {
     try {
+      if (isClosed) return;
       emit(TagPayLoading());
       final transaction = await repository.sendMoney(
         receiverTagPay: receiverTagPay,
@@ -84,11 +98,13 @@ class TagPayCubit extends Cubit<TagPayState> {
         sourceAccountId: sourceAccountId,
         transactionPin: transactionPin,
       );
+      if (isClosed) return;
       emit(MoneyTransferSuccess(
         transaction: transaction,
         message: 'Money sent successfully',
       ));
     } catch (e) {
+      if (isClosed) return;
       emit(TagPayError(e.toString()));
     }
   }
@@ -100,6 +116,7 @@ class TagPayCubit extends Cubit<TagPayState> {
     String? description,
   }) async {
     try {
+      if (isClosed) return;
       emit(TagPayLoading());
       final request = await repository.requestMoney(
         requesteeTagPay: requesteeTagPay,
@@ -107,24 +124,29 @@ class TagPayCubit extends Cubit<TagPayState> {
         currency: currency,
         description: description,
       );
+      if (isClosed) return;
       emit(MoneyRequestSuccess(
         request: request,
         message: 'Money request sent successfully',
       ));
     } catch (e) {
+      if (isClosed) return;
       emit(TagPayError(e.toString()));
     }
   }
 
   Future<void> getTransactions({int page = 1, int limit = 20}) async {
     try {
+      if (isClosed) return;
       emit(TagPayLoading());
       final transactions = await repository.getTransactions(
         page: page,
         limit: limit,
       );
+      if (isClosed) return;
       emit(TagPayTransactionsLoaded(transactions));
     } catch (e) {
+      if (isClosed) return;
       emit(TagPayError(e.toString()));
     }
   }
@@ -135,14 +157,17 @@ class TagPayCubit extends Cubit<TagPayState> {
     bool incoming = true,
   }) async {
     try {
+      if (isClosed) return;
       emit(TagPayLoading());
       final requests = await repository.getPendingMoneyRequests(
         page: page,
         limit: limit,
         incoming: incoming,
       );
+      if (isClosed) return;
       emit(MoneyRequestsLoaded(requests));
     } catch (e) {
+      if (isClosed) return;
       emit(TagPayError(e.toString()));
     }
   }
@@ -153,17 +178,20 @@ class TagPayCubit extends Cubit<TagPayState> {
     required String transactionPin,
   }) async {
     try {
+      if (isClosed) return;
       emit(TagPayLoading());
       final transaction = await repository.acceptMoneyRequest(
         requestId: requestId,
         sourceAccountId: sourceAccountId,
         transactionPin: transactionPin,
       );
+      if (isClosed) return;
       emit(MoneyTransferSuccess(
         transaction: transaction,
         message: 'Money request accepted',
       ));
     } catch (e) {
+      if (isClosed) return;
       emit(TagPayError(e.toString()));
     }
   }
@@ -173,6 +201,7 @@ class TagPayCubit extends Cubit<TagPayState> {
     String? reason,
   }) async {
     try {
+      if (isClosed) return;
       emit(TagPayLoading());
       await repository.declineMoneyRequest(
         requestId: requestId,
@@ -181,26 +210,32 @@ class TagPayCubit extends Cubit<TagPayState> {
       // Refresh pending requests after declining
       await getPendingRequests();
     } catch (e) {
+      if (isClosed) return;
       emit(TagPayError(e.toString()));
     }
   }
 
   Future<void> getMyTagPay({String? username}) async {
     try {
+      if (isClosed) return;
       emit(TagPayLoading());
 
       // If username is provided, fetch the tag pay from backend by username
       if (username != null && username.isNotEmpty) {
         final tagPay = await repository.getTagPay(username);
         if (tagPay != null) {
+          if (isClosed) return;
           emit(TagPayLoaded(tagPay));
         } else {
+          if (isClosed) return;
           emit(const TagPayError('No username set. Please set a username in your profile.'));
         }
       } else {
+        if (isClosed) return;
         emit(const TagPayError('No username set. Please set a username in your profile.'));
       }
     } catch (e) {
+      if (isClosed) return;
       emit(TagPayError(e.toString()));
     }
   }
@@ -212,6 +247,7 @@ class TagPayCubit extends Cubit<TagPayState> {
     String? description,
   }) async {
     try {
+      if (isClosed) return;
       emit(TagPayLoading());
       final tag = await repository.createTag(
         taggedUserTagPay: taggedUserTagPay,
@@ -219,41 +255,52 @@ class TagPayCubit extends Cubit<TagPayState> {
         currency: currency,
         description: description,
       );
+      if (isClosed) return;
       emit(TagCreatedSuccess(
         tag: tag,
         message: 'Tagged ${tag.taggedUserName} with $currency ${amount.toStringAsFixed(2)}',
       ));
     } catch (e) {
+      if (isClosed) return;
       emit(TagPayError(e.toString()));
     }
   }
 
   Future<void> getMyTags({int page = 1, int limit = 20}) async {
     try {
+      if (isClosed) return;
       emit(TagPayLoading());
       final tags = await repository.getMyTags(page: page, limit: limit);
+      if (isClosed) return;
       emit(MyTagsLoaded(tags));
     } catch (e) {
+      if (isClosed) return;
       emit(TagPayError(e.toString()));
     }
   }
 
   Future<void> getMyOutgoingTags({int page = 1, int limit = 20}) async {
     try {
+      if (isClosed) return;
       emit(TagPayLoading());
       final tags = await repository.getMyOutgoingTags(page: page, limit: limit);
+      if (isClosed) return;
       emit(MyOutgoingTagsLoaded(tags));
     } catch (e) {
+      if (isClosed) return;
       emit(TagPayError(e.toString()));
     }
   }
 
   Future<void> getMyIncomingTags({int page = 1, int limit = 20}) async {
     try {
+      if (isClosed) return;
       emit(TagPayLoading());
       final tags = await repository.getMyIncomingTags(page: page, limit: limit);
+      if (isClosed) return;
       emit(MyIncomingTagsLoaded(tags));
     } catch (e) {
+      if (isClosed) return;
       emit(TagPayError(e.toString()));
     }
   }
@@ -264,18 +311,21 @@ class TagPayCubit extends Cubit<TagPayState> {
   }) async {
     try {
       print('🏷️ [TagPayCubit] Starting payTag - tagId: $tagId, accountId: $sourceAccountId');
+      if (isClosed) return;
       emit(TagPayLoading());
       final transaction = await repository.payTag(
         tagId: tagId,
         sourceAccountId: sourceAccountId,
       );
       print('✅ [TagPayCubit] Tag payment successful - transaction ID: ${transaction.id}');
+      if (isClosed) return;
       emit(TagPaidSuccess(
         transaction: transaction,
         message: 'Tag paid successfully!',
       ));
     } catch (e) {
       print('❌ [TagPayCubit] Tag payment failed: $e');
+      if (isClosed) return;
       emit(TagPayError(e.toString()));
     }
   }

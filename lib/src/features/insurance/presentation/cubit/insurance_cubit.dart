@@ -31,13 +31,18 @@ class InsuranceCubit extends Cubit<InsuranceState> {
   /// Load all insurances for the current user
   Future<void> loadInsurances() async {
     try {
+      if (isClosed) return;
       emit(InsuranceLoading());
-      
+
       final insurances = await repository.getUserInsurances(currentUserId);
+      if (isClosed) return;
       final recentPayments = await repository.getUserPayments(currentUserId);
+      if (isClosed) return;
       final overduePayments = await repository.getOverduePayments(currentUserId);
+      if (isClosed) return;
       final statistics = await repository.getInsuranceStatistics(currentUserId);
-      
+      if (isClosed) return;
+
       emit(InsurancesLoaded(
         insurances: insurances,
         recentPayments: recentPayments.take(5).toList(),
@@ -45,6 +50,7 @@ class InsuranceCubit extends Cubit<InsuranceState> {
         statistics: statistics,
       ));
     } catch (e) {
+      if (isClosed) return;
       emit(InsuranceError('Failed to load insurances: ${e.toString()}'));
     }
   }
@@ -52,23 +58,28 @@ class InsuranceCubit extends Cubit<InsuranceState> {
   /// Load details for a specific insurance policy
   Future<void> loadInsuranceDetails(String insuranceId) async {
     try {
+      if (isClosed) return;
       emit(InsuranceLoading());
-      
+
       final insurance = await repository.getInsuranceById(insuranceId);
+      if (isClosed) return;
       if (insurance == null) {
         emit(const InsuranceError('Insurance not found'));
         return;
       }
-      
+
       final payments = await repository.getInsurancePayments(insuranceId);
+      if (isClosed) return;
       final claims = await repository.getInsuranceClaims(insuranceId);
-      
+      if (isClosed) return;
+
       emit(InsuranceDetailsLoaded(
         insurance: insurance,
         payments: payments,
         claims: claims,
       ));
     } catch (e) {
+      if (isClosed) return;
       emit(InsuranceError('Failed to load insurance details: ${e.toString()}'));
     }
   }
@@ -78,16 +89,19 @@ class InsuranceCubit extends Cubit<InsuranceState> {
     try {
       // Immediately emit the state with the provided insurance data
       // and empty payments/claims to show the screen right away
+      if (isClosed) return;
       emit(InsuranceDetailsLoaded(
         insurance: insurance,
         payments: [],
         claims: [],
       ));
-      
+
       // Then load payments and claims in the background
       final payments = await repository.getInsurancePayments(insurance.id);
+      if (isClosed) return;
       final claims = await repository.getInsuranceClaims(insurance.id);
-      
+      if (isClosed) return;
+
       // Update the state with loaded payments and claims
       emit(InsuranceDetailsLoaded(
         insurance: insurance,
@@ -95,6 +109,7 @@ class InsuranceCubit extends Cubit<InsuranceState> {
         claims: claims,
       ));
     } catch (e) {
+      if (isClosed) return;
       emit(InsuranceError('Failed to load insurance details: ${e.toString()}'));
     }
   }
@@ -102,14 +117,17 @@ class InsuranceCubit extends Cubit<InsuranceState> {
   /// Create a new insurance policy
   Future<void> createInsurance(Insurance insurance) async {
     try {
+      if (isClosed) return;
       emit(InsuranceLoading());
-      
+
       final createdInsurance = await repository.createInsurance(insurance);
+      if (isClosed) return;
       emit(InsuranceCreated(createdInsurance));
-      
+
       // Reload insurances
       await loadInsurances();
     } catch (e) {
+      if (isClosed) return;
       emit(InsuranceError('Failed to create insurance: ${e.toString()}'));
     }
   }
@@ -117,14 +135,17 @@ class InsuranceCubit extends Cubit<InsuranceState> {
   /// Update an existing insurance policy
   Future<void> updateInsurance(Insurance insurance) async {
     try {
+      if (isClosed) return;
       emit(InsuranceLoading());
-      
+
       final updatedInsurance = await repository.updateInsurance(insurance);
+      if (isClosed) return;
       emit(InsuranceUpdated(updatedInsurance));
-      
+
       // Reload insurances
       await loadInsurances();
     } catch (e) {
+      if (isClosed) return;
       emit(InsuranceError('Failed to update insurance: ${e.toString()}'));
     }
   }
@@ -132,14 +153,17 @@ class InsuranceCubit extends Cubit<InsuranceState> {
   /// Delete an insurance policy
   Future<void> deleteInsurance(String insuranceId) async {
     try {
+      if (isClosed) return;
       emit(InsuranceLoading());
-      
+
       await repository.deleteInsurance(insuranceId);
+      if (isClosed) return;
       emit(InsuranceDeleted(insuranceId));
-      
+
       // Reload insurances
       await loadInsurances();
     } catch (e) {
+      if (isClosed) return;
       emit(InsuranceError('Failed to delete insurance: ${e.toString()}'));
     }
   }
@@ -147,6 +171,7 @@ class InsuranceCubit extends Cubit<InsuranceState> {
   /// Process a premium payment
   Future<void> processPayment(InsurancePayment payment) async {
     try {
+      if (isClosed) return;
       emit(PaymentProcessing(
         payment: payment,
         step: 'Initializing payment...',
@@ -155,6 +180,7 @@ class InsuranceCubit extends Cubit<InsuranceState> {
 
       // Simulate payment processing steps
       await Future.delayed(const Duration(seconds: 1));
+      if (isClosed) return;
       emit(PaymentProcessing(
         payment: payment,
         step: 'Verifying payment method...',
@@ -162,6 +188,7 @@ class InsuranceCubit extends Cubit<InsuranceState> {
       ));
 
       await Future.delayed(const Duration(seconds: 1));
+      if (isClosed) return;
       emit(PaymentProcessing(
         payment: payment,
         step: 'Processing payment...',
@@ -169,6 +196,7 @@ class InsuranceCubit extends Cubit<InsuranceState> {
       ));
 
       await Future.delayed(const Duration(seconds: 1));
+      if (isClosed) return;
       emit(PaymentProcessing(
         payment: payment,
         step: 'Confirming transaction...',
@@ -176,7 +204,8 @@ class InsuranceCubit extends Cubit<InsuranceState> {
       ));
 
       await Future.delayed(const Duration(seconds: 1));
-      
+      if (isClosed) return;
+
       // Simulate payment success/failure (90% success rate)
       final random = Random();
       final isSuccess = random.nextDouble() > 0.1;
@@ -190,7 +219,9 @@ class InsuranceCubit extends Cubit<InsuranceState> {
         );
 
         await repository.updatePayment(completedPayment);
+        if (isClosed) return;
         final receiptUrl = await repository.generatePaymentReceipt(completedPayment.id);
+        if (isClosed) return;
 
         emit(PaymentCompleted(
           payment: completedPayment,
@@ -203,6 +234,7 @@ class InsuranceCubit extends Cubit<InsuranceState> {
         );
 
         await repository.updatePayment(failedPayment);
+        if (isClosed) return;
 
         emit(PaymentFailed(
           payment: failedPayment,
@@ -210,6 +242,7 @@ class InsuranceCubit extends Cubit<InsuranceState> {
         ));
       }
     } catch (e) {
+      if (isClosed) return;
       emit(PaymentFailed(
         payment: payment,
         error: 'Payment failed: ${e.toString()}',
@@ -245,11 +278,14 @@ class InsuranceCubit extends Cubit<InsuranceState> {
   /// Submit an insurance claim
   Future<void> submitClaim(InsuranceClaim claim) async {
     try {
+      if (isClosed) return;
       emit(InsuranceLoading());
-      
+
       final submittedClaim = await repository.createClaim(claim);
+      if (isClosed) return;
       emit(ClaimSubmitted(submittedClaim));
     } catch (e) {
+      if (isClosed) return;
       emit(InsuranceError('Failed to submit claim: ${e.toString()}'));
     }
   }
@@ -257,11 +293,14 @@ class InsuranceCubit extends Cubit<InsuranceState> {
   /// Load user claims
   Future<void> loadUserClaims() async {
     try {
+      if (isClosed) return;
       emit(InsuranceLoading());
-      
+
       final claims = await repository.getUserClaims(currentUserId);
+      if (isClosed) return;
       emit(ClaimsLoaded(claims));
     } catch (e) {
+      if (isClosed) return;
       emit(InsuranceError('Failed to load claims: ${e.toString()}'));
     }
   }
@@ -274,11 +313,14 @@ class InsuranceCubit extends Cubit<InsuranceState> {
         return;
       }
 
+      if (isClosed) return;
       emit(InsuranceLoading());
-      
+
       final results = await repository.searchInsurances(query, currentUserId);
+      if (isClosed) return;
       emit(InsuranceSearchResults(results: results, query: query));
     } catch (e) {
+      if (isClosed) return;
       emit(InsuranceError('Failed to search insurances: ${e.toString()}'));
     }
   }

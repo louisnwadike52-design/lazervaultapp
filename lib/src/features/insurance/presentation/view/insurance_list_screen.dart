@@ -10,6 +10,7 @@ import '../../domain/entities/insurance_entity.dart';
 import '../cubit/insurance_cubit.dart';
 import '../cubit/insurance_state.dart';
 import '../cubit/create_policy_cubit.dart';
+import '../widgets/insurance_voice_agent_button.dart';
 import 'create_insurance_policy_carousel.dart';
 
 class InsuranceListScreen extends StatefulWidget {
@@ -145,8 +146,31 @@ class _InsuranceListScreenState extends State<InsuranceListScreen> with TickerPr
           ),
         ),
       ),
-      floatingActionButton: _buildFAB(),
+      floatingActionButton: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          InsuranceVoiceAgentButton(
+            accessToken: _getAccessToken(),
+            onConnected: () {
+              // Optional: Handle connection
+            },
+            onDisconnected: () {
+              // Optional: Handle disconnection
+            },
+          ),
+          SizedBox(height: 16.h),
+          _buildFAB(),
+        ],
+      ),
     );
+  }
+
+  String? _getAccessToken() {
+    final authState = context.read<AuthenticationCubit>().state;
+    if (authState is AuthenticationSuccess) {
+      return authState.profile.session.accessToken;
+    }
+    return null;
   }
 
   Widget _buildHeader() {
@@ -808,13 +832,17 @@ class _InsuranceListScreenState extends State<InsuranceListScreen> with TickerPr
   }
 
   void _showCreateInsuranceDialog() {
+    // Capture cubits from current context before navigation
+    final insuranceCubit = context.read<InsuranceCubit>();
+    final authCubit = context.read<AuthenticationCubit>();
+
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => MultiBlocProvider(
           providers: [
-            BlocProvider.value(value: context.read<InsuranceCubit>()),
-            BlocProvider.value(value: context.read<AuthenticationCubit>()),
+            BlocProvider.value(value: insuranceCubit),
+            BlocProvider.value(value: authCubit),
             BlocProvider(create: (context) => CreatePolicyCubit()),
           ],
           child: const CreateInsurancePolicyCarousel(),
@@ -822,7 +850,7 @@ class _InsuranceListScreenState extends State<InsuranceListScreen> with TickerPr
       ),
     ).then((_) {
       // Refresh insurance list after carousel closes
-      context.read<InsuranceCubit>().loadInsurances();
+      insuranceCubit.loadInsurances();
     });
   }
 

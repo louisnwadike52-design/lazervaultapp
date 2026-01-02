@@ -13,10 +13,13 @@ class AirtimeCubit extends Cubit<AirtimeState> {
   // Load countries
   Future<void> loadCountries() async {
     try {
+      if (isClosed) return;
       emit(AirtimeCountriesLoading());
       final countries = await repository.getCountries();
+      if (isClosed) return;
       emit(AirtimeCountriesLoaded(countries: countries));
     } catch (e) {
+      if (isClosed) return;
       emit(AirtimeCountriesError(message: e.toString()));
     }
   }
@@ -24,13 +27,16 @@ class AirtimeCubit extends Cubit<AirtimeState> {
   // Load network providers for a country
   Future<void> loadNetworkProviders(String countryCode) async {
     try {
+      if (isClosed) return;
       emit(AirtimeNetworkProvidersLoading());
       final providers = await repository.getNetworkProviders(countryCode);
+      if (isClosed) return;
       emit(AirtimeNetworkProvidersLoaded(
         providers: providers,
         countryCode: countryCode,
       ));
     } catch (e) {
+      if (isClosed) return;
       emit(AirtimeNetworkProvidersError(message: e.toString()));
     }
   }
@@ -49,9 +55,11 @@ class AirtimeCubit extends Cubit<AirtimeState> {
   // Validate phone number
   Future<void> validatePhoneNumber(String phoneNumber, String countryCode) async {
     try {
+      if (isClosed) return;
       emit(AirtimePhoneNumberValidating());
       final result = await repository.validatePhoneNumber(phoneNumber, countryCode);
-      
+
+      if (isClosed) return;
       emit(AirtimePhoneNumberValidated(
         isValid: result['isValid'] as bool,
         error: result['error'] as String?,
@@ -60,6 +68,7 @@ class AirtimeCubit extends Cubit<AirtimeState> {
         formattedNumber: result['formattedNumber'] as String,
       ));
     } catch (e) {
+      if (isClosed) return;
       emit(AirtimeError(message: e.toString()));
     }
   }
@@ -76,6 +85,7 @@ class AirtimeCubit extends Cubit<AirtimeState> {
       final fee = await repository.calculateTransactionFee(amount, country.code);
       final totalAmount = amount + fee;
 
+      if (isClosed) return;
       emit(AirtimeTransactionReviewReady(
         country: country,
         provider: provider,
@@ -86,6 +96,7 @@ class AirtimeCubit extends Cubit<AirtimeState> {
         totalAmount: totalAmount,
       ));
     } catch (e) {
+      if (isClosed) return;
       emit(AirtimeError(message: e.toString()));
     }
   }
@@ -113,6 +124,7 @@ class AirtimeCubit extends Cubit<AirtimeState> {
         totalAmount: amount,
       );
 
+      if (isClosed) return;
       emit(AirtimePaymentProcessing(transaction: tempTransaction));
 
       final transaction = await repository.purchaseAirtime(
@@ -123,6 +135,7 @@ class AirtimeCubit extends Cubit<AirtimeState> {
         currency: currency,
       );
 
+      if (isClosed) return;
       if (transaction.status == AirtimeTransactionStatus.completed) {
         emit(AirtimePaymentSuccess(transaction: transaction));
       } else {
@@ -132,6 +145,7 @@ class AirtimeCubit extends Cubit<AirtimeState> {
         ));
       }
     } catch (e) {
+      if (isClosed) return;
       emit(AirtimePaymentFailed(message: e.toString()));
     }
   }
@@ -139,15 +153,18 @@ class AirtimeCubit extends Cubit<AirtimeState> {
   // Load transaction history
   Future<void> loadTransactionHistory(String userId) async {
     try {
+      if (isClosed) return;
       emit(AirtimeTransactionHistoryLoading());
       final transactions = await repository.getTransactionHistory(userId);
       final statistics = await repository.getAirtimeStatistics(userId);
-      
+
+      if (isClosed) return;
       emit(AirtimeTransactionHistoryLoaded(
         transactions: transactions,
         statistics: statistics,
       ));
     } catch (e) {
+      if (isClosed) return;
       emit(AirtimeError(message: e.toString()));
     }
   }
@@ -155,15 +172,18 @@ class AirtimeCubit extends Cubit<AirtimeState> {
   // Load transaction details
   Future<void> loadTransactionDetails(String transactionId) async {
     try {
+      if (isClosed) return;
       emit(AirtimeTransactionDetailsLoading());
       final transaction = await repository.getTransactionById(transactionId);
-      
+
+      if (isClosed) return;
       if (transaction != null) {
         emit(AirtimeTransactionDetailsLoaded(transaction: transaction));
       } else {
         emit(AirtimeError(message: 'Transaction not found'));
       }
     } catch (e) {
+      if (isClosed) return;
       emit(AirtimeError(message: e.toString()));
     }
   }
@@ -188,17 +208,19 @@ class AirtimeCubit extends Cubit<AirtimeState> {
 
   // Reset to initial state
   void reset() {
+    if (isClosed) return;
     emit(AirtimeInitial());
   }
 
   // Simulate payment completion (for demo purposes)
   Future<void> simulatePaymentCompletion(AirtimeTransaction transaction) async {
     await Future.delayed(Duration(seconds: 2)); // Realistic processing time
-    
+
     try {
       // Simulate 90% success rate
       final isSuccess = DateTime.now().millisecond % 10 != 0;
-      
+
+      if (isClosed) return;
       if (isSuccess) {
         final successfulTransaction = AirtimeTransaction(
           id: 'txn_${DateTime.now().millisecondsSinceEpoch}',
@@ -213,7 +235,7 @@ class AirtimeCubit extends Cubit<AirtimeState> {
           totalAmount: transaction.totalAmount,
           completedAt: DateTime.now(),
         );
-        
+
         emit(AirtimePaymentSuccess(transaction: successfulTransaction));
       } else {
         final failedTransaction = transaction.copyWith(
@@ -221,13 +243,14 @@ class AirtimeCubit extends Cubit<AirtimeState> {
           failureReason: 'Network provider temporarily unavailable',
           completedAt: DateTime.now(),
         );
-        
+
         emit(AirtimePaymentFailed(
           message: 'Payment failed: Network provider temporarily unavailable',
           transaction: failedTransaction,
         ));
       }
     } catch (e) {
+      if (isClosed) return;
       emit(AirtimePaymentFailed(message: e.toString()));
     }
   }

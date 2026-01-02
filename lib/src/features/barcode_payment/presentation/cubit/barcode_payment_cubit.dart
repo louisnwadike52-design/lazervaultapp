@@ -14,6 +14,7 @@ class BarcodePaymentCubit extends Cubit<BarcodePaymentState> {
     String? description,
     int? validityMinutes,
   }) async {
+    if (isClosed) return;
     emit(BarcodePaymentLoading());
 
     final result = await repository.generateBarcode(
@@ -23,6 +24,7 @@ class BarcodePaymentCubit extends Cubit<BarcodePaymentState> {
       validityMinutes: validityMinutes,
     );
 
+    if (isClosed) return;
     result.fold(
       (failure) => emit(BarcodePaymentError(message: failure.message)),
       (barcode) {
@@ -47,10 +49,12 @@ class BarcodePaymentCubit extends Cubit<BarcodePaymentState> {
   }
 
   Future<void> getBarcodeDetails({required String barcodeCode}) async {
+    if (isClosed) return;
     emit(BarcodePaymentLoading());
 
     final result = await repository.getBarcodeDetails(barcodeCode: barcodeCode);
 
+    if (isClosed) return;
     result.fold(
       (failure) => emit(BarcodePaymentError(message: failure.message)),
       (barcode) => emit(BarcodeDetailsLoaded(barcode: barcode)),
@@ -61,6 +65,7 @@ class BarcodePaymentCubit extends Cubit<BarcodePaymentState> {
     required String barcodeCode,
     required String sourceAccountId,
   }) async {
+    if (isClosed) return;
     emit(BarcodePaymentProcessing());
 
     final result = await repository.processBarcodePayment(
@@ -68,6 +73,7 @@ class BarcodePaymentCubit extends Cubit<BarcodePaymentState> {
       sourceAccountId: sourceAccountId,
     );
 
+    if (isClosed) return;
     result.fold(
       (failure) => emit(BarcodePaymentError(message: failure.message)),
       (transaction) => emit(BarcodePaymentSuccess(transaction: transaction)),
@@ -75,6 +81,7 @@ class BarcodePaymentCubit extends Cubit<BarcodePaymentState> {
   }
 
   Future<void> getMyGeneratedBarcodes({int? limit, int? offset}) async {
+    if (isClosed) return;
     emit(BarcodePaymentLoading());
 
     final result = await repository.getMyGeneratedBarcodes(
@@ -82,6 +89,7 @@ class BarcodePaymentCubit extends Cubit<BarcodePaymentState> {
       offset: offset,
     );
 
+    if (isClosed) return;
     result.fold(
       (failure) => emit(BarcodePaymentError(message: failure.message)),
       (barcodes) => emit(GeneratedBarcodesLoaded(barcodes: barcodes)),
@@ -89,6 +97,7 @@ class BarcodePaymentCubit extends Cubit<BarcodePaymentState> {
   }
 
   Future<void> getMyScannedBarcodes({int? limit, int? offset}) async {
+    if (isClosed) return;
     emit(BarcodePaymentLoading());
 
     final result = await repository.getMyScannedBarcodes(
@@ -96,6 +105,7 @@ class BarcodePaymentCubit extends Cubit<BarcodePaymentState> {
       offset: offset,
     );
 
+    if (isClosed) return;
     result.fold(
       (failure) => emit(BarcodePaymentError(message: failure.message)),
       (transactions) => emit(ScannedBarcodesLoaded(transactions: transactions)),
@@ -103,10 +113,12 @@ class BarcodePaymentCubit extends Cubit<BarcodePaymentState> {
   }
 
   Future<void> cancelBarcode({required String barcodeId}) async {
+    if (isClosed) return;
     emit(BarcodePaymentLoading());
 
     final result = await repository.cancelBarcode(barcodeId: barcodeId);
 
+    if (isClosed) return;
     result.fold(
       (failure) => emit(BarcodePaymentError(message: failure.message)),
       (_) {
@@ -118,6 +130,7 @@ class BarcodePaymentCubit extends Cubit<BarcodePaymentState> {
   }
 
   void reset() {
+    if (isClosed) return;
     emit(BarcodePaymentInitial());
   }
 }

@@ -1,133 +1,313 @@
-import 'dart:math';
+import 'package:grpc/grpc.dart';
 import '../../domain/entities/insurance_entity.dart';
 import '../../domain/entities/insurance_payment_entity.dart';
 import '../../domain/entities/insurance_claim_entity.dart';
 import '../../domain/repositories/insurance_repository.dart';
-import '../datasources/insurance_local_datasource.dart';
+import '../datasources/insurance_remote_datasource.dart';
+import '../../../../../core/services/secure_storage_service.dart';
 
 class InsuranceRepositoryImpl implements InsuranceRepository {
-  final InsuranceLocalDataSource localDataSource;
+  final InsuranceRemoteDataSource remoteDataSource;
+  final SecureStorageService secureStorage;
 
-  InsuranceRepositoryImpl({required this.localDataSource});
+  InsuranceRepositoryImpl({
+    required this.remoteDataSource,
+    required this.secureStorage,
+  });
 
   @override
   Future<List<Insurance>> getUserInsurances(String userId) async {
-    return await localDataSource.getUserInsurances(userId);
+    try {
+      final accessToken = await secureStorage.getAccessToken() ?? '';
+      return await remoteDataSource.getUserInsurances(accessToken: accessToken);
+    } on GrpcError catch (e) {
+      throw _handleGrpcError(e);
+    } catch (e) {
+      throw Exception('Failed to fetch user insurances: $e');
+    }
   }
 
   @override
   Future<Insurance?> getInsuranceById(String id) async {
-    return await localDataSource.getInsuranceById(id);
+    try {
+      final accessToken = await secureStorage.getAccessToken() ?? '';
+      return await remoteDataSource.getInsuranceById(id: id, accessToken: accessToken);
+    } on GrpcError catch (e) {
+      if (e.code == StatusCode.notFound) {
+        return null;
+      }
+      throw _handleGrpcError(e);
+    } catch (e) {
+      throw Exception('Failed to fetch insurance: $e');
+    }
   }
 
   @override
   Future<Insurance> createInsurance(Insurance insurance) async {
-    return await localDataSource.saveInsurance(insurance);
+    try {
+      final accessToken = await secureStorage.getAccessToken() ?? '';
+      return await remoteDataSource.createInsurance(insurance: insurance, accessToken: accessToken);
+    } on GrpcError catch (e) {
+      throw _handleGrpcError(e);
+    } catch (e) {
+      throw Exception('Failed to create insurance: $e');
+    }
   }
 
   @override
   Future<Insurance> updateInsurance(Insurance insurance) async {
-    return await localDataSource.updateInsurance(insurance);
+    try {
+      final accessToken = await secureStorage.getAccessToken() ?? '';
+      return await remoteDataSource.updateInsurance(insurance: insurance, accessToken: accessToken);
+    } on GrpcError catch (e) {
+      throw _handleGrpcError(e);
+    } catch (e) {
+      throw Exception('Failed to update insurance: $e');
+    }
   }
 
   @override
   Future<void> deleteInsurance(String id) async {
-    return await localDataSource.deleteInsurance(id);
+    try {
+      final accessToken = await secureStorage.getAccessToken() ?? '';
+      await remoteDataSource.deleteInsurance(id: id, accessToken: accessToken);
+    } on GrpcError catch (e) {
+      throw _handleGrpcError(e);
+    } catch (e) {
+      throw Exception('Failed to delete insurance: $e');
+    }
   }
 
   @override
   Future<List<Insurance>> searchInsurances(String query, String userId) async {
-    return await localDataSource.searchInsurances(query, userId);
+    try {
+      final accessToken = await secureStorage.getAccessToken() ?? '';
+      return await remoteDataSource.searchInsurances(query: query, accessToken: accessToken);
+    } on GrpcError catch (e) {
+      throw _handleGrpcError(e);
+    } catch (e) {
+      throw Exception('Failed to search insurances: $e');
+    }
   }
 
   @override
   Future<List<InsurancePayment>> getInsurancePayments(String insuranceId) async {
-    return await localDataSource.getInsurancePayments(insuranceId);
+    try {
+      final accessToken = await secureStorage.getAccessToken() ?? '';
+      return await remoteDataSource.getInsurancePayments(insuranceId: insuranceId, accessToken: accessToken);
+    } on GrpcError catch (e) {
+      throw _handleGrpcError(e);
+    } catch (e) {
+      throw Exception('Failed to fetch insurance payments: $e');
+    }
   }
 
   @override
   Future<List<InsurancePayment>> getUserPayments(String userId) async {
-    return await localDataSource.getUserPayments(userId);
+    try {
+      final accessToken = await secureStorage.getAccessToken() ?? '';
+      return await remoteDataSource.getUserPayments(accessToken: accessToken);
+    } on GrpcError catch (e) {
+      throw _handleGrpcError(e);
+    } catch (e) {
+      throw Exception('Failed to fetch user payments: $e');
+    }
   }
 
   @override
   Future<InsurancePayment?> getPaymentById(String id) async {
-    return await localDataSource.getPaymentById(id);
+    try {
+      final accessToken = await secureStorage.getAccessToken() ?? '';
+      return await remoteDataSource.getPaymentById(id: id, accessToken: accessToken);
+    } on GrpcError catch (e) {
+      if (e.code == StatusCode.notFound) {
+        return null;
+      }
+      throw _handleGrpcError(e);
+    } catch (e) {
+      throw Exception('Failed to fetch payment: $e');
+    }
   }
 
   @override
   Future<InsurancePayment> createPayment(InsurancePayment payment) async {
-    return await localDataSource.savePayment(payment);
+    try {
+      final accessToken = await secureStorage.getAccessToken() ?? '';
+      return await remoteDataSource.createPayment(payment: payment, accessToken: accessToken);
+    } on GrpcError catch (e) {
+      throw _handleGrpcError(e);
+    } catch (e) {
+      throw Exception('Failed to create payment: $e');
+    }
   }
 
   @override
   Future<InsurancePayment> updatePayment(InsurancePayment payment) async {
-    return await localDataSource.updatePayment(payment);
+    try {
+      final accessToken = await secureStorage.getAccessToken() ?? '';
+      return await remoteDataSource.createPayment(payment: payment, accessToken: accessToken);
+    } on GrpcError catch (e) {
+      throw _handleGrpcError(e);
+    } catch (e) {
+      throw Exception('Failed to update payment: $e');
+    }
   }
 
   @override
   Future<List<InsurancePayment>> getOverduePayments(String userId) async {
-    return await localDataSource.getOverduePayments(userId);
+    try {
+      final accessToken = await secureStorage.getAccessToken() ?? '';
+      return await remoteDataSource.getOverduePayments(accessToken: accessToken);
+    } on GrpcError catch (e) {
+      throw _handleGrpcError(e);
+    } catch (e) {
+      throw Exception('Failed to fetch overdue payments: $e');
+    }
   }
 
-  // Mock claim operations (for demo purposes)
   @override
   Future<List<InsuranceClaim>> getInsuranceClaims(String insuranceId) async {
-    // Mock data - in a real app, this would use a data source
-    return [];
+    try {
+      final accessToken = await secureStorage.getAccessToken() ?? '';
+      return await remoteDataSource.getInsuranceClaims(insuranceId: insuranceId, accessToken: accessToken);
+    } on GrpcError catch (e) {
+      throw _handleGrpcError(e);
+    } catch (e) {
+      throw Exception('Failed to fetch insurance claims: $e');
+    }
   }
 
   @override
   Future<List<InsuranceClaim>> getUserClaims(String userId) async {
-    // Mock data - in a real app, this would use a data source
-    return [];
+    try {
+      final accessToken = await secureStorage.getAccessToken() ?? '';
+      return await remoteDataSource.getUserClaims(accessToken: accessToken);
+    } on GrpcError catch (e) {
+      throw _handleGrpcError(e);
+    } catch (e) {
+      throw Exception('Failed to fetch user claims: $e');
+    }
   }
 
   @override
   Future<InsuranceClaim?> getClaimById(String id) async {
-    // Mock data - in a real app, this would use a data source
-    return null;
+    try {
+      final accessToken = await secureStorage.getAccessToken() ?? '';
+      return await remoteDataSource.getClaimById(id: id, accessToken: accessToken);
+    } on GrpcError catch (e) {
+      if (e.code == StatusCode.notFound) {
+        return null;
+      }
+      throw _handleGrpcError(e);
+    } catch (e) {
+      throw Exception('Failed to fetch claim: $e');
+    }
   }
 
   @override
   Future<InsuranceClaim> createClaim(InsuranceClaim claim) async {
-    // Mock implementation - in a real app, this would save to data source
-    return claim;
+    try {
+      final accessToken = await secureStorage.getAccessToken() ?? '';
+      return await remoteDataSource.createClaim(claim: claim, accessToken: accessToken);
+    } on GrpcError catch (e) {
+      throw _handleGrpcError(e);
+    } catch (e) {
+      throw Exception('Failed to create claim: $e');
+    }
   }
 
   @override
   Future<InsuranceClaim> updateClaim(InsuranceClaim claim) async {
-    // Mock implementation - in a real app, this would update in data source
-    return claim;
+    try {
+      final accessToken = await secureStorage.getAccessToken() ?? '';
+      return await remoteDataSource.updateClaim(claim: claim, accessToken: accessToken);
+    } on GrpcError catch (e) {
+      throw _handleGrpcError(e);
+    } catch (e) {
+      throw Exception('Failed to update claim: $e');
+    }
   }
 
   @override
   Future<void> deleteClaim(String id) async {
-    // Mock implementation - in a real app, this would delete from data source
+    try {
+      final accessToken = await secureStorage.getAccessToken() ?? '';
+      // Note: deleteClaim not in remote datasource interface, might need to add
+      throw UnimplementedError('Delete claim not yet implemented in remote datasource');
+    } catch (e) {
+      throw Exception('Failed to delete claim: $e');
+    }
   }
 
   @override
   Future<String> generatePaymentReceipt(String paymentId) async {
-    // Mock receipt generation
-    await Future.delayed(const Duration(seconds: 1));
-    final random = Random();
-    final receiptId = 'RCP${random.nextInt(999999).toString().padLeft(6, '0')}';
-    return 'https://receipts.lazervault.com/$receiptId.pdf';
+    try {
+      final accessToken = await secureStorage.getAccessToken() ?? '';
+      return await remoteDataSource.generatePaymentReceipt(paymentId: paymentId, accessToken: accessToken);
+    } on GrpcError catch (e) {
+      throw _handleGrpcError(e);
+    } catch (e) {
+      throw Exception('Failed to generate payment receipt: $e');
+    }
   }
 
   @override
   Future<List<String>> getUserReceipts(String userId) async {
-    // Mock receipts list
-    return [];
+    try {
+      final accessToken = await secureStorage.getAccessToken() ?? '';
+      return await remoteDataSource.getUserReceipts(accessToken: accessToken);
+    } on GrpcError catch (e) {
+      throw _handleGrpcError(e);
+    } catch (e) {
+      throw Exception('Failed to fetch user receipts: $e');
+    }
   }
 
   @override
   Future<Map<String, dynamic>> getInsuranceStatistics(String userId) async {
-    return await localDataSource.getInsuranceStatistics(userId);
+    try {
+      final accessToken = await secureStorage.getAccessToken() ?? '';
+      return await remoteDataSource.getInsuranceStatistics(accessToken: accessToken);
+    } on GrpcError catch (e) {
+      throw _handleGrpcError(e);
+    } catch (e) {
+      throw Exception('Failed to fetch insurance statistics: $e');
+    }
   }
 
   @override
   Future<Map<String, dynamic>> getPaymentStatistics(String userId, {DateTime? startDate, DateTime? endDate}) async {
-    return await localDataSource.getPaymentStatistics(userId, startDate: startDate, endDate: endDate);
+    try {
+      final accessToken = await secureStorage.getAccessToken() ?? '';
+      return await remoteDataSource.getPaymentStatistics(
+        accessToken: accessToken,
+        startDate: startDate,
+        endDate: endDate,
+      );
+    } on GrpcError catch (e) {
+      throw _handleGrpcError(e);
+    } catch (e) {
+      throw Exception('Failed to fetch payment statistics: $e');
+    }
+  }
+
+  // Error Handling Helper
+  Exception _handleGrpcError(GrpcError error) {
+    switch (error.code) {
+      case StatusCode.notFound:
+        return Exception('Insurance not found');
+      case StatusCode.unauthenticated:
+        return Exception('Authentication required. Please log in again.');
+      case StatusCode.permissionDenied:
+        return Exception('You do not have permission to perform this action');
+      case StatusCode.invalidArgument:
+        return Exception('Invalid data provided: ${error.message}');
+      case StatusCode.alreadyExists:
+        return Exception('Insurance already exists');
+      case StatusCode.unavailable:
+        return Exception('Service temporarily unavailable. Please try again later.');
+      default:
+        return Exception('An error occurred: ${error.message}');
+    }
   }
 } 

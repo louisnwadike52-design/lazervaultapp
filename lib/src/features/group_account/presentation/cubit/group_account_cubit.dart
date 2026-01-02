@@ -113,12 +113,16 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
     required String description,
   }) async {
     if (isClosed) return;
+    if (currentUserId == null) {
+      emit(const GroupAccountError('User not authenticated'));
+      return;
+    }
     emit(const GroupAccountLoading(message: 'Creating group...'));
     try {
       final group = await createGroup(CreateGroupParams(
         name: name,
         description: description,
-        adminId: currentUserId,
+        adminId: currentUserId!,
       ));
       if (isClosed) return;
       emit(GroupAccountGroupCreated(group));
@@ -257,6 +261,10 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
     required DateTime deadline,
   }) async {
     if (isClosed) return;
+    if (currentUserId == null) {
+      emit(const GroupAccountError('User not authenticated'));
+      return;
+    }
     emit(const GroupAccountLoading(message: 'Creating contribution...'));
     try {
       final contribution = await createContribution(CreateContributionParams(
@@ -266,7 +274,7 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
         targetAmount: targetAmount,
         currency: currency,
         deadline: deadline,
-        createdBy: currentUserId,
+        createdBy: currentUserId!,
       ));
       if (isClosed) return;
       emit(GroupAccountContributionCreated(contribution));
@@ -331,12 +339,16 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
     String? notes,
   }) async {
     if (isClosed) return;
+    if (currentUserId == null) {
+      emit(const GroupAccountError('User not authenticated'));
+      return;
+    }
     emit(const GroupAccountLoading(message: 'Processing payment...'));
     try {
       final payment = await makeContributionPayment(MakePaymentParams(
         contributionId: contributionId,
         groupId: groupId,
-        userId: currentUserId,
+        userId: currentUserId!,
         userName: 'Current User', // In real app, get from user service
         amount: amount,
         currency: currency,
@@ -389,9 +401,14 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
 
   Future<void> loadUserReceipts([String? userId]) async {
     if (isClosed) return;
+    final effectiveUserId = userId ?? currentUserId;
+    if (effectiveUserId == null) {
+      emit(const GroupAccountError('User not authenticated'));
+      return;
+    }
     emit(const GroupAccountLoading(message: 'Loading receipts...'));
     try {
-      final receipts = await getUserReceipts(userId ?? currentUserId);
+      final receipts = await getUserReceipts(effectiveUserId);
       if (isClosed) return;
       emit(GroupAccountSuccess('Receipts loaded'));
     } catch (e) {
@@ -430,9 +447,14 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
 
   Future<void> loadUserStats([String? userId]) async {
     if (isClosed) return;
+    final effectiveUserId = userId ?? currentUserId;
+    if (effectiveUserId == null) {
+      emit(const GroupAccountError('User not authenticated'));
+      return;
+    }
     emit(const GroupAccountLoading(message: 'Loading user statistics...'));
     try {
-      final stats = await getUserContributionStats(userId ?? currentUserId);
+      final stats = await getUserContributionStats(effectiveUserId);
       if (isClosed) return;
       emit(GroupAccountSuccess('User statistics loaded'));
     } catch (e) {

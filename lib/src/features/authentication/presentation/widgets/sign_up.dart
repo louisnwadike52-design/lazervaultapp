@@ -481,6 +481,15 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
           onChanged: (value) => context.read<AuthenticationCubit>().signUpUsernameChanged(value),
         ),
         SizedBox(height: 8.0.h),
+        // Referral code field
+        BuildFormField(
+          name: "referralCode",
+          placeholder: "Referral Code (optional)",
+          prefixIcon: const Icon(Icons.card_giftcard, color: Colors.black45),
+          textCapitalization: TextCapitalization.characters,
+          onChanged: (value) => context.read<AuthenticationCubit>().signUpReferralCodeChanged(value.toUpperCase()),
+        ),
+        SizedBox(height: 8.0.h),
         // DOB field
          GestureDetector(
               onTap: _showDatePicker,

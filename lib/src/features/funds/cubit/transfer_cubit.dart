@@ -21,6 +21,7 @@ class TransferCubit extends Cubit<TransferState> {
     DateTime? scheduledAt,
   }) async {
     print("TransferCubit: initiateTransfer method entered.");
+    if (isClosed) return;
     emit(const TransferLoading());
 
     final params = InitiateTransferParams(
@@ -41,6 +42,7 @@ class TransferCubit extends Cubit<TransferState> {
       final result = await initiateTransferUseCase(params);
       print("TransferCubit: Use case call completed. Result: $result");
 
+      if (isClosed) return;
       result.fold(
         (failure) {
           print("TransferCubit: Emitting Failure - ${failure.message}");
@@ -54,6 +56,7 @@ class TransferCubit extends Cubit<TransferState> {
       );
     } catch (e, stackTrace) {
       print("TransferCubit: Error caught BEFORE result.fold: $e\n$stackTrace");
+      if (isClosed) return;
       emit(TransferFailure(
           message: 'Error during transfer process: ${e.toString()}'));
     }

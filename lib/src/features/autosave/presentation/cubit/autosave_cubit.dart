@@ -58,6 +58,7 @@ class AutoSaveCubit extends Cubit<AutoSaveState> {
     double? minimumBalance,
     double? maximumPerSave,
   }) async {
+    if (isClosed) return;
     emit(AutoSaveLoading());
 
     final result = await createAutoSaveRuleUseCase(
@@ -87,6 +88,7 @@ class AutoSaveCubit extends Cubit<AutoSaveState> {
     String? accountId,
     AutoSaveStatus? status,
   }) async {
+    if (isClosed) return;
     emit(AutoSaveLoading());
 
     final result = await getAutoSaveRulesUseCase(
@@ -114,6 +116,7 @@ class AutoSaveCubit extends Cubit<AutoSaveState> {
     double? minimumBalance,
     double? maximumPerSave,
   }) async {
+    if (isClosed) return;
     emit(AutoSaveLoading());
 
     final result = await updateAutoSaveRuleUseCase(
@@ -141,6 +144,7 @@ class AutoSaveCubit extends Cubit<AutoSaveState> {
     required String ruleId,
     required String action,
   }) async {
+    if (isClosed) return;
     emit(AutoSaveLoading());
 
     final result = await toggleAutoSaveRuleUseCase(
@@ -157,6 +161,7 @@ class AutoSaveCubit extends Cubit<AutoSaveState> {
   Future<void> deleteRule({
     required String ruleId,
   }) async {
+    if (isClosed) return;
     emit(AutoSaveLoading());
 
     final result = await deleteAutoSaveRuleUseCase(ruleId: ruleId);
@@ -173,6 +178,7 @@ class AutoSaveCubit extends Cubit<AutoSaveState> {
     int? limit,
     int? offset,
   }) async {
+    if (isClosed) return;
     emit(AutoSaveLoading());
 
     final result = await getAutoSaveTransactionsUseCase(
@@ -189,6 +195,7 @@ class AutoSaveCubit extends Cubit<AutoSaveState> {
   }
 
   Future<void> getStatistics() async {
+    if (isClosed) return;
     emit(AutoSaveLoading());
 
     final result = await getAutoSaveStatisticsUseCase();
@@ -203,6 +210,7 @@ class AutoSaveCubit extends Cubit<AutoSaveState> {
     required String ruleId,
     double? customAmount,
   }) async {
+    if (isClosed) return;
     emit(AutoSaveRuleTriggeringState(ruleId));
 
     final result = await triggerAutoSaveUseCase(
@@ -232,6 +240,7 @@ class AutoSaveCubit extends Cubit<AutoSaveState> {
       return;
     }
 
+    if (isClosed) return;
     emit(AutoSaveRulesLoadingState(cachedRules: _cachedRules));
 
     final result = await getAutoSaveRulesUseCase(
@@ -292,6 +301,7 @@ class AutoSaveCubit extends Cubit<AutoSaveState> {
     // Apply sort
     filtered = _sortRules(filtered, sort ?? _currentSort);
 
+    if (isClosed) return;
     emit(AutoSaveRulesLoadedState(
       rules: filtered,
       accountNames: _accountNamesCache,
@@ -353,6 +363,7 @@ class AutoSaveCubit extends Cubit<AutoSaveState> {
     final oldRule = _cachedRules[index];
 
     // Emit toggling state
+    if (isClosed) return;
     emit(AutoSaveRuleTogglingState(ruleId, action == 'resume'));
 
     // Optimistically update cache
@@ -396,12 +407,14 @@ class AutoSaveCubit extends Cubit<AutoSaveState> {
       (failure) {
         // Revert optimistic update
         _cachedRules[index] = oldRule;
+        if (isClosed) return;
         emit(AutoSaveError(failure.message));
         _emitFilteredAndSorted(_currentFilter, _currentSearch, _currentSort);
       },
       (rule) {
         // Update cache with actual result
         _cachedRules[index] = rule;
+        if (isClosed) return;
         emit(AutoSaveRuleToggleSuccess(rule));
         _emitFilteredAndSorted(_currentFilter, _currentSearch, _currentSort);
       },
@@ -438,6 +451,7 @@ class AutoSaveCubit extends Cubit<AutoSaveState> {
     BulkOperationType operation,
     Future<dynamic> Function(String) operationFn,
   ) async {
+    if (isClosed) return;
     emit(AutoSaveLoading());
 
     int successCount = 0;
@@ -460,9 +474,11 @@ class AutoSaveCubit extends Cubit<AutoSaveState> {
     await getRulesWithCache(forceRefresh: true);
 
     if (successCount > 0) {
+      if (isClosed) return;
       emit(AutoSaveBulkOperationSuccess(operation, successCount));
       _emitFilteredAndSorted(_currentFilter, _currentSearch, _currentSort);
     } else {
+      if (isClosed) return;
       emit(AutoSaveError('Bulk operation failed for all selected rules'));
     }
   }

@@ -3,12 +3,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:uuid/uuid.dart';
+import 'package:get/get.dart';
+import 'package:lazervault/core/types/app_routes.dart';
 import '../../domain/entities/insurance_entity.dart';
 import '../../domain/entities/insurance_payment_entity.dart';
 import '../cubit/insurance_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
-import 'insurance_payment_processing_screen.dart';
+import 'insurance_provider_bottomsheet.dart';
 
 /// Screen 6: Payment Method Selection
 ///
@@ -97,13 +99,35 @@ class _PaymentMethodSelectionScreenState
                 children: [
                   _buildPaymentSummary(),
                   SizedBox(height: 32.h),
-                  Text(
-                    'Choose Payment Method',
-                    style: GoogleFonts.inter(
-                      fontSize: 18.sp,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Choose Payment Method',
+                        style: GoogleFonts.inter(
+                          fontSize: 18.sp,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                        ),
+                      ),
+                      // Button to show bottom sheet
+                      TextButton.icon(
+                        onPressed: _showPaymentMethodBottomSheet,
+                        icon: Icon(
+                          Icons.search,
+                          size: 18.sp,
+                          color: const Color(0xFF6366F1),
+                        ),
+                        label: Text(
+                          'Search',
+                          style: GoogleFonts.inter(
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF6366F1),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                   SizedBox(height: 16.h),
                   ..._paymentMethods.map((methodData) {
@@ -336,6 +360,13 @@ class _PaymentMethodSelectionScreenState
     );
   }
 
+  Future<void> _showPaymentMethodBottomSheet() async {
+    final selectedMethod = await InsuranceProviderBottomSheet.show(context);
+    if (selectedMethod != null) {
+      setState(() => _selectedMethod = selectedMethod);
+    }
+  }
+
   Future<void> _processPayment() async {
     if (_selectedMethod == null) return;
 
@@ -375,15 +406,12 @@ class _PaymentMethodSelectionScreenState
       updatedAt: DateTime.now(),
     );
 
-    // Navigate to processing screen
+    // Navigate to processing screen using named route to preserve provider
     if (!mounted) return;
 
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (context) => InsurancePaymentProcessingScreen(
-          payment: payment,
-        ),
-      ),
+    Get.offNamed(
+      AppRoutes.insurancePaymentProcessing,
+      arguments: payment,
     );
   }
 

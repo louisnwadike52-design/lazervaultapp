@@ -11,6 +11,7 @@ import '../../cubit/gift_card_state.dart';
 import '../../domain/entities/gift_card_entity.dart';
 import '../../../../../core/types/app_routes.dart';
 import '../../../voice_session/widgets/voice_command_sheet.dart';
+import 'widgets/brand_search_bottomsheet.dart';
 
 class GiftCardsScreen extends StatefulWidget {
   const GiftCardsScreen({super.key});
@@ -42,7 +43,7 @@ class _GiftCardsScreenState extends State<GiftCardsScreen>
       CurvedAnimation(parent: _animationController, curve: Curves.elasticOut),
     );
     _animationController.forward();
-    
+
     SystemChrome.setSystemUIOverlayStyle(
       const SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
@@ -51,8 +52,10 @@ class _GiftCardsScreenState extends State<GiftCardsScreen>
         systemNavigationBarIconBrightness: Brightness.light,
       ),
     );
-    
+
+    // Load both brands and statistics on init
     context.read<GiftCardCubit>().loadGiftCardBrands();
+    context.read<GiftCardCubit>().loadMyGiftCards(); // This will trigger statistics loading
   }
 
   @override
@@ -60,6 +63,13 @@ class _GiftCardsScreenState extends State<GiftCardsScreen>
     _animationController.dispose();
     _searchController.dispose();
     super.dispose();
+  }
+
+  Future<void> _onRefresh() async {
+    await Future.wait([
+      context.read<GiftCardCubit>().loadGiftCardBrands(),
+      context.read<GiftCardCubit>().loadMyGiftCards(),
+    ]);
   }
 
   @override
@@ -80,18 +90,23 @@ class _GiftCardsScreenState extends State<GiftCardsScreen>
           ),
         ),
         child: SafeArea(
-          child: Column(
-            children: [
-              _buildModernHeader(),
-              _buildSearchSection(),
-              _buildSummaryCard(),
-              _buildQuickActions(),
-              SizedBox(height: 16.h),
-              _buildCategoryFilter(),
-              Expanded(
-                child: _buildGiftCardBrandsList(context.watch<GiftCardCubit>().state),
-              ),
-            ],
+          child: RefreshIndicator(
+            onRefresh: _onRefresh,
+            backgroundColor: const Color(0xFF1A1A3E),
+            color: Colors.blue,
+            child: Column(
+              children: [
+                _buildModernHeader(),
+                _buildSearchSection(),
+                _buildSummaryCard(),
+                _buildQuickActions(),
+                SizedBox(height: 16.h),
+                _buildCategoryFilter(),
+                Expanded(
+                  child: _buildGiftCardBrandsList(context.watch<GiftCardCubit>().state),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -256,6 +271,23 @@ class _GiftCardsScreenState extends State<GiftCardsScreen>
   }
 
   Widget _buildSummaryCard() {
+    final state = context.watch<GiftCardCubit>().state;
+
+    // Extract statistics from state
+    String totalValue = '\$0.00';
+    String activeCards = '0';
+    String pendingCards = '0';
+    String usedCards = '0';
+
+    if (state is MyGiftCardsLoaded) {
+      final cards = state.giftCards;
+      final total = cards.fold<double>(0, (sum, card) => sum + card.amount);
+      totalValue = '\$${total.toStringAsFixed(2)}';
+      activeCards = cards.where((c) => c.status == GiftCardStatus.active).length.toString();
+      pendingCards = cards.where((c) => c.status == GiftCardStatus.pending).length.toString();
+      usedCards = cards.where((c) => c.status == GiftCardStatus.used).length.toString();
+    }
+
     return Container(
       margin: EdgeInsets.fromLTRB(16.w, 0, 16.w, 16.h),
       padding: EdgeInsets.all(20.w),
@@ -291,7 +323,7 @@ class _GiftCardsScreenState extends State<GiftCardsScreen>
           Row(
             children: [
               Text(
-                '\$2,450.00',
+                totalValue,
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 32.sp,
@@ -334,9 +366,9 @@ class _GiftCardsScreenState extends State<GiftCardsScreen>
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _buildPortfolioStat('Active Cards', '8'),
-              _buildPortfolioStat('Pending', '2'),
-              _buildPortfolioStat('Used', '12'),
+              _buildPortfolioStat('Active Cards', activeCards),
+              _buildPortfolioStat('Pending', pendingCards),
+              _buildPortfolioStat('Used', usedCards),
             ],
           ),
         ],
@@ -452,6 +484,10 @@ class _GiftCardsScreenState extends State<GiftCardsScreen>
       return _buildBrandsGrid(state.brands);
     } else if (state is GiftCardBrandsSearched) {
       return _buildBrandsGrid(state.brands);
+    } else if (state is GiftCardBrandsEmpty) {
+      return _buildEmptyBrandsView();
+    } else if (state is GiftCardNetworkError) {
+      return _buildNetworkErrorView(state.message, state.canRetry);
     } else if (state is GiftCardError) {
       return _buildErrorView(state.message);
     }
@@ -718,6 +754,197 @@ class _GiftCardsScreenState extends State<GiftCardsScreen>
               fontWeight: FontWeight.w400,
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyBrandsView() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: EdgeInsets.all(24.w),
+            decoration: BoxDecoration(
+              color: Colors.orange.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(24.r),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.orange.withValues(alpha: 0.2),
+                  blurRadius: 8,
+                  offset: Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Icon(
+              Icons.store_outlined,
+              size: 48.sp,
+              color: Colors.orange.shade400,
+            ),
+          ),
+          SizedBox(height: 16.h),
+          Text(
+            'No Brands Available',
+            style: GoogleFonts.inter(
+              fontSize: 20.sp,
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
+            ),
+          ),
+          SizedBox(height: 8.h),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 32.w),
+            child: Text(
+              'Gift card brands will appear here when available',
+              style: GoogleFonts.inter(
+                fontSize: 14.sp,
+                color: Colors.white.withOpacity(0.7),
+                fontWeight: FontWeight.w400,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          SizedBox(height: 24.h),
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  const Color(0xFF8B5CF6),
+                  const Color(0xFF3B82F6),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(12.r),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF8B5CF6).withOpacity(0.3),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: ElevatedButton(
+              onPressed: () {
+                context.read<GiftCardCubit>().loadGiftCardBrands();
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.transparent,
+                shadowColor: Colors.transparent,
+                padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+              ),
+              child: Text(
+                'Refresh',
+                style: GoogleFonts.inter(
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNetworkErrorView(String message, bool canRetry) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: EdgeInsets.all(24.w),
+            decoration: BoxDecoration(
+              color: Colors.orange.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(24.r),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.orange.withValues(alpha: 0.2),
+                  blurRadius: 8,
+                  offset: Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Icon(
+              Icons.wifi_off_rounded,
+              size: 48.sp,
+              color: Colors.orange.shade400,
+            ),
+          ),
+          SizedBox(height: 16.h),
+          Text(
+            'Network Error',
+            style: GoogleFonts.inter(
+              fontSize: 20.sp,
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
+            ),
+          ),
+          SizedBox(height: 8.h),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 32.w),
+            child: Text(
+              message,
+              style: GoogleFonts.inter(
+                fontSize: 14.sp,
+                color: Colors.white.withOpacity(0.7),
+                fontWeight: FontWeight.w400,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          if (canRetry) ...[
+            SizedBox(height: 24.h),
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    const Color(0xFF8B5CF6),
+                    const Color(0xFF3B82F6),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(12.r),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF8B5CF6).withOpacity(0.3),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: ElevatedButton(
+                onPressed: () {
+                  context.read<GiftCardCubit>().loadGiftCardBrands();
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.transparent,
+                  shadowColor: Colors.transparent,
+                  padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.refresh_rounded, size: 20.sp, color: Colors.white),
+                    SizedBox(width: 8.w),
+                    Text(
+                      'Retry',
+                      style: GoogleFonts.inter(
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -1029,157 +1256,27 @@ class _GiftCardsScreenState extends State<GiftCardsScreen>
   void _showBrandSelectionDialog() {
     final currentState = context.read<GiftCardCubit>().state;
     List<GiftCardBrand> availableBrands = [];
-    
+
     if (currentState is GiftCardBrandsLoaded) {
       availableBrands = currentState.brands;
     } else if (currentState is GiftCardBrandsSearched) {
       availableBrands = currentState.brands;
     }
-    
-    if (availableBrands.isEmpty) {
-      // If no brands are loaded, show a message and load them
-      Get.snackbar(
-        'Loading Brands',
-        'Please wait while we load available gift card brands...',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.blue.withOpacity(0.8),
-        colorText: Colors.white,
-        borderRadius: 12.r,
-        margin: EdgeInsets.all(16.w),
-      );
-      context.read<GiftCardCubit>().loadGiftCardBrands();
-      return;
-    }
-    
+
     Get.bottomSheet(
-      Container(
-        height: 400.h,
-        padding: EdgeInsets.all(20.w),
-        decoration: BoxDecoration(
-          color: Colors.grey[900],
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
-        ),
-        child: Column(
-          children: [
-            Container(
-              width: 40.w,
-              height: 4.h,
-              margin: EdgeInsets.only(bottom: 20.h),
-              decoration: BoxDecoration(
-                color: Colors.grey[700],
-                borderRadius: BorderRadius.circular(2.r),
-              ),
-            ),
-            Text(
-              'Select Gift Card Brand',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 20.sp,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            SizedBox(height: 20.h),
-            Expanded(
-              child: ListView.builder(
-                itemCount: availableBrands.length,
-                itemBuilder: (context, index) {
-                  final brand = availableBrands[index];
-                  return Container(
-                    margin: EdgeInsets.only(bottom: 12.h),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(12.r),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.2),
-                          blurRadius: 6,
-                          offset: Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        borderRadius: BorderRadius.circular(12.r),
-                        onTap: () {
-                          Get.back(); // Close the bottom sheet
-                          Get.toNamed(AppRoutes.purchaseGiftCard, arguments: brand);
-                        },
-                        child: Padding(
-                          padding: EdgeInsets.all(16.w),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 40.w,
-                                height: 40.h,
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(8.r),
-                                ),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(8.r),
-                                  child: CachedNetworkImage(
-                                    imageUrl: brand.logoUrl,
-                                    fit: BoxFit.contain,
-                                    placeholder: (context, url) => Icon(
-                                      Icons.card_giftcard,
-                                      color: Colors.grey[400],
-                                      size: 20.sp,
-                                    ),
-                                    errorWidget: (context, url, error) => Icon(
-                                      Icons.card_giftcard,
-                                      color: Colors.grey[400],
-                                      size: 20.sp,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              SizedBox(width: 16.w),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      brand.name,
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 16.sp,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                    if (brand.discountPercentage != null && brand.discountPercentage! > 0) ...[
-                                      SizedBox(height: 4.h),
-                                      Text(
-                                        '${brand.discountPercentage!.toStringAsFixed(0)}% OFF',
-                                        style: TextStyle(
-                                          color: Colors.green,
-                                          fontSize: 12.sp,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                    ],
-                                  ],
-                                ),
-                              ),
-                              Icon(
-                                Icons.arrow_forward_ios_rounded,
-                                color: Colors.grey[400],
-                                size: 16.sp,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-          ],
+      BlocProvider.value(
+        value: context.read<GiftCardCubit>(),
+        child: BrandSearchBottomSheet(
+          initialBrands: availableBrands,
+          onBrandSelected: (brand) {
+            Get.toNamed(AppRoutes.purchaseGiftCard, arguments: brand);
+          },
         ),
       ),
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
+      isDismissible: true,
+      enableDrag: true,
     );
   }
 

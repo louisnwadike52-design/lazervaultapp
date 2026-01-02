@@ -1402,3 +1402,305 @@ const GetUpcomingBillsResponse$json = const {
 
 /// Descriptor for `GetUpcomingBillsResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List getUpcomingBillsResponseDescriptor = $convert.base64Decode('ChhHZXRVcGNvbWluZ0JpbGxzUmVzcG9uc2USNAoKYmlsbHNfbGlzdBgBIAEoCzIVLnBiLlVwY29taW5nQmlsbHNMaXN0UgliaWxsc0xpc3Q=');
+@$core.Deprecated('Use trackedIncomeTransactionDescriptor instead')
+const TrackedIncomeTransaction$json = const {
+  '1': 'TrackedIncomeTransaction',
+  '2': const [
+    const {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
+    const {'1': 'user_id', '3': 2, '4': 1, '5': 4, '10': 'userId'},
+    const {'1': 'amount', '3': 3, '4': 1, '5': 1, '10': 'amount'},
+    const {'1': 'currency', '3': 4, '4': 1, '5': 9, '10': 'currency'},
+    const {'1': 'source_type', '3': 5, '4': 1, '5': 9, '10': 'sourceType'},
+    const {'1': 'source_id', '3': 6, '4': 1, '5': 9, '10': 'sourceId'},
+    const {'1': 'source_reference', '3': 7, '4': 1, '5': 9, '10': 'sourceReference'},
+    const {'1': 'category', '3': 8, '4': 1, '5': 9, '10': 'category'},
+    const {'1': 'description', '3': 9, '4': 1, '5': 9, '10': 'description'},
+    const {'1': 'sender_id', '3': 10, '4': 1, '5': 4, '10': 'senderId'},
+    const {'1': 'sender_name', '3': 11, '4': 1, '5': 9, '10': 'senderName'},
+    const {'1': 'transaction_date', '3': 12, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'transactionDate'},
+    const {'1': 'metadata', '3': 13, '4': 1, '5': 9, '10': 'metadata'},
+    const {'1': 'created_at', '3': 14, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
+  ],
+};
+
+/// Descriptor for `TrackedIncomeTransaction`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List trackedIncomeTransactionDescriptor = $convert.base64Decode('ChhUcmFja2VkSW5jb21lVHJhbnNhY3Rpb24SDgoCaWQYASABKAlSAmlkEhcKB3VzZXJfaWQYAiABKARSBnVzZXJJZBIWCgZhbW91bnQYAyABKAFSBmFtb3VudBIaCghjdXJyZW5jeRgEIAEoCVIIY3VycmVuY3kSHwoLc291cmNlX3R5cGUYBSABKAlSCnNvdXJjZVR5cGUSGwoJc291cmNlX2lkGAYgASgJUghzb3VyY2VJZBIpChBzb3VyY2VfcmVmZXJlbmNlGAcgASgJUg9zb3VyY2VSZWZlcmVuY2USGgoIY2F0ZWdvcnkYCCABKAlSCGNhdGVnb3J5EiAKC2Rlc2NyaXB0aW9uGAkgASgJUgtkZXNjcmlwdGlvbhIbCglzZW5kZXJfaWQYCiABKARSCHNlbmRlcklkEh8KC3NlbmRlcl9uYW1lGAsgASgJUgpzZW5kZXJOYW1lEkUKEHRyYW5zYWN0aW9uX2RhdGUYDCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUg90cmFuc2FjdGlvbkRhdGUSGgoIbWV0YWRhdGEYDSABKAlSCG1ldGFkYXRhEjkKCmNyZWF0ZWRfYXQYDiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUgljcmVhdGVkQXQ=');
+@$core.Deprecated('Use trackedExpenditureTransactionDescriptor instead')
+const TrackedExpenditureTransaction$json = const {
+  '1': 'TrackedExpenditureTransaction',
+  '2': const [
+    const {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
+    const {'1': 'user_id', '3': 2, '4': 1, '5': 4, '10': 'userId'},
+    const {'1': 'amount', '3': 3, '4': 1, '5': 1, '10': 'amount'},
+    const {'1': 'currency', '3': 4, '4': 1, '5': 9, '10': 'currency'},
+    const {'1': 'expense_type', '3': 5, '4': 1, '5': 9, '10': 'expenseType'},
+    const {'1': 'expense_id', '3': 6, '4': 1, '5': 9, '10': 'expenseId'},
+    const {'1': 'expense_reference', '3': 7, '4': 1, '5': 9, '10': 'expenseReference'},
+    const {'1': 'category', '3': 8, '4': 1, '5': 9, '10': 'category'},
+    const {'1': 'recipient_id', '3': 9, '4': 1, '5': 4, '10': 'recipientId'},
+    const {'1': 'recipient_name', '3': 10, '4': 1, '5': 9, '10': 'recipientName'},
+    const {'1': 'merchant', '3': 11, '4': 1, '5': 9, '10': 'merchant'},
+    const {'1': 'description', '3': 12, '4': 1, '5': 9, '10': 'description'},
+    const {'1': 'transaction_date', '3': 13, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'transactionDate'},
+    const {'1': 'metadata', '3': 14, '4': 1, '5': 9, '10': 'metadata'},
+    const {'1': 'created_at', '3': 15, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
+  ],
+};
+
+/// Descriptor for `TrackedExpenditureTransaction`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List trackedExpenditureTransactionDescriptor = $convert.base64Decode('Ch1UcmFja2VkRXhwZW5kaXR1cmVUcmFuc2FjdGlvbhIOCgJpZBgBIAEoCVICaWQSFwoHdXNlcl9pZBgCIAEoBFIGdXNlcklkEhYKBmFtb3VudBgDIAEoAVIGYW1vdW50EhoKCGN1cnJlbmN5GAQgASgJUghjdXJyZW5jeRIhCgxleHBlbnNlX3R5cGUYBSABKAlSC2V4cGVuc2VUeXBlEh0KCmV4cGVuc2VfaWQYBiABKAlSCWV4cGVuc2VJZBIrChFleHBlbnNlX3JlZmVyZW5jZRgHIAEoCVIQZXhwZW5zZVJlZmVyZW5jZRIaCghjYXRlZ29yeRgIIAEoCVIIY2F0ZWdvcnkSIQoMcmVjaXBpZW50X2lkGAkgASgEUgtyZWNpcGllbnRJZBIlCg5yZWNpcGllbnRfbmFtZRgKIAEoCVINcmVjaXBpZW50TmFtZRIaCghtZXJjaGFudBgLIAEoCVIIbWVyY2hhbnQSIAoLZGVzY3JpcHRpb24YDCABKAlSC2Rlc2NyaXB0aW9uEkUKEHRyYW5zYWN0aW9uX2RhdGUYDSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUg90cmFuc2FjdGlvbkRhdGUSGgoIbWV0YWRhdGEYDiABKAlSCG1ldGFkYXRhEjkKCmNyZWF0ZWRfYXQYDyABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUgljcmVhdGVkQXQ=');
+@$core.Deprecated('Use getTrackedIncomeRequestDescriptor instead')
+const GetTrackedIncomeRequest$json = const {
+  '1': 'GetTrackedIncomeRequest',
+  '2': const [
+    const {'1': 'start_date', '3': 1, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'startDate'},
+    const {'1': 'end_date', '3': 2, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'endDate'},
+  ],
+};
+
+/// Descriptor for `GetTrackedIncomeRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getTrackedIncomeRequestDescriptor = $convert.base64Decode('ChdHZXRUcmFja2VkSW5jb21lUmVxdWVzdBI5CgpzdGFydF9kYXRlGAEgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcFIJc3RhcnREYXRlEjUKCGVuZF9kYXRlGAIgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcFIHZW5kRGF0ZQ==');
+@$core.Deprecated('Use getTrackedIncomeResponseDescriptor instead')
+const GetTrackedIncomeResponse$json = const {
+  '1': 'GetTrackedIncomeResponse',
+  '2': const [
+    const {'1': 'total_income', '3': 1, '4': 1, '5': 1, '10': 'totalIncome'},
+    const {'1': 'success', '3': 2, '4': 1, '5': 8, '10': 'success'},
+  ],
+};
+
+/// Descriptor for `GetTrackedIncomeResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getTrackedIncomeResponseDescriptor = $convert.base64Decode('ChhHZXRUcmFja2VkSW5jb21lUmVzcG9uc2USIQoMdG90YWxfaW5jb21lGAEgASgBUgt0b3RhbEluY29tZRIYCgdzdWNjZXNzGAIgASgIUgdzdWNjZXNz');
+@$core.Deprecated('Use getTrackedExpenditureRequestDescriptor instead')
+const GetTrackedExpenditureRequest$json = const {
+  '1': 'GetTrackedExpenditureRequest',
+  '2': const [
+    const {'1': 'start_date', '3': 1, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'startDate'},
+    const {'1': 'end_date', '3': 2, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'endDate'},
+  ],
+};
+
+/// Descriptor for `GetTrackedExpenditureRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getTrackedExpenditureRequestDescriptor = $convert.base64Decode('ChxHZXRUcmFja2VkRXhwZW5kaXR1cmVSZXF1ZXN0EjkKCnN0YXJ0X2RhdGUYASABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUglzdGFydERhdGUSNQoIZW5kX2RhdGUYAiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUgdlbmREYXRl');
+@$core.Deprecated('Use getTrackedExpenditureResponseDescriptor instead')
+const GetTrackedExpenditureResponse$json = const {
+  '1': 'GetTrackedExpenditureResponse',
+  '2': const [
+    const {'1': 'total_expenditure', '3': 1, '4': 1, '5': 1, '10': 'totalExpenditure'},
+    const {'1': 'success', '3': 2, '4': 1, '5': 8, '10': 'success'},
+  ],
+};
+
+/// Descriptor for `GetTrackedExpenditureResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getTrackedExpenditureResponseDescriptor = $convert.base64Decode('Ch1HZXRUcmFja2VkRXhwZW5kaXR1cmVSZXNwb25zZRIrChF0b3RhbF9leHBlbmRpdHVyZRgBIAEoAVIQdG90YWxFeHBlbmRpdHVyZRIYCgdzdWNjZXNzGAIgASgIUgdzdWNjZXNz');
+@$core.Deprecated('Use getTrackedIncomeBreakdownRequestDescriptor instead')
+const GetTrackedIncomeBreakdownRequest$json = const {
+  '1': 'GetTrackedIncomeBreakdownRequest',
+  '2': const [
+    const {'1': 'start_date', '3': 1, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'startDate'},
+    const {'1': 'end_date', '3': 2, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'endDate'},
+  ],
+};
+
+/// Descriptor for `GetTrackedIncomeBreakdownRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getTrackedIncomeBreakdownRequestDescriptor = $convert.base64Decode('CiBHZXRUcmFja2VkSW5jb21lQnJlYWtkb3duUmVxdWVzdBI5CgpzdGFydF9kYXRlGAEgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcFIJc3RhcnREYXRlEjUKCGVuZF9kYXRlGAIgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcFIHZW5kRGF0ZQ==');
+@$core.Deprecated('Use getTrackedIncomeBreakdownResponseDescriptor instead')
+const GetTrackedIncomeBreakdownResponse$json = const {
+  '1': 'GetTrackedIncomeBreakdownResponse',
+  '2': const [
+    const {'1': 'breakdown_by_source', '3': 1, '4': 3, '5': 11, '6': '.pb.GetTrackedIncomeBreakdownResponse.BreakdownBySourceEntry', '10': 'breakdownBySource'},
+    const {'1': 'total_income', '3': 2, '4': 1, '5': 1, '10': 'totalIncome'},
+    const {'1': 'success', '3': 3, '4': 1, '5': 8, '10': 'success'},
+  ],
+  '3': const [GetTrackedIncomeBreakdownResponse_BreakdownBySourceEntry$json],
+};
+
+@$core.Deprecated('Use getTrackedIncomeBreakdownResponseDescriptor instead')
+const GetTrackedIncomeBreakdownResponse_BreakdownBySourceEntry$json = const {
+  '1': 'BreakdownBySourceEntry',
+  '2': const [
+    const {'1': 'key', '3': 1, '4': 1, '5': 9, '10': 'key'},
+    const {'1': 'value', '3': 2, '4': 1, '5': 1, '10': 'value'},
+  ],
+  '7': const {'7': true},
+};
+
+/// Descriptor for `GetTrackedIncomeBreakdownResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getTrackedIncomeBreakdownResponseDescriptor = $convert.base64Decode('CiFHZXRUcmFja2VkSW5jb21lQnJlYWtkb3duUmVzcG9uc2USbAoTYnJlYWtkb3duX2J5X3NvdXJjZRgBIAMoCzI8LnBiLkdldFRyYWNrZWRJbmNvbWVCcmVha2Rvd25SZXNwb25zZS5CcmVha2Rvd25CeVNvdXJjZUVudHJ5UhFicmVha2Rvd25CeVNvdXJjZRIhCgx0b3RhbF9pbmNvbWUYAiABKAFSC3RvdGFsSW5jb21lEhgKB3N1Y2Nlc3MYAyABKAhSB3N1Y2Nlc3MaRAoWQnJlYWtkb3duQnlTb3VyY2VFbnRyeRIQCgNrZXkYASABKAlSA2tleRIUCgV2YWx1ZRgCIAEoAVIFdmFsdWU6AjgB');
+@$core.Deprecated('Use getTrackedExpenditureBreakdownRequestDescriptor instead')
+const GetTrackedExpenditureBreakdownRequest$json = const {
+  '1': 'GetTrackedExpenditureBreakdownRequest',
+  '2': const [
+    const {'1': 'start_date', '3': 1, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'startDate'},
+    const {'1': 'end_date', '3': 2, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'endDate'},
+  ],
+};
+
+/// Descriptor for `GetTrackedExpenditureBreakdownRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getTrackedExpenditureBreakdownRequestDescriptor = $convert.base64Decode('CiVHZXRUcmFja2VkRXhwZW5kaXR1cmVCcmVha2Rvd25SZXF1ZXN0EjkKCnN0YXJ0X2RhdGUYASABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUglzdGFydERhdGUSNQoIZW5kX2RhdGUYAiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUgdlbmREYXRl');
+@$core.Deprecated('Use getTrackedExpenditureBreakdownResponseDescriptor instead')
+const GetTrackedExpenditureBreakdownResponse$json = const {
+  '1': 'GetTrackedExpenditureBreakdownResponse',
+  '2': const [
+    const {'1': 'breakdown_by_type', '3': 1, '4': 3, '5': 11, '6': '.pb.GetTrackedExpenditureBreakdownResponse.BreakdownByTypeEntry', '10': 'breakdownByType'},
+    const {'1': 'total_expenditure', '3': 2, '4': 1, '5': 1, '10': 'totalExpenditure'},
+    const {'1': 'success', '3': 3, '4': 1, '5': 8, '10': 'success'},
+  ],
+  '3': const [GetTrackedExpenditureBreakdownResponse_BreakdownByTypeEntry$json],
+};
+
+@$core.Deprecated('Use getTrackedExpenditureBreakdownResponseDescriptor instead')
+const GetTrackedExpenditureBreakdownResponse_BreakdownByTypeEntry$json = const {
+  '1': 'BreakdownByTypeEntry',
+  '2': const [
+    const {'1': 'key', '3': 1, '4': 1, '5': 9, '10': 'key'},
+    const {'1': 'value', '3': 2, '4': 1, '5': 1, '10': 'value'},
+  ],
+  '7': const {'7': true},
+};
+
+/// Descriptor for `GetTrackedExpenditureBreakdownResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getTrackedExpenditureBreakdownResponseDescriptor = $convert.base64Decode('CiZHZXRUcmFja2VkRXhwZW5kaXR1cmVCcmVha2Rvd25SZXNwb25zZRJrChFicmVha2Rvd25fYnlfdHlwZRgBIAMoCzI/LnBiLkdldFRyYWNrZWRFeHBlbmRpdHVyZUJyZWFrZG93blJlc3BvbnNlLkJyZWFrZG93bkJ5VHlwZUVudHJ5Ug9icmVha2Rvd25CeVR5cGUSKwoRdG90YWxfZXhwZW5kaXR1cmUYAiABKAFSEHRvdGFsRXhwZW5kaXR1cmUSGAoHc3VjY2VzcxgDIAEoCFIHc3VjY2VzcxpCChRCcmVha2Rvd25CeVR5cGVFbnRyeRIQCgNrZXkYASABKAlSA2tleRIUCgV2YWx1ZRgCIAEoAVIFdmFsdWU6AjgB');
+@$core.Deprecated('Use getTrackedIncomeTransactionsRequestDescriptor instead')
+const GetTrackedIncomeTransactionsRequest$json = const {
+  '1': 'GetTrackedIncomeTransactionsRequest',
+  '2': const [
+    const {'1': 'start_date', '3': 1, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'startDate'},
+    const {'1': 'end_date', '3': 2, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'endDate'},
+    const {'1': 'limit', '3': 3, '4': 1, '5': 5, '10': 'limit'},
+  ],
+};
+
+/// Descriptor for `GetTrackedIncomeTransactionsRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getTrackedIncomeTransactionsRequestDescriptor = $convert.base64Decode('CiNHZXRUcmFja2VkSW5jb21lVHJhbnNhY3Rpb25zUmVxdWVzdBI5CgpzdGFydF9kYXRlGAEgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcFIJc3RhcnREYXRlEjUKCGVuZF9kYXRlGAIgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcFIHZW5kRGF0ZRIUCgVsaW1pdBgDIAEoBVIFbGltaXQ=');
+@$core.Deprecated('Use getTrackedIncomeTransactionsResponseDescriptor instead')
+const GetTrackedIncomeTransactionsResponse$json = const {
+  '1': 'GetTrackedIncomeTransactionsResponse',
+  '2': const [
+    const {'1': 'transactions', '3': 1, '4': 3, '5': 11, '6': '.pb.TrackedIncomeTransaction', '10': 'transactions'},
+    const {'1': 'total_count', '3': 2, '4': 1, '5': 5, '10': 'totalCount'},
+    const {'1': 'success', '3': 3, '4': 1, '5': 8, '10': 'success'},
+  ],
+};
+
+/// Descriptor for `GetTrackedIncomeTransactionsResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getTrackedIncomeTransactionsResponseDescriptor = $convert.base64Decode('CiRHZXRUcmFja2VkSW5jb21lVHJhbnNhY3Rpb25zUmVzcG9uc2USQAoMdHJhbnNhY3Rpb25zGAEgAygLMhwucGIuVHJhY2tlZEluY29tZVRyYW5zYWN0aW9uUgx0cmFuc2FjdGlvbnMSHwoLdG90YWxfY291bnQYAiABKAVSCnRvdGFsQ291bnQSGAoHc3VjY2VzcxgDIAEoCFIHc3VjY2Vzcw==');
+@$core.Deprecated('Use getTrackedExpenditureTransactionsRequestDescriptor instead')
+const GetTrackedExpenditureTransactionsRequest$json = const {
+  '1': 'GetTrackedExpenditureTransactionsRequest',
+  '2': const [
+    const {'1': 'start_date', '3': 1, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'startDate'},
+    const {'1': 'end_date', '3': 2, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'endDate'},
+    const {'1': 'limit', '3': 3, '4': 1, '5': 5, '10': 'limit'},
+  ],
+};
+
+/// Descriptor for `GetTrackedExpenditureTransactionsRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getTrackedExpenditureTransactionsRequestDescriptor = $convert.base64Decode('CihHZXRUcmFja2VkRXhwZW5kaXR1cmVUcmFuc2FjdGlvbnNSZXF1ZXN0EjkKCnN0YXJ0X2RhdGUYASABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUglzdGFydERhdGUSNQoIZW5kX2RhdGUYAiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUgdlbmREYXRlEhQKBWxpbWl0GAMgASgFUgVsaW1pdA==');
+@$core.Deprecated('Use getTrackedExpenditureTransactionsResponseDescriptor instead')
+const GetTrackedExpenditureTransactionsResponse$json = const {
+  '1': 'GetTrackedExpenditureTransactionsResponse',
+  '2': const [
+    const {'1': 'transactions', '3': 1, '4': 3, '5': 11, '6': '.pb.TrackedExpenditureTransaction', '10': 'transactions'},
+    const {'1': 'total_count', '3': 2, '4': 1, '5': 5, '10': 'totalCount'},
+    const {'1': 'success', '3': 3, '4': 1, '5': 8, '10': 'success'},
+  ],
+};
+
+/// Descriptor for `GetTrackedExpenditureTransactionsResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getTrackedExpenditureTransactionsResponseDescriptor = $convert.base64Decode('CilHZXRUcmFja2VkRXhwZW5kaXR1cmVUcmFuc2FjdGlvbnNSZXNwb25zZRJFCgx0cmFuc2FjdGlvbnMYASADKAsyIS5wYi5UcmFja2VkRXhwZW5kaXR1cmVUcmFuc2FjdGlvblIMdHJhbnNhY3Rpb25zEh8KC3RvdGFsX2NvdW50GAIgASgFUgp0b3RhbENvdW50EhgKB3N1Y2Nlc3MYAyABKAhSB3N1Y2Nlc3M=');
+@$core.Deprecated('Use getComprehensiveFinancialSummaryRequestDescriptor instead')
+const GetComprehensiveFinancialSummaryRequest$json = const {
+  '1': 'GetComprehensiveFinancialSummaryRequest',
+  '2': const [
+    const {'1': 'start_date', '3': 1, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'startDate'},
+    const {'1': 'end_date', '3': 2, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'endDate'},
+  ],
+};
+
+/// Descriptor for `GetComprehensiveFinancialSummaryRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getComprehensiveFinancialSummaryRequestDescriptor = $convert.base64Decode('CidHZXRDb21wcmVoZW5zaXZlRmluYW5jaWFsU3VtbWFyeVJlcXVlc3QSOQoKc3RhcnRfZGF0ZRgBIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXBSCXN0YXJ0RGF0ZRI1CghlbmRfZGF0ZRgCIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXBSB2VuZERhdGU=');
+@$core.Deprecated('Use getComprehensiveFinancialSummaryResponseDescriptor instead')
+const GetComprehensiveFinancialSummaryResponse$json = const {
+  '1': 'GetComprehensiveFinancialSummaryResponse',
+  '2': const [
+    const {'1': 'summary', '3': 1, '4': 1, '5': 11, '6': '.pb.ComprehensiveFinancialSummary', '10': 'summary'},
+    const {'1': 'success', '3': 2, '4': 1, '5': 8, '10': 'success'},
+  ],
+};
+
+/// Descriptor for `GetComprehensiveFinancialSummaryResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getComprehensiveFinancialSummaryResponseDescriptor = $convert.base64Decode('CihHZXRDb21wcmVoZW5zaXZlRmluYW5jaWFsU3VtbWFyeVJlc3BvbnNlEjsKB3N1bW1hcnkYASABKAsyIS5wYi5Db21wcmVoZW5zaXZlRmluYW5jaWFsU3VtbWFyeVIHc3VtbWFyeRIYCgdzdWNjZXNzGAIgASgIUgdzdWNjZXNz');
+@$core.Deprecated('Use comprehensiveFinancialSummaryDescriptor instead')
+const ComprehensiveFinancialSummary$json = const {
+  '1': 'ComprehensiveFinancialSummary',
+  '2': const [
+    const {'1': 'period', '3': 1, '4': 1, '5': 11, '6': '.pb.ComprehensivePeriod', '10': 'period'},
+    const {'1': 'income', '3': 2, '4': 1, '5': 11, '6': '.pb.ComprehensiveIncomeData', '10': 'income'},
+    const {'1': 'expenditure', '3': 3, '4': 1, '5': 11, '6': '.pb.ComprehensiveExpenditureData', '10': 'expenditure'},
+    const {'1': 'net_income', '3': 4, '4': 1, '5': 1, '10': 'netIncome'},
+    const {'1': 'savings_rate', '3': 5, '4': 1, '5': 1, '10': 'savingsRate'},
+  ],
+};
+
+/// Descriptor for `ComprehensiveFinancialSummary`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List comprehensiveFinancialSummaryDescriptor = $convert.base64Decode('Ch1Db21wcmVoZW5zaXZlRmluYW5jaWFsU3VtbWFyeRIvCgZwZXJpb2QYASABKAsyFy5wYi5Db21wcmVoZW5zaXZlUGVyaW9kUgZwZXJpb2QSMwoGaW5jb21lGAIgASgLMhsucGIuQ29tcHJlaGVuc2l2ZUluY29tZURhdGFSBmluY29tZRJCCgtleHBlbmRpdHVyZRgDIAEoCzIgLnBiLkNvbXByZWhlbnNpdmVFeHBlbmRpdHVyZURhdGFSC2V4cGVuZGl0dXJlEh0KCm5ldF9pbmNvbWUYBCABKAFSCW5ldEluY29tZRIhCgxzYXZpbmdzX3JhdGUYBSABKAFSC3NhdmluZ3NSYXRl');
+@$core.Deprecated('Use comprehensivePeriodDescriptor instead')
+const ComprehensivePeriod$json = const {
+  '1': 'ComprehensivePeriod',
+  '2': const [
+    const {'1': 'start_date', '3': 1, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'startDate'},
+    const {'1': 'end_date', '3': 2, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'endDate'},
+  ],
+};
+
+/// Descriptor for `ComprehensivePeriod`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List comprehensivePeriodDescriptor = $convert.base64Decode('ChNDb21wcmVoZW5zaXZlUGVyaW9kEjkKCnN0YXJ0X2RhdGUYASABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUglzdGFydERhdGUSNQoIZW5kX2RhdGUYAiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUgdlbmREYXRl');
+@$core.Deprecated('Use comprehensiveIncomeDataDescriptor instead')
+const ComprehensiveIncomeData$json = const {
+  '1': 'ComprehensiveIncomeData',
+  '2': const [
+    const {'1': 'manual_income', '3': 1, '4': 1, '5': 1, '10': 'manualIncome'},
+    const {'1': 'tracked_income', '3': 2, '4': 1, '5': 1, '10': 'trackedIncome'},
+    const {'1': 'total_income', '3': 3, '4': 1, '5': 1, '10': 'totalIncome'},
+    const {'1': 'income_breakdown', '3': 4, '4': 3, '5': 11, '6': '.pb.ComprehensiveIncomeData.IncomeBreakdownEntry', '10': 'incomeBreakdown'},
+  ],
+  '3': const [ComprehensiveIncomeData_IncomeBreakdownEntry$json],
+};
+
+@$core.Deprecated('Use comprehensiveIncomeDataDescriptor instead')
+const ComprehensiveIncomeData_IncomeBreakdownEntry$json = const {
+  '1': 'IncomeBreakdownEntry',
+  '2': const [
+    const {'1': 'key', '3': 1, '4': 1, '5': 9, '10': 'key'},
+    const {'1': 'value', '3': 2, '4': 1, '5': 1, '10': 'value'},
+  ],
+  '7': const {'7': true},
+};
+
+/// Descriptor for `ComprehensiveIncomeData`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List comprehensiveIncomeDataDescriptor = $convert.base64Decode('ChdDb21wcmVoZW5zaXZlSW5jb21lRGF0YRIjCg1tYW51YWxfaW5jb21lGAEgASgBUgxtYW51YWxJbmNvbWUSJQoOdHJhY2tlZF9pbmNvbWUYAiABKAFSDXRyYWNrZWRJbmNvbWUSIQoMdG90YWxfaW5jb21lGAMgASgBUgt0b3RhbEluY29tZRJbChBpbmNvbWVfYnJlYWtkb3duGAQgAygLMjAucGIuQ29tcHJlaGVuc2l2ZUluY29tZURhdGEuSW5jb21lQnJlYWtkb3duRW50cnlSD2luY29tZUJyZWFrZG93bhpCChRJbmNvbWVCcmVha2Rvd25FbnRyeRIQCgNrZXkYASABKAlSA2tleRIUCgV2YWx1ZRgCIAEoAVIFdmFsdWU6AjgB');
+@$core.Deprecated('Use comprehensiveExpenditureDataDescriptor instead')
+const ComprehensiveExpenditureData$json = const {
+  '1': 'ComprehensiveExpenditureData',
+  '2': const [
+    const {'1': 'manual_expenses', '3': 1, '4': 1, '5': 1, '10': 'manualExpenses'},
+    const {'1': 'tracked_expenditure', '3': 2, '4': 1, '5': 1, '10': 'trackedExpenditure'},
+    const {'1': 'total_expenditure', '3': 3, '4': 1, '5': 1, '10': 'totalExpenditure'},
+    const {'1': 'expenditure_breakdown', '3': 4, '4': 3, '5': 11, '6': '.pb.ComprehensiveExpenditureData.ExpenditureBreakdownEntry', '10': 'expenditureBreakdown'},
+  ],
+  '3': const [ComprehensiveExpenditureData_ExpenditureBreakdownEntry$json],
+};
+
+@$core.Deprecated('Use comprehensiveExpenditureDataDescriptor instead')
+const ComprehensiveExpenditureData_ExpenditureBreakdownEntry$json = const {
+  '1': 'ExpenditureBreakdownEntry',
+  '2': const [
+    const {'1': 'key', '3': 1, '4': 1, '5': 9, '10': 'key'},
+    const {'1': 'value', '3': 2, '4': 1, '5': 1, '10': 'value'},
+  ],
+  '7': const {'7': true},
+};
+
+/// Descriptor for `ComprehensiveExpenditureData`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List comprehensiveExpenditureDataDescriptor = $convert.base64Decode('ChxDb21wcmVoZW5zaXZlRXhwZW5kaXR1cmVEYXRhEicKD21hbnVhbF9leHBlbnNlcxgBIAEoAVIObWFudWFsRXhwZW5zZXMSLwoTdHJhY2tlZF9leHBlbmRpdHVyZRgCIAEoAVISdHJhY2tlZEV4cGVuZGl0dXJlEisKEXRvdGFsX2V4cGVuZGl0dXJlGAMgASgBUhB0b3RhbEV4cGVuZGl0dXJlEm8KFWV4cGVuZGl0dXJlX2JyZWFrZG93bhgEIAMoCzI6LnBiLkNvbXByZWhlbnNpdmVFeHBlbmRpdHVyZURhdGEuRXhwZW5kaXR1cmVCcmVha2Rvd25FbnRyeVIUZXhwZW5kaXR1cmVCcmVha2Rvd24aRwoZRXhwZW5kaXR1cmVCcmVha2Rvd25FbnRyeRIQCgNrZXkYASABKAlSA2tleRIUCgV2YWx1ZRgCIAEoAVIFdmFsdWU6AjgB');

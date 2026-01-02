@@ -601,4 +601,166 @@ class StatisticsRepository {
       },
     );
   }
+
+  // ========================================
+  // TRACKED TRANSACTIONS (AUTOMATIC)
+  // ========================================
+
+  /// Get tracked income total for a period
+  Future<double> getTrackedIncome({
+    required DateTime startDate,
+    required DateTime endDate,
+  }) async {
+    return retryWithBackoff(
+      operation: () async {
+        final request = pb.GetTrackedIncomeRequest()
+          ..startDate = _toProtoTimestamp(startDate)
+          ..endDate = _toProtoTimestamp(endDate);
+
+        final options = await grpcClient.callOptions;
+        final response = await grpcClient.statisticsClient.getTrackedIncome(
+          request,
+          options: options,
+        );
+
+        return response.totalIncome;
+      },
+    );
+  }
+
+  /// Get tracked expenditure total for a period
+  Future<double> getTrackedExpenditure({
+    required DateTime startDate,
+    required DateTime endDate,
+  }) async {
+    return retryWithBackoff(
+      operation: () async {
+        final request = pb.GetTrackedExpenditureRequest()
+          ..startDate = _toProtoTimestamp(startDate)
+          ..endDate = _toProtoTimestamp(endDate);
+
+        final options = await grpcClient.callOptions;
+        final response = await grpcClient.statisticsClient.getTrackedExpenditure(
+          request,
+          options: options,
+        );
+
+        return response.totalExpenditure;
+      },
+    );
+  }
+
+  /// Get tracked income breakdown by source type
+  Future<Map<String, double>> getTrackedIncomeBreakdown({
+    required DateTime startDate,
+    required DateTime endDate,
+  }) async {
+    return retryWithBackoff(
+      operation: () async {
+        final request = pb.GetTrackedIncomeBreakdownRequest()
+          ..startDate = _toProtoTimestamp(startDate)
+          ..endDate = _toProtoTimestamp(endDate);
+
+        final options = await grpcClient.callOptions;
+        final response = await grpcClient.statisticsClient.getTrackedIncomeBreakdown(
+          request,
+          options: options,
+        );
+
+        return response.breakdownBySource;
+      },
+    );
+  }
+
+  /// Get tracked expenditure breakdown by expense type
+  Future<Map<String, double>> getTrackedExpenditureBreakdown({
+    required DateTime startDate,
+    required DateTime endDate,
+  }) async {
+    return retryWithBackoff(
+      operation: () async {
+        final request = pb.GetTrackedExpenditureBreakdownRequest()
+          ..startDate = _toProtoTimestamp(startDate)
+          ..endDate = _toProtoTimestamp(endDate);
+
+        final options = await grpcClient.callOptions;
+        final response = await grpcClient.statisticsClient.getTrackedExpenditureBreakdown(
+          request,
+          options: options,
+        );
+
+        return response.breakdownByType;
+      },
+    );
+  }
+
+  /// Get tracked income transactions
+  Future<List<pb.TrackedIncomeTransaction>> getTrackedIncomeTransactions({
+    required DateTime startDate,
+    required DateTime endDate,
+    int limit = 100,
+  }) async {
+    return retryWithBackoff(
+      operation: () async {
+        final request = pb.GetTrackedIncomeTransactionsRequest()
+          ..startDate = _toProtoTimestamp(startDate)
+          ..endDate = _toProtoTimestamp(endDate)
+          ..limit = limit;
+
+        final options = await grpcClient.callOptions;
+        final response = await grpcClient.statisticsClient.getTrackedIncomeTransactions(
+          request,
+          options: options,
+        );
+
+        return response.transactions;
+      },
+    );
+  }
+
+  /// Get tracked expenditure transactions
+  Future<List<pb.TrackedExpenditureTransaction>> getTrackedExpenditureTransactions({
+    required DateTime startDate,
+    required DateTime endDate,
+    int limit = 100,
+  }) async {
+    return retryWithBackoff(
+      operation: () async {
+        final request = pb.GetTrackedExpenditureTransactionsRequest()
+          ..startDate = _toProtoTimestamp(startDate)
+          ..endDate = _toProtoTimestamp(endDate)
+          ..limit = limit;
+
+        final options = await grpcClient.callOptions;
+        final response = await grpcClient.statisticsClient.getTrackedExpenditureTransactions(
+          request,
+          options: options,
+        );
+
+        return response.transactions;
+      },
+    );
+  }
+
+  /// Get comprehensive financial summary (combines manual + tracked data)
+  Future<pb.ComprehensiveFinancialSummary> getComprehensiveFinancialSummary({
+    required DateTime startDate,
+    required DateTime endDate,
+  }) async {
+    return retryWithBackoff(
+      operation: () async {
+        final request = pb.GetComprehensiveFinancialSummaryRequest()
+          ..startDate = _toProtoTimestamp(startDate)
+          ..endDate = _toProtoTimestamp(endDate);
+
+        final options = await grpcClient.callOptions;
+        final response = await grpcClient.statisticsClient.getComprehensiveFinancialSummary(
+          request,
+          options: options,
+        );
+
+        return response.summary;
+      },
+    );
+  }
 }

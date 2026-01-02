@@ -133,8 +133,13 @@ class PayInvoiceCubit extends Cubit<PayInvoiceState> {
   Future<void> filterInvoicesByPriority(InvoicePriority priority) async {
     try {
       if (isClosed) return;
+      if (currentUserId == null) {
+        if (isClosed) return;
+        emit(const PayInvoiceError(message: 'User not authenticated. Please log in.'));
+        return;
+      }
       emit(PayInvoiceLoading());
-      final invoices = await repository.filterInvoicesByPriority(currentUserId, priority);
+      final invoices = await repository.filterInvoicesByPriority(currentUserId!, priority);
       if (isClosed) return;
       emit(PayInvoicesLoaded(invoices: invoices));
     } catch (e) {
@@ -287,7 +292,12 @@ class PayInvoiceCubit extends Cubit<PayInvoiceState> {
   // Load payment statistics
   Future<void> loadPaymentStatistics() async {
     try {
-      final statistics = await repository.getPaymentStatistics(currentUserId);
+      if (currentUserId == null) {
+        if (isClosed) return;
+        emit(const PayInvoiceError(message: 'User not authenticated. Please log in.'));
+        return;
+      }
+      final statistics = await repository.getPaymentStatistics(currentUserId!);
       if (isClosed) return;
       emit(PayInvoiceStatisticsLoaded(statistics: statistics));
     } catch (e) {
@@ -299,7 +309,12 @@ class PayInvoiceCubit extends Cubit<PayInvoiceState> {
   // Load user account balance
   Future<void> loadAccountBalance() async {
     try {
-      final accountBalance = await repository.getUserAccountBalance(currentUserId);
+      if (currentUserId == null) {
+        if (isClosed) return;
+        emit(const PayInvoiceError(message: 'User not authenticated. Please log in.'));
+        return;
+      }
+      final accountBalance = await repository.getUserAccountBalance(currentUserId!);
       if (isClosed) return;
       emit(PayInvoiceAccountBalanceLoaded(accountBalance: accountBalance));
     } catch (e) {
@@ -311,7 +326,12 @@ class PayInvoiceCubit extends Cubit<PayInvoiceState> {
   // Load user payment methods
   Future<void> loadPaymentMethods() async {
     try {
-      final paymentMethods = await repository.getUserPaymentMethods(currentUserId);
+      if (currentUserId == null) {
+        if (isClosed) return;
+        emit(const PayInvoiceError(message: 'User not authenticated. Please log in.'));
+        return;
+      }
+      final paymentMethods = await repository.getUserPaymentMethods(currentUserId!);
       if (isClosed) return;
       emit(PayInvoicePaymentMethodsLoaded(paymentMethods: paymentMethods));
     } catch (e) {
@@ -323,7 +343,12 @@ class PayInvoiceCubit extends Cubit<PayInvoiceState> {
   // Load recent transactions
   Future<void> loadRecentTransactions({int limit = 20}) async {
     try {
-      final transactions = await repository.getRecentTransactions(currentUserId, limit: limit);
+      if (currentUserId == null) {
+        if (isClosed) return;
+        emit(const PayInvoiceError(message: 'User not authenticated. Please log in.'));
+        return;
+      }
+      final transactions = await repository.getRecentTransactions(currentUserId!, limit: limit);
       if (isClosed) return;
       emit(PayInvoiceRecentTransactionsLoaded(transactions: transactions));
     } catch (e) {
@@ -373,7 +398,12 @@ class PayInvoiceCubit extends Cubit<PayInvoiceState> {
   // Add payment method
   Future<void> addPaymentMethod(Map<String, dynamic> paymentMethodData) async {
     try {
-      final success = await repository.addPaymentMethod(currentUserId, paymentMethodData);
+      if (currentUserId == null) {
+        if (isClosed) return;
+        emit(const PayInvoiceError(message: 'User not authenticated. Please log in.'));
+        return;
+      }
+      final success = await repository.addPaymentMethod(currentUserId!, paymentMethodData);
       if (isClosed) return;
       if (success) {
         emit(PayInvoiceOperationSuccess(
@@ -394,7 +424,12 @@ class PayInvoiceCubit extends Cubit<PayInvoiceState> {
   // Remove payment method
   Future<void> removePaymentMethod(String paymentMethodId) async {
     try {
-      final success = await repository.removePaymentMethod(currentUserId, paymentMethodId);
+      if (currentUserId == null) {
+        if (isClosed) return;
+        emit(const PayInvoiceError(message: 'User not authenticated. Please log in.'));
+        return;
+      }
+      final success = await repository.removePaymentMethod(currentUserId!, paymentMethodId);
       if (isClosed) return;
       if (success) {
         emit(PayInvoiceOperationSuccess(

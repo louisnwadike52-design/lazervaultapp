@@ -17,19 +17,23 @@ class DepositCubit extends Cubit<DepositState> {
     required String sourceBankName,
     String? accessToken,
   }) async {
+    if (isClosed) return;
     emit(DepositLoading());
 
     if (amount <= 0) {
+      if (isClosed) return;
       emit(const DepositFailure('Amount must be greater than zero'));
       return;
     }
 
     if (currency.isEmpty) {
+      if (isClosed) return;
       emit(const DepositFailure('Currency must be specified'));
       return;
     }
 
     if (sourceBankName.isEmpty) {
+      if (isClosed) return;
       emit(const DepositFailure('Source bank must be selected'));
       return;
     }
@@ -44,6 +48,7 @@ class DepositCubit extends Cubit<DepositState> {
         accessToken: accessToken,
       );
 
+      if (isClosed) return;
       result.fold(
         (failure) => emit(DepositFailure(
           failure.message,
@@ -52,6 +57,7 @@ class DepositCubit extends Cubit<DepositState> {
         (depositDetails) => emit(DepositSuccess(depositDetails)),
       );
     } catch (e) {
+      if (isClosed) return;
       emit(DepositFailure('An unexpected error occurred: $e'));
     }
   }

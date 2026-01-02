@@ -188,6 +188,7 @@ import 'package:lazervault/src/features/identity/cubit/identity_cubit.dart';
 // Stocks Imports
 import 'package:lazervault/src/features/stocks/data/datasources/stock_remote_data_source.dart';
 import 'package:lazervault/src/features/stocks/data/datasources/stock_remote_data_source_impl.dart';
+import 'package:lazervault/src/features/stocks/data/datasources/stock_remote_data_source_grpc_impl.dart';
 import 'package:lazervault/src/features/stocks/data/repositories/stock_repository_impl.dart';
 import 'package:lazervault/src/features/stocks/domain/repositories/i_stock_repository.dart';
 import 'package:lazervault/src/features/stocks/domain/usecases/get_stocks_usecase.dart';
@@ -203,6 +204,8 @@ import 'package:lazervault/src/features/stocks/presentation/view/stock_trade_rev
 import 'package:lazervault/src/features/stocks/presentation/view/stock_trade_receipt_screen.dart';
 import 'package:lazervault/src/features/stocks/domain/entities/stock_entity.dart';
 import 'package:lazervault/src/features/stocks/presentation/view/stock_chart_details_screen.dart';
+import 'package:lazervault/core/grpc/grpc_channel_manager.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 // End Stocks Imports
 
 // Crypto Imports
@@ -307,6 +310,7 @@ import 'package:lazervault/src/features/group_account/presentation/views/group_a
 
 // Insurance Imports
 import 'package:lazervault/src/features/insurance/data/datasources/insurance_local_datasource.dart';
+import 'package:lazervault/src/features/insurance/data/datasources/insurance_remote_datasource.dart';
 import 'package:lazervault/src/features/insurance/data/repositories/insurance_repository_impl.dart';
 import 'package:lazervault/src/features/insurance/domain/repositories/insurance_repository.dart';
 import 'package:lazervault/src/features/insurance/presentation/cubit/insurance_cubit.dart';
@@ -841,13 +845,40 @@ Future<void> init() async {
 
   // ================== Feature: Stocks ==================
 
-  // Data Sources
+  // Stocks gRPC Channel Manager
+  serviceLocator.registerLazySingleton<GrpcChannelManager>(
+    () {
+      final useGrpc = dotenv.env['USE_STOCKS_GRPC']?.toLowerCase() == 'true';
+      final host = dotenv.env['STOCKS_GRPC_HOST'] ?? '10.0.2.2';
+      final port = int.tryParse(dotenv.env['STOCKS_GRPC_PORT'] ?? '9091') ?? 9091;
+
+      return GrpcChannelManager(
+        host: host,
+        port: port,
+        secureStorage: serviceLocator<SecureStorageService>(),
+      );
+    },
+  );
+
+  // Data Sources - Use gRPC or HTTP based on environment variable
   serviceLocator.registerLazySingleton<IStockRemoteDataSource>(
-    () => StockRemoteDataSourceRealImpl(
-      client: serviceLocator<http.Client>(),
-      baseUrl: 'http://10.0.2.2:8081/api/v1', // Stocks microservice endpoint
-      secureStorage: serviceLocator<SecureStorageService>(),
-    ),
+    () {
+      final useGrpc = dotenv.env['USE_STOCKS_GRPC']?.toLowerCase() == 'true';
+
+      if (useGrpc) {
+        // Use gRPC implementation
+        return StockRemoteDataSourceGrpcImpl(
+          channelManager: serviceLocator<GrpcChannelManager>(),
+        );
+      } else {
+        // Use HTTP implementation
+        return StockRemoteDataSourceRealImpl(
+          client: serviceLocator<http.Client>(),
+          baseUrl: dotenv.env['STOCKS_API_URL'] ?? 'http://10.0.2.2:8081/api/v1',
+          secureStorage: serviceLocator<SecureStorageService>(),
+        );
+      }
+    },
   );
 
   // Repositories
@@ -1311,15 +1342,25 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton<InsuranceLocalDataSource>(
     () {
       final dataSource = InsuranceLocalDataSourceImpl();
-      // Initialize Hive for insurance
+      // Initialize Hive for insurance (kept for potential offline fallback)
       dataSource.initializeHive();
       return dataSource;
     },
   );
 
-  // Repositories
+  // Remote Data Source - Using gRPC
+  serviceLocator.registerLazySingleton<InsuranceRemoteDataSource>(
+    () => InsuranceRemoteDataSourceImpl(
+      grpcClient: serviceLocator<GrpcClient>(),
+    ),
+  );
+
+  // Repositories - Now using gRPC remote datasource
   serviceLocator.registerLazySingleton<InsuranceRepository>(
-    () => InsuranceRepositoryImpl(localDataSource: serviceLocator<InsuranceLocalDataSource>()),
+    () => InsuranceRepositoryImpl(
+      remoteDataSource: serviceLocator<InsuranceRemoteDataSource>(),
+      secureStorage: serviceLocator<SecureStorageService>(),
+    ),
   );
 
   // Blocs/Cubits

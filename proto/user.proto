@@ -40,6 +40,7 @@ message CreateUserRequest {
   string role = 6;
   string login_passcode = 7; // Optional 4-6 digit passcode for quick login
   string username = 8; // Optional unique username
+  string referral_code = 9; // Optional referral code from another user
 }
 
 

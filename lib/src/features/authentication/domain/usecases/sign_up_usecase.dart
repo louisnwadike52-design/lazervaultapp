@@ -15,6 +15,7 @@ class SignUpUseCase {
     required String password,
     String? phoneNumber,
     String? username,
+    String? referralCode,
   }) async {
     // Input validation could go here if needed
     return _repository.signUp(
@@ -24,6 +25,7 @@ class SignUpUseCase {
       password: password,
       phoneNumber: phoneNumber,
       username: username,
+      referralCode: referralCode,
     );
   }
 }

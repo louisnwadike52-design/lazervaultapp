@@ -44,6 +44,15 @@ class StatisticsLoaded extends StatisticsState {
   final SavingsGoal? savingsGoal;
   final UpcomingBillsList? upcomingBills;
 
+  // Tracked Transactions (Automatic)
+  final double trackedIncome;
+  final double trackedExpenditure;
+  final Map<String, double> trackedIncomeBreakdown;
+  final Map<String, double> trackedExpenditureBreakdown;
+  final List<TrackedIncomeTransaction> trackedIncomeTransactions;
+  final List<TrackedExpenditureTransaction> trackedExpenditureTransactions;
+  final ComprehensiveFinancialSummary? comprehensiveSummary;
+
   // AI-powered features
   final GetAISpendingInsightsResponse? aiSpendingInsights;
   final GetAIBudgetingRecommendationsResponse? aiBudgetingRecommendations;
@@ -73,6 +82,13 @@ class StatisticsLoaded extends StatisticsState {
     this.financialGoals = const [],
     this.savingsGoal,
     this.upcomingBills,
+    this.trackedIncome = 0.0,
+    this.trackedExpenditure = 0.0,
+    this.trackedIncomeBreakdown = const {},
+    this.trackedExpenditureBreakdown = const {},
+    this.trackedIncomeTransactions = const [],
+    this.trackedExpenditureTransactions = const [],
+    this.comprehensiveSummary,
     this.aiSpendingInsights,
     this.aiBudgetingRecommendations,
     this.aiCategorySuggestions,
@@ -103,6 +119,13 @@ class StatisticsLoaded extends StatisticsState {
         financialGoals,
         savingsGoal,
         upcomingBills,
+        trackedIncome,
+        trackedExpenditure,
+        trackedIncomeBreakdown,
+        trackedExpenditureBreakdown,
+        trackedIncomeTransactions,
+        trackedExpenditureTransactions,
+        comprehensiveSummary,
         aiSpendingInsights,
         aiBudgetingRecommendations,
         aiCategorySuggestions,
@@ -134,6 +157,13 @@ class StatisticsLoaded extends StatisticsState {
     List<FinancialGoal>? financialGoals,
     SavingsGoal? savingsGoal,
     UpcomingBillsList? upcomingBills,
+    double? trackedIncome,
+    double? trackedExpenditure,
+    Map<String, double>? trackedIncomeBreakdown,
+    Map<String, double>? trackedExpenditureBreakdown,
+    List<TrackedIncomeTransaction>? trackedIncomeTransactions,
+    List<TrackedExpenditureTransaction>? trackedExpenditureTransactions,
+    ComprehensiveFinancialSummary? comprehensiveSummary,
     GetAISpendingInsightsResponse? aiSpendingInsights,
     GetAIBudgetingRecommendationsResponse? aiBudgetingRecommendations,
     AutoCategorizeExpenseResponse? aiCategorySuggestions,
@@ -163,6 +193,13 @@ class StatisticsLoaded extends StatisticsState {
       financialGoals: financialGoals ?? this.financialGoals,
       savingsGoal: savingsGoal ?? this.savingsGoal,
       upcomingBills: upcomingBills ?? this.upcomingBills,
+      trackedIncome: trackedIncome ?? this.trackedIncome,
+      trackedExpenditure: trackedExpenditure ?? this.trackedExpenditure,
+      trackedIncomeBreakdown: trackedIncomeBreakdown ?? this.trackedIncomeBreakdown,
+      trackedExpenditureBreakdown: trackedExpenditureBreakdown ?? this.trackedExpenditureBreakdown,
+      trackedIncomeTransactions: trackedIncomeTransactions ?? this.trackedIncomeTransactions,
+      trackedExpenditureTransactions: trackedExpenditureTransactions ?? this.trackedExpenditureTransactions,
+      comprehensiveSummary: comprehensiveSummary ?? this.comprehensiveSummary,
       aiSpendingInsights: aiSpendingInsights ?? this.aiSpendingInsights,
       aiBudgetingRecommendations: aiBudgetingRecommendations ?? this.aiBudgetingRecommendations,
       aiCategorySuggestions: aiCategorySuggestions ?? this.aiCategorySuggestions,

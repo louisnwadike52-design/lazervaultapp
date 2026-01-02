@@ -84,8 +84,8 @@ class _ExchangeScreenState extends State<ExchangeScreen>
                           SizedBox(height: 8.h),
                           _buildExchangeCard(controller),
                           SizedBox(height: 20.h),
-                          if (controller.currentRate.value != null)
-                            _buildRateInfo(controller),
+                          // Always show rate info (even when loading)
+                          _buildRateInfo(controller),
                           if (controller.errorMessage.value.isNotEmpty)
                             _buildErrorMessage(controller),
                           SizedBox(height: 20.h),
@@ -365,13 +365,16 @@ class _ExchangeScreenState extends State<ExchangeScreen>
               // Amount
               Expanded(
                 child: isLoading
-                    ? SizedBox(
-                        height: 24.h,
-                        width: 24.w,
-                        child: const CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor:
-                              AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
+                    ? Align(
+                        alignment: Alignment.centerRight,
+                        child: SizedBox(
+                          height: 20.h,
+                          width: 20.w,
+                          child: const CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
+                          ),
                         ),
                       )
                     : isEditable
@@ -419,6 +422,12 @@ class _ExchangeScreenState extends State<ExchangeScreen>
   }
 
   Widget _buildRateInfo(ExchangeController controller) {
+    final bool hasRate = controller.currentRate.value != null;
+    final bool isLoading = controller.isLoadingRate.value;
+    final fromCode = controller.fromCurrency.value?.code ?? 'USD';
+    final toCode = controller.toCurrency.value?.code ?? 'GBP';
+    final fromSymbol = controller.fromCurrency.value?.symbol ?? '\$';
+
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
@@ -437,14 +446,24 @@ class _ExchangeScreenState extends State<ExchangeScreen>
         children: [
           _buildInfoRow(
             'Exchange Rate',
-            '1 ${controller.fromCurrency.value?.code} = ${controller.currentRate.value?.rate.toStringAsFixed(4)} ${controller.toCurrency.value?.code}',
+            isLoading
+                ? 'Loading...'
+                : hasRate
+                    ? '1 $fromCode = ${controller.currentRate.value!.rate.toStringAsFixed(4)} $toCode'
+                    : '1 $fromCode = --- $toCode',
             Icons.sync_alt,
+            isLoading: isLoading,
           ),
           SizedBox(height: 12.h),
           _buildInfoRow(
             'Transfer Fee',
-            '${controller.fromCurrency.value?.symbol}${controller.fees.toStringAsFixed(2)}',
+            isLoading
+                ? 'Loading...'
+                : hasRate
+                    ? '$fromSymbol${controller.fees.toStringAsFixed(2)}'
+                    : '${fromSymbol}0.00',
             Icons.receipt,
+            isLoading: isLoading,
           ),
           Divider(color: const Color(0xFF2D2D2D), height: 24.h),
           Row(
@@ -458,14 +477,25 @@ class _ExchangeScreenState extends State<ExchangeScreen>
                   fontWeight: FontWeight.w700,
                 ),
               ),
-              Text(
-                '${controller.fromCurrency.value?.symbol}${controller.totalCost.toStringAsFixed(2)}',
-                style: GoogleFonts.inter(
-                  color: Colors.white,
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
+              isLoading
+                  ? SizedBox(
+                      height: 16.h,
+                      width: 16.w,
+                      child: const CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
+                      ),
+                    )
+                  : Text(
+                      hasRate
+                          ? '$fromSymbol${controller.totalCost.toStringAsFixed(2)}'
+                          : '${fromSymbol}0.00',
+                      style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
             ],
           ),
         ],
@@ -473,7 +503,7 @@ class _ExchangeScreenState extends State<ExchangeScreen>
     );
   }
 
-  Widget _buildInfoRow(String label, String value, IconData icon) {
+  Widget _buildInfoRow(String label, String value, IconData icon, {bool isLoading = false}) {
     return Row(
       children: [
         Icon(icon, color: const Color(0xFF3B82F6), size: 20.sp),
@@ -487,14 +517,23 @@ class _ExchangeScreenState extends State<ExchangeScreen>
             ),
           ),
         ),
-        Text(
-          value,
-          style: GoogleFonts.inter(
-            color: Colors.white,
-            fontSize: 14.sp,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
+        isLoading
+            ? SizedBox(
+                height: 14.h,
+                width: 14.w,
+                child: const CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
+                ),
+              )
+            : Text(
+                value,
+                style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
       ],
     );
   }
