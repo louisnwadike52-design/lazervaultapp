@@ -19,6 +19,11 @@ abstract class IAuthRepository {
     required String passcode,
   });
 
+  Future<Either<Failure, void>> changePasscode({
+    required String oldPasscode,
+    required String newPasscode,
+  });
+
   Future<Either<Failure, ProfileEntity>> signUp({
     required String firstName,
     required String lastName,
@@ -26,6 +31,7 @@ abstract class IAuthRepository {
     required String password,
     String? phoneNumber,
     String? username,
+    String? referralCode,
   });
 
   Future<Either<Failure, ProfileEntity>> signInWithGoogle();

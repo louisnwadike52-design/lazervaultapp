@@ -65,7 +65,7 @@ dependencies:
   printing: ^5.13.4
   barcode: ^2.2.9
   barcode_widget: ^2.0.4
-  mobile_scanner: ^5.2.3
+  mobile_scanner: ^7.1.4
   local_auth: ^2.3.0
   lottie: ^3.3.1
   get: ^4.7.2
@@ -85,7 +85,7 @@ dependencies:
   shimmer: ^3.0.0
   flutter_tts: ^4.2.2
   flutter_secure_storage: ^9.2.4
-  google_sign_in: ^6.3.0
+  google_sign_in: ^7.2.0
   sign_in_with_apple: ^7.0.1
   protobuf: ^4.0.0
   fixnum: ^1.1.1
@@ -183,4 +183,3 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
-mobile_scanner: ^5.2.3

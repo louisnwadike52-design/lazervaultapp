@@ -19,8 +19,10 @@ class TaggedInvoiceCubit extends Cubit<TaggedInvoiceState> {
   }) async {
     try {
       if (!append) {
+        if (isClosed) return;
         emit(const TaggedInvoiceLoading());
       } else if (state is IncomingTaggedInvoicesLoaded) {
+        if (isClosed) return;
         final currentState = state as IncomingTaggedInvoicesLoaded;
         emit(TaggedInvoiceLoadingMore(
           currentInvoices: currentState.invoices,
@@ -33,8 +35,10 @@ class TaggedInvoiceCubit extends Cubit<TaggedInvoiceState> {
         limit: _defaultPageSize,
         statusFilter: statusFilter,
       );
+      if (isClosed) return;
 
       final statistics = await repository.getIncomingStatistics();
+      if (isClosed) return;
 
       if (append && state is TaggedInvoiceLoadingMore) {
         final loadingState = state as TaggedInvoiceLoadingMore;
@@ -56,6 +60,7 @@ class TaggedInvoiceCubit extends Cubit<TaggedInvoiceState> {
         ));
       }
     } catch (e) {
+      if (isClosed) return;
       emit(TaggedInvoiceError(message: e.toString()));
     }
   }
@@ -68,8 +73,10 @@ class TaggedInvoiceCubit extends Cubit<TaggedInvoiceState> {
   }) async {
     try {
       if (!append) {
+        if (isClosed) return;
         emit(const TaggedInvoiceLoading());
       } else if (state is OutgoingTaggedInvoicesLoaded) {
+        if (isClosed) return;
         final currentState = state as OutgoingTaggedInvoicesLoaded;
         emit(TaggedInvoiceLoadingMore(
           currentInvoices: currentState.invoices,
@@ -82,8 +89,10 @@ class TaggedInvoiceCubit extends Cubit<TaggedInvoiceState> {
         limit: _defaultPageSize,
         statusFilter: statusFilter,
       );
+      if (isClosed) return;
 
       final statistics = await repository.getOutgoingStatistics();
+      if (isClosed) return;
 
       if (append && state is TaggedInvoiceLoadingMore) {
         final loadingState = state as TaggedInvoiceLoadingMore;
@@ -105,6 +114,7 @@ class TaggedInvoiceCubit extends Cubit<TaggedInvoiceState> {
         ));
       }
     } catch (e) {
+      if (isClosed) return;
       emit(TaggedInvoiceError(message: e.toString()));
     }
   }
@@ -168,6 +178,7 @@ class TaggedInvoiceCubit extends Cubit<TaggedInvoiceState> {
   /// Pay a tagged invoice (one-click payment from account balance)
   Future<void> payInvoice(String invoiceId, String accountId) async {
     try {
+      if (isClosed) return;
       emit(TaggedInvoicePaymentProcessing(
         invoiceId: invoiceId,
         message: 'Processing payment...',
@@ -177,6 +188,7 @@ class TaggedInvoiceCubit extends Cubit<TaggedInvoiceState> {
         invoiceId: invoiceId,
         sourceAccountId: accountId,
       );
+      if (isClosed) return;
 
       emit(TaggedInvoicePaymentSuccess(
         transaction: transaction,
@@ -185,8 +197,10 @@ class TaggedInvoiceCubit extends Cubit<TaggedInvoiceState> {
 
       // Auto-refresh incoming invoices after successful payment
       await Future.delayed(const Duration(seconds: 2));
+      if (isClosed) return;
       await refreshIncoming();
     } catch (e) {
+      if (isClosed) return;
       emit(TaggedInvoiceError(
         message: 'Payment failed: ${e.toString()}',
         errorCode: 'PAYMENT_FAILED',
@@ -208,14 +222,18 @@ class TaggedInvoiceCubit extends Cubit<TaggedInvoiceState> {
   /// Load invoice details
   Future<void> loadInvoiceDetails(String invoiceId) async {
     try {
+      if (isClosed) return;
       emit(const TaggedInvoiceLoading());
       final invoice = await repository.getTaggedInvoiceById(invoiceId);
+      if (isClosed) return;
 
       // Mark as viewed when loading details
       await markAsViewed(invoiceId);
+      if (isClosed) return;
 
       emit(TaggedInvoiceDetailsLoaded(invoice: invoice));
     } catch (e) {
+      if (isClosed) return;
       emit(TaggedInvoiceError(message: e.toString()));
     }
   }
@@ -227,11 +245,13 @@ class TaggedInvoiceCubit extends Cubit<TaggedInvoiceState> {
         invoiceId: invoiceId,
         reminderDate: reminderDate,
       );
+      if (isClosed) return;
       emit(const TaggedInvoiceOperationSuccess(
         message: 'Reminder set successfully',
       ));
       await refreshIncoming();
     } catch (e) {
+      if (isClosed) return;
       emit(TaggedInvoiceError(message: e.toString()));
     }
   }
@@ -239,9 +259,12 @@ class TaggedInvoiceCubit extends Cubit<TaggedInvoiceState> {
   /// Load overdue invoices
   Future<void> loadOverdueInvoices() async {
     try {
+      if (isClosed) return;
       emit(const TaggedInvoiceLoading());
       final invoices = await repository.getOverdueTaggedInvoices(limit: 50);
+      if (isClosed) return;
       final statistics = await repository.getIncomingStatistics();
+      if (isClosed) return;
 
       emit(IncomingTaggedInvoicesLoaded(
         invoices: invoices,
@@ -251,6 +274,7 @@ class TaggedInvoiceCubit extends Cubit<TaggedInvoiceState> {
         currentFilter: InvoicePaymentStatus.INVOICE_PAYMENT_STATUS_OVERDUE,
       ));
     } catch (e) {
+      if (isClosed) return;
       emit(TaggedInvoiceError(message: e.toString()));
     }
   }
@@ -258,12 +282,15 @@ class TaggedInvoiceCubit extends Cubit<TaggedInvoiceState> {
   /// Load upcoming invoices (due soon)
   Future<void> loadUpcomingInvoices({int daysAhead = 7}) async {
     try {
+      if (isClosed) return;
       emit(const TaggedInvoiceLoading());
       final invoices = await repository.getUpcomingTaggedInvoices(
         daysAhead: daysAhead,
         limit: 50,
       );
+      if (isClosed) return;
       final statistics = await repository.getIncomingStatistics();
+      if (isClosed) return;
 
       emit(IncomingTaggedInvoicesLoaded(
         invoices: invoices,
@@ -272,6 +299,7 @@ class TaggedInvoiceCubit extends Cubit<TaggedInvoiceState> {
         hasMore: false,
       ));
     } catch (e) {
+      if (isClosed) return;
       emit(TaggedInvoiceError(message: e.toString()));
     }
   }
@@ -288,15 +316,18 @@ class TaggedInvoiceCubit extends Cubit<TaggedInvoiceState> {
         return;
       }
 
+      if (isClosed) return;
       emit(const TaggedInvoiceLoading());
       final invoices = await repository.searchTaggedInvoices(
         query: query,
         incoming: incoming,
         limit: 50,
       );
+      if (isClosed) return;
 
       if (incoming) {
         final statistics = await repository.getIncomingStatistics();
+        if (isClosed) return;
         emit(IncomingTaggedInvoicesLoaded(
           invoices: invoices,
           statistics: statistics,
@@ -305,6 +336,7 @@ class TaggedInvoiceCubit extends Cubit<TaggedInvoiceState> {
         ));
       } else {
         final statistics = await repository.getOutgoingStatistics();
+        if (isClosed) return;
         emit(OutgoingTaggedInvoicesLoaded(
           invoices: invoices,
           statistics: statistics,
@@ -313,12 +345,14 @@ class TaggedInvoiceCubit extends Cubit<TaggedInvoiceState> {
         ));
       }
     } catch (e) {
+      if (isClosed) return;
       emit(TaggedInvoiceError(message: e.toString()));
     }
   }
 
   /// Reset to initial state
   void reset() {
+    if (isClosed) return;
     emit(const TaggedInvoiceInitial());
   }
 }

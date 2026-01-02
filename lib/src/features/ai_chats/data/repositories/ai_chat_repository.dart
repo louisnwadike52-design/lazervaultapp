@@ -16,10 +16,21 @@ class RecipientRepositoryImpl implements IRecipientRepository {
 
   @override
   Future<Either<Failure, List<RecipientModel>>> getRecipients(
-      {required String accessToken}) async {
+      {required String accessToken, String? countryCode, String? currency, bool? favoritesOnly}) async {
     try {
+      final request = grpc.ListRecipientsRequest();
+      if (countryCode != null) {
+        request.countryCode = countryCode;
+      }
+      if (currency != null) {
+        request.currency = currency;
+      }
+      if (favoritesOnly != null) {
+        request.favoritesOnly = favoritesOnly;
+      }
+
       final response = await _client.listRecipients(
-        grpc.ListRecipientsRequest(),
+        request,
         options: _getAuthOptions(accessToken),
       );
       return Right(response.recipients.map(RecipientModel.fromProto).toList());

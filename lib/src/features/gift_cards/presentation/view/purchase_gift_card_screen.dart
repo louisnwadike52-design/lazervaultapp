@@ -874,6 +874,8 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
         brandId: widget.brand.id,
         amount: amount,
         currency: 'USD', // Default currency, could be made configurable
+        brand: widget.brand,
+        userBalance: 0.0, // TODO: Get actual user balance
         recipientEmail: _isForSelf ? null : _recipientEmailController.text.trim(),
         recipientName: _isForSelf ? null : _recipientNameController.text.trim(),
         message: _messageController.text.trim().isEmpty ? null : _messageController.text.trim(),

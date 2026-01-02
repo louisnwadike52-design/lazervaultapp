@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-enum GiftCardStatus { active, used, expired, pending, cancelled }
+enum GiftCardStatus { active, used, expired, pending, cancelled, partiallyRedeemed }
 enum GiftCardType { digital, physical }
 enum GiftCardCategory {
   entertainment,
@@ -165,6 +165,9 @@ class GiftCardBrand extends Equatable {
   final GiftCardCategory category;
   final double? discountPercentage;
   final bool isPopular;
+  final double? minAmount;
+  final double? maxAmount;
+  final List<String>? availableDenominations;
 
   const GiftCardBrand({
     required this.id,
@@ -174,6 +177,9 @@ class GiftCardBrand extends Equatable {
     required this.category,
     this.discountPercentage,
     this.isPopular = false,
+    this.minAmount,
+    this.maxAmount,
+    this.availableDenominations,
   });
 
   @override
@@ -185,6 +191,9 @@ class GiftCardBrand extends Equatable {
     category,
     discountPercentage,
     isPopular,
+    minAmount,
+    maxAmount,
+    availableDenominations,
   ];
 }
 
@@ -198,6 +207,8 @@ class GiftCardTransaction extends Equatable {
   final String transactionType; // purchase, redeem, refund
   final GiftCardStatus status;
   final String? failureReason;
+  final String? description;
+  final String? brandName;
   final Map<String, dynamic>? additionalDetails;
 
   const GiftCardTransaction({
@@ -210,6 +221,8 @@ class GiftCardTransaction extends Equatable {
     required this.transactionType,
     required this.status,
     this.failureReason,
+    this.description,
+    this.brandName,
     this.additionalDetails,
   });
 
@@ -224,6 +237,8 @@ class GiftCardTransaction extends Equatable {
     transactionType,
     status,
     failureReason,
+    description,
+    brandName,
     additionalDetails,
   ];
 } 

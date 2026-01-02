@@ -64,11 +64,13 @@ class ExchangeController extends GetxController {
     super.onInit();
     // Initialize with default currencies
     if (fromCurrency.value == null) {
-      setFromCurrency(CurrencyData.popularCurrencies[0]); // USD
+      fromCurrency.value = CurrencyData.popularCurrencies[0]; // USD
     }
     if (toCurrency.value == null) {
-      setToCurrency(CurrencyData.popularCurrencies[2]); // GBP
+      toCurrency.value = CurrencyData.popularCurrencies[2]; // GBP
     }
+    // Immediately fetch the exchange rate for the default currencies
+    _refreshRate();
     // Load recipients
     loadRecipients();
   }
@@ -106,7 +108,8 @@ class ExchangeController extends GetxController {
   }
 
   Future<void> _refreshRate() async {
-    if (fromCurrency.value == null || toCurrency.value == null || amount.value <= 0) {
+    // Check if currencies are set
+    if (fromCurrency.value == null || toCurrency.value == null) {
       currentRate.value = null;
       return;
     }

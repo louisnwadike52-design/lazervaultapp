@@ -161,6 +161,7 @@ class SignUpInProgress extends AuthenticationState {
     this.firstName = '',
     this.lastName = '',
     this.username = '',
+    this.referralCode = '',
     this.selectedDate,
     this.phoneNumber = '',
     this.isLoading = false,
@@ -174,6 +175,7 @@ class SignUpInProgress extends AuthenticationState {
   final String firstName;
   final String lastName;
   final String username;
+  final String referralCode;
   final DateTime? selectedDate;
   final String phoneNumber;
   final bool isLoading;
@@ -187,6 +189,7 @@ class SignUpInProgress extends AuthenticationState {
     String? firstName,
     String? lastName,
     String? username,
+    String? referralCode,
     DateTime? selectedDate,
     String? phoneNumber,
     bool? isLoading,
@@ -201,6 +204,7 @@ class SignUpInProgress extends AuthenticationState {
       firstName: firstName ?? this.firstName,
       lastName: lastName ?? this.lastName,
       username: username ?? this.username,
+      referralCode: referralCode ?? this.referralCode,
       selectedDate: selectedDate ?? this.selectedDate,
       phoneNumber: phoneNumber ?? this.phoneNumber,
       isLoading: isLoading ?? this.isLoading,
@@ -217,6 +221,7 @@ class SignUpInProgress extends AuthenticationState {
         firstName,
         lastName,
         username,
+        referralCode,
         selectedDate,
         phoneNumber,
         isLoading,

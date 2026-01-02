@@ -1,22 +1,56 @@
 import 'package:fpdart/fpdart.dart';
 import 'package:lazervault/core/errors/failure.dart';
+import 'package:lazervault/core/network/retry_policy.dart';
 import '../../domain/entities/gift_card_entity.dart';
 import '../../domain/repositories/i_gift_card_repository.dart';
 import '../datasources/gift_card_remote_data_source.dart';
+import '../datasources/gift_card_local_datasource.dart';
 
 class GiftCardRepositoryImpl implements IGiftCardRepository {
   final IGiftCardRemoteDataSource _remoteDataSource;
+  final IGiftCardLocalDataSource _localDataSource;
+
+  // Default user ID (should be injected from auth service in production)
+  static const String _defaultUserId = 'user123';
 
   GiftCardRepositoryImpl({
     required IGiftCardRemoteDataSource remoteDataSource,
-  }) : _remoteDataSource = remoteDataSource;
+    required IGiftCardLocalDataSource localDataSource,
+  })  : _remoteDataSource = remoteDataSource,
+        _localDataSource = localDataSource {
+    // Initialize local data source
+    _localDataSource.initialize();
+  }
 
   @override
   Future<Either<Failure, List<GiftCardBrand>>> getGiftCardBrands() async {
     try {
-      final brands = await _remoteDataSource.getGiftCardBrands();
+      // Try cache first
+      final cachedBrands = await _localDataSource.getCachedBrands();
+      if (cachedBrands.isNotEmpty) {
+        return Right(cachedBrands);
+      }
+
+      // Fetch from remote if cache is empty or expired
+      // Standard operation - use standard retry policy
+      final brands = await RetryPolicy.standard.execute(
+        () => _remoteDataSource.getGiftCardBrands(),
+        onRetry: (attempt, error) {
+          print('Retrying fetch brands (attempt $attempt) due to: $error');
+        },
+      );
+
+      // Cache the results
+      await _localDataSource.cacheBrands(brands);
+
       return Right(brands);
     } catch (e) {
+      // If remote fails, try to return stale cache
+      final cachedBrands = await _localDataSource.getCachedBrands();
+      if (cachedBrands.isNotEmpty) {
+        return Right(cachedBrands);
+      }
+
       return Left(APIFailure(message: e.toString(), statusCode: 500));
     }
   }
@@ -62,14 +96,24 @@ class GiftCardRepositoryImpl implements IGiftCardRepository {
     String? message,
   }) async {
     try {
-      final giftCard = await _remoteDataSource.purchaseGiftCard(
-        brandId: brandId,
-        amount: amount,
-        currency: currency,
-        recipientEmail: recipientEmail,
-        recipientName: recipientName,
-        message: message,
+      // Critical operation - use retry with extended attempts
+      final giftCard = await RetryPolicy.critical.execute(
+        () => _remoteDataSource.purchaseGiftCard(
+          brandId: brandId,
+          amount: amount,
+          currency: currency,
+          recipientEmail: recipientEmail,
+          recipientName: recipientName,
+          message: message,
+        ),
+        onRetry: (attempt, error) {
+          print('Retrying purchase (attempt $attempt) due to: $error');
+        },
       );
+
+      // Save purchased card to cache
+      await _localDataSource.saveGiftCard(giftCard);
+
       return Right(giftCard);
     } catch (e) {
       return Left(APIFailure(message: e.toString(), statusCode: 500));
@@ -79,8 +123,31 @@ class GiftCardRepositoryImpl implements IGiftCardRepository {
   @override
   Future<Either<Failure, List<GiftCard>>> getUserGiftCards() async {
     try {
-      final giftCards = await _remoteDataSource.getUserGiftCards();
-      return Right(giftCards);
+      // Try cache first
+      final cachedCards = await _localDataSource.getUserGiftCards(_defaultUserId);
+
+      // Try to fetch from remote with retry
+      try {
+        final giftCards = await RetryPolicy.standard.execute(
+          () => _remoteDataSource.getUserGiftCards(),
+          onRetry: (attempt, error) {
+            print('Retrying fetch user cards (attempt $attempt) due to: $error');
+          },
+        );
+
+        // Save each card to cache
+        for (var card in giftCards) {
+          await _localDataSource.saveGiftCard(card);
+        }
+
+        return Right(giftCards);
+      } catch (remoteError) {
+        // If remote fails but we have cache, return cache
+        if (cachedCards.isNotEmpty) {
+          return Right(cachedCards);
+        }
+        rethrow;
+      }
     } catch (e) {
       return Left(APIFailure(message: e.toString(), statusCode: 500));
     }
@@ -89,7 +156,18 @@ class GiftCardRepositoryImpl implements IGiftCardRepository {
   @override
   Future<Either<Failure, GiftCard>> getGiftCardById(String giftCardId) async {
     try {
+      // Try cache first
+      final cachedCard = await _localDataSource.getGiftCardById(giftCardId);
+      if (cachedCard != null) {
+        return Right(cachedCard);
+      }
+
+      // Fetch from remote if not in cache
       final giftCard = await _remoteDataSource.getGiftCardById(giftCardId);
+
+      // Save to cache
+      await _localDataSource.saveGiftCard(giftCard);
+
       return Right(giftCard);
     } catch (e) {
       return Left(APIFailure(message: e.toString(), statusCode: 500));
@@ -99,7 +177,17 @@ class GiftCardRepositoryImpl implements IGiftCardRepository {
   @override
   Future<Either<Failure, GiftCard>> redeemGiftCard(String giftCardId, String code) async {
     try {
-      final giftCard = await _remoteDataSource.redeemGiftCard(giftCardId, code);
+      // Critical operation - use retry with extended attempts
+      final giftCard = await RetryPolicy.critical.execute(
+        () => _remoteDataSource.redeemGiftCard(giftCardId, code),
+        onRetry: (attempt, error) {
+          print('Retrying redemption (attempt $attempt) due to: $error');
+        },
+      );
+
+      // Update cache with redeemed card
+      await _localDataSource.saveGiftCard(giftCard);
+
       return Right(giftCard);
     } catch (e) {
       return Left(APIFailure(message: e.toString(), statusCode: 500));
@@ -109,8 +197,29 @@ class GiftCardRepositoryImpl implements IGiftCardRepository {
   @override
   Future<Either<Failure, List<GiftCardTransaction>>> getGiftCardTransactions() async {
     try {
-      final transactions = await _remoteDataSource.getGiftCardTransactions();
-      return Right(transactions);
+      // Try to fetch from remote with retry
+      try {
+        final transactions = await RetryPolicy.standard.execute(
+          () => _remoteDataSource.getGiftCardTransactions(),
+          onRetry: (attempt, error) {
+            print('Retrying fetch transactions (attempt $attempt) due to: $error');
+          },
+        );
+
+        // Cache each transaction
+        for (var transaction in transactions) {
+          await _localDataSource.saveTransaction(transaction);
+        }
+
+        return Right(transactions);
+      } catch (remoteError) {
+        // If remote fails, return cached transactions
+        final cachedTransactions = await _localDataSource.getTransactions(_defaultUserId);
+        if (cachedTransactions.isNotEmpty) {
+          return Right(cachedTransactions);
+        }
+        rethrow;
+      }
     } catch (e) {
       return Left(APIFailure(message: e.toString(), statusCode: 500));
     }
@@ -170,9 +279,15 @@ class GiftCardRepositoryImpl implements IGiftCardRepository {
     required double sellingPrice,
   }) async {
     try {
-      final giftCard = await _remoteDataSource.sellGiftCard(
-        giftCardId: giftCardId,
-        sellingPrice: sellingPrice,
+      // Critical operation - use retry with extended attempts
+      final giftCard = await RetryPolicy.critical.execute(
+        () => _remoteDataSource.sellGiftCard(
+          giftCardId: giftCardId,
+          sellingPrice: sellingPrice,
+        ),
+        onRetry: (attempt, error) {
+          print('Retrying sell gift card (attempt $attempt) due to: $error');
+        },
       );
       return Right(giftCard);
     } catch (e) {

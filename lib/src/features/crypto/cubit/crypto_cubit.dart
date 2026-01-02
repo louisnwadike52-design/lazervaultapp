@@ -10,8 +10,9 @@ class CryptoCubit extends Cubit<CryptoState> {
 
   Future<void> loadCryptos() async {
     try {
+      if (isClosed) return;
       emit(CryptoLoading());
-      
+
       final cryptos = await repository.getCryptos();
       final trendingCryptos = await repository.getTrendingCryptos();
       final topCryptos = await repository.getTopCryptos();
@@ -19,6 +20,7 @@ class CryptoCubit extends Cubit<CryptoState> {
       final holdings = await repository.getHoldings();
       final transactions = await repository.getTransactions();
 
+      if (isClosed) return;
       emit(CryptosLoaded(
         cryptos: cryptos,
         trendingCryptos: trendingCryptos,
@@ -28,6 +30,7 @@ class CryptoCubit extends Cubit<CryptoState> {
         transactions: transactions,
       ));
     } catch (e) {
+      if (isClosed) return;
       emit(CryptoError(message: e.toString()));
     }
   }
@@ -35,10 +38,12 @@ class CryptoCubit extends Cubit<CryptoState> {
   Future<void> searchCryptos(String query) async {
     try {
       if (state is CryptosLoaded) {
+        if (isClosed) return;
         emit((state as CryptosLoaded).copyWith(isSearching: true));
-        
+
         if (query.isEmpty) {
           final cryptos = await repository.getCryptos();
+          if (isClosed) return;
           emit((state as CryptosLoaded).copyWith(
             cryptos: cryptos,
             searchQuery: null,
@@ -46,6 +51,7 @@ class CryptoCubit extends Cubit<CryptoState> {
           ));
         } else {
           final searchResults = await repository.searchCryptos(query);
+          if (isClosed) return;
           emit((state as CryptosLoaded).copyWith(
             cryptos: searchResults,
             searchQuery: query,
@@ -54,23 +60,27 @@ class CryptoCubit extends Cubit<CryptoState> {
         }
       }
     } catch (e) {
+      if (isClosed) return;
       emit(CryptoError(message: e.toString()));
     }
   }
 
   Future<void> loadCryptoDetails(String cryptoId, {String timeframe = '7d'}) async {
     try {
+      if (isClosed) return;
       emit(CryptoLoading());
-      
+
       final crypto = await repository.getCryptoById(cryptoId);
       final priceHistory = await repository.getCryptoPriceHistory(cryptoId, range: timeframe);
-      
+
+      if (isClosed) return;
       emit(CryptoDetailsLoaded(
         crypto: crypto,
         priceHistory: priceHistory,
         selectedTimeframe: timeframe,
       ));
     } catch (e) {
+      if (isClosed) return;
       emit(CryptoError(message: e.toString()));
     }
   }
@@ -79,13 +89,15 @@ class CryptoCubit extends Cubit<CryptoState> {
     try {
       if (state is CryptoDetailsLoaded) {
         final crypto = (state as CryptoDetailsLoaded).crypto;
+        if (isClosed) return;
         emit(CryptoLoading());
-        
+
         final priceHistory = await repository.getCryptoPriceHistory(
           crypto.id,
           range: timeframe,
         );
-        
+
+        if (isClosed) return;
         emit(CryptoDetailsLoaded(
           crypto: crypto,
           priceHistory: priceHistory,
@@ -93,6 +105,7 @@ class CryptoCubit extends Cubit<CryptoState> {
         ));
       }
     } catch (e) {
+      if (isClosed) return;
       emit(CryptoError(message: e.toString()));
     }
   }
@@ -103,6 +116,7 @@ class CryptoCubit extends Cubit<CryptoState> {
     required double price,
   }) async {
     try {
+      if (isClosed) return;
       emit(CryptoTransactionProcessing(
         cryptoId: cryptoId,
         type: TransactionType.buy,
@@ -116,11 +130,13 @@ class CryptoCubit extends Cubit<CryptoState> {
         price: price,
       );
 
+      if (isClosed) return;
       emit(CryptoTransactionSuccess(transaction: transaction));
-      
+
       // Reload data to reflect the new transaction
       await loadCryptos();
     } catch (e) {
+      if (isClosed) return;
       emit(CryptoError(message: e.toString()));
     }
   }
@@ -131,6 +147,7 @@ class CryptoCubit extends Cubit<CryptoState> {
     required double price,
   }) async {
     try {
+      if (isClosed) return;
       emit(CryptoTransactionProcessing(
         cryptoId: cryptoId,
         type: TransactionType.sell,
@@ -144,11 +161,13 @@ class CryptoCubit extends Cubit<CryptoState> {
         price: price,
       );
 
+      if (isClosed) return;
       emit(CryptoTransactionSuccess(transaction: transaction));
-      
+
       // Reload data to reflect the new transaction
       await loadCryptos();
     } catch (e) {
+      if (isClosed) return;
       emit(CryptoError(message: e.toString()));
     }
   }
@@ -156,11 +175,13 @@ class CryptoCubit extends Cubit<CryptoState> {
   Future<void> createWatchlist(String name, String description) async {
     try {
       final watchlist = await repository.createWatchlist(name, description);
+      if (isClosed) return;
       emit(CryptoWatchlistCreated(watchlist: watchlist));
-      
+
       // Reload data to include the new watchlist
       await loadCryptos();
     } catch (e) {
+      if (isClosed) return;
       emit(CryptoError(message: e.toString()));
     }
   }
@@ -170,6 +191,7 @@ class CryptoCubit extends Cubit<CryptoState> {
       await repository.addToWatchlist(watchlistId, cryptoId);
       await loadCryptos(); // Reload to reflect changes
     } catch (e) {
+      if (isClosed) return;
       emit(CryptoError(message: e.toString()));
     }
   }
@@ -179,6 +201,7 @@ class CryptoCubit extends Cubit<CryptoState> {
       await repository.removeFromWatchlist(watchlistId, cryptoId);
       await loadCryptos(); // Reload to reflect changes
     } catch (e) {
+      if (isClosed) return;
       emit(CryptoError(message: e.toString()));
     }
   }
@@ -188,6 +211,7 @@ class CryptoCubit extends Cubit<CryptoState> {
       await repository.deleteWatchlist(watchlistId);
       await loadCryptos(); // Reload to reflect changes
     } catch (e) {
+      if (isClosed) return;
       emit(CryptoError(message: e.toString()));
     }
   }
@@ -197,6 +221,7 @@ class CryptoCubit extends Cubit<CryptoState> {
       await repository.toggleFavorite(cryptoId);
       await loadCryptos(); // Reload to reflect changes
     } catch (e) {
+      if (isClosed) return;
       emit(CryptoError(message: e.toString()));
     }
   }

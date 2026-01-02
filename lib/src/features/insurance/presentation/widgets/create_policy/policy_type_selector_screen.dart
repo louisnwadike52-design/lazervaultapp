@@ -309,77 +309,87 @@ class _PolicyTypeSelectorScreenState extends State<PolicyTypeSelectorScreen>
   }
 
   void _showProviderDialog(BuildContext context) {
+    final cubit = context.read<CreatePolicyCubit>();
+
     showDialog(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        backgroundColor: const Color(0xFF1A1A1A),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16.r),
-        ),
-        title: Text(
-          'Select Insurance Provider',
-          style: GoogleFonts.inter(
-            fontSize: 18.sp,
-            fontWeight: FontWeight.w700,
-            color: Colors.white,
+      builder: (dialogContext) => BlocProvider.value(
+        value: cubit,
+        child: AlertDialog(
+          backgroundColor: const Color(0xFF1A1A1A),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16.r),
           ),
-        ),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: ListView.separated(
-            shrinkWrap: true,
-            itemCount: _availableProviders.length,
-            separatorBuilder: (context, index) => Divider(
-              color: Colors.white.withValues(alpha: 0.1),
-              height: 1,
+          title: Text(
+            'Select Insurance Provider',
+            style: GoogleFonts.inter(
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
             ),
-            itemBuilder: (context, index) {
-              final provider = _availableProviders[index];
-              final cubit = context.read<CreatePolicyCubit>();
-              final isSelected = cubit.provider == provider;
-
-              return ListTile(
-                contentPadding: EdgeInsets.symmetric(
-                  horizontal: 8.w,
-                  vertical: 4.h,
-                ),
-                title: Text(
-                  provider,
-                  style: GoogleFonts.inter(
-                    fontSize: 15.sp,
-                    fontWeight:
-                        isSelected ? FontWeight.w600 : FontWeight.w500,
-                    color: Colors.white,
-                  ),
-                ),
-                trailing: isSelected
-                    ? Icon(
-                        Icons.check_circle,
-                        color: const Color(0xFF6366F1),
-                        size: 20.sp,
-                      )
-                    : null,
-                onTap: () {
-                  cubit.updateProvider(provider);
-                  Navigator.of(dialogContext).pop();
-                },
-              );
-            },
           ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: Text(
-              'Cancel',
-              style: GoogleFonts.inter(
-                fontSize: 14.sp,
-                fontWeight: FontWeight.w600,
-                color: Colors.grey[400],
+          content: SizedBox(
+            width: double.maxFinite,
+            child: BlocBuilder<CreatePolicyCubit, dynamic>(
+              builder: (context, state) {
+                final currentProvider = context.read<CreatePolicyCubit>().provider;
+
+                return ListView.separated(
+                  shrinkWrap: true,
+                  itemCount: _availableProviders.length,
+                  separatorBuilder: (context, index) => Divider(
+                    color: Colors.white.withValues(alpha: 0.1),
+                    height: 1,
+                  ),
+                  itemBuilder: (context, index) {
+                    final provider = _availableProviders[index];
+                    final isSelected = currentProvider == provider;
+
+                    return ListTile(
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 8.w,
+                        vertical: 4.h,
+                      ),
+                      title: Text(
+                        provider,
+                        style: GoogleFonts.inter(
+                          fontSize: 15.sp,
+                          fontWeight:
+                              isSelected ? FontWeight.w600 : FontWeight.w500,
+                          color: Colors.white,
+                        ),
+                      ),
+                      trailing: isSelected
+                          ? Icon(
+                              Icons.check_circle,
+                              color: const Color(0xFF6366F1),
+                              size: 20.sp,
+                            )
+                          : null,
+                      onTap: () {
+                        context.read<CreatePolicyCubit>().updateProvider(provider);
+                        Navigator.of(dialogContext).pop();
+                      },
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: Text(
+                'Cancel',
+                style: GoogleFonts.inter(
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey[400],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

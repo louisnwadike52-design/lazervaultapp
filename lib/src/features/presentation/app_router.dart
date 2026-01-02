@@ -9,12 +9,17 @@ import 'package:lazervault/src/features/authentication/presentation/views/email_
 import 'package:lazervault/src/features/authentication/presentation/views/email_verification_screen.dart';
 import 'package:lazervault/src/features/authentication/cubit/email_verification_cubit.dart';
 import 'package:lazervault/src/features/authentication/presentation/views/passcode_setup_screen.dart';
+import 'package:lazervault/src/features/authentication/presentation/views/change_passcode_screen.dart';
 import 'package:lazervault/src/features/crypto/presentation/view/crypto_screen.dart';
 import 'package:lazervault/src/features/crypto/presentation/view/buy_crypto_screen.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/transfer_proof.dart';
 import 'package:lazervault/src/features/gift_cards/presentation/view/gift_cards_screen.dart';
 import 'package:lazervault/src/features/gift_cards/presentation/view/purchase_gift_card_screen.dart';
 import 'package:lazervault/src/features/gift_cards/presentation/view/gift_card_details_screen.dart';
+import 'package:lazervault/src/features/gift_cards/presentation/view/gift_card_payment_method_selection_screen.dart';
+import 'package:lazervault/src/features/gift_cards/presentation/view/gift_card_purchase_processing_screen.dart';
+import 'package:lazervault/src/features/gift_cards/presentation/view/gift_card_purchase_confirmation_screen.dart';
+import 'package:lazervault/src/features/gift_cards/presentation/view/gift_card_transactions_screen.dart';
 import 'package:lazervault/src/features/gift_cards/presentation/view/redeem_gift_card_screen.dart';
 import 'package:lazervault/src/features/gift_cards/presentation/view/my_gift_cards_screen.dart';
 import 'package:lazervault/src/features/gift_cards/presentation/view/sell_to_contact_screen.dart';
@@ -72,6 +77,7 @@ import 'package:lazervault/src/features/authentication/presentation/views/passco
 import 'package:lazervault/src/features/authentication/presentation/views/sign_up_screen.dart';
 import 'package:lazervault/src/features/presentation/views/stocks/stocks_screen.dart';
 import 'package:lazervault/src/features/stocks/presentation/view/stocks_screen.dart' as StockFeature;
+import 'package:lazervault/src/features/stocks/presentation/view/stocks_home_screen.dart';
 import 'package:lazervault/src/features/stocks/presentation/view/stock_details_screen.dart';
 import 'package:lazervault/src/features/stocks/presentation/view/stock_trade_amount_screen.dart';
 import 'package:lazervault/src/features/stocks/presentation/view/stock_trade_payment_screen.dart';
@@ -80,6 +86,9 @@ import 'package:lazervault/src/features/stocks/presentation/view/stock_trade_rec
 import 'package:lazervault/src/features/stocks/cubit/stock_cubit.dart';
 import 'package:lazervault/src/features/stocks/domain/entities/stock_entity.dart';
 import 'package:lazervault/src/features/presentation/views/upload_image_scren.dart';
+// Portfolio temporarily disabled
+// import 'package:lazervault/src/features/portfolio/presentation/view/portfolio_details_screen.dart';
+// import 'package:lazervault/src/features/portfolio/presentation/cubit/portfolio_cubit.dart';
 import '../../../core/services/injection_container.dart';
 import 'views/onboarding_screen.dart';
 import '../../../main.dart' show AuthCheckScreen;
@@ -95,9 +104,13 @@ import 'package:lazervault/src/features/crypto/domain/entities/crypto_entity.dar
 import 'package:lazervault/src/features/crypto/presentation/view/crypto_chart_details_screen.dart';
 import 'package:lazervault/src/features/invoice/presentation/view/invoice_home_screen.dart';
 import 'package:lazervault/src/features/invoice/presentation/view/invoice_list_screen.dart';
+import 'package:lazervault/src/features/cards/presentation/cubit/card_cubit.dart';
+import 'package:lazervault/src/features/cards/presentation/view/card_creation_form_screen.dart';
+import 'package:lazervault/src/features/cards/presentation/view/card_creation_receipt_screen.dart';
 import 'package:lazervault/src/features/invoice/presentation/view/invoice_service_screen.dart';
 import 'package:lazervault/src/features/invoice/presentation/cubit/invoice_cubit.dart';
-import 'package:lazervault/src/features/invoice/presentation/view/create_invoice_screen.dart';
+import 'package:lazervault/src/features/invoice/presentation/view/create_invoice_carousel.dart';
+import 'package:lazervault/src/features/invoice/presentation/cubit/create_invoice_cubit.dart';
 import 'package:lazervault/src/features/invoice/presentation/view/invoice_details_screen.dart';
 import 'package:lazervault/src/features/invoice/domain/entities/invoice_entity.dart';
 import 'package:lazervault/src/features/invoice/presentation/view/incoming_tagged_invoices_screen.dart';
@@ -220,6 +233,25 @@ import 'package:lazervault/src/features/crowdfund/presentation/views/donation_pr
 import 'package:lazervault/src/features/crowdfund/presentation/views/donation_receipt_screen.dart';
 import 'package:lazervault/src/features/crowdfund/domain/entities/crowdfund_entities.dart';
 
+// Electricity Bill imports
+import 'package:lazervault/src/features/electricity_bill/presentation/cubit/electricity_bill_cubit.dart';
+import 'package:lazervault/src/features/electricity_bill/presentation/cubit/beneficiary_cubit.dart';
+import 'package:lazervault/src/features/electricity_bill/presentation/cubit/auto_recharge_cubit.dart';
+import 'package:lazervault/src/features/electricity_bill/presentation/cubit/reminder_cubit.dart';
+import 'package:lazervault/src/features/electricity_bill/presentation/view/electricity_bill_home_screen.dart';
+import 'package:lazervault/src/features/electricity_bill/presentation/view/meter_input_screen.dart';
+import 'package:lazervault/src/features/electricity_bill/presentation/view/payment_confirmation_screen.dart';
+import 'package:lazervault/src/features/electricity_bill/presentation/view/payment_processing_screen.dart';
+import 'package:lazervault/src/features/electricity_bill/presentation/view/payment_receipt_screen.dart' as bill_receipt;
+import 'package:lazervault/src/features/electricity_bill/presentation/view/payment_history_screen.dart';
+import 'package:lazervault/src/features/electricity_bill/presentation/view/beneficiaries_screen.dart';
+import 'package:lazervault/src/features/electricity_bill/presentation/view/add_beneficiary_screen.dart';
+import 'package:lazervault/src/features/electricity_bill/presentation/view/auto_recharge_list_screen.dart';
+import 'package:lazervault/src/features/electricity_bill/presentation/view/create_auto_recharge_screen.dart';
+import 'package:lazervault/src/features/electricity_bill/presentation/view/edit_auto_recharge_screen.dart';
+import 'package:lazervault/src/features/electricity_bill/presentation/view/reminders_screen.dart';
+import 'package:lazervault/src/features/electricity_bill/presentation/view/create_reminder_screen.dart';
+
 // Currency Exchange imports
 import 'package:lazervault/src/features/currency_exchange/presentation/views/exchange_screen.dart';
 import 'package:lazervault/src/features/currency_exchange/presentation/bindings/exchange_binding.dart';
@@ -228,6 +260,12 @@ import 'package:lazervault/src/features/currency_exchange/presentation/bindings/
 import 'package:lazervault/src/features/settings/presentation/view/privacy_policy_screen.dart';
 import 'package:lazervault/src/features/settings/presentation/view/help_support_screen.dart';
 import 'package:lazervault/src/features/settings/presentation/view/contact_us_screen.dart';
+import 'package:lazervault/src/features/referral/presentation/screens/referral_dashboard_screen.dart';
+import 'package:lazervault/src/features/referral/presentation/cubit/referral_cubit.dart';
+
+// Lock Funds imports
+import 'package:lazervault/src/features/lock_funds/presentation/cubit/lock_funds_cubit.dart';
+import 'package:lazervault/src/features/lock_funds/presentation/screens/lock_funds_list_screen.dart';
 
 class AppRouter {
   static final routes = [
@@ -300,7 +338,7 @@ class AppRouter {
       name: AppRoutes.stocks,
       page: () => BlocProvider(
         create: (context) => serviceLocator<StockCubit>(),
-        child: serviceLocator<StockFeature.StocksScreen>(),
+        child: const StocksHomeScreen(),
       ),
       transition: Transition.rightToLeft,
     ),
@@ -309,6 +347,12 @@ class AppRouter {
       page: () => serviceLocator<InvestmentsScreen>(),
       transition: Transition.rightToLeft,
     ),
+    // Portfolio temporarily disabled
+    // GetPage(
+    //   name: AppRoutes.portfolioDetails,
+    //   page: () => const PortfolioDetailsScreen(),
+    //   transition: Transition.rightToLeft,
+    // ),
     GetPage(
       name: AppRoutes.giftCards,
       page: () => BlocProvider(
@@ -376,10 +420,16 @@ class AppRouter {
     GetPage(
       name: AppRoutes.createInvoice,
       page: () {
-        final editingInvoice = Get.arguments as Invoice?;
-        return BlocProvider(
-          create: (_) => serviceLocator<InvoiceCubit>(),
-          child: CreateInvoiceScreen(editingInvoice: editingInvoice),
+        return MultiBlocProvider(
+          providers: [
+            BlocProvider(
+              create: (_) => serviceLocator<InvoiceCubit>(),
+            ),
+            BlocProvider(
+              create: (_) => CreateInvoiceCubit(),
+            ),
+          ],
+          child: const CreateInvoiceCarousel(),
         );
       },
       transition: Transition.rightToLeft,
@@ -486,6 +536,11 @@ class AppRouter {
       transition: Transition.rightToLeft,
     ),
     GetPage(
+      name: AppRoutes.changePasscode,
+      page: () => const ChangePasscodeScreen(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
       name: AppRoutes.emailVerification,
       page: () => BlocProvider(
         create: (context) => serviceLocator<EmailVerificationCubit>(),
@@ -549,6 +604,14 @@ class AppRouter {
     GetPage(
       name: AppRoutes.facialLogin,
       page: () => serviceLocator<FacialLoginScreen>(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.referralDashboard,
+      page: () => BlocProvider(
+        create: (context) => serviceLocator<ReferralCubit>(),
+        child: const ReferralDashboardScreen(),
+      ),
       transition: Transition.rightToLeft,
     ),
     GetPage(
@@ -674,6 +737,46 @@ class AppRouter {
         final giftCard = Get.arguments as GiftCard;
         return GiftCardDetailsScreen(giftCard: giftCard);
       },
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.giftCardPaymentMethod,
+      page: () {
+        final args = Get.arguments as Map<String, dynamic>;
+        return GiftCardPaymentMethodSelectionScreen(
+          brandId: args['brandId'],
+          brandName: args['brandName'],
+          brandLogoUrl: args['brandLogoUrl'],
+          amount: args['amount'],
+          discountPercentage: args['discountPercentage'],
+          finalPrice: args['finalPrice'],
+          currency: args['currency'],
+          recipientEmail: args['recipientEmail'],
+          recipientName: args['recipientName'],
+          message: args['message'],
+        );
+      },
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.giftCardPurchaseProcessing,
+      page: () => BlocProvider.value(
+        value: serviceLocator<GiftCardCubit>(),
+        child: const GiftCardPurchaseProcessingScreen(),
+      ),
+      transition: Transition.fade,
+    ),
+    GetPage(
+      name: AppRoutes.giftCardPurchaseConfirmation,
+      page: () => const GiftCardPurchaseConfirmationScreen(),
+      transition: Transition.zoom,
+    ),
+    GetPage(
+      name: AppRoutes.giftCardTransactions,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<GiftCardCubit>(),
+        child: const GiftCardTransactionsScreen(),
+      ),
       transition: Transition.rightToLeft,
     ),
     GetPage(
@@ -994,7 +1097,7 @@ class AppRouter {
       name: AppRoutes.insurance,
       page: () => BlocProvider(
         create: (_) => serviceLocator<InsuranceCubit>(),
-        child: serviceLocator<InsuranceListScreen>(),
+        child: const InsuranceListScreen(),
       ),
       transition: Transition.rightToLeft,
     ),
@@ -1482,6 +1585,145 @@ class AppRouter {
       transition: Transition.rightToLeft,
     ),
 
+    // Electricity Bill Payment routes
+    GetPage(
+      name: AppRoutes.electricityBillHome,
+      page: () {
+        return MultiBlocProvider(
+          providers: [
+            BlocProvider(create: (_) => serviceLocator<ElectricityBillCubit>()),
+            BlocProvider(create: (_) => serviceLocator<BeneficiaryCubit>()),
+          ],
+          child: const ElectricityBillHomeScreen(),
+        );
+      },
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.electricityBillMeterInput,
+      page: () {
+        return BlocProvider(
+          create: (_) => serviceLocator<ElectricityBillCubit>(),
+          child: const MeterInputScreen(),
+        );
+      },
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.electricityBillConfirmation,
+      page: () {
+        return BlocProvider(
+          create: (_) => serviceLocator<ElectricityBillCubit>(),
+          child: const PaymentConfirmationScreen(),
+        );
+      },
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.electricityBillProcessing,
+      page: () {
+        return BlocProvider(
+          create: (_) => serviceLocator<ElectricityBillCubit>(),
+          child: const PaymentProcessingScreen(),
+        );
+      },
+      transition: Transition.fadeIn,
+    ),
+    GetPage(
+      name: AppRoutes.electricityBillReceipt,
+      page: () => const bill_receipt.PaymentReceiptScreen(),
+      transition: Transition.zoom,
+    ),
+    GetPage(
+      name: AppRoutes.electricityBillHistory,
+      page: () {
+        return BlocProvider(
+          create: (_) => serviceLocator<ElectricityBillCubit>(),
+          child: const PaymentHistoryScreen(),
+        );
+      },
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.electricityBillBeneficiaries,
+      page: () {
+        return BlocProvider(
+          create: (_) => serviceLocator<BeneficiaryCubit>(),
+          child: const BeneficiariesScreen(),
+        );
+      },
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.electricityBillAddBeneficiary,
+      page: () {
+        return MultiBlocProvider(
+          providers: [
+            BlocProvider(create: (_) => serviceLocator<ElectricityBillCubit>()),
+            BlocProvider(create: (_) => serviceLocator<BeneficiaryCubit>()),
+          ],
+          child: const AddBeneficiaryScreen(),
+        );
+      },
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.electricityBillAutoRecharge,
+      page: () {
+        return BlocProvider(
+          create: (_) => serviceLocator<AutoRechargeCubit>(),
+          child: const AutoRechargeListScreen(),
+        );
+      },
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.electricityBillCreateAutoRecharge,
+      page: () {
+        return MultiBlocProvider(
+          providers: [
+            BlocProvider(create: (_) => serviceLocator<BeneficiaryCubit>()),
+            BlocProvider(create: (_) => serviceLocator<AutoRechargeCubit>()),
+          ],
+          child: const CreateAutoRechargeScreen(),
+        );
+      },
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.electricityBillEditAutoRecharge,
+      page: () {
+        return BlocProvider(
+          create: (_) => serviceLocator<AutoRechargeCubit>(),
+          child: const EditAutoRechargeScreen(),
+        );
+      },
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.electricityBillReminders,
+      page: () {
+        return BlocProvider(
+          create: (_) => serviceLocator<ReminderCubit>(),
+          child: const RemindersScreen(),
+        );
+      },
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.electricityBillCreateReminder,
+      page: () {
+        return MultiBlocProvider(
+          providers: [
+            BlocProvider(create: (_) => serviceLocator<BeneficiaryCubit>()),
+            BlocProvider(create: (_) => serviceLocator<ReminderCubit>()),
+          ],
+          child: const CreateReminderScreen(),
+        );
+      },
+      transition: Transition.rightToLeft,
+    ),
+
     // Settings screens
     GetPage(
       name: '/privacy-policy',
@@ -1571,6 +1813,34 @@ class AppRouter {
         );
       },
       transition: Transition.zoom,
+    ),
+
+    // Card Management Routes
+    GetPage(
+      name: AppRoutes.cardCreationForm,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<CardCubit>(),
+        child: const CardCreationFormScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.cardCreationReceipt,
+      page: () => BlocProvider.value(
+        value: serviceLocator<CardCubit>(),
+        child: const CardCreationReceiptScreen(),
+      ),
+      transition: Transition.zoom,
+    ),
+
+    // Lock Funds Routes
+    GetPage(
+      name: AppRoutes.lockFunds,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<LockFundsCubit>(),
+        child: const LockFundsListScreen(),
+      ),
+      transition: Transition.rightToLeft,
     ),
   ];
 }

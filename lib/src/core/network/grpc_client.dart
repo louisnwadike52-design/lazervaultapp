@@ -9,6 +9,12 @@ import '../../generated/ai_scan.pbgrpc.dart';
 import '../../generated/tag_pay.pbgrpc.dart';
 import '../../generated/exchange.pbgrpc.dart';
 import '../../generated/barcode_payment.pbgrpc.dart';
+import '../../generated/portfolio.pbgrpc.dart';
+import '../../generated/account_card.pbgrpc.dart';
+import '../../generated/electricity_bill.pbgrpc.dart';
+import '../../generated/giftcard.pbgrpc.dart';
+import '../../generated/lock_funds.pbgrpc.dart';
+import '../../generated/insurance.pbgrpc.dart';
 
 class GrpcClient {
   late ClientChannel _channel;
@@ -20,6 +26,12 @@ class GrpcClient {
   late TagPayServiceClient _tagPayClient;
   late ExchangeServiceClient _exchangeClient;
   late BarcodePaymentServiceClient _barcodePaymentClient;
+  late PortfolioServiceClient _portfolioClient;
+  late AccountCardServiceClient _accountCardClient;
+  late ElectricityBillServiceClient _electricityBillClient;
+  late GiftCardServiceClient _giftCardClient;
+  late LockFundsServiceClient _lockFundsClient;
+  late InsuranceServiceClient _insuranceClient;
 
   final FlutterSecureStorage _secureStorage;
   static const String _accessTokenKey = 'access_token';
@@ -52,6 +64,12 @@ class GrpcClient {
     _tagPayClient = TagPayServiceClient(_channel);
     _exchangeClient = ExchangeServiceClient(_channel);
     _barcodePaymentClient = BarcodePaymentServiceClient(_channel);
+    _portfolioClient = PortfolioServiceClient(_channel);
+    _accountCardClient = AccountCardServiceClient(_channel);
+    _electricityBillClient = ElectricityBillServiceClient(_channel);
+    _giftCardClient = GiftCardServiceClient(_channel);
+    _lockFundsClient = LockFundsServiceClient(_channel);
+    _insuranceClient = InsuranceServiceClient(_channel);
   }
 
   InvoiceServiceClient get invoiceClient => _invoiceClient;
@@ -63,6 +81,12 @@ class GrpcClient {
   TagPayServiceClient get tagPayClient => _tagPayClient;
   ExchangeServiceClient get exchangeClient => _exchangeClient;
   BarcodePaymentServiceClient get barcodePaymentClient => _barcodePaymentClient;
+  PortfolioServiceClient get portfolioClient => _portfolioClient;
+  AccountCardServiceClient get accountCardClient => _accountCardClient;
+  ElectricityBillServiceClient get electricityBillClient => _electricityBillClient;
+  GiftCardServiceClient get giftCardClient => _giftCardClient;
+  LockFundsServiceClient get lockFundsClient => _lockFundsClient;
+  InsuranceServiceClient get insuranceClient => _insuranceClient;
 
   /// Get call options with authentication token
   Future<CallOptions> get callOptions async {

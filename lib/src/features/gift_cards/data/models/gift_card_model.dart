@@ -1,4 +1,6 @@
 import '../../domain/entities/gift_card_entity.dart';
+import '../../../../generated/giftcard.pb.dart' as pb;
+import 'package:lazervault/src/generated/google/protobuf/timestamp.pb.dart' as timestamp;
 
 class GiftCardModel extends GiftCard {
   const GiftCardModel({
@@ -102,6 +104,162 @@ class GiftCardModel extends GiftCard {
       'additionalInfo': additionalInfo,
     };
   }
+
+  factory GiftCardModel.fromProto(pb.GiftCard proto) {
+    return GiftCardModel(
+      id: proto.id,
+      brandId: proto.brandId,
+      brandName: proto.brandName,
+      logoUrl: proto.logoUrl,
+      amount: proto.amount,
+      discountPercentage: proto.discountPercentage,
+      finalPrice: proto.finalPrice,
+      currency: proto.currency,
+      status: _statusFromProto(proto.status),
+      type: _typeFromProto(proto.type),
+      category: _categoryFromProto(proto.category),
+      description: proto.description,
+      termsAndConditions: proto.termsAndConditions,
+      expiryDate: proto.expiryDate.toDateTime(),
+      purchaseDate: proto.purchaseDate.toDateTime(),
+      recipientEmail: proto.recipientEmail.isEmpty ? null : proto.recipientEmail,
+      recipientName: proto.recipientName.isEmpty ? null : proto.recipientName,
+      message: proto.message.isEmpty ? null : proto.message,
+      code: proto.code.isEmpty ? null : proto.code,
+      pin: proto.pin.isEmpty ? null : proto.pin,
+      isRedeemed: proto.isRedeemed,
+      transactionId: proto.transactionId.isEmpty ? null : proto.transactionId,
+      availableDenominations: proto.availableDenominations.toList(),
+      qrCodeUrl: proto.qrCodeUrl.isEmpty ? null : proto.qrCodeUrl,
+      barcodeUrl: proto.barcodeUrl.isEmpty ? null : proto.barcodeUrl,
+      additionalInfo: null,
+    );
+  }
+
+  pb.GiftCard toProto() {
+    return pb.GiftCard()
+      ..id = id
+      ..userId = ''
+      ..brandId = brandId
+      ..brandName = brandName
+      ..logoUrl = logoUrl
+      ..amount = amount
+      ..discountPercentage = discountPercentage
+      ..finalPrice = finalPrice
+      ..currency = currency
+      ..status = _statusToProto(status)
+      ..type = _typeToProto(type)
+      ..category = _categoryToProto(category)
+      ..description = description
+      ..termsAndConditions = termsAndConditions
+      ..expiryDate = timestamp.Timestamp.fromDateTime(expiryDate)
+      ..purchaseDate = timestamp.Timestamp.fromDateTime(purchaseDate)
+      ..recipientEmail = recipientEmail ?? ''
+      ..recipientName = recipientName ?? ''
+      ..message = message ?? ''
+      ..code = code ?? ''
+      ..pin = pin ?? ''
+      ..isRedeemed = isRedeemed
+      ..transactionId = transactionId ?? ''
+      ..availableDenominations.addAll(availableDenominations)
+      ..qrCodeUrl = qrCodeUrl ?? ''
+      ..barcodeUrl = barcodeUrl ?? ''
+      ..remainingBalance = amount
+      ..originalAmount = amount;
+  }
+
+  // Helper methods for enum conversion
+  static GiftCardStatus _statusFromProto(pb.GiftCardStatus protoStatus) {
+    switch (protoStatus) {
+      case pb.GiftCardStatus.GIFTCARD_STATUS_ACTIVE:
+        return GiftCardStatus.active;
+      case pb.GiftCardStatus.GIFTCARD_STATUS_USED:
+        return GiftCardStatus.used;
+      case pb.GiftCardStatus.GIFTCARD_STATUS_EXPIRED:
+        return GiftCardStatus.expired;
+      case pb.GiftCardStatus.GIFTCARD_STATUS_PENDING:
+        return GiftCardStatus.pending;
+      case pb.GiftCardStatus.GIFTCARD_STATUS_CANCELLED:
+        return GiftCardStatus.cancelled;
+      case pb.GiftCardStatus.GIFTCARD_STATUS_PARTIALLY_REDEEMED:
+        return GiftCardStatus.partiallyRedeemed;
+      default:
+        return GiftCardStatus.active;
+    }
+  }
+
+  static pb.GiftCardStatus _statusToProto(GiftCardStatus status) {
+    switch (status) {
+      case GiftCardStatus.active:
+        return pb.GiftCardStatus.GIFTCARD_STATUS_ACTIVE;
+      case GiftCardStatus.used:
+        return pb.GiftCardStatus.GIFTCARD_STATUS_USED;
+      case GiftCardStatus.expired:
+        return pb.GiftCardStatus.GIFTCARD_STATUS_EXPIRED;
+      case GiftCardStatus.pending:
+        return pb.GiftCardStatus.GIFTCARD_STATUS_PENDING;
+      case GiftCardStatus.cancelled:
+        return pb.GiftCardStatus.GIFTCARD_STATUS_CANCELLED;
+      case GiftCardStatus.partiallyRedeemed:
+        return pb.GiftCardStatus.GIFTCARD_STATUS_PARTIALLY_REDEEMED;
+    }
+  }
+
+  static GiftCardType _typeFromProto(pb.GiftCardType protoType) {
+    switch (protoType) {
+      case pb.GiftCardType.GIFTCARD_TYPE_DIGITAL:
+        return GiftCardType.digital;
+      case pb.GiftCardType.GIFTCARD_TYPE_PHYSICAL:
+        return GiftCardType.physical;
+      default:
+        return GiftCardType.digital;
+    }
+  }
+
+  static pb.GiftCardType _typeToProto(GiftCardType type) {
+    switch (type) {
+      case GiftCardType.digital:
+        return pb.GiftCardType.GIFTCARD_TYPE_DIGITAL;
+      case GiftCardType.physical:
+        return pb.GiftCardType.GIFTCARD_TYPE_PHYSICAL;
+    }
+  }
+
+  static GiftCardCategory _categoryFromProto(pb.GiftCardCategory protoCategory) {
+    switch (protoCategory) {
+      case pb.GiftCardCategory.GIFTCARD_CATEGORY_ENTERTAINMENT:
+        return GiftCardCategory.entertainment;
+      case pb.GiftCardCategory.GIFTCARD_CATEGORY_SHOPPING:
+        return GiftCardCategory.shopping;
+      case pb.GiftCardCategory.GIFTCARD_CATEGORY_DINING:
+        return GiftCardCategory.dining;
+      case pb.GiftCardCategory.GIFTCARD_CATEGORY_TRAVEL:
+        return GiftCardCategory.travel;
+      case pb.GiftCardCategory.GIFTCARD_CATEGORY_GAMING:
+        return GiftCardCategory.gaming;
+      case pb.GiftCardCategory.GIFTCARD_CATEGORY_OTHER:
+        return GiftCardCategory.other;
+      default:
+        return GiftCardCategory.shopping;
+    }
+  }
+
+  static pb.GiftCardCategory _categoryToProto(GiftCardCategory category) {
+    switch (category) {
+      case GiftCardCategory.entertainment:
+        return pb.GiftCardCategory.GIFTCARD_CATEGORY_ENTERTAINMENT;
+      case GiftCardCategory.shopping:
+        return pb.GiftCardCategory.GIFTCARD_CATEGORY_SHOPPING;
+      case GiftCardCategory.dining:
+        return pb.GiftCardCategory.GIFTCARD_CATEGORY_DINING;
+      case GiftCardCategory.travel:
+        return pb.GiftCardCategory.GIFTCARD_CATEGORY_TRAVEL;
+      case GiftCardCategory.gaming:
+        return pb.GiftCardCategory.GIFTCARD_CATEGORY_GAMING;
+      case GiftCardCategory.other:
+        return pb.GiftCardCategory.GIFTCARD_CATEGORY_OTHER;
+    }
+  }
 }
 
 class GiftCardBrandModel extends GiftCardBrand {
@@ -142,6 +300,29 @@ class GiftCardBrandModel extends GiftCardBrand {
       'discountPercentage': discountPercentage,
       'isPopular': isPopular,
     };
+  }
+
+  factory GiftCardBrandModel.fromProto(pb.GiftCardBrand proto) {
+    return GiftCardBrandModel(
+      id: proto.id,
+      name: proto.name,
+      logoUrl: proto.logoUrl,
+      description: proto.description,
+      category: GiftCardModel._categoryFromProto(proto.category),
+      discountPercentage: proto.discountPercentage != 0 ? proto.discountPercentage : null,
+      isPopular: proto.isPopular,
+    );
+  }
+
+  pb.GiftCardBrand toProto() {
+    return pb.GiftCardBrand()
+      ..id = id
+      ..name = name
+      ..logoUrl = logoUrl
+      ..description = description
+      ..category = GiftCardModel._categoryToProto(category)
+      ..discountPercentage = discountPercentage ?? 0.0
+      ..isPopular = isPopular;
   }
 }
 
@@ -190,5 +371,68 @@ class GiftCardTransactionModel extends GiftCardTransaction {
       'failureReason': failureReason,
       'additionalDetails': additionalDetails,
     };
+  }
+
+  factory GiftCardTransactionModel.fromProto(pb.GiftCardTransaction proto) {
+    return GiftCardTransactionModel(
+      id: proto.id,
+      giftCardId: proto.giftCardId,
+      userId: proto.userId,
+      amount: proto.amount,
+      currency: proto.currency,
+      transactionDate: proto.transactionDate.toDateTime(),
+      transactionType: _transactionTypeFromProto(proto.transactionType),
+      status: GiftCardModel._statusFromProto(proto.status),
+      failureReason: proto.failureReason.isEmpty ? null : proto.failureReason,
+      additionalDetails: null,
+    );
+  }
+
+  pb.GiftCardTransaction toProto() {
+    return pb.GiftCardTransaction()
+      ..id = id
+      ..giftCardId = giftCardId
+      ..userId = userId
+      ..amount = amount
+      ..currency = currency
+      ..transactionDate = timestamp.Timestamp.fromDateTime(transactionDate)
+      ..transactionType = _transactionTypeToProto(transactionType)
+      ..status = GiftCardModel._statusToProto(status)
+      ..failureReason = failureReason ?? '';
+  }
+
+  // Helper methods for transaction type conversion
+  static String _transactionTypeFromProto(pb.TransactionType protoType) {
+    switch (protoType) {
+      case pb.TransactionType.TRANSACTION_TYPE_PURCHASE:
+        return 'purchase';
+      case pb.TransactionType.TRANSACTION_TYPE_REDEEM:
+        return 'redeem';
+      case pb.TransactionType.TRANSACTION_TYPE_TRANSFER:
+        return 'transfer';
+      case pb.TransactionType.TRANSACTION_TYPE_REFUND:
+        return 'refund';
+      case pb.TransactionType.TRANSACTION_TYPE_SELL:
+        return 'sell';
+      default:
+        return 'purchase';
+    }
+  }
+
+  static pb.TransactionType _transactionTypeToProto(String transactionType) {
+    switch (transactionType.toLowerCase()) {
+      case 'purchase':
+        return pb.TransactionType.TRANSACTION_TYPE_PURCHASE;
+      case 'redeem':
+        return pb.TransactionType.TRANSACTION_TYPE_REDEEM;
+      case 'transfer':
+        return pb.TransactionType.TRANSACTION_TYPE_TRANSFER;
+      case 'refund':
+        return pb.TransactionType.TRANSACTION_TYPE_REFUND;
+      case 'sell':
+        return pb.TransactionType.TRANSACTION_TYPE_SELL;
+      default:
+        return pb.TransactionType.TRANSACTION_TYPE_PURCHASE;
+    }
   }
 } 

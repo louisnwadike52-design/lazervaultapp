@@ -17,8 +17,10 @@ class EmailVerificationCubit extends Cubit<EmailVerificationState> {
   void updateVerificationCode(String code) {
     if (state is EmailVerificationInProgress) {
       final currentState = state as EmailVerificationInProgress;
+      if (isClosed) return;
       emit(currentState.copyWith(verificationCode: code, errorMessage: ''));
     } else {
+      if (isClosed) return;
       emit(EmailVerificationInProgress(verificationCode: code));
     }
   }
@@ -29,6 +31,7 @@ class EmailVerificationCubit extends Cubit<EmailVerificationState> {
       final code = currentState.verificationCode.trim();
 
       if (code.isEmpty) {
+        if (isClosed) return;
         emit(currentState.copyWith(
           errorMessage: 'Please enter the verification code',
           isLoading: false,
@@ -37,6 +40,7 @@ class EmailVerificationCubit extends Cubit<EmailVerificationState> {
       }
 
       if (code.length < 6) {
+        if (isClosed) return;
         emit(currentState.copyWith(
           errorMessage: 'Verification code must be at least 6 characters',
           isLoading: false,
@@ -44,10 +48,12 @@ class EmailVerificationCubit extends Cubit<EmailVerificationState> {
         return;
       }
 
+      if (isClosed) return;
       emit(currentState.copyWith(isLoading: true, errorMessage: ''));
 
       final result = await _verifyEmailUseCase(code);
 
+      if (isClosed) return;
       result.fold(
         (failure) {
           print('Email verification failed: ${failure.message}');
@@ -72,10 +78,12 @@ class EmailVerificationCubit extends Cubit<EmailVerificationState> {
         return; // Already resending
       }
 
+      if (isClosed) return;
       emit(currentState.copyWith(isResending: true, errorMessage: ''));
 
       final result = await _resendVerificationUseCase();
 
+      if (isClosed) return;
       result.fold(
         (failure) {
           print('Failed to resend verification email: ${failure.message}');
@@ -93,12 +101,14 @@ class EmailVerificationCubit extends Cubit<EmailVerificationState> {
         },
       );
     } else {
+      if (isClosed) return;
       emit(const EmailVerificationInProgress(verificationCode: ''));
       await resendVerificationEmail();
     }
   }
 
   void skipVerification() {
+    if (isClosed) return;
     emit(const EmailVerificationSkipped());
   }
 }

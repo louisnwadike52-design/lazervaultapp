@@ -33,6 +33,9 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
       case AppServiceName.invest:
         Get.toNamed(AppRoutes.investments);
         break;
+      case AppServiceName.stocks:
+        Get.toNamed(AppRoutes.stocks);
+        break;
       case AppServiceName.exchange:
         Get.toNamed(AppRoutes.currencyExchange);
         break;
@@ -65,6 +68,9 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
         break;
       case AppServiceName.crowdfund:
         Get.toNamed(AppRoutes.crowdfund);
+        break;
+      case AppServiceName.lockFunds:
+        Get.toNamed(AppRoutes.lockFunds);
         break;
       case AppServiceName.sendFunds:
       default:
@@ -175,6 +181,9 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
       case AppServiceName.invest:
         iconData = Icons.trending_up;
         break;
+      case AppServiceName.stocks:
+        iconData = Icons.show_chart;
+        break;
       case AppServiceName.exchange:
         iconData = Icons.currency_exchange;
         break;
@@ -204,6 +213,9 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
         break;
       case AppServiceName.crowdfund:
         iconData = Icons.volunteer_activism;
+        break;
+      case AppServiceName.lockFunds:
+        iconData = Icons.lock_clock;
         break;
     }
 

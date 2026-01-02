@@ -6,6 +6,7 @@ enum AppServiceName {
   payInvoice,
   payElectricityBill,
   invest,
+  stocks,
   exchange,
   crypto,
   giftCards,
@@ -16,6 +17,7 @@ enum AppServiceName {
   airtime,
   autoSave,
   crowdfund,
+  lockFunds,
 }
 
 extension AppServiceNameExtension on AppServiceName {
@@ -35,6 +37,8 @@ extension AppServiceNameExtension on AppServiceName {
         return 'Pay Electricity Bill';
       case AppServiceName.invest:
         return 'Invest';
+      case AppServiceName.stocks:
+        return 'Stocks';
       case AppServiceName.exchange:
         return 'Exchange';
       case AppServiceName.crypto:
@@ -55,6 +59,8 @@ extension AppServiceNameExtension on AppServiceName {
         return 'Auto-Save';
       case AppServiceName.crowdfund:
         return 'Crowdfund';
+      case AppServiceName.lockFunds:
+        return 'Lock Funds';
     }
   }
 }
@@ -74,6 +80,7 @@ enum AppServiceImg {
   payInvoice,
   payElectricityBill,
   invest,
+  stocks,
   exchange,
   crypto,
   giftCards,
@@ -84,6 +91,7 @@ enum AppServiceImg {
   airtime,
   autoSave,
   crowdfund,
+  lockFunds,
 }
 
 extension AppServiceImgExtension on AppServiceImg {
@@ -103,6 +111,8 @@ extension AppServiceImgExtension on AppServiceImg {
         return 'assets/images/receive-square.png';
       case AppServiceImg.invest:
         return 'assets/images/trending-up.png';
+      case AppServiceImg.stocks:
+        return 'assets/images/stocks.png';
       case AppServiceImg.exchange:
         return 'assets/images/exchange.png';
       case AppServiceImg.crypto:
@@ -123,6 +133,8 @@ extension AppServiceImgExtension on AppServiceImg {
         return 'assets/images/auto-save.png';
       case AppServiceImg.crowdfund:
         return 'assets/images/volunteer_activism.png';
+      case AppServiceImg.lockFunds:
+        return 'assets/images/lock.png';
     }
   }
 }

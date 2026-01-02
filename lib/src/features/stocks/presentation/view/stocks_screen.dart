@@ -11,6 +11,12 @@ import '../../cubit/stock_state.dart';
 import '../../domain/entities/stock_entity.dart';
 import '../../../../../core/types/app_routes.dart';
 import '../widgets/stock_action_bottom_sheet.dart';
+import '../widgets/stock_empty_states.dart';
+import 'create_stock_trade_carousel.dart';
+import 'add_funds_carousel.dart';
+import 'withdraw_funds_carousel.dart';
+import 'portfolio_rebalance_carousel.dart';
+import 'portfolio_analytics_screen.dart';
 
 class StocksScreen extends StatefulWidget {
   const StocksScreen({super.key});
@@ -342,31 +348,12 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
       ),
       child: BlocBuilder<StockCubit, StockState>(
         builder: (context, state) {
-          // Always show market data, fallback to mock data if not loaded
-          final marketData = state is MarketIndicesLoaded 
-              ? state.indices 
-              : {
-                  'S&P 500': 4567.89,
-                  'NASDAQ': 14234.56,
-                  'DOW': 34567.12,
-                  'FTSE': 7234.56,
-                  'NIKKEI': 28456.78,
-                  'DAX': 15234.67,
-                  'CAC 40': 6789.12,
-                  'HANG SENG': 23456.89,
-                };
+          if (state is MarketIndicesLoaded) {
+            final marketData = state.indices;
 
-          // Generate random percentage changes for demo
-          final percentageChanges = {
-            'S&P 500': 0.85,
-            'NASDAQ': 1.23,
-            'DOW': -0.45,
-            'FTSE': 0.67,
-            'NIKKEI': 1.12,
-            'DAX': -0.23,
-            'CAC 40': 0.89,
-            'HANG SENG': -0.78,
-          };
+            if (marketData.isEmpty) {
+              return _buildEmptyMarketOverview();
+            }
 
             return Column(
               children: [
@@ -407,50 +394,51 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
                   itemCount: marketData.length,
                   itemBuilder: (context, index) {
                     final entry = marketData.entries.elementAt(index);
-                    final change = percentageChanges[entry.key] ?? 0.0;
+                    final indexData = entry.value as Map<String, dynamic>;
+                    final price = indexData['price'] ?? 0.0;
+                    final change = indexData['change'] ?? 0.0;
                     final isPositive = change >= 0;
-                    
+
                     return Container(
                       width: 140.w,
                       margin: EdgeInsets.only(right: 12.w),
-                        padding: EdgeInsets.all(12.w),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.05),
-                          borderRadius: BorderRadius.circular(12.r),
+                      padding: EdgeInsets.all(12.w),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.05),
+                        borderRadius: BorderRadius.circular(12.r),
                         boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.08),
+                            blurRadius: 6,
+                            offset: Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              entry.key,
-                              style: GoogleFonts.inter(
-                                color: Colors.grey[400],
+                        children: [
+                          Text(
+                            entry.key,
+                            style: GoogleFonts.inter(
+                              color: Colors.grey[400],
                               fontSize: 11.sp,
                               fontWeight: FontWeight.w500,
-                              ),
+                            ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            ),
+                          ),
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                            Text(
-                              entry.value.toStringAsFixed(2),
-                              style: GoogleFonts.inter(
-                                color: Colors.white,
+                              Text(
+                                price.toStringAsFixed(2),
+                                style: GoogleFonts.inter(
+                                  color: Colors.white,
                                   fontSize: 14.sp,
-                                fontWeight: FontWeight.w600,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
-                            ),
                               SizedBox(height: 2.h),
                               Row(
                                 children: [
@@ -480,8 +468,103 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
               ),
             ],
           );
+          }
+
+          // Loading state
+          return Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Market Overview',
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(8.r),
+                    ),
+                    child: Text(
+                      'LOADING',
+                      style: GoogleFonts.inter(
+                        color: Colors.grey[400],
+                        fontSize: 10.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 12.h),
+              SizedBox(
+                height: 80.h,
+                child: Center(
+                  child: CircularProgressIndicator(
+                    color: const Color(0xFF4A90E2),
+                    strokeWidth: 2.5,
+                  ),
+                ),
+              ),
+            ],
+          );
         },
       ),
+    );
+  }
+
+  Widget _buildEmptyMarketOverview() {
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Market Overview',
+              style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 16.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+              decoration: BoxDecoration(
+                color: Colors.orange.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(8.r),
+              ),
+              child: Text(
+                'OFFLINE',
+                style: GoogleFonts.inter(
+                  color: Colors.orange,
+                  fontSize: 10.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: 16.h),
+        Icon(
+          Icons.cloud_off,
+          size: 40.sp,
+          color: Colors.grey[600],
+        ),
+        SizedBox(height: 8.h),
+        Text(
+          'Market data unavailable',
+          style: GoogleFonts.inter(
+            color: Colors.grey[400],
+            fontSize: 13.sp,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
     );
   }
 
@@ -692,27 +775,35 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
             builder: (context, state) {
               if (state is StockLoading) {
                 return Container(
-                  height: 200.h,
-                  child: _buildLoadingState(),
+                  height: 300.h,
+                  child: StockEmptyStates.shimmerLoading(message: 'Loading stocks...'),
                 );
               } else if (state is StockLoaded) {
                 if (state.stocks.isEmpty) {
                   return Container(
-                    height: 200.h,
-                    child: _buildEmptyState('No stocks available'),
+                    height: 300.h,
+                    child: StockEmptyStates.emptySearchResults(
+                      searchQuery: _searchController.text.isEmpty ? null : _searchController.text,
+                    ),
                   );
                 }
                 return _buildStocksListScrollable(state.stocks);
               } else if (state is StockError) {
                 return Container(
-                  height: 200.h,
-                  child: _buildErrorState(state.message),
+                  height: 300.h,
+                  child: StockEmptyStates.errorState(
+                    message: state.message,
+                    onRetry: () => context.read<StockCubit>().loadStocks(
+                      sector: _selectedSector == 'All' ? null : _selectedSector,
+                      limit: 15,
+                    ),
+                  ),
                 );
               }
               // Show loading initially to trigger data load
               return Container(
-                height: 200.h,
-                child: _buildLoadingState(),
+                height: 300.h,
+                child: StockEmptyStates.shimmerLoading(message: 'Loading stocks...'),
               );
             },
           ),
@@ -1200,13 +1291,25 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
     return BlocBuilder<StockCubit, StockState>(
       builder: (context, state) {
         if (state is PortfolioLoading) {
-          return _buildLoadingState();
+          return StockEmptyStates.shimmerLoading(message: 'Loading portfolio...');
         } else if (state is PortfolioLoaded) {
+          // Check if portfolio has holdings
+          if (state.portfolio.holdings.isEmpty) {
+            return StockEmptyStates.emptyPortfolio(
+              onGetStarted: () => Get.toNamed(AppRoutes.stockTrade),
+            );
+          }
           return _buildPortfolioView(state.portfolio);
         } else if (state is PortfolioError) {
-          return _buildErrorState(state.message);
+          return StockEmptyStates.errorState(
+            message: state.message,
+            onRetry: () => context.read<StockCubit>().loadPortfolio(),
+          );
         }
-        return _buildEmptyState('No portfolio data available');
+        // Initial empty state
+        return StockEmptyStates.emptyPortfolio(
+          onGetStarted: () => Get.toNamed(AppRoutes.stockTrade),
+        );
       },
     );
   }
@@ -1606,6 +1709,37 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
   }
 
   Widget _buildHoldingItem(StockHolding holding) {
+    // Helper method to create Stock from holding
+    Stock _createStockFromHolding() {
+      return Stock(
+        symbol: holding.symbol,
+        name: '${holding.symbol} Inc.',
+        currentPrice: holding.totalValue / holding.shares,
+        previousClose: (holding.totalValue / holding.shares) - 1.0,
+        change: 1.0,
+        changePercent: holding.totalReturnPercent,
+        dayHigh: (holding.totalValue / holding.shares) + 5.0,
+        dayLow: (holding.totalValue / holding.shares) - 5.0,
+        volume: 1000000,
+        marketCap: 1000000000,
+        peRatio: 25.0,
+        dividendYield: 2.5,
+        sector: 'Technology',
+        industry: 'Software',
+        logoUrl: 'https://via.placeholder.com/64x64/4A90E2/FFFFFF?text=${holding.symbol[0]}',
+        priceHistory: [],
+        lastUpdated: DateTime.now(),
+        weekHigh52: (holding.totalValue / holding.shares) + 50.0,
+        weekLow52: (holding.totalValue / holding.shares) - 50.0,
+        avgVolume: 1500000,
+        beta: 1.2,
+        eps: 5.0,
+        description: 'A leading technology company',
+        exchange: 'NASDAQ',
+        currency: 'USD',
+      );
+    }
+
     return Container(
       margin: EdgeInsets.only(bottom: 12.h),
       padding: EdgeInsets.all(16.w),
@@ -1627,44 +1761,18 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
           ),
         ],
       ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(20.r),
-          onTap: () {
-            // Navigate to stock details for this holding
-            final stock = Stock(
-              symbol: holding.symbol,
-              name: '${holding.symbol} Inc.',
-              currentPrice: holding.totalValue / holding.shares,
-              previousClose: (holding.totalValue / holding.shares) - 1.0,
-              change: 1.0,
-              changePercent: holding.totalReturnPercent,
-              dayHigh: (holding.totalValue / holding.shares) + 5.0,
-              dayLow: (holding.totalValue / holding.shares) - 5.0,
-              volume: 1000000,
-              marketCap: 1000000000,
-              peRatio: 25.0,
-              dividendYield: 2.5,
-              sector: 'Technology',
-              industry: 'Software',
-              logoUrl: 'https://via.placeholder.com/64x64/4A90E2/FFFFFF?text=${holding.symbol[0]}',
-              priceHistory: [],
-              lastUpdated: DateTime.now(),
-              weekHigh52: (holding.totalValue / holding.shares) + 50.0,
-              weekLow52: (holding.totalValue / holding.shares) - 50.0,
-              avgVolume: 1500000,
-              beta: 1.2,
-              eps: 5.0,
-              description: 'A leading technology company',
-              exchange: 'NASDAQ',
-              currency: 'USD',
-            );
-            Get.toNamed(AppRoutes.stockDetails, arguments: stock);
-          },
-          child: Padding(
-            padding: EdgeInsets.all(4.w),
-            child: Row(
+      child: Column(
+        children: [
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(20.r),
+              onTap: () {
+                Get.toNamed(AppRoutes.stockDetails, arguments: _createStockFromHolding());
+              },
+              child: Padding(
+                padding: EdgeInsets.all(4.w),
+                child: Row(
               children: [
                 Container(
                   width: 48.w,
@@ -1841,6 +1949,55 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
             ),
           ),
         ),
+          ),
+          SizedBox(height: 12.h),
+          // Action buttons
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () {
+                    Get.to(() => CreateStockTradeCarousel(
+                      stock: _createStockFromHolding(),
+                      initialSide: OrderSide.sell,
+                    ));
+                  },
+                  icon: Icon(Icons.sell, size: 16.sp),
+                  label: Text('Sell'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.red,
+                    side: BorderSide(color: Colors.red.withValues(alpha: 0.5)),
+                    padding: EdgeInsets.symmetric(vertical: 10.h),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    Get.to(() => CreateStockTradeCarousel(
+                      stock: _createStockFromHolding(),
+                      initialSide: OrderSide.buy,
+                    ));
+                  },
+                  icon: Icon(Icons.add_circle_outline, size: 16.sp),
+                  label: Text('Buy More'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    foregroundColor: Colors.white,
+                    padding: EdgeInsets.symmetric(vertical: 10.h),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -2444,236 +2601,81 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
   }
 
   void _showAddFundsDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF2A2A3E),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20.r),
-        ),
-        title: Text(
-          'Add Funds',
-          style: GoogleFonts.inter(
-            color: Colors.white,
-            fontSize: 18.sp,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        content: Text(
-          'Add funds to your portfolio to increase your buying power.',
-          style: GoogleFonts.inter(
-            color: Colors.grey[300],
-            fontSize: 14.sp,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              'Cancel',
-              style: GoogleFonts.inter(
-                color: Colors.grey[400],
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12.r),
-              ),
-            ),
-            child: Text(
-              'Add Funds',
-              style: GoogleFonts.inter(
-                color: Colors.white,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
+    // Get available cash from current portfolio state
+    final state = context.read<StockCubit>().state;
+    double availableCash = 2450.0; // Default fallback
+
+    if (state is PortfolioLoaded) {
+      availableCash = state.portfolio.availableCash;
+    }
+
+    Get.to(() => AddFundsCarousel(availableCash: availableCash));
   }
 
   void _showRebalanceDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF2A2A3E),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20.r),
+    // Get portfolio data from current state
+    final state = context.read<StockCubit>().state;
+
+    if (state is PortfolioLoaded) {
+      Get.to(() => PortfolioRebalanceCarousel(
+        holdings: state.portfolio.holdings,
+        availableCash: state.portfolio.availableCash,
+        totalValue: state.portfolio.totalValue,
+      ));
+    } else {
+      // Show error if portfolio not loaded
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Please wait for portfolio to load',
+            style: GoogleFonts.inter(),
+          ),
+          backgroundColor: Colors.orange,
+          behavior: SnackBarBehavior.floating,
         ),
-        title: Text(
-          'Rebalance Portfolio',
-          style: GoogleFonts.inter(
-            color: Colors.white,
-            fontSize: 18.sp,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        content: Text(
-          'Rebalance your portfolio to maintain your target allocation.',
-          style: GoogleFonts.inter(
-            color: Colors.grey[300],
-            fontSize: 14.sp,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              'Cancel',
-              style: GoogleFonts.inter(
-                color: Colors.grey[400],
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF4A90E2),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12.r),
-              ),
-            ),
-            child: Text(
-              'Rebalance',
-              style: GoogleFonts.inter(
-                color: Colors.white,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
+      );
+    }
   }
 
   void _showWithdrawDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF2A2A3E),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20.r),
-        ),
-        title: Text(
-          'Withdraw Funds',
-          style: GoogleFonts.inter(
-            color: Colors.white,
-            fontSize: 18.sp,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        content: Text(
-          'Withdraw funds from your portfolio to your bank account.',
-          style: GoogleFonts.inter(
-            color: Colors.grey[300],
-            fontSize: 14.sp,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              'Cancel',
-              style: GoogleFonts.inter(
-                color: Colors.grey[400],
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.orange,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12.r),
-              ),
-            ),
-            child: Text(
-              'Withdraw',
-              style: GoogleFonts.inter(
-                color: Colors.white,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
+    // Get available cash from current portfolio state
+    final state = context.read<StockCubit>().state;
+    double availableCash = 2450.0; // Default fallback
+
+    if (state is PortfolioLoaded) {
+      availableCash = state.portfolio.availableCash;
+    }
+
+    Get.to(() => WithdrawFundsCarousel(availableCash: availableCash));
   }
 
   void _showAnalyticsDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF2A2A3E),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20.r),
-        ),
-        title: Text(
-          'Portfolio Analytics',
-          style: GoogleFonts.inter(
-            color: Colors.white,
-            fontSize: 18.sp,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        content: Text(
-          'View detailed analytics and performance metrics for your portfolio.',
-          style: GoogleFonts.inter(
-            color: Colors.grey[300],
-            fontSize: 14.sp,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              'Cancel',
-              style: GoogleFonts.inter(
-                color: Colors.grey[400],
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.purple,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12.r),
-              ),
-            ),
-            child: Text(
-              'View Analytics',
-              style: GoogleFonts.inter(
-                color: Colors.white,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
+    Get.to(() => const PortfolioAnalyticsScreen());
   }
 
   Widget _buildWatchlistTab() {
     return BlocBuilder<StockCubit, StockState>(
       builder: (context, state) {
         if (state is WatchlistsLoading) {
-          return _buildLoadingState();
+          return StockEmptyStates.shimmerLoading(message: 'Loading watchlists...');
         } else if (state is WatchlistsLoaded) {
+          // Check if watchlists are empty
+          if (state.watchlists.isEmpty) {
+            return StockEmptyStates.emptyWatchlist(
+              onAddStocks: () => _showCreateWatchlistDialog(),
+            );
+          }
           return _buildWatchlistView(state.watchlists);
         } else if (state is WatchlistsError) {
-          return _buildErrorState(state.message);
+          return StockEmptyStates.errorState(
+            message: state.message,
+            onRetry: () => context.read<StockCubit>().loadWatchlists(),
+          );
         }
-        return _buildEmptyState('No watchlists available');
+        // Initial empty state
+        return StockEmptyStates.emptyWatchlist(
+          onAddStocks: () => _showCreateWatchlistDialog(),
+        );
       },
     );
   }
@@ -2969,31 +2971,79 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
               spacing: 8.w,
               runSpacing: 8.h,
                           children: watchlist.symbols.take(6).map((symbol) {
-                return Container(
-                              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-                  decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [
-                                    const Color(0xFF4A90E2).withValues(alpha: 0.3),
-                                    const Color(0xFF357ABD).withValues(alpha: 0.3),
-                                  ],
-                                ),
-                                borderRadius: BorderRadius.circular(12.r),
-                                boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
-                  ),
-                  child: Text(
-                    symbol,
-                    style: GoogleFonts.inter(
-                                  color: const Color(0xFF4A90E2),
-                      fontSize: 12.sp,
-                                  fontWeight: FontWeight.w600,
+                return Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(12.r),
+                    onTap: () {
+                      // Create a stock from symbol for quick trade
+                      final stock = Stock(
+                        symbol: symbol,
+                        name: '$symbol Inc.',
+                        currentPrice: 100.0,
+                        previousClose: 99.0,
+                        change: 1.0,
+                        changePercent: 1.0,
+                        dayHigh: 105.0,
+                        dayLow: 95.0,
+                        volume: 1000000,
+                        marketCap: 1000000000,
+                        peRatio: 25.0,
+                        dividendYield: 2.5,
+                        sector: 'Technology',
+                        industry: 'Software',
+                        logoUrl: 'https://via.placeholder.com/64x64/4A90E2/FFFFFF?text=${symbol[0]}',
+                        priceHistory: [],
+                        lastUpdated: DateTime.now(),
+                        weekHigh52: 150.0,
+                        weekLow52: 50.0,
+                        avgVolume: 1500000,
+                        beta: 1.2,
+                        eps: 5.0,
+                        description: 'A leading company',
+                        exchange: 'NASDAQ',
+                        currency: 'USD',
+                      );
+                      Get.to(() => CreateStockTradeCarousel(stock: stock));
+                    },
+                    child: Container(
+                                  padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                      decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        const Color(0xFF4A90E2).withValues(alpha: 0.3),
+                                        const Color(0xFF357ABD).withValues(alpha: 0.3),
+                                      ],
+                                    ),
+                                    borderRadius: BorderRadius.circular(12.r),
+                                    boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.08),
+                blurRadius: 6,
+                offset: Offset(0, 2),
+              ),
+            ],
+
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            symbol,
+                            style: GoogleFonts.inter(
+                                          color: const Color(0xFF4A90E2),
+                              fontSize: 12.sp,
+                                          fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          SizedBox(width: 4.w),
+                          Icon(
+                            Icons.trending_up,
+                            color: const Color(0xFF4A90E2),
+                            size: 12.sp,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 );
@@ -3094,13 +3144,25 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
     return BlocBuilder<StockCubit, StockState>(
       builder: (context, state) {
         if (state is OrdersLoading) {
-          return _buildLoadingState();
+          return StockEmptyStates.shimmerLoading(message: 'Loading orders...');
         } else if (state is OrdersLoaded) {
+          // Check if orders are empty
+          if (state.orders.isEmpty) {
+            return StockEmptyStates.emptyOrders(
+              onTrade: () => Get.toNamed(AppRoutes.stockTrade),
+            );
+          }
           return _buildOrdersView(state.orders);
         } else if (state is StockError) {
-          return _buildErrorState(state.message);
+          return StockEmptyStates.errorState(
+            message: state.message,
+            onRetry: () => context.read<StockCubit>().loadOrders(),
+          );
         }
-        return _buildEmptyState('No orders available');
+        // Initial empty state
+        return StockEmptyStates.emptyOrders(
+          onTrade: () => Get.toNamed(AppRoutes.stockTrade),
+        );
       },
     );
   }
@@ -3244,13 +3306,25 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
     return BlocBuilder<StockCubit, StockState>(
       builder: (context, state) {
         if (state is MarketNewsLoading) {
-          return _buildLoadingState();
+          return StockEmptyStates.shimmerLoading(message: 'Loading market news...');
         } else if (state is MarketNewsLoaded) {
+          // Check if news are empty
+          if (state.news.isEmpty) {
+            return StockEmptyStates.emptyNews(
+              onRetry: () => context.read<StockCubit>().loadMarketNews(),
+            );
+          }
           return _buildNewsView(state.news);
         } else if (state is MarketNewsError) {
-          return _buildErrorState(state.message);
+          return StockEmptyStates.errorState(
+            message: state.message,
+            onRetry: () => context.read<StockCubit>().loadMarketNews(),
+          );
         }
-        return _buildEmptyState('No news available');
+        // Initial empty state
+        return StockEmptyStates.emptyNews(
+          onRetry: () => context.read<StockCubit>().loadMarketNews(),
+        );
       },
     );
   }

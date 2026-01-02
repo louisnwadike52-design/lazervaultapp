@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../cubit/create_policy_cubit.dart';
 import '../cubit/create_policy_state.dart';
+import '../cubit/insurance_cubit.dart';
 import '../../../authentication/cubit/authentication_cubit.dart';
 import '../../../authentication/cubit/authentication_state.dart';
 import '../widgets/create_policy/policy_type_selector_screen.dart';
@@ -125,10 +126,20 @@ class _CreateInsurancePolicyCarouselState
     final cubit = context.read<CreatePolicyCubit>();
     final insurance = cubit.buildInsurance(authState.profile.user.id);
 
+    // Capture cubits from current context before navigation
+    final insuranceCubit = context.read<InsuranceCubit>();
+    final authCubit = context.read<AuthenticationCubit>();
+
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => PaymentMethodSelectionScreen(
-          insurance: insurance,
+        builder: (context) => MultiBlocProvider(
+          providers: [
+            BlocProvider.value(value: insuranceCubit),
+            BlocProvider.value(value: authCubit),
+          ],
+          child: PaymentMethodSelectionScreen(
+            insurance: insurance,
+          ),
         ),
       ),
     );

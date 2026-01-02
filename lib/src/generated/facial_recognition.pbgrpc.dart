@@ -10,48 +10,48 @@ import 'dart:async' as $async;
 import 'dart:core' as $core;
 
 import 'package:grpc/service_api.dart' as $grpc;
-import 'facial_recognition.pb.dart' as $13;
+import 'facial_recognition.pb.dart' as $14;
 export 'facial_recognition.pb.dart';
 
 class FacialRecognitionServiceClient extends $grpc.Client {
   static final _$registerFace =
-      $grpc.ClientMethod<$13.RegisterFaceRequest, $13.RegisterFaceResponse>(
+      $grpc.ClientMethod<$14.RegisterFaceRequest, $14.RegisterFaceResponse>(
           '/pb.FacialRecognitionService/RegisterFace',
-          ($13.RegisterFaceRequest value) => value.writeToBuffer(),
+          ($14.RegisterFaceRequest value) => value.writeToBuffer(),
           ($core.List<$core.int> value) =>
-              $13.RegisterFaceResponse.fromBuffer(value));
+              $14.RegisterFaceResponse.fromBuffer(value));
   static final _$verifyFace =
-      $grpc.ClientMethod<$13.VerifyFaceRequest, $13.VerifyFaceResponse>(
+      $grpc.ClientMethod<$14.VerifyFaceRequest, $14.VerifyFaceResponse>(
           '/pb.FacialRecognitionService/VerifyFace',
-          ($13.VerifyFaceRequest value) => value.writeToBuffer(),
+          ($14.VerifyFaceRequest value) => value.writeToBuffer(),
           ($core.List<$core.int> value) =>
-              $13.VerifyFaceResponse.fromBuffer(value));
+              $14.VerifyFaceResponse.fromBuffer(value));
   static final _$healthCheck =
-      $grpc.ClientMethod<$13.HealthCheckRequest, $13.HealthCheckResponse>(
+      $grpc.ClientMethod<$14.HealthCheckRequest, $14.HealthCheckResponse>(
           '/pb.FacialRecognitionService/HealthCheck',
-          ($13.HealthCheckRequest value) => value.writeToBuffer(),
+          ($14.HealthCheckRequest value) => value.writeToBuffer(),
           ($core.List<$core.int> value) =>
-              $13.HealthCheckResponse.fromBuffer(value));
+              $14.HealthCheckResponse.fromBuffer(value));
 
   FacialRecognitionServiceClient($grpc.ClientChannel channel,
       {$grpc.CallOptions? options,
       $core.Iterable<$grpc.ClientInterceptor>? interceptors})
       : super(channel, options: options, interceptors: interceptors);
 
-  $grpc.ResponseFuture<$13.RegisterFaceResponse> registerFace(
-      $13.RegisterFaceRequest request,
+  $grpc.ResponseFuture<$14.RegisterFaceResponse> registerFace(
+      $14.RegisterFaceRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$registerFace, request, options: options);
   }
 
-  $grpc.ResponseFuture<$13.VerifyFaceResponse> verifyFace(
-      $13.VerifyFaceRequest request,
+  $grpc.ResponseFuture<$14.VerifyFaceResponse> verifyFace(
+      $14.VerifyFaceRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$verifyFace, request, options: options);
   }
 
-  $grpc.ResponseFuture<$13.HealthCheckResponse> healthCheck(
-      $13.HealthCheckRequest request,
+  $grpc.ResponseFuture<$14.HealthCheckResponse> healthCheck(
+      $14.HealthCheckRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$healthCheck, request, options: options);
   }
@@ -62,54 +62,54 @@ abstract class FacialRecognitionServiceBase extends $grpc.Service {
 
   FacialRecognitionServiceBase() {
     $addMethod(
-        $grpc.ServiceMethod<$13.RegisterFaceRequest, $13.RegisterFaceResponse>(
+        $grpc.ServiceMethod<$14.RegisterFaceRequest, $14.RegisterFaceResponse>(
             'RegisterFace',
             registerFace_Pre,
             false,
             false,
             ($core.List<$core.int> value) =>
-                $13.RegisterFaceRequest.fromBuffer(value),
-            ($13.RegisterFaceResponse value) => value.writeToBuffer()));
+                $14.RegisterFaceRequest.fromBuffer(value),
+            ($14.RegisterFaceResponse value) => value.writeToBuffer()));
     $addMethod(
-        $grpc.ServiceMethod<$13.VerifyFaceRequest, $13.VerifyFaceResponse>(
+        $grpc.ServiceMethod<$14.VerifyFaceRequest, $14.VerifyFaceResponse>(
             'VerifyFace',
             verifyFace_Pre,
             false,
             false,
             ($core.List<$core.int> value) =>
-                $13.VerifyFaceRequest.fromBuffer(value),
-            ($13.VerifyFaceResponse value) => value.writeToBuffer()));
+                $14.VerifyFaceRequest.fromBuffer(value),
+            ($14.VerifyFaceResponse value) => value.writeToBuffer()));
     $addMethod(
-        $grpc.ServiceMethod<$13.HealthCheckRequest, $13.HealthCheckResponse>(
+        $grpc.ServiceMethod<$14.HealthCheckRequest, $14.HealthCheckResponse>(
             'HealthCheck',
             healthCheck_Pre,
             false,
             false,
             ($core.List<$core.int> value) =>
-                $13.HealthCheckRequest.fromBuffer(value),
-            ($13.HealthCheckResponse value) => value.writeToBuffer()));
+                $14.HealthCheckRequest.fromBuffer(value),
+            ($14.HealthCheckResponse value) => value.writeToBuffer()));
   }
 
-  $async.Future<$13.RegisterFaceResponse> registerFace_Pre(
+  $async.Future<$14.RegisterFaceResponse> registerFace_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$13.RegisterFaceRequest> request) async {
+      $async.Future<$14.RegisterFaceRequest> request) async {
     return registerFace(call, await request);
   }
 
-  $async.Future<$13.VerifyFaceResponse> verifyFace_Pre($grpc.ServiceCall call,
-      $async.Future<$13.VerifyFaceRequest> request) async {
+  $async.Future<$14.VerifyFaceResponse> verifyFace_Pre($grpc.ServiceCall call,
+      $async.Future<$14.VerifyFaceRequest> request) async {
     return verifyFace(call, await request);
   }
 
-  $async.Future<$13.HealthCheckResponse> healthCheck_Pre($grpc.ServiceCall call,
-      $async.Future<$13.HealthCheckRequest> request) async {
+  $async.Future<$14.HealthCheckResponse> healthCheck_Pre($grpc.ServiceCall call,
+      $async.Future<$14.HealthCheckRequest> request) async {
     return healthCheck(call, await request);
   }
 
-  $async.Future<$13.RegisterFaceResponse> registerFace(
-      $grpc.ServiceCall call, $13.RegisterFaceRequest request);
-  $async.Future<$13.VerifyFaceResponse> verifyFace(
-      $grpc.ServiceCall call, $13.VerifyFaceRequest request);
-  $async.Future<$13.HealthCheckResponse> healthCheck(
-      $grpc.ServiceCall call, $13.HealthCheckRequest request);
+  $async.Future<$14.RegisterFaceResponse> registerFace(
+      $grpc.ServiceCall call, $14.RegisterFaceRequest request);
+  $async.Future<$14.VerifyFaceResponse> verifyFace(
+      $grpc.ServiceCall call, $14.VerifyFaceRequest request);
+  $async.Future<$14.HealthCheckResponse> healthCheck(
+      $grpc.ServiceCall call, $14.HealthCheckRequest request);
 }

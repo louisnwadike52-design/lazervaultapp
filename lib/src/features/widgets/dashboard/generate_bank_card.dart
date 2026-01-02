@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
+import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/src/features/cards/domain/entities/card_entity.dart';
 import 'package:lazervault/src/features/widgets/universal_image_loader.dart';
 
 class GenerateBankCard extends StatefulWidget {
@@ -99,7 +102,10 @@ class _GenerateBankCardState extends State<GenerateBankCard> {
                   title: "Disposable",
                   subtitle: "Generate instantly",
                   onTap: () {
-                    // Add disposable card generation logic
+                    Get.toNamed(
+                      AppRoutes.cardCreationForm,
+                      arguments: {'cardType': CardType.disposable},
+                    );
                   },
                 ),
               ),
@@ -121,7 +127,10 @@ class _GenerateBankCardState extends State<GenerateBankCard> {
                   title: "Virtual Card",
                   subtitle: "Create new card",
                   onTap: () {
-                    // Add virtual card generation logic
+                    Get.toNamed(
+                      AppRoutes.cardCreationForm,
+                      arguments: {'cardType': CardType.virtual},
+                    );
                   },
                 ),
               ),

@@ -41,6 +41,7 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
     bool myCrowdfundsOnly = false,
   }) async {
     try {
+      if (isClosed) return;
       emit(const CrowdfundLoading(message: 'Loading crowdfunds...'));
 
       final crowdfunds = await listCrowdfundsUseCase(
@@ -51,12 +52,14 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
         myCrowdfundsOnly: myCrowdfundsOnly,
       );
 
+      if (isClosed) return;
       emit(CrowdfundLoaded(
         crowdfunds: crowdfunds,
         totalCount: crowdfunds.length,
         currentPage: page,
       ));
     } catch (e) {
+      if (isClosed) return;
       emit(CrowdfundError(message: e.toString()));
     }
   }
@@ -72,6 +75,7 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
         return;
       }
 
+      if (isClosed) return;
       emit(const CrowdfundLoading(message: 'Searching...'));
 
       final crowdfunds = await searchCrowdfundsUseCase(
@@ -79,12 +83,14 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
         limit: limit,
       );
 
+      if (isClosed) return;
       emit(CrowdfundLoaded(
         crowdfunds: crowdfunds,
         totalCount: crowdfunds.length,
         currentPage: 1,
       ));
     } catch (e) {
+      if (isClosed) return;
       emit(CrowdfundError(message: 'Search failed: ${e.toString()}'));
     }
   }
@@ -92,6 +98,7 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
   /// Load single crowdfund details with donations and statistics
   Future<void> loadCrowdfundDetails(String crowdfundId) async {
     try {
+      if (isClosed) return;
       emit(const CrowdfundLoading(message: 'Loading details...'));
 
       // Load crowdfund details
@@ -112,12 +119,14 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
         // Statistics optional, continue without them
       }
 
+      if (isClosed) return;
       emit(CrowdfundDetailsLoaded(
         crowdfund: crowdfund,
         donations: donations,
         statistics: statistics,
       ));
     } catch (e) {
+      if (isClosed) return;
       emit(CrowdfundError(message: e.toString()));
     }
   }
@@ -136,6 +145,7 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
     Map<String, dynamic>? metadata,
   }) async {
     try {
+      if (isClosed) return;
       emit(const CrowdfundLoading(message: 'Creating crowdfund...'));
 
       final crowdfund = await createCrowdfundUseCase(
@@ -151,17 +161,20 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
         metadata: metadata,
       );
 
+      if (isClosed) return;
       emit(CrowdfundCreated(crowdfund));
     } catch (e) {
       // Check if error is about verification
       if (e.toString().contains('verified') ||
           e.toString().contains('PermissionDenied')) {
+        if (isClosed) return;
         emit(const CrowdfundError(
           message:
               'Only verified users can create crowdfunds. Please verify your account first.',
           errorCode: 'VERIFICATION_REQUIRED',
         ));
       } else {
+        if (isClosed) return;
         emit(CrowdfundError(message: 'Failed to create crowdfund: $e'));
       }
     }
@@ -179,6 +192,7 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
     Map<String, dynamic>? metadata,
   }) async {
     try {
+      if (isClosed) return;
       emit(const CrowdfundLoading(message: 'Updating crowdfund...'));
 
       final crowdfund = await updateCrowdfundUseCase(
@@ -192,8 +206,10 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
         metadata: metadata,
       );
 
+      if (isClosed) return;
       emit(CrowdfundUpdated(crowdfund));
     } catch (e) {
+      if (isClosed) return;
       emit(CrowdfundError(message: 'Failed to update crowdfund: $e'));
     }
   }
@@ -201,6 +217,7 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
   /// Delete a crowdfund
   Future<void> deleteCrowdfund(String crowdfundId) async {
     try {
+      if (isClosed) return;
       emit(const CrowdfundLoading(message: 'Deleting crowdfund...'));
 
       await deleteCrowdfundUseCase(crowdfundId);
@@ -208,6 +225,7 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
       // Reload crowdfunds after deletion
       await loadCrowdfunds();
     } catch (e) {
+      if (isClosed) return;
       emit(CrowdfundError(message: 'Failed to delete crowdfund: $e'));
     }
   }
@@ -222,6 +240,7 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
   }) async {
     try {
       // Step 1: Verifying donation
+      if (isClosed) return;
       emit(const DonationProcessing(
         step: 'Verifying donation',
         currentStepIndex: 1,
@@ -230,6 +249,7 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
       await Future.delayed(const Duration(milliseconds: 500));
 
       // Step 2: Processing payment
+      if (isClosed) return;
       emit(const DonationProcessing(
         step: 'Processing payment',
         currentStepIndex: 2,
@@ -245,6 +265,7 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
       );
 
       // Step 3: Updating crowdfund
+      if (isClosed) return;
       emit(const DonationProcessing(
         step: 'Updating crowdfund',
         currentStepIndex: 3,
@@ -253,6 +274,7 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
       await Future.delayed(const Duration(milliseconds: 500));
 
       // Step 4: Generating receipt
+      if (isClosed) return;
       emit(const DonationProcessing(
         step: 'Generating receipt',
         currentStepIndex: 4,
@@ -266,11 +288,13 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
         // Receipt generation optional
       }
 
+      if (isClosed) return;
       emit(DonationCompleted(
         donation: donation,
         receipt: receipt,
       ));
     } catch (e) {
+      if (isClosed) return;
       emit(CrowdfundError(message: 'Donation failed: ${e.toString()}'));
     }
   }
@@ -282,6 +306,7 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
     int pageSize = 20,
   }) async {
     try {
+      if (isClosed) return;
       emit(const CrowdfundLoading(message: 'Loading donations...'));
 
       final donations = await getCrowdfundDonationsUseCase(
@@ -293,16 +318,19 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
       // If we're already in details view, update it
       if (state is CrowdfundDetailsLoaded) {
         final currentState = state as CrowdfundDetailsLoaded;
+        if (isClosed) return;
         emit(CrowdfundDetailsLoaded(
           crowdfund: currentState.crowdfund,
           donations: donations,
           statistics: currentState.statistics,
         ));
       } else {
+        if (isClosed) return;
         emit(const CrowdfundError(
             message: 'Cannot load donations without crowdfund details'));
       }
     } catch (e) {
+      if (isClosed) return;
       emit(CrowdfundError(message: 'Failed to load donations: $e'));
     }
   }
@@ -313,6 +341,7 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
     int pageSize = 20,
   }) async {
     try {
+      if (isClosed) return;
       emit(const CrowdfundLoading(message: 'Loading your donations...'));
 
       final donations = await getUserDonationsUseCase(
@@ -320,12 +349,14 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
         pageSize: pageSize,
       );
 
+      if (isClosed) return;
       emit(UserDonationsLoaded(
         donations: donations,
         totalCount: donations.length,
         currentPage: page,
       ));
     } catch (e) {
+      if (isClosed) return;
       emit(CrowdfundError(message: 'Failed to load donations: $e'));
     }
   }
@@ -333,12 +364,15 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
   /// Generate receipt for a donation
   Future<void> generateReceipt(String donationId) async {
     try {
+      if (isClosed) return;
       emit(const CrowdfundLoading(message: 'Generating receipt...'));
 
       final receipt = await generateDonationReceiptUseCase(donationId);
 
+      if (isClosed) return;
       emit(ReceiptGenerated(receipt));
     } catch (e) {
+      if (isClosed) return;
       emit(CrowdfundError(message: 'Failed to generate receipt: $e'));
     }
   }
@@ -349,6 +383,7 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
     int pageSize = 20,
   }) async {
     try {
+      if (isClosed) return;
       emit(const CrowdfundLoading(message: 'Loading receipts...'));
 
       final receipts = await getUserReceiptsUseCase(
@@ -356,12 +391,14 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
         pageSize: pageSize,
       );
 
+      if (isClosed) return;
       emit(UserReceiptsLoaded(
         receipts: receipts,
         totalCount: receipts.length,
         currentPage: page,
       ));
     } catch (e) {
+      if (isClosed) return;
       emit(CrowdfundError(message: 'Failed to load receipts: $e'));
     }
   }
@@ -369,18 +406,22 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
   /// Load statistics for a crowdfund
   Future<void> loadStatistics(String crowdfundId) async {
     try {
+      if (isClosed) return;
       emit(const CrowdfundLoading(message: 'Loading statistics...'));
 
       final statistics = await getCrowdfundStatisticsUseCase(crowdfundId);
 
+      if (isClosed) return;
       emit(StatisticsLoaded(statistics));
     } catch (e) {
+      if (isClosed) return;
       emit(CrowdfundError(message: 'Failed to load statistics: $e'));
     }
   }
 
   /// Reset to initial state
   void reset() {
+    if (isClosed) return;
     emit(const CrowdfundInitial());
   }
 }

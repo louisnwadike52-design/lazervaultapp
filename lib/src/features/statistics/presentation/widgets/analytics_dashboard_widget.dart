@@ -99,17 +99,112 @@ class AnalyticsDashboardWidget extends StatelessWidget {
               else
                 ...categoryBreakdown.map((category) {
                   return _CategoryBreakdownCard(category: category);
-                }).toList(),
+                }),
 
               const SizedBox(height: 16),
 
               // Budget health indicator
               _BudgetHealthCard(analytics: analytics),
+
+              const SizedBox(height: 32),
+
+              // Comprehensive Financial Summary (Manual + Tracked)
+              if (state.comprehensiveSummary != null) ...[
+                Text(
+                  'Comprehensive Financial Summary',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Combines manual entries + automatic tracking',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Colors.grey[600],
+                      ),
+                ),
+                const SizedBox(height: 16),
+                _ComprehensiveSummaryCard(summary: state.comprehensiveSummary!),
+                const SizedBox(height: 24),
+              ],
+
+              // Tracked Transactions Section
+              Text(
+                'Automatic Transaction Tracking',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Automatically tracked from transfers, deposits, withdrawals, payments, etc.',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Colors.grey[600],
+                    ),
+              ),
+              const SizedBox(height: 16),
+
+              // Tracked Income and Expenditure Cards
+              _TrackedTransactionsSummary(
+                trackedIncome: state.trackedIncome,
+                trackedExpenditure: state.trackedExpenditure,
+              ),
+
+              const SizedBox(height: 24),
+
+              // Tracked Income Breakdown
+              if (state.trackedIncomeBreakdown.isNotEmpty) ...[
+                Text(
+                  'Tracked Income by Source',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                ),
+                const SizedBox(height: 12),
+                ...state.trackedIncomeBreakdown.entries.map((entry) {
+                  return _TrackedBreakdownCard(
+                    label: _formatSourceType(entry.key),
+                    amount: entry.value,
+                    color: Colors.green,
+                  );
+                }),
+                const SizedBox(height: 16),
+              ],
+
+              // Tracked Expenditure Breakdown
+              if (state.trackedExpenditureBreakdown.isNotEmpty) ...[
+                Text(
+                  'Tracked Expenditure by Type',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                ),
+                const SizedBox(height: 12),
+                ...state.trackedExpenditureBreakdown.entries.map((entry) {
+                  return _TrackedBreakdownCard(
+                    label: _formatExpenseType(entry.key),
+                    amount: entry.value,
+                    color: Colors.red,
+                  );
+                }),
+              ],
             ],
           ),
         );
       },
     );
+  }
+
+  String _formatSourceType(String type) {
+    return type.split('_').map((word) =>
+      word[0].toUpperCase() + word.substring(1).toLowerCase()
+    ).join(' ');
+  }
+
+  String _formatExpenseType(String type) {
+    return type.split('_').map((word) =>
+      word[0].toUpperCase() + word.substring(1).toLowerCase()
+    ).join(' ');
   }
 }
 
@@ -468,6 +563,313 @@ class _HealthStat extends StatelessWidget {
               ),
         ),
       ],
+    );
+  }
+}
+
+/// Comprehensive Financial Summary Card
+class _ComprehensiveSummaryCard extends StatelessWidget {
+  final ComprehensiveFinancialSummary summary;
+
+  const _ComprehensiveSummaryCard({required this.summary});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final netIncomeColor = summary.netIncome >= 0 ? Colors.green : Colors.red;
+
+    return Card(
+      elevation: 2,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Period info
+            Row(
+              children: [
+                Icon(Icons.calendar_today, size: 16, color: Colors.grey[600]),
+                const SizedBox(width: 8),
+                Text(
+                  _formatPeriod(summary.period),
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: Colors.grey[600],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+
+            // Income section
+            _FinancialDataRow(
+              label: 'Total Income',
+              manualAmount: summary.income.manualIncome,
+              trackedAmount: summary.income.trackedIncome,
+              totalAmount: summary.income.totalIncome,
+              color: Colors.green,
+            ),
+            const SizedBox(height: 12),
+
+            // Expenditure section
+            _FinancialDataRow(
+              label: 'Total Expenditure',
+              manualAmount: summary.expenditure.manualExpenses,
+              trackedAmount: summary.expenditure.trackedExpenditure,
+              totalAmount: summary.expenditure.totalExpenditure,
+              color: Colors.red,
+            ),
+            const SizedBox(height: 16),
+
+            const Divider(),
+            const SizedBox(height: 16),
+
+            // Net income
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Net Income',
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(
+                  '\$${summary.netIncome.toStringAsFixed(2)}',
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: netIncomeColor,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+
+            // Savings rate
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Savings Rate',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    color: Colors.grey[700],
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    '${summary.savingsRate.toStringAsFixed(1)}%',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.blue,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _formatPeriod(ComprehensivePeriod period) {
+    final startDate = DateTime.fromMillisecondsSinceEpoch(
+      period.startDate.seconds.toInt() * 1000,
+    );
+    final endDate = DateTime.fromMillisecondsSinceEpoch(
+      period.endDate.seconds.toInt() * 1000,
+    );
+
+    return '${_formatDate(startDate)} - ${_formatDate(endDate)}';
+  }
+
+  String _formatDate(DateTime date) {
+    return '${date.day}/${date.month}/${date.year}';
+  }
+}
+
+/// Financial data row showing manual, tracked, and total amounts
+class _FinancialDataRow extends StatelessWidget {
+  final String label;
+  final double manualAmount;
+  final double trackedAmount;
+  final double totalAmount;
+  final Color color;
+
+  const _FinancialDataRow({
+    required this.label,
+    required this.manualAmount,
+    required this.trackedAmount,
+    required this.totalAmount,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: theme.textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Manual:',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: Colors.grey[600],
+              ),
+            ),
+            Text(
+              '\$${manualAmount.toStringAsFixed(2)}',
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: Colors.grey[700],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Tracked:',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: Colors.grey[600],
+              ),
+            ),
+            Text(
+              '\$${trackedAmount.toStringAsFixed(2)}',
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: Colors.grey[700],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Total:',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Text(
+                '\$${totalAmount.toStringAsFixed(2)}',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: color,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Tracked transactions summary widget
+class _TrackedTransactionsSummary extends StatelessWidget {
+  final double trackedIncome;
+  final double trackedExpenditure;
+
+  const _TrackedTransactionsSummary({
+    required this.trackedIncome,
+    required this.trackedExpenditure,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        _SummaryCard(
+          title: 'Tracked Income',
+          amount: trackedIncome,
+          icon: Icons.trending_up,
+          color: Colors.green,
+        ),
+        const SizedBox(height: 12),
+        _SummaryCard(
+          title: 'Tracked Expenditure',
+          amount: trackedExpenditure,
+          icon: Icons.trending_down,
+          color: Colors.red,
+        ),
+      ],
+    );
+  }
+}
+
+/// Tracked breakdown card widget
+class _TrackedBreakdownCard extends StatelessWidget {
+  final String label;
+  final double amount;
+  final Color color;
+
+  const _TrackedBreakdownCard({
+    required this.label,
+    required this.amount,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 8),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 8,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    color: color,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  label,
+                  style: theme.textTheme.bodyMedium,
+                ),
+              ],
+            ),
+            Text(
+              '\$${amount.toStringAsFixed(2)}',
+              style: theme.textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: color,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

@@ -47,8 +47,15 @@ class Screen {
   Widget get widget {
     switch (name) {
       case ScreenName.dashboard:
-        return BlocProvider(
-          create: (context) => serviceLocator<ProfileCubit>()..getUserProfile(),
+        return MultiBlocProvider(
+          providers: [
+            BlocProvider(
+              create: (context) => serviceLocator<ProfileCubit>()..getUserProfile(),
+            ),
+            BlocProvider(
+              create: (context) => serviceLocator<StatisticsCubit>(),
+            ),
+          ],
           child: const Dashboard(),
         );
       case ScreenName.statistics:

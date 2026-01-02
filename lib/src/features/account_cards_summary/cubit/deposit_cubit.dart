@@ -14,6 +14,7 @@ class DepositCubit extends Cubit<DepositState> {
     required String currency,
     required String sourceBankName,
   }) async {
+    if (isClosed) return;
     emit(DepositLoading());
 
     // Call the use case
@@ -24,6 +25,7 @@ class DepositCubit extends Cubit<DepositState> {
       sourceBankName: sourceBankName,
     );
 
+    if (isClosed) return;
     result.fold(
       (failure) => emit(DepositFailure(
         failure.message,

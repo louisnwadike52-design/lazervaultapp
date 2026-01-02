@@ -9,6 +9,7 @@ import '../../cubit/crypto_state.dart';
 import '../../domain/entities/crypto_entity.dart';
 import '../../data/models/crypto_model.dart';
 import '../widgets/crypto_search_bar.dart';
+import '../widgets/voice_input_widget.dart';
 import 'crypto_detail_screen.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import '../../../../../core/services/injection_container.dart';
@@ -134,6 +135,24 @@ class _CryptoScreenState extends State<CryptoScreen>
           },
         ),
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _showVoiceInputBottomSheet,
+        backgroundColor: const Color(0xFF6C5CE7),
+        child: Icon(
+          Icons.mic,
+          color: Colors.white,
+          size: 28.sp,
+        ),
+      ),
+    );
+  }
+
+  void _showVoiceInputBottomSheet() {
+    Get.bottomSheet(
+      const VoiceInputWidget(),
+      isScrollControlled: true,
+      isDismissible: true,
+      enableDrag: true,
     );
   }
 
@@ -180,15 +199,7 @@ class _CryptoScreenState extends State<CryptoScreen>
                 ),
                 child: IconButton(
                   icon: Icon(Icons.mic, color: const Color(0xFF6C5CE7), size: 20.sp),
-                  onPressed: () {
-                    // TODO: Implement voice command functionality
-                    Get.snackbar(
-                      'Voice Command',
-                      'Voice command feature coming soon!',
-                      backgroundColor: const Color(0xFF6C5CE7).withOpacity(0.2),
-                      colorText: Colors.white,
-                    );
-                  },
+                  onPressed: _showVoiceInputBottomSheet,
                 ),
               ),
               SizedBox(width: 12.w),

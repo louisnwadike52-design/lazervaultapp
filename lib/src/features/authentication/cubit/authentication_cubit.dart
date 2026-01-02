@@ -81,15 +81,18 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       if (accessToken != null && userId != null) {
         // Token exists, validate it
         // For now, assume valid. Later add token validation
+        if (isClosed) return;
         emit(AuthenticationCheckingSession());
 
         // TODO: Add API call to validate token and get user profile
         // For now, just emit initial state
         await Future.delayed(const Duration(milliseconds: 500));
+        if (isClosed) return;
         emit(AuthenticationInitial());
       }
     } catch (e) {
       print('Auto login failed: $e');
+      if (isClosed) return;
       emit(AuthenticationInitial());
     }
   }
@@ -161,10 +164,12 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     required String password,
   }) async {
     print('🔐 Login attempt with email: $email (length: ${email.length})');
+    if (isClosed) return;
     emit(AuthenticationLoading());
 
     final result = await _loginUseCase(email: email, password: password);
 
+    if (isClosed) return;
     result.fold(
       (failure) {
         print('❌ Login failed for email: $email - ${failure.message}');
@@ -187,6 +192,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     required String email,
     required String passcode,
   }) async {
+    if (isClosed) return;
     emit(const AuthenticationLoading());
 
     final result = await _loginWithPasscodeUseCase(
@@ -194,6 +200,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       passcode: passcode,
     );
 
+    if (isClosed) return;
     result.fold(
       (failure) {
         emit(AuthenticationError(failure.message));
@@ -212,10 +219,12 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
   Future<void> registerPasscode({
     required String passcode,
   }) async {
+    if (isClosed) return;
     emit(const AuthenticationLoading());
 
     final result = await _registerPasscodeUseCase(passcode: passcode);
 
+    if (isClosed) return;
     result.fold(
       (failure) {
         _showErrorSnackbar('Passcode Registration Failed', failure.message);
@@ -245,6 +254,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     required String password,
     String? phoneNumber,
   }) async {
+    if (isClosed) return;
     emit(AuthenticationLoading());
 
     final result = await _signUpUseCase(
@@ -255,6 +265,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       phoneNumber: phoneNumber,
     );
 
+    if (isClosed) return;
     result.fold(
       (failure) {
         _showErrorSnackbar('Sign Up Failed', failure.message);
@@ -286,10 +297,12 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
   }
 
   Future<void> signInWithGoogle() async {
+    if (isClosed) return;
     emit(AuthenticationLoading());
 
     final result = await _signInWithGoogleUseCase();
 
+    if (isClosed) return;
     result.fold(
       (failure) {
         _showErrorSnackbar('Google Sign-In Failed', failure.message);
@@ -307,10 +320,12 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
   }
 
   Future<void> signInWithApple() async {
+    if (isClosed) return;
     emit(AuthenticationLoading());
 
     final result = await _signInWithAppleUseCase();
 
+    if (isClosed) return;
     result.fold(
       (failure) {
         _showErrorSnackbar('Apple Sign-In Failed', failure.message);
@@ -346,19 +361,23 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
 
     // Validate email
     if (currentState.email.isEmpty) {
+      if (isClosed) return;
       emit(currentState.copyWith(errorMessage: 'Email is required'));
       return;
     }
 
     if (!_isValidEmail(currentState.email)) {
+      if (isClosed) return;
       emit(currentState.copyWith(errorMessage: 'Please enter a valid email address'));
       return;
     }
 
+    if (isClosed) return;
     emit(currentState.copyWith(isLoading: true, clearError: true));
 
     final result = await _forgotPasswordUseCase(currentState.email);
 
+    if (isClosed) return;
     result.fold(
       (failure) {
         _showErrorSnackbar('Password Reset Failed', failure.message);
@@ -381,10 +400,12 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
 
   // Legacy method for backward compatibility
   Future<void> forgotPassword(String email) async {
+    if (isClosed) return;
     emit(AuthenticationLoading());
 
     final result = await _forgotPasswordUseCase(email);
 
+    if (isClosed) return;
     result.fold(
       (failure) {
         _showErrorSnackbar('Password Reset Failed', failure.message);
@@ -431,6 +452,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     final passwordError = _validatePassword(currentState.newPassword);
     if (passwordError != null) {
       _showErrorSnackbar('Invalid Password', passwordError);
+      if (isClosed) return;
       emit(currentState.copyWith(errorMessage: passwordError));
       return;
     }
@@ -438,10 +460,12 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     if (currentState.newPassword != currentState.confirmPassword) {
       const error = 'Passwords do not match';
       _showErrorSnackbar('Error', error);
+      if (isClosed) return;
       emit(currentState.copyWith(errorMessage: error));
       return;
     }
 
+    if (isClosed) return;
     emit(currentState.copyWith(isLoading: true, clearError: true));
 
     final result = await _resetPasswordUseCase(
@@ -450,6 +474,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       newPassword: currentState.newPassword,
     );
 
+    if (isClosed) return;
     result.fold(
       (failure) {
         _showErrorSnackbar('Password Reset Failed', failure.message);
@@ -472,10 +497,12 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
 
   // --- Email Verification ---
   Future<void> verifyEmail(String token) async {
+    if (isClosed) return;
     emit(AuthenticationLoading());
 
     final result = await _verifyEmailUseCase(token);
 
+    if (isClosed) return;
     result.fold(
       (failure) {
         _showErrorSnackbar('Verification Failed', failure.message);
@@ -501,10 +528,12 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       return;
     }
 
+    if (isClosed) return;
     emit(AuthenticationLoading());
 
     final result = await _resendVerificationUseCase();
 
+    if (isClosed) return;
     result.fold(
       (failure) {
         _showErrorSnackbar('Failed to Send Email', failure.message);
@@ -599,6 +628,13 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     }
   }
 
+  void signUpReferralCodeChanged(String value) {
+    if (state is SignUpInProgress) {
+      final currentState = state as SignUpInProgress;
+      emit(currentState.copyWith(referralCode: value, clearErrorMessage: true, isLoading: false));
+    }
+  }
+
   void signUpDateOfBirthChanged(DateTime? value) {
     if (state is SignUpInProgress) {
       final currentState = state as SignUpInProgress;
@@ -624,6 +660,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
         if (currentState.email.isEmpty) {
           final errorMsg = 'Email is required';
           _showErrorSnackbar('Validation Error', errorMsg);
+          if (isClosed) return;
           emit(currentState.copyWith(errorMessage: errorMsg));
           return;
         }
@@ -631,6 +668,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
         if (!_isValidEmail(currentState.email)) {
           final errorMsg = 'Please enter a valid email address';
           _showErrorSnackbar('Validation Error', errorMsg);
+          if (isClosed) return;
           emit(currentState.copyWith(errorMessage: errorMsg));
           return;
         }
@@ -638,6 +676,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
         if (currentState.password.isEmpty) {
           final errorMsg = 'Password is required';
           _showErrorSnackbar('Validation Error', errorMsg);
+          if (isClosed) return;
           emit(currentState.copyWith(errorMessage: errorMsg));
           return;
         }
@@ -645,6 +684,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
         final passwordError = _validatePassword(currentState.password);
         if (passwordError != null) {
           _showErrorSnackbar('Password Requirements', passwordError);
+          if (isClosed) return;
           emit(currentState.copyWith(errorMessage: passwordError));
           return;
         }
@@ -652,6 +692,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
         if (currentState.confirmPassword.isEmpty) {
           final errorMsg = 'Please confirm your password';
           _showErrorSnackbar('Validation Error', errorMsg);
+          if (isClosed) return;
           emit(currentState.copyWith(errorMessage: errorMsg));
           return;
         }
@@ -659,15 +700,18 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
         if (currentState.password != currentState.confirmPassword) {
           final errorMsg = 'Passwords do not match';
           _showErrorSnackbar('Validation Error', errorMsg);
+          if (isClosed) return;
           emit(currentState.copyWith(errorMessage: errorMsg));
           return;
         }
 
         // Check email availability before proceeding
+        if (isClosed) return;
         emit(currentState.copyWith(isLoading: true, clearErrorMessage: true));
 
         final result = await _checkEmailAvailabilityUseCase(email: currentState.email);
 
+        if (isClosed) return;
         result.fold(
           (failure) {
             final errorMsg = 'Failed to verify email availability. Please try again.';
@@ -692,6 +736,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
         final firstNameError = _validateName(currentState.firstName, 'First name');
         if (firstNameError != null) {
           _showErrorSnackbar('Validation Error', firstNameError);
+          if (isClosed) return;
           emit(currentState.copyWith(errorMessage: firstNameError));
           return;
         }
@@ -699,6 +744,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
         final lastNameError = _validateName(currentState.lastName, 'Last name');
         if (lastNameError != null) {
           _showErrorSnackbar('Validation Error', lastNameError);
+          if (isClosed) return;
           emit(currentState.copyWith(errorMessage: lastNameError));
           return;
         }
@@ -706,6 +752,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
         final dobError = _validateDateOfBirth(currentState.selectedDate);
         if (dobError != null) {
           _showErrorSnackbar('Validation Error', dobError);
+          if (isClosed) return;
           emit(currentState.copyWith(errorMessage: dobError));
           return;
         }
@@ -713,12 +760,14 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
         final phoneError = _validatePhoneNumber(currentState.phoneNumber);
         if (phoneError != null) {
           _showErrorSnackbar('Validation Error', phoneError);
+          if (isClosed) return;
           emit(currentState.copyWith(errorMessage: phoneError));
           return;
         }
       }
 
       if (currentState.currentPage < 1) {
+        if (isClosed) return;
         emit(currentState.copyWith(currentPage: currentState.currentPage + 1, clearErrorMessage: true));
       }
     }
@@ -741,6 +790,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       if (!_isValidEmail(currentState.email)) {
         final errorMsg = 'Please enter a valid email address';
         _showErrorSnackbar('Validation Error', errorMsg);
+        if (isClosed) return;
         emit(currentState.copyWith(errorMessage: errorMsg, isLoading: false));
         return;
       }
@@ -748,6 +798,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       final passwordError = _validatePassword(currentState.password);
       if (passwordError != null) {
         _showErrorSnackbar('Password Requirements', passwordError);
+        if (isClosed) return;
         emit(currentState.copyWith(errorMessage: passwordError, isLoading: false));
         return;
       }
@@ -755,6 +806,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       if (currentState.password != currentState.confirmPassword) {
         final errorMsg = 'Passwords do not match';
         _showErrorSnackbar('Validation Error', errorMsg);
+        if (isClosed) return;
         emit(currentState.copyWith(errorMessage: errorMsg, isLoading: false));
         return;
       }
@@ -762,6 +814,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       final firstNameError = _validateName(currentState.firstName, 'First name');
       if (firstNameError != null) {
         _showErrorSnackbar('Validation Error', firstNameError);
+        if (isClosed) return;
         emit(currentState.copyWith(errorMessage: firstNameError, isLoading: false));
         return;
       }
@@ -769,6 +822,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       final lastNameError = _validateName(currentState.lastName, 'Last name');
       if (lastNameError != null) {
         _showErrorSnackbar('Validation Error', lastNameError);
+        if (isClosed) return;
         emit(currentState.copyWith(errorMessage: lastNameError, isLoading: false));
         return;
       }
@@ -776,6 +830,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       final dobError = _validateDateOfBirth(currentState.selectedDate);
       if (dobError != null) {
         _showErrorSnackbar('Validation Error', dobError);
+        if (isClosed) return;
         emit(currentState.copyWith(errorMessage: dobError, isLoading: false));
         return;
       }
@@ -783,11 +838,13 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       final phoneError = _validatePhoneNumber(currentState.phoneNumber);
       if (phoneError != null) {
         _showErrorSnackbar('Validation Error', phoneError);
+        if (isClosed) return;
         emit(currentState.copyWith(errorMessage: phoneError, isLoading: false));
         return;
       }
 
       if (currentState.isLoading) return;
+      if (isClosed) return;
       emit(currentState.copyWith(isLoading: true, clearErrorMessage: true));
 
       // Call the sign up use case
@@ -798,8 +855,10 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
         password: currentState.password,
         phoneNumber: currentState.phoneNumber,
         username: currentState.username.isEmpty ? null : currentState.username,
+        referralCode: currentState.referralCode.isEmpty ? null : currentState.referralCode,
       );
 
+      if (isClosed) return;
       result.fold(
         (failure) {
           print('Error signing up: ${failure.message}');
@@ -831,6 +890,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       );
     } else {
       print('Cannot submit sign up from current state: $state');
+      if (isClosed) return;
       emit(AuthenticationFailure("Cannot submit sign up from current state.", statusCode: 400));
     }
   }
@@ -1032,6 +1092,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     if (state is! PasscodeSetupInProgress) return;
 
     final currentState = state as PasscodeSetupInProgress;
+    if (isClosed) return;
     emit(currentState.copyWith(isRegistering: true, clearError: true));
 
     // Store passcode locally
@@ -1044,6 +1105,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     // Call backend API
     final result = await _registerPasscodeUseCase(passcode: passcode);
 
+    if (isClosed) return;
     result.fold(
       (failure) {
         _showErrorSnackbar('Passcode Registration Failed', failure.message);
@@ -1127,10 +1189,12 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
 
     if (email == null || email.isEmpty) {
       _showErrorSnackbar('Error', 'No stored email found. Please use email/password login.');
+      if (isClosed) return;
       emit(currentState.copyWith(enteredPasscode: '', clearError: true));
       return;
     }
 
+    if (isClosed) return;
     emit(currentState.copyWith(isAuthenticating: true, clearError: true));
 
     print('🔐 Calling loginWithPasscode for email: $email');
@@ -1140,6 +1204,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       passcode: passcode,
     );
 
+    if (isClosed) return;
     result.fold(
       (failure) {
         print('🔐 Passcode login failed: ${failure.message}');

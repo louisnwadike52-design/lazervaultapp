@@ -51,6 +51,28 @@ const RegisterPasscodeResponse$json = const {
 
 /// Descriptor for `RegisterPasscodeResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List registerPasscodeResponseDescriptor = $convert.base64Decode('ChhSZWdpc3RlclBhc3Njb2RlUmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2VzcxIQCgNtc2cYAiABKAlSA21zZw==');
+@$core.Deprecated('Use changePasscodeRequestDescriptor instead')
+const ChangePasscodeRequest$json = const {
+  '1': 'ChangePasscodeRequest',
+  '2': const [
+    const {'1': 'old_passcode', '3': 1, '4': 1, '5': 9, '10': 'oldPasscode'},
+    const {'1': 'new_passcode', '3': 2, '4': 1, '5': 9, '10': 'newPasscode'},
+  ],
+};
+
+/// Descriptor for `ChangePasscodeRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List changePasscodeRequestDescriptor = $convert.base64Decode('ChVDaGFuZ2VQYXNzY29kZVJlcXVlc3QSIQoMb2xkX3Bhc3Njb2RlGAEgASgJUgtvbGRQYXNzY29kZRIhCgxuZXdfcGFzc2NvZGUYAiABKAlSC25ld1Bhc3Njb2Rl');
+@$core.Deprecated('Use changePasscodeResponseDescriptor instead')
+const ChangePasscodeResponse$json = const {
+  '1': 'ChangePasscodeResponse',
+  '2': const [
+    const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    const {'1': 'msg', '3': 2, '4': 1, '5': 9, '10': 'msg'},
+  ],
+};
+
+/// Descriptor for `ChangePasscodeResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List changePasscodeResponseDescriptor = $convert.base64Decode('ChZDaGFuZ2VQYXNzY29kZVJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3MSEAoDbXNnGAIgASgJUgNtc2c=');
 @$core.Deprecated('Use loginResponseDescriptor instead')
 const LoginResponse$json = const {
   '1': 'LoginResponse',
@@ -151,12 +173,13 @@ const RequestPasswordResetRequest$json = const {
   '1': 'RequestPasswordResetRequest',
   '2': const [
     const {'1': 'email', '3': 1, '4': 1, '5': 9, '10': 'email'},
+    const {'1': 'delivery_method', '3': 2, '4': 1, '5': 9, '10': 'deliveryMethod'},
   ],
   '7': const {},
 };
 
 /// Descriptor for `RequestPasswordResetRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List requestPasswordResetRequestDescriptor = $convert.base64Decode('ChtSZXF1ZXN0UGFzc3dvcmRSZXNldFJlcXVlc3QSFAoFZW1haWwYASABKAlSBWVtYWlsOg2SQQoKCNIBBWVtYWls');
+final $typed_data.Uint8List requestPasswordResetRequestDescriptor = $convert.base64Decode('ChtSZXF1ZXN0UGFzc3dvcmRSZXNldFJlcXVlc3QSFAoFZW1haWwYASABKAlSBWVtYWlsEicKD2RlbGl2ZXJ5X21ldGhvZBgCIAEoCVIOZGVsaXZlcnlNZXRob2Q6DZJBCgoI0gEFZW1haWw=');
 @$core.Deprecated('Use requestPasswordResetResponseDescriptor instead')
 const RequestPasswordResetResponse$json = const {
   '1': 'RequestPasswordResetResponse',
@@ -192,6 +215,75 @@ const ResetPasswordResponse$json = const {
 
 /// Descriptor for `ResetPasswordResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List resetPasswordResponseDescriptor = $convert.base64Decode('ChVSZXNldFBhc3N3b3JkUmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2VzcxIQCgNtc2cYAiABKAlSA21zZw==');
+@$core.Deprecated('Use verifyPasswordResetCodeRequestDescriptor instead')
+const VerifyPasswordResetCodeRequest$json = const {
+  '1': 'VerifyPasswordResetCodeRequest',
+  '2': const [
+    const {'1': 'email', '3': 1, '4': 1, '5': 9, '10': 'email'},
+    const {'1': 'code', '3': 2, '4': 1, '5': 9, '10': 'code'},
+  ],
+  '7': const {},
+};
+
+/// Descriptor for `VerifyPasswordResetCodeRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List verifyPasswordResetCodeRequestDescriptor = $convert.base64Decode('Ch5WZXJpZnlQYXNzd29yZFJlc2V0Q29kZVJlcXVlc3QSFAoFZW1haWwYASABKAlSBWVtYWlsEhIKBGNvZGUYAiABKAlSBGNvZGU6FJJBEQoP0gEFZW1haWzSAQRjb2Rl');
+@$core.Deprecated('Use verifyPasswordResetCodeResponseDescriptor instead')
+const VerifyPasswordResetCodeResponse$json = const {
+  '1': 'VerifyPasswordResetCodeResponse',
+  '2': const [
+    const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    const {'1': 'msg', '3': 2, '4': 1, '5': 9, '10': 'msg'},
+    const {'1': 'reset_token', '3': 3, '4': 1, '5': 9, '10': 'resetToken'},
+  ],
+};
+
+/// Descriptor for `VerifyPasswordResetCodeResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List verifyPasswordResetCodeResponseDescriptor = $convert.base64Decode('Ch9WZXJpZnlQYXNzd29yZFJlc2V0Q29kZVJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3MSEAoDbXNnGAIgASgJUgNtc2cSHwoLcmVzZXRfdG9rZW4YAyABKAlSCnJlc2V0VG9rZW4=');
+@$core.Deprecated('Use loginWithFaceRequestDescriptor instead')
+const LoginWithFaceRequest$json = const {
+  '1': 'LoginWithFaceRequest',
+  '2': const [
+    const {'1': 'email', '3': 1, '4': 1, '5': 9, '10': 'email'},
+    const {'1': 'image_data', '3': 2, '4': 1, '5': 12, '10': 'imageData'},
+    const {'1': 'image_filename', '3': 3, '4': 1, '5': 9, '10': 'imageFilename'},
+  ],
+  '7': const {},
+};
+
+/// Descriptor for `LoginWithFaceRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List loginWithFaceRequestDescriptor = $convert.base64Decode('ChRMb2dpbldpdGhGYWNlUmVxdWVzdBIUCgVlbWFpbBgBIAEoCVIFZW1haWwSHQoKaW1hZ2VfZGF0YRgCIAEoDFIJaW1hZ2VEYXRhEiUKDmltYWdlX2ZpbGVuYW1lGAMgASgJUg1pbWFnZUZpbGVuYW1lOhqSQRcKFdIBBWVtYWls0gEKaW1hZ2VfZGF0YQ==');
+@$core.Deprecated('Use loginWithFaceResponseDescriptor instead')
+const LoginWithFaceResponse$json = const {
+  '1': 'LoginWithFaceResponse',
+  '2': const [
+    const {'1': 'data', '3': 1, '4': 1, '5': 11, '6': '.pb.Data', '10': 'data'},
+    const {'1': 'success', '3': 2, '4': 1, '5': 8, '10': 'success'},
+    const {'1': 'msg', '3': 3, '4': 1, '5': 9, '10': 'msg'},
+    const {'1': 'confidence', '3': 4, '4': 1, '5': 1, '10': 'confidence'},
+  ],
+};
+
+/// Descriptor for `LoginWithFaceResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List loginWithFaceResponseDescriptor = $convert.base64Decode('ChVMb2dpbldpdGhGYWNlUmVzcG9uc2USHAoEZGF0YRgBIAEoCzIILnBiLkRhdGFSBGRhdGESGAoHc3VjY2VzcxgCIAEoCFIHc3VjY2VzcxIQCgNtc2cYAyABKAlSA21zZxIeCgpjb25maWRlbmNlGAQgASgBUgpjb25maWRlbmNl');
+@$core.Deprecated('Use checkFaceRegistrationRequestDescriptor instead')
+const CheckFaceRegistrationRequest$json = const {
+  '1': 'CheckFaceRegistrationRequest',
+};
+
+/// Descriptor for `CheckFaceRegistrationRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List checkFaceRegistrationRequestDescriptor = $convert.base64Decode('ChxDaGVja0ZhY2VSZWdpc3RyYXRpb25SZXF1ZXN0');
+@$core.Deprecated('Use checkFaceRegistrationResponseDescriptor instead')
+const CheckFaceRegistrationResponse$json = const {
+  '1': 'CheckFaceRegistrationResponse',
+  '2': const [
+    const {'1': 'is_registered', '3': 1, '4': 1, '5': 8, '10': 'isRegistered'},
+    const {'1': 'registered_at', '3': 2, '4': 1, '5': 9, '10': 'registeredAt'},
+    const {'1': 'msg', '3': 3, '4': 1, '5': 9, '10': 'msg'},
+  ],
+};
+
+/// Descriptor for `CheckFaceRegistrationResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List checkFaceRegistrationResponseDescriptor = $convert.base64Decode('Ch1DaGVja0ZhY2VSZWdpc3RyYXRpb25SZXNwb25zZRIjCg1pc19yZWdpc3RlcmVkGAEgASgIUgxpc1JlZ2lzdGVyZWQSIwoNcmVnaXN0ZXJlZF9hdBgCIAEoCVIMcmVnaXN0ZXJlZEF0EhAKA21zZxgDIAEoCVIDbXNn');
 @$core.Deprecated('Use signInWithGoogleRequestDescriptor instead')
 const SignInWithGoogleRequest$json = const {
   '1': 'SignInWithGoogleRequest',

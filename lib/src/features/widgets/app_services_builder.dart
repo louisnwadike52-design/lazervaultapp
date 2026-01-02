@@ -67,6 +67,9 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
     const AppService(
         serviceName: AppServiceName.crowdfund,
         serviceImg: AppServiceImg.crowdfund),
+    const AppService(
+        serviceName: AppServiceName.lockFunds,
+        serviceImg: AppServiceImg.lockFunds),
   ];
 
   // Split services into pages

@@ -205,10 +205,12 @@ class _AllServicesBottomSheetState extends State<AllServicesBottomSheet>
       curve: Curves.easeOutBack,
       tween: Tween(begin: 0.0, end: 1.0),
       builder: (context, value, child) {
+        // Clamp values to ensure they're within valid ranges
+        final clampedValue = value.clamp(0.0, 1.0);
         return Transform.scale(
-          scale: value,
+          scale: clampedValue,
           child: Opacity(
-            opacity: value,
+            opacity: clampedValue,
             child: child,
           ),
         );

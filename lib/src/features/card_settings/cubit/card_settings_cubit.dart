@@ -24,6 +24,7 @@ class CardSettingsCubit extends Cubit<CardSettingsState> {
     required String accountId,
     String? accessToken,
   }) async {
+    if (isClosed) return;
     emit(CardSettingsLoading());
 
     final result = await _getAccountDetailsUseCase.call(
@@ -32,12 +33,16 @@ class CardSettingsCubit extends Cubit<CardSettingsState> {
     );
 
     result.fold(
-      (failure) => emit(CardSettingsError(
-        failure.message,
-        statusCode: failure.statusCode,
-      )),
+      (failure) {
+        if (isClosed) return;
+        emit(CardSettingsError(
+          failure.message,
+          statusCode: failure.statusCode,
+        ));
+      },
       (accountDetails) {
         _accountDetailsCache[accountId] = accountDetails;
+        if (isClosed) return;
         emit(CardSettingsLoaded(_accountDetailsCache));
       },
     );
@@ -51,6 +56,7 @@ class CardSettingsCubit extends Cubit<CardSettingsState> {
     required bool enableOnlinePayments,
     String? accessToken,
   }) async {
+    if (isClosed) return;
     emit(CardSettingsUpdating(accountId, 'security'));
 
     final result = await _updateSecuritySettingsUseCase.call(
@@ -63,22 +69,26 @@ class CardSettingsCubit extends Cubit<CardSettingsState> {
 
     result.fold(
       (failure) {
+        if (isClosed) return;
         emit(CardSettingsError(
           failure.message,
           statusCode: failure.statusCode,
         ));
         // Re-emit loaded state to maintain UI
         if (_accountDetailsCache.isNotEmpty) {
+          if (isClosed) return;
           emit(CardSettingsLoaded(_accountDetailsCache));
         }
       },
       (accountDetails) {
         _accountDetailsCache[accountId] = accountDetails;
+        if (isClosed) return;
         emit(CardSettingsUpdateSuccess(
           accountDetails,
           'Security settings updated successfully',
         ));
         // Re-emit loaded state with updated data
+        if (isClosed) return;
         emit(CardSettingsLoaded(_accountDetailsCache));
       },
     );
@@ -91,6 +101,7 @@ class CardSettingsCubit extends Cubit<CardSettingsState> {
     required String reason,
     String? accessToken,
   }) async {
+    if (isClosed) return;
     emit(CardSettingsUpdating(accountId, 'status'));
 
     final result = await _updateAccountStatusUseCase.call(
@@ -102,12 +113,14 @@ class CardSettingsCubit extends Cubit<CardSettingsState> {
 
     result.fold(
       (failure) {
+        if (isClosed) return;
         emit(CardSettingsError(
           failure.message,
           statusCode: failure.statusCode,
         ));
         // Re-emit loaded state to maintain UI
         if (_accountDetailsCache.isNotEmpty) {
+          if (isClosed) return;
           emit(CardSettingsLoaded(_accountDetailsCache));
         }
       },
@@ -116,8 +129,10 @@ class CardSettingsCubit extends Cubit<CardSettingsState> {
         final message = status.toLowerCase() == 'frozen'
             ? 'Card frozen successfully'
             : 'Card unfrozen successfully';
+        if (isClosed) return;
         emit(CardSettingsUpdateSuccess(accountDetails, message));
         // Re-emit loaded state with updated data
+        if (isClosed) return;
         emit(CardSettingsLoaded(_accountDetailsCache));
       },
     );
@@ -136,6 +151,7 @@ class CardSettingsCubit extends Cubit<CardSettingsState> {
   /// Clear the cache
   void clearCache() {
     _accountDetailsCache.clear();
+    if (isClosed) return;
     emit(CardSettingsInitial());
   }
 }

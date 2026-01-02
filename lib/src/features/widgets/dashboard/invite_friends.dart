@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
+import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/widgets/universal_image_loader.dart';
 
 class InviteFriends extends StatefulWidget {
@@ -96,7 +98,7 @@ class _InviteFriendsState extends State<InviteFriends> {
                       SizedBox(height: 20.h),
                       ElevatedButton(
                         onPressed: () {
-                          // Add invite functionality
+                          Get.toNamed(AppRoutes.referralDashboard);
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.white,

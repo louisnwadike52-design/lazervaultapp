@@ -35,7 +35,7 @@ class InvoiceCubit extends Cubit<InvoiceState> {
       // Check if user is authenticated
       if (currentUserId == null) {
         if (isClosed) return;
-        emit(const InvoiceError('User not authenticated. Please log in.'));
+        emit(const InvoiceError(message: 'User not authenticated. Please log in.'));
         return;
       }
 
@@ -294,7 +294,7 @@ class InvoiceCubit extends Cubit<InvoiceState> {
       // Check if user is authenticated
       if (currentUserId == null) {
         if (isClosed) return;
-        emit(const InvoiceError('User not authenticated. Please log in.'));
+        emit(const InvoiceError(message: 'User not authenticated. Please log in.'));
         return;
       }
 
