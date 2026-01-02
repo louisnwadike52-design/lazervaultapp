@@ -8,11 +8,20 @@ import 'invoice_state.dart';
 
 class InvoiceCubit extends Cubit<InvoiceState> {
   final InvoiceRepository repository;
-  final String currentUserId;
+
+  // Current user ID - set from authentication state
+  String? _currentUserId;
+  String? get currentUserId => _currentUserId;
+
+  /// Set the current user ID from authentication state
+  void setUserId(String userId) {
+    _currentUserId = userId;
+    // Automatically load invoices when user ID is set
+    loadInvoices();
+  }
 
   InvoiceCubit({
     required this.repository,
-    required this.currentUserId,
   }) : super(InvoiceInitial());
 
   // Load all invoices with pagination and statistics
@@ -23,7 +32,15 @@ class InvoiceCubit extends Cubit<InvoiceState> {
     bool append = false,
   }) async {
     try {
+      // Check if user is authenticated
+      if (currentUserId == null) {
+        if (isClosed) return;
+        emit(const InvoiceError('User not authenticated. Please log in.'));
+        return;
+      }
+
       if (page == 1 && !append) {
+        if (isClosed) return;
         emit(InvoiceLoading());
       }
 
@@ -35,8 +52,10 @@ class InvoiceCubit extends Cubit<InvoiceState> {
           limit: limit,
           filter: filter,
         );
+        if (isClosed) return;
 
-        final statistics = await repository.getInvoiceStatistics(currentUserId);
+        final statistics = await repository.getInvoiceStatistics(currentUserId!);
+        if (isClosed) return;
 
         if (append && state is InvoicesLoaded) {
           final currentState = state as InvoicesLoaded;
@@ -62,7 +81,9 @@ class InvoiceCubit extends Cubit<InvoiceState> {
       } else {
         // Fallback for gRPC or other implementations without pagination
         final invoices = await repository.getAllInvoices();
-        final statistics = await repository.getInvoiceStatistics(currentUserId);
+        if (isClosed) return;
+        final statistics = await repository.getInvoiceStatistics(currentUserId!);
+        if (isClosed) return;
 
         // Apply client-side filtering if filter is provided
         List<Invoice> filteredInvoices = invoices;
@@ -78,6 +99,7 @@ class InvoiceCubit extends Cubit<InvoiceState> {
         ));
       }
     } catch (e) {
+      if (isClosed) return;
       // Check if error is due to service being unavailable
       final errorMessage = e.toString().toLowerCase();
       if (errorMessage.contains('unimplemented') ||
@@ -112,6 +134,7 @@ class InvoiceCubit extends Cubit<InvoiceState> {
   }) async {
     try {
       if (page == 1 && !append) {
+        if (isClosed) return;
         emit(InvoiceLoading());
       }
 
@@ -124,6 +147,7 @@ class InvoiceCubit extends Cubit<InvoiceState> {
           limit: limit,
           filter: filter,
         );
+        if (isClosed) return;
 
         if (append && state is InvoiceSearchResults) {
           final currentState = state as InvoiceSearchResults;
@@ -149,6 +173,7 @@ class InvoiceCubit extends Cubit<InvoiceState> {
       } else {
         // Fallback for gRPC or other implementations without pagination
         final results = await repository.searchInvoices(query);
+        if (isClosed) return;
 
         emit(InvoiceSearchResults(
           results: results,
@@ -156,6 +181,7 @@ class InvoiceCubit extends Cubit<InvoiceState> {
         ));
       }
     } catch (e) {
+      if (isClosed) return;
       // Check if error is due to service being unavailable
       final errorMessage = e.toString().toLowerCase();
       if (errorMessage.contains('unimplemented') ||
@@ -215,9 +241,11 @@ class InvoiceCubit extends Cubit<InvoiceState> {
   // Load specific invoice details
   Future<void> loadInvoiceDetails(String invoiceId) async {
     try {
+      if (isClosed) return;
       emit(InvoiceLoading());
 
       final invoice = await repository.getInvoiceById(invoiceId);
+      if (isClosed) return;
       if (invoice == null) {
         emit(InvoiceError(message: 'Invoice not found'));
         return;
@@ -227,6 +255,7 @@ class InvoiceCubit extends Cubit<InvoiceState> {
       List<Map<String, dynamic>> paymentHistory = [];
       try {
         paymentHistory = await repository.getPaymentHistory(invoiceId);
+        if (isClosed) return;
       } catch (e) {
         // Payment history not available or not implemented - that's okay
         print('Payment history not available: $e');
@@ -237,6 +266,7 @@ class InvoiceCubit extends Cubit<InvoiceState> {
         paymentHistory: paymentHistory,
       ));
     } catch (e) {
+      if (isClosed) return;
       emit(InvoiceError(message: 'Failed to load invoice details: ${e.toString()}'));
     }
   }
@@ -261,6 +291,14 @@ class InvoiceCubit extends Cubit<InvoiceState> {
     final previousFormState = state is InvoiceFormState ? state as InvoiceFormState : null;
 
     try {
+      // Check if user is authenticated
+      if (currentUserId == null) {
+        if (isClosed) return;
+        emit(const InvoiceError('User not authenticated. Please log in.'));
+        return;
+      }
+
+      if (isClosed) return;
       emit(InvoiceLoading());
 
       final subtotal = items.fold<double>(0, (sum, item) => sum + item.totalPrice);
@@ -278,7 +316,7 @@ class InvoiceCubit extends Cubit<InvoiceState> {
         type: type,
         createdAt: DateTime.now(),
         dueDate: dueDate,
-        fromUserId: currentUserId,
+        fromUserId: currentUserId!,
         toEmail: toEmail,
         toName: toName,
         items: items,
@@ -291,6 +329,7 @@ class InvoiceCubit extends Cubit<InvoiceState> {
       );
 
       final createdInvoice = await repository.createInvoice(invoice);
+      if (isClosed) return;
 
       emit(InvoiceOperationSuccess(
         message: sendImmediately ? 'Invoice created and sent successfully' : 'Invoice created as draft',
@@ -300,6 +339,7 @@ class InvoiceCubit extends Cubit<InvoiceState> {
       // Reload invoices to update the list
       await loadInvoices();
     } catch (e) {
+      if (isClosed) return;
       emit(InvoiceError(message: 'Failed to create invoice: ${e.toString()}'));
       // Restore form state so user can retry with updated data
       if (previousFormState != null) {
@@ -314,9 +354,11 @@ class InvoiceCubit extends Cubit<InvoiceState> {
     final previousFormState = state is InvoiceFormState ? state as InvoiceFormState : null;
 
     try {
+      if (isClosed) return;
       emit(InvoiceLoading());
 
       final updatedInvoice = await repository.updateInvoice(invoice);
+      if (isClosed) return;
 
       emit(InvoiceOperationSuccess(
         message: 'Invoice updated successfully',
@@ -325,6 +367,7 @@ class InvoiceCubit extends Cubit<InvoiceState> {
 
       await loadInvoices();
     } catch (e) {
+      if (isClosed) return;
       emit(InvoiceError(message: 'Failed to update invoice: ${e.toString()}'));
       // Restore form state so user can retry with updated data
       if (previousFormState != null) {
@@ -337,14 +380,16 @@ class InvoiceCubit extends Cubit<InvoiceState> {
   Future<void> sendInvoice(String invoiceId) async {
     try {
       final updatedInvoice = await repository.sendInvoice(invoiceId);
-      
+      if (isClosed) return;
+
       emit(InvoiceOperationSuccess(
         message: 'Invoice sent successfully',
         invoice: updatedInvoice,
       ));
-      
+
       await loadInvoices();
     } catch (e) {
+      if (isClosed) return;
       emit(InvoiceError(message: 'Failed to send invoice: ${e.toString()}'));
     }
   }
@@ -353,14 +398,16 @@ class InvoiceCubit extends Cubit<InvoiceState> {
   Future<void> markAsPaid(String invoiceId, PaymentMethod paymentMethod, [String? reference]) async {
     try {
       final updatedInvoice = await repository.markInvoiceAsPaid(invoiceId, paymentMethod, reference);
-      
+      if (isClosed) return;
+
       emit(InvoiceOperationSuccess(
         message: 'Invoice marked as paid successfully',
         invoice: updatedInvoice,
       ));
-      
+
       await loadInvoices();
     } catch (e) {
+      if (isClosed) return;
       emit(InvoiceError(message: 'Failed to mark invoice as paid: ${e.toString()}'));
     }
   }
@@ -369,14 +416,16 @@ class InvoiceCubit extends Cubit<InvoiceState> {
   Future<void> cancelInvoice(String invoiceId) async {
     try {
       final updatedInvoice = await repository.cancelInvoice(invoiceId);
-      
+      if (isClosed) return;
+
       emit(InvoiceOperationSuccess(
         message: 'Invoice cancelled successfully',
         invoice: updatedInvoice,
       ));
-      
+
       await loadInvoices();
     } catch (e) {
+      if (isClosed) return;
       emit(InvoiceError(message: 'Failed to cancel invoice: ${e.toString()}'));
     }
   }
@@ -385,11 +434,13 @@ class InvoiceCubit extends Cubit<InvoiceState> {
   Future<void> deleteInvoice(String invoiceId) async {
     try {
       await repository.deleteInvoice(invoiceId);
-      
+      if (isClosed) return;
+
       emit(InvoiceOperationSuccess(message: 'Invoice deleted successfully'));
-      
+
       await loadInvoices();
     } catch (e) {
+      if (isClosed) return;
       emit(InvoiceError(message: 'Failed to delete invoice: ${e.toString()}'));
     }
   }
@@ -398,12 +449,14 @@ class InvoiceCubit extends Cubit<InvoiceState> {
   Future<void> generateQRCode(String invoiceId) async {
     try {
       final qrData = await repository.generateQRCode(invoiceId);
-      
+      if (isClosed) return;
+
       emit(QRCodeGenerated(
         qrData: qrData,
         invoiceId: invoiceId,
       ));
     } catch (e) {
+      if (isClosed) return;
       emit(InvoiceError(message: 'Failed to generate QR code: ${e.toString()}'));
     }
   }
@@ -412,9 +465,11 @@ class InvoiceCubit extends Cubit<InvoiceState> {
   Future<void> shareInvoice(String invoiceId, List<String> recipients) async {
     try {
       await repository.shareInvoice(invoiceId, recipients);
-      
+      if (isClosed) return;
+
       emit(InvoiceOperationSuccess(message: 'Invoice shared successfully'));
     } catch (e) {
+      if (isClosed) return;
       emit(InvoiceError(message: 'Failed to share invoice: ${e.toString()}'));
     }
   }
@@ -422,12 +477,15 @@ class InvoiceCubit extends Cubit<InvoiceState> {
   // Load invoices by status
   Future<void> loadInvoicesByStatus(InvoiceStatus status) async {
     try {
+      if (isClosed) return;
       emit(InvoiceLoading());
-      
+
       final invoices = await repository.getInvoicesByStatus(status);
-      
+      if (isClosed) return;
+
       emit(InvoicesLoaded(invoices: invoices));
     } catch (e) {
+      if (isClosed) return;
       emit(InvoiceError(message: 'Failed to load invoices: ${e.toString()}'));
     }
   }
@@ -435,18 +493,22 @@ class InvoiceCubit extends Cubit<InvoiceState> {
   // Load overdue invoices
   Future<void> loadOverdueInvoices() async {
     try {
+      if (isClosed) return;
       emit(InvoiceLoading());
-      
+
       final invoices = await repository.getOverdueInvoices();
-      
+      if (isClosed) return;
+
       emit(InvoicesLoaded(invoices: invoices));
     } catch (e) {
+      if (isClosed) return;
       emit(InvoiceError(message: 'Failed to load overdue invoices: ${e.toString()}'));
     }
   }
 
   // Initialize form for new invoice
   void initializeForm({Invoice? editingInvoice}) {
+    if (isClosed) return;
     if (editingInvoice != null) {
       emit(InvoiceFormState(
         items: editingInvoice.items,
@@ -467,6 +529,7 @@ class InvoiceCubit extends Cubit<InvoiceState> {
 
   // Add item to form
   void addItem(InvoiceItem item) {
+    if (isClosed) return;
     if (state is InvoiceFormState) {
       final currentState = state as InvoiceFormState;
       final updatedItems = [...currentState.items, item];
@@ -479,6 +542,7 @@ class InvoiceCubit extends Cubit<InvoiceState> {
 
   // Update item in form by finding the item with matching ID
   void updateItem(InvoiceItem updatedItem) {
+    if (isClosed) return;
     if (state is InvoiceFormState) {
       final currentState = state as InvoiceFormState;
       final updatedItems = currentState.items.map((item) {
@@ -493,6 +557,7 @@ class InvoiceCubit extends Cubit<InvoiceState> {
 
   // Remove item from form by ID
   void removeItem(String itemId) {
+    if (isClosed) return;
     if (state is InvoiceFormState) {
       final currentState = state as InvoiceFormState;
       final updatedItems = currentState.items.where((item) => item.id != itemId).toList();
@@ -505,6 +570,7 @@ class InvoiceCubit extends Cubit<InvoiceState> {
 
   // Update item in form by index (legacy method)
   void updateItemByIndex(int index, InvoiceItem item) {
+    if (isClosed) return;
     if (state is InvoiceFormState) {
       final currentState = state as InvoiceFormState;
       final updatedItems = [...currentState.items];
@@ -520,6 +586,7 @@ class InvoiceCubit extends Cubit<InvoiceState> {
 
   // Remove item from form by index (legacy method)
   void removeItemByIndex(int index) {
+    if (isClosed) return;
     if (state is InvoiceFormState) {
       final currentState = state as InvoiceFormState;
       final updatedItems = [...currentState.items];
@@ -535,6 +602,7 @@ class InvoiceCubit extends Cubit<InvoiceState> {
 
   // Reset form
   void resetForm() {
+    if (isClosed) return;
     emit(InvoiceFormState(
       items: [],
       isValid: false,

@@ -15,8 +15,9 @@ import '../cubit/invoice_state.dart';
 import '../widgets/invoice_card.dart';
 import '../widgets/invoice_statistics_card.dart';
 import '../widgets/invoice_filter_chip.dart';
-import 'create_invoice_screen.dart';
 import 'invoice_details_screen.dart';
+import '../../../authentication/cubit/authentication_cubit.dart';
+import '../../../authentication/cubit/authentication_state.dart';
 
 class InvoiceListScreen extends StatefulWidget {
   const InvoiceListScreen({super.key});
@@ -32,11 +33,6 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
   @override
   void initState() {
     super.initState();
-    
-    // Load initial data with pagination
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<InvoiceCubit>().loadInvoices();
-    });
   }
 
   @override
@@ -47,6 +43,52 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    return BlocConsumer<AuthenticationCubit, AuthenticationState>(
+      listener: (context, authState) {
+        if (authState is AuthenticationSuccess) {
+          // Set user ID in invoice cubit when authenticated
+          context.read<InvoiceCubit>().setUserId(authState.profile.user.id);
+        }
+      },
+      builder: (context, authState) {
+        // Show loading if not authenticated yet
+        if (authState is! AuthenticationSuccess) {
+          return _buildAuthLoadingScreen();
+        }
+        return _buildInvoiceScreen();
+      },
+    );
+  }
+
+  Widget _buildAuthLoadingScreen() {
+    return Scaffold(
+      backgroundColor: InvoiceThemeColors.primaryBackground,
+      body: SafeArea(
+        child: Column(
+          children: [
+            _buildHeader(),
+            Expanded(
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CircularProgressIndicator(color: InvoiceThemeColors.primaryPurple),
+                    SizedBox(height: 16.h),
+                    Text(
+                      'Loading your invoices...',
+                      style: InvoiceTextStyles.body14,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInvoiceScreen() {
     return Scaffold(
       backgroundColor: InvoiceThemeColors.primaryBackground,
       body: SafeArea(
@@ -88,11 +130,11 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Invoices',
+                  'Sent Invoices',
                   style: InvoiceTextStyles.header28,
                 ),
                 Text(
-                  'Manage your invoices and payment requests',
+                  'Track invoices you\'ve created',
                   style: InvoiceTextStyles.body14,
                 ),
               ],

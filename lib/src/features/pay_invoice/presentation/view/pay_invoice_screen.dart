@@ -13,6 +13,8 @@ import '../cubit/pay_invoice_state.dart';
 import 'widgets/invoice_payment_card.dart';
 import 'payment_method_selection_screen.dart';
 import 'invoice_details_screen.dart';
+import '../../../authentication/cubit/authentication_cubit.dart';
+import '../../../authentication/cubit/authentication_state.dart';
 
 class PayInvoiceScreen extends StatefulWidget {
   const PayInvoiceScreen({super.key});
@@ -31,9 +33,6 @@ class _PayInvoiceScreenState extends State<PayInvoiceScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
-
-    // Load initial data
-    context.read<PayInvoiceCubit>().loadTaggedInvoices();
   }
 
   @override
@@ -45,6 +44,38 @@ class _PayInvoiceScreenState extends State<PayInvoiceScreen>
 
   @override
   Widget build(BuildContext context) {
+    return BlocConsumer<AuthenticationCubit, AuthenticationState>(
+      listener: (context, authState) {
+        if (authState is AuthenticationSuccess) {
+          // Set user ID in pay invoice cubit when authenticated
+          context.read<PayInvoiceCubit>().setUserId(authState.profile.user.id);
+        }
+      },
+      builder: (context, authState) {
+        // Show loading if not authenticated yet
+        if (authState is! AuthenticationSuccess) {
+          return _buildAuthLoadingScreen();
+        }
+        return _buildPayInvoiceScreen();
+      },
+    );
+  }
+
+  Widget _buildAuthLoadingScreen() {
+    return Scaffold(
+      backgroundColor: InvoiceThemeColors.primaryBackground,
+      body: SafeArea(
+        child: Column(
+          children: [
+            _buildHeader(),
+            Expanded(child: _buildLoadingState()),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPayInvoiceScreen() {
     return Scaffold(
       backgroundColor: InvoiceThemeColors.primaryBackground,
       body: SafeArea(
