@@ -10,6 +10,8 @@ import '../cubit/group_account_state.dart';
 import '../widgets/group_card.dart';
 import '../widgets/create_group_bottom_sheet.dart';
 import '../../../presentation/views/dashboard/dashboard_screen.dart';
+import '../../../authentication/cubit/authentication_cubit.dart';
+import '../../../authentication/cubit/authentication_state.dart';
 
 class GroupAccountListScreen extends StatefulWidget {
   const GroupAccountListScreen({super.key});
@@ -20,19 +22,52 @@ class GroupAccountListScreen extends StatefulWidget {
 
 class _GroupAccountListScreenState extends State<GroupAccountListScreen> {
   @override
-  void initState() {
-    super.initState();
-    // Load groups only if not already loaded from route
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final currentState = context.read<GroupAccountCubit>().state;
-      if (currentState is! GroupAccountGroupsLoaded) {
-        context.read<GroupAccountCubit>().loadUserGroups();
-      }
-    });
+  Widget build(BuildContext context) {
+    return BlocConsumer<AuthenticationCubit, AuthenticationState>(
+      listener: (context, authState) {
+        if (authState is AuthenticationSuccess) {
+          // Set user ID in group account cubit when authenticated
+          context.read<GroupAccountCubit>().setUserId(authState.profile.user.id);
+        }
+      },
+      builder: (context, authState) {
+        // Show loading if not authenticated yet
+        if (authState is! AuthenticationSuccess) {
+          return _buildAuthLoadingScreen();
+        }
+        return _buildGroupAccountScreen();
+      },
+    );
   }
 
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildAuthLoadingScreen() {
+    return Scaffold(
+      backgroundColor: const Color(0xFF0A0A0A),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              const Color(0xFF1A1A3E),
+              const Color(0xFF0A0E27),
+              const Color(0xFF0F0F23),
+            ],
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
+            children: [
+              _buildHeader(),
+              Expanded(child: _buildLoadingView()),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGroupAccountScreen() {
     return Scaffold(
       backgroundColor: const Color(0xFF0A0A0A),
       body: SafeArea(
