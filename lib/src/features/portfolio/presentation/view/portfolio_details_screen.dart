@@ -8,6 +8,7 @@ import 'package:lazervault/src/features/portfolio/presentation/cubit/portfolio_c
 import 'package:lazervault/src/features/portfolio/presentation/cubit/portfolio_state.dart';
 import 'package:lazervault/src/features/portfolio/domain/entities/portfolio_entity.dart';
 import 'package:lazervault/src/features/widgets/universal_image_loader.dart';
+import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 
 class PortfolioDetailsScreen extends StatefulWidget {
   const PortfolioDetailsScreen({super.key});
@@ -140,7 +141,10 @@ class _PortfolioDetailsScreenState extends State<PortfolioDetailsScreen>
               context.read<PortfolioCubit>().refreshPortfolio();
             },
           ),
-        ],
+                ServiceVoiceButton(
+          serviceName: 'portfolio',
+        ),
+],
       ),
     );
   }
@@ -311,7 +315,7 @@ class _PortfolioDetailsScreenState extends State<PortfolioDetailsScreen>
                     ),
                     SizedBox(height: 4.h),
                     Text(
-                      '${summary.totalAssets}',
+                      '${summary.assetCount}',
                       style: GoogleFonts.poppins(
                         color: Colors.white,
                         fontSize: 16.sp,

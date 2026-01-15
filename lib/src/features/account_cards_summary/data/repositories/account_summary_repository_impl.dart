@@ -25,28 +25,31 @@ class AccountSummaryRepositoryImpl implements IAccountSummaryRepository {
     String? country,
   }) async {
     try {
-      final request = req_resp.GetUserAccountsRequest();
+      // Use executeWithTokenRotation for automatic token refresh on auth errors
+      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+        final request = req_resp.GetUserAccountsRequest();
 
-      print('Sending gRPC GetUserAccounts Request for user: $userId${country != null ? ', country: $country' : ''}');
+        print('Sending gRPC GetUserAccounts Request for user: $userId${country != null ? ', country: $country' : ''}');
 
-      // Use helper to get call options with authorization header from secure storage
-      CallOptions callOptions = await _callOptionsHelper.withAuth();
+        // Use helper to get call options with authorization header from secure storage
+        CallOptions callOptions = await _callOptionsHelper.withAuth();
 
-      // Add country code to metadata if provided
-      if (country != null && country.isNotEmpty) {
-        final metadata = Map<String, String>.from(callOptions.metadata ?? {});
-        metadata['x-country-code'] = country;
+        // Add country code to metadata if provided
+        if (country != null && country.isNotEmpty) {
+          final metadata = Map<String, String>.from(callOptions.metadata ?? {});
+          metadata['x-country-code'] = country;
 
-        callOptions = CallOptions(
-          metadata: metadata,
-          timeout: callOptions.timeout,
+          callOptions = CallOptions(
+            metadata: metadata,
+            timeout: callOptions.timeout,
+          );
+        }
+
+        return await _accountServiceClient.getUserAccounts(
+          request,
+          options: callOptions,
         );
-      }
-
-      final response = await _accountServiceClient.getUserAccounts(
-        request,
-        options: callOptions,
-      );
+      });
 
       print('gRPC GetUserAccounts Response received with ${response.accounts.length} items');
 

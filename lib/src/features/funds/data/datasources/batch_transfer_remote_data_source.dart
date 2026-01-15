@@ -75,13 +75,16 @@ class BatchTransferRemoteDataSourceImpl implements IBatchTransferRemoteDataSourc
         );
 
         try {
-          final callOptions = await _callOptionsHelper.withAuth();
-          final response = await _client.initiateBatchTransfer(
-            request,
-            options: callOptions.mergedWith(
-              CallOptions(timeout: const Duration(seconds: 60)),
-            ),
-          );
+          // Use executeWithTokenRotation for automatic token refresh on auth errors
+          final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+            final callOptions = await _callOptionsHelper.withAuth();
+            return await _client.initiateBatchTransfer(
+              request,
+              options: callOptions.mergedWith(
+                CallOptions(timeout: const Duration(seconds: 60)),
+              ),
+            );
+          });
           return response;
         } on GrpcError catch (e) {
           print('gRPC Error during batch transfer initiation: ${e.code} - ${e.message}');
@@ -127,13 +130,16 @@ class BatchTransferRemoteDataSourceImpl implements IBatchTransferRemoteDataSourc
         );
 
         try {
-          final callOptions = await _callOptionsHelper.withAuth();
-          final response = await _client.getBatchTransferStatus(
-            request,
-            options: callOptions.mergedWith(
-              CallOptions(timeout: const Duration(seconds: 30)),
-            ),
-          );
+          // Use executeWithTokenRotation for automatic token refresh on auth errors
+          final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+            final callOptions = await _callOptionsHelper.withAuth();
+            return await _client.getBatchTransferStatus(
+              request,
+              options: callOptions.mergedWith(
+                CallOptions(timeout: const Duration(seconds: 30)),
+              ),
+            );
+          });
           return response;
         } on GrpcError catch (e) {
           print('gRPC Error during batch transfer status check: ${e.code} - ${e.message}');
@@ -169,13 +175,16 @@ class BatchTransferRemoteDataSourceImpl implements IBatchTransferRemoteDataSourc
         );
 
         try {
-          final callOptions = await _callOptionsHelper.withAuth();
-          final response = await _client.getBatchTransferHistory(
-            request,
-            options: callOptions.mergedWith(
-              CallOptions(timeout: const Duration(seconds: 30)),
-            ),
-          );
+          // Use executeWithTokenRotation for automatic token refresh on auth errors
+          final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+            final callOptions = await _callOptionsHelper.withAuth();
+            return await _client.getBatchTransferHistory(
+              request,
+              options: callOptions.mergedWith(
+                CallOptions(timeout: const Duration(seconds: 30)),
+              ),
+            );
+          });
           return response;
         } on GrpcError catch (e) {
           print('gRPC Error during batch transfer history retrieval: ${e.code} - ${e.message}');

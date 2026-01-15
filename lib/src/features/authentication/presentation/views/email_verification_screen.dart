@@ -32,22 +32,24 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: BlocListener<EmailVerificationCubit, EmailVerificationState>(
-        listener: (context, state) {
-          switch (state) {
-            case EmailVerificationSuccess():
-              // Navigate to passcode setup on success
-              Get.offAllNamed(AppRoutes.passcodeSetup);
-              break;
+    return PopScope(
+      canPop: false, // Prevent back navigation - verification is mandatory
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        body: BlocListener<EmailVerificationCubit, EmailVerificationState>(
+          listener: (context, state) {
+            switch (state) {
+              case EmailVerificationSuccess():
+                // Navigate to passcode setup on success
+                Get.offAllNamed(AppRoutes.passcodeSetup);
+                break;
 
-            case EmailVerificationSkipped():
-              // Navigate to passcode setup even if skipped
-              Get.offAllNamed(AppRoutes.passcodeSetup);
-              break;
+              // Skip case removed - verification is now mandatory
+              // case EmailVerificationSkipped():
+              //   Get.offAllNamed(AppRoutes.passcodeSetup);
+              //   break;
 
-            case EmailVerificationFailure():
+              case EmailVerificationFailure():
               // Show error message
               Get.snackbar(
                 'Error',
@@ -194,51 +196,29 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
 
                           if (!isLoading) SizedBox(height: 24.h),
 
-                          // Resend Code and Skip Links Row
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              TextButton(
-                                onPressed: isResending || isLoading
-                                    ? null
-                                    : () {
-                                        context
-                                            .read<EmailVerificationCubit>()
-                                            .resendVerificationEmail();
-                                      },
-                                child: Text(
-                                  isResending
-                                      ? 'Sending...'
-                                      : 'Resend Code',
-                                  style: TextStyle(
-                                    color: isResending || isLoading
-                                        ? Colors.grey
-                                        : Theme.of(context).primaryColor,
-                                    fontSize: 14.sp,
-                                    fontWeight: FontWeight.w600,
-                                  ),
+                          // Resend Code Button - Centered (Skip removed - verification is mandatory)
+                          Center(
+                            child: TextButton(
+                              onPressed: isResending || isLoading
+                                  ? null
+                                  : () {
+                                      context
+                                          .read<EmailVerificationCubit>()
+                                          .resendVerificationEmail();
+                                    },
+                              child: Text(
+                                isResending
+                                    ? 'Sending...'
+                                    : 'Resend Code',
+                                style: TextStyle(
+                                  color: isResending || isLoading
+                                      ? Colors.grey
+                                      : Theme.of(context).primaryColor,
+                                  fontSize: 14.sp,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
-                              TextButton(
-                                onPressed: isLoading
-                                    ? null
-                                    : () {
-                                        context
-                                            .read<EmailVerificationCubit>()
-                                            .skipVerification();
-                                      },
-                                child: Text(
-                                  'Skip for Now',
-                                  style: TextStyle(
-                                    color: isLoading
-                                        ? Colors.grey
-                                        : Colors.black54,
-                                    fontSize: 14.sp,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                            ],
+                            ),
                           ),
 
                           SizedBox(height: 24.h),
@@ -252,6 +232,6 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
           },
         ),
       ),
-    );
+    ));
   }
 }

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:livekit_client/livekit_client.dart';
+import 'package:livekit_client/livekit_client.dart' as lk;
 import 'dart:convert';
 
 /// Voice agent button for invoice management conversations
@@ -23,7 +23,7 @@ class InvoiceVoiceAgentButton extends StatefulWidget {
 
 class _InvoiceVoiceAgentButtonState extends State<InvoiceVoiceAgentButton>
     with SingleTickerProviderStateMixin {
-  Room? _room;
+  lk.Room? _room;
   bool _isConnected = false;
   bool _isConnecting = false;
   late AnimationController _animationController;
@@ -57,19 +57,14 @@ class _InvoiceVoiceAgentButtonState extends State<InvoiceVoiceAgentButton>
       );
 
       // Create room metadata with access token for authentication
-      final metadata = jsonEncode({
-        'access_token': widget.accessToken ?? '',
-        'feature': 'invoices',
-      });
-
       // Connect to LiveKit room
-      _room = await LiveKitClient.connect(
+      _room = lk.Room();
+      await _room!.connect(
         livekitUrl,
         widget.accessToken ?? '',
-        roomOptions: RoomOptions(
+        roomOptions: lk.RoomOptions(
           adaptiveStream: true,
           dynacast: true,
-          metadata: metadata,
         ),
       );
 
@@ -108,7 +103,7 @@ class _InvoiceVoiceAgentButtonState extends State<InvoiceVoiceAgentButton>
   }
 
   void _onRoomUpdate() {
-    if (_room?.connectionState == ConnectionState.disconnected) {
+    if (_room?.connectionState == lk.ConnectionState.disconnected) {
       _handleDisconnect();
     }
   }
@@ -187,7 +182,7 @@ class InvoiceVoiceAgentControl extends StatefulWidget {
 }
 
 class _InvoiceVoiceAgentControlState extends State<InvoiceVoiceAgentControl> {
-  Room? _room;
+  lk.Room? _room;
   bool _isConnected = false;
   bool _isMuted = false;
   bool _isSpeakerOn = true;
@@ -205,19 +200,14 @@ class _InvoiceVoiceAgentControlState extends State<InvoiceVoiceAgentControl> {
       defaultValue: 'wss://lazervault-sgb9bwog.livekit.cloud',
     );
 
-    final metadata = jsonEncode({
-      'access_token': widget.accessToken ?? '',
-      'feature': 'invoices',
-    });
-
     try {
-      _room = await LiveKitClient.connect(
+      _room = lk.Room();
+      await _room!.connect(
         livekitUrl,
         widget.accessToken ?? '',
-        roomOptions: RoomOptions(
+        roomOptions: lk.RoomOptions(
           adaptiveStream: true,
           dynacast: true,
-          metadata: metadata,
         ),
       );
 

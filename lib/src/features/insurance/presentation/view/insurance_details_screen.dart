@@ -11,6 +11,7 @@ import '../../domain/entities/insurance_payment_entity.dart';
 import '../../domain/entities/insurance_claim_entity.dart';
 import '../cubit/insurance_cubit.dart';
 import '../cubit/insurance_state.dart';
+import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 
 class InsuranceDetailsScreen extends StatefulWidget {
   final Insurance insurance;
@@ -182,7 +183,7 @@ class _InsuranceDetailsScreenState extends State<InsuranceDetailsScreen> with Ti
             blurRadius: 6,
             offset: Offset(0, 2),
           ),
-        ],
+                ],
               ),
               child: Icon(
                 Icons.arrow_back_ios_new,

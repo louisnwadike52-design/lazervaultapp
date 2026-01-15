@@ -34,6 +34,8 @@ abstract class ElectricityBillRemoteDataSource {
     required String accountId,
     String? paymentGateway,
     String? beneficiaryId,
+    String? transactionId,
+    String? verificationToken,
   });
 
   Future<BillPaymentModel> verifyPayment({required String paymentId});
@@ -177,6 +179,8 @@ class ElectricityBillRemoteDataSourceImpl implements ElectricityBillRemoteDataSo
     required String accountId,
     String? paymentGateway,
     String? beneficiaryId,
+    String? transactionId,
+    String? verificationToken,
   }) async {
     final request = pb.InitiatePaymentRequest()
       ..providerCode = providerCode
@@ -192,6 +196,14 @@ class ElectricityBillRemoteDataSourceImpl implements ElectricityBillRemoteDataSo
     if (beneficiaryId != null) {
       request.beneficiaryId = beneficiaryId;
     }
+    // Note: transactionId and verificationToken are not part of InitiatePaymentRequest protobuf
+    // These may be added to metadata or handled differently in the future
+    // if (transactionId != null) {
+    //   request.transactionId = transactionId;
+    // }
+    // if (verificationToken != null) {
+    //   request.verificationToken = verificationToken;
+    // }
 
     final options = await grpcClient.callOptions;
     final response = await grpcClient.electricityBillClient.initiatePayment(

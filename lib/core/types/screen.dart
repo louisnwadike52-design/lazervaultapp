@@ -26,9 +26,9 @@ import 'package:lazervault/src/features/presentation/views/set_fingerprint_scree
 import 'package:lazervault/src/features/authentication/presentation/views/passcode_sign_in_screen.dart';
 import 'package:lazervault/src/features/authentication/presentation/views/sign_up_screen.dart';
 import 'package:lazervault/src/features/presentation/views/transfer_funds_screen.dart';
-import 'package:lazervault/src/features/ai_chats/presentation/view/ai_chats_screen.dart';
 import 'package:lazervault/src/features/crowdfund/presentation/views/crowdfund_list_screen.dart';
 import 'package:lazervault/src/features/crowdfund/presentation/cubit/crowdfund_cubit.dart';
+import 'package:lazervault/src/features/ai_chats/presentation/view/ai_chats_screen.dart';
 
 import 'package:lazervault/src/features/widgets/dashboard/dashboard.dart';
 import 'package:lazervault/src/features/widgets/my_cards.dart';
@@ -59,6 +59,11 @@ class Screen {
           child: const Dashboard(),
         );
       case ScreenName.statistics:
+        return BlocProvider(
+          create: (context) => serviceLocator<StatisticsCubit>(),
+          child: const Statistics(),
+        );
+      case ScreenName.statisticsLegacy:
         return BlocProvider(
           create: (context) => serviceLocator<StatisticsCubit>(),
           child: const Statistics(),
@@ -143,6 +148,7 @@ class Screen {
 enum ScreenName {
   dashboard('Dashboard'),
   statistics('Statistics'),
+  statisticsLegacy('Statistics (Legacy)'),
   myCards('My Cards'),
   notifications('Notifications'),
   newCard('Add New Card'),

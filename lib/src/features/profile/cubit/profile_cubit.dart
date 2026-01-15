@@ -1,12 +1,17 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lazervault/core/services/currency_sync_service.dart';
 import 'package:lazervault/src/features/profile/cubit/profile_state.dart';
 import 'package:lazervault/src/features/profile/domain/repositories/i_profile_repository.dart';
 
 class ProfileCubit extends Cubit<ProfileState> {
   final IProfileRepository _repository;
+  final CurrencySyncService _currencySyncService;
 
-  ProfileCubit({required IProfileRepository repository})
-      : _repository = repository,
+  ProfileCubit({
+    required IProfileRepository repository,
+    required CurrencySyncService currencySyncService,
+  })  : _repository = repository,
+        _currencySyncService = currencySyncService,
         super(const ProfileInitial());
 
   Future<void> getUserProfile() async {
@@ -98,6 +103,12 @@ class ProfileCubit extends Cubit<ProfileState> {
 
     if (isClosed) return;
     emit(const ProfileLoading());
+
+    // If currency is being updated, sync it with CurrencySyncService
+    if (currency != null) {
+      await _currencySyncService.updateCurrency(currency);
+    }
+
     final result = await _repository.updatePreferences(
       pushNotifications: pushNotifications,
       emailNotifications: emailNotifications,

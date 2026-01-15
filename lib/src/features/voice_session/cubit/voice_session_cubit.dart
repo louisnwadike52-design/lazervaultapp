@@ -24,7 +24,7 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
 
   VoiceSessionCubit() : super(VoiceSessionInitial());
 
-  Future<void> startVoiceSession({required String? accessToken}) async {
+  Future<void> startVoiceSession({required String? accessToken, String? serviceName}) async {
     if (isClosed) return;
     emit(VoiceSessionLoadingCredentials());
 
@@ -35,13 +35,18 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     }
 
     try {
+      final requestBody = <String, dynamic>{};
+      if (serviceName != null && serviceName.isNotEmpty) {
+        requestBody['serviceName'] = serviceName;
+      }
+
       final response = await http.post(
         Uri.parse('$_goBackendBaseApiUrl/v1/voice/session/start'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $accessToken',
         },
-        body: jsonEncode({}),
+        body: jsonEncode(requestBody),
       );
 
       if (response.statusCode == 200) {

@@ -2,12 +2,18 @@ import 'package:get_it/get_it.dart';
 import 'package:grpc/grpc.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:logger/logger.dart';
 import 'package:lazervault/core/services/grpc_call_options_helper.dart';
+import 'package:lazervault/core/services/grpc_channel_factory.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
+import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
+import 'package:lazervault/core/services/voice_biometrics_service.dart';
+import 'package:lazervault/core/services/currency_sync_service.dart';
 import 'package:lazervault/core/types/electricity_bill_details.dart';
 import 'package:lazervault/core/types/recipient.dart' as core_recipient;
 import 'package:lazervault/core/types/transaction.dart';
+import 'package:lazervault/src/generated/auth.pbgrpc.dart' as auth_proto;
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/email_verification_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/face_verification_cubit.dart';
@@ -64,15 +70,25 @@ import 'package:lazervault/src/features/recipients/data/repositories/recipient_r
 import 'package:lazervault/src/features/recipients/domain/repositories/i_recipient_repository.dart';
 import 'package:lazervault/src/features/recipients/presentation/view/add_recipient_screen.dart';
 import 'package:lazervault/src/features/voice_session/cubit/voice_session_cubit.dart';
+import 'package:lazervault/src/features/voice_enrollment/cubit/voice_enrollment_cubit.dart';
+import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
+import 'package:lazervault/src/features/transaction_pin/cubit/transaction_pin_cubit.dart';
+import 'package:lazervault/src/features/voice_enrollment/domain/repositories/voice_enrollment_repository.dart';
+import 'package:lazervault/src/features/voice_enrollment/data/voice_biometrics_service_config.dart';
 import 'package:lazervault/src/generated/recipient.pbgrpc.dart';
 import 'package:lazervault/src/generated/transfer.pbgrpc.dart' hide TransferTransaction;
 import 'package:lazervault/src/generated/user.pbgrpc.dart' as user_grpc;
-import 'package:lazervault/src/generated/auth.pbgrpc.dart';
+import 'package:lazervault/src/generated/transaction_pin.pbgrpc.dart';
 import 'package:lazervault/src/generated/deposit.pbgrpc.dart';
 import 'package:lazervault/src/generated/facial_recognition.pbgrpc.dart';
 import 'package:lazervault/src/generated/contact_sync.pbgrpc.dart';
 import 'package:lazervault/src/generated/group_account.pbgrpc.dart';
 import 'package:lazervault/src/generated/referral.pbgrpc.dart';
+import 'package:lazervault/src/generated/exchange.pbgrpc.dart';
+import 'package:lazervault/src/generated/voice-biometrics.pbgrpc.dart';
+import 'package:lazervault/src/features/currency_exchange/data/repositories/exchange_repository_impl.dart';
+import 'package:lazervault/src/features/currency_exchange/domain/repositories/i_exchange_repository.dart';
+import 'package:lazervault/src/features/voice_enrollment/data/voice_enrollment_repository_impl.dart';
 import 'package:lazervault/src/features/presentation/views/cb_currency_exchange/cb_currency_exchange_screen.dart';
 import 'package:lazervault/src/features/presentation/views/cb_currency_exchange/currency_deposit_screen.dart';
 import 'package:lazervault/src/features/presentation/views/change_pin_screen.dart';
@@ -130,10 +146,13 @@ import 'package:lazervault/src/features/funds/data/repositories/deposit_reposito
 import 'package:lazervault/src/features/funds/domain/repositories/i_deposit_repository.dart';
 import 'package:lazervault/src/features/funds/domain/usecases/initiate_deposit_usecase.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
+import 'package:lazervault/src/features/account_cards_summary/cubit/balance_websocket_cubit.dart';
+import 'package:lazervault/src/features/account_cards_summary/services/balance_websocket_service.dart';
 import 'package:lazervault/src/features/account_cards_summary/data/repositories/account_summary_repository_impl.dart';
 import 'package:lazervault/src/features/account_cards_summary/domain/repositories/i_account_summary_repository.dart';
 import 'package:lazervault/src/features/account_cards_summary/domain/usecases/get_account_summaries_usecase.dart';
-import 'package:lazervault/src/generated/account.pbgrpc.dart';
+import 'package:lazervault/src/generated/account.pbgrpc.dart' as account_grpc;
+import 'package:lazervault/src/generated/accounts.pbgrpc.dart' as accounts_grpc;
 import 'package:lazervault/src/features/funds/domain/usecases/initiate_withdrawal_usecase.dart';
 
 // Card Settings Imports
@@ -154,6 +173,15 @@ import 'package:lazervault/src/features/ai_chats/domain/usecases/process_ai_chat
 import 'package:lazervault/src/features/ai_chats/cubit/ai_chat_cubit.dart';
 import 'package:lazervault/src/features/ai_chats/domain/usecases/get_ai_chat_history_usecase.dart';
 // End AI Chat Imports
+
+// General Chat Imports
+import 'package:lazervault/src/features/microservice_chat/presentation/screen/general_chat_screen.dart';
+import 'package:lazervault/src/features/microservice_chat/cubit/general_chat_cubit.dart';
+import 'package:lazervault/src/features/microservice_chat/cubit/general_chat_state.dart';
+import 'package:lazervault/src/features/microservice_chat/domain/usecases/send_general_chat_message_usecase.dart';
+import 'package:lazervault/src/features/microservice_chat/data/repositories/general_chat_repository_impl.dart';
+import 'package:lazervault/src/features/microservice_chat/data/datasources/http_general_chat_datasource.dart';
+// End General Chat Imports
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
@@ -205,10 +233,11 @@ import 'package:lazervault/src/features/stocks/presentation/view/stock_trade_rec
 import 'package:lazervault/src/features/stocks/domain/entities/stock_entity.dart';
 import 'package:lazervault/src/features/stocks/presentation/view/stock_chart_details_screen.dart';
 import 'package:lazervault/core/grpc/grpc_channel_manager.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 // End Stocks Imports
 
 // Crypto Imports
+import 'package:lazervault/src/core/grpc/crypto_grpc_client.dart';
+import 'package:lazervault/src/core/grpc/voice_grpc_client.dart';
 import 'package:lazervault/src/features/crypto/data/datasources/crypto_remote_data_source.dart';
 import 'package:lazervault/src/features/crypto/data/repositories/crypto_repository_impl.dart';
 import 'package:lazervault/src/features/crypto/domain/repositories/crypto_repository.dart';
@@ -247,8 +276,6 @@ import 'package:lazervault/src/features/pay_invoice/domain/repositories/pay_invo
 import 'package:lazervault/src/features/invoice/domain/repositories/tagged_invoice_repository.dart';
 import 'package:lazervault/src/features/invoice/data/repositories/tagged_invoice_repository_grpc_impl.dart';
 import 'package:lazervault/src/features/invoice/presentation/cubit/tagged_invoice_cubit.dart';
-import 'package:lazervault/src/features/invoice/presentation/view/incoming_tagged_invoices_screen.dart';
-import 'package:lazervault/src/features/invoice/presentation/view/outgoing_tagged_invoices_screen.dart';
 // End Tagged Invoice Imports
 
 // Portfolio Imports
@@ -307,6 +334,17 @@ import 'package:lazervault/src/features/group_account/domain/repositories/group_
 import 'package:lazervault/src/features/group_account/domain/usecases/group_account_usecases.dart';
 import 'package:lazervault/src/features/group_account/presentation/cubit/group_account_cubit.dart';
 import 'package:lazervault/src/features/group_account/presentation/views/group_account_list_screen.dart';
+
+// Family Account Imports
+import 'package:lazervault/src/features/family_account/data/datasources/family_account_remote_data_source.dart';
+import 'package:lazervault/src/features/family_account/data/datasources/family_account_grpc_data_source.dart';
+import 'package:lazervault/src/features/family_account/data/repositories/family_account_repository_impl.dart';
+import 'package:lazervault/src/features/family_account/domain/repositories/family_account_repository.dart';
+import 'package:lazervault/src/features/family_account/domain/usecases/family_account_usecases.dart';
+import 'package:lazervault/src/features/family_account/presentation/cubit/family_account_cubit.dart';
+import 'package:lazervault/src/features/family_account/presentation/cubit/family_account_state.dart';
+import 'package:lazervault/src/generated/family_accounts.pbgrpc.dart' as family_accounts_grpc;
+import 'package:dio/dio.dart';
 
 // Insurance Imports
 import 'package:lazervault/src/features/insurance/data/datasources/insurance_local_datasource.dart';
@@ -368,6 +406,17 @@ import 'package:lazervault/src/features/cards/domain/usecases/get_user_cards_use
 import 'package:lazervault/src/features/cards/presentation/cubit/card_cubit.dart';
 // End Auto-Save Imports
 
+// Transaction History Imports
+// import 'package:lazervault/core/grpc/transaction_history_grpc_client.dart';
+import 'package:lazervault/src/core/grpc/accounts_grpc_client.dart';
+import 'package:lazervault/src/features/transaction_history/data/datasources/transaction_history_cache_datasource.dart';
+import 'package:lazervault/src/features/transaction_history/data/repository/transaction_history_repository_grpc.dart';
+import 'package:lazervault/src/features/transaction_history/domain/repository/transaction_history_repository.dart';
+import 'package:lazervault/src/features/transaction_history/presentation/cubit/transaction_history_cubit.dart';
+import 'package:lazervault/src/features/transaction_history/presentation/screens/dashboard_transaction_history_screen.dart';
+import 'package:lazervault/src/features/transaction_history/presentation/screens/service_transaction_history_screen.dart';
+// End Transaction History Imports
+
 final serviceLocator = GetIt.instance;
 
 Future<void> init() async {
@@ -377,9 +426,46 @@ Future<void> init() async {
   // ================== External / gRPC / HTTP ==================
   serviceLocator.registerLazySingleton(http.Client.new);
 
+  // Register Voice Biometrics Service
+  serviceLocator.registerLazySingleton<VoiceBiometricsService>(
+    () => VoiceBiometricsService(
+      baseUrl: 'http://10.0.2.2:8888', // Android emulator
+      // baseUrl: 'http://localhost:8888', // iOS simulator
+      client: serviceLocator<http.Client>(),
+    ),
+  );
+
+  // Register Transaction PIN Service
+  serviceLocator.registerLazySingleton<ITransactionPinService>(
+    () => TransactionPinService(
+      client: serviceLocator<TransactionPinServiceClient>(),
+      callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
+      accountManager: serviceLocator<AccountManager>(),
+    ),
+  );
+
+  // Register Transaction PIN Cubit
+  serviceLocator.registerFactory<TransactionPinCubit>(
+    () => TransactionPinCubit(serviceLocator<ITransactionPinService>()),
+  );
+
   // Register FlutterSecureStorage
   serviceLocator.registerLazySingleton<FlutterSecureStorage>(
     () => const FlutterSecureStorage(),
+  );
+
+  // Register Logger
+  serviceLocator.registerLazySingleton<Logger>(
+    () => Logger(
+      printer: PrettyPrinter(
+        methodCount: 2,
+        errorMethodCount: 8,
+        lineLength: 120,
+        colors: true,
+        printEmojis: true,
+        printTime: true,
+      ),
+    ),
   );
 
   // Register SecureStorageService
@@ -392,51 +478,81 @@ Future<void> init() async {
     () => LocaleManager(serviceLocator<FlutterSecureStorage>()),
   );
 
-  // Register gRPC Call Options Helper with LocaleManager
+  // Register CurrencySyncService for currency synchronization between local and server
+  serviceLocator.registerLazySingleton<CurrencySyncService>(
+    () => CurrencySyncService(
+      profileRepository: serviceLocator<IProfileRepository>(),
+      localeManager: serviceLocator<LocaleManager>(),
+      logger: serviceLocator<Logger>(),
+    ),
+  );
+
+  // Register AccountManager for centralized active account state management
+  serviceLocator.registerLazySingleton<AccountManager>(
+    () => AccountManager(serviceLocator<FlutterSecureStorage>()),
+  );
+
+  // Register gRPC Call Options Helper with LocaleManager and AccountManager
+  // Token refresh callback will be set up after AuthRepository is created
   serviceLocator.registerLazySingleton<GrpcCallOptionsHelper>(
     () => GrpcCallOptionsHelper(
       serviceLocator<FlutterSecureStorage>(),
       localeManager: serviceLocator<LocaleManager>(),
+      accountManager: serviceLocator<AccountManager>(),
+      // onTokenRefreshNeeded will be set later
     ),
   );
 
-  serviceLocator.registerLazySingleton<ClientChannel>(() {
-    final host = dotenv.env['GRPC_API_HOST'] ?? (throw Exception('GRPC_API_HOST environment variable is not set. For Android emulator, use http://10.0.2.2:7878'));
-    final port = int.parse(dotenv.env['GRPC_API_PORT'] ?? (throw Exception('GRPC_API_PORT environment variable is not set')));
+  // ===== 3-GATEWAY ARCHITECTURE =====
+  // Register 3 independent gateway channels for optimal API organization:
+  // 1. Core Gateway (7878) - Auth, Accounts, Users, Support, Referrals, Crowdfund
+  // 2. Investment Gateway (8090) - Stocks, Crypto, Portfolio, Analytics
+  // 3. Financial Gateway (8100) - Payments, Cards, Invoices, Expenses, Loans, Insurance
 
-    // Extract host without protocol
-    final uri = Uri.parse(host);
-    final cleanHost = uri.host;
+  // Core Gateway Channel - For authentication and core account operations
+  serviceLocator.registerLazySingleton<ClientChannel>(
+    () => GrpcChannelFactory.createCoreChannel(),
+    instanceName: 'coreChannel',
+  );
 
-    print("Creating gRPC Channel to $cleanHost:$port");
-    return ClientChannel(
-      cleanHost,
-      port: port,
-      options: const ChannelOptions(
-        credentials: ChannelCredentials.insecure(), // Use insecure credentials for localhost
-        keepAlive: ClientKeepAliveOptions(
-          pingInterval: Duration(seconds: 30),
-          timeout: Duration(seconds: 10),
-          permitWithoutCalls: true,
-        ),
-        connectionTimeout: Duration(seconds: 10),
-        idleTimeout: Duration(minutes: 5),
-      ),
-    );
-  });
+  // Investment Gateway Channel - For stocks, crypto, portfolio, analytics
+  serviceLocator.registerLazySingleton<ClientChannel>(
+    () => GrpcChannelFactory.createInvestmentChannel(),
+    instanceName: 'investmentChannel',
+  );
+
+  // Financial Gateway Channel - For payments, cards, invoices, expenses, loans
+  serviceLocator.registerLazySingleton<ClientChannel>(
+    () => GrpcChannelFactory.createFinancialChannel(),
+    instanceName: 'financialChannel',
+  );
+
+  // Default channel for backward compatibility (points to Core Gateway)
+  serviceLocator.registerLazySingleton<ClientChannel>(
+    () => serviceLocator<ClientChannel>(instanceName: 'coreChannel'),
+  );
 
   // Register gRPC Clients
   serviceLocator.registerLazySingleton<user_grpc.UserServiceClient>(
     () => user_grpc.UserServiceClient(serviceLocator<ClientChannel>()),
   );
-  serviceLocator.registerLazySingleton<AuthServiceClient>(
-    () => AuthServiceClient(serviceLocator<ClientChannel>()),
+  serviceLocator.registerLazySingleton<auth_proto.AuthServiceClient>(
+    () => auth_proto.AuthServiceClient(serviceLocator<ClientChannel>()),
+  );
+  serviceLocator.registerLazySingleton<TransactionPinServiceClient>(
+    () => TransactionPinServiceClient(serviceLocator<ClientChannel>()),
   );
   serviceLocator.registerLazySingleton<DepositServiceClient>(
     () => DepositServiceClient(serviceLocator<ClientChannel>()),
   );
-  serviceLocator.registerLazySingleton<AccountServiceClient>(
-    () => AccountServiceClient(serviceLocator<ClientChannel>()),
+  serviceLocator.registerLazySingleton<account_grpc.AccountServiceClient>(
+    () => account_grpc.AccountServiceClient(serviceLocator<ClientChannel>()),
+  );
+  serviceLocator.registerLazySingleton<accounts_grpc.AccountsServiceClient>(
+    () => accounts_grpc.AccountsServiceClient(serviceLocator<ClientChannel>()),
+  );
+  serviceLocator.registerLazySingleton<family_accounts_grpc.FamilyAccountsServiceClient>(
+    () => family_accounts_grpc.FamilyAccountsServiceClient(serviceLocator<ClientChannel>()),
   );
   serviceLocator.registerLazySingleton<RecipientServiceClient>(
     () => RecipientServiceClient(serviceLocator<ClientChannel>()),
@@ -476,6 +592,11 @@ Future<void> init() async {
     () => ReferralServiceClient(serviceLocator<ClientChannel>()),
   );
 
+  // Voice Biometrics Service Client
+  serviceLocator.registerLazySingleton<VoiceBiometricsServiceClient>(
+    () => VoiceBiometricsServiceClient(serviceLocator<ClientChannel>()),
+  );
+
 
   // ================== Feature: Authentication ==================
 
@@ -486,11 +607,23 @@ Future<void> init() async {
 
   // Repositories
   serviceLocator.registerLazySingleton<IAuthRepository>(
-      () => AuthRepositoryImpl(
+      () {
+        final authRepo = AuthRepositoryImpl(
           userServiceClient: serviceLocator<user_grpc.UserServiceClient>(),
-          authServiceClient: serviceLocator<AuthServiceClient>(),
+          authServiceClient: serviceLocator<auth_proto.AuthServiceClient>(),
           callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
-        ));
+        );
+
+        // Wire up automatic token rotation callback
+        // This allows all gRPC calls to automatically refresh tokens when they expire
+        serviceLocator<GrpcCallOptionsHelper>().onTokenRefreshNeeded = () async {
+          print('🔄 Token rotation triggered by expired token');
+          return await authRepo.refreshTokensSimple();
+        };
+
+        print('✅ Token rotation callback wired up successfully');
+        return authRepo;
+      });
 
   serviceLocator.registerLazySingleton<IFaceRecognitionRepository>(
       () => FaceRecognitionRepositoryImpl(
@@ -530,6 +663,7 @@ Future<void> init() async {
         resendVerification: serviceLocator<ResendVerificationUseCase>(),
         checkEmailAvailability: serviceLocator<CheckEmailAvailabilityUseCase>(),
         storage: serviceLocator<FlutterSecureStorage>(),
+        currencySyncService: serviceLocator<CurrencySyncService>(),
       ));
 
   serviceLocator.registerFactory(() => FaceVerificationCubit(
@@ -560,6 +694,7 @@ Future<void> init() async {
   // Blocs/Cubits
   serviceLocator.registerFactory(() => ProfileCubit(
         repository: serviceLocator<IProfileRepository>(),
+        currencySyncService: serviceLocator<CurrencySyncService>(),
       ));
 
   // ================== Feature: Identity Verification ==================
@@ -601,6 +736,20 @@ Future<void> init() async {
         getStatementHistoryUseCase: serviceLocator<GetStatementHistoryUseCase>(),
       ));
 
+  // ================== Feature: Currency Exchange ==================
+
+  // Register Exchange Service Client
+  serviceLocator.registerLazySingleton<ExchangeServiceClient>(
+    () => ExchangeServiceClient(serviceLocator<ClientChannel>()),
+  );
+
+  // Repositories
+  serviceLocator.registerLazySingleton<IExchangeRepository>(
+    () => ExchangeRepositoryImpl(
+      grpcClient: serviceLocator<GrpcClient>(),
+    ),
+  );
+
   // ================== Feature: Referral ==================
 
   // Repositories
@@ -631,7 +780,7 @@ Future<void> init() async {
   // Repositories
   serviceLocator.registerLazySingleton<IAccountSummaryRepository>(
       () => AccountSummaryRepositoryImpl(
-        serviceLocator<AccountServiceClient>(),
+        serviceLocator<account_grpc.AccountServiceClient>(),
         serviceLocator<GrpcCallOptionsHelper>(),
       ));
 
@@ -641,13 +790,17 @@ Future<void> init() async {
   // Blocs/Cubits
   serviceLocator.registerLazySingleton(() => AccountCardsSummaryCubit(serviceLocator<GetAccountSummariesUseCase>()));
 
+  // WebSocket Balance Update Service
+  serviceLocator.registerLazySingleton(() => BalanceWebSocketService());
+  serviceLocator.registerLazySingleton(() => BalanceWebSocketCubit(serviceLocator<BalanceWebSocketService>()));
+
 
   // ================== Feature: Card Settings ==================
 
   // Repositories
   serviceLocator.registerLazySingleton<ICardSettingsRepository>(
       () => CardSettingsRepositoryImpl(
-        serviceLocator<AccountServiceClient>(),
+        serviceLocator<account_grpc.AccountServiceClient>(),
         serviceLocator<GrpcCallOptionsHelper>(),
       ));
 
@@ -845,19 +998,12 @@ Future<void> init() async {
 
   // ================== Feature: Stocks ==================
 
-  // Stocks gRPC Channel Manager
+  // Stocks gRPC Channel Manager - Uses Investment Gateway (8090)
   serviceLocator.registerLazySingleton<GrpcChannelManager>(
-    () {
-      final useGrpc = dotenv.env['USE_STOCKS_GRPC']?.toLowerCase() == 'true';
-      final host = dotenv.env['STOCKS_GRPC_HOST'] ?? '10.0.2.2';
-      final port = int.tryParse(dotenv.env['STOCKS_GRPC_PORT'] ?? '9091') ?? 9091;
-
-      return GrpcChannelManager(
-        host: host,
-        port: port,
-        secureStorage: serviceLocator<SecureStorageService>(),
-      );
-    },
+    () => GrpcChannelManager(
+      channel: serviceLocator<ClientChannel>(instanceName: 'investmentChannel'),
+      secureStorage: serviceLocator<SecureStorageService>(),
+    ),
   );
 
   // Data Sources - Use gRPC or HTTP based on environment variable
@@ -904,9 +1050,18 @@ Future<void> init() async {
 
   // ================== Feature: Crypto ==================
 
+  // gRPC Client - Uses Investment Gateway (8090)
+  serviceLocator.registerLazySingleton<CryptoGrpcClient>(
+    () => CryptoGrpcClient(
+      channel: serviceLocator<ClientChannel>(instanceName: 'investmentChannel'),
+    ),
+  );
+
   // Data Sources
   serviceLocator.registerLazySingleton<CryptoRemoteDataSource>(
-    () => CryptoRemoteDataSourceImpl(),
+    () => CryptoRemoteDataSourceImpl(
+      grpcClient: serviceLocator<CryptoGrpcClient>(),
+    ),
   );
 
   // Repositories
@@ -1114,8 +1269,8 @@ Future<void> init() async {
   ));
 
   // ================== Screens / Presentation ==================
+  // Note: ModernOnboardingScreen uses const constructor, no registration needed
   serviceLocator
-      ..registerFactory(() => OnboardingScreen())
       ..registerFactory(() => SplashScreen())
       ..registerFactory(() => DashboardScreen())
       ..registerFactory(() => NewCardScreen())
@@ -1203,9 +1358,34 @@ Future<void> init() async {
   // Make sure AuthenticationCubit is registered first, e.g.:
   // serviceLocator.registerLazySingleton(() => AuthenticationCubit(...));
 
+  // ================== Feature: Voice ==================
+
+  // Voice gRPC Client - Uses Core Gateway (7878)
+  serviceLocator.registerLazySingleton<VoiceGrpcClient>(
+    () => VoiceGrpcClient(
+      channel: serviceLocator<ClientChannel>(instanceName: 'coreChannel'),
+    ),
+  );
+
   // Then, register VoiceSessionCubit and inject AuthenticationCubit:
   serviceLocator.registerLazySingleton<VoiceSessionCubit>(
     () => VoiceSessionCubit(),
+  );
+
+  // Voice Enrollment Repository - with real gRPC backend integration
+  serviceLocator.registerLazySingleton<VoiceEnrollmentRepository>(
+    () => VoiceEnrollmentRepositoryImpl(
+      serviceLocator<VoiceBiometricsServiceClient>(),
+      serviceLocator<GrpcCallOptionsHelper>(),
+      serviceLocator<SecureStorageService>(),
+    ),
+  );
+
+  // Voice Enrollment Cubit - registered as Factory for fresh instances
+  serviceLocator.registerFactory<VoiceEnrollmentCubit>(
+    () => VoiceEnrollmentCubit(
+      serviceLocator<VoiceEnrollmentRepository>(),
+    ),
   );
 
   // ================== Feature: Pay Invoice ==================
@@ -1436,8 +1616,13 @@ Future<void> init() async {
 
   // ================== Feature: Statistics ==================
 
-  // GrpcClient (for statistics and invoices) - Initialize asynchronously
-  final grpcClient = GrpcClient(secureStorage: serviceLocator<FlutterSecureStorage>());
+  // GrpcClient (for statistics and invoices) - Uses Financial Gateway (8100)
+  // Now with automatic token rotation support via GrpcCallOptionsHelper
+  final grpcClient = GrpcClient(
+    channel: serviceLocator<ClientChannel>(instanceName: 'financialChannel'),
+    secureStorage: serviceLocator<FlutterSecureStorage>(),
+    callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
+  );
   await grpcClient.initialize();  // Properly await initialization
   serviceLocator.registerLazySingleton<GrpcClient>(() => grpcClient);
 
@@ -1499,6 +1684,155 @@ Future<void> init() async {
     () => CreateLockCubit(),
   );
 
+
+  // ================== Feature: Family & Friends Account ==================
+
+  // Dio client for HTTP requests to REST API
+  serviceLocator.registerLazySingleton<Dio>(
+    () => Dio(BaseOptions(
+      connectTimeout: const Duration(seconds: 30),
+      receiveTimeout: const Duration(seconds: 30),
+      sendTimeout: const Duration(seconds: 30),
+    )),
+  );
+
+  // Remote Data Source (gRPC implementation)
+  serviceLocator.registerLazySingleton<FamilyAccountRemoteDataSource>(
+    () => FamilyAccountGrpcDataSource(
+      serviceLocator<family_accounts_grpc.FamilyAccountsServiceClient>(),
+    ),
+  );
+
+  // Repository
+  serviceLocator.registerLazySingleton<FamilyAccountRepository>(
+    () => FamilyAccountRepositoryImpl(
+      remoteDataSource: serviceLocator<FamilyAccountRemoteDataSource>(),
+    ),
+  );
+
+  // Use Cases
+  serviceLocator.registerLazySingleton(() => GetFamilyAccountsUseCase(serviceLocator<FamilyAccountRepository>()));
+  serviceLocator.registerLazySingleton(() => GetFamilyAccountUseCase(serviceLocator<FamilyAccountRepository>()));
+  serviceLocator.registerLazySingleton(() => CreateFamilyAccountUseCase(serviceLocator<FamilyAccountRepository>()));
+  serviceLocator.registerLazySingleton(() => AddFamilyMemberUseCase(serviceLocator<FamilyAccountRepository>()));
+  serviceLocator.registerLazySingleton(() => UpdateFamilyMemberUseCase(serviceLocator<FamilyAccountRepository>()));
+  serviceLocator.registerLazySingleton(() => RemoveFamilyMemberUseCase(serviceLocator<FamilyAccountRepository>()));
+  serviceLocator.registerLazySingleton(() => AcceptFamilyInvitationUseCase(serviceLocator<FamilyAccountRepository>()));
+  serviceLocator.registerLazySingleton(() => DeclineFamilyInvitationUseCase(serviceLocator<FamilyAccountRepository>()));
+  serviceLocator.registerLazySingleton(() => GetPendingInvitationsUseCase(serviceLocator<FamilyAccountRepository>()));
+  serviceLocator.registerLazySingleton(() => GetFamilyTransactionsUseCase(serviceLocator<FamilyAccountRepository>()));
+  serviceLocator.registerLazySingleton(() => AllocateFundsUseCase(serviceLocator<FamilyAccountRepository>()));
+  serviceLocator.registerLazySingleton(() => GenerateMemberCardUseCase(serviceLocator<FamilyAccountRepository>()));
+  serviceLocator.registerLazySingleton(() => FreezeFamilyAccountUseCase(serviceLocator<FamilyAccountRepository>()));
+  serviceLocator.registerLazySingleton(() => UnfreezeFamilyAccountUseCase(serviceLocator<FamilyAccountRepository>()));
+  serviceLocator.registerLazySingleton(() => DeleteFamilyAccountUseCase(serviceLocator<FamilyAccountRepository>()));
+  serviceLocator.registerLazySingleton(() => ProcessMemberContributionUseCase(serviceLocator<FamilyAccountRepository>()));
+
+  // Blocs/Cubits
+  serviceLocator.registerFactory<FamilyAccountCubit>(
+    () => FamilyAccountCubit(
+      getFamilyAccounts: serviceLocator<GetFamilyAccountsUseCase>(),
+      getFamilyAccount: serviceLocator<GetFamilyAccountUseCase>(),
+      createFamilyAccount: serviceLocator<CreateFamilyAccountUseCase>(),
+      addFamilyMember: serviceLocator<AddFamilyMemberUseCase>(),
+      updateFamilyMember: serviceLocator<UpdateFamilyMemberUseCase>(),
+      removeFamilyMember: serviceLocator<RemoveFamilyMemberUseCase>(),
+      acceptInvitationUseCase: serviceLocator<AcceptFamilyInvitationUseCase>(),
+      declineInvitationUseCase: serviceLocator<DeclineFamilyInvitationUseCase>(),
+      getPendingInvitations: serviceLocator<GetPendingInvitationsUseCase>(),
+      getFamilyTransactions: serviceLocator<GetFamilyTransactionsUseCase>(),
+      allocateFunds: serviceLocator<AllocateFundsUseCase>(),
+      generateMemberCard: serviceLocator<GenerateMemberCardUseCase>(),
+      freezeFamilyAccount: serviceLocator<FreezeFamilyAccountUseCase>(),
+      unfreezeFamilyAccount: serviceLocator<UnfreezeFamilyAccountUseCase>(),
+      deleteFamilyAccount: serviceLocator<DeleteFamilyAccountUseCase>(),
+      processMemberContribution: serviceLocator<ProcessMemberContributionUseCase>(),
+    ),
+  );
+
+
+  // ================== Feature: General Chat ==================
+  // Uses Enhanced Chat Gateway with LLM-based intent classification
+  // Gateway provides: intent classification, conversation memory, service switching
+
+  // Data Sources
+  serviceLocator.registerLazySingleton<GeneralChatDataSource>(
+    () => HttpGeneralChatDataSource(
+      dio: serviceLocator<Dio>(),
+      callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
+      baseUrl: dotenv.env['CHAT_GATEWAY_URL'] ?? 'http://10.0.2.2:3011', // Enhanced Gateway
+    ),
+  );
+
+  // Repositories
+  serviceLocator.registerLazySingleton<GeneralChatRepository>(
+    () => GeneralChatRepositoryImpl(
+      dataSource: serviceLocator<GeneralChatDataSource>(),
+    ),
+  );
+
+  // Use Cases
+  serviceLocator.registerLazySingleton<SendGeneralChatMessageUseCase>(
+    () => SendGeneralChatMessageUseCaseImpl(
+      repository: serviceLocator<GeneralChatRepository>(),
+    ),
+  );
+
+  // Blocs/Cubits
+  serviceLocator.registerFactory(() => GeneralChatCubit(
+    sendMessageUseCase: serviceLocator<SendGeneralChatMessageUseCase>(),
+    authCubit: serviceLocator<AuthenticationCubit>(),
+  ));
+
+  // Screens
+  serviceLocator.registerFactory(() => GeneralChatScreen());
+
+  // ================== Feature: Transaction History ==================
+
+  // gRPC Client - Connects to Transaction History Service (port 9091)
+  // TODO: Fix TransactionHistoryGrpcClient implementation and enable
+  // serviceLocator.registerLazySingleton<TransactionHistoryGrpcClient>(
+  //   () => TransactionHistoryGrpcClient(
+  //     host: dotenv.env['GRPC_HOST'] ?? 'localhost',
+  //     port: int.tryParse(dotenv.env['GRPC_PORT'] ?? '9091') ?? 9091,
+  //     authToken: dotenv.env['GRPC_AUTH_TOKEN'],
+  //   ),
+  // );
+
+  // gRPC Client - Connects to Accounts Service on Core Gateway
+  // Uses the Core Gateway channel for authenticated calls
+  serviceLocator.registerLazySingleton<AccountsGrpcClient>(
+    () => AccountsGrpcClient(
+      client: serviceLocator<accounts_grpc.AccountsServiceClient>(),
+      callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
+    ),
+  );
+
+  // Cache Data Source - SQLite for offline support
+  // TODO: Enable when TransactionHistoryGrpcClient is fixed
+  // serviceLocator.registerLazySingleton<TransactionHistoryCacheDataSource>(
+  //   () => TransactionHistoryCacheDataSource(),
+  // );
+
+  // Repository - gRPC-based implementation with local caching
+  // Uses AccountsGrpcClient to communicate with accounts microservice
+  // serviceLocator.registerLazySingleton<TransactionHistoryRepository>(
+  //   () => TransactionHistoryRepositoryGrpc(
+  //     grpcClient: serviceLocator<AccountsGrpcClient>(),
+  //     accountManager: serviceLocator<AccountManager>(),
+  //   ),
+  // );
+
+  // Blocs/Cubits
+  // serviceLocator.registerFactory(() => TransactionHistoryCubit(
+  //   repository: serviceLocator<TransactionHistoryRepository>(),
+  // ));
+
+  // Screens
+  serviceLocator.registerFactory(() => DashboardTransactionHistoryScreen());
+  // serviceLocator.registerFactoryParam<ServiceTransactionHistoryScreen, TransactionServiceType, void>(
+  //   (serviceType, _) => ServiceTransactionHistoryScreen(serviceType: serviceType),
+  // );
 
   print("Dependency Injection Initialized with Hierarchical Order");
 }

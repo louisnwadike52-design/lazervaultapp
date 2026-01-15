@@ -1,16 +1,16 @@
 import 'package:grpc/grpc.dart';
-import '../config/grpc_config.dart';
-import '../../generated/crypto.pb.dart';
 import '../../generated/crypto.pbgrpc.dart';
 
 /// Wrapper class for Crypto gRPC client
 /// This provides a clean interface to interact with the crypto-microservice
+/// Uses the Investment Gateway (8090) injected from injection_container
 class CryptoGrpcClient {
-  late ClientChannel _channel;
+  final ClientChannel _channel;
   late CryptoServiceClient _client;
 
-  CryptoGrpcClient() {
-    _channel = GrpcConfig.createCryptoChannel();
+  /// Accepts an injected ClientChannel (Investment Gateway from injection_container)
+  /// This ensures all crypto services go through the proper API gateway
+  CryptoGrpcClient({required ClientChannel channel}) : _channel = channel {
     _client = CryptoServiceClient(_channel);
   }
 

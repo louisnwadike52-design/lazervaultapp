@@ -139,7 +139,7 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
                 },
               ),
               BlocListener<IdentityCubit, IdentityState>(
-                listener: (context, state) {
+                listener: (context, state) async {
                   if (state is PasscodeExistsChecked) {
                     if (state.exists) {
                       // User has passcode, go to dashboard
@@ -149,17 +149,25 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
                       Get.offAllNamed(AppRoutes.passcodeSetup);
                     }
                   } else if (state is IdentityError) {
-                    // API error - default to passcode setup for safety
-                    Get.snackbar(
-                      'Warning',
-                      'Could not verify passcode status. Please set up your passcode.',
-                      snackPosition: SnackPosition.TOP,
-                      backgroundColor: Colors.orange,
-                      colorText: Colors.white,
-                      margin: EdgeInsets.all(15.w),
-                      borderRadius: 10.r,
-                    );
-                    Get.offAllNamed(AppRoutes.passcodeSetup);
+                    // API error - check local storage as fallback
+                    final storedPasscode = await _storage.read(key: 'user_passcode');
+
+                    if (storedPasscode != null && storedPasscode.isNotEmpty) {
+                      // User has passcode locally, allow them to proceed to dashboard
+                      Get.offAllNamed(AppRoutes.dashboard);
+                    } else {
+                      // No local passcode found, prompt to set up
+                      Get.snackbar(
+                        'Warning',
+                        'Could not verify passcode status. Please set up your passcode.',
+                        snackPosition: SnackPosition.TOP,
+                        backgroundColor: Colors.orange,
+                        colorText: Colors.white,
+                        margin: EdgeInsets.all(15.w),
+                        borderRadius: 10.r,
+                      );
+                      Get.offAllNamed(AppRoutes.passcodeSetup);
+                    }
                   }
                 },
               ),

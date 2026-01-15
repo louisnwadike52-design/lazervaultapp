@@ -7,6 +7,7 @@ import '../../cubit/crypto_cubit.dart';
 import '../../cubit/crypto_state.dart';
 import '../../domain/entities/crypto_entity.dart';
 import 'crypto_confirmation_screen.dart';
+import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 
 class SwapCryptoScreen extends StatefulWidget {
   final CryptoHolding? fromHolding;
@@ -358,7 +359,10 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
                     color: Colors.white.withOpacity(0.7),
                   ),
                 ),
-              ],
+                            ServiceVoiceButton(
+                serviceName: 'crypto',
+              ),
+],
             ),
           ),
           Container(

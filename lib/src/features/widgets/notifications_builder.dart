@@ -165,6 +165,8 @@ class _NotificationsBuilderState extends State<NotificationsBuilder> {
         return const Color.fromARGB(255, 78, 3, 208);
       case AppServiceName.lockFunds:
         return const Color(0xFF10B981);
+      case AppServiceName.whatsappIntegration:
+        return Colors.green;
     }
   }
 

@@ -68,6 +68,8 @@ class ElectricityBillRepositoryImpl implements ElectricityBillRepository {
     required String accountId,
     String? paymentGateway,
     String? beneficiaryId,
+    String? transactionId,
+    String? verificationToken,
   }) async {
     try {
       final result = await remoteDataSource.initiatePayment(
@@ -79,6 +81,8 @@ class ElectricityBillRepositoryImpl implements ElectricityBillRepository {
         accountId: accountId,
         paymentGateway: paymentGateway,
         beneficiaryId: beneficiaryId,
+        transactionId: transactionId,
+        verificationToken: verificationToken,
       );
       return Right(result);
     } on GrpcError catch (e) {

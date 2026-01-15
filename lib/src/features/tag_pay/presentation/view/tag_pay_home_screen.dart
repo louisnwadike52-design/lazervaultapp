@@ -12,6 +12,8 @@ import '../../../authentication/cubit/authentication_state.dart';
 import '../../../profile/cubit/profile_cubit.dart';
 import '../../../profile/cubit/profile_state.dart';
 import '../../domain/entities/tag_pay_entity.dart';
+import 'package:lazervault/src/features/widgets/service_voice_button.dart';
+import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 
 class TagPayHomeScreen extends StatefulWidget {
   const TagPayHomeScreen({super.key});
@@ -150,6 +152,13 @@ class _TagPayHomeViewState extends State<_TagPayHomeView> {
                 ),
               ],
             ),
+          ),
+          SizedBox(width: 12.w),
+          MicroserviceChatIcon(
+            serviceName: 'Tag Pay',
+            sourceContext: 'transfers',
+            icon: Icons.chat_bubble_outline,
+            iconColor: const Color(0xFF10B981),
           ),
         ],
       ),

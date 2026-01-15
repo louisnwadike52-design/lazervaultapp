@@ -11,6 +11,7 @@ import '../../cubit/gift_card_state.dart';
 import '../../domain/entities/gift_card_entity.dart';
 import '../../../../../core/types/app_routes.dart';
 import '../../../voice_session/widgets/voice_command_sheet.dart';
+import '../../../microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 import 'widgets/brand_search_bottomsheet.dart';
 
 class GiftCardsScreen extends StatefulWidget {
@@ -173,10 +174,17 @@ class _GiftCardsScreenState extends State<GiftCardsScreen>
                   borderRadius: BorderRadius.circular(12.r),
                 ),
                 child: IconButton(
-                  icon: Icon(Icons.mic_rounded, 
+                  icon: Icon(Icons.mic_rounded,
                     color: Colors.blue, size: 20.sp),
                   onPressed: () => _showVoiceAgentSheet(),
                 ),
+              ),
+              SizedBox(width: 8.w),
+              MicroserviceChatIcon(
+                serviceName: 'Gift Cards',
+                sourceContext: 'giftcards',
+                icon: Icons.chat_bubble_outline,
+                iconColor: Colors.blue,
               ),
               SizedBox(width: 12.w),
               Container(

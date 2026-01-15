@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/autosave/presentation/cubit/autosave_cubit.dart';
 import 'package:lazervault/src/features/autosave/presentation/cubit/autosave_state.dart';
+import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 
 class AutoSaveRuleProcessingScreen extends StatefulWidget {
   const AutoSaveRuleProcessingScreen({super.key});
@@ -209,7 +210,10 @@ class _AutoSaveRuleProcessingScreenState extends State<AutoSaveRuleProcessingScr
                     fontWeight: FontWeight.w400,
                   ),
                 ),
-              ],
+                            ServiceVoiceButton(
+                serviceName: 'autosave',
+              ),
+],
             ),
           ),
         ],

@@ -16,6 +16,8 @@ abstract class ITransferRemoteDataSource {
     String? category,
     String? reference,
     DateTime? scheduledAt, // Changed type to DateTime?
+    String? transactionId,
+    String? verificationToken,
   });
 }
 
@@ -38,6 +40,8 @@ class TransferRemoteDataSourceImpl implements ITransferRemoteDataSource {
     String? category,
     String? reference,
     DateTime? scheduledAt, // Changed type to DateTime?
+    String? transactionId,
+    String? verificationToken,
   }) async {
     // PRODUCTION-GRADE: Execute with retry policy for network resilience
     return await RetryPolicy.critical.execute(
@@ -59,13 +63,16 @@ class TransferRemoteDataSourceImpl implements ITransferRemoteDataSource {
         );
 
         try {
-          final callOptions = await _callOptionsHelper.withAuth();
-          final response = await _client.initiateTransfer(
-            request,
-            options: callOptions.mergedWith(
-              CallOptions(timeout: const Duration(seconds: 30)),
-            ),
-          );
+          // Use executeWithTokenRotation for automatic token refresh on auth errors
+          final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+            final callOptions = await _callOptionsHelper.withAuth();
+            return await _client.initiateTransfer(
+              request,
+              options: callOptions.mergedWith(
+                CallOptions(timeout: const Duration(seconds: 30)),
+              ),
+            );
+          });
           return response;
         } on GrpcError catch (e) {
           // Log the gRPC error details

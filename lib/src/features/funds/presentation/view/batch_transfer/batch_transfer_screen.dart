@@ -9,6 +9,7 @@ import 'package:lazervault/src/features/funds/presentation/widgets/batch_transfe
 import 'package:lazervault/src/features/funds/presentation/widgets/batch_transfer/batch_transfer_history_widget.dart';
 import 'package:lazervault/src/features/funds/cubit/batch_transfer_cubit.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_cubit.dart';
+import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 
 class BatchTransferScreen extends StatefulWidget {
   const BatchTransferScreen({super.key});
@@ -148,6 +149,11 @@ class _BatchTransferScreenState extends State<BatchTransferScreen> {
                 ),
               ],
             ),
+          ),
+          SizedBox(width: 12.w),
+          ServiceVoiceButton(
+            serviceName: 'transfers',
+            iconColor: Colors.white,
           ),
         ],
       ),

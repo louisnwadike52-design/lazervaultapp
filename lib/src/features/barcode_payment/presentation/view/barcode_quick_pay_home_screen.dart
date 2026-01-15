@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../../core/types/app_routes.dart';
+import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 
 class BarcodeQuickPayHomeScreen extends StatefulWidget {
   const BarcodeQuickPayHomeScreen({super.key});
@@ -148,7 +149,10 @@ class _BarcodeQuickPayHomeScreenState extends State<BarcodeQuickPayHomeScreen>
                     fontWeight: FontWeight.w400,
                   ),
                 ),
-              ],
+                            ServiceVoiceButton(
+                serviceName: 'barcode',
+              ),
+],
             ),
           ),
         ],

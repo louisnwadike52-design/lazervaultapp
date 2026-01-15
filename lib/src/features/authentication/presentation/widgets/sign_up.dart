@@ -33,8 +33,12 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
     super.initState();
     _pageController = PageController();
     _responsiveController = ResponsiveController(context);
-    // Initialize the sign-up process in the cubit
-    context.read<AuthenticationCubit>().startSignUp();
+    // Initialize the sign-up process in the cubit after the frame is built
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        context.read<AuthenticationCubit>().startSignUp();
+      }
+    });
   }
 
   @override
@@ -149,30 +153,78 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
             // fullName, selectedDate, and phoneNumber after this error to prevent fields clearing.
             break;
           case AuthenticationSuccess():
-            // Signup successful, navigate to email verification screen first
-            Get.snackbar(
-              'Account Created!',
-              'Please verify your email to continue.',
-              snackPosition: SnackPosition.TOP,
-              backgroundColor: Colors.green,
-              colorText: Colors.white,
-              margin: EdgeInsets.all(15.w),
-              borderRadius: 10.r,
-            );
-            Get.offAllNamed(AppRoutes.emailVerification);
+            // Signup successful, navigate to verification screen based on primary contact type
+            final signupState = context.read<AuthenticationCubit>().state;
+            if (signupState is SignUpInProgress) {
+              final primaryType = signupState.primaryContactType;
+              if (primaryType == PrimaryContactType.phone) {
+                Get.snackbar(
+                  'Account Created!',
+                  'Please verify your phone number to continue.',
+                  snackPosition: SnackPosition.TOP,
+                  backgroundColor: Colors.green,
+                  colorText: Colors.white,
+                  margin: EdgeInsets.all(15.w),
+                  borderRadius: 10.r,
+                );
+                Get.offAllNamed(AppRoutes.phoneVerification, arguments: signupState.phoneNumber);
+              } else {
+                Get.snackbar(
+                  'Account Created!',
+                  'Please verify your email to continue.',
+                  snackPosition: SnackPosition.TOP,
+                  backgroundColor: Colors.green,
+                  colorText: Colors.white,
+                  margin: EdgeInsets.all(15.w),
+                  borderRadius: 10.r,
+                );
+                Get.offAllNamed(AppRoutes.emailVerification, arguments: signupState.email);
+              }
+            } else {
+              // Fallback to email verification
+              Get.offAllNamed(AppRoutes.emailVerification);
+            }
             break;
           case UserCreated(): // Handle successful user creation
-            Get.snackbar(
-              'Success',
-              'Sign up successful! Please verify your email.',
-              snackPosition: SnackPosition.TOP,
-              backgroundColor: Colors.green,
-              colorText: Colors.white,
-              margin: EdgeInsets.all(15.w),
-              borderRadius: 10.r,
-            );
-            // Navigate to email verification after successful signup
-            Get.offAllNamed(AppRoutes.emailVerification);
+            // Determine primary contact type from previous signup state to route correctly
+            final cubit = context.read<AuthenticationCubit>();
+            final profile = cubit.currentProfile;
+
+            // Try to get the primary contact type from the stored user data
+            String? phoneNumber;
+            String? email;
+            bool usePhoneVerification = false;
+
+            if (profile != null) {
+              phoneNumber = profile.user.phoneNumber;
+              email = profile.user.email;
+              // If phone exists and email is empty, assume phone signup
+              usePhoneVerification = phoneNumber != null && phoneNumber.isNotEmpty;
+            }
+
+            if (usePhoneVerification) {
+              Get.snackbar(
+                'Success',
+                'Sign up successful! Please verify your phone number.',
+                snackPosition: SnackPosition.TOP,
+                backgroundColor: Colors.green,
+                colorText: Colors.white,
+                margin: EdgeInsets.all(15.w),
+                borderRadius: 10.r,
+              );
+              Get.offAllNamed(AppRoutes.phoneVerification, arguments: phoneNumber);
+            } else {
+              Get.snackbar(
+                'Success',
+                'Sign up successful! Please verify your email.',
+                snackPosition: SnackPosition.TOP,
+                backgroundColor: Colors.green,
+                colorText: Colors.white,
+                margin: EdgeInsets.all(15.w),
+                borderRadius: 10.r,
+              );
+              Get.offAllNamed(AppRoutes.emailVerification, arguments: email);
+            }
             break;
           default:
              // Handle other states or do nothing
@@ -306,6 +358,8 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
       builder: (context, state) {
         final password = state is SignUpInProgress ? state.password : '';
         final confirmPassword = state is SignUpInProgress ? state.confirmPassword : '';
+        final primaryContactType = state is SignUpInProgress ? state.primaryContactType : PrimaryContactType.none;
+        final phoneNumber = state is SignUpInProgress ? state.phoneNumber : '';
 
         // Password validation checks
         final hasMinLength = password.length >= 8;
@@ -325,14 +379,117 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            BuildFormField(
-              name: "email",
-              placeholder: "Email",
-              keyboardType: TextInputType.emailAddress,
-              prefixIcon: const Icon(Icons.email, color: Colors.black45),
-              initialValue: initialEmail,
-              onChanged: (value) => context.read<AuthenticationCubit>().signUpEmailChanged(value),
+            // Toggle between Email and Phone Number
+            Container(
+              padding: EdgeInsets.symmetric(vertical: 8.h),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () => context.read<AuthenticationCubit>().signUpSetPrimaryContactType(PrimaryContactType.email),
+                      child: Container(
+                        padding: EdgeInsets.symmetric(vertical: 12.h),
+                        decoration: BoxDecoration(
+                          color: primaryContactType == PrimaryContactType.email || primaryContactType == PrimaryContactType.none
+                              ? Colors.blue
+                              : Colors.grey[300],
+                          borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(24.r),
+                            bottomLeft: Radius.circular(24.r),
+                          ),
+                        ),
+                        child: Text(
+                          'Email',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: primaryContactType == PrimaryContactType.email || primaryContactType == PrimaryContactType.none
+                                ? Colors.white
+                                : Colors.black54,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 15.sp,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () => context.read<AuthenticationCubit>().signUpSetPrimaryContactType(PrimaryContactType.phone),
+                      child: Container(
+                        padding: EdgeInsets.symmetric(vertical: 12.h),
+                        decoration: BoxDecoration(
+                          color: primaryContactType == PrimaryContactType.phone
+                              ? Colors.blue
+                              : Colors.grey[300],
+                          borderRadius: BorderRadius.only(
+                            topRight: Radius.circular(24.r),
+                            bottomRight: Radius.circular(24.r),
+                          ),
+                        ),
+                        child: Text(
+                          'Phone Number',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: primaryContactType == PrimaryContactType.phone
+                                ? Colors.white
+                                : Colors.black54,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 15.sp,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
+            SizedBox(height: 16.0.h),
+
+            // Show Email OR Phone Number field based on selection
+            if (primaryContactType == PrimaryContactType.email || primaryContactType == PrimaryContactType.none)
+              BuildFormField(
+                name: "email",
+                placeholder: "Email",
+                keyboardType: TextInputType.emailAddress,
+                prefixIcon: const Icon(Icons.email, color: Colors.black45),
+                initialValue: initialEmail,
+                onChanged: (value) => context.read<AuthenticationCubit>().signUpEmailChanged(value),
+              )
+            else
+              IntlPhoneField(
+                decoration: InputDecoration(
+                  hintText: 'Phone Number',
+                  hintStyle: TextStyle(
+                    fontSize: 16.sp,
+                    color: Colors.grey.shade600,
+                  ),
+                  fillColor: const Color(0xFFF0F0F0),
+                  filled: true,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(24.0.r),
+                    borderSide: BorderSide.none,
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(24.0.r),
+                    borderSide: BorderSide.none,
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(24.0.r),
+                    borderSide: BorderSide.none,
+                  ),
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 12.0.w,
+                    vertical: 12.0.h,
+                  ),
+                ),
+                style: TextStyle(fontSize: 16.sp),
+                dropdownTextStyle: TextStyle(fontSize: 16.sp),
+                initialCountryCode: 'US',
+                onChanged: (phone) {
+                  context.read<AuthenticationCubit>().signUpPhoneNumberChanged(phone.completeNumber);
+                },
+              ),
             SizedBox(height: 8.0.h),
             BuildFormField(
               name: "password",
@@ -453,45 +610,50 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
   // Helper method for Page 2 content
   // Linter Fix: Accept firstName, lastName instead of fullName
   Widget _buildPageTwo(BuildContext context, {String? initialFirstName, String? initialLastName, DateTime? selectedDate, String? initialPhoneNumber, required bool isLoading}) {
-    return Column(
-      children: [
-        // Linter Fix: Separate First Name field
-        BuildFormField(
-          name: "firstname",
-          placeholder: "First Name",
-          prefixIcon: const Icon(Icons.person_outline, color: Colors.black45),
-          initialValue: initialFirstName,
-          onChanged: (value) => context.read<AuthenticationCubit>().signUpFirstNameChanged(value),
-        ),
-        SizedBox(height: 8.0.h),
-        // Linter Fix: Separate Last Name field
-        BuildFormField(
-          name: "lastname",
-          placeholder: "Last Name",
-          prefixIcon: const Icon(Icons.person_outline, color: Colors.black45),
-          initialValue: initialLastName,
-          onChanged: (value) => context.read<AuthenticationCubit>().signUpLastNameChanged(value),
-        ),
-        SizedBox(height: 8.0.h),
-        // Username field
-        BuildFormField(
-          name: "username",
-          placeholder: "Username (optional)",
-          prefixIcon: const Icon(Icons.alternate_email, color: Colors.black45),
-          onChanged: (value) => context.read<AuthenticationCubit>().signUpUsernameChanged(value),
-        ),
-        SizedBox(height: 8.0.h),
-        // Referral code field
-        BuildFormField(
-          name: "referralCode",
-          placeholder: "Referral Code (optional)",
-          prefixIcon: const Icon(Icons.card_giftcard, color: Colors.black45),
-          textCapitalization: TextCapitalization.characters,
-          onChanged: (value) => context.read<AuthenticationCubit>().signUpReferralCodeChanged(value.toUpperCase()),
-        ),
-        SizedBox(height: 8.0.h),
-        // DOB field
-         GestureDetector(
+    return BlocBuilder<AuthenticationCubit, AuthenticationState>(
+      builder: (context, state) {
+        final primaryContactType = state is SignUpInProgress ? state.primaryContactType : PrimaryContactType.none;
+        final email = state is SignUpInProgress ? state.email : '';
+
+        return Column(
+          children: [
+            // Linter Fix: Separate First Name field
+            BuildFormField(
+              name: "firstname",
+              placeholder: "First Name",
+              prefixIcon: const Icon(Icons.person_outline, color: Colors.black45),
+              initialValue: initialFirstName,
+              onChanged: (value) => context.read<AuthenticationCubit>().signUpFirstNameChanged(value),
+            ),
+            SizedBox(height: 8.0.h),
+            // Linter Fix: Separate Last Name field
+            BuildFormField(
+              name: "lastname",
+              placeholder: "Last Name",
+              prefixIcon: const Icon(Icons.person_outline, color: Colors.black45),
+              initialValue: initialLastName,
+              onChanged: (value) => context.read<AuthenticationCubit>().signUpLastNameChanged(value),
+            ),
+            SizedBox(height: 8.0.h),
+            // Username field
+            BuildFormField(
+              name: "username",
+              placeholder: "Username (optional)",
+              prefixIcon: const Icon(Icons.alternate_email, color: Colors.black45),
+              onChanged: (value) => context.read<AuthenticationCubit>().signUpUsernameChanged(value),
+            ),
+            SizedBox(height: 8.0.h),
+            // Referral code field
+            BuildFormField(
+              name: "referralCode",
+              placeholder: "Referral Code (optional)",
+              prefixIcon: const Icon(Icons.card_giftcard, color: Colors.black45),
+              textCapitalization: TextCapitalization.characters,
+              onChanged: (value) => context.read<AuthenticationCubit>().signUpReferralCodeChanged(value.toUpperCase()),
+            ),
+            SizedBox(height: 8.0.h),
+            // DOB field
+            GestureDetector(
               onTap: _showDatePicker,
               child: AbsorbPointer(
                 child: BuildFormField(
@@ -506,76 +668,114 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
                 ),
               ),
             ),
-        SizedBox(height: 8.0.h),
-        // Phone Number Field with Country Code
-        IntlPhoneField(
-          decoration: InputDecoration(
-            hintText: 'Phone Number',
-            hintStyle: TextStyle(
-              fontSize: 16.sp,
-              color: Colors.grey.shade600,
-            ),
-            fillColor: const Color(0xFFF0F0F0),
-            filled: true,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(24.0.r),
-              borderSide: BorderSide.none,
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(24.0.r),
-              borderSide: BorderSide.none,
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(24.0.r),
-              borderSide: BorderSide.none,
-            ),
-            contentPadding: EdgeInsets.symmetric(
-              horizontal: 12.0.w,
-              vertical: 12.0.h,
-            ),
-          ),
-          style: TextStyle(fontSize: 16.sp),
-          dropdownTextStyle: TextStyle(fontSize: 16.sp),
-          initialCountryCode: 'US', // Default country code
-          onChanged: (phone) {
-            // Store complete phone number with country code in E.164 format
-            context.read<AuthenticationCubit>().signUpPhoneNumberChanged(phone.completeNumber);
-          },
-        ),
-        SizedBox(height: 32.0.h),
-        // --- Navigation Button ---
-        isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : Center(
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
-                    foregroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(
-                        vertical: 12.0,
-                        horizontal: _responsiveController.screenWidth * 0.4),
+            SizedBox(height: 8.0.h),
+
+            // Show opposite field based on what was entered on page 1
+            // If user entered email on page 1, show phone field (optional)
+            // If user entered phone on page 1, show email field (optional)
+            if (primaryContactType == PrimaryContactType.email)
+              IntlPhoneField(
+                decoration: InputDecoration(
+                  hintText: 'Phone Number (Optional)',
+                  hintStyle: TextStyle(
+                    fontSize: 16.sp,
+                    color: Colors.grey.shade600,
                   ),
-                  onPressed: () {
-                    context.read<AuthenticationCubit>().signUpSubmitted();
-                  },
-                  child: const Text(
-                    "Sign Up",
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                  fillColor: const Color(0xFFF0F0F0),
+                  filled: true,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(24.0.r),
+                    borderSide: BorderSide.none,
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(24.0.r),
+                    borderSide: BorderSide.none,
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(24.0.r),
+                    borderSide: BorderSide.none,
+                  ),
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 12.0.w,
+                    vertical: 12.0.h,
                   ),
                 ),
+                style: TextStyle(fontSize: 16.sp),
+                dropdownTextStyle: TextStyle(fontSize: 16.sp),
+                initialCountryCode: 'US',
+                onChanged: (phone) {
+                  context.read<AuthenticationCubit>().signUpPhoneNumberChanged(phone.completeNumber);
+                },
+              )
+            else if (primaryContactType == PrimaryContactType.phone)
+              BuildFormField(
+                name: "email",
+                placeholder: "Email (Optional)",
+                keyboardType: TextInputType.emailAddress,
+                prefixIcon: const Icon(Icons.email, color: Colors.black45),
+                initialValue: email,
+                onChanged: (value) => context.read<AuthenticationCubit>().signUpEmailChanged(value),
+              )
+            else
+              // Fallback: Show phone if primaryContactType is none (shouldn't happen if page 1 validation works)
+              IntlPhoneField(
+                decoration: InputDecoration(
+                  hintText: 'Phone Number',
+                  hintStyle: TextStyle(
+                    fontSize: 16.sp,
+                    color: Colors.grey.shade600,
+                  ),
+                  fillColor: const Color(0xFFF0F0F0),
+                  filled: true,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(24.0.r),
+                    borderSide: BorderSide.none,
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(24.0.r),
+                    borderSide: BorderSide.none,
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(24.0.r),
+                    borderSide: BorderSide.none,
+                  ),
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 12.0.w,
+                    vertical: 12.0.h,
+                  ),
+                ),
+                style: TextStyle(fontSize: 16.sp),
+                dropdownTextStyle: TextStyle(fontSize: 16.sp),
+                initialCountryCode: 'US',
+                onChanged: (phone) {
+                  context.read<AuthenticationCubit>().signUpPhoneNumberChanged(phone.completeNumber);
+                },
               ),
-        SizedBox(height: 16.0.h),
-        UniversalImageLoader(imagePath: AppData.orDivider),
-        SizedBox(height: 16.0.h),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _socialLoginButton(AppData.googleLogo),
-            SizedBox(width: 10.w),
-            _socialLoginButton(AppData.appleLogo),
+            SizedBox(height: 32.0.h),
+            // --- Navigation Button ---
+            isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : Center(
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        foregroundColor: Colors.white,
+                        padding: EdgeInsets.symmetric(
+                            vertical: 12.0,
+                            horizontal: _responsiveController.screenWidth * 0.4),
+                      ),
+                      onPressed: () {
+                        context.read<AuthenticationCubit>().signUpSubmitted();
+                      },
+                      child: const Text(
+                        "Sign Up",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
           ],
-        ),
-      ],
+        );
+      },
     );
   }
 

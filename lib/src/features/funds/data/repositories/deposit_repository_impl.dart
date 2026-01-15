@@ -27,23 +27,26 @@ class DepositRepositoryImpl implements IDepositRepository {
     String? accessToken,
   }) async {
     try {
-      final amountMinorUnits = Int64((amount * 100).round());
+      // Use executeWithTokenRotation for automatic token refresh on auth errors
+      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+        final amountMinorUnits = Int64((amount * 100).round());
 
-      print('DepositRepository: Preparing request with targetAccountId: $targetAccountId, amount: $amount, currency: $currency, sourceBankName: $sourceBankName');
+        print('DepositRepository: Preparing request with targetAccountId: $targetAccountId, amount: $amount, currency: $currency, sourceBankName: $sourceBankName');
 
-      final request = req_resp.InitiateDepositRequest(
-        targetAccountId: Int64(targetAccountId),
-        amount: amountMinorUnits,
-        currency: currency,
-        sourceBankName: sourceBankName,
-      );
+        final request = req_resp.InitiateDepositRequest(
+          targetAccountId: Int64(targetAccountId),
+          amount: amountMinorUnits,
+          currency: currency,
+          sourceBankName: sourceBankName,
+        );
 
-      // Use helper to get call options with authorization header from secure storage
-      final callOptions = await _callOptionsHelper.withAuth();
+        // Use helper to get call options with authorization header from secure storage
+        final callOptions = await _callOptionsHelper.withAuth();
 
-      print('DepositRepository: Sending gRPC InitiateDeposit Request: $request');
+        print('DepositRepository: Sending gRPC InitiateDeposit Request: $request');
 
-      final response = await _depositServiceClient.initiateDeposit(request, options: callOptions);
+        return await _depositServiceClient.initiateDeposit(request, options: callOptions);
+      });
 
       print('DepositRepository: gRPC InitiateDeposit Response received: ${response.message} with status ${response.status.name}, depositId: ${response.depositId}');
 
@@ -53,7 +56,7 @@ class DepositRepositoryImpl implements IDepositRepository {
       return Right(depositModel);
     } on GrpcError catch (e) {
       print('DepositRepository: gRPC Error during InitiateDeposit: code=${e.code}, codeName=${e.codeName}, message=${e.message}, details=${e.details}');
-      
+
       if (e.code == StatusCode.unauthenticated) {
         return Left(ServerFailure(
           message: 'Authentication required. Please log in again.',

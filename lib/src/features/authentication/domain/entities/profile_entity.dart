@@ -11,6 +11,9 @@ class ProfileEntity extends Equatable {
     required this.session,
   });
 
+  // Convenience getter for userId
+  String get userId => user.id;
+
   @override
   List<Object?> get props => [user, session];
 } 

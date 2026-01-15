@@ -10,6 +10,8 @@ import '../widgets/market_index_card.dart';
 import '../widgets/portfolio_summary_card.dart';
 import '../widgets/watchlist_preview_card.dart';
 import '../widgets/quick_action_button.dart';
+import 'package:lazervault/src/features/widgets/service_voice_button.dart';
+import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 
 /// Modern stocks home screen - Main entry point for stocks feature
 /// Follows insurance pattern with market-themed gradient and modern UI
@@ -155,7 +157,17 @@ class _StocksHomeScreenState extends State<StocksHomeScreen>
                     fontWeight: FontWeight.w400,
                   ),
                 ),
-              ],
+                            ServiceVoiceButton(
+                serviceName: 'stocks',
+              ),
+              SizedBox(width: 8.w),
+              MicroserviceChatIcon(
+                serviceName: 'Stocks',
+                sourceContext: 'investments',
+                icon: Icons.chat_bubble_outline,
+                iconColor: const Color(0xFF3B82F6),
+              ),
+],
             ),
           ),
           _buildNotificationButton(),

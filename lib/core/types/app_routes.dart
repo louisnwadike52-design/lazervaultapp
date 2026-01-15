@@ -51,6 +51,16 @@ abstract class AppRoutes {
   static const String crypto = '/crypto';
   static const String stocks = '/stocks';
   static const String transactionHistory = '/transaction-history';
+
+  // New Transaction History Routes (Redesigned)
+  static const String dashboardTransactionHistory = '/transactions/dashboard';
+  static const String serviceTransactionHistory = '/transactions/service';
+
+  // WhatsApp Integration Routes
+  static const String whatsappBanking = '/whatsapp-banking';
+  static const String whatsappLinking = '/whatsapp-banking/linking';
+  static const String whatsappSecurity = '/whatsapp-banking/security';
+  static const String whatsappConfirm = '/whatsapp-banking/confirm';
   static const String reviewTransferFunds = '/review-transfer-funds';
   static const String profileSettings = '/profile-settings';
   static const String languages = '/profile-settings/languages';
@@ -89,6 +99,7 @@ abstract class AppRoutes {
   static const String passcodeSetup = '/auth/passcode-setup';
   static const String changePasscode = '/auth/change-passcode';
   static const String emailVerification = '/auth/email-verification';
+  static const String phoneVerification = '/auth/phone-verification';
   static const String otpVerification = '/auth/otp-verification';
   static const String enableBiometricAccess = '/auth/enable-biometric-access';
   static const String passwordRecovery = '/auth/password-recovery';
@@ -221,8 +232,14 @@ abstract class AppRoutes {
 
   // Statistics Routes
   static const String statistics = '/statistics';
+  static const String statisticsRedesigned = '/statistics/redesigned';
   static const String addExpense = '/statistics/add-expense';
   static const String addBudget = '/statistics/add-budget';
+
+  // Open Banking Routes
+  static const String openBankingConnect = '/open-banking/connect';
+  static const String openBankingCallback = '/open-banking/callback';
+  static const String openBankingSync = '/open-banking/sync';
 
   // Tag Pay Routes
   static const String tagPay = '/tag-pay';
@@ -263,4 +280,20 @@ abstract class AppRoutes {
   static const String lockFunds = '/lock-funds';
   static const String createLockFund = '/lock-funds/create';
   static const String lockFundDetails = '/lock-funds/details';
+
+  // Voice Enrollment Routes
+  static const String voiceEnrollment = '/voice/enrollment';
+  static const String voiceActivationPrompt = '/voice/activation-prompt';
+
+  // Family Account Routes
+  static const String familySetup = '/family/setup';
+  static const String familyAddMember = '/family/add-member';
+  static const String familyDetails = '/family/details';
+  static const String familyEditMemberLimits = '/family/edit-limits';
+  static const String familyInvitations = '/family/invitations';
+  static const String familySettings = '/family/settings';
+
+  // Microservice Chat Routes
+  static const String microserviceChat = '/microservice-chat';
+  static const String generalChat = '/general-chat';
 }

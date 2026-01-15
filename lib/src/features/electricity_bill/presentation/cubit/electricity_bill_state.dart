@@ -77,14 +77,32 @@ class PaymentInitiated extends ElectricityBillState {
 class PaymentProcessing extends ElectricityBillState {
   final BillPaymentEntity payment;
   final String message;
+  final double progress; // 0.0 to 1.0
+  final String currentStep;
 
   PaymentProcessing({
     required this.payment,
     this.message = 'Processing your payment...',
+    this.progress = 0.1,
+    this.currentStep = 'Initializing payment...',
   });
 
+  PaymentProcessing copyWith({
+    BillPaymentEntity? payment,
+    String? message,
+    double? progress,
+    String? currentStep,
+  }) {
+    return PaymentProcessing(
+      payment: payment ?? this.payment,
+      message: message ?? this.message,
+      progress: progress ?? this.progress,
+      currentStep: currentStep ?? this.currentStep,
+    );
+  }
+
   @override
-  List<Object?> get props => [payment, message];
+  List<Object?> get props => [payment, message, progress, currentStep];
 }
 
 class PaymentSuccess extends ElectricityBillState {

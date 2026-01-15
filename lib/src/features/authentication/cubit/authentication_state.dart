@@ -152,6 +152,13 @@ class AuthenticationError extends AuthenticationState {
   List<Object?> get props => [message];
 }
 
+// Enum to track which contact type was entered on page 1
+enum PrimaryContactType {
+  email,
+  phone,
+  none, // Initial state before user chooses
+}
+
 class SignUpInProgress extends AuthenticationState {
   const SignUpInProgress({
     this.currentPage = 0,
@@ -166,6 +173,7 @@ class SignUpInProgress extends AuthenticationState {
     this.phoneNumber = '',
     this.isLoading = false,
     this.errorMessage,
+    this.primaryContactType = PrimaryContactType.none, // Track which contact type user entered first
   });
 
   final int currentPage;
@@ -180,6 +188,7 @@ class SignUpInProgress extends AuthenticationState {
   final String phoneNumber;
   final bool isLoading;
   final String? errorMessage;
+  final PrimaryContactType primaryContactType;
 
   SignUpInProgress copyWith({
     int? currentPage,
@@ -195,6 +204,7 @@ class SignUpInProgress extends AuthenticationState {
     bool? isLoading,
     String? errorMessage,
     bool clearErrorMessage = false,
+    PrimaryContactType? primaryContactType,
   }) {
     return SignUpInProgress(
       currentPage: currentPage ?? this.currentPage,
@@ -209,6 +219,7 @@ class SignUpInProgress extends AuthenticationState {
       phoneNumber: phoneNumber ?? this.phoneNumber,
       isLoading: isLoading ?? this.isLoading,
       errorMessage: clearErrorMessage ? null : errorMessage ?? this.errorMessage,
+      primaryContactType: primaryContactType ?? this.primaryContactType,
     );
   }
 
@@ -226,6 +237,7 @@ class SignUpInProgress extends AuthenticationState {
         phoneNumber,
         isLoading,
         errorMessage,
+        primaryContactType,
       ];
 }
 

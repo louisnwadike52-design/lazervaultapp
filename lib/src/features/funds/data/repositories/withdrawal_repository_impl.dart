@@ -29,25 +29,28 @@ class WithdrawalRepositoryImpl implements IWithdrawalRepository {
     String? accessToken,
   }) async {
     try {
-      final amountMinorUnits = Int64((amount * 100).round());
+      // Use executeWithTokenRotation for automatic token refresh on auth errors
+      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+        final amountMinorUnits = Int64((amount * 100).round());
 
-      print('WithdrawalRepository: Preparing request with sourceAccountId: $sourceAccountId, amount: $amount, currency: $currency, targetBankName: $targetBankName');
-      
-      final request = req_resp.InitiateWithdrawalRequest(
-        sourceAccountId: Int64(sourceAccountId),
-        amount: amountMinorUnits,
-        currency: currency,
-        targetBankName: targetBankName,
-        targetAccountNumber: targetAccountNumber,
-        targetSortCode: targetSortCode,
-      );
+        print('WithdrawalRepository: Preparing request with sourceAccountId: $sourceAccountId, amount: $amount, currency: $currency, targetBankName: $targetBankName');
 
-      // Use helper to get call options with authorization header from secure storage
-      final callOptions = await _callOptionsHelper.withAuth();
+        final request = req_resp.InitiateWithdrawalRequest(
+          sourceAccountId: Int64(sourceAccountId),
+          amount: amountMinorUnits,
+          currency: currency,
+          targetBankName: targetBankName,
+          targetAccountNumber: targetAccountNumber,
+          targetSortCode: targetSortCode,
+        );
 
-      print('WithdrawalRepository: Sending gRPC InitiateWithdrawal Request: $request');
+        // Use helper to get call options with authorization header from secure storage
+        final callOptions = await _callOptionsHelper.withAuth();
 
-      final response = await _withdrawServiceClient.initiateWithdrawal(request, options: callOptions);
+        print('WithdrawalRepository: Sending gRPC InitiateWithdrawal Request: $request');
+
+        return await _withdrawServiceClient.initiateWithdrawal(request, options: callOptions);
+      });
 
       print('WithdrawalRepository: gRPC InitiateWithdrawal Response received: ${response.message} with status ${response.status.name}, withdrawalId: ${response.withdrawalId}');
 
@@ -57,7 +60,7 @@ class WithdrawalRepositoryImpl implements IWithdrawalRepository {
       return Right(withdrawalModel);
     } catch (e) {
       print('WithdrawalRepository: Error during initiateWithdrawal: $e');
-      
+
       if (e is GrpcError) {
         return Left(
           ServerFailure(
@@ -66,7 +69,7 @@ class WithdrawalRepositoryImpl implements IWithdrawalRepository {
           ),
         );
       }
-      
+
       return Left(
         ServerFailure(
           message: 'An unexpected error occurred: $e',

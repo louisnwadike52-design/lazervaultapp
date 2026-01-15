@@ -1,588 +1,480 @@
 syntax = "proto3";
 
-package pb;
-option go_package = "lazervaultGo/pb";
+package auth;
 
 import "google/api/annotations.proto";
 import "protoc-gen-openapiv2/options/annotations.proto";
-import "common.proto";
 
+option go_package = "auth-service/proto";
+
+// OpenAPI v2 documentation
 option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
-    info: {
-        title: "LazerVault API"
-        version: "1.0"
-        description: "LazerVault Authentication API"
+  info: {
+    title: "LazerVault Auth Service";
+    version: "1.0";
+    description: "Authentication and authorization service for LazerVault";
+  };
+  schemes: HTTP;
+  schemes: HTTPS;
+  consumes: "application/json";
+  produces: "application/json";
+  security_definitions: {
+    security: {
+      key: "bearer";
+      value: {
+        type: TYPE_API_KEY;
+        in: IN_HEADER;
+        name: "Authorization";
+        description: "Bearer token authentication";
+      }
     }
-    schemes: HTTP
-    schemes: HTTPS
-    consumes: "application/json"
-    produces: "application/json"
+  };
 };
 
+// Auth Service - Complete authentication and authorization
+service AuthService {
+  // User registration
+  rpc Signup(SignupRequest) returns (SignupResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/auth/signup"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "User Registration";
+      description: "Register a new user account";
+      tags: ["Authentication"];
+    };
+  }
 
+  // User login
+  rpc Login(LoginRequest) returns (LoginResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/auth/login"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "User Login";
+      description: "Login with email and password";
+      tags: ["Authentication"];
+    };
+  }
+
+  // Refresh access token
+  rpc RefreshToken(RefreshTokenRequest) returns (RefreshTokenResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/auth/refresh"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Refresh Token";
+      description: "Refresh access token using refresh token";
+      tags: ["Authentication"];
+    };
+  }
+
+  // Logout user
+  rpc Logout(LogoutRequest) returns (LogoutResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/auth/logout"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "User Logout";
+      description: "Logout and invalidate refresh token";
+      tags: ["Authentication"];
+      security: {
+        security_requirement: {
+          key: "bearer";
+        }
+      };
+    };
+  }
+
+  // Email verification
+  rpc VerifyEmail(VerifyEmailRequest) returns (VerifyEmailResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/auth/verify-email"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Verify Email";
+      description: "Verify email address with token";
+      tags: ["Authentication"];
+    };
+  }
+
+  // Phone verification
+  rpc VerifyPhone(VerifyPhoneRequest) returns (VerifyPhoneResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/auth/verify-phone"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Verify Phone";
+      description: "Verify phone number with OTP code";
+      tags: ["Authentication"];
+      security: {
+        security_requirement: {
+          key: "bearer";
+        }
+      };
+    };
+  }
+
+  // Request password reset
+  rpc ForgotPassword(ForgotPasswordRequest) returns (ForgotPasswordResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/auth/forgot-password"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Forgot Password";
+      description: "Request password reset email";
+      tags: ["Authentication"];
+    };
+  }
+
+  // Reset password with token
+  rpc ResetPassword(ResetPasswordRequest) returns (ResetPasswordResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/auth/reset-password"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Reset Password";
+      description: "Reset password using token from email";
+      tags: ["Authentication"];
+    };
+  }
+
+  // Get current user info
+  rpc GetMe(GetMeRequest) returns (GetMeResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/auth/me"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Get Current User";
+      description: "Get currently authenticated user information";
+      tags: ["User"];
+      security: {
+        security_requirement: {
+          key: "bearer";
+        }
+      };
+    };
+  }
+
+  // Facial recognition login
+  rpc FacialLogin(FacialLoginRequest) returns (FacialLoginResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/auth/facial-login"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Facial Login";
+      description: "Login using facial recognition";
+      tags: ["Authentication"];
+    };
+  }
+
+  // Social login (Google, Facebook, Apple)
+  rpc SocialLogin(SocialLoginRequest) returns (SocialLoginResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/auth/social-login"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Social Login";
+      description: "Login with social provider (Google, Facebook, Apple)";
+      tags: ["Authentication"];
+    };
+  }
+
+  // Enable two-factor authentication
+  rpc EnableTwoFactor(EnableTwoFactorRequest) returns (EnableTwoFactorResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/auth/2fa/enable"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Enable 2FA";
+      description: "Enable two-factor authentication";
+      tags: ["Two-Factor Authentication"];
+      security: {
+        security_requirement: {
+          key: "bearer";
+        }
+      };
+    };
+  }
+
+  // Verify two-factor authentication
+  rpc VerifyTwoFactor(VerifyTwoFactorRequest) returns (VerifyTwoFactorResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/auth/2fa/verify"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Verify 2FA";
+      description: "Verify two-factor authentication code";
+      tags: ["Two-Factor Authentication"];
+    };
+  }
+
+  // Validate token (used by gateway)
+  rpc ValidateToken(ValidateTokenRequest) returns (ValidateTokenResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/auth/validate-token"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Validate Token";
+      description: "Validate JWT token (internal use by gateway)";
+      tags: ["Internal"];
+    };
+  }
+
+  // Resend verification email
+  rpc ResendVerificationEmail(ResendVerificationEmailRequest) returns (ResendVerificationEmailResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/auth/resend-verification"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Resend Verification Email";
+      description: "Resend email verification link";
+      tags: ["Authentication"];
+    };
+  }
+
+  // Change password (authenticated)
+  rpc ChangePassword(ChangePasswordRequest) returns (ChangePasswordResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/auth/change-password"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Change Password";
+      description: "Change password for authenticated user";
+      tags: ["User"];
+      security: {
+        security_requirement: {
+          key: "bearer";
+        }
+      };
+    };
+  }
+}
+
+// ===== Signup =====
+message SignupRequest {
+  string email = 1;
+  string password = 2;
+  string first_name = 3;
+  string last_name = 4;
+  string phone = 5;
+  string country_code = 6;
+  string device_id = 7;
+  string device_name = 8;
+}
+
+message SignupResponse {
+  string user_id = 1;
+  string email = 2;
+  string message = 3;
+  bool email_verification_required = 4;
+  string access_token = 5;
+  string refresh_token = 6;
+  int64 expires_in = 7;
+  User user = 8;
+}
+
+// ===== Login =====
 message LoginRequest {
   string email = 1;
   string password = 2;
-}
-
-message LoginWithPasscodeRequest {
-  string email = 1;
-  string login_passcode = 2; // 4-6 digit passcode
-}
-
-message RegisterPasscodeRequest {
-  string login_passcode = 1; // 6-digit passcode to register
-}
-
-message RegisterPasscodeResponse {
-  bool success = 1;
-  string msg = 2;
-}
-
-message ChangePasscodeRequest {
-  string old_passcode = 1; // Current 6-digit passcode
-  string new_passcode = 2; // New 6-digit passcode
-}
-
-message ChangePasscodeResponse {
-  bool success = 1;
-  string msg = 2;
+  string device_id = 3;
+  string device_name = 4;
 }
 
 message LoginResponse {
-  Data data = 1;
-  bool success = 2;
-  string msg = 3;
+  string access_token = 1;
+  string refresh_token = 2;
+  int64 expires_in = 3;
+  User user = 4;
+  bool two_factor_required = 5;
+  string two_factor_token = 6; // Temporary token for 2FA flow
 }
 
+// ===== Refresh Token =====
 message RefreshTokenRequest {
   string refresh_token = 1;
 }
 
 message RefreshTokenResponse {
-  Data data = 1;
-  bool success = 2;     
-  string msg = 3;
-}   
+  string access_token = 1;
+  string refresh_token = 2;
+  int64 expires_in = 3;
+}
 
+// ===== Logout =====
 message LogoutRequest {
-  string session_id = 1;
+  string user_id = 1;
+  string refresh_token = 2;
 }
 
 message LogoutResponse {
-  bool success = 1;
-  string msg = 2;
+  string message = 1;
 }
 
-// --- Email Verification Messages ---
-
-// Request to send a verification email to the authenticated user.
-// No parameters needed as user is identified via auth token.
-message RequestEmailVerificationRequest {}
-
-// Response for requesting email verification.
-message RequestEmailVerificationResponse {
-  bool success = 1; // Indicates if the request was accepted (email sending enqueued)
-  string msg = 2;   // User-facing message (e.g., "Verification email sent")
-}
-
-// Request to verify an email using a received code.
+// ===== Email Verification =====
 message VerifyEmailRequest {
-  option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
-    json_schema: {
-      required: ["verification_code"]
-    }
-  };
-  string verification_code = 1; // The verification code sent to the user's email
+  string token = 1;
 }
 
-// Response for verifying an email.
 message VerifyEmailResponse {
-  bool success = 1; // Indicates if the email was successfully verified
-  string msg = 2;   // User-facing message (e.g., "Email verified successfully")
-}
-
-// --- End Email Verification Messages ---
-
-// --- Password Reset Messages (Email/Token Based) ---
-
-// Request to initiate password reset process via email or SMS.
-message RequestPasswordResetRequest {
-  option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
-    json_schema: {
-      required: ["email"]
-    }
-  };
-  // User provides their email to initiate reset.
-  string email = 1;
-  // Delivery method for OTP: "EMAIL" or "SMS" (default: "SMS")
-  string delivery_method = 2;
-}
-
-// Response for requesting password reset.
-message RequestPasswordResetResponse {
-  bool success = 1;
-  string msg = 2; // e.g., "Password reset instructions sent to your email."
-}
-
-// Request to reset password using the email token.
-message ResetPasswordRequest {
- option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
-    json_schema: {
-      required: ["email", "token", "new_password"]
-    }
-  };
-  string email = 1;        // Email used in the initial request
-  string token = 2;        // The reset token received via email
-  string new_password = 3; // The desired new password
-}
-
-// Response for resetting password.
-message ResetPasswordResponse {
-  bool success = 1;
-  string msg = 2; // e.g., "Password reset successfully."
-}
-
-// Request to verify password reset code (6-digit OTP)
-message VerifyPasswordResetCodeRequest {
-  option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
-    json_schema: {
-      required: ["email", "code"]
-    }
-  };
-  string email = 1; // Email used in the reset request
-  string code = 2;  // 6-digit OTP code
-}
-
-// Response for verifying password reset code
-message VerifyPasswordResetCodeResponse {
-  bool success = 1;
-  string msg = 2;
-  string reset_token = 3; // Temporary token for password reset (valid 15 minutes)
-}
-
-// --- End Password Reset Messages ---
-
-// --- Facial Recognition Messages ---
-
-// Request to login with facial recognition
-message LoginWithFaceRequest {
-  option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
-    json_schema: {
-      required: ["email", "image_data"]
-    }
-  };
-  string email = 1;
-  bytes image_data = 2;
-  string image_filename = 3;
-}
-
-// Response for facial recognition login
-message LoginWithFaceResponse {
-  Data data = 1;
+  string message = 1;
   bool success = 2;
-  string msg = 3;
-  double confidence = 4; // Confidence score from facial recognition
 }
 
-// Request to check if user has facial recognition enabled
-message CheckFaceRegistrationRequest {
-  // User identified via auth token, no parameters needed
+message ResendVerificationEmailRequest {
+  string email = 1;
 }
 
-// Response for checking face registration status
-message CheckFaceRegistrationResponse {
-  bool is_registered = 1;
-  string registered_at = 2; // ISO 8601 timestamp
-  string msg = 3;
+message ResendVerificationEmailResponse {
+  string message = 1;
 }
 
-// --- End Facial Recognition Messages ---
-
-// --- Social Sign-In Messages ---
-message SignInWithGoogleRequest {
-  option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
-    json_schema: {
-      required: ["id_token"]
-    }
-  };
-  // The ID token received from Google Sign-In on the client.
-  string id_token = 1;
+// ===== Phone Verification =====
+message VerifyPhoneRequest {
+  string user_id = 1;
+  string code = 2;
 }
 
-message SignInWithAppleRequest {
-  option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
-    json_schema: {
-      required: ["identity_token", "user_identifier"]
-      // Optional: Include email and name if you want the client to send them
-      // when first available from Apple. The backend should prioritize
-      // verification via identity_token.
-    }
-  };
-  // The identity token received from Sign in with Apple on the client.
-  string identity_token = 1;
-  // The unique user identifier received from Apple.
-  string user_identifier = 2;
-  // Optional: Email provided by Apple (usually only on first sign-in).
+message VerifyPhoneResponse {
+  string message = 1;
+  bool success = 2;
+}
+
+// ===== Password Reset =====
+message ForgotPasswordRequest {
+  string email = 1;
+}
+
+message ForgotPasswordResponse {
+  string message = 1;
+}
+
+message ResetPasswordRequest {
+  string token = 1;
+  string new_password = 2;
+}
+
+message ResetPasswordResponse {
+  string message = 1;
+  bool success = 2;
+}
+
+message ChangePasswordRequest {
+  string user_id = 1;
+  string current_password = 2;
+  string new_password = 3;
+}
+
+message ChangePasswordResponse {
+  string message = 1;
+}
+
+// ===== Get User Info =====
+message GetMeRequest {
+  string user_id = 1;
+}
+
+message GetMeResponse {
+  User user = 1;
+}
+
+// ===== Facial Login =====
+message FacialLoginRequest {
+  bytes facial_data = 1;
+  string device_id = 2;
+}
+
+message FacialLoginResponse {
+  string access_token = 1;
+  string refresh_token = 2;
+  int64 expires_in = 3;
+  User user = 4;
+}
+
+// ===== Social Login =====
+message SocialLoginRequest {
+  string provider = 1; // "google", "facebook", "apple"
+  string provider_token = 2;
   string email = 3;
-  // Optional: Given name provided by Apple.
-  string given_name = 4;
-  // Optional: Family name provided by Apple.
-  string family_name = 5;
+  string first_name = 4;
+  string last_name = 5;
+  string provider_user_id = 6;
 }
 
-// We can reuse LoginResponse for social sign-in success.
-
-// --- End Social Sign-In Messages ---
-
-// --- Email Availability Check ---
-message CheckEmailAvailabilityRequest {
-  option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
-    json_schema: {
-      required: ["email"]
-    }
-  };
-  string email = 1; // The email to check for availability
+message SocialLoginResponse {
+  string access_token = 1;
+  string refresh_token = 2;
+  int64 expires_in = 3;
+  User user = 4;
+  bool is_new_user = 5;
 }
 
-message CheckEmailAvailabilityResponse {
-  bool available = 1; // Indicates if the email is available (true) or already in use (false)
-  string msg = 2;     // User-facing message (e.g., "Email is available" or "Email already in use")
+// ===== Two-Factor Authentication =====
+message EnableTwoFactorRequest {
+  string user_id = 1;
+  string method = 2; // "sms", "email", "totp"
 }
 
-// --- PIN Verification ---
-message VerifyPinRequest {
-  option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
-    json_schema: {
-      required: ["pin"]
-    }
-  };
-  string pin = 1; // The 4-digit transaction PIN entered by the user
+message EnableTwoFactorResponse {
+  string message = 1;
+  string qr_code = 2; // For TOTP
+  string secret = 3; // For TOTP
 }
 
-message VerifyPinResponse {
-  bool success = 1; // Indicates if the PIN was correct
-  string msg = 2;   // e.g., "PIN verified successfully."
+message VerifyTwoFactorRequest {
+  string two_factor_token = 1; // From login response
+  string code = 2;
+  string method = 3;
 }
 
-// --- Phone Verification Messages ---
-
-// Request to send a verification code to a phone number.
-message RequestPhoneVerificationRequest {
-  option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
-    json_schema: {
-      required: ["phone_number"]
-    }
-  };
-  string phone_number = 1; // The phone number to verify (E.164 format preferred)
+message VerifyTwoFactorResponse {
+  string access_token = 1;
+  string refresh_token = 2;
+  int64 expires_in = 3;
+  User user = 4;
 }
 
-// Response for requesting phone verification.
-message RequestPhoneVerificationResponse {
-  bool success = 1; // Indicates if the request was accepted (SMS sending initiated)
-  string msg = 2;   // User-facing message (e.g., "Verification code sent to your phone")
-  string verification_id = 3; // Optional: ID to track this verification request
-  int32 expires_in = 4; // Optional: Expiry time in seconds
+// ===== Validate Token (for gateway) =====
+message ValidateTokenRequest {
+  string token = 1;
 }
 
-// Request to verify a phone number using a received code.
-message VerifyPhoneNumberRequest {
-  option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
-    json_schema: {
-      required: ["phone_number", "verification_code"]
-    }
-  };
-  string phone_number = 1; // The phone number being verified
-  string verification_code = 2; // The verification code sent to the user's phone
+message ValidateTokenResponse {
+  bool valid = 1;
+  string user_id = 2;
+  string email = 3;
+  int64 expires_at = 4;
 }
 
-// Response for verifying a phone number.
-message VerifyPhoneNumberResponse {
-  bool success = 1; // Indicates if the phone number was successfully verified
-  string msg = 2;   // User-facing message (e.g., "Phone number verified successfully")
-  bool is_verified = 3; // Indicates if the phone is now verified
+// ===== User Model =====
+message User {
+  string id = 1;
+  string email = 2;
+  string first_name = 3;
+  string last_name = 4;
+  string phone = 5;
+  string country_code = 6;
+  bool email_verified = 7;
+  bool phone_verified = 8;
+  bool two_factor_enabled = 9;
+  string two_factor_method = 10;
+  string profile_picture = 11;
+  string created_at = 12;
+  string updated_at = 13;
 }
-
-// --- End Phone Verification Messages ---
-
-// Service Definition
-service AuthService {
-  rpc Login(LoginRequest) returns (LoginResponse) {
-    option (google.api.http) = {
-      post: "/v1/auth/login"
-      body: "*"
-    };
-  }
-
-  rpc LoginWithPasscode(LoginWithPasscodeRequest) returns (LoginResponse) {
-    option (google.api.http) = {
-      post: "/v1/auth/login-passcode"
-      body: "*"
-    };
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary: "Login with Passcode"
-      description: "Authenticates a user using their email and login passcode."
-      tags: ["Auth"]
-    };
-  }
-
-  rpc RegisterPasscode(RegisterPasscodeRequest) returns (RegisterPasscodeResponse) {
-    option (google.api.http) = {
-      post: "/v1/auth/register-passcode"
-      body: "*"
-    };
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary: "Register Passcode"
-      description: "Registers a login passcode for the authenticated user."
-      tags: ["Auth"]
-      security: {
-        security_requirement: {
-          key: "bearer" value: {}
-        }
-      }
-    };
-  }
-
-  rpc ChangePasscode(ChangePasscodeRequest) returns (ChangePasscodeResponse) {
-    option (google.api.http) = {
-      post: "/v1/auth/change-passcode"
-      body: "*"
-    };
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary: "Change Passcode"
-      description: "Changes the login passcode for the authenticated user."
-      tags: ["Auth"]
-      security: {
-        security_requirement: {
-          key: "bearer" value: {}
-        }
-      }
-    };
-  }
-
-rpc RefreshToken(RefreshTokenRequest) returns (RefreshTokenResponse) {
-    option (google.api.http) = {
-      post: "/v1/auth/refresh-token"
-      body: "*"
-    };
-  }
-  rpc Logout(LogoutRequest) returns (LogoutResponse) {
-    option (google.api.http) = {
-      post: "/v1/auth/logout"
-      body: "*"
-    };
-  }
-
-  // --- Email Verification RPCs ---
-
-  // Request sending a verification email to the authenticated user.
-  rpc RequestEmailVerification(RequestEmailVerificationRequest) returns (RequestEmailVerificationResponse) {
-    option (google.api.http) = {
-      post: "/v1/auth/request-verification-email"
-      body: "*"
-    };
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary: "Request Email Verification"
-      description: "Initiates the process to send a verification email to the authenticated user's registered email address."
-      tags: ["Auth"]
-      security: {
-        security_requirement: {
-          key: "bearer" value: {}
-        }
-      }
-    };
-  }
-
-  // Verify the user's email address using a verification code.
-  rpc VerifyEmail(VerifyEmailRequest) returns (VerifyEmailResponse) {
-    option (google.api.http) = {
-      post: "/v1/auth/verify-email"
-      body: "*"
-    };
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary: "Verify Email"
-      description: "Verifies the user's email address using the provided verification code."
-      tags: ["Auth"]
-      // No explicit security requirement here, as the code itself implies user action.
-      // However, the backend service MUST validate the code properly.
-    };
-  }
-
-  // --- End Email Verification RPCs ---
-
-  // --- Password Reset RPCs (Email/Token Based) ---
-
-  // Initiate password reset by sending an email token.
-  rpc RequestPasswordReset(RequestPasswordResetRequest) returns (RequestPasswordResetResponse) {
-    option (google.api.http) = {
-      post: "/v1/auth/request-password-reset"
-      body: "*"
-    };
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary: "Request Password Reset (Email)"
-      description: "Initiates the password reset process by sending an email with a reset link/token to the user's registered email address."
-      tags: ["Auth"]
-    };
-  }
-
-  // Reset the user's password using the email token.
-  rpc ResetPassword(ResetPasswordRequest) returns (ResetPasswordResponse) {
-    option (google.api.http) = {
-      post: "/v1/auth/reset-password"
-      body: "*"
-    };
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary: "Reset Password (Email Token)"
-      description: "Resets the user's password after verifying the email and the reset token received via email."
-      tags: ["Auth"]
-    };
-  }
-
-  // Verify password reset code (6-digit OTP)
-  rpc VerifyPasswordResetCode(VerifyPasswordResetCodeRequest) returns (VerifyPasswordResetCodeResponse) {
-    option (google.api.http) = {
-      post: "/v1/auth/verify-password-reset-code"
-      body: "*"
-    };
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary: "Verify Password Reset Code"
-      description: "Verifies the 6-digit OTP code received via email/SMS and returns a temporary reset token."
-      tags: ["Auth"]
-    };
-  }
-
-  // --- End Password Reset RPCs ---
-
-  // --- Facial Recognition RPCs ---
-
-  // Login with facial recognition
-  rpc LoginWithFace(LoginWithFaceRequest) returns (LoginWithFaceResponse) {
-    option (google.api.http) = {
-      post: "/v1/auth/login-face"
-      body: "*"
-    };
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary: "Login with Face Recognition"
-      description: "Authenticates a user using facial recognition."
-      tags: ["Auth"]
-    };
-  }
-
-  // Check if user has facial recognition enabled
-  rpc CheckFaceRegistration(CheckFaceRegistrationRequest) returns (CheckFaceRegistrationResponse) {
-    option (google.api.http) = {
-      post: "/v1/auth/check-face-registration"
-      body: "*"
-    };
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary: "Check Face Registration Status"
-      description: "Checks if the authenticated user has facial recognition enabled."
-      tags: ["Auth"]
-      security: {
-        security_requirement: {
-          key: "bearer" value: {}
-        }
-      }
-    };
-  }
-
-  // --- End Facial Recognition RPCs ---
-
-  // --- Social Sign-In RPCs ---
-  rpc SignInWithGoogle(SignInWithGoogleRequest) returns (LoginResponse) {
-     option (google.api.http) = {
-       post: "/v1/auth/google/signin"
-       body: "*"
-     };
-     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-       summary: "Sign In/Up with Google"
-       description: "Authenticates a user using a Google ID token. Creates an account if one doesn't exist for the Google user."
-       tags: ["Auth"]
-     };
-  }
-
-  rpc SignInWithApple(SignInWithAppleRequest) returns (LoginResponse) {
-     option (google.api.http) = {
-       post: "/v1/auth/apple/signin"
-       body: "*"
-     };
-     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-       summary: "Sign In/Up with Apple"
-       description: "Authenticates a user using Apple credentials. Creates an account if one doesn't exist for the Apple user."
-       tags: ["Auth"]
-     };
-  }
-  // --- End Social Sign-In RPCs ---
-
-  // --- Email Availability Check RPC ---
-  rpc CheckEmailAvailability(CheckEmailAvailabilityRequest) returns (CheckEmailAvailabilityResponse) {
-    option (google.api.http) = {
-      post: "/v1/auth/check-email-availability"
-      body: "*"
-    };
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary: "Check Email Availability"
-      description: "Checks if an email address is available for registration or already in use."
-      tags: ["Auth"]
-    };
-  }
-  // --- End Email Availability Check RPC ---
-
-  // Verify the user's transaction PIN.
-  rpc VerifyPin(VerifyPinRequest) returns (VerifyPinResponse) {
-    option (google.api.http) = {
-      post: "/v1/auth/verify-pin"
-      body: "*"
-    };
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary: "Verify Transaction PIN"
-      description: "Verifies the authenticated user's transaction PIN."
-      tags: ["Auth"]
-      security: { // Requires authentication
-        security_requirement: {
-          key: "bearer" value: {}
-        }
-      }
-    };
-  }
-
-  // --- Phone Verification RPCs ---
-
-  // Request sending a verification code to the user's phone number.
-  rpc RequestPhoneVerification(RequestPhoneVerificationRequest) returns (RequestPhoneVerificationResponse) {
-    option (google.api.http) = {
-      post: "/v1/auth/request-phone-verification"
-      body: "*"
-    };
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary: "Request Phone Verification"
-      description: "Sends a verification code to the provided phone number via SMS."
-      tags: ["Auth"]
-      security: {
-        security_requirement: {
-          key: "bearer" value: {}
-        }
-      }
-    };
-  }
-
-  // Verify the user's phone number using a verification code.
-  rpc VerifyPhoneNumber(VerifyPhoneNumberRequest) returns (VerifyPhoneNumberResponse) {
-    option (google.api.http) = {
-      post: "/v1/auth/verify-phone"
-      body: "*"
-    };
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary: "Verify Phone Number"
-      description: "Verifies the user's phone number using the provided verification code."
-      tags: ["Auth"]
-      security: {
-        security_requirement: {
-          key: "bearer" value: {}
-        }
-      }
-    };
-  }
-
-  // --- End Phone Verification RPCs ---
-} 

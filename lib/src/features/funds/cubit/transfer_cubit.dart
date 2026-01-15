@@ -61,4 +61,61 @@ class TransferCubit extends Cubit<TransferState> {
           message: 'Error during transfer process: ${e.toString()}'));
     }
   }
+
+  /// Initiate transfer with verification token (for PIN-validated transactions)
+  Future<void> initiateTransferWithToken({
+    required Int64 fromAccountId,
+    required Int64 amount,
+    required String accessToken,
+    Int64? toAccountId,
+    Int64? recipientId,
+    String? category,
+    String? reference,
+    DateTime? scheduledAt,
+    required String transactionId,
+    required String verificationToken,
+  }) async {
+    print("TransferCubit: initiateTransferWithToken method entered.");
+    if (isClosed) return;
+    emit(const TransferLoading());
+
+    final params = InitiateTransferParams(
+      fromAccountId: fromAccountId,
+      amount: amount,
+      accessToken: accessToken,
+      toAccountId: toAccountId,
+      recipientId: recipientId,
+      category: category,
+      reference: reference,
+      scheduledAt: scheduledAt,
+      transactionId: transactionId,
+      verificationToken: verificationToken,
+    );
+
+    print("TransferCubit: initiateTransferWithToken called with params: $params");
+    print("TransferCubit: Calling initiateTransferUseCase...");
+
+    try {
+      final result = await initiateTransferUseCase(params);
+      print("TransferCubit: Use case call completed. Result: $result");
+
+      if (isClosed) return;
+      result.fold(
+        (failure) {
+          print("TransferCubit: Emitting Failure - ${failure.message}");
+          emit(TransferFailure(
+              message: failure.message ?? 'An unknown error occurred'));
+        },
+        (transferEntity) {
+          print("TransferCubit: Emitting Success - Response: $transferEntity");
+          emit(TransferSuccess(response: transferEntity));
+        },
+      );
+    } catch (e, stackTrace) {
+      print("TransferCubit: Error caught BEFORE result.fold: $e\n$stackTrace");
+      if (isClosed) return;
+      emit(TransferFailure(
+          message: 'Error during transfer process: ${e.toString()}'));
+    }
+  }
 }

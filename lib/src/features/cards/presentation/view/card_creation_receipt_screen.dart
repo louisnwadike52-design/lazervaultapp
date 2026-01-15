@@ -6,6 +6,7 @@ import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/cards/domain/entities/card_entity.dart' as card_entity;
 import 'package:intl/intl.dart';
 import 'package:lazervault/src/features/widgets/common/back_navigator.dart';
+import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 
 class CardCreationReceiptScreen extends StatelessWidget {
   const CardCreationReceiptScreen({super.key});
@@ -54,7 +55,10 @@ class CardCreationReceiptScreen extends StatelessWidget {
                     icon: const Icon(Icons.close, color: Colors.white),
                     onPressed: () => Get.offAllNamed(AppRoutes.dashboard),
                   ),
-                ],
+                                ServiceVoiceButton(
+                  serviceName: 'cards',
+                ),
+],
               ),
               SizedBox(height: 24.h),
 

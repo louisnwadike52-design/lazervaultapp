@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../domain/entities/provider_entity.dart';
 import '../../domain/entities/bill_payment_entity.dart';
@@ -9,6 +10,8 @@ import '../../domain/repositories/electricity_bill_repository.dart';
 import '../../../../../core/types/app_routes.dart';
 import '../../../authentication/cubit/authentication_cubit.dart';
 import '../../../authentication/cubit/authentication_state.dart';
+import '../../../transaction_pin/mixins/transaction_pin_mixin.dart';
+import '../../../transaction_pin/services/transaction_pin_service.dart';
 import '../cubit/electricity_bill_cubit.dart';
 import '../cubit/electricity_bill_state.dart';
 
@@ -19,9 +22,14 @@ class PaymentConfirmationScreen extends StatefulWidget {
   State<PaymentConfirmationScreen> createState() => _PaymentConfirmationScreenState();
 }
 
-class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen> {
+class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
+    with TransactionPinMixin {
   final TextEditingController _amountController = TextEditingController();
   String _selectedAccountId = 'default';
+
+  @override
+  ITransactionPinService get transactionPinService =>
+      GetIt.I<ITransactionPinService>();
 
   @override
   void dispose() {
@@ -29,7 +37,7 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen> {
     super.dispose();
   }
 
-  void _processPayment() {
+  void _processPayment() async {
     final args = Get.arguments as Map<String, dynamic>;
     final provider = args['provider'] as ElectricityProviderEntity;
     final validationResult = args['validationResult'] as MeterValidationResult;
@@ -80,6 +88,48 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen> {
       }
     }
 
+    // Generate unique transaction ID
+    final transactionId = 'electricity_${DateTime.now().millisecondsSinceEpoch}_$meterNumber';
+
+    // Validate PIN before processing payment
+    final success = await validateTransactionPin(
+      context: context,
+      transactionId: transactionId,
+      transactionType: 'bill_payment',
+      amount: amount,
+      currency: 'NGN',
+      title: 'Confirm Bill Payment',
+      message: 'Confirm payment of ₦${amount.toStringAsFixed(2)} for ${provider.providerName} electricity bill?',
+      onPinValidated: (verificationToken) async {
+        // PIN is valid, proceed with payment
+        _executePaymentWithToken(
+          provider: provider,
+          validationResult: validationResult,
+          meterNumber: meterNumber,
+          meterType: meterType,
+          amount: amount,
+          transactionId: transactionId,
+          verificationToken: verificationToken,
+        );
+      },
+    );
+
+    if (!success) {
+      // PIN validation failed or was cancelled
+      // User has already been notified via the mixin
+    }
+  }
+
+  /// Execute actual payment with verification token
+  void _executePaymentWithToken({
+    required ElectricityProviderEntity provider,
+    required MeterValidationResult validationResult,
+    required String meterNumber,
+    required MeterType meterType,
+    required double amount,
+    required String transactionId,
+    required String verificationToken,
+  }) {
     // Navigate to processing screen first
     Get.toNamed(
       AppRoutes.electricityBillProcessing,
@@ -92,15 +142,17 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen> {
       },
     );
 
-    // Then trigger the payment
+    // Then trigger the payment with verification token
     Future.delayed(const Duration(milliseconds: 500), () {
-      context.read<ElectricityBillCubit>().initiatePayment(
+      context.read<ElectricityBillCubit>().initiatePaymentWithToken(
             providerCode: provider.providerCode,
             meterNumber: meterNumber,
             meterType: meterType,
             amount: amount,
             currency: 'NGN',
             accountId: _selectedAccountId,
+            transactionId: transactionId,
+            verificationToken: verificationToken,
           );
     });
   }

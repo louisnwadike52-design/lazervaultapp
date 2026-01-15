@@ -1,6 +1,6 @@
 import 'package:grpc/grpc.dart';
 import 'package:lazervault/core/grpc/grpc_channel_manager.dart';
-import 'package:lazervault/src/generated/stocks/stock.pbgrpc.dart' hide OrderType, OrderSide, OrderStatus;
+import 'package:lazervault/src/generated/stocks/stock.pbgrpc.dart' hide OrderType, OrderSide, OrderStatus, PricePoint;
 import 'package:lazervault/src/generated/stocks/stock.pbenum.dart' as stockspb_enums;
 import '../models/stock_model.dart';
 import '../../domain/entities/stock_entity.dart';
@@ -592,27 +592,24 @@ class StockRemoteDataSourceGrpcImpl implements IStockRemoteDataSource {
       marketCap: msg.marketCap,
       peRatio: msg.peRatio,
       dividendYield: msg.dividendYield,
-      sector: msg.sector.isNotEmpty ? msg.sector : null,
-      industry: msg.industry.isNotEmpty ? msg.industry : null,
-      logoUrl: msg.logoUrl.isNotEmpty ? msg.logoUrl : null,
+      sector: msg.sector.isNotEmpty ? msg.sector : '',
+      industry: msg.industry.isNotEmpty ? msg.industry : '',
+      logoUrl: msg.logoUrl.isNotEmpty ? msg.logoUrl : '',
       priceHistory: msg.priceHistory
-          .map((p) => StockPriceModel(
+          .map((p) => PricePoint(
                 timestamp: p.timestamp.toDateTime(),
-                open: p.open,
-                high: p.high,
-                low: p.low,
-                close: p.close,
+                price: p.close,
                 volume: p.volume,
               ))
           .toList(),
       lastUpdated: msg.hasLastUpdated() ? msg.lastUpdated.toDateTime() : DateTime.now(),
-      week52High: msg.weekHigh52,
-      week52Low: msg.weekLow52,
+      weekHigh52: msg.weekHigh52,
+      weekLow52: msg.weekLow52,
       avgVolume: msg.avgVolume,
       beta: msg.beta,
       eps: msg.eps,
-      description: msg.description.isNotEmpty ? msg.description : null,
-      exchange: msg.exchange.isNotEmpty ? msg.exchange : null,
+      description: msg.description.isNotEmpty ? msg.description : '',
+      exchange: msg.exchange.isNotEmpty ? msg.exchange : '',
       currency: msg.currency.isNotEmpty ? msg.currency : 'USD',
     );
   }
@@ -620,7 +617,6 @@ class StockRemoteDataSourceGrpcImpl implements IStockRemoteDataSource {
   PortfolioModel _convertPortfolioMessageToModel(PortfolioMessage msg) {
     return PortfolioModel(
       id: msg.id,
-      userId: msg.userId,
       totalValue: msg.totalValue,
       totalCost: msg.totalCost,
       totalReturn: msg.totalReturn,
@@ -629,7 +625,6 @@ class StockRemoteDataSourceGrpcImpl implements IStockRemoteDataSource {
       dayChangePercent: msg.dayChangePercent,
       holdings: msg.holdings
           .map((h) => StockHoldingModel(
-                id: h.id,
                 symbol: h.symbol,
                 name: h.name,
                 shares: h.shares,
@@ -641,7 +636,7 @@ class StockRemoteDataSourceGrpcImpl implements IStockRemoteDataSource {
                 dayChange: h.dayChange,
                 dayChangePercent: h.dayChangePercent,
                 purchaseDate: h.hasPurchaseDate() ? h.purchaseDate.toDateTime() : DateTime.now(),
-                logoUrl: h.logoUrl.isNotEmpty ? h.logoUrl : null,
+                logoUrl: h.logoUrl.isNotEmpty ? h.logoUrl : '',
               ))
           .toList(),
       lastUpdated: msg.hasLastUpdated() ? msg.lastUpdated.toDateTime() : DateTime.now(),
@@ -653,7 +648,6 @@ class StockRemoteDataSourceGrpcImpl implements IStockRemoteDataSource {
   StockOrderModel _convertOrderMessageToModel(OrderMessage msg) {
     return StockOrderModel(
       id: msg.id,
-      userId: msg.userId,
       symbol: msg.symbol,
       type: _convertProtoToOrderType(msg.type),
       side: _convertProtoToOrderSide(msg.side),
@@ -665,26 +659,17 @@ class StockRemoteDataSourceGrpcImpl implements IStockRemoteDataSource {
       executedPrice: msg.executedPrice,
       executedQuantity: msg.executedQuantity,
       fees: msg.fees,
-      notes: msg.notes.isNotEmpty ? msg.notes : null,
+      notes: msg.notes.isNotEmpty ? msg.notes : '',
     );
   }
 
   WatchlistModel _convertWatchlistMessageToModel(WatchlistMessage msg) {
     return WatchlistModel(
       id: msg.id,
-      userId: msg.userId,
       name: msg.name,
-      stocks: msg.stocks
-          .map((s) => WatchlistStockModel(
-                symbol: s.symbol,
-                name: s.name,
-                currentPrice: s.currentPrice,
-                changePercent: s.changePercent,
-                addedAt: s.hasAddedAt() ? s.addedAt.toDateTime() : DateTime.now(),
-              ))
-          .toList(),
+      symbols: msg.stocks.map((s) => s.symbol).toList(),
       createdAt: msg.hasCreatedAt() ? msg.createdAt.toDateTime() : DateTime.now(),
-      updatedAt: msg.hasUpdatedAt() ? msg.updatedAt.toDateTime() : DateTime.now(),
+      lastUpdated: msg.hasUpdatedAt() ? msg.updatedAt.toDateTime() : DateTime.now(),
       isDefault: msg.isDefault,
     );
   }

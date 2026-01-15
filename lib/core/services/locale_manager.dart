@@ -6,17 +6,22 @@ import 'package:rxdart/rxdart.dart';
 /// and notifies all listeners when locale changes.
 ///
 /// Locale format: BCP 47 standard (e.g., "en-US", "en-GB", "fr-FR", "en-ZA")
+///
+/// Now includes currency management with local storage and server sync support.
 class LocaleManager {
   static const String _localeKey = 'app_locale';
   static const String _countryKey = 'app_country';
+  static const String _currencyKey = 'app_currency';
   static const String _defaultLocale = 'en-US';
   static const String _defaultCountry = 'US';
+  static const String _defaultCurrency = 'USD';
 
   final FlutterSecureStorage _storage;
 
   // Stream controller for reactive locale updates
   final _localeController = BehaviorSubject<String>.seeded(_defaultLocale);
   final _countryController = BehaviorSubject<String>.seeded(_defaultCountry);
+  final _currencyController = BehaviorSubject<String>.seeded(_defaultCurrency);
 
   LocaleManager(this._storage) {
     _initializeLocale();
@@ -27,6 +32,7 @@ class LocaleManager {
     try {
       final storedLocale = await _storage.read(key: _localeKey);
       final storedCountry = await _storage.read(key: _countryKey);
+      final storedCurrency = await _storage.read(key: _currencyKey);
 
       if (storedLocale != null && storedLocale.isNotEmpty) {
         _localeController.add(storedLocale);
@@ -35,10 +41,15 @@ class LocaleManager {
       if (storedCountry != null && storedCountry.isNotEmpty) {
         _countryController.add(storedCountry);
       }
+
+      if (storedCurrency != null && storedCurrency.isNotEmpty) {
+        _currencyController.add(storedCurrency);
+      }
     } catch (e) {
       // If storage fails, use default values
       _localeController.add(_defaultLocale);
       _countryController.add(_defaultCountry);
+      _currencyController.add(_defaultCurrency);
     }
   }
 
@@ -48,11 +59,17 @@ class LocaleManager {
   /// Get current country code (e.g., "US", "GB", "ZA")
   String get currentCountry => _countryController.value;
 
+  /// Get current currency code (e.g., "USD", "GBP", "EUR")
+  String get currentCurrency => _currencyController.value;
+
   /// Stream of locale changes for reactive UI updates
   Stream<String> get localeStream => _localeController.stream;
 
   /// Stream of country changes for reactive UI updates
   Stream<String> get countryStream => _countryController.stream;
+
+  /// Stream of currency changes for reactive UI updates
+  Stream<String> get currencyStream => _currencyController.stream;
 
   /// Update both locale and country atomically
   ///
@@ -78,6 +95,42 @@ class LocaleManager {
       _countryController.add(country);
     } catch (e) {
       rethrow;
+    }
+  }
+
+  /// Update currency (stores locally for offline access)
+  ///
+  /// Note: This only updates local storage. Use CurrencySyncService
+  /// to sync with server preferences.
+  ///
+  /// Example: setCurrency("GBP")
+  Future<void> setCurrency(String currencyCode) async {
+    try {
+      // Validate currency code (basic check for ISO 4217 format)
+      if (!_isValidCurrencyFormat(currencyCode)) {
+        throw ArgumentError('Invalid currency format: $currencyCode. Expected format: USD, GBP, EUR');
+      }
+
+      // Save to storage
+      await _storage.write(key: _currencyKey, value: currencyCode);
+
+      // Notify listeners
+      _currencyController.add(currencyCode);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Update currency from server sync (internal method)
+  ///
+  /// Used by CurrencySyncService to update local currency after server sync.
+  /// This bypasses validation since the server is the source of truth.
+  Future<void> setCurrencyFromServerSync(String currencyCode) async {
+    try {
+      await _storage.write(key: _currencyKey, value: currencyCode);
+      _currencyController.add(currencyCode);
+    } catch (e) {
+      // Silently fail - server data takes precedence
     }
   }
 
@@ -124,10 +177,12 @@ class LocaleManager {
   }
 
   /// Get locale metadata for gRPC calls
+  ///
+  /// Returns metadata in the format expected by backend microservices:
+  /// - x-locale: Full locale string (e.g., "en-US", "en-NG")
   Map<String, String> getLocaleMetadata() {
     return {
-      'accept-language': currentLocale,
-      'x-country-code': currentCountry,
+      'x-locale': currentLocale,
     };
   }
 
@@ -140,15 +195,23 @@ class LocaleManager {
            parts[1].length == 2;
   }
 
-  /// Reset to default locale
+  /// Basic validation for currency format (ISO 4217)
+  bool _isValidCurrencyFormat(String currency) {
+    // Basic check: should be 3 uppercase letters
+    return RegExp(r'^[A-Z]{3}$').hasMatch(currency);
+  }
+
+  /// Reset to default locale and currency
   Future<void> resetToDefault() async {
     await updateLocale(locale: _defaultLocale, country: _defaultCountry);
+    await setCurrency(_defaultCurrency);
   }
 
   /// Clean up resources
   void dispose() {
     _localeController.close();
     _countryController.close();
+    _currencyController.close();
   }
 }
 
@@ -160,6 +223,7 @@ class CountryLocale {
   final String locale;           // "en-US", "en-GB", "fr-FR"
   final String flag;             // Emoji flag "🇺🇸" or asset path
   final String dialCode;         // "+1", "+44", "+27"
+  final String currency;         // "USD", "GBP", "ZAR"
 
   const CountryLocale({
     required this.countryCode,
@@ -168,10 +232,12 @@ class CountryLocale {
     required this.locale,
     required this.flag,
     required this.dialCode,
+    required this.currency,
   });
 
   String get displayName => '$flag $countryName';
   String get localeDisplay => '$countryName ($locale)';
+  String get currencyDisplay => '$currency ($countryCode)';
 }
 
 /// Pre-defined country locales for common countries
@@ -184,6 +250,7 @@ class CountryLocales {
       locale: 'en-US',
       flag: '🇺🇸',
       dialCode: '+1',
+      currency: 'USD',
     ),
     CountryLocale(
       countryCode: 'GB',
@@ -192,6 +259,7 @@ class CountryLocales {
       locale: 'en-GB',
       flag: '🇬🇧',
       dialCode: '+44',
+      currency: 'GBP',
     ),
     CountryLocale(
       countryCode: 'ZA',
@@ -200,6 +268,7 @@ class CountryLocales {
       locale: 'en-ZA',
       flag: '🇿🇦',
       dialCode: '+27',
+      currency: 'ZAR',
     ),
     CountryLocale(
       countryCode: 'NG',
@@ -208,6 +277,7 @@ class CountryLocales {
       locale: 'en-NG',
       flag: '🇳🇬',
       dialCode: '+234',
+      currency: 'NGN',
     ),
     CountryLocale(
       countryCode: 'CA',
@@ -216,6 +286,7 @@ class CountryLocales {
       locale: 'en-CA',
       flag: '🇨🇦',
       dialCode: '+1',
+      currency: 'CAD',
     ),
     CountryLocale(
       countryCode: 'AU',
@@ -224,6 +295,7 @@ class CountryLocales {
       locale: 'en-AU',
       flag: '🇦🇺',
       dialCode: '+61',
+      currency: 'AUD',
     ),
     CountryLocale(
       countryCode: 'FR',
@@ -232,6 +304,7 @@ class CountryLocales {
       locale: 'fr-FR',
       flag: '🇫🇷',
       dialCode: '+33',
+      currency: 'EUR',
     ),
     CountryLocale(
       countryCode: 'DE',
@@ -240,6 +313,7 @@ class CountryLocales {
       locale: 'de-DE',
       flag: '🇩🇪',
       dialCode: '+49',
+      currency: 'EUR',
     ),
     CountryLocale(
       countryCode: 'ES',
@@ -248,6 +322,7 @@ class CountryLocales {
       locale: 'es-ES',
       flag: '🇪🇸',
       dialCode: '+34',
+      currency: 'EUR',
     ),
     CountryLocale(
       countryCode: 'IT',
@@ -256,6 +331,7 @@ class CountryLocales {
       locale: 'it-IT',
       flag: '🇮🇹',
       dialCode: '+39',
+      currency: 'EUR',
     ),
     CountryLocale(
       countryCode: 'BR',
@@ -264,6 +340,7 @@ class CountryLocales {
       locale: 'pt-BR',
       flag: '🇧🇷',
       dialCode: '+55',
+      currency: 'BRL',
     ),
     CountryLocale(
       countryCode: 'MX',
@@ -272,6 +349,7 @@ class CountryLocales {
       locale: 'es-MX',
       flag: '🇲🇽',
       dialCode: '+52',
+      currency: 'MXN',
     ),
     CountryLocale(
       countryCode: 'IN',
@@ -280,6 +358,7 @@ class CountryLocales {
       locale: 'en-IN',
       flag: '🇮🇳',
       dialCode: '+91',
+      currency: 'INR',
     ),
     CountryLocale(
       countryCode: 'CN',
@@ -288,6 +367,7 @@ class CountryLocales {
       locale: 'zh-CN',
       flag: '🇨🇳',
       dialCode: '+86',
+      currency: 'CNY',
     ),
     CountryLocale(
       countryCode: 'JP',
@@ -296,6 +376,7 @@ class CountryLocales {
       locale: 'ja-JP',
       flag: '🇯🇵',
       dialCode: '+81',
+      currency: 'JPY',
     ),
     CountryLocale(
       countryCode: 'KR',
@@ -304,6 +385,7 @@ class CountryLocales {
       locale: 'ko-KR',
       flag: '🇰🇷',
       dialCode: '+82',
+      currency: 'KRW',
     ),
     CountryLocale(
       countryCode: 'RU',
@@ -312,6 +394,7 @@ class CountryLocales {
       locale: 'ru-RU',
       flag: '🇷🇺',
       dialCode: '+7',
+      currency: 'RUB',
     ),
     CountryLocale(
       countryCode: 'AE',
@@ -320,6 +403,7 @@ class CountryLocales {
       locale: 'ar-AE',
       flag: '🇦🇪',
       dialCode: '+971',
+      currency: 'AED',
     ),
     CountryLocale(
       countryCode: 'SA',
@@ -328,6 +412,7 @@ class CountryLocales {
       locale: 'ar-SA',
       flag: '🇸🇦',
       dialCode: '+966',
+      currency: 'SAR',
     ),
     CountryLocale(
       countryCode: 'EG',
@@ -336,6 +421,7 @@ class CountryLocales {
       locale: 'ar-EG',
       flag: '🇪🇬',
       dialCode: '+20',
+      currency: 'EGP',
     ),
     CountryLocale(
       countryCode: 'KE',
@@ -344,6 +430,7 @@ class CountryLocales {
       locale: 'en-KE',
       flag: '🇰🇪',
       dialCode: '+254',
+      currency: 'KES',
     ),
     CountryLocale(
       countryCode: 'GH',
@@ -352,6 +439,7 @@ class CountryLocales {
       locale: 'en-GH',
       flag: '🇬🇭',
       dialCode: '+233',
+      currency: 'GHS',
     ),
     CountryLocale(
       countryCode: 'SG',
@@ -360,6 +448,7 @@ class CountryLocales {
       locale: 'en-SG',
       flag: '🇸🇬',
       dialCode: '+65',
+      currency: 'SGD',
     ),
     CountryLocale(
       countryCode: 'PH',
@@ -368,6 +457,7 @@ class CountryLocales {
       locale: 'en-PH',
       flag: '🇵🇭',
       dialCode: '+63',
+      currency: 'PHP',
     ),
     CountryLocale(
       countryCode: 'NL',
@@ -376,6 +466,7 @@ class CountryLocales {
       locale: 'nl-NL',
       flag: '🇳🇱',
       dialCode: '+31',
+      currency: 'EUR',
     ),
   ];
 

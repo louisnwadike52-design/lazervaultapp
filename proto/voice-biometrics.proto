@@ -1,0 +1,148 @@
+syntax = "proto3";
+
+package voicebiometrics;
+
+option go_package = "voice-biometrics-service/proto;voicebiometricspb";
+
+// Voice Biometrics Service - Speaker recognition and verification
+service VoiceBiometricsService {
+  // Enroll a new voice for a user
+  rpc EnrollVoice(EnrollVoiceRequest) returns (EnrollVoiceResponse);
+
+  // Verify a voice sample matches the enrolled user
+  rpc VerifyVoice(VerifyVoiceRequest) returns (VerifyVoiceResponse);
+
+  // Check if user has enrolled their voice
+  rpc CheckEnrollmentStatus(CheckEnrollmentStatusRequest) returns (CheckEnrollmentStatusResponse);
+
+  // Delete user's voice enrollment
+  rpc DeleteVoiceEnrollment(DeleteVoiceEnrollmentRequest) returns (DeleteVoiceEnrollmentResponse);
+
+  // Update voice enrollment with additional samples
+  rpc UpdateVoiceEnrollment(UpdateVoiceEnrollmentRequest) returns (UpdateVoiceEnrollmentResponse);
+
+  // Get voice enrollment details
+  rpc GetVoiceEnrollment(GetVoiceEnrollmentRequest) returns (GetVoiceEnrollmentResponse);
+}
+
+// Enroll voice request
+message EnrollVoiceRequest {
+  string user_id = 1;                 // User ID
+  repeated bytes audio_samples = 2;   // Multiple voice samples (WAV/PCM format)
+  AudioFormat format = 3;             // Audio format
+  map<string, string> metadata = 4;   // Additional metadata
+}
+
+message EnrollVoiceResponse {
+  bool success = 1;
+  string enrollment_id = 2;           // Unique enrollment ID
+  int32 samples_count = 3;            // Number of samples processed
+  float quality_score = 4;            // Voice sample quality (0-1)
+  string message = 5;
+  VoiceProfile voice_profile = 6;
+}
+
+// Verify voice request
+message VerifyVoiceRequest {
+  string user_id = 1;                 // User ID to verify against
+  bytes audio_sample = 2;             // Voice sample to verify
+  AudioFormat format = 3;             // Audio format
+  float threshold = 4;                // Similarity threshold (default: 0.85)
+  map<string, string> metadata = 5;
+}
+
+message VerifyVoiceResponse {
+  bool verified = 1;                  // True if voice matches
+  float similarity_score = 2;         // Similarity score (0-1, higher = more similar)
+  float confidence = 3;               // Confidence level (0-1)
+  string message = 4;
+  VerificationStatus status = 5;
+  int64 verification_timestamp = 6;
+}
+
+// Check enrollment status
+message CheckEnrollmentStatusRequest {
+  string user_id = 1;
+}
+
+message CheckEnrollmentStatusResponse {
+  bool is_enrolled = 1;
+  string enrollment_id = 2;
+  int64 enrolled_at = 3;              // Unix timestamp
+  int32 samples_count = 4;
+  float quality_score = 5;
+  VoiceProfile voice_profile = 6;
+}
+
+// Delete enrollment
+message DeleteVoiceEnrollmentRequest {
+  string user_id = 1;
+}
+
+message DeleteVoiceEnrollmentResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+// Update enrollment
+message UpdateVoiceEnrollmentRequest {
+  string user_id = 1;
+  repeated bytes audio_samples = 2;
+  AudioFormat format = 3;
+}
+
+message UpdateVoiceEnrollmentResponse {
+  bool success = 1;
+  int32 new_samples_count = 2;
+  float updated_quality_score = 3;
+  string message = 4;
+}
+
+// Get enrollment details
+message GetVoiceEnrollmentRequest {
+  string user_id = 1;
+}
+
+message GetVoiceEnrollmentResponse {
+  bool exists = 1;
+  VoiceProfile voice_profile = 2;
+  EnrollmentMetadata metadata = 3;
+}
+
+// Voice profile
+message VoiceProfile {
+  string user_id = 1;
+  string enrollment_id = 2;
+  int64 created_at = 3;
+  int64 updated_at = 4;
+  int32 samples_count = 5;
+  float quality_score = 6;
+  int32 verification_count = 7;       // Number of successful verifications
+  int64 last_verified_at = 8;
+}
+
+// Enrollment metadata
+message EnrollmentMetadata {
+  string device_info = 1;
+  string audio_quality = 2;
+  repeated string sample_ids = 3;
+  map<string, string> custom_fields = 4;
+}
+
+// Audio format
+message AudioFormat {
+  string codec = 1;                   // e.g., "pcm", "wav", "opus"
+  int32 sample_rate = 2;              // e.g., 16000, 44100
+  int32 channels = 3;                 // e.g., 1 (mono), 2 (stereo)
+  int32 bit_depth = 4;                // e.g., 16, 24
+}
+
+// Verification status
+enum VerificationStatus {
+  VERIFICATION_UNKNOWN = 0;
+  VERIFICATION_SUCCESS = 1;
+  VERIFICATION_FAILED = 2;
+  VERIFICATION_NO_ENROLLMENT = 3;
+  VERIFICATION_POOR_QUALITY = 4;
+  VERIFICATION_THRESHOLD_NOT_MET = 5;
+}

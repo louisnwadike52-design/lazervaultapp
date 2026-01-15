@@ -65,6 +65,8 @@ class AirtimeRepositoryImpl implements AirtimeRepository {
     required String phoneNumber,
     required double amount,
     required String currency,
+    String? transactionId,
+    String? verificationToken,
   }) async {
     try {
       // Validate inputs
@@ -72,12 +74,17 @@ class AirtimeRepositoryImpl implements AirtimeRepository {
         throw Exception('Amount must be greater than 0');
       }
 
+      // Validate verification token is provided
+      if (verificationToken == null || verificationToken.isEmpty) {
+        throw Exception('Verification token is required for payment processing');
+      }
+
       // Calculate fee
       final fee = await calculateTransactionFee(amount, countryCode);
       final totalAmount = amount + fee;
 
-      // Generate transaction ID
-      final transactionId = _generateTransactionId();
+      // Use provided transaction ID or generate new one
+      final txnId = transactionId ?? _generateTransactionId();
       final reference = _generateReference();
 
       // Get network provider to get the type
@@ -88,7 +95,7 @@ class AirtimeRepositoryImpl implements AirtimeRepository {
 
       // Create transaction
       final transaction = AirtimeTransactionModel(
-        id: transactionId,
+        id: txnId,
         transactionReference: reference,
         networkProvider: provider.type,
         recipientPhoneNumber: phoneNumber,
@@ -103,6 +110,7 @@ class AirtimeRepositoryImpl implements AirtimeRepository {
         metadata: {
           'countryCode': countryCode,
           'networkProviderId': networkProviderId,
+          'verificationToken': verificationToken, // Store for validation by backend
         },
       );
 

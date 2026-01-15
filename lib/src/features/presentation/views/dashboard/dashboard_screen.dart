@@ -5,6 +5,9 @@ import 'package:lazervault/core/types/screen.dart';
 import 'package:lazervault/src/features/presentation/views/bottom_nav_menu.dart';
 import 'package:lazervault/src/features/widgets/themed_drawer.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
+import 'package:lazervault/src/features/dashboard/managers/voice_setup_manager.dart';
+import 'package:lazervault/src/features/dashboard/widgets/voice_setup_prompt_modal.dart';
+import 'package:lazervault/src/features/voice/managers/voice_activation_manager.dart';
 
 class DashboardScreen extends StatefulWidget {
   static final List<Screen> tabItems = [
@@ -48,6 +51,65 @@ class _DashboardScreenState extends State<DashboardScreen>
     _tabController =
         TabController(length: DashboardScreen.tabItems.length, vsync: this);
     _tabController.addListener(_onTabChanged);
+
+    // Check and show voice setup prompt after dashboard loads
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkAndShowVoiceSetup();
+    });
+  }
+
+  /// Check if voice setup is needed and show modal prompt
+  Future<void> _checkAndShowVoiceSetup() async {
+    final setupManager = VoiceSetupManager(
+      voiceManager: VoiceActivationManager(),
+    );
+
+    final status = await setupManager.checkVoiceSetupStatus();
+    final skipCount = await setupManager.getSkipCount();
+
+    switch (status) {
+      case VoiceSetupStatus.pending:
+        _showVoiceSetupModal(canDismiss: true, skipCount: skipCount);
+        break;
+      case VoiceSetupStatus.mandatory:
+        _showVoiceSetupModal(canDismiss: false, skipCount: skipCount);
+        break;
+      case VoiceSetupStatus.dismissed:
+      case VoiceSetupStatus.completed:
+      case VoiceSetupStatus.notApplicable:
+        // Do nothing
+        break;
+    }
+  }
+
+  /// Show voice setup modal bottom sheet
+  void _showVoiceSetupModal({required bool canDismiss, int? skipCount}) {
+    showModalBottomSheet(
+      context: context,
+      isDismissible: canDismiss,
+      enableDrag: canDismiss,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => VoiceSetupPromptModal(
+        canDismiss: canDismiss,
+        skipCount: skipCount,
+        onSetupNow: () {
+          Navigator.pop(context);
+          Get.toNamed(AppRoutes.voiceActivationPrompt);
+        },
+        onSetupLater: canDismiss
+            ? () async {
+                final setupManager = VoiceSetupManager(
+                  voiceManager: VoiceActivationManager(),
+                );
+                await setupManager.incrementSkipCount();
+                if (mounted) {
+                  Navigator.pop(context);
+                }
+              }
+            : null,
+      ),
+    );
   }
 
   void _onTabChanged() {

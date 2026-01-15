@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:get_it/get_it.dart';
 import 'package:intl/intl.dart';
 import '../cubit/airtime_cubit.dart';
 import '../cubit/airtime_state.dart';
@@ -9,6 +10,8 @@ import '../../domain/entities/airtime_transaction.dart';
 import '../../domain/entities/network_provider.dart';
 import '../../domain/entities/country.dart';
 import '../../../../../core/types/app_routes.dart';
+import '../../../transaction_pin/mixins/transaction_pin_mixin.dart';
+import '../../../transaction_pin/services/transaction_pin_service.dart';
 
 class AirtimeReviewScreen extends StatefulWidget {
   const AirtimeReviewScreen({super.key});
@@ -17,7 +20,12 @@ class AirtimeReviewScreen extends StatefulWidget {
   State<AirtimeReviewScreen> createState() => _AirtimeReviewScreenState();
 }
 
-class _AirtimeReviewScreenState extends State<AirtimeReviewScreen> {
+class _AirtimeReviewScreenState extends State<AirtimeReviewScreen>
+    with TransactionPinMixin {
+  @override
+  ITransactionPinService get transactionPinService =>
+      GetIt.I<ITransactionPinService>();
+
   Country? country;
   NetworkProvider? networkProvider;
   String? phoneNumber;
@@ -45,16 +53,46 @@ class _AirtimeReviewScreenState extends State<AirtimeReviewScreen> {
     }
   }
 
-  void _processPayment() {
+  /// Process payment with transaction PIN validation
+  void _processPayment() async {
     if (networkProvider != null && phoneNumber != null && amount != null && country != null) {
-      context.read<AirtimeCubit>().processPayment(
-        countryCode: country!.code,
-        networkProviderId: networkProvider!.id,
-        phoneNumber: phoneNumber!,
+      // Generate unique transaction ID
+      final transactionId = 'airtime_${DateTime.now().millisecondsSinceEpoch}_${phoneNumber!.replaceAll(RegExp(r'[^\d]'), '')}';
+
+      // Validate PIN before processing payment
+      final success = await validateTransactionPin(
+        context: context,
+        transactionId: transactionId,
+        transactionType: 'airtime_purchase',
         amount: amount!,
         currency: country!.currency,
+        title: 'Confirm Airtime Purchase',
+        message: 'Confirm purchase of ${country!.currency} ${amount!.toStringAsFixed(2)} airtime for $phoneNumber?',
+        onPinValidated: (verificationToken) async {
+          // PIN is valid, proceed with payment
+          _executePaymentWithToken(transactionId, verificationToken);
+        },
       );
+
+      if (!success) {
+        // PIN validation failed or was cancelled
+        // User has already been notified via the mixin
+      }
     }
+  }
+
+  /// Execute actual payment with verification token
+  void _executePaymentWithToken(String transactionId, String verificationToken) {
+    // Call the cubit with verification token
+    context.read<AirtimeCubit>().processPaymentWithToken(
+      countryCode: country!.code,
+      networkProviderId: networkProvider!.id,
+      phoneNumber: phoneNumber!,
+      amount: amount!,
+      currency: country!.currency,
+      transactionId: transactionId,
+      verificationToken: verificationToken,
+    );
   }
 
   void _showError(String message) {

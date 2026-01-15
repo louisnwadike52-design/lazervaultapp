@@ -13,6 +13,7 @@ import 'package:lazervault/src/features/recipients/presentation/widgets/recipien
 import 'package:lazervault/src/features/recipients/presentation/widgets/recipients.dart';
 import 'package:lazervault/src/features/recipients/data/models/recipient_model.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/enhanced_recipient_selection_bottom_sheet.dart';
+import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 
 class SelectRecipients extends StatefulWidget {
   const SelectRecipients({super.key});
@@ -113,7 +114,10 @@ class _SelectRecipientsState extends State<SelectRecipients> {
                                 ),
                               ),
                             ),
-                            SizedBox(width: 40.w),
+                            ServiceVoiceButton(
+                              serviceName: 'transfers',
+                              iconColor: Colors.white,
+                            ),
                           ],
                         ),
                         SizedBox(height: 24.h),

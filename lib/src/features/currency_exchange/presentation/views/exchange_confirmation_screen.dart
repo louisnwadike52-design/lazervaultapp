@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
+import 'package:get_it/get_it.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 import '../controllers/exchange_controller.dart';
 import 'exchange_processing_screen.dart';
+import '../../../transaction_pin/mixins/transaction_pin_mixin.dart';
+import '../../../transaction_pin/services/transaction_pin_service.dart';
 
 class ExchangeConfirmationScreen extends StatefulWidget {
   const ExchangeConfirmationScreen({super.key});
@@ -17,7 +20,10 @@ class ExchangeConfirmationScreen extends StatefulWidget {
 
 class _ExchangeConfirmationScreenState
     extends State<ExchangeConfirmationScreen>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, TransactionPinMixin {
+  @override
+  ITransactionPinService get transactionPinService =>
+      GetIt.I<ITransactionPinService>();
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<double> _slideAnimation;
@@ -53,6 +59,45 @@ class _ExchangeConfirmationScreenState
 
   Future<void> _confirmAndSubmit() async {
     final controller = Get.find<ExchangeController>();
+
+    // Get exchange details for PIN validation
+    final fromCurrency = controller.fromCurrency.value!.code;
+    final toCurrency = controller.toCurrency.value!.code;
+    final amount = controller.amount.value;
+
+    // Generate unique transaction ID
+    final transactionId = 'currency_exchange_${DateTime.now().millisecondsSinceEpoch}_${fromCurrency}_to_$toCurrency';
+
+    // Validate PIN before processing currency exchange
+    final success = await validateTransactionPin(
+      context: context,
+      transactionId: transactionId,
+      transactionType: 'currency_exchange',
+      amount: amount,
+      currency: fromCurrency,
+      title: 'Confirm Currency Exchange',
+      message: 'Confirm exchange of $amount $fromCurrency to $toCurrency?',
+      onPinValidated: (verificationToken) async {
+        // PIN is valid, proceed with exchange
+        _executeExchangeWithToken(transactionId, verificationToken, controller);
+      },
+    );
+
+    if (!success) {
+      // PIN validation failed or was cancelled
+      // User has already been notified via the mixin
+    }
+  }
+
+  /// Execute currency exchange with verification token
+  Future<void> _executeExchangeWithToken(
+    String transactionId,
+    String verificationToken,
+    ExchangeController controller,
+  ) async {
+    // Store verification token in controller for backend use
+    controller.setVerificationToken(verificationToken);
+    controller.setTransactionId(transactionId);
 
     final success = await controller.submitTransfer();
 

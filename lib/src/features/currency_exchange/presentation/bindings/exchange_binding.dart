@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
-import '../../../../core/di/grpc_injection.dart';
+import '../../../../../../core/services/injection_container.dart';
+import '../../domain/repositories/i_exchange_repository.dart';
 import '../controllers/exchange_controller.dart';
 
 class ExchangeBinding extends Bindings {
@@ -7,7 +8,7 @@ class ExchangeBinding extends Bindings {
   void dependencies() {
     Get.lazyPut<ExchangeController>(
       () => ExchangeController(
-        repository: getExchangeRepository(),
+        repository: serviceLocator<IExchangeRepository>(),
       ),
     );
   }

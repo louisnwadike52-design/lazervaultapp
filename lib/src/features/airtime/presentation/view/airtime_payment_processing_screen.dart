@@ -141,31 +141,86 @@ class _AirtimePaymentProcessingScreenState extends State<AirtimePaymentProcessin
               }
             },
             builder: (context, state) {
+              double progress = _progressAnimation.value;
+
+              if (state is AirtimePaymentProcessing) {
+                progress = state.progress;
+              }
+
               return SingleChildScrollView(
                 child: ConstrainedBox(
                   constraints: BoxConstraints(
                     minHeight: MediaQuery.of(context).size.height - MediaQuery.of(context).padding.top,
                   ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      SizedBox(height: 60.h),
-                      
-                      // Processing animation
-                      _buildProcessingAnimation(),
-                      
-                      SizedBox(height: 40.h),
-                      
-                      // Processing text with state awareness
-                      _buildProcessingText(state),
-                      
-                      SizedBox(height: 40.h),
-                      
-                      // Transaction details
-                      if (transaction != null) _buildTransactionDetails(),
-                      
-                      SizedBox(height: 60.h),
-                    ],
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 20.w),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SizedBox(height: 60.h),
+
+                        // Processing animation
+                        _buildProcessingAnimation(),
+
+                        SizedBox(height: 40.h),
+
+                        // Processing text with state awareness
+                        _buildProcessingText(state),
+
+                        SizedBox(height: 32.h),
+
+                        // Processing steps indicator
+                        if (state is AirtimePaymentProcessing || state is AirtimeInitial)
+                          _buildProcessingSteps(progress),
+
+                        SizedBox(height: 32.h),
+
+                        // Security note
+                        if (state is AirtimePaymentProcessing || state is AirtimeInitial)
+                          Container(
+                            padding: EdgeInsets.all(16.w),
+                            decoration: BoxDecoration(
+                              color: Color(0xFF3B82F6).withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(12.r),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.08),
+                                  blurRadius: 6,
+                                  offset: Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.lock_outline,
+                                  size: 16.sp,
+                                  color: Color(0xFF3B82F6),
+                                ),
+                                SizedBox(width: 8.w),
+                                Expanded(
+                                  child: Text(
+                                    'Your payment is secured with end-to-end encryption',
+                                    style: TextStyle(
+                                      fontSize: 12.sp,
+                                      color: Color(0xFF3B82F6),
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                        SizedBox(height: 32.h),
+
+                        // Transaction details
+                        if (transaction != null) _buildTransactionDetails(),
+
+                        SizedBox(height: 60.h),
+                      ],
+                    ),
                   ),
                 ),
               );
@@ -266,10 +321,13 @@ class _AirtimePaymentProcessingScreenState extends State<AirtimePaymentProcessin
   Widget _buildProcessingText(AirtimeState state) {
     String title = 'Processing Payment';
     String subtitle = 'Please wait while we process your airtime purchase.\nThis may take a few moments.';
-    
+    double progress = _progressAnimation.value;
+    String currentStep = 'Initializing payment...';
+
     if (state is AirtimePaymentProcessing) {
       title = 'Processing Payment';
-      subtitle = 'Your airtime purchase is being processed.\nPlease wait a moment...';
+      progress = state.progress;
+      currentStep = state.currentStep;
     } else if (state is AirtimePaymentSuccess) {
       title = 'Payment Successful!';
       subtitle = 'Your airtime has been successfully purchased.\nRedirecting to confirmation...';
@@ -277,84 +335,96 @@ class _AirtimePaymentProcessingScreenState extends State<AirtimePaymentProcessin
       title = 'Payment Failed';
       subtitle = 'There was an issue processing your payment.\nRedirecting to confirmation...';
     }
-    
+
     return Column(
       children: [
         Text(
           title,
           style: TextStyle(
-            fontSize: 24.sp,
+            fontSize: 28.sp,
             fontWeight: FontWeight.w700,
             color: Colors.white,
             letterSpacing: 0.5,
           ),
         ),
-        
+
         SizedBox(height: 12.h),
-        
-        Text(
-          subtitle,
-          style: TextStyle(
-            fontSize: 14.sp,
-            color: Colors.white.withOpacity(0.6),
-            fontWeight: FontWeight.w400,
-            height: 1.5,
+
+        // Current step
+        if (state is! AirtimePaymentSuccess && state is! AirtimePaymentFailed)
+          Text(
+            currentStep,
+            style: TextStyle(
+              fontSize: 16.sp,
+              color: Colors.white.withOpacity(0.9),
+              fontWeight: FontWeight.w400,
+            ),
+            textAlign: TextAlign.center,
           ),
-          textAlign: TextAlign.center,
-        ),
-        
-        SizedBox(height: 20.h),
-        
-        // Progress indicator or loading dots
-        if (state is AirtimePaymentProcessing || state is AirtimeInitial) ...[
-          _buildProgressIndicator(),
-          SizedBox(height: 16.h),
-          _buildLoadingDots(),
+
+        if (state is AirtimePaymentSuccess || state is AirtimePaymentFailed) ...[
+          Text(
+            subtitle,
+            style: TextStyle(
+              fontSize: 14.sp,
+              color: Colors.white.withOpacity(0.6),
+              fontWeight: FontWeight.w400,
+              height: 1.5,
+            ),
+            textAlign: TextAlign.center,
+          ),
         ],
+
+        SizedBox(height: 32.h),
+
+        // Progress indicator
+        if (state is AirtimePaymentProcessing || state is AirtimeInitial)
+          _buildProgressIndicator(state),
+
+        SizedBox(height: 16.h),
       ],
     );
   }
 
-  Widget _buildProgressIndicator() {
-    return AnimatedBuilder(
-      animation: _progressAnimation,
-      builder: (context, child) {
-        return Column(
-          children: [
-            Container(
-              width: 200.w,
-              height: 4.h,
+  Widget _buildProgressIndicator(AirtimeState state) {
+    double progress = _progressAnimation.value;
+
+    if (state is AirtimePaymentProcessing) {
+      progress = state.progress;
+    }
+
+    return Column(
+      children: [
+        Container(
+          width: 200.w,
+          height: 8.h,
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.2),
+            borderRadius: BorderRadius.circular(4.r),
+          ),
+          child: FractionallySizedBox(
+            alignment: Alignment.centerLeft,
+            widthFactor: progress,
+            child: Container(
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(2.r),
-              ),
-              child: Stack(
-                children: [
-                  Container(
-                    width: 200.w * _progressAnimation.value,
-                    height: 4.h,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6)],
-                      ),
-                      borderRadius: BorderRadius.circular(2.r),
-                    ),
-                  ),
-                ],
+                gradient: LinearGradient(
+                  colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6)],
+                ),
+                borderRadius: BorderRadius.circular(4.r),
               ),
             ),
-            SizedBox(height: 8.h),
-            Text(
-              '${(_progressAnimation.value * 100).toInt()}%',
-              style: TextStyle(
-                fontSize: 12.sp,
-                color: Colors.white.withOpacity(0.6),
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        );
-      },
+          ),
+        ),
+        SizedBox(height: 12.h),
+        Text(
+          '${(progress * 100).toInt()}%',
+          style: TextStyle(
+            fontSize: 14.sp,
+            color: Colors.white.withOpacity(0.8),
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
     );
   }
 
@@ -368,7 +438,7 @@ class _AirtimePaymentProcessingScreenState extends State<AirtimePaymentProcessin
             final delay = index * 0.3;
             final animationValue = (_pulseController.value + delay) % 1.0;
             final opacity = (animationValue < 0.5) ? animationValue * 2 : (1 - animationValue) * 2;
-            
+
             return Container(
               margin: EdgeInsets.symmetric(horizontal: 4.w),
               width: 8.w,
@@ -382,6 +452,66 @@ class _AirtimePaymentProcessingScreenState extends State<AirtimePaymentProcessin
         );
       }),
     );
+  }
+
+  Widget _buildProcessingSteps(double progress) {
+    final steps = _getProcessingSteps();
+
+    return Column(
+      children: steps.asMap().entries.map((entry) {
+        final index = entry.key;
+        final step = entry.value;
+        final stepProgress = (index + 1) / steps.length;
+        final isCompleted = progress >= stepProgress;
+        final isActive = progress > (index / steps.length) && progress <= stepProgress;
+
+        return Padding(
+          padding: EdgeInsets.symmetric(vertical: 6.h),
+          child: Row(
+            children: [
+              Container(
+                width: 20.w,
+                height: 20.w,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: isCompleted
+                      ? const Color(0xFF10B981)
+                      : isActive
+                          ? const Color(0xFF3B82F6)
+                          : Colors.white.withOpacity(0.2),
+                ),
+                child: Icon(
+                  isCompleted ? Icons.check : Icons.circle,
+                  size: 12.sp,
+                  color: isCompleted || isActive ? Colors.white : Color(0xFF9CA3AF),
+                ),
+              ),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: Text(
+                  step,
+                  style: TextStyle(
+                    fontSize: 13.sp,
+                    color: isCompleted || isActive ? Colors.white : Color(0xFF9CA3AF),
+                    fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  List<String> _getProcessingSteps() {
+    return [
+      'Validating phone number',
+      'Checking account balance',
+      'Processing with network provider',
+      'Sending airtime',
+      'Confirming payment',
+    ];
   }
 
   Widget _buildTransactionDetails() {

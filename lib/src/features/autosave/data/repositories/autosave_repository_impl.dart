@@ -72,11 +72,14 @@ class AutoSaveRepositoryImpl implements IAutoSaveRepository {
 
       print('Sending gRPC CreateAutoSaveRule request: name=$name, trigger=$triggerType');
 
-      final callOptions = await _callOptionsHelper.withAuth();
-      final response = await _autoSaveServiceClient.createAutoSaveRule(
-        request,
-        options: callOptions,
-      );
+      // Use executeWithTokenRotation for automatic token refresh on auth errors
+      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+        final callOptions = await _callOptionsHelper.withAuth();
+        return await _autoSaveServiceClient.createAutoSaveRule(
+          request,
+          options: callOptions,
+        );
+      });
 
       print('CreateAutoSaveRule response: success=${response.success}, msg=${response.msg}');
 
@@ -120,11 +123,14 @@ class AutoSaveRepositoryImpl implements IAutoSaveRepository {
 
       print('Sending gRPC GetAutoSaveRules request: accountId=$accountId, status=$status');
 
-      final callOptions = await _callOptionsHelper.withAuth();
-      final response = await _autoSaveServiceClient.getAutoSaveRules(
-        request,
-        options: callOptions,
-      );
+      // Use executeWithTokenRotation for automatic token refresh on auth errors
+      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+        final callOptions = await _callOptionsHelper.withAuth();
+        return await _autoSaveServiceClient.getAutoSaveRules(
+          request,
+          options: callOptions,
+        );
+      });
 
       print('GetAutoSaveRules response: success=${response.success}, rules count=${response.rules.length}');
 
@@ -210,11 +216,14 @@ class AutoSaveRepositoryImpl implements IAutoSaveRepository {
 
       print('Sending gRPC UpdateAutoSaveRule request: ruleId=$ruleId');
 
-      final callOptions = await _callOptionsHelper.withAuth();
-      final response = await _autoSaveServiceClient.updateAutoSaveRule(
-        request,
-        options: callOptions,
-      );
+      // Use executeWithTokenRotation for automatic token refresh on auth errors
+      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+        final callOptions = await _callOptionsHelper.withAuth();
+        return await _autoSaveServiceClient.updateAutoSaveRule(
+          request,
+          options: callOptions,
+        );
+      });
 
       print('UpdateAutoSaveRule response: success=${response.success}, msg=${response.msg}');
 
@@ -254,11 +263,14 @@ class AutoSaveRepositoryImpl implements IAutoSaveRepository {
 
       print('Sending gRPC ToggleAutoSaveRule request: ruleId=$ruleId, action=$action');
 
-      final callOptions = await _callOptionsHelper.withAuth();
-      final response = await _autoSaveServiceClient.toggleAutoSaveRule(
-        request,
-        options: callOptions,
-      );
+      // Use executeWithTokenRotation for automatic token refresh on auth errors
+      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+        final callOptions = await _callOptionsHelper.withAuth();
+        return await _autoSaveServiceClient.toggleAutoSaveRule(
+          request,
+          options: callOptions,
+        );
+      });
 
       print('ToggleAutoSaveRule response: success=${response.success}, msg=${response.msg}');
 
@@ -296,11 +308,14 @@ class AutoSaveRepositoryImpl implements IAutoSaveRepository {
 
       print('Sending gRPC DeleteAutoSaveRule request: ruleId=$ruleId');
 
-      final callOptions = await _callOptionsHelper.withAuth();
-      final response = await _autoSaveServiceClient.deleteAutoSaveRule(
-        request,
-        options: callOptions,
-      );
+      // Use executeWithTokenRotation for automatic token refresh on auth errors
+      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+        final callOptions = await _callOptionsHelper.withAuth();
+        return await _autoSaveServiceClient.deleteAutoSaveRule(
+          request,
+          options: callOptions,
+        );
+      });
 
       print('DeleteAutoSaveRule response: success=${response.success}, msg=${response.msg}');
 

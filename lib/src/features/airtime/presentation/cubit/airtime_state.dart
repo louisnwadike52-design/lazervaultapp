@@ -109,11 +109,29 @@ class AirtimeTransactionReviewReady extends AirtimeState {
 // Payment states
 class AirtimePaymentProcessing extends AirtimeState {
   final AirtimeTransaction transaction;
+  final double progress; // 0.0 to 1.0
+  final String currentStep;
 
-  const AirtimePaymentProcessing({required this.transaction});
+  const AirtimePaymentProcessing({
+    required this.transaction,
+    this.progress = 0.1,
+    this.currentStep = 'Initializing payment...',
+  });
+
+  AirtimePaymentProcessing copyWith({
+    AirtimeTransaction? transaction,
+    double? progress,
+    String? currentStep,
+  }) {
+    return AirtimePaymentProcessing(
+      transaction: transaction ?? this.transaction,
+      progress: progress ?? this.progress,
+      currentStep: currentStep ?? this.currentStep,
+    );
+  }
 
   @override
-  List<Object?> get props => [transaction];
+  List<Object?> get props => [transaction, progress, currentStep];
 }
 
 class AirtimePaymentSuccess extends AirtimeState {

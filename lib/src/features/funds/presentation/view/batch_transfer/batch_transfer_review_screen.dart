@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:fixnum/fixnum.dart';
 import 'package:lazervault/core/types/app_routes.dart';
@@ -10,6 +11,8 @@ import 'package:lazervault/src/features/funds/cubit/batch_transfer_state.dart';
 import 'package:lazervault/src/features/funds/domain/entities/batch_transfer_entity.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
+import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
+import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 
 class BatchTransferReviewScreen extends StatefulWidget {
   const BatchTransferReviewScreen({super.key});
@@ -19,7 +22,10 @@ class BatchTransferReviewScreen extends StatefulWidget {
 }
 
 class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, TransactionPinMixin {
+  @override
+  ITransactionPinService get transactionPinService =>
+      GetIt.I<ITransactionPinService>();
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
@@ -60,8 +66,45 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
     super.dispose();
   }
 
-  void _confirmTransfer() {
-    // Navigate immediately to processing screen with all transfer data
+  void _confirmTransfer() async {
+    // Calculate total amount for PIN validation
+    final recipients = transferData['recipients'] as List<BatchTransferRecipient>? ?? [];
+    final totalAmount = recipients.fold<double>(
+      0.0,
+      (sum, recipient) => sum + (recipient.amount.toDouble() / 100),
+    );
+
+    // Generate unique transaction ID
+    final transactionId = 'batch_transfer_${DateTime.now().millisecondsSinceEpoch}_${recipients.length}';
+
+    // Validate PIN before processing batch transfer
+    final success = await validateTransactionPin(
+      context: context,
+      transactionId: transactionId,
+      transactionType: 'batch_transfer',
+      amount: totalAmount,
+      currency: 'GBP',
+      title: 'Confirm Batch Transfer',
+      message: 'Confirm batch transfer of £${totalAmount.toStringAsFixed(2)} to ${recipients.length} ${recipients.length == 1 ? 'recipient' : 'recipients'}?',
+      onPinValidated: (verificationToken) async {
+        // PIN is valid, proceed with batch transfer
+        _executeBatchTransferWithToken(transactionId, verificationToken);
+      },
+    );
+
+    if (!success) {
+      // PIN validation failed or was cancelled
+      // User has already been notified via the mixin
+    }
+  }
+
+  /// Execute batch transfer with verification token
+  void _executeBatchTransferWithToken(String transactionId, String verificationToken) {
+    // Add verification token to transfer data
+    transferData['transactionId'] = transactionId;
+    transferData['verificationToken'] = verificationToken;
+
+    // Navigate to processing screen with all transfer data
     Get.offNamed(
       AppRoutes.batchTransferProcessing,
       arguments: transferData,
