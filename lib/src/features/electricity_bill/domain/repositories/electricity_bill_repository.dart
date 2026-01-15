@@ -31,6 +31,8 @@ abstract class ElectricityBillRepository {
     required String accountId,
     String? paymentGateway,
     String? beneficiaryId,
+    String? transactionId,
+    String? verificationToken,
   });
 
   Future<Either<Failure, BillPaymentEntity>> verifyPayment({

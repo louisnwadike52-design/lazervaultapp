@@ -15,7 +15,7 @@ class InitiateTransferUseCase
 
   InitiateTransferUseCase(this.repository);
 
-  @override 
+  @override
   // Use dartz's Either
   Future<Either<Failure, TransferEntity>> call(
       InitiateTransferParams params) async {
@@ -29,6 +29,8 @@ class InitiateTransferUseCase
       category: params.category,
       reference: params.reference,
       scheduledAt: params.scheduledAt,
+      transactionId: params.transactionId,
+      verificationToken: params.verificationToken,
     );
     // No need for intermediate variable 'result'
   }
@@ -43,6 +45,8 @@ class InitiateTransferParams extends Equatable {
   final String? category;
   final String? reference;
   final DateTime? scheduledAt;
+  final String? transactionId;
+  final String? verificationToken;
 
   const InitiateTransferParams({
     required this.fromAccountId,
@@ -53,6 +57,8 @@ class InitiateTransferParams extends Equatable {
     this.category,
     this.reference,
     this.scheduledAt,
+    this.transactionId,
+    this.verificationToken,
   });
 
   @override
@@ -65,5 +71,7 @@ class InitiateTransferParams extends Equatable {
         category,
         reference,
         scheduledAt,
+        transactionId,
+        verificationToken,
       ];
 } 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/select_recipients.dart';
+import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 // Import for SystemUiOverlayStyle
 
 
@@ -59,6 +60,10 @@ class _SelectRecipientScreenState extends State<SelectRecipientScreen> {
       //         color: Colors.white, // Set add icon color to white
       //       ),
       //       onPressed: () => Get.toNamed(AppRoutes.addRecipient),
+      //     ),
+      //     SizedBox(width: 12.w),
+      //     ServiceVoiceButton(
+      //       serviceName: 'recipients',
       //     ),
       //   ],
       // ),

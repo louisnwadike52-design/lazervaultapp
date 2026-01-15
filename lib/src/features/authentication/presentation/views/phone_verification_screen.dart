@@ -57,39 +57,42 @@ class _PhoneVerificationViewState extends State<_PhoneVerificationView> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: BlocListener<PhoneVerificationCubit, PhoneVerificationState>(
-        listener: (context, state) {
-          if (state is PhoneVerificationCodeSent) {
-            setState(() => _codeSent = true);
-            Get.snackbar(
-              'Success',
-              state.message,
-              snackPosition: SnackPosition.TOP,
-              backgroundColor: Colors.green,
-              colorText: Colors.white,
-              margin: EdgeInsets.all(16.w),
-              borderRadius: 12.r,
-              duration: const Duration(seconds: 3),
-            );
-          } else if (state is PhoneVerificationSuccess) {
-            Get.snackbar(
-              'Success',
-              state.message,
-              snackPosition: SnackPosition.TOP,
-              backgroundColor: Colors.green,
-              colorText: Colors.white,
-              margin: EdgeInsets.all(16.w),
-              borderRadius: 12.r,
-              duration: const Duration(seconds: 2),
-            );
-            Future.delayed(const Duration(milliseconds: 500), () {
-              Get.offAllNamed(AppRoutes.dashboard);
-            });
-          } else if (state is PhoneVerificationSkipped) {
-            Get.offAllNamed(AppRoutes.dashboard);
-          } else if (state is PhoneVerificationFailure) {
+    return PopScope(
+      canPop: false, // Prevent back navigation - verification is mandatory
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        body: BlocListener<PhoneVerificationCubit, PhoneVerificationState>(
+          listener: (context, state) {
+            if (state is PhoneVerificationCodeSent) {
+              setState(() => _codeSent = true);
+              Get.snackbar(
+                'Success',
+                state.message,
+                snackPosition: SnackPosition.TOP,
+                backgroundColor: Colors.green,
+                colorText: Colors.white,
+                margin: EdgeInsets.all(16.w),
+                borderRadius: 12.r,
+                duration: const Duration(seconds: 3),
+              );
+            } else if (state is PhoneVerificationSuccess) {
+              Get.snackbar(
+                'Success',
+                state.message,
+                snackPosition: SnackPosition.TOP,
+                backgroundColor: Colors.green,
+                colorText: Colors.white,
+                margin: EdgeInsets.all(16.w),
+                borderRadius: 12.r,
+                duration: const Duration(seconds: 2),
+              );
+              Future.delayed(const Duration(milliseconds: 500), () {
+                Get.offAllNamed(AppRoutes.passcodeSetup);
+              });
+            // Skip case removed - verification is now mandatory
+            // } else if (state is PhoneVerificationSkipped) {
+            //   Get.offAllNamed(AppRoutes.dashboard);
+            } else if (state is PhoneVerificationFailure) {
             Get.snackbar(
               'Error',
               state.message,
@@ -384,21 +387,7 @@ class _PhoneVerificationViewState extends State<_PhoneVerificationView> {
 
                     SizedBox(height: 24.h),
 
-                    // Skip Button
-                    Center(
-                      child: TextButton(
-                        onPressed: () {
-                          context.read<PhoneVerificationCubit>().skipVerification();
-                        },
-                        child: Text(
-                          'Skip for now',
-                          style: GoogleFonts.inter(
-                            fontSize: 14.sp,
-                            color: const Color(0xFF6B7280),
-                          ),
-                        ),
-                      ),
-                    ),
+                    // Note: Skip button removed - phone verification is now mandatory
 
                     SizedBox(height: 40.h),
 
@@ -436,6 +425,6 @@ class _PhoneVerificationViewState extends State<_PhoneVerificationView> {
           },
         ),
       ),
-    );
+    ));
   }
 }

@@ -1,4 +1,6 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart' hide Transition;
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/types/electricity_bill_details.dart';
@@ -8,6 +10,8 @@ import 'package:lazervault/src/features/authentication/domain/entities/user.dart
 import 'package:lazervault/src/features/authentication/presentation/views/email_sign_in_screen.dart';
 import 'package:lazervault/src/features/authentication/presentation/views/email_verification_screen.dart';
 import 'package:lazervault/src/features/authentication/cubit/email_verification_cubit.dart';
+import 'package:lazervault/src/features/authentication/presentation/views/phone_verification_screen.dart';
+import 'package:lazervault/src/features/authentication/cubit/phone_verification_cubit.dart';
 import 'package:lazervault/src/features/authentication/presentation/views/passcode_setup_screen.dart';
 import 'package:lazervault/src/features/authentication/presentation/views/change_passcode_screen.dart';
 import 'package:lazervault/src/features/crypto/presentation/view/crypto_screen.dart';
@@ -90,7 +94,7 @@ import 'package:lazervault/src/features/presentation/views/upload_image_scren.da
 // import 'package:lazervault/src/features/portfolio/presentation/view/portfolio_details_screen.dart';
 // import 'package:lazervault/src/features/portfolio/presentation/cubit/portfolio_cubit.dart';
 import '../../../core/services/injection_container.dart';
-import 'views/onboarding_screen.dart';
+import 'package:lazervault/src/features/authentication/presentation/views/modern_onboarding_screen.dart';
 import '../../../main.dart' show AuthCheckScreen;
 import 'package:lazervault/src/features/funds/cubit/withdrawal_cubit.dart';
 import 'package:lazervault/src/features/funds/cubit/deposit_cubit.dart';
@@ -107,6 +111,9 @@ import 'package:lazervault/src/features/invoice/presentation/view/invoice_list_s
 import 'package:lazervault/src/features/cards/presentation/cubit/card_cubit.dart';
 import 'package:lazervault/src/features/cards/presentation/view/card_creation_form_screen.dart';
 import 'package:lazervault/src/features/cards/presentation/view/card_creation_receipt_screen.dart';
+import 'package:lazervault/src/features/voice_enrollment/cubit/voice_enrollment_cubit.dart';
+import 'package:lazervault/src/features/voice_enrollment/presentation/voice_enrollment_screen.dart';
+import 'package:lazervault/src/features/voice_activation/presentation/voice_activation_prompt_screen.dart';
 import 'package:lazervault/src/features/invoice/presentation/view/invoice_service_screen.dart';
 import 'package:lazervault/src/features/invoice/presentation/cubit/invoice_cubit.dart';
 import 'package:lazervault/src/features/invoice/presentation/view/create_invoice_carousel.dart';
@@ -267,12 +274,26 @@ import 'package:lazervault/src/features/referral/presentation/cubit/referral_cub
 import 'package:lazervault/src/features/lock_funds/presentation/cubit/lock_funds_cubit.dart';
 import 'package:lazervault/src/features/lock_funds/presentation/screens/lock_funds_list_screen.dart';
 
+// Family Account imports
+import 'package:lazervault/src/features/family_account/presentation/cubit/family_account_cubit.dart';
+import 'package:lazervault/src/features/family_account/domain/entities/family_account_entities.dart';
+import 'package:lazervault/src/features/family_account/presentation/views/family_setup_flow_screen.dart';
+import 'package:lazervault/src/features/family_account/presentation/views/family_add_member_screen.dart';
+import 'package:lazervault/src/features/family_account/presentation/views/family_account_detail_screen.dart';
+import 'package:lazervault/src/features/family_account/presentation/views/family_edit_member_limits_screen.dart';
+
+// Transaction History imports (Redesigned)
+import 'package:lazervault/core/types/unified_transaction.dart';
+import 'package:lazervault/src/features/transaction_history/presentation/cubit/transaction_history_cubit.dart';
+import 'package:lazervault/src/features/transaction_history/presentation/screens/dashboard_transaction_history_screen.dart';
+import 'package:lazervault/src/features/transaction_history/presentation/screens/service_transaction_history_screen.dart';
+
 class AppRouter {
   static final routes = [
     GetPage(
       name: AppRoutes.root,
-      page: () => serviceLocator<OnboardingScreen>(),
-      transition: Transition.rightToLeft,
+      page: () => const ModernOnboardingScreen(),
+      transition: Transition.fade,
     ),
     GetPage(
       name: AppRoutes.authCheck,
@@ -545,9 +566,22 @@ class AppRouter {
       page: () => BlocProvider(
         create: (context) => serviceLocator<EmailVerificationCubit>(),
         child: EmailVerificationScreen(
-          email: Get.parameters['email'],
+          email: Get.arguments ?? Get.parameters['email'],
         ),
       ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.phoneVerification,
+      page: () {
+        // Import added at top of file
+        return BlocProvider(
+          create: (context) => serviceLocator<PhoneVerificationCubit>(),
+          child: PhoneVerificationScreen(
+            phoneNumber: Get.arguments ?? Get.parameters['phoneNumber'],
+          ),
+        );
+      },
       transition: Transition.rightToLeft,
     ),
     GetPage(
@@ -675,6 +709,26 @@ class AppRouter {
     GetPage(
       name: AppRoutes.transactionHistory,
       page: () => serviceLocator<TransactionHistoryScreen>(),
+      transition: Transition.rightToLeft,
+    ),
+    // New Transaction History Routes (Redesigned)
+    GetPage(
+      name: AppRoutes.dashboardTransactionHistory,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<TransactionHistoryCubit>(),
+        child: const DashboardTransactionHistoryScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.serviceTransactionHistory,
+      page: () {
+        final serviceType = Get.arguments as TransactionServiceType;
+        return BlocProvider(
+          create: (_) => serviceLocator<TransactionHistoryCubit>(),
+          child: ServiceTransactionHistoryScreen(serviceType: serviceType),
+        );
+      },
       transition: Transition.rightToLeft,
     ),
     GetPage(
@@ -1840,6 +1894,97 @@ class AppRouter {
         create: (_) => serviceLocator<LockFundsCubit>(),
         child: const LockFundsListScreen(),
       ),
+      transition: Transition.rightToLeft,
+    ),
+
+    // Voice Enrollment Routes
+    GetPage(
+      name: AppRoutes.voiceActivationPrompt,
+      page: () {
+        final storage = serviceLocator<FlutterSecureStorage>();
+        return FutureBuilder<String?>(
+          future: storage.read(key: 'user_id'),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Scaffold(
+                body: Center(child: CircularProgressIndicator()),
+              );
+            }
+            final userId = snapshot.data ?? '';
+            return FutureBuilder<String?>(
+              future: storage.read(key: 'voice_activation_skips'),
+              builder: (context, skipSnapshot) {
+                final skipCountStr = skipSnapshot.data ?? '0';
+                return VoiceActivationPromptScreen(
+                  userId: userId,
+                  isMandatory: (int.tryParse(skipCountStr) ?? 0) >= 3,
+                );
+              },
+            );
+          },
+        );
+      },
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.voiceEnrollment,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<VoiceEnrollmentCubit>(),
+        child: const VoiceEnrollmentScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+
+    // Family Account Routes
+    GetPage(
+      name: AppRoutes.familySetup,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<FamilyAccountCubit>(),
+        child: const FamilySetupFlowScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.familyDetails,
+      page: () {
+        // Get familyId from arguments
+        final args = Get.arguments as Map<String, dynamic>?;
+        final familyId = args?['familyId'] as String? ?? '';
+
+        return BlocProvider(
+          create: (_) => serviceLocator<FamilyAccountCubit>(),
+          child: FamilyAccountDetailScreen(familyId: familyId),
+        );
+      },
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.familyAddMember,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<FamilyAccountCubit>(),
+        child: FamilyAddMemberScreen(
+          familyId: Get.parameters['familyId'] ?? '',
+          familyName: Get.parameters['familyName'],
+        ),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.familyEditMemberLimits,
+      page: () {
+        // Get arguments
+        final args = Get.arguments as Map<String, dynamic>?;
+        final familyId = args?['familyId'] as String? ?? '';
+        final member = args?['member'] as FamilyMember?;
+
+        return BlocProvider(
+          create: (_) => serviceLocator<FamilyAccountCubit>(),
+          child: FamilyEditMemberLimitsScreen(
+            familyId: familyId,
+            member: member!,
+          ),
+        );
+      },
       transition: Transition.rightToLeft,
     ),
   ];

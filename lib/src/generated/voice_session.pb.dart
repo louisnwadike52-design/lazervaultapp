@@ -12,11 +12,25 @@ import 'package:protobuf/protobuf.dart' as $pb;
 
 class StartVoiceSessionRequest extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'StartVoiceSessionRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'serviceName')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'preferredAgentLanguage')
     ..hasRequiredFields = false
   ;
 
   StartVoiceSessionRequest._() : super();
-  factory StartVoiceSessionRequest() => create();
+  factory StartVoiceSessionRequest({
+    $core.String? serviceName,
+    $core.String? preferredAgentLanguage,
+  }) {
+    final _result = create();
+    if (serviceName != null) {
+      _result.serviceName = serviceName;
+    }
+    if (preferredAgentLanguage != null) {
+      _result.preferredAgentLanguage = preferredAgentLanguage;
+    }
+    return _result;
+  }
   factory StartVoiceSessionRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory StartVoiceSessionRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
@@ -37,6 +51,24 @@ class StartVoiceSessionRequest extends $pb.GeneratedMessage {
   @$core.pragma('dart2js:noInline')
   static StartVoiceSessionRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<StartVoiceSessionRequest>(create);
   static StartVoiceSessionRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get serviceName => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set serviceName($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasServiceName() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearServiceName() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get preferredAgentLanguage => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set preferredAgentLanguage($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasPreferredAgentLanguage() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearPreferredAgentLanguage() => clearField(2);
 }
 
 class StartVoiceSessionResponse extends $pb.GeneratedMessage {
@@ -44,6 +76,8 @@ class StartVoiceSessionResponse extends $pb.GeneratedMessage {
     ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'roomName')
     ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'livekitToken')
     ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'agentId')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'agentUrl')
+    ..a<$core.int>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'agentPort', $pb.PbFieldType.O3)
     ..hasRequiredFields = false
   ;
 
@@ -52,6 +86,8 @@ class StartVoiceSessionResponse extends $pb.GeneratedMessage {
     $core.String? roomName,
     $core.String? livekitToken,
     $core.String? agentId,
+    $core.String? agentUrl,
+    $core.int? agentPort,
   }) {
     final _result = create();
     if (roomName != null) {
@@ -62,6 +98,12 @@ class StartVoiceSessionResponse extends $pb.GeneratedMessage {
     }
     if (agentId != null) {
       _result.agentId = agentId;
+    }
+    if (agentUrl != null) {
+      _result.agentUrl = agentUrl;
+    }
+    if (agentPort != null) {
+      _result.agentPort = agentPort;
     }
     return _result;
   }
@@ -112,6 +154,24 @@ class StartVoiceSessionResponse extends $pb.GeneratedMessage {
   $core.bool hasAgentId() => $_has(2);
   @$pb.TagNumber(3)
   void clearAgentId() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get agentUrl => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set agentUrl($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasAgentUrl() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearAgentUrl() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.int get agentPort => $_getIZ(4);
+  @$pb.TagNumber(5)
+  set agentPort($core.int v) { $_setSignedInt32(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasAgentPort() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearAgentPort() => clearField(5);
 }
 
 class ProcessVoiceNoteRequest extends $pb.GeneratedMessage {

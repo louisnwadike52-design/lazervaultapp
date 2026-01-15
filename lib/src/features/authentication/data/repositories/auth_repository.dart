@@ -42,8 +42,37 @@ class AuthRepositoryImpl implements IAuthRepository {
           response.hasData() &&
           response.data.hasUser() &&
           response.data.hasSession()) {
-        final userModel = UserModel.fromProto(response.data.user);
-        final sessionModel = SessionModel.fromProto(response.data.session);
+        // Note: auth.pb.dart User/Session are different from common.pb.dart types
+        // Construct models directly from response fields
+        final user = response.data.user;
+        final session = response.data.session;
+
+        final userModel = UserModel(
+          id: user.id,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          phoneNumber: user.hasPhone() ? user.phone : null,
+          verified: user.phoneVerified,
+          isEmailVerified: user.emailVerified,
+          profilePicture: user.profilePicture.isEmpty ? null : user.profilePicture,
+          createdAt: DateTime.tryParse(user.createdAt) ?? DateTime.now(),
+          updatedAt: DateTime.tryParse(user.updatedAt) ?? DateTime.now(),
+        );
+
+        final now = DateTime.now();
+        final expiresAt = session.hasExpiresIn()
+            ? now.add(Duration(seconds: session.expiresIn.toInt()))
+            : now.add(const Duration(hours: 1)); // Default 1 hour
+        final sessionModel = SessionModel(
+          id: session.hasUserId() ? session.userId : user.id,
+          userId: user.id,
+          accessToken: session.accessToken,
+          refreshToken: session.refreshToken,
+          accessTokenExpiresAt: expiresAt,
+          refreshTokenExpiresAt: expiresAt,
+        );
+
         final profileModel = ProfileModel(user: userModel, session: sessionModel);
         return Right(profileModel); // Explicitly use Right()
       } else {
@@ -70,7 +99,12 @@ class AuthRepositoryImpl implements IAuthRepository {
     required String password,
   }) async {
     return _processAuthResponse(() async {
-      final request = auth_req_resp.LoginRequest(email: email, password: password);
+      final request = auth_req_resp.LoginRequest(
+        email: email,
+        password: password,
+        deviceId: 'flutter-app',
+        deviceName: 'Flutter App',
+      );
       return await _authServiceClient.login(request);
     });
   }
@@ -83,7 +117,7 @@ class AuthRepositoryImpl implements IAuthRepository {
     return _processAuthResponse(() async {
       final request = auth_req_resp.LoginWithPasscodeRequest(
         email: email,
-        loginPasscode: passcode,
+        passcode: passcode,
       );
       return await _authServiceClient.loginWithPasscode(request);
     });
@@ -95,7 +129,7 @@ class AuthRepositoryImpl implements IAuthRepository {
   }) async {
     try {
       final request = auth_req_resp.RegisterPasscodeRequest(
-        loginPasscode: passcode,
+        passcode: passcode,
       );
       final callOptions = await _callOptionsHelper.withAuth();
       final response = await _authServiceClient.registerPasscode(
@@ -133,7 +167,7 @@ class AuthRepositoryImpl implements IAuthRepository {
   }) async {
     try {
       final request = auth_req_resp.ChangePasscodeRequest(
-        oldPasscode: oldPasscode,
+        currentPasscode: oldPasscode,
         newPasscode: newPasscode,
       );
       final callOptions = await _callOptionsHelper.withAuth();
@@ -176,50 +210,75 @@ class AuthRepositoryImpl implements IAuthRepository {
     String? referralCode,
   }) async {
     try {
-      final createUserRequest = user_req_resp.CreateUserRequest(
+      // Use new AuthService.Signup endpoint that returns tokens directly
+      final signupRequest = auth_req_resp.SignupRequest(
         firstName: firstName,
         lastName: lastName,
         email: email,
         password: password,
-        phoneNumber: phoneNumber ?? '',
-        username: username ?? '',
-        referralCode: referralCode ?? '',
+        phone: phoneNumber ?? '',
+        countryCode: '', // Extract from phone if needed
+        deviceId: 'flutter-app', // TODO: Get actual device ID
+        deviceName: 'Flutter App', // TODO: Get actual device name
       );
-      print('Sending gRPC CreateUser request...');
-      final createUserResponse = await _userServiceClient.createUser(createUserRequest);
+      print('Sending gRPC Signup request...');
+      final signupResponse = await _authServiceClient.signup(signupRequest);
 
-      if (!createUserResponse.success) {
-         print('gRPC CreateUser failed (success=false)');
-         String errorMessage = createUserResponse.message.isNotEmpty
-             ? createUserResponse.message
-             : 'Signup failed during user creation.';
-        return Left(ServerFailure(message: errorMessage, statusCode: 500));
-      }
-
-      // Verify response has complete data (user and session)
-      if (!createUserResponse.hasData() ||
-          !createUserResponse.data.hasUser() ||
-          !createUserResponse.data.hasSession()) {
-        print('gRPC CreateUser succeeded but returned incomplete data.');
+      // Check if signup returned tokens
+      if (signupResponse.accessToken.isEmpty || signupResponse.refreshToken.isEmpty) {
+        print('gRPC Signup succeeded but no tokens returned');
         return Left(ServerFailure(
-          message: 'Signup partially failed (incomplete response data).',
+          message: 'Signup partially failed (no tokens returned).',
           statusCode: 500
         ));
       }
 
-      // CreateUser endpoint already returns session data, no need to call login
-      print('gRPC CreateUser successful. User created and logged in.');
-      final userModel = UserModel.fromProto(createUserResponse.data.user);
-      final sessionModel = SessionModel.fromProto(createUserResponse.data.session);
+      // Check if user data is present
+      if (!signupResponse.hasUser()) {
+        print('gRPC Signup succeeded but no user data returned');
+        return Left(ServerFailure(
+          message: 'Signup partially failed (no user data).',
+          statusCode: 500
+        ));
+      }
+
+      print('gRPC Signup successful. User created with tokens.');
+
+      // Convert user proto to model
+      final userModel = UserModel(
+        id: signupResponse.user.id,
+        email: signupResponse.user.email,
+        firstName: signupResponse.user.firstName,
+        lastName: signupResponse.user.lastName,
+        phoneNumber: signupResponse.user.phone,
+        verified: signupResponse.user.phoneVerified, // Use phoneVerified for overall verified status
+        isEmailVerified: signupResponse.user.emailVerified,
+        profilePicture: signupResponse.user.profilePicture.isEmpty ? null : signupResponse.user.profilePicture,
+        createdAt: DateTime.tryParse(signupResponse.user.createdAt) ?? DateTime.now(),
+        updatedAt: DateTime.tryParse(signupResponse.user.updatedAt) ?? DateTime.now(),
+      );
+
+      // Create session model with tokens
+      final now = DateTime.now();
+      final expiresAt = now.add(Duration(seconds: signupResponse.expiresIn.toInt()));
+      final sessionModel = SessionModel(
+        id: signupResponse.user.id,
+        userId: signupResponse.user.id,
+        accessToken: signupResponse.accessToken,
+        refreshToken: signupResponse.refreshToken,
+        accessTokenExpiresAt: expiresAt,
+        refreshTokenExpiresAt: expiresAt,
+      );
+
       final profileModel = ProfileModel(user: userModel, session: sessionModel);
 
       return Right(profileModel);
 
     } on GrpcError catch (e) {
-      print('gRPC Error during signUp (CreateUser step): ${e.codeName} - ${e.message}');
-       if (e.code == StatusCode.alreadyExists) {
-           return Left(ServerFailure(message: e.message ?? 'Account already exists.', statusCode: e.code));
-       }
+      print('gRPC Error during signUp: ${e.codeName} - ${e.message}');
+      if (e.code == StatusCode.alreadyExists) {
+        return Left(ServerFailure(message: e.message ?? 'Account already exists.', statusCode: e.code));
+      }
       return Left(ServerFailure(
         message: e.message ?? 'Signup failed due to server error.',
         statusCode: e.code,
@@ -282,7 +341,6 @@ class AuthRepositoryImpl implements IAuthRepository {
   }) async {
     try {
       final request = auth_req_resp.ResetPasswordRequest(
-        email: email,
         token: token,
         newPassword: newPassword,
       );
@@ -385,22 +443,65 @@ class AuthRepositoryImpl implements IAuthRepository {
   @override
   Future<Either<Failure, ProfileEntity>> refreshToken({required String refreshToken}) async {
     try {
+      print('Calling RefreshToken endpoint with token: ${refreshToken.substring(0, 20)}...');
       final request = auth_req_resp.RefreshTokenRequest(refreshToken: refreshToken);
       final response = await _authServiceClient.refreshToken(request);
 
-      if (response.success &&
-          response.hasData() &&
-          response.data.hasUser() &&
-          response.data.hasSession()) {
-        final userModel = UserModel.fromProto(response.data.user);
-        final sessionModel = SessionModel.fromProto(response.data.session);
+      print('RefreshToken response received');
+
+      // Check if response has the new tokens
+      if (response.hasAccessToken() && response.hasRefreshToken()) {
+        print('New tokens received from refresh');
+
+        // Check if user data is present
+        UserModel userModel;
+        if (response.hasUser()) {
+          userModel = UserModel(
+            id: response.user.id,
+            email: response.user.email,
+            firstName: response.user.firstName,
+            lastName: response.user.lastName,
+            phoneNumber: response.user.phone,
+            verified: response.user.phoneVerified, // Use phoneVerified for overall verified status
+            isEmailVerified: response.user.emailVerified,
+            profilePicture: response.user.profilePicture.isEmpty ? null : response.user.profilePicture,
+            createdAt: DateTime.tryParse(response.user.createdAt) ?? DateTime.now(),
+            updatedAt: DateTime.tryParse(response.user.updatedAt) ?? DateTime.now(),
+          );
+        } else {
+          // If no user data, create a minimal user model
+          userModel = UserModel(
+            id: '',
+            email: '',
+            firstName: '',
+            lastName: '',
+            phoneNumber: '',
+            verified: false,
+            isEmailVerified: false,
+            profilePicture: null,
+            createdAt: DateTime.now(),
+            updatedAt: DateTime.now(),
+          );
+        }
+
+        final now = DateTime.now();
+        final expiresAt = now.add(Duration(seconds: response.expiresIn.toInt()));
+        final sessionModel = SessionModel(
+          id: userModel.id,
+          userId: userModel.id,
+          accessToken: response.accessToken,
+          refreshToken: response.refreshToken,
+          accessTokenExpiresAt: expiresAt,
+          refreshTokenExpiresAt: expiresAt,
+        );
+
         final profileModel = ProfileModel(user: userModel, session: sessionModel);
+        print('RefreshToken successful, returning new profile');
         return Right(profileModel);
       } else {
+        print('RefreshToken response missing tokens');
         return Left(ServerFailure(
-            message: response.msg.isNotEmpty
-                ? response.msg
-                : 'Token refresh failed.', statusCode: 401));
+            message: 'Token refresh failed - no tokens returned.', statusCode: 401));
       }
     } on GrpcError catch (e) {
       print('gRPC Error during token refresh: ${e.codeName} - ${e.message}');
@@ -411,6 +512,40 @@ class AuthRepositoryImpl implements IAuthRepository {
     } catch (e) {
       print('Unexpected error during token refresh: $e');
       return Left(ServerFailure(message: 'An unexpected error occurred during token refresh.', statusCode: 500));
+    }
+  }
+
+  /// Helper method for token rotation - returns tokens as a simple map
+  /// This is used by GrpcCallOptionsHelper for automatic token refresh
+  Future<Map<String, String>?> refreshTokensSimple() async {
+    try {
+      // Get refresh token from secure storage
+      final storage = _callOptionsHelper.storage;
+      final refreshToken = await storage.read(key: 'refresh_token');
+
+      if (refreshToken == null || refreshToken.isEmpty) {
+        print('No refresh token available for rotation');
+        return null;
+      }
+
+      final result = await this.refreshToken(refreshToken: refreshToken);
+
+      return result.fold(
+        (failure) {
+          print('Token refresh failed: ${failure.message}');
+          return null;
+        },
+        (profile) {
+          print('Token refresh successful');
+          return {
+            'accessToken': profile.session.accessToken,
+            'refreshToken': profile.session.refreshToken,
+          };
+        },
+      );
+    } catch (e) {
+      print('Error in refreshTokensSimple: $e');
+      return null;
     }
   }
 
@@ -442,7 +577,7 @@ class AuthRepositoryImpl implements IAuthRepository {
   }) async {
     try {
       final request = auth_req_resp.RequestPhoneVerificationRequest(
-        phoneNumber: phoneNumber,
+        phone: phoneNumber,
       );
       print('Sending gRPC RequestPhoneVerification request for: $phoneNumber');
 
@@ -457,7 +592,7 @@ class AuthRepositoryImpl implements IAuthRepository {
           success: true,
           message: response.msg.isNotEmpty ? response.msg : 'Verification code sent to your phone',
           verificationId: response.verificationId,
-          expiresIn: response.expiresIn,
+          expiresIn: response.hasExpiresIn() ? response.expiresIn.toInt() : null,
         ));
       } else {
         return Left(ServerFailure(
@@ -487,8 +622,8 @@ class AuthRepositoryImpl implements IAuthRepository {
   }) async {
     try {
       final request = auth_req_resp.VerifyPhoneNumberRequest(
-        phoneNumber: phoneNumber,
-        verificationCode: verificationCode,
+        phone: phoneNumber,
+        code: verificationCode,
       );
       print('Sending gRPC VerifyPhoneNumber request for: $phoneNumber');
 

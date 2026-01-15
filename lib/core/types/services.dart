@@ -18,6 +18,7 @@ enum AppServiceName {
   autoSave,
   crowdfund,
   lockFunds,
+  whatsappIntegration,
 }
 
 extension AppServiceNameExtension on AppServiceName {
@@ -61,6 +62,55 @@ extension AppServiceNameExtension on AppServiceName {
         return 'Crowdfund';
       case AppServiceName.lockFunds:
         return 'Lock Funds';
+      case AppServiceName.whatsappIntegration:
+        return 'WhatsApp Banking';
+    }
+  }
+
+  /// Maps AppServiceName to backend microservice name for transaction history
+  /// This is used when calling accounts-service GetTransactionHistory with service_name filter
+  String get backendServiceName {
+    switch (this) {
+      case AppServiceName.sendFunds:
+        return 'transfer-service';
+      case AppServiceName.batchTransfer:
+        return 'transfer-service';
+      case AppServiceName.tagPay:
+        return 'tag-pay-service';
+      case AppServiceName.invoice:
+        return 'invoice-service';
+      case AppServiceName.payInvoice:
+        return 'invoice-service';
+      case AppServiceName.payElectricityBill:
+        return 'utility-payments-service';
+      case AppServiceName.invest:
+        return 'investments-service';
+      case AppServiceName.stocks:
+        return 'stocks-service';
+      case AppServiceName.exchange:
+        return 'investments-service';
+      case AppServiceName.crypto:
+        return 'crypto-service';
+      case AppServiceName.giftCards:
+        return 'giftcards-service';
+      case AppServiceName.aiScanToPay:
+        return 'core-payments-service';
+      case AppServiceName.barcodeQuickPay:
+        return 'core-payments-service';
+      case AppServiceName.groupAccount:
+        return 'accounts-service';
+      case AppServiceName.insurance:
+        return 'insurance-service';
+      case AppServiceName.airtime:
+        return 'airtime-service';
+      case AppServiceName.autoSave:
+        return 'accounts-service';
+      case AppServiceName.crowdfund:
+        return 'crowdfund-service';
+      case AppServiceName.lockFunds:
+        return 'accounts-service';
+      case AppServiceName.whatsappIntegration:
+        return 'whatsapp-service';
     }
   }
 }
@@ -92,6 +142,7 @@ enum AppServiceImg {
   autoSave,
   crowdfund,
   lockFunds,
+  whatsappIntegration,
 }
 
 extension AppServiceImgExtension on AppServiceImg {
@@ -135,6 +186,8 @@ extension AppServiceImgExtension on AppServiceImg {
         return 'assets/images/volunteer_activism.png';
       case AppServiceImg.lockFunds:
         return 'assets/images/lock.png';
+      case AppServiceImg.whatsappIntegration:
+        return 'assets/images/whatsapp-banking.png';
     }
   }
 }

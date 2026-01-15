@@ -14,5 +14,7 @@ abstract class ITransferRepository {
     String? category,
     String? reference,
     DateTime? scheduledAt,
+    String? transactionId,
+    String? verificationToken,
   });
 }

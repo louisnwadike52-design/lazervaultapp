@@ -1,16 +1,16 @@
 import 'package:grpc/grpc.dart';
-import '../config/grpc_config.dart';
-import '../../generated/voice_session.pb.dart';
 import '../../generated/voice_session.pbgrpc.dart';
 
 /// Wrapper class for Voice Session gRPC client
 /// This provides a clean interface to interact with the lazervault-golang voice service
+/// Uses the Core Gateway (7878) injected from injection_container
 class VoiceGrpcClient {
-  late ClientChannel _channel;
+  final ClientChannel _channel;
   late VoiceSessionServiceClient _client;
 
-  VoiceGrpcClient() {
-    _channel = GrpcConfig.createVoiceChannel();
+  /// Accepts an injected ClientChannel (Core Gateway from injection_container)
+  /// This ensures all voice services go through the proper API gateway
+  VoiceGrpcClient({required ClientChannel channel}) : _channel = channel {
     _client = VoiceSessionServiceClient(_channel);
   }
 

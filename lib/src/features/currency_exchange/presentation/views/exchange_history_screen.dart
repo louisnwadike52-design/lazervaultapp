@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 
 import '../../domain/entities/transaction_entity.dart';
 import '../controllers/exchange_controller.dart';
+import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 
 class ExchangeHistoryScreen extends StatefulWidget {
   const ExchangeHistoryScreen({super.key});
@@ -98,7 +99,10 @@ class _ExchangeHistoryScreenState extends State<ExchangeHistoryScreen> {
               ),
             ),
           ),
-        ],
+                ServiceVoiceButton(
+          serviceName: 'exchange',
+        ),
+],
       ),
     );
   }

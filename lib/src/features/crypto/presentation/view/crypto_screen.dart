@@ -13,6 +13,7 @@ import '../widgets/voice_input_widget.dart';
 import 'crypto_detail_screen.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import '../../../../../core/services/injection_container.dart';
+import '../../../../core/grpc/voice_grpc_client.dart';
 import 'sell_crypto_screen.dart';
 import 'swap_crypto_screen.dart';
 import 'price_alerts_screen.dart';
@@ -149,7 +150,9 @@ class _CryptoScreenState extends State<CryptoScreen>
 
   void _showVoiceInputBottomSheet() {
     Get.bottomSheet(
-      const VoiceInputWidget(),
+      VoiceInputWidget(
+        voiceClient: serviceLocator<VoiceGrpcClient>(),
+      ),
       isScrollControlled: true,
       isDismissible: true,
       enableDrag: true,

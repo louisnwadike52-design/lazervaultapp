@@ -8,6 +8,7 @@ import 'package:lazervault/src/features/widgets/themed_app_bar.dart';
 import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
 import 'package:lazervault/src/features/profile/cubit/profile_state.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/services/currency_sync_service.dart';
 import 'package:lazervault/src/features/profile/presentation/widgets/change_password_dialog.dart';
 import 'package:lazervault/src/features/profile/presentation/widgets/language_picker_dialog.dart';
 import 'package:lazervault/src/features/profile/presentation/widgets/currency_picker_dialog.dart';
@@ -300,12 +301,12 @@ class _SettingsViewState extends State<_SettingsView> {
     final language = state is ProfileLoaded
         ? _getLanguageName(state.user.language ?? 'en')
         : 'English';
-    final currency = state is ProfileLoaded
-        ? state.user.currency ?? 'GBP'
-        : 'GBP';
     final country = state is ProfileLoaded
         ? state.user.country ?? 'United Kingdom'
         : 'United Kingdom';
+
+    // Get currency from CurrencySyncService (reactive stream)
+    final currencySyncService = serviceLocator<CurrencySyncService>();
 
     return _buildSection(
       title: 'Regional Settings',
@@ -335,8 +336,8 @@ class _SettingsViewState extends State<_SettingsView> {
         ),
         _buildSettingsTile(
           icon: Icons.location_on_outlined,
-          title: 'Country & Currency',
-          subtitle: '$country • $currency',
+          title: 'Country',
+          subtitle: country,
           trailing: Icon(
             Icons.arrow_forward_ios,
             size: 16.sp,
@@ -358,6 +359,34 @@ class _SettingsViewState extends State<_SettingsView> {
                   currentCurrency: currentCurrency,
                 ),
               ),
+            );
+          },
+        ),
+        // Reactive currency tile with StreamBuilder
+        StreamBuilder<String>(
+          stream: currencySyncService.currencyStream,
+          initialData: currencySyncService.currentCurrency,
+          builder: (context, snapshot) {
+            final currentCurrency = snapshot.data ?? 'USD';
+
+            return _buildSettingsTile(
+              icon: Icons.attach_money_outlined,
+              title: 'Currency',
+              subtitle: currentCurrency,
+              trailing: Icon(
+                Icons.arrow_forward_ios,
+                size: 16.sp,
+                color: const Color(0xFF9CA3AF),
+              ),
+              onTap: () {
+                showDialog(
+                  context: context,
+                  builder: (dialogContext) => BlocProvider.value(
+                    value: context.read<ProfileCubit>(),
+                    child: CurrencyPickerDialog(currentCurrency: currentCurrency),
+                  ),
+                );
+              },
             );
           },
         ),

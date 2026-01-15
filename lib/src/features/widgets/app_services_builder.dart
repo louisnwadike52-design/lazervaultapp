@@ -70,6 +70,9 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
     const AppService(
         serviceName: AppServiceName.lockFunds,
         serviceImg: AppServiceImg.lockFunds),
+    const AppService(
+        serviceName: AppServiceName.whatsappIntegration,
+        serviceImg: AppServiceImg.whatsappIntegration),
   ];
 
   // Split services into pages

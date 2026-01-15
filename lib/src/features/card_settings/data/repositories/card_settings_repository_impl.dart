@@ -24,19 +24,22 @@ class CardSettingsRepositoryImpl implements ICardSettingsRepository {
     String? accessToken,
   }) async {
     try {
-      final request = req_resp.GetAccountDetailsRequest(
-        accountId: Int64.parseInt(accountId),
-      );
+      // Use executeWithTokenRotation for automatic token refresh on auth errors
+      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+        final request = req_resp.GetAccountDetailsRequest(
+          accountId: Int64.parseInt(accountId),
+        );
 
-      print('Sending gRPC GetAccountDetails Request for account: $accountId');
+        print('Sending gRPC GetAccountDetails Request for account: $accountId');
 
-      // Use helper to get call options with authorization header from secure storage
-      final callOptions = await _callOptionsHelper.withAuth();
+        // Use helper to get call options with authorization header from secure storage
+        final callOptions = await _callOptionsHelper.withAuth();
 
-      final response = await _accountServiceClient.getAccountDetails(
-        request,
-        options: callOptions,
-      );
+        return await _accountServiceClient.getAccountDetails(
+          request,
+          options: callOptions,
+        );
+      });
 
       print('gRPC GetAccountDetails Response received');
 
@@ -67,27 +70,30 @@ class CardSettingsRepositoryImpl implements ICardSettingsRepository {
     String? accessToken,
   }) async {
     try {
-      final securitySettings = AccountDetailsModel.toProtoSecuritySettings(
-        enable3dSecure: enable3dSecure,
-        enableContactless: enableContactless,
-        enableOnlinePayments: enableOnlinePayments,
-      );
+      // Use executeWithTokenRotation for automatic token refresh on auth errors
+      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+        final securitySettings = AccountDetailsModel.toProtoSecuritySettings(
+          enable3dSecure: enable3dSecure,
+          enableContactless: enableContactless,
+          enableOnlinePayments: enableOnlinePayments,
+        );
 
-      final request = req_resp.UpdateSecuritySettingsRequest(
-        accountId: Int64.parseInt(accountId),
-        settings: securitySettings,
-      );
+        final request = req_resp.UpdateSecuritySettingsRequest(
+          accountId: Int64.parseInt(accountId),
+          settings: securitySettings,
+        );
 
-      print('Sending gRPC UpdateSecuritySettings Request for account: $accountId');
-      print('Security Settings: 3DS=$enable3dSecure, Contactless=$enableContactless, Online=$enableOnlinePayments');
+        print('Sending gRPC UpdateSecuritySettings Request for account: $accountId');
+        print('Security Settings: 3DS=$enable3dSecure, Contactless=$enableContactless, Online=$enableOnlinePayments');
 
-      // Use helper to get call options with authorization header from secure storage
-      final callOptions = await _callOptionsHelper.withAuth();
+        // Use helper to get call options with authorization header from secure storage
+        final callOptions = await _callOptionsHelper.withAuth();
 
-      final response = await _accountServiceClient.updateSecuritySettings(
-        request,
-        options: callOptions,
-      );
+        return await _accountServiceClient.updateSecuritySettings(
+          request,
+          options: callOptions,
+        );
+      });
 
       print('gRPC UpdateSecuritySettings Response received');
 
@@ -117,22 +123,25 @@ class CardSettingsRepositoryImpl implements ICardSettingsRepository {
     String? accessToken,
   }) async {
     try {
-      final request = req_resp.UpdateAccountStatusRequest(
-        accountId: Int64.parseInt(accountId),
-        status: status,
-        reason: reason,
-      );
+      // Use executeWithTokenRotation for automatic token refresh on auth errors
+      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+        final request = req_resp.UpdateAccountStatusRequest(
+          accountId: Int64.parseInt(accountId),
+          status: status,
+          reason: reason,
+        );
 
-      print('Sending gRPC UpdateAccountStatus Request for account: $accountId');
-      print('Status: $status, Reason: $reason');
+        print('Sending gRPC UpdateAccountStatus Request for account: $accountId');
+        print('Status: $status, Reason: $reason');
 
-      // Use helper to get call options with authorization header from secure storage
-      final callOptions = await _callOptionsHelper.withAuth();
+        // Use helper to get call options with authorization header from secure storage
+        final callOptions = await _callOptionsHelper.withAuth();
 
-      final response = await _accountServiceClient.updateAccountStatus(
-        request,
-        options: callOptions,
-      );
+        return await _accountServiceClient.updateAccountStatus(
+          request,
+          options: callOptions,
+        );
+      });
 
       print('gRPC UpdateAccountStatus Response received');
 

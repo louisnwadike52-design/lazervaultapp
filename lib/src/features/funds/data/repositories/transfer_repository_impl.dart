@@ -29,6 +29,8 @@ class TransferRepositoryImpl implements ITransferRepository {
     String? category,
     String? reference,
     DateTime? scheduledAt,
+    String? transactionId,
+    String? verificationToken,
   }) async {
     try {
       final remoteResponse = await remoteDataSource.initiateTransfer(
@@ -40,6 +42,8 @@ class TransferRepositoryImpl implements ITransferRepository {
         category: category,
         reference: reference,
         scheduledAt: scheduledAt,
+        transactionId: transactionId,
+        verificationToken: verificationToken,
       );
       // Convert the raw gRPC response to our model
       final responseModel =

@@ -7,13 +7,17 @@ import 'package:lazervault/src/features/authentication/cubit/authentication_cubi
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/features/voice_session/cubit/voice_session_cubit.dart';
 import 'package:lazervault/src/features/voice_session/cubit/voice_session_state.dart';
+import 'package:lazervault/src/features/voice/managers/voice_activation_manager.dart';
+import 'package:lazervault/src/features/voice/presentation/screens/voice_verification_screen.dart';
 
 class VoiceCommandSheet extends StatefulWidget {
   final List<String>? suggestions;
-  
+  final String? serviceName;
+
   const VoiceCommandSheet({
     super.key,
     this.suggestions,
+    this.serviceName,
   });
 
   @override
@@ -23,6 +27,10 @@ class VoiceCommandSheet extends StatefulWidget {
 class _VoiceCommandSheetState extends State<VoiceCommandSheet>
     with TickerProviderStateMixin {
   late AnimationController _micAnimationController;
+  final VoiceActivationManager _voiceActivationManager = VoiceActivationManager();
+
+  bool _isCheckingEnrollment = true;
+  bool _voiceVerified = false;
 
   @override
   void initState() {
@@ -31,13 +39,59 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
       duration: const Duration(milliseconds: 1500),
       vsync: this,
     );
-    
+
+    // Check voice enrollment and verification before starting session
+    _checkVoiceActivation();
+  }
+
+  /// Check voice enrollment and verify before starting voice session
+  Future<void> _checkVoiceActivation() async {
     final authState = context.read<AuthenticationCubit>().state;
-    String? token;
-    if (authState is AuthenticationSuccess) {
-      token = authState.profile.session.accessToken;
+
+    if (authState is! AuthenticationSuccess) {
+      setState(() {
+        _isCheckingEnrollment = false;
+      });
+      return;
     }
-    context.read<VoiceSessionCubit>().startVoiceSession(accessToken: token);
+
+    final userId = authState.profile.userId;
+
+    // Activate voice (enroll if needed, verify if enrolled)
+    final activated = await _voiceActivationManager.activateVoice(
+      context,
+      userId,
+      forceVerification: true, // Always verify before voice session
+      onSuccess: () {
+        if (mounted) {
+          setState(() {
+            _voiceVerified = true;
+          });
+          // Start voice session after verification
+          _startVoiceSession(authState.profile.session.accessToken);
+        }
+      },
+    );
+
+    setState(() {
+      _isCheckingEnrollment = false;
+    });
+
+    if (!activated && !_voiceVerified) {
+      // User canceled or failed verification, close the sheet
+      if (mounted) {
+        Navigator.of(context).pop();
+      }
+    }
+  }
+
+  void _startVoiceSession(String? token) {
+    if (token == null || token.isEmpty) return;
+
+    context.read<VoiceSessionCubit>().startVoiceSession(
+      accessToken: token,
+      serviceName: widget.serviceName,
+    );
   }
 
   @override

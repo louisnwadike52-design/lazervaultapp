@@ -10,6 +10,7 @@ import 'package:lazervault/src/features/funds/cubit/deposit_cubit.dart';
 import 'package:lazervault/src/features/funds/cubit/deposit_state.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 
 class DepositFundsScreen extends StatefulWidget {
   final Map<String, dynamic> selectedCard;
@@ -398,7 +399,10 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
             });
           },
         ),
-      ],
+            ServiceVoiceButton(
+        serviceName: 'loans',
+      ),
+],
     );
   }
 

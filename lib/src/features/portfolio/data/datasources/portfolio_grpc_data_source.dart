@@ -6,17 +6,16 @@ import '../../../../../core/services/grpc_call_options_helper.dart';
 /// Portfolio gRPC Data Source
 class PortfolioGrpcDataSource {
   final PortfolioServiceClient _client;
+  final GrpcCallOptionsHelper _callOptionsHelper;
 
-  const PortfolioGrpcDataSource(this._client);
+  const PortfolioGrpcDataSource(this._client, this._callOptionsHelper);
 
   /// Get complete user portfolio
   Future<pb.GetCompletePortfolioResponse> getCompletePortfolio() async {
     try {
       final request = pb.GetCompletePortfolioRequest();
 
-      final callOptions = await GrpcCallOptionsHelper.getCallOptions(
-        timeout: const Duration(seconds: 30),
-      );
+      final callOptions = await _callOptionsHelper.withAuth();
 
       final response = await _client.getCompletePortfolio(
         request,
@@ -39,9 +38,7 @@ class PortfolioGrpcDataSource {
       final request = pb.GetPortfolioByAssetTypeRequest()
         ..assetType = assetType;
 
-      final callOptions = await GrpcCallOptionsHelper.getCallOptions(
-        timeout: const Duration(seconds: 30),
-      );
+      final callOptions = await _callOptionsHelper.withAuth();
 
       final response = await _client.getPortfolioByAssetType(
         request,
@@ -61,7 +58,7 @@ class PortfolioGrpcDataSource {
     try {
       final request = pb.GetPortfolioSummaryRequest();
 
-      final callOptions = await GrpcCallOptionsHelper.getCallOptions();
+      final callOptions = await _callOptionsHelper.withAuth();
 
       final response = await _client.getPortfolioSummary(
         request,
@@ -84,7 +81,7 @@ class PortfolioGrpcDataSource {
       final request = pb.GetPortfolioHistoryRequest()
         ..period = period;
 
-      final callOptions = await GrpcCallOptionsHelper.getCallOptions();
+      final callOptions = await _callOptionsHelper.withAuth();
 
       final response = await _client.getPortfolioHistory(
         request,

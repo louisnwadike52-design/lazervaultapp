@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/services/currency_sync_service.dart';
 import '../domain/usecases/login_usecase.dart';
 import '../domain/usecases/login_with_passcode_usecase.dart';
 import '../domain/usecases/register_passcode_usecase.dart';
@@ -30,6 +31,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
   final ResendVerificationUseCase _resendVerificationUseCase;
   final CheckEmailAvailabilityUseCase _checkEmailAvailabilityUseCase;
   final FlutterSecureStorage _storage;
+  final CurrencySyncService _currencySyncService;
 
   ProfileEntity? _currentProfile;
 
@@ -46,6 +48,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     required ResendVerificationUseCase resendVerification,
     required CheckEmailAvailabilityUseCase checkEmailAvailability,
     FlutterSecureStorage? storage,
+    required CurrencySyncService currencySyncService,
   })  : _loginUseCase = login,
         _loginWithPasscodeUseCase = loginWithPasscode,
         _registerPasscodeUseCase = registerPasscode,
@@ -58,6 +61,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
         _resendVerificationUseCase = resendVerification,
         _checkEmailAvailabilityUseCase = checkEmailAvailability,
         _storage = storage ?? const FlutterSecureStorage(),
+        _currencySyncService = currencySyncService,
         super(AuthenticationInitial());
 
   // Getters
@@ -183,6 +187,8 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       (profile) async {
         print('✅ Login successful for email: ${profile.user.email}');
         await _saveSession(profile);
+        // Sync currency from server after successful login
+        await _currencySyncService.syncFromServer();
         emit(AuthenticationSuccess(profile));
       },
     );
@@ -210,6 +216,8 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
         // Store login method preference
         await _storage.write(key: 'login_method', value: 'passcode');
         await _storage.write(key: 'stored_email', value: email);
+        // Sync currency from server after successful login
+        await _currencySyncService.syncFromServer();
         _showSuccessSnackbar('Welcome back!', '${profile.user.firstName} ${profile.user.lastName}');
         emit(AuthenticationSuccess(profile));
       },
@@ -276,6 +284,8 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       },
       (profile) async {
         await _saveSession(profile);
+        // Sync currency from server after successful registration
+        await _currencySyncService.syncFromServer();
 
         if (!profile.user.isEmailVerified) {
           _showInfoSnackbar(
@@ -313,6 +323,8 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       },
       (profile) async {
         await _saveSession(profile);
+        // Sync currency from server after successful login
+        await _currencySyncService.syncFromServer();
         _showSuccessSnackbar('Welcome!', 'Signed in with Google');
         emit(AuthenticationSuccess(profile));
       },
@@ -336,6 +348,8 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       },
       (profile) async {
         await _saveSession(profile);
+        // Sync currency from server after successful login
+        await _currencySyncService.syncFromServer();
         _showSuccessSnackbar('Welcome!', 'Signed in with Apple');
         emit(AuthenticationSuccess(profile));
       },
@@ -571,6 +585,8 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
   // --- Logout ---
   Future<void> logout() async {
     await _clearSession();
+    // Clear currency sync state on logout
+    _currencySyncService.clear();
     _showInfoSnackbar('Logged Out', 'Come back soon!');
     // Emit PasscodeLoginInProgress instead of AuthenticationInitial
     // to prevent infinite loading spinner on passcode screen
@@ -651,28 +667,76 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     }
   }
 
+  // New method to set primary contact type (email or phone)
+  void signUpSetPrimaryContactType(PrimaryContactType type) {
+    if (state is SignUpInProgress) {
+      final currentState = state as SignUpInProgress;
+      // When switching types, clear the data for the previous type
+      if (type == PrimaryContactType.email) {
+        emit(currentState.copyWith(
+          primaryContactType: type,
+          phoneNumber: '', // Clear phone if switching to email
+          clearErrorMessage: true,
+        ));
+      } else if (type == PrimaryContactType.phone) {
+        emit(currentState.copyWith(
+          primaryContactType: type,
+          email: '', // Clear email if switching to phone
+          clearErrorMessage: true,
+        ));
+      }
+    }
+  }
+
   Future<void> signUpNextPage() async {
     if (state is SignUpInProgress) {
       final currentState = state as SignUpInProgress;
 
       if (currentState.currentPage == 0) {
-        // Validation for page 0: Email and Password
-        if (currentState.email.isEmpty) {
-          final errorMsg = 'Email is required';
-          _showErrorSnackbar('Validation Error', errorMsg);
-          if (isClosed) return;
-          emit(currentState.copyWith(errorMessage: errorMsg));
-          return;
+        // Validation for page 0: Email OR Phone + Password
+        // Validate based on primary contact type
+        if (currentState.primaryContactType == PrimaryContactType.email || currentState.primaryContactType == PrimaryContactType.none) {
+          // Validate email
+          if (currentState.email.isEmpty) {
+            final errorMsg = 'Email is required';
+            _showErrorSnackbar('Validation Error', errorMsg);
+            if (isClosed) return;
+            emit(currentState.copyWith(errorMessage: errorMsg));
+            return;
+          }
+
+          if (!_isValidEmail(currentState.email)) {
+            final errorMsg = 'Please enter a valid email address';
+            _showErrorSnackbar('Validation Error', errorMsg);
+            if (isClosed) return;
+            emit(currentState.copyWith(errorMessage: errorMsg));
+            return;
+          }
+
+          // Set primary contact type to email if not already set
+          if (currentState.primaryContactType == PrimaryContactType.none) {
+            emit(currentState.copyWith(primaryContactType: PrimaryContactType.email));
+          }
+        } else if (currentState.primaryContactType == PrimaryContactType.phone) {
+          // Validate phone number
+          if (currentState.phoneNumber.isEmpty) {
+            final errorMsg = 'Phone number is required';
+            _showErrorSnackbar('Validation Error', errorMsg);
+            if (isClosed) return;
+            emit(currentState.copyWith(errorMessage: errorMsg));
+            return;
+          }
+
+          if (!_isValidPhoneNumber(currentState.phoneNumber)) {
+            final errorMsg = 'Please enter a valid phone number';
+            _showErrorSnackbar('Validation Error', errorMsg);
+            if (isClosed) return;
+            emit(currentState.copyWith(errorMessage: errorMsg));
+            return;
+          }
         }
 
-        if (!_isValidEmail(currentState.email)) {
-          final errorMsg = 'Please enter a valid email address';
-          _showErrorSnackbar('Validation Error', errorMsg);
-          if (isClosed) return;
-          emit(currentState.copyWith(errorMessage: errorMsg));
-          return;
-        }
-
+        // Validate password (required for both email and phone signup)
         if (currentState.password.isEmpty) {
           final errorMsg = 'Password is required';
           _showErrorSnackbar('Validation Error', errorMsg);
@@ -705,31 +769,36 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
           return;
         }
 
-        // Check email availability before proceeding
-        if (isClosed) return;
-        emit(currentState.copyWith(isLoading: true, clearErrorMessage: true));
+        // Check email availability before proceeding (only if email is primary contact)
+        if (currentState.primaryContactType == PrimaryContactType.email) {
+          if (isClosed) return;
+          emit(currentState.copyWith(isLoading: true, clearErrorMessage: true));
 
-        final result = await _checkEmailAvailabilityUseCase(email: currentState.email);
+          final result = await _checkEmailAvailabilityUseCase(email: currentState.email);
 
-        if (isClosed) return;
-        result.fold(
-          (failure) {
-            final errorMsg = 'Failed to verify email availability. Please try again.';
-            _showErrorSnackbar('Connection Error', errorMsg);
-            emit(currentState.copyWith(errorMessage: errorMsg, isLoading: false));
-            return;
-          },
-          (isAvailable) {
-            if (!isAvailable) {
-              final errorMsg = 'This email is already registered. Please use a different email or sign in.';
-              _showErrorSnackbar('Email Already Exists', errorMsg);
+          if (isClosed) return;
+          result.fold(
+            (failure) {
+              final errorMsg = 'Failed to verify email availability. Please try again.';
+              _showErrorSnackbar('Connection Error', errorMsg);
               emit(currentState.copyWith(errorMessage: errorMsg, isLoading: false));
               return;
-            }
-            // Email is available, proceed to next page
-            emit(currentState.copyWith(currentPage: currentState.currentPage + 1, clearErrorMessage: true, isLoading: false));
-          },
-        );
+            },
+            (isAvailable) {
+              if (!isAvailable) {
+                final errorMsg = 'This email is already registered. Please use a different email or sign in.';
+                _showErrorSnackbar('Email Already Exists', errorMsg);
+                emit(currentState.copyWith(errorMessage: errorMsg, isLoading: false));
+                return;
+              }
+              // Email is available, proceed to next page
+              emit(currentState.copyWith(currentPage: currentState.currentPage + 1, clearErrorMessage: true, isLoading: false));
+            },
+          );
+        } else {
+          // Phone signup - proceed to next page (phone availability can be checked on backend)
+          emit(currentState.copyWith(currentPage: currentState.currentPage + 1, clearErrorMessage: true, isLoading: false));
+        }
         return; // Return early as we handled page transition in the fold
       } else if (currentState.currentPage == 1) {
         // Validation for page 1: Personal Info
@@ -902,6 +971,19 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       r'^[a-zA-Z0-9.!#$%&*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$',
     );
     return email.isNotEmpty && emailRegex.hasMatch(email) && email.length <= 254;
+  }
+
+  bool _isValidPhoneNumber(String phone) {
+    // Validate phone number - expects E.164 format from IntlPhoneField
+    // E.164 format: +[country code][number] (e.g., +12345678901)
+    if (phone.isEmpty) return false;
+
+    // Remove any whitespace
+    final cleanPhone = phone.replaceAll(RegExp(r'\s+'), '');
+
+    // Check if it starts with + and has 7-15 digits (E.164 standard)
+    final phoneRegex = RegExp(r'^\+[1-9]\d{6,14}$');
+    return phoneRegex.hasMatch(cleanPhone);
   }
 
   String? _validatePassword(String password) {

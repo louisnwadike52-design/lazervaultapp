@@ -11,10 +11,14 @@ import 'dart:typed_data' as $typed_data;
 @$core.Deprecated('Use startVoiceSessionRequestDescriptor instead')
 const StartVoiceSessionRequest$json = const {
   '1': 'StartVoiceSessionRequest',
+  '2': const [
+    const {'1': 'service_name', '3': 1, '4': 1, '5': 9, '10': 'serviceName'},
+    const {'1': 'preferred_agent_language', '3': 2, '4': 1, '5': 9, '10': 'preferredAgentLanguage'},
+  ],
 };
 
 /// Descriptor for `StartVoiceSessionRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List startVoiceSessionRequestDescriptor = $convert.base64Decode('ChhTdGFydFZvaWNlU2Vzc2lvblJlcXVlc3Q=');
+final $typed_data.Uint8List startVoiceSessionRequestDescriptor = $convert.base64Decode('ChhTdGFydFZvaWNlU2Vzc2lvblJlcXVlc3QSIQoMc2VydmljZV9uYW1lGAEgASgJUgtzZXJ2aWNlTmFtZRI4ChhwcmVmZXJyZWRfYWdlbnRfbGFuZ3VhZ2UYAiABKAlSFnByZWZlcnJlZEFnZW50TGFuZ3VhZ2U=');
 @$core.Deprecated('Use startVoiceSessionResponseDescriptor instead')
 const StartVoiceSessionResponse$json = const {
   '1': 'StartVoiceSessionResponse',
@@ -22,11 +26,13 @@ const StartVoiceSessionResponse$json = const {
     const {'1': 'room_name', '3': 1, '4': 1, '5': 9, '10': 'roomName'},
     const {'1': 'livekit_token', '3': 2, '4': 1, '5': 9, '10': 'livekitToken'},
     const {'1': 'agent_id', '3': 3, '4': 1, '5': 9, '10': 'agentId'},
+    const {'1': 'agent_url', '3': 4, '4': 1, '5': 9, '10': 'agentUrl'},
+    const {'1': 'agent_port', '3': 5, '4': 1, '5': 5, '10': 'agentPort'},
   ],
 };
 
 /// Descriptor for `StartVoiceSessionResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List startVoiceSessionResponseDescriptor = $convert.base64Decode('ChlTdGFydFZvaWNlU2Vzc2lvblJlc3BvbnNlEhsKCXJvb21fbmFtZRgBIAEoCVIIcm9vbU5hbWUSIwoNbGl2ZWtpdF90b2tlbhgCIAEoCVIMbGl2ZWtpdFRva2VuEhkKCGFnZW50X2lkGAMgASgJUgdhZ2VudElk');
+final $typed_data.Uint8List startVoiceSessionResponseDescriptor = $convert.base64Decode('ChlTdGFydFZvaWNlU2Vzc2lvblJlc3BvbnNlEhsKCXJvb21fbmFtZRgBIAEoCVIIcm9vbU5hbWUSIwoNbGl2ZWtpdF90b2tlbhgCIAEoCVIMbGl2ZWtpdFRva2VuEhkKCGFnZW50X2lkGAMgASgJUgdhZ2VudElkEhsKCWFnZW50X3VybBgEIAEoCVIIYWdlbnRVcmwSHQoKYWdlbnRfcG9ydBgFIAEoBVIJYWdlbnRQb3J0');
 @$core.Deprecated('Use processVoiceNoteRequestDescriptor instead')
 const ProcessVoiceNoteRequest$json = const {
   '1': 'ProcessVoiceNoteRequest',

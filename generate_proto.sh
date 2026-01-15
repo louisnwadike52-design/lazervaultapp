@@ -64,6 +64,13 @@ protoc --dart_out=grpc:lib/src/generated \
   ../insurance-microservice/proto/insurance.proto \
   ../insurance-microservice/proto/common.proto
 
+# Generate accounts.proto from accounts-microservice
+echo "Generating Dart code from accounts.proto..."
+protoc --dart_out=grpc:lib/src/generated \
+  -I../microservices/accounts-service/accounts-microservice/proto \
+  -Iproto \
+  ../microservices/accounts-service/accounts-microservice/proto/accounts.proto
+
 if [ $? -eq 0 ]; then
     echo "Dart code generation successful."
 else

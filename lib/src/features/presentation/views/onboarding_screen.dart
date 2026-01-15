@@ -6,6 +6,7 @@ import 'package:lazervault/src/features/presentation/views/onboarding_carousel.d
 import 'package:motion_tab_bar/MotionTabBarController.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -43,7 +44,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     });
   }
 
-  void _gotoHomeScreen() {
+  void _gotoHomeScreen() async {
+    // Save that the user has seen onboarding
+    const storage = FlutterSecureStorage();
+    await storage.write(key: 'has_seen_onboarding', value: 'true');
+
+    // Navigate to sign up screen
     Get.offAllNamed(AppRoutes.signUp);
   }
 

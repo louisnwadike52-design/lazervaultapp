@@ -187,7 +187,6 @@ class _StatisticsState extends State<Statistics> {
                     _buildBudgetProgress(state),
                     _buildMonthlyTrendChart(),
                     _buildComparisonMetrics(),
-                    _buildTrackedTransactions(state),
                     _buildToggleSection(),
                     showIncome ? _buildIncomeAnalysis(state) : _buildExpenseAnalysis(),
                     _buildInvestmentPortfolio(state),
@@ -343,22 +342,13 @@ class _StatisticsState extends State<Statistics> {
     double totalSpending = 0.0;
     double totalIncome = 0.0;
     double totalExpenses = 0.0;
-    double trackedIncome = 0.0;
-    double trackedExpenditure = 0.0;
 
     if (state is StatisticsLoaded) {
-      // Calculate totals from manual expenses
+      // Calculate totals from expenses list
       totalExpenses = state.expenses.fold(0.0, (sum, expense) => sum + expense.amount);
-
-      // Get tracked transactions from backend
-      trackedIncome = state.trackedIncome;
-      trackedExpenditure = state.trackedExpenditure;
-
-      // Total income includes tracked income
-      totalIncome = trackedIncome;
-
-      // Total spending includes both manual expenses and tracked expenditure
-      totalSpending = totalExpenses + trackedExpenditure;
+      totalSpending = totalExpenses;
+      // Income would need to come from a separate source
+      totalIncome = 8350.00; // TODO: Get from user profile or income tracking
     }
 
     return Column(
@@ -1131,193 +1121,6 @@ class _StatisticsState extends State<Statistics> {
               ),
             ),
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTrackedTransactions(StatisticsState state) {
-    if (state is! StatisticsLoaded) {
-      return SizedBox.shrink();
-    }
-
-    // Only show if there's tracked data
-    if (state.trackedIncome == 0.0 && state.trackedExpenditure == 0.0) {
-      return SizedBox.shrink();
-    }
-
-    return Container(
-      margin: EdgeInsets.all(16.r),
-      padding: EdgeInsets.all(20.r),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Color(0xFF1E3A8A).withOpacity(0.3),
-            Color(0xFF6366F1).withOpacity(0.1),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(color: Colors.blue.withOpacity(0.3), width: 1.5),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.blue.withOpacity(0.1),
-            blurRadius: 20,
-            offset: Offset(0, 10),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: EdgeInsets.all(10.r),
-                decoration: BoxDecoration(
-                  color: Colors.blue.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(12.r),
-                ),
-                child: Icon(
-                  Icons.auto_graph,
-                  color: Colors.blue[300],
-                  size: 24.r,
-                ),
-              ),
-              SizedBox(width: 12.w),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Tracked Transactions',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 20.sp,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      'Automatic tracking from your activities',
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.6),
-                        fontSize: 12.sp,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 20.h),
-          Row(
-            children: [
-              Expanded(
-                child: _buildTrackedMetricCard(
-                  'Income',
-                  state.trackedIncome,
-                  Icons.arrow_upward,
-                  Colors.green,
-                  state.trackedIncomeBreakdown,
-                ),
-              ),
-              SizedBox(width: 16.w),
-              Expanded(
-                child: _buildTrackedMetricCard(
-                  'Expenditure',
-                  state.trackedExpenditure,
-                  Icons.arrow_downward,
-                  Colors.red,
-                  state.trackedExpenditureBreakdown,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTrackedMetricCard(
-    String label,
-    double amount,
-    IconData icon,
-    MaterialColor color,
-    Map<String, double> breakdown,
-  ) {
-    return Container(
-      padding: EdgeInsets.all(16.r),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: color.withOpacity(0.3)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                label,
-                style: TextStyle(
-                  color: Colors.white.withOpacity(0.7),
-                  fontSize: 14.sp,
-                ),
-              ),
-              Icon(
-                icon,
-                color: color[300],
-                size: 18.r,
-              ),
-            ],
-          ),
-          SizedBox(height: 8.h),
-          Text(
-            '\$${amount.toStringAsFixed(2)}',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 24.sp,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          if (breakdown.isNotEmpty) ...[
-            SizedBox(height: 12.h),
-            Divider(color: Colors.white.withOpacity(0.1)),
-            SizedBox(height: 8.h),
-            ...breakdown.entries.map((entry) {
-              final categoryLabel = entry.key.replaceAll('_', ' ').split(' ')
-                .map((word) => word.isNotEmpty ? word[0].toUpperCase() + word.substring(1) : '')
-                .join(' ');
-              return Padding(
-                padding: EdgeInsets.only(bottom: 6.h),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Flexible(
-                      child: Text(
-                        categoryLabel,
-                        style: TextStyle(
-                          color: Colors.white.withOpacity(0.6),
-                          fontSize: 11.sp,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    Text(
-                      '\$${entry.value.toStringAsFixed(2)}',
-                      style: TextStyle(
-                        color: color[200],
-                        fontSize: 11.sp,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            }).toList(),
-          ],
         ],
       ),
     );

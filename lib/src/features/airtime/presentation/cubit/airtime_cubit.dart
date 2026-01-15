@@ -150,6 +150,59 @@ class AirtimeCubit extends Cubit<AirtimeState> {
     }
   }
 
+  // Process payment with verification token (for PIN-validated transactions)
+  Future<void> processPaymentWithToken({
+    required String countryCode,
+    required String networkProviderId,
+    required String phoneNumber,
+    required double amount,
+    required String currency,
+    required String transactionId,
+    required String verificationToken,
+  }) async {
+    try {
+      // Create a temporary transaction for the processing state
+      final tempTransaction = AirtimeTransaction(
+        id: transactionId,
+        transactionReference: 'processing',
+        networkProvider: NetworkProviderType.mtn, // Will be updated
+        recipientPhoneNumber: phoneNumber,
+        amount: amount,
+        currency: currency,
+        status: AirtimeTransactionStatus.processing,
+        createdAt: DateTime.now(),
+        userId: 'current_user',
+        totalAmount: amount,
+      );
+
+      if (isClosed) return;
+      emit(AirtimePaymentProcessing(transaction: tempTransaction));
+
+      final transaction = await repository.purchaseAirtime(
+        countryCode: countryCode,
+        networkProviderId: networkProviderId,
+        phoneNumber: phoneNumber,
+        amount: amount,
+        currency: currency,
+        transactionId: transactionId,
+        verificationToken: verificationToken,
+      );
+
+      if (isClosed) return;
+      if (transaction.status == AirtimeTransactionStatus.completed) {
+        emit(AirtimePaymentSuccess(transaction: transaction));
+      } else {
+        emit(AirtimePaymentFailed(
+          message: transaction.failureReason ?? 'Payment failed',
+          transaction: transaction,
+        ));
+      }
+    } catch (e) {
+      if (isClosed) return;
+      emit(AirtimePaymentFailed(message: e.toString()));
+    }
+  }
+
   // Load transaction history
   Future<void> loadTransactionHistory(String userId) async {
     try {

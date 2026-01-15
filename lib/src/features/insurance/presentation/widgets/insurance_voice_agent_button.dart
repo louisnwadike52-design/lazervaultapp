@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:livekit_client/livekit_client.dart' as livekit hide ConnectionState;
+import 'package:livekit_client/livekit_client.dart' as livekit;
 import 'dart:convert';
 
 /// Voice agent button for insurance management conversations
@@ -106,7 +106,7 @@ class _InsuranceVoiceAgentButtonState extends State<InsuranceVoiceAgentButton>
   void _onRoomUpdate() {
     // Check if room is disconnected
     // Note: Room.connectionState is available in livekit.Room
-    if (_room != null && !_room!.isConnected) {
+    if (_room?.connectionState == livekit.ConnectionState.disconnected) {
       _handleDisconnect();
     }
   }

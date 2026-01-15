@@ -24,23 +24,27 @@ class RecipientRepositoryImpl implements IRecipientRepository {
     bool? favoritesOnly,
   }) async {
     try {
-      final callOptions = await _callOptionsHelper.withAuth();
-      final request = grpc.ListRecipientsRequest();
+      // Use executeWithTokenRotation for automatic token refresh on auth errors
+      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+        final callOptions = await _callOptionsHelper.withAuth();
+        final request = grpc.ListRecipientsRequest();
 
-      if (countryCode != null) {
-        request.countryCode = countryCode;
-      }
-      if (currency != null) {
-        request.currency = currency;
-      }
-      if (favoritesOnly != null) {
-        request.favoritesOnly = favoritesOnly;
-      }
+        if (countryCode != null) {
+          request.countryCode = countryCode;
+        }
+        if (currency != null) {
+          request.currency = currency;
+        }
+        if (favoritesOnly != null) {
+          request.favoritesOnly = favoritesOnly;
+        }
 
-      final response = await _client.listRecipients(
-        request,
-        options: callOptions,
-      );
+        return await _client.listRecipients(
+          request,
+          options: callOptions,
+        );
+      });
+
       return Right(response.recipients.map(RecipientModel.fromProto).toList());
     } catch (e) {
       return Left(
@@ -52,38 +56,42 @@ class RecipientRepositoryImpl implements IRecipientRepository {
   Future<Either<Failure, RecipientModel>> addRecipient(
       {required RecipientModel recipient, required String accessToken}) async {
     try {
-      final request = grpc.CreateRecipientRequest()
-        ..name = recipient.name
-        ..accountNumber = recipient.accountNumber
-        ..bankName = recipient.bankName
-        ..sortCode = recipient.sortCode
-        ..isFavorite = recipient.isFavorite
-        ..type = 'external'; // Default to external recipient
+      // Use executeWithTokenRotation for automatic token refresh on auth errors
+      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+        final request = grpc.CreateRecipientRequest()
+          ..name = recipient.name
+          ..accountNumber = recipient.accountNumber
+          ..bankName = recipient.bankName
+          ..sortCode = recipient.sortCode
+          ..isFavorite = recipient.isFavorite
+          ..type = 'external'; // Default to external recipient
 
-      if (recipient.countryCode != null) {
-        request.countryCode = recipient.countryCode!;
-      }
-      if (recipient.email != null) {
-        request.email = recipient.email!;
-      }
-      if (recipient.phoneNumber != null) {
-        request.phoneNumber = recipient.phoneNumber!;
-      }
-      if (recipient.currency != null) {
-        request.currency = recipient.currency!;
-      }
-      if (recipient.swiftCode != null) {
-        request.swiftCode = recipient.swiftCode!;
-      }
-      if (recipient.iban != null) {
-        request.iban = recipient.iban!;
-      }
+        if (recipient.countryCode != null) {
+          request.countryCode = recipient.countryCode!;
+        }
+        if (recipient.email != null) {
+          request.email = recipient.email!;
+        }
+        if (recipient.phoneNumber != null) {
+          request.phoneNumber = recipient.phoneNumber!;
+        }
+        if (recipient.currency != null) {
+          request.currency = recipient.currency!;
+        }
+        if (recipient.swiftCode != null) {
+          request.swiftCode = recipient.swiftCode!;
+        }
+        if (recipient.iban != null) {
+          request.iban = recipient.iban!;
+        }
 
-      final callOptions = await _callOptionsHelper.withAuth();
-      final response = await _client.createRecipient(
-        request,
-        options: callOptions,
-      );
+        final callOptions = await _callOptionsHelper.withAuth();
+        return await _client.createRecipient(
+          request,
+          options: callOptions,
+        );
+      });
+
       return Right(RecipientModel.fromProto(response.recipient));
     } catch (e) {
       return Left(
@@ -95,14 +103,18 @@ class RecipientRepositoryImpl implements IRecipientRepository {
   Future<Either<Failure, void>> toggleFavorite(
       {required String recipientId, required String accessToken}) async {
     try {
-      final request = grpc.UpdateRecipientRequest()
-        ..recipientId = Int64.parseInt(recipientId);
+      // Use executeWithTokenRotation for automatic token refresh on auth errors
+      await _callOptionsHelper.executeWithTokenRotation(() async {
+        final request = grpc.UpdateRecipientRequest()
+          ..recipientId = Int64.parseInt(recipientId);
 
-      final callOptions = await _callOptionsHelper.withAuth();
-      await _client.updateRecipient(
-        request,
-        options: callOptions,
-      );
+        final callOptions = await _callOptionsHelper.withAuth();
+        return await _client.updateRecipient(
+          request,
+          options: callOptions,
+        );
+      });
+
       return Right(null);
     } catch (e) {
       return Left(

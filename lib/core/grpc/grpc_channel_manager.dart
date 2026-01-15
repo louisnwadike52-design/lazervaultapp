@@ -2,34 +2,18 @@ import 'package:grpc/grpc.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
 
 /// Manages gRPC channels and provides authentication interceptors
+/// Uses an injected ClientChannel from injection_container (Investment Gateway)
 class GrpcChannelManager {
-  final String host;
-  final int port;
+  final ClientChannel _channel;
   final SecureStorageService secureStorage;
 
-  ClientChannel? _channel;
-
   GrpcChannelManager({
-    required this.host,
-    required this.port,
+    required ClientChannel channel,
     required this.secureStorage,
-  });
+  }) : _channel = channel;
 
-  /// Get or create the gRPC channel
-  ClientChannel get channel {
-    if (_channel == null) {
-      _channel = ClientChannel(
-        host,
-        port: port,
-        options: ChannelOptions(
-          credentials: const ChannelCredentials.insecure(),
-          connectionTimeout: const Duration(seconds: 10),
-          idleTimeout: const Duration(seconds: 60),
-        ),
-      );
-    }
-    return _channel!;
-  }
+  /// Get the gRPC channel (now injected from injection_container)
+  ClientChannel get channel => _channel;
 
   /// Create call options with authentication token
   Future<CallOptions> getAuthCallOptions() async {
@@ -56,15 +40,13 @@ class GrpcChannelManager {
     );
   }
 
-  /// Close the channel
+  /// Close the channel (managed externally by injection_container)
   Future<void> close() async {
-    await _channel?.shutdown();
-    _channel = null;
+    // Channel lifecycle is managed by injection_container, no action needed
   }
 
-  /// Dispose resources
+  /// Dispose resources (managed externally by injection_container)
   void dispose() {
-    _channel?.shutdown();
-    _channel = null;
+    // Channel lifecycle is managed by injection_container, no action needed
   }
 }

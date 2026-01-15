@@ -8,6 +8,8 @@ import '../../../../../core/types/app_routes.dart';
 import '../cubit/electricity_bill_cubit.dart';
 import '../cubit/electricity_bill_state.dart';
 import '../cubit/beneficiary_cubit.dart';
+import 'package:lazervault/src/features/widgets/service_voice_button.dart';
+import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 
 class ElectricityBillHomeScreen extends StatefulWidget {
   const ElectricityBillHomeScreen({super.key});
@@ -160,7 +162,17 @@ class _ElectricityBillHomeScreenState extends State<ElectricityBillHomeScreen> {
                     fontWeight: FontWeight.w400,
                   ),
                 ),
-              ],
+                            ServiceVoiceButton(
+                serviceName: 'electricity',
+              ),
+              SizedBox(width: 8.w),
+              MicroserviceChatIcon(
+                serviceName: 'Utility Payments',
+                sourceContext: 'bills',
+                icon: Icons.chat_bubble_outline,
+                iconColor: const Color(0xFF4E03D0),
+              ),
+],
             ),
           ),
           IconButton(

@@ -9,6 +9,7 @@ import 'package:lazervault/src/features/authentication/cubit/authentication_cubi
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -46,7 +47,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     });
   }
 
-  void _gotoHomeScreen() {
+  void _gotoHomeScreen() async {
+    // Save that the user has seen onboarding
+    const storage = FlutterSecureStorage();
+    await storage.write(key: 'has_seen_onboarding', value: 'true');
+
+    // Navigate to sign up screen
     Get.offAllNamed(AppRoutes.signUp);
   }
 
@@ -87,7 +93,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         isLastPage = outerCurrentPage == totalSlides - 1;
                       });
                     },
-                    height: 400.h, // Allows height to expand based on content
+                    // Responsive height based on screen size
+                    height: MediaQuery.of(context).size.height * 0.5 < 380.h
+                        ? MediaQuery.of(context).size.height * 0.5
+                        : 380.h,
                   ),
                   items: AppData.outerStyleImages.map((imagePath) {
                     return Builder(

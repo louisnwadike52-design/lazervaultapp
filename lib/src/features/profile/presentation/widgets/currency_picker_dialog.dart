@@ -18,18 +18,39 @@ class CurrencyPickerDialog extends StatefulWidget {
 
 class _CurrencyPickerDialogState extends State<CurrencyPickerDialog> {
   late String _selectedCurrency;
+  bool _isSaving = false;
 
   final List<Map<String, String>> _currencies = [
     {'code': 'GBP', 'name': 'British Pound', 'symbol': '£'},
     {'code': 'USD', 'name': 'US Dollar', 'symbol': '\$'},
     {'code': 'EUR', 'name': 'Euro', 'symbol': '€'},
     {'code': 'JPY', 'name': 'Japanese Yen', 'symbol': '¥'},
-    {'code': 'CHF', 'name': 'Swiss Franc', 'symbol': 'CHF'},
+    {'code': 'CHF', 'name': 'Swiss Franc', 'symbol': 'Fr'},
     {'code': 'CAD', 'name': 'Canadian Dollar', 'symbol': 'C\$'},
     {'code': 'AUD', 'name': 'Australian Dollar', 'symbol': 'A\$'},
     {'code': 'CNY', 'name': 'Chinese Yuan', 'symbol': '¥'},
     {'code': 'INR', 'name': 'Indian Rupee', 'symbol': '₹'},
     {'code': 'NGN', 'name': 'Nigerian Naira', 'symbol': '₦'},
+    {'code': 'ZAR', 'name': 'South African Rand', 'symbol': 'R'},
+    {'code': 'BRL', 'name': 'Brazilian Real', 'symbol': 'R\$'},
+    {'code': 'MXN', 'name': 'Mexican Peso', 'symbol': '\$'},
+    {'code': 'SGD', 'name': 'Singapore Dollar', 'symbol': 'S\$'},
+    {'code': 'HKD', 'name': 'Hong Kong Dollar', 'symbol': 'HK\$'},
+    {'code': 'NOK', 'name': 'Norwegian Krone', 'symbol': 'kr'},
+    {'code': 'SEK', 'name': 'Swedish Krona', 'symbol': 'kr'},
+    {'code': 'DKK', 'name': 'Danish Krone', 'symbol': 'kr'},
+    {'code': 'PLN', 'name': 'Polish Zloty', 'symbol': 'zł'},
+    {'code': 'THB', 'name': 'Thai Baht', 'symbol': '฿'},
+    {'code': 'IDR', 'name': 'Indonesian Rupiah', 'symbol': 'Rp'},
+    {'code': 'MYR', 'name': 'Malaysian Ringgit', 'symbol': 'RM'},
+    {'code': 'PHP', 'name': 'Philippine Peso', 'symbol': '₱'},
+    {'code': 'VND', 'name': 'Vietnamese Dong', 'symbol': '₫'},
+    {'code': 'EGP', 'name': 'Egyptian Pound', 'symbol': 'E£'},
+    {'code': 'KES', 'name': 'Kenyan Shilling', 'symbol': 'KSh'},
+    {'code': 'GHS', 'name': 'Ghanaian Cedi', 'symbol': 'GH₵'},
+    {'code': 'UGX', 'name': 'Ugandan Shilling', 'symbol': 'USh'},
+    {'code': 'XOF', 'name': 'West African CFA Franc', 'symbol': 'CFA'},
+    {'code': 'XAF', 'name': 'Central African CFA Franc', 'symbol': 'XAF'},
   ];
 
   @override
@@ -38,16 +59,21 @@ class _CurrencyPickerDialogState extends State<CurrencyPickerDialog> {
     _selectedCurrency = widget.currentCurrency;
   }
 
-  void _handleSave() {
-    context.read<ProfileCubit>().updateUserProfile(
+  Future<void> _handleSave() async {
+    if (_isSaving) return;
+
+    setState(() {
+      _isSaving = true;
+    });
+
+    // Update currency using ProfileCubit which syncs with CurrencySyncService
+    await context.read<ProfileCubit>().updatePreferences(
           currency: _selectedCurrency,
         );
 
-    Future.delayed(const Duration(milliseconds: 300), () {
-      if (mounted) {
-        Navigator.of(context).pop();
-      }
-    });
+    if (mounted) {
+      Navigator.of(context).pop();
+    }
   }
 
   @override
@@ -58,7 +84,7 @@ class _CurrencyPickerDialogState extends State<CurrencyPickerDialog> {
       ),
       child: Container(
         padding: EdgeInsets.all(24.w),
-        constraints: BoxConstraints(maxHeight: 500.h),
+        constraints: BoxConstraints(maxHeight: 600.h),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -90,6 +116,16 @@ class _CurrencyPickerDialogState extends State<CurrencyPickerDialog> {
               ],
             ),
 
+            SizedBox(height: 8.h),
+
+            Text(
+              'Choose your preferred currency for transactions',
+              style: GoogleFonts.inter(
+                fontSize: 13.sp,
+                color: const Color(0xFF6B7280),
+              ),
+            ),
+
             SizedBox(height: 16.h),
 
             // Currency List
@@ -112,7 +148,7 @@ class _CurrencyPickerDialogState extends State<CurrencyPickerDialog> {
                       margin: EdgeInsets.only(bottom: 8.h),
                       decoration: BoxDecoration(
                         color: isSelected
-                            ? const Color(0xFF4E03D0).withOpacity(0.1)
+                            ? const Color(0xFF4E03D0).withValues(alpha: 0.1)
                             : Colors.grey.shade50,
                         borderRadius: BorderRadius.circular(12.r),
                         border: Border.all(
@@ -187,7 +223,7 @@ class _CurrencyPickerDialogState extends State<CurrencyPickerDialog> {
 
             // Action Button
             ElevatedButton(
-              onPressed: _handleSave,
+              onPressed: _isSaving ? null : _handleSave,
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF4E03D0),
                 padding: EdgeInsets.symmetric(vertical: 16.h),
@@ -195,14 +231,23 @@ class _CurrencyPickerDialogState extends State<CurrencyPickerDialog> {
                   borderRadius: BorderRadius.circular(12.r),
                 ),
               ),
-              child: Text(
-                'Save',
-                style: GoogleFonts.inter(
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
-                ),
-              ),
+              child: _isSaving
+                  ? SizedBox(
+                      height: 20.h,
+                      width: 20.h,
+                      child: const CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    )
+                  : Text(
+                      'Save',
+                      style: GoogleFonts.inter(
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
             ),
           ],
         ),

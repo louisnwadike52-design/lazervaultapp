@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
+import 'package:get_it/get_it.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../domain/entities/stock_entity.dart';
 import '../../../../../core/types/app_routes.dart';
+import '../../../transaction_pin/mixins/transaction_pin_mixin.dart';
+import '../../../transaction_pin/services/transaction_pin_service.dart';
 
 class StockTradeReviewScreen extends StatefulWidget {
   const StockTradeReviewScreen({super.key});
@@ -13,7 +16,10 @@ class StockTradeReviewScreen extends StatefulWidget {
 }
 
 class _StockTradeReviewScreenState extends State<StockTradeReviewScreen>
-    with TickerProviderStateMixin {
+    with TickerProviderStateMixin, TransactionPinMixin {
+  @override
+  ITransactionPinService get transactionPinService =>
+      GetIt.I<ITransactionPinService>();
   late AnimationController _animationController;
   late AnimationController _processingController;
   late Animation<double> _fadeAnimation;
@@ -87,22 +93,51 @@ class _StockTradeReviewScreenState extends State<StockTradeReviewScreen>
   }
 
   void _processTrade() async {
+    // Generate unique transaction ID
+    final transactionId = 'stock_${_tradeType}_${DateTime.now().millisecondsSinceEpoch}_${_selectedStock?.symbol}';
+
+    // Validate PIN before processing stock trade
+    final success = await validateTransactionPin(
+      context: context,
+      transactionId: transactionId,
+      transactionType: 'stock_trade',
+      amount: _estimatedTotal,
+      currency: 'USD',
+      title: 'Confirm ${_tradeType == 'buy' ? 'Buy' : 'Sell'} Order',
+      message: 'Confirm ${_tradeType} of $_shares shares of ${_selectedStock?.symbol ?? 'stock'} for \$${_estimatedTotal.toStringAsFixed(2)}?',
+      onPinValidated: (verificationToken) async {
+        // PIN is valid, proceed with trade processing
+        _executeTradeWithToken(transactionId, verificationToken);
+      },
+    );
+
+    if (!success) {
+      // PIN validation failed or was cancelled
+      // User has already been notified via the mixin
+    }
+  }
+
+  /// Execute stock trade with verification token
+  void _executeTradeWithToken(String transactionId, String verificationToken) async {
     setState(() {
       _isProcessing = true;
     });
-    
+
     _processingController.repeat();
-    
-    // Simulate processing time
+
+    // Simulate processing time (in real implementation, this would call your backend API with verification token)
     await Future.delayed(const Duration(seconds: 3));
-    
+
     _processingController.stop();
-    
+
     setState(() {
       _isProcessing = false;
       _isCompleted = true;
-      _transactionId = 'STK${DateTime.now().millisecondsSinceEpoch}';
+      _transactionId = transactionId;
     });
+
+    // TODO: In production, call your stock trade API with verification token
+    // The verification token should be included in the API call for backend validation
   }
 
   void _goToHome() {

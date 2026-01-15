@@ -1,6 +1,6 @@
 import 'package:grpc/grpc.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import '../../../core/services/grpc_call_options_helper.dart';
 import '../../generated/invoice.pbgrpc.dart';
 import '../../generated/invoice_payment.pbgrpc.dart';
 import '../../generated/tagged_invoice.pbgrpc.dart';
@@ -17,7 +17,7 @@ import '../../generated/lock_funds.pbgrpc.dart';
 import '../../generated/insurance.pbgrpc.dart';
 
 class GrpcClient {
-  late ClientChannel _channel;
+  final ClientChannel _channel;
   late InvoiceServiceClient _invoiceClient;
   late InvoicePaymentServiceClient _paymentClient;
   late TaggedInvoiceServiceClient _taggedInvoiceClient;
@@ -34,28 +34,20 @@ class GrpcClient {
   late InsuranceServiceClient _insuranceClient;
 
   final FlutterSecureStorage _secureStorage;
+  final GrpcCallOptionsHelper? _callOptionsHelper;
   static const String _accessTokenKey = 'access_token';
 
-  // Environment-based configuration
-  String get _host => dotenv.get('INVOICE_GRPC_HOST', fallback: 'localhost');
-  int get _port => int.parse(dotenv.get('INVOICE_GRPC_PORT', fallback: '9090'));
-  bool get _useSecureChannel => _host.contains('.run.app') || _host.startsWith('https');
-
-  GrpcClient({FlutterSecureStorage? secureStorage})
-      : _secureStorage = secureStorage ?? const FlutterSecureStorage();
+  /// Accepts an injected ClientChannel (Financial Gateway from injection_container)
+  /// This ensures all financial services go through the proper API gateway
+  GrpcClient({
+    required ClientChannel channel,
+    FlutterSecureStorage? secureStorage,
+    GrpcCallOptionsHelper? callOptionsHelper,
+  })  : _channel = channel,
+        _secureStorage = secureStorage ?? const FlutterSecureStorage(),
+        _callOptionsHelper = callOptionsHelper;
 
   Future<void> initialize() async {
-    _channel = ClientChannel(
-      _host,
-      port: _port,
-      options: ChannelOptions(
-        credentials: _useSecureChannel
-            ? const ChannelCredentials.secure()
-            : const ChannelCredentials.insecure(),
-        connectionTimeout: const Duration(seconds: 10),
-      ),
-    );
-
     _invoiceClient = InvoiceServiceClient(_channel);
     _paymentClient = InvoicePaymentServiceClient(_channel);
     _taggedInvoiceClient = TaggedInvoiceServiceClient(_channel);
@@ -89,10 +81,17 @@ class GrpcClient {
   InsuranceServiceClient get insuranceClient => _insuranceClient;
 
   /// Get call options with authentication token
+  /// If callOptionsHelper is available, use it for automatic token rotation
   Future<CallOptions> get callOptions async {
+    // Use helper if available (provides automatic token rotation)
+    if (_callOptionsHelper != null) {
+      return await _callOptionsHelper!.withAuth();
+    }
+
+    // Fallback to manual token retrieval (legacy mode, no auto-rotation)
     final accessToken = await _secureStorage.read(key: _accessTokenKey);
 
-    print('=== GrpcClient.callOptions ===');
+    print('=== GrpcClient.callOptions (legacy mode) ===');
     print('Access token present: ${accessToken != null && accessToken.isNotEmpty}');
 
     if (accessToken == null || accessToken.isEmpty) {
@@ -113,6 +112,20 @@ class GrpcClient {
       metadata: metadata,
       timeout: const Duration(seconds: 30),
     );
+  }
+
+  /// Execute a gRPC call with automatic token rotation on auth failures
+  /// If callOptionsHelper is available, provides automatic token refresh
+  Future<T> executeWithTokenRotation<T>(
+    Future<T> Function() call, {
+    int maxRetries = 1,
+  }) async {
+    if (_callOptionsHelper != null) {
+      return await _callOptionsHelper!.executeWithTokenRotation(call, maxRetries: maxRetries);
+    }
+
+    // Fallback: no token rotation if helper not available
+    return await call();
   }
 
   Future<void> dispose() async {

@@ -12,11 +12,15 @@ import '../../../../core/grpc/voice_grpc_client.dart';
 /// - "Buy Ethereum"
 /// - "What's the trending crypto?"
 /// - etc.
+///
+/// Uses VoiceGrpcClient injected from injection_container for API calls
 class VoiceInputWidget extends StatefulWidget {
   final VoidCallback? onClose;
+  final VoiceGrpcClient voiceClient;
 
   const VoiceInputWidget({
     super.key,
+    required this.voiceClient,
     this.onClose,
   });
 
@@ -41,7 +45,7 @@ class _VoiceInputWidgetState extends State<VoiceInputWidget>
   void initState() {
     super.initState();
     _speech = stt.SpeechToText();
-    _voiceClient = VoiceGrpcClient();
+    _voiceClient = widget.voiceClient;
     _initializeSpeech();
 
     _animationController = AnimationController(

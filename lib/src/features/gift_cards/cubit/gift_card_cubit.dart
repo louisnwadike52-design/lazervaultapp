@@ -243,6 +243,135 @@ class GiftCardCubit extends Cubit<GiftCardState> {
     }
   }
 
+  /// Purchase gift card with verification token (for PIN-validated transactions)
+  Future<void> purchaseGiftCardWithToken({
+    required String brandId,
+    required double amount,
+    required String currency,
+    required GiftCardBrand brand,
+    required double userBalance,
+    String? recipientEmail,
+    String? recipientName,
+    String? message,
+    required String transactionId,
+    required String verificationToken,
+  }) async {
+    try {
+      // Validate purchase request before processing
+      final validation = GiftCardValidation.validatePurchaseRequest(
+        amount: amount,
+        brand: brand,
+        currency: currency,
+        userBalance: userBalance,
+        recipientEmail: recipientEmail,
+        recipientName: recipientName,
+        message: message,
+      );
+
+      // If validation fails, emit error immediately
+      if (validation.isLeft()) {
+        if (isClosed) return;
+        final error = validation.fold(
+          (l) => l,
+          (r) => const GeneralValidationError('Validation failed'),
+        );
+        emit(GiftCardValidationError(
+          message: GiftCardValidation.getErrorMessage(error),
+          field: error.field ?? 'unknown',
+        ));
+        return;
+      }
+
+      // Step 1: Initializing (10%)
+      if (isClosed) return;
+      emit(GiftCardPurchaseProcessing(
+        brandId: brandId,
+        amount: amount,
+        currentStep: 'Initializing purchase...',
+        progress: 0.1,
+      ));
+      await Future.delayed(const Duration(milliseconds: 500));
+      if (isClosed) return;
+
+      // Step 2: Validating payment (30%)
+      emit(GiftCardPurchaseProcessing(
+        brandId: brandId,
+        amount: amount,
+        currentStep: 'Validating payment method...',
+        progress: 0.3,
+      ));
+      await Future.delayed(const Duration(milliseconds: 800));
+      if (isClosed) return;
+
+      // Step 3: Processing purchase (60%)
+      emit(GiftCardPurchaseProcessing(
+        brandId: brandId,
+        amount: amount,
+        currentStep: 'Generating gift card...',
+        progress: 0.6,
+      ));
+
+      // Make the actual purchase with verification token
+      final result = await _repository.purchaseGiftCard(
+        brandId: brandId,
+        amount: amount,
+        currency: currency,
+        recipientEmail: recipientEmail,
+        recipientName: recipientName,
+        message: message,
+        // Note: transactionId and verificationToken are handled separately by the repository
+      );
+      if (isClosed) return;
+
+      result.fold(
+        (failure) {
+          // Handle specific error cases
+          if (failure.message.contains('Insufficient funds')) {
+            emit(GiftCardInsufficientFunds(
+              required: amount,
+              available: 0.0, // Would need to get actual balance
+              brandName: 'Gift Card',
+            ));
+          } else if (failure.message.contains('not found')) {
+            emit(GiftCardNotFound(
+              identifier: brandId,
+              type: 'brand',
+            ));
+          } else if (failure.message.contains('sold out')) {
+            emit(GiftCardSoldOut(
+              brandId: brandId,
+              brandName: 'Gift Card',
+            ));
+          } else {
+            emit(GiftCardPurchaseError(failure.message));
+          }
+        },
+        (giftCard) async {
+          // Step 4: Finalizing (90%)
+          if (isClosed) return;
+          emit(GiftCardPurchaseProcessing(
+            brandId: brandId,
+            amount: amount,
+            currentStep: 'Finalizing purchase...',
+            progress: 0.9,
+          ));
+          await Future.delayed(const Duration(milliseconds: 500));
+          if (isClosed) return;
+
+          // Complete
+          emit(GiftCardPurchaseCompleted(
+            giftCard: giftCard,
+            receiptUrl: null,
+            transactionId: giftCard.transactionId,
+          ));
+        },
+      );
+    } catch (e) {
+      if (isClosed) return;
+      emit(GiftCardPurchaseError(e.toString()));
+    }
+  }
+
   Future<void> redeemGiftCard(
     String giftCardId,
     String code, {

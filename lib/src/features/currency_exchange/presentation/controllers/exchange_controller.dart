@@ -35,6 +35,10 @@ class ExchangeController extends GetxController {
   final RxString selectedFilter = 'All'.obs;
   final Rx<CurrencyTransaction?> lastTransaction = Rx<CurrencyTransaction?>(null);
 
+  // Transaction verification
+  final RxString verificationToken = ''.obs;
+  final RxString transactionId = ''.obs;
+
   // Computed values
   double get convertedAmount {
     if (currentRate.value == null || amount.value == 0) return 0.0;
@@ -207,12 +211,23 @@ class ExchangeController extends GetxController {
     errorMessage.value = '';
   }
 
+  // Verification token methods
+  void setVerificationToken(String token) {
+    verificationToken.value = token;
+  }
+
+  void setTransactionId(String id) {
+    transactionId.value = id;
+  }
+
   void reset() {
     amount.value = 0.0;
     currentRate.value = null;
     selectedRecipient.value = null;
     errorMessage.value = '';
     lastTransaction.value = null;
+    verificationToken.value = '';
+    transactionId.value = '';
   }
 
   double _calculateFees(double amount) {

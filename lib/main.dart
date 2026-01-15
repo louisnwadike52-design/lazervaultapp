@@ -17,11 +17,12 @@ import 'src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/database/database_helper.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
+import 'package:lazervault/src/features/account_cards_summary/cubit/balance_websocket_cubit.dart';
 import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:device_info_plus/device_info_plus.dart'; // Added device_info_plus
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:lazervault/src/core/di/grpc_injection.dart';
+import 'package:lazervault/src/features/voice/managers/voice_activation_manager.dart';
 
 Future<void> _checkPermissions() async {
   var status = await Permission.bluetooth.request();
@@ -81,10 +82,6 @@ void main() async {
     // or maybe the app shouldn't start without certain variables.
   }
 
-  // Initialize gRPC dependencies (includes Exchange repository)
-  await initGrpcDependencies();
-  print("gRPC dependencies initialized.");
-
   // Initialize the database
   final dbHelper = DatabaseHelper();
   await dbHelper.database;
@@ -107,29 +104,42 @@ void main() async {
   FlutterNativeSplash.remove();
 }
 
-/// Helper function to determine the initial route based on stored login method
-/// Always starts from login screen - never directly to dashboard
+/// Helper function to determine the initial route based on authentication status
+/// IMPORTANT: Users must authenticate on every app restart for security
 Future<String> _determineInitialRoute() async {
   const storage = FlutterSecureStorage();
 
   try {
-    // Check if user has logged in before
+    // Check if user has seen onboarding
+    final hasSeenOnboarding = await storage.read(key: 'has_seen_onboarding');
+    if (hasSeenOnboarding != 'true') {
+      return AppRoutes.root; // Show onboarding for first-time users
+    }
+
+    // Check if user has a stored login method
     final loginMethod = await storage.read(key: 'login_method');
     final storedEmail = await storage.read(key: 'stored_email');
+    final userId = await storage.read(key: 'user_id');
 
-    // If has passcode login set up, show passcode login
-    if (loginMethod == 'passcode' && storedEmail != null && storedEmail.isNotEmpty) {
+    // If user has passcode login set up, require passcode authentication
+    if (loginMethod == 'passcode' &&
+        storedEmail != null &&
+        storedEmail.isNotEmpty &&
+        userId != null &&
+        userId.isNotEmpty) {
+      print('🔐 User has passcode login configured, redirecting to passcode login');
       return AppRoutes.passcodeLogin;
     }
 
-    // Check if user has seen onboarding
-    final hasSeenOnboarding = await storage.read(key: 'has_seen_onboarding');
-    if (hasSeenOnboarding != null && hasSeenOnboarding == 'true') {
+    // If user was previously logged in but no passcode, go to email sign in
+    // This ensures they re-authenticate with email/password
+    if (userId != null && userId.isNotEmpty) {
+      print('🔐 User was previously logged in, requiring re-authentication via email');
       return AppRoutes.emailSignIn;
     }
 
-    // Default to onboarding for first-time users
-    return AppRoutes.root;
+    // New user or logged out, show email sign in
+    return AppRoutes.emailSignIn;
   } catch (e) {
     print('Error determining initial route: $e');
     return AppRoutes.root;
@@ -201,6 +211,9 @@ class _MyAppState extends State<MyApp> {
         ),
         BlocProvider<AccountCardsSummaryCubit>.value(
           value: serviceLocator<AccountCardsSummaryCubit>(),
+        ),
+        BlocProvider<BalanceWebSocketCubit>.value(
+          value: serviceLocator<BalanceWebSocketCubit>(),
         ),
       ],
       child: ScreenUtilInit(

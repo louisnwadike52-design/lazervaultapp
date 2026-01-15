@@ -13,6 +13,8 @@ import '../cubit/invoice_state.dart';
 import '../cubit/tagged_invoice_cubit.dart';
 import '../cubit/tagged_invoice_state.dart';
 import '../widgets/invoice_voice_agent_button.dart';
+import 'package:lazervault/src/features/widgets/service_voice_button.dart';
+import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 
 class InvoiceHomeScreen extends StatefulWidget {
   const InvoiceHomeScreen({super.key});
@@ -108,6 +110,14 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen> {
             ),
           ),
           SizedBox(width: 12.w),
+          // Chat Agent Icon
+          MicroserviceChatIcon(
+            serviceName: 'Invoices',
+            sourceContext: 'invoices',
+            icon: Icons.chat_bubble_outline,
+            iconColor: const Color(0xFF8B5CF6),
+          ),
+          SizedBox(width: 8.w),
           // Voice Agent Button
           BlocBuilder<AuthenticationCubit, AuthenticationState>(
             builder: (context, authState) {

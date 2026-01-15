@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 
 class InvestmentsScreen extends StatefulWidget {
   const InvestmentsScreen({super.key});
@@ -246,7 +247,10 @@ class _InvestmentsScreenState extends State<InvestmentsScreen>
                         color: Colors.white.withOpacity(0.8),
                       ),
                     ),
-                  ],
+                                    ServiceVoiceButton(
+                    serviceName: 'stocks',
+                  ),
+],
                 ),
               ),
             ],

@@ -50,7 +50,7 @@
 		<key>NSCameraUsageDescription</key>
 		<string>$(PRODUCT_NAME) uses your camera</string>
 		<key>NSMicrophoneUsageDescription</key>
-		<string>We need access to your microphone to process your voice commands.</string>
+		<string>We need access to your microphone for voice enrollment and secure voice biometric authentication.</string>
 		<key>NSContactsUsageDescription</key>
 		<string>LazerVault needs access to your contacts to help you quickly send money to friends and family.</string>
 		<key>UIBackgroundModes</key>

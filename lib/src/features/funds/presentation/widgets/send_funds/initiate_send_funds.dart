@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:get_it/get_it.dart';
 import 'package:fixnum/fixnum.dart';
 import 'package:intl/intl.dart';
 import 'package:lazervault/core/services/injection_container.dart'; // For serviceLocator
@@ -15,6 +16,8 @@ import 'package:lazervault/src/features/funds/cubit/transfer_cubit.dart';
 import 'package:lazervault/src/features/funds/cubit/transfer_state.dart';
 import 'package:lazervault/src/features/recipients/data/models/recipient_model.dart';
 import 'package:lazervault/src/features/widgets/common/back_navigator.dart';
+import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
+import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 
 class InitiateSendFunds extends StatefulWidget {
   const InitiateSendFunds({super.key, required this.recipient});
@@ -24,7 +27,11 @@ class InitiateSendFunds extends StatefulWidget {
   State<InitiateSendFunds> createState() => _InitiateSendFundsState();
 }
 
-class _InitiateSendFundsState extends State<InitiateSendFunds> {
+class _InitiateSendFundsState extends State<InitiateSendFunds>
+    with TransactionPinMixin {
+  @override
+  ITransactionPinService get transactionPinService =>
+      GetIt.I<ITransactionPinService>();
   String amount =
       ''; // Stores amount as string of MINOR units (e.g., "2000" for £20.00)
   // final double maxAmount = 15358.00; // TODO: Get max from selected card/account later
@@ -774,22 +781,42 @@ class _InitiateSendFundsState extends State<InitiateSendFunds> {
                             child: ElevatedButton(
                               onPressed: isDialogLoading
                                   ? null
-                                  : () {
+                                  : () async {
                                       print("Dialog Button: Pressed!");
-                                      // Set loading state *within the dialog*
-                                      setDialogState(() {
-                                        print(
-                                            "Dialog Button: Setting state to loading...");
-                                        // We still need to update the main state if the dialog
-                                        // rebuilds using it, or manage a local bool here.
-                                        // Let's stick to updating the main state for now,
-                                        // ensuring the listener resets it.
-                                        _isConfirmingTransfer = true;
-                                      });
-                                      // Trigger the transfer initiation
-                                      print(
-                                          "Dialog Button: Calling _handleTransferInitiation...");
-                                      _handleTransferInitiation(accountState);
+                                      // Generate unique transaction ID
+                                      final transactionId = 'transfer_${DateTime.now().millisecondsSinceEpoch}_${widget.recipient.id}';
+
+                                      // Calculate amounts for PIN validation
+                                      double transferAmountMajor = double.parse(amount) / 100.0;
+
+                                      // Validate PIN before processing transfer
+                                      final success = await validateTransactionPin(
+                                        context: context,
+                                        transactionId: transactionId,
+                                        transactionType: 'transfer',
+                                        amount: transferAmountMajor,
+                                        currency: 'GBP',
+                                        title: 'Confirm Transfer',
+                                        message: 'Confirm transfer of £${transferAmountMajor.toStringAsFixed(2)} to ${widget.recipient.name}?',
+                                        onPinValidated: (verificationToken) async {
+                                          // PIN is valid, proceed with transfer
+                                          _executeTransferWithPin(
+                                            accountState: accountState,
+                                            transactionId: transactionId,
+                                            verificationToken: verificationToken,
+                                          );
+                                        },
+                                      );
+
+                                      if (!success) {
+                                        // PIN validation failed or was cancelled
+                                        // Reset loading state
+                                        if (mounted) {
+                                          setState(() {
+                                            _isConfirmingTransfer = false;
+                                          });
+                                        }
+                                      }
                                     },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor:
@@ -962,6 +989,110 @@ class _InitiateSendFundsState extends State<InitiateSendFunds> {
           scheduledAt: scheduledDate, // Pass DateTime? directly
         );
     print("_handleTransferInitiation: Transfer initiation called.");
+  }
+
+  /// Execute transfer with verification token (for PIN-validated transactions)
+  void _executeTransferWithPin({
+    required AccountCardsSummaryState accountState,
+    required String transactionId,
+    required String verificationToken,
+  }) {
+    print("_executeTransferWithPin: Entered function.");
+    final authState = context.read<AuthenticationCubit>().state;
+    if (authState is! AuthenticationSuccess) {
+      print("_executeTransferWithPin: Error - Not authenticated.");
+      Get.snackbar('Error', 'Authentication required.',
+          snackPosition: SnackPosition.BOTTOM);
+      return;
+    }
+    final accessToken = authState.profile.session.accessToken;
+
+    // Validate selected card and get source account ID from cubit state
+    if (accountState is! AccountCardsSummaryLoaded ||
+        accountState.accountSummaries.isEmpty) {
+      print("_executeTransferWithPin: Error - Account data not loaded.");
+      Get.snackbar('Error', 'Account data not available.',
+          snackPosition: SnackPosition.BOTTOM);
+      return;
+    }
+    if (selectedCardIndex >= accountState.accountSummaries.length) {
+      print("_executeTransferWithPin: Error - Invalid card index.");
+      Get.snackbar('Error', 'Invalid card selected.',
+          snackPosition: SnackPosition.BOTTOM);
+      return;
+    }
+    final selectedAccount = accountState.accountSummaries[selectedCardIndex];
+    final fromAccountIdString = selectedAccount.id;
+
+    // Ensure fromAccountId can be parsed to int before creating Int64
+    int fromAccountIdInt;
+    try {
+      fromAccountIdInt = int.parse(fromAccountIdString);
+    } catch (e) {
+      print(
+          "_executeTransferWithPin: Error - Parsing fromAccountIdString: $e");
+      Get.snackbar('Error', 'Invalid source account ID format.',
+          snackPosition: SnackPosition.BOTTOM);
+      return;
+    }
+
+    // Get recipient ID - Ensure widget.recipient.id is not null and can be parsed to int
+    int recipientIdInt;
+    try {
+      final dynamic id = widget.recipient.id;
+      if (id is String) {
+        recipientIdInt = int.parse(id);
+      } else if (id is int) {
+        recipientIdInt = id;
+      } else {
+        print(
+            "_executeTransferWithPin: Error - Unexpected recipient ID type: $id");
+        throw const FormatException('Unexpected recipient ID type');
+      }
+    } catch (e) {
+      print("_executeTransferWithPin: Error - Parsing recipientId: $e");
+      Get.snackbar(
+          'Error', 'Recipient information missing or invalid: ${e.toString()}',
+          snackPosition: SnackPosition.BOTTOM);
+      return;
+    }
+
+    // Parse amount string (minor units)
+    Int64 amountMinorUnits;
+    try {
+      if (amount.isEmpty) throw const FormatException('Amount is empty');
+      amountMinorUnits = Int64.parseInt(amount);
+      if (amountMinorUnits <= Int64.ZERO) {
+        print("_executeTransferWithPin: Error - Amount is zero or less.");
+        Get.snackbar('Error', 'Amount must be greater than zero.',
+            snackPosition: SnackPosition.BOTTOM);
+        return;
+      }
+    } catch (e) {
+      print("_executeTransferWithPin: Error - Parsing amount: $e");
+      Get.snackbar('Error', 'Invalid amount entered.',
+          snackPosition: SnackPosition.BOTTOM);
+      return;
+    }
+
+    final category = selectedCategory;
+    final reference = _referenceController.text.trim();
+
+    // Call the Cubit with verification token
+    print(
+        "_executeTransferWithPin: Calling TransferCubit.initiateTransferWithToken...");
+    context.read<TransferCubit>().initiateTransferWithToken(
+          fromAccountId: Int64(fromAccountIdInt),
+          amount: amountMinorUnits,
+          accessToken: accessToken,
+          recipientId: Int64(recipientIdInt),
+          category: category,
+          reference: reference.isNotEmpty ? reference : null,
+          scheduledAt: scheduledDate,
+          transactionId: transactionId,
+          verificationToken: verificationToken,
+        );
+    print("_executeTransferWithPin: Transfer initiation with token called.");
   }
 
   // Confirmation Row Helper (Minor Adjustments)

@@ -13,6 +13,7 @@ import '../cubit/ai_scan_cubit.dart';
 import '../cubit/ai_scan_state.dart';
 import '../widgets/ai_chat_bottom_sheet.dart';
 import 'ai_scan_to_pay_screen.dart';
+import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 
 class AiScanCameraScreen extends StatefulWidget {
   const AiScanCameraScreen({super.key});
@@ -372,7 +373,10 @@ class _AiScanCameraScreenState extends State<AiScanCameraScreen>
                         color: Colors.white,
                       ),
                     ),
-                  ],
+                                    ServiceVoiceButton(
+                    serviceName: 'ai-scan',
+                  ),
+],
                 ),
               ),
               SizedBox(height: 16.h),

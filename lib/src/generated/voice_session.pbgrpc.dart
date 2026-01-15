@@ -10,36 +10,36 @@ import 'dart:async' as $async;
 import 'dart:core' as $core;
 
 import 'package:grpc/service_api.dart' as $grpc;
-import 'voice_session.pb.dart' as $0;
+import 'voice_session.pb.dart' as $32;
 export 'voice_session.pb.dart';
 
 class VoiceSessionServiceClient extends $grpc.Client {
   static final _$startVoiceSession = $grpc.ClientMethod<
-          $0.StartVoiceSessionRequest, $0.StartVoiceSessionResponse>(
+          $32.StartVoiceSessionRequest, $32.StartVoiceSessionResponse>(
       '/pb.VoiceSessionService/StartVoiceSession',
-      ($0.StartVoiceSessionRequest value) => value.writeToBuffer(),
+      ($32.StartVoiceSessionRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $0.StartVoiceSessionResponse.fromBuffer(value));
+          $32.StartVoiceSessionResponse.fromBuffer(value));
   static final _$processVoiceNote = $grpc.ClientMethod<
-          $0.ProcessVoiceNoteRequest, $0.ProcessVoiceNoteResponse>(
+          $32.ProcessVoiceNoteRequest, $32.ProcessVoiceNoteResponse>(
       '/pb.VoiceSessionService/ProcessVoiceNote',
-      ($0.ProcessVoiceNoteRequest value) => value.writeToBuffer(),
+      ($32.ProcessVoiceNoteRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $0.ProcessVoiceNoteResponse.fromBuffer(value));
+          $32.ProcessVoiceNoteResponse.fromBuffer(value));
 
   VoiceSessionServiceClient($grpc.ClientChannel channel,
       {$grpc.CallOptions? options,
       $core.Iterable<$grpc.ClientInterceptor>? interceptors})
       : super(channel, options: options, interceptors: interceptors);
 
-  $grpc.ResponseFuture<$0.StartVoiceSessionResponse> startVoiceSession(
-      $0.StartVoiceSessionRequest request,
+  $grpc.ResponseFuture<$32.StartVoiceSessionResponse> startVoiceSession(
+      $32.StartVoiceSessionRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$startVoiceSession, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.ProcessVoiceNoteResponse> processVoiceNote(
-      $0.ProcessVoiceNoteRequest request,
+  $grpc.ResponseFuture<$32.ProcessVoiceNoteResponse> processVoiceNote(
+      $32.ProcessVoiceNoteRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$processVoiceNote, request, options: options);
   }
@@ -49,40 +49,40 @@ abstract class VoiceSessionServiceBase extends $grpc.Service {
   $core.String get $name => 'pb.VoiceSessionService';
 
   VoiceSessionServiceBase() {
-    $addMethod($grpc.ServiceMethod<$0.StartVoiceSessionRequest,
-            $0.StartVoiceSessionResponse>(
+    $addMethod($grpc.ServiceMethod<$32.StartVoiceSessionRequest,
+            $32.StartVoiceSessionResponse>(
         'StartVoiceSession',
         startVoiceSession_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $0.StartVoiceSessionRequest.fromBuffer(value),
-        ($0.StartVoiceSessionResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.ProcessVoiceNoteRequest,
-            $0.ProcessVoiceNoteResponse>(
+            $32.StartVoiceSessionRequest.fromBuffer(value),
+        ($32.StartVoiceSessionResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$32.ProcessVoiceNoteRequest,
+            $32.ProcessVoiceNoteResponse>(
         'ProcessVoiceNote',
         processVoiceNote_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $0.ProcessVoiceNoteRequest.fromBuffer(value),
-        ($0.ProcessVoiceNoteResponse value) => value.writeToBuffer()));
+            $32.ProcessVoiceNoteRequest.fromBuffer(value),
+        ($32.ProcessVoiceNoteResponse value) => value.writeToBuffer()));
   }
 
-  $async.Future<$0.StartVoiceSessionResponse> startVoiceSession_Pre(
+  $async.Future<$32.StartVoiceSessionResponse> startVoiceSession_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$0.StartVoiceSessionRequest> request) async {
+      $async.Future<$32.StartVoiceSessionRequest> request) async {
     return startVoiceSession(call, await request);
   }
 
-  $async.Future<$0.ProcessVoiceNoteResponse> processVoiceNote_Pre(
+  $async.Future<$32.ProcessVoiceNoteResponse> processVoiceNote_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$0.ProcessVoiceNoteRequest> request) async {
+      $async.Future<$32.ProcessVoiceNoteRequest> request) async {
     return processVoiceNote(call, await request);
   }
 
-  $async.Future<$0.StartVoiceSessionResponse> startVoiceSession(
-      $grpc.ServiceCall call, $0.StartVoiceSessionRequest request);
-  $async.Future<$0.ProcessVoiceNoteResponse> processVoiceNote(
-      $grpc.ServiceCall call, $0.ProcessVoiceNoteRequest request);
+  $async.Future<$32.StartVoiceSessionResponse> startVoiceSession(
+      $grpc.ServiceCall call, $32.StartVoiceSessionRequest request);
+  $async.Future<$32.ProcessVoiceNoteResponse> processVoiceNote(
+      $grpc.ServiceCall call, $32.ProcessVoiceNoteRequest request);
 }

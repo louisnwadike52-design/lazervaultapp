@@ -563,7 +563,7 @@ class InsuranceRemoteDataSourceImpl implements InsuranceRemoteDataSource {
       ..title = claim.title
       ..description = claim.description
       ..claimAmount = claim.claimAmount
-      ..approvedAmount = claim.approvedAmount
+      ..approvedAmount = claim.approvedAmount ?? 0.0
       ..currency = claim.currency
       ..incidentDate = claim.incidentDate.toIso8601String()
       ..incidentLocation = claim.incidentLocation

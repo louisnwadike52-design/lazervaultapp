@@ -4,10 +4,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:get/get.dart';
+import 'package:get_it/get_it.dart';
 import '../../cubit/gift_card_cubit.dart';
 import '../../cubit/gift_card_state.dart';
 import '../../domain/entities/gift_card_entity.dart';
-import 'package:get/get.dart';
+import '../../../transaction_pin/mixins/transaction_pin_mixin.dart';
+import '../../../transaction_pin/services/transaction_pin_service.dart';
 
 class PurchaseGiftCardScreen extends StatefulWidget {
   final GiftCardBrand brand;
@@ -22,7 +25,10 @@ class PurchaseGiftCardScreen extends StatefulWidget {
 }
 
 class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
-    with TickerProviderStateMixin {
+    with TickerProviderStateMixin, TransactionPinMixin {
+  @override
+  ITransactionPinService get transactionPinService =>
+      GetIt.I<ITransactionPinService>();
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
@@ -866,21 +872,59 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
     );
   }
 
-  void _purchaseGiftCard() {
+  void _purchaseGiftCard() async {
     if (_formKey.currentState!.validate()) {
       final amount = _selectedAmount!;
 
-      context.read<GiftCardCubit>().purchaseGiftCard(
-        brandId: widget.brand.id,
+      // Generate unique transaction ID
+      final transactionId = 'giftcard_${DateTime.now().millisecondsSinceEpoch}_${widget.brand.id}';
+
+      // Validate PIN before processing payment
+      final success = await validateTransactionPin(
+        context: context,
+        transactionId: transactionId,
+        transactionType: 'gift_card_purchase',
         amount: amount,
-        currency: 'USD', // Default currency, could be made configurable
-        brand: widget.brand,
-        userBalance: 0.0, // TODO: Get actual user balance
-        recipientEmail: _isForSelf ? null : _recipientEmailController.text.trim(),
-        recipientName: _isForSelf ? null : _recipientNameController.text.trim(),
-        message: _messageController.text.trim().isEmpty ? null : _messageController.text.trim(),
+        currency: 'USD',
+        title: 'Confirm Gift Card Purchase',
+        message: 'Confirm purchase of \$${amount.toStringAsFixed(2)} ${widget.brand.name} gift card?',
+        onPinValidated: (verificationToken) async {
+          // PIN is valid, proceed with purchase
+          _executePurchaseWithToken(
+            brandId: widget.brand.id,
+            amount: amount,
+            transactionId: transactionId,
+            verificationToken: verificationToken,
+          );
+        },
       );
+
+      if (!success) {
+        // PIN validation failed or was cancelled
+        // User has already been notified via the mixin
+      }
     }
+  }
+
+  /// Execute actual purchase with verification token
+  void _executePurchaseWithToken({
+    required String brandId,
+    required double amount,
+    required String transactionId,
+    required String verificationToken,
+  }) {
+    context.read<GiftCardCubit>().purchaseGiftCardWithToken(
+      brandId: brandId,
+      amount: amount,
+      currency: 'USD',
+      brand: widget.brand,
+      userBalance: 0.0, // TODO: Get actual user balance
+      recipientEmail: _isForSelf ? null : _recipientEmailController.text.trim(),
+      recipientName: _isForSelf ? null : _recipientNameController.text.trim(),
+      message: _messageController.text.trim().isEmpty ? null : _messageController.text.trim(),
+      transactionId: transactionId,
+      verificationToken: verificationToken,
+    );
   }
 
   void _showSuccessDialog(GiftCard giftCard) {

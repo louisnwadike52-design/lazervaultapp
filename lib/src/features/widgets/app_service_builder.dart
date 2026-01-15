@@ -72,6 +72,9 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
       case AppServiceName.lockFunds:
         Get.toNamed(AppRoutes.lockFunds);
         break;
+      case AppServiceName.whatsappIntegration:
+        Get.toNamed(AppRoutes.whatsappBanking);
+        break;
       case AppServiceName.sendFunds:
       default:
         Get.toNamed(AppRoutes.selectRecipient);
@@ -216,6 +219,9 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
         break;
       case AppServiceName.lockFunds:
         iconData = Icons.lock_clock;
+        break;
+      case AppServiceName.whatsappIntegration:
+        iconData = Icons.chat_bubble;
         break;
     }
 

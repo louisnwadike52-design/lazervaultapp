@@ -10,108 +10,108 @@ import 'dart:async' as $async;
 import 'dart:core' as $core;
 
 import 'package:grpc/service_api.dart' as $grpc;
-import 'crypto.pb.dart' as $0;
+import 'crypto.pb.dart' as $10;
 export 'crypto.pb.dart';
 
 class CryptoServiceClient extends $grpc.Client {
   static final _$getCryptos =
-      $grpc.ClientMethod<$0.GetCryptosRequest, $0.GetCryptosResponse>(
+      $grpc.ClientMethod<$10.GetCryptosRequest, $10.GetCryptosResponse>(
           '/pb.CryptoService/GetCryptos',
-          ($0.GetCryptosRequest value) => value.writeToBuffer(),
+          ($10.GetCryptosRequest value) => value.writeToBuffer(),
           ($core.List<$core.int> value) =>
-              $0.GetCryptosResponse.fromBuffer(value));
+              $10.GetCryptosResponse.fromBuffer(value));
   static final _$getCryptoById =
-      $grpc.ClientMethod<$0.GetCryptoByIdRequest, $0.GetCryptoByIdResponse>(
+      $grpc.ClientMethod<$10.GetCryptoByIdRequest, $10.GetCryptoByIdResponse>(
           '/pb.CryptoService/GetCryptoById',
-          ($0.GetCryptoByIdRequest value) => value.writeToBuffer(),
+          ($10.GetCryptoByIdRequest value) => value.writeToBuffer(),
           ($core.List<$core.int> value) =>
-              $0.GetCryptoByIdResponse.fromBuffer(value));
+              $10.GetCryptoByIdResponse.fromBuffer(value));
   static final _$searchCryptos =
-      $grpc.ClientMethod<$0.SearchCryptosRequest, $0.SearchCryptosResponse>(
+      $grpc.ClientMethod<$10.SearchCryptosRequest, $10.SearchCryptosResponse>(
           '/pb.CryptoService/SearchCryptos',
-          ($0.SearchCryptosRequest value) => value.writeToBuffer(),
+          ($10.SearchCryptosRequest value) => value.writeToBuffer(),
           ($core.List<$core.int> value) =>
-              $0.SearchCryptosResponse.fromBuffer(value));
+              $10.SearchCryptosResponse.fromBuffer(value));
   static final _$getCryptoPriceHistory = $grpc.ClientMethod<
-          $0.GetCryptoPriceHistoryRequest, $0.GetCryptoPriceHistoryResponse>(
+          $10.GetCryptoPriceHistoryRequest, $10.GetCryptoPriceHistoryResponse>(
       '/pb.CryptoService/GetCryptoPriceHistory',
-      ($0.GetCryptoPriceHistoryRequest value) => value.writeToBuffer(),
+      ($10.GetCryptoPriceHistoryRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $0.GetCryptoPriceHistoryResponse.fromBuffer(value));
+          $10.GetCryptoPriceHistoryResponse.fromBuffer(value));
   static final _$getTrendingCryptos = $grpc.ClientMethod<
-          $0.GetTrendingCryptosRequest, $0.GetTrendingCryptosResponse>(
+          $10.GetTrendingCryptosRequest, $10.GetTrendingCryptosResponse>(
       '/pb.CryptoService/GetTrendingCryptos',
-      ($0.GetTrendingCryptosRequest value) => value.writeToBuffer(),
+      ($10.GetTrendingCryptosRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $0.GetTrendingCryptosResponse.fromBuffer(value));
+          $10.GetTrendingCryptosResponse.fromBuffer(value));
   static final _$getTopCryptos =
-      $grpc.ClientMethod<$0.GetTopCryptosRequest, $0.GetTopCryptosResponse>(
+      $grpc.ClientMethod<$10.GetTopCryptosRequest, $10.GetTopCryptosResponse>(
           '/pb.CryptoService/GetTopCryptos',
-          ($0.GetTopCryptosRequest value) => value.writeToBuffer(),
+          ($10.GetTopCryptosRequest value) => value.writeToBuffer(),
           ($core.List<$core.int> value) =>
-              $0.GetTopCryptosResponse.fromBuffer(value));
+              $10.GetTopCryptosResponse.fromBuffer(value));
   static final _$getMarketChart =
-      $grpc.ClientMethod<$0.GetMarketChartRequest, $0.GetMarketChartResponse>(
+      $grpc.ClientMethod<$10.GetMarketChartRequest, $10.GetMarketChartResponse>(
           '/pb.CryptoService/GetMarketChart',
-          ($0.GetMarketChartRequest value) => value.writeToBuffer(),
+          ($10.GetMarketChartRequest value) => value.writeToBuffer(),
           ($core.List<$core.int> value) =>
-              $0.GetMarketChartResponse.fromBuffer(value));
+              $10.GetMarketChartResponse.fromBuffer(value));
   static final _$getGlobalMarketData = $grpc.ClientMethod<
-          $0.GetGlobalMarketDataRequest, $0.GetGlobalMarketDataResponse>(
+          $10.GetGlobalMarketDataRequest, $10.GetGlobalMarketDataResponse>(
       '/pb.CryptoService/GetGlobalMarketData',
-      ($0.GetGlobalMarketDataRequest value) => value.writeToBuffer(),
+      ($10.GetGlobalMarketDataRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $0.GetGlobalMarketDataResponse.fromBuffer(value));
+          $10.GetGlobalMarketDataResponse.fromBuffer(value));
 
   CryptoServiceClient($grpc.ClientChannel channel,
       {$grpc.CallOptions? options,
       $core.Iterable<$grpc.ClientInterceptor>? interceptors})
       : super(channel, options: options, interceptors: interceptors);
 
-  $grpc.ResponseFuture<$0.GetCryptosResponse> getCryptos(
-      $0.GetCryptosRequest request,
+  $grpc.ResponseFuture<$10.GetCryptosResponse> getCryptos(
+      $10.GetCryptosRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getCryptos, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.GetCryptoByIdResponse> getCryptoById(
-      $0.GetCryptoByIdRequest request,
+  $grpc.ResponseFuture<$10.GetCryptoByIdResponse> getCryptoById(
+      $10.GetCryptoByIdRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getCryptoById, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.SearchCryptosResponse> searchCryptos(
-      $0.SearchCryptosRequest request,
+  $grpc.ResponseFuture<$10.SearchCryptosResponse> searchCryptos(
+      $10.SearchCryptosRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$searchCryptos, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.GetCryptoPriceHistoryResponse> getCryptoPriceHistory(
-      $0.GetCryptoPriceHistoryRequest request,
+  $grpc.ResponseFuture<$10.GetCryptoPriceHistoryResponse> getCryptoPriceHistory(
+      $10.GetCryptoPriceHistoryRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getCryptoPriceHistory, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.GetTrendingCryptosResponse> getTrendingCryptos(
-      $0.GetTrendingCryptosRequest request,
+  $grpc.ResponseFuture<$10.GetTrendingCryptosResponse> getTrendingCryptos(
+      $10.GetTrendingCryptosRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getTrendingCryptos, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.GetTopCryptosResponse> getTopCryptos(
-      $0.GetTopCryptosRequest request,
+  $grpc.ResponseFuture<$10.GetTopCryptosResponse> getTopCryptos(
+      $10.GetTopCryptosRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getTopCryptos, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.GetMarketChartResponse> getMarketChart(
-      $0.GetMarketChartRequest request,
+  $grpc.ResponseFuture<$10.GetMarketChartResponse> getMarketChart(
+      $10.GetMarketChartRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getMarketChart, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.GetGlobalMarketDataResponse> getGlobalMarketData(
-      $0.GetGlobalMarketDataRequest request,
+  $grpc.ResponseFuture<$10.GetGlobalMarketDataResponse> getGlobalMarketData(
+      $10.GetGlobalMarketDataRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getGlobalMarketData, request, options: options);
   }
@@ -121,139 +121,141 @@ abstract class CryptoServiceBase extends $grpc.Service {
   $core.String get $name => 'pb.CryptoService';
 
   CryptoServiceBase() {
-    $addMethod($grpc.ServiceMethod<$0.GetCryptosRequest, $0.GetCryptosResponse>(
-        'GetCryptos',
-        getCryptos_Pre,
-        false,
-        false,
-        ($core.List<$core.int> value) => $0.GetCryptosRequest.fromBuffer(value),
-        ($0.GetCryptosResponse value) => value.writeToBuffer()));
     $addMethod(
-        $grpc.ServiceMethod<$0.GetCryptoByIdRequest, $0.GetCryptoByIdResponse>(
-            'GetCryptoById',
-            getCryptoById_Pre,
+        $grpc.ServiceMethod<$10.GetCryptosRequest, $10.GetCryptosResponse>(
+            'GetCryptos',
+            getCryptos_Pre,
             false,
             false,
             ($core.List<$core.int> value) =>
-                $0.GetCryptoByIdRequest.fromBuffer(value),
-            ($0.GetCryptoByIdResponse value) => value.writeToBuffer()));
-    $addMethod(
-        $grpc.ServiceMethod<$0.SearchCryptosRequest, $0.SearchCryptosResponse>(
-            'SearchCryptos',
-            searchCryptos_Pre,
-            false,
-            false,
-            ($core.List<$core.int> value) =>
-                $0.SearchCryptosRequest.fromBuffer(value),
-            ($0.SearchCryptosResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.GetCryptoPriceHistoryRequest,
-            $0.GetCryptoPriceHistoryResponse>(
+                $10.GetCryptosRequest.fromBuffer(value),
+            ($10.GetCryptosResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$10.GetCryptoByIdRequest,
+            $10.GetCryptoByIdResponse>(
+        'GetCryptoById',
+        getCryptoById_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $10.GetCryptoByIdRequest.fromBuffer(value),
+        ($10.GetCryptoByIdResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$10.SearchCryptosRequest,
+            $10.SearchCryptosResponse>(
+        'SearchCryptos',
+        searchCryptos_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $10.SearchCryptosRequest.fromBuffer(value),
+        ($10.SearchCryptosResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$10.GetCryptoPriceHistoryRequest,
+            $10.GetCryptoPriceHistoryResponse>(
         'GetCryptoPriceHistory',
         getCryptoPriceHistory_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $0.GetCryptoPriceHistoryRequest.fromBuffer(value),
-        ($0.GetCryptoPriceHistoryResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.GetTrendingCryptosRequest,
-            $0.GetTrendingCryptosResponse>(
+            $10.GetCryptoPriceHistoryRequest.fromBuffer(value),
+        ($10.GetCryptoPriceHistoryResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$10.GetTrendingCryptosRequest,
+            $10.GetTrendingCryptosResponse>(
         'GetTrendingCryptos',
         getTrendingCryptos_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $0.GetTrendingCryptosRequest.fromBuffer(value),
-        ($0.GetTrendingCryptosResponse value) => value.writeToBuffer()));
-    $addMethod(
-        $grpc.ServiceMethod<$0.GetTopCryptosRequest, $0.GetTopCryptosResponse>(
-            'GetTopCryptos',
-            getTopCryptos_Pre,
-            false,
-            false,
-            ($core.List<$core.int> value) =>
-                $0.GetTopCryptosRequest.fromBuffer(value),
-            ($0.GetTopCryptosResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.GetMarketChartRequest,
-            $0.GetMarketChartResponse>(
+            $10.GetTrendingCryptosRequest.fromBuffer(value),
+        ($10.GetTrendingCryptosResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$10.GetTopCryptosRequest,
+            $10.GetTopCryptosResponse>(
+        'GetTopCryptos',
+        getTopCryptos_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $10.GetTopCryptosRequest.fromBuffer(value),
+        ($10.GetTopCryptosResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$10.GetMarketChartRequest,
+            $10.GetMarketChartResponse>(
         'GetMarketChart',
         getMarketChart_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $0.GetMarketChartRequest.fromBuffer(value),
-        ($0.GetMarketChartResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.GetGlobalMarketDataRequest,
-            $0.GetGlobalMarketDataResponse>(
+            $10.GetMarketChartRequest.fromBuffer(value),
+        ($10.GetMarketChartResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$10.GetGlobalMarketDataRequest,
+            $10.GetGlobalMarketDataResponse>(
         'GetGlobalMarketData',
         getGlobalMarketData_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $0.GetGlobalMarketDataRequest.fromBuffer(value),
-        ($0.GetGlobalMarketDataResponse value) => value.writeToBuffer()));
+            $10.GetGlobalMarketDataRequest.fromBuffer(value),
+        ($10.GetGlobalMarketDataResponse value) => value.writeToBuffer()));
   }
 
-  $async.Future<$0.GetCryptosResponse> getCryptos_Pre($grpc.ServiceCall call,
-      $async.Future<$0.GetCryptosRequest> request) async {
+  $async.Future<$10.GetCryptosResponse> getCryptos_Pre($grpc.ServiceCall call,
+      $async.Future<$10.GetCryptosRequest> request) async {
     return getCryptos(call, await request);
   }
 
-  $async.Future<$0.GetCryptoByIdResponse> getCryptoById_Pre(
+  $async.Future<$10.GetCryptoByIdResponse> getCryptoById_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$0.GetCryptoByIdRequest> request) async {
+      $async.Future<$10.GetCryptoByIdRequest> request) async {
     return getCryptoById(call, await request);
   }
 
-  $async.Future<$0.SearchCryptosResponse> searchCryptos_Pre(
+  $async.Future<$10.SearchCryptosResponse> searchCryptos_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$0.SearchCryptosRequest> request) async {
+      $async.Future<$10.SearchCryptosRequest> request) async {
     return searchCryptos(call, await request);
   }
 
-  $async.Future<$0.GetCryptoPriceHistoryResponse> getCryptoPriceHistory_Pre(
+  $async.Future<$10.GetCryptoPriceHistoryResponse> getCryptoPriceHistory_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$0.GetCryptoPriceHistoryRequest> request) async {
+      $async.Future<$10.GetCryptoPriceHistoryRequest> request) async {
     return getCryptoPriceHistory(call, await request);
   }
 
-  $async.Future<$0.GetTrendingCryptosResponse> getTrendingCryptos_Pre(
+  $async.Future<$10.GetTrendingCryptosResponse> getTrendingCryptos_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$0.GetTrendingCryptosRequest> request) async {
+      $async.Future<$10.GetTrendingCryptosRequest> request) async {
     return getTrendingCryptos(call, await request);
   }
 
-  $async.Future<$0.GetTopCryptosResponse> getTopCryptos_Pre(
+  $async.Future<$10.GetTopCryptosResponse> getTopCryptos_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$0.GetTopCryptosRequest> request) async {
+      $async.Future<$10.GetTopCryptosRequest> request) async {
     return getTopCryptos(call, await request);
   }
 
-  $async.Future<$0.GetMarketChartResponse> getMarketChart_Pre(
+  $async.Future<$10.GetMarketChartResponse> getMarketChart_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$0.GetMarketChartRequest> request) async {
+      $async.Future<$10.GetMarketChartRequest> request) async {
     return getMarketChart(call, await request);
   }
 
-  $async.Future<$0.GetGlobalMarketDataResponse> getGlobalMarketData_Pre(
+  $async.Future<$10.GetGlobalMarketDataResponse> getGlobalMarketData_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$0.GetGlobalMarketDataRequest> request) async {
+      $async.Future<$10.GetGlobalMarketDataRequest> request) async {
     return getGlobalMarketData(call, await request);
   }
 
-  $async.Future<$0.GetCryptosResponse> getCryptos(
-      $grpc.ServiceCall call, $0.GetCryptosRequest request);
-  $async.Future<$0.GetCryptoByIdResponse> getCryptoById(
-      $grpc.ServiceCall call, $0.GetCryptoByIdRequest request);
-  $async.Future<$0.SearchCryptosResponse> searchCryptos(
-      $grpc.ServiceCall call, $0.SearchCryptosRequest request);
-  $async.Future<$0.GetCryptoPriceHistoryResponse> getCryptoPriceHistory(
-      $grpc.ServiceCall call, $0.GetCryptoPriceHistoryRequest request);
-  $async.Future<$0.GetTrendingCryptosResponse> getTrendingCryptos(
-      $grpc.ServiceCall call, $0.GetTrendingCryptosRequest request);
-  $async.Future<$0.GetTopCryptosResponse> getTopCryptos(
-      $grpc.ServiceCall call, $0.GetTopCryptosRequest request);
-  $async.Future<$0.GetMarketChartResponse> getMarketChart(
-      $grpc.ServiceCall call, $0.GetMarketChartRequest request);
-  $async.Future<$0.GetGlobalMarketDataResponse> getGlobalMarketData(
-      $grpc.ServiceCall call, $0.GetGlobalMarketDataRequest request);
+  $async.Future<$10.GetCryptosResponse> getCryptos(
+      $grpc.ServiceCall call, $10.GetCryptosRequest request);
+  $async.Future<$10.GetCryptoByIdResponse> getCryptoById(
+      $grpc.ServiceCall call, $10.GetCryptoByIdRequest request);
+  $async.Future<$10.SearchCryptosResponse> searchCryptos(
+      $grpc.ServiceCall call, $10.SearchCryptosRequest request);
+  $async.Future<$10.GetCryptoPriceHistoryResponse> getCryptoPriceHistory(
+      $grpc.ServiceCall call, $10.GetCryptoPriceHistoryRequest request);
+  $async.Future<$10.GetTrendingCryptosResponse> getTrendingCryptos(
+      $grpc.ServiceCall call, $10.GetTrendingCryptosRequest request);
+  $async.Future<$10.GetTopCryptosResponse> getTopCryptos(
+      $grpc.ServiceCall call, $10.GetTopCryptosRequest request);
+  $async.Future<$10.GetMarketChartResponse> getMarketChart(
+      $grpc.ServiceCall call, $10.GetMarketChartRequest request);
+  $async.Future<$10.GetGlobalMarketDataResponse> getGlobalMarketData(
+      $grpc.ServiceCall call, $10.GetGlobalMarketDataRequest request);
 }

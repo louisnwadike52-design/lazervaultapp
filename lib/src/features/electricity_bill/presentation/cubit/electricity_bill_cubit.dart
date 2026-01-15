@@ -95,16 +95,95 @@ class ElectricityBillCubit extends Cubit<ElectricityBillState> {
     );
   }
 
-  Future<void> verifyPayment({required String paymentId}) async {
+  /// Initiate payment with verification token (for PIN-validated transactions)
+  Future<void> initiatePaymentWithToken({
+    required String providerCode,
+    required String meterNumber,
+    required MeterType meterType,
+    required double amount,
+    required String currency,
+    required String accountId,
+    required String transactionId,
+    required String verificationToken,
+    String? paymentGateway,
+    String? beneficiaryId,
+  }) async {
     if (isClosed) return;
-    emit(PaymentVerifying());
+    emit(PaymentInitiating());
 
-    final result = await repository.verifyPayment(paymentId: paymentId);
+    final result = await repository.initiatePayment(
+      providerCode: providerCode,
+      meterNumber: meterNumber,
+      meterType: meterType,
+      amount: amount,
+      currency: currency,
+      accountId: accountId,
+      paymentGateway: paymentGateway,
+      beneficiaryId: beneficiaryId,
+      transactionId: transactionId,
+      verificationToken: verificationToken,
+    );
 
     if (isClosed) return;
     result.fold(
       (failure) => emit(ElectricityBillError(message: failure.message)),
       (payment) {
+        emit(PaymentInitiated(payment: payment));
+        // Automatically start verifying the payment
+        verifyPayment(paymentId: payment.id);
+      },
+    );
+  }
+
+  Future<void> verifyPayment({required String paymentId}) async {
+    if (isClosed) return;
+
+    // Emit progressive states for better UX
+    emit(PaymentProcessing(
+      payment: (state as PaymentInitiated).payment,
+      progress: 0.1,
+      currentStep: 'Validating meter number...',
+    ));
+
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    if (isClosed) emit(PaymentProcessing(
+      payment: (state as PaymentInitiated).payment,
+      progress: 0.3,
+      currentStep: 'Checking account balance...',
+    ));
+
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    if (isClosed) emit(PaymentProcessing(
+      payment: (state as PaymentInitiated).payment,
+      progress: 0.5,
+      currentStep: 'Processing with provider...',
+    ));
+
+    final result = await repository.verifyPayment(paymentId: paymentId);
+
+    if (isClosed) return;
+
+    result.fold(
+      // Left side: Failure
+      (failure) {
+        emit(PaymentProcessing(
+          payment: (state as PaymentInitiated).payment,
+          progress: 0.5,
+          currentStep: 'Processing...',
+        ));
+        emit(ElectricityBillError(message: failure.message));
+      },
+      // Right side: Success
+      (payment) {
+        // Show progress near completion
+        emit(PaymentProcessing(
+          payment: payment,
+          progress: 0.8,
+          currentStep: 'Finalizing transaction...',
+        ));
+
         if (payment.isCompleted) {
           emit(PaymentSuccess(payment: payment));
         } else if (payment.isFailed) {
@@ -113,7 +192,7 @@ class ElectricityBillCubit extends Cubit<ElectricityBillState> {
             errorMessage: payment.errorMessage ?? 'Payment failed',
           ));
         } else if (payment.isProcessing) {
-          emit(PaymentProcessing(payment: payment));
+          emit(PaymentProcessing(payment: payment, progress: 0.6, currentStep: 'Processing...'));
         } else {
           emit(PaymentVerified(payment: payment));
         }
