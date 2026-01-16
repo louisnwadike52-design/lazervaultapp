@@ -2,8 +2,6 @@ import 'package:bloc/bloc.dart';
 import 'package:uuid/uuid.dart';
 import '../../domain/entities/invoice_entity.dart';
 import '../../domain/repositories/invoice_repository.dart';
-import '../../data/models/pagination_model.dart';
-import '../../data/repositories/invoice_repository_impl.dart';
 import 'invoice_state.dart';
 
 class InvoiceCubit extends Cubit<InvoiceState> {
@@ -24,12 +22,9 @@ class InvoiceCubit extends Cubit<InvoiceState> {
     required this.repository,
   }) : super(InvoiceInitial());
 
-  // Load all invoices with pagination and statistics
+  // Load all invoices with statistics
   Future<void> loadInvoices({
-    int page = 1,
-    int limit = 20,
-    InvoiceSearchFilter? filter,
-    bool append = false,
+    List<String>? statusFilter,
   }) async {
     try {
       // Check if user is authenticated
@@ -39,65 +34,27 @@ class InvoiceCubit extends Cubit<InvoiceState> {
         return;
       }
 
-      if (page == 1 && !append) {
-        if (isClosed) return;
-        emit(InvoiceLoading());
+      if (isClosed) return;
+      emit(InvoiceLoading());
+
+      // Load all invoices from gRPC repository
+      final invoices = await repository.getAllInvoices();
+      if (isClosed) return;
+      final statistics = await repository.getInvoiceStatistics(currentUserId!);
+      if (isClosed) return;
+
+      // Apply client-side filtering if statusFilter is provided
+      List<Invoice> filteredInvoices = invoices;
+      if (statusFilter != null && statusFilter.isNotEmpty) {
+        filteredInvoices = invoices.where((invoice) {
+          return statusFilter.contains(invoice.status.name);
+        }).toList();
       }
 
-      // Check if repository supports pagination
-      if (repository is InvoiceRepositoryImpl) {
-        final repositoryImpl = repository as InvoiceRepositoryImpl;
-        final result = await repositoryImpl.getAllInvoicesPaginated(
-          page: page,
-          limit: limit,
-          filter: filter,
-        );
-        if (isClosed) return;
-
-        final statistics = await repository.getInvoiceStatistics(currentUserId!);
-        if (isClosed) return;
-
-        if (append && state is InvoicesLoaded) {
-          final currentState = state as InvoicesLoaded;
-          final updatedInvoices = [
-            ...currentState.invoices,
-            ...result.invoices.cast<Invoice>(),
-          ];
-
-          emit(InvoicesLoaded(
-            invoices: updatedInvoices,
-            statistics: statistics,
-            pagination: result.pagination,
-            filter: result.filter,
-          ));
-        } else {
-          emit(InvoicesLoaded(
-            invoices: result.invoices.cast<Invoice>(),
-            statistics: statistics,
-            pagination: result.pagination,
-            filter: result.filter,
-          ));
-        }
-      } else {
-        // Fallback for gRPC or other implementations without pagination
-        final invoices = await repository.getAllInvoices();
-        if (isClosed) return;
-        final statistics = await repository.getInvoiceStatistics(currentUserId!);
-        if (isClosed) return;
-
-        // Apply client-side filtering if filter is provided
-        List<Invoice> filteredInvoices = invoices;
-        if (filter != null && filter.statuses?.isNotEmpty == true) {
-          filteredInvoices = invoices.where((invoice) {
-            return filter.statuses!.contains(invoice.status.name);
-          }).toList();
-        }
-
-        emit(InvoicesLoaded(
-          invoices: filteredInvoices,
-          statistics: statistics,
-        ));
-      }
+      emit(InvoicesLoaded(
+        invoices: filteredInvoices,
+        statistics: statistics,
+      ));
     } catch (e) {
       if (isClosed) return;
       // Check if error is due to service being unavailable
@@ -124,62 +81,22 @@ class InvoiceCubit extends Cubit<InvoiceState> {
     }
   }
 
-  // Search invoices with pagination
+  // Search invoices
   Future<void> searchInvoices({
     required String query,
-    int page = 1,
-    int limit = 20,
-    InvoiceSearchFilter? filter,
-    bool append = false,
   }) async {
     try {
-      if (page == 1 && !append) {
-        if (isClosed) return;
-        emit(InvoiceLoading());
-      }
+      if (isClosed) return;
+      emit(InvoiceLoading());
 
-      // Check if repository supports pagination
-      if (repository is InvoiceRepositoryImpl) {
-        final repositoryImpl = repository as InvoiceRepositoryImpl;
-        final result = await repositoryImpl.searchInvoicesPaginated(
-          query: query,
-          page: page,
-          limit: limit,
-          filter: filter,
-        );
-        if (isClosed) return;
+      // Search using gRPC repository
+      final results = await repository.searchInvoices(query);
+      if (isClosed) return;
 
-        if (append && state is InvoiceSearchResults) {
-          final currentState = state as InvoiceSearchResults;
-          final updatedResults = [
-            ...currentState.results,
-            ...result.invoices.cast<Invoice>(),
-          ];
-
-          emit(InvoiceSearchResults(
-            results: updatedResults,
-            query: query,
-            pagination: result.pagination,
-            filter: result.filter,
-          ));
-        } else {
-          emit(InvoiceSearchResults(
-            results: result.invoices.cast<Invoice>(),
-            query: query,
-            pagination: result.pagination,
-            filter: result.filter,
-          ));
-        }
-      } else {
-        // Fallback for gRPC or other implementations without pagination
-        final results = await repository.searchInvoices(query);
-        if (isClosed) return;
-
-        emit(InvoiceSearchResults(
-          results: results,
-          query: query,
-        ));
-      }
+      emit(InvoiceSearchResults(
+        results: results,
+        query: query,
+      ));
     } catch (e) {
       if (isClosed) return;
       // Check if error is due to service being unavailable
@@ -199,38 +116,9 @@ class InvoiceCubit extends Cubit<InvoiceState> {
     }
   }
 
-  // Load more invoices (pagination)
-  Future<void> loadMoreInvoices() async {
-    if (state is InvoicesLoaded) {
-      final currentState = state as InvoicesLoaded;
-      if (currentState.pagination?.hasNext == true) {
-        await loadInvoices(
-          page: (currentState.pagination?.page ?? 0) + 1,
-          filter: currentState.filter,
-          append: true,
-        );
-      }
-    }
-  }
-
-  // Load more search results (pagination)
-  Future<void> loadMoreSearchResults() async {
-    if (state is InvoiceSearchResults) {
-      final currentState = state as InvoiceSearchResults;
-      if (currentState.pagination?.hasNext == true) {
-        await searchInvoices(
-          query: currentState.query,
-          page: (currentState.pagination?.page ?? 0) + 1,
-          filter: currentState.filter,
-          append: true,
-        );
-      }
-    }
-  }
-
-  // Apply filters
-  Future<void> applyFilters(InvoiceSearchFilter filter) async {
-    await loadInvoices(filter: filter);
+  // Apply status filter
+  Future<void> applyStatusFilter(List<String> statuses) async {
+    await loadInvoices(statusFilter: statuses);
   }
 
   // Clear filters
