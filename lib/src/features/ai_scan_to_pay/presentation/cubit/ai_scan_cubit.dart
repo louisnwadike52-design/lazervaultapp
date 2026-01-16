@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../domain/entities/scan_entities.dart';
+import '../../domain/exceptions/scan_exceptions.dart';
 import '../../domain/usecases/ai_scan_usecases.dart';
 import 'ai_scan_state.dart';
 
@@ -10,6 +11,11 @@ class AiScanCubit extends Cubit<AiScanState> {
   final GeneratePaymentUseCase generatePaymentUseCase;
   final ProcessPaymentUseCase processPaymentUseCase;
   final GetScanHistoryUseCase getScanHistoryUseCase;
+  final ScanBankDetailsUseCase scanBankDetailsUseCase;
+  final ProcessBankDetailsPaymentUseCase processBankDetailsPaymentUseCase;
+
+  // Track current session for bank details flow
+  ScanSession? _currentSession;
 
   AiScanCubit({
     required this.startScanSessionUseCase,
@@ -18,6 +24,8 @@ class AiScanCubit extends Cubit<AiScanState> {
     required this.generatePaymentUseCase,
     required this.processPaymentUseCase,
     required this.getScanHistoryUseCase,
+    required this.scanBankDetailsUseCase,
+    required this.processBankDetailsPaymentUseCase,
   }) : super(AiScanInitial());
 
   // Initialize and show scan type selection
@@ -224,7 +232,7 @@ class AiScanCubit extends Cubit<AiScanState> {
   Future<void> updateSessionStatus(ScanStatus status) async {
     final currentState = state;
     ScanSession? session;
-    
+
     if (currentState is AiScanCamera) {
       session = currentState.session;
     } else if (currentState is AiScanChatActive) {
@@ -235,7 +243,7 @@ class AiScanCubit extends Cubit<AiScanState> {
 
     if (session != null) {
       final updatedSession = session.copyWith(status: status);
-      
+
       // Emit updated state based on current state type
       if (currentState is AiScanCamera) {
         if (isClosed) return;
@@ -245,5 +253,240 @@ class AiScanCubit extends Cubit<AiScanState> {
         emit(currentState.copyWith(session: updatedSession));
       }
     }
+  }
+
+  // ========== Bank Details Flow Methods ==========
+
+  /// Process bank details image and extract data
+  Future<void> processBankDetailsImage(String imagePath) async {
+    try {
+      if (isClosed) return;
+      emit(AiScanProcessing(
+        session: _currentSession!,
+        status: 'Extracting bank details...',
+        progress: 0.3,
+      ));
+
+      // Extract bank details via OCR
+      final bankDetails = await scanBankDetailsUseCase(imagePath, _currentSession!.id);
+
+      // Show bottomsheet for editing (confidence warnings shown in UI)
+      if (isClosed) return;
+      emit(AiScanBankDetailsExtracted(
+        session: _currentSession!,
+        bankDetails: bankDetails,
+      ));
+    } on OCRException catch (e) {
+      if (isClosed) return;
+      emit(AiScanError(
+        message: e.getUserMessage(),
+        details: e.details,
+      ));
+    } on NetworkException catch (e) {
+      if (isClosed) return;
+      emit(AiScanError(
+        message: e.getUserMessage(),
+        details: e.details,
+      ));
+    } on AuthenticationException catch (e) {
+      if (isClosed) return;
+      emit(AiScanError(
+        message: e.getUserMessage(),
+        details: e.details,
+      ));
+    } on RateLimitException catch (e) {
+      if (isClosed) return;
+      emit(AiScanError(
+        message: e.getUserMessage(),
+        details: e.details,
+      ));
+    } on ScanException catch (e) {
+      if (isClosed) return;
+      emit(AiScanError(
+        message: e.getUserMessage(),
+        details: e.details,
+      ));
+    } catch (e) {
+      if (isClosed) return;
+      emit(AiScanError(
+        message: 'An unexpected error occurred',
+        details: e.toString(),
+      ));
+    }
+  }
+
+  /// Initiate payment with bank details
+  Future<void> initiatePayment({
+    required BankDetails bankDetails,
+    required double amount,
+    required String description,
+  }) async {
+    try {
+      // Generate transaction ID for idempotency
+      final transactionId = 'TRF-${DateTime.now().millisecondsSinceEpoch}';
+
+      // Show PIN modal by emitting awaiting PIN state
+      if (isClosed) return;
+      emit(AiScanBankDetailsAwaitingPIN(
+        bankDetails: bankDetails,
+        amount: amount,
+        description: description,
+        transactionId: transactionId,
+      ));
+
+      // PIN entry handled by UI, wait for PIN verification
+      // processPaymentWithPIN will be called after PIN is verified
+    } catch (e) {
+      if (isClosed) return;
+      emit(AiScanError(message: 'Payment initiation failed: ${e.toString()}'));
+    }
+  }
+
+  /// Process payment with verified PIN
+  Future<void> processPaymentWithPIN({
+    required BankDetails bankDetails,
+    required double amount,
+    required String description,
+    required String verificationToken,
+    required String transactionId,
+  }) async {
+    try {
+      // Step 1: Verifying PIN
+      if (isClosed) return;
+      emit(const AiScanBankDetailsProcessing(
+        status: 'Verifying your PIN...',
+        progress: 0.2,
+      ));
+
+      await Future.delayed(const Duration(milliseconds: 500)); // Simulate PIN verification
+
+      // Step 2: Validating account
+      if (isClosed) return;
+      emit(const AiScanBankDetailsProcessing(
+        status: 'Validating account details...',
+        progress: 0.4,
+      ));
+
+      await Future.delayed(const Duration(milliseconds: 500));
+
+      // Step 3: Processing payment
+      if (isClosed) return;
+      emit(AiScanBankDetailsProcessing(
+        status: bankDetails.isExternal
+            ? 'Initiating bank transfer...'
+            : 'Processing payment...',
+        progress: 0.6,
+      ));
+
+      final receipt = await processBankDetailsPaymentUseCase(
+        bankDetails: bankDetails,
+        amount: amount,
+        description: description,
+        verificationToken: verificationToken,
+        transactionId: transactionId,
+      );
+
+      // Step 4: Updating balance
+      if (isClosed) return;
+      emit(AiScanBankDetailsProcessing(
+        status: bankDetails.isExternal
+            ? 'Awaiting confirmation...'
+            : 'Updating your balance...',
+        progress: 0.8,
+      ));
+
+      await Future.delayed(const Duration(milliseconds: 500));
+
+      // Step 5: Generating receipt
+      if (isClosed) return;
+      emit(const AiScanBankDetailsProcessing(
+        status: 'Generating receipt...',
+        progress: 1.0,
+      ));
+
+      await Future.delayed(const Duration(milliseconds: 300));
+
+      // Show receipt
+      if (isClosed) return;
+      emit(AiScanBankDetailsPaymentSuccess(receipt: receipt));
+    } on PaymentException catch (e) {
+      if (isClosed) return;
+
+      emit(AiScanBankDetailsPaymentFailed(
+        errorMessage: e.getUserMessage(),
+        bankDetails: bankDetails,
+        canRetry: e.canRetry,
+      ));
+    } on ValidationException catch (e) {
+      if (isClosed) return;
+
+      emit(AiScanBankDetailsPaymentFailed(
+        errorMessage: e.getUserMessage(),
+        bankDetails: bankDetails,
+        canRetry: false,
+      ));
+    } on BankValidationException catch (e) {
+      if (isClosed) return;
+
+      emit(AiScanBankDetailsPaymentFailed(
+        errorMessage: e.getUserMessage(),
+        bankDetails: bankDetails,
+        canRetry: e.canRetry,
+      ));
+    } on NetworkException catch (e) {
+      if (isClosed) return;
+
+      emit(AiScanBankDetailsPaymentFailed(
+        errorMessage: e.getUserMessage(),
+        bankDetails: bankDetails,
+        canRetry: e.canRetry,
+      ));
+    } on AuthenticationException catch (e) {
+      if (isClosed) return;
+
+      emit(AiScanBankDetailsPaymentFailed(
+        errorMessage: e.getUserMessage(),
+        bankDetails: bankDetails,
+        canRetry: false,
+      ));
+    } on RateLimitException catch (e) {
+      if (isClosed) return;
+
+      emit(AiScanBankDetailsPaymentFailed(
+        errorMessage: e.getUserMessage(),
+        bankDetails: bankDetails,
+        canRetry: e.canRetry,
+      ));
+    } on ScanException catch (e) {
+      if (isClosed) return;
+
+      emit(AiScanBankDetailsPaymentFailed(
+        errorMessage: e.getUserMessage(),
+        bankDetails: bankDetails,
+        canRetry: e.canRetry,
+      ));
+    } catch (e) {
+      if (isClosed) return;
+
+      emit(AiScanBankDetailsPaymentFailed(
+        errorMessage: 'An unexpected error occurred. Please try again.',
+        bankDetails: bankDetails,
+        canRetry: true,
+      ));
+    }
+  }
+
+  /// Retry payment after failure
+  Future<void> retryBankDetailsPayment({
+    required BankDetails bankDetails,
+    required double amount,
+    required String description,
+  }) async {
+    // Re-initiate payment flow
+    await initiatePayment(
+      bankDetails: bankDetails,
+      amount: amount,
+      description: description,
+    );
   }
 } 

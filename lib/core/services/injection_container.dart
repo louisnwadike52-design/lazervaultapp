@@ -314,9 +314,8 @@ import 'package:lazervault/src/features/airtime/presentation/cubit/airtime_cubit
 import 'package:lazervault/src/features/investments/presentation/view/investments_screen.dart';
 
 // AI Scan to Pay Imports
-import 'package:lazervault/src/features/ai_scan_to_pay/data/datasources/ai_scan_datasource.dart';
 import 'package:lazervault/src/features/ai_scan_to_pay/data/datasources/ai_scan_remote_datasource.dart';
-import 'package:lazervault/src/features/ai_scan_to_pay/data/repositories/ai_scan_repository_impl_v2.dart';
+import 'package:lazervault/src/features/ai_scan_to_pay/data/repositories/ai_scan_repository_impl.dart';
 import 'package:lazervault/src/features/ai_scan_to_pay/domain/repositories/ai_scan_repository.dart';
 import 'package:lazervault/src/features/ai_scan_to_pay/domain/usecases/ai_scan_usecases.dart';
 import 'package:lazervault/src/features/ai_scan_to_pay/presentation/cubit/ai_scan_cubit.dart';
@@ -1383,19 +1382,18 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton<AiScanRemoteDataSource>(
     () => AiScanRemoteDataSourceImpl(
       grpcClient: serviceLocator<GrpcClient>(),
+      httpClient: serviceLocator<http.Client>(),
+      secureStorage: serviceLocator<SecureStorageService>(),
+      chatGatewayBaseUrl: dotenv.env['CHAT_GATEWAY_BASE_URL'] ?? 'http://localhost:3011',
     ),
   );
 
-  // Keep mock datasource for fallback/testing if needed
-  serviceLocator.registerLazySingleton<AiScanDataSource>(
-    () => AiScanDataSourceImpl(),
-  );
-
-  // Repositories - Using V2 implementation with gRPC
+  // Repositories - Using gRPC implementation
   serviceLocator.registerLazySingleton<AiScanRepository>(
-    () => AiScanRepositoryImplV2(
+    () => AiScanRepositoryImpl(
       remoteDataSource: serviceLocator<AiScanRemoteDataSource>(),
       grpcClient: serviceLocator<GrpcClient>(),
+      secureStorage: serviceLocator<SecureStorageService>(),
     ),
   );
 

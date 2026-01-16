@@ -20,4 +20,14 @@ abstract class AiScanRepository {
   Future<PaymentInstruction> generatePaymentInstruction(Map<String, dynamic> extractedData, ScanType scanType);
   Future<bool> processPayment(PaymentInstruction instruction);
   Future<bool> validatePaymentData(Map<String, dynamic> paymentData);
+
+  // Bank details scan operations
+  Future<BankDetails> scanBankDetails(String imagePath, String sessionId);
+  Future<PaymentReceipt> processBankDetailsPayment({
+    required BankDetails bankDetails,
+    required double amount,
+    required String description,
+    required String verificationToken,
+    required String transactionId,
+  });
 } 

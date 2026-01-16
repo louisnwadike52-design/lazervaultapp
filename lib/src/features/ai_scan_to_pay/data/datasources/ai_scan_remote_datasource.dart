@@ -1,9 +1,13 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:async';
 import 'package:grpc/grpc.dart';
-import '../../../../core/network/grpc_client.dart';
+import 'package:http/http.dart' as http;
+import '../../../../../core/network/grpc_client.dart';
+import '../../../../../core/services/secure_storage_service.dart';
 import '../../../../generated/ai_scan.pb.dart' as pb;
 import '../../domain/entities/scan_entities.dart';
+import '../../domain/exceptions/scan_exceptions.dart';
 import '../models/scan_models.dart';
 
 abstract class AiScanRemoteDataSource {
@@ -16,12 +20,31 @@ abstract class AiScanRemoteDataSource {
   Future<AiChatMessageModel> processAiResponse(String sessionId, String userMessage, Map<String, dynamic>? extractedData);
   Future<PaymentInstructionModel> generatePaymentInstruction(Map<String, dynamic> extractedData, ScanType scanType, String sessionId);
   Future<bool> processPayment(PaymentInstructionModel instruction, String userId, String sessionId);
+
+  // Bank details scan methods
+  Future<BankDetailsModel> scanBankDetails(String imagePath, String userId, String sessionId, String accessToken);
+  Future<PaymentReceiptModel> processBankDetailsPayment({
+    required BankDetailsModel bankDetails,
+    required double amount,
+    required String description,
+    required String verificationToken,
+    required String transactionId,
+    required String userId,
+  });
 }
 
 class AiScanRemoteDataSourceImpl implements AiScanRemoteDataSource {
   final GrpcClient grpcClient;
+  final http.Client httpClient;
+  final SecureStorageService secureStorage;
+  final String chatGatewayBaseUrl;
 
-  AiScanRemoteDataSourceImpl({required this.grpcClient});
+  AiScanRemoteDataSourceImpl({
+    required this.grpcClient,
+    required this.httpClient,
+    required this.secureStorage,
+    required this.chatGatewayBaseUrl,
+  });
 
   @override
   Future<ScanSessionModel> createScanSession(ScanType scanType, String userId) async {
@@ -201,6 +224,326 @@ class AiScanRemoteDataSourceImpl implements AiScanRemoteDataSource {
     // Chat history is managed through processAiResponse
     // Return empty list as messages are returned individually
     return [];
+  }
+
+  @override
+  Future<BankDetailsModel> scanBankDetails(
+    String imagePath,
+    String userId,
+    String sessionId,
+    String accessToken,
+  ) async {
+    try {
+      // Validate image file
+      final imageFile = File(imagePath);
+      if (!await imageFile.exists()) {
+        throw OCRException.invalidImageFormat();
+      }
+
+      // Check file size (max 10MB)
+      final fileSize = await imageFile.length();
+      if (fileSize > 10 * 1024 * 1024) {
+        throw OCRException(
+          errorType: OCRErrorType.invalidImageFormat,
+          message: 'Image file too large',
+          userMessage: 'Image is too large. Maximum size: 10MB',
+        );
+      }
+
+      // Read image file and convert to base64
+      final imageBytes = await imageFile.readAsBytes();
+      final imageBase64 = base64Encode(imageBytes);
+
+      // Prepare request body
+      final requestBody = jsonEncode({
+        'image_base64': imageBase64,
+        'user_id': userId,
+        'session_id': sessionId,
+        'access_token': accessToken,
+      });
+
+      // Send POST request to chat gateway with timeout
+      final uri = Uri.parse('$chatGatewayBaseUrl/scan/bank-details');
+      final response = await httpClient
+          .post(
+        uri,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $accessToken',
+        },
+        body: requestBody,
+      )
+          .timeout(
+        const Duration(seconds: 30),
+        onTimeout: () {
+          throw OCRException.processingTimeout();
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final responseData = jsonDecode(response.body) as Map<String, dynamic>;
+
+        if (responseData['success'] == true) {
+          final extractedData =
+              responseData['extracted_data'] as Map<String, dynamic>;
+
+          // Check confidence score
+          final confidenceScore =
+              (extractedData['confidence_score'] as num?)?.toDouble() ?? 0.0;
+          if (confidenceScore < 0.3) {
+            throw OCRException.lowConfidence(confidence: confidenceScore);
+          }
+
+          return BankDetailsModel.fromJson(extractedData);
+        } else {
+          // Handle specific error codes from backend
+          final errorCode = responseData['error'] as String?;
+          final errorMessage = responseData['user_message'] as String?;
+
+          if (errorCode == 'LOW_CONFIDENCE') {
+            throw OCRException.lowConfidence(
+              confidence:
+                  (responseData['confidence_score'] as num?)?.toDouble(),
+            );
+          } else if (errorCode == 'NO_TEXT_DETECTED') {
+            throw OCRException.noTextDetected();
+          } else if (errorCode == 'INVALID_FORMAT') {
+            throw OCRException.invalidImageFormat();
+          } else if (errorCode == 'OCR_FAILED') {
+            throw OCRException(
+              errorType: OCRErrorType.processingTimeout,
+              message: 'OCR processing failed',
+              userMessage: errorMessage ??
+                  'Could not process image. Please try again.',
+            );
+          } else {
+            throw OCRException(
+              errorType: OCRErrorType.processingTimeout,
+              message: errorMessage ?? 'Unknown error occurred',
+              userMessage: errorMessage ?? 'Failed to scan bank details.',
+            );
+          }
+        }
+      } else if (response.statusCode == 400) {
+        final errorData = jsonDecode(response.body);
+        final errorMessage = errorData['user_message'] ?? 'Invalid request';
+        throw ValidationException(
+          validationType: ValidationType.accountNumber,
+          message: errorMessage,
+          userMessage: errorMessage,
+        );
+      } else if (response.statusCode == 401) {
+        throw AuthenticationException.notAuthenticated();
+      } else if (response.statusCode == 403) {
+        throw AuthenticationException.unauthorized();
+      } else if (response.statusCode == 429) {
+        final retryAfter = int.tryParse(
+          response.headers['retry-after'] ?? '',
+        );
+        throw RateLimitException.tooManyRequests(retryAfter: retryAfter);
+      } else if (response.statusCode >= 500) {
+        throw NetworkException.serverError(statusCode: response.statusCode);
+      } else {
+        throw NetworkException(
+          errorType: NetworkErrorType.badRequest,
+          message: 'Unexpected error: ${response.statusCode}',
+          userMessage: 'Server error. Please try again.',
+        );
+      }
+    } on SocketException {
+      throw NetworkException.noConnection();
+    } on TimeoutException {
+      throw NetworkException.timeout();
+    } on http.ClientException catch (e) {
+      throw NetworkException(
+        errorType: NetworkErrorType.serverError,
+        message: 'Network error: ${e.message}',
+        userMessage: 'Connection failed. Please check your network.',
+      );
+    } on ScanException {
+      // Re-throw our custom exceptions
+      rethrow;
+    } catch (e) {
+      throw OCRException(
+        errorType: OCRErrorType.processingTimeout,
+        message: 'Failed to scan bank details: $e',
+        userMessage: 'An unexpected error occurred. Please try again.',
+      );
+    }
+  }
+
+  @override
+  Future<PaymentReceiptModel> processBankDetailsPayment({
+    required BankDetailsModel bankDetails,
+    required double amount,
+    required String description,
+    required String verificationToken,
+    required String transactionId,
+    required String userId,
+  }) async {
+    try {
+      // Validate amount
+      if (amount <= 0) {
+        throw PaymentException.amountTooSmall(minAmount: 0.01);
+      }
+      if (amount > 1000000) {
+        throw PaymentException.amountTooLarge(maxAmount: 1000000);
+      }
+
+      // Get access token
+      final accessToken = await secureStorage.getAccessToken();
+      if (accessToken == null || accessToken.isEmpty) {
+        throw AuthenticationException.notAuthenticated();
+      }
+
+      // Validate bank details
+      if (bankDetails.accountNumber.isEmpty) {
+        throw ValidationException.invalidAccountNumber();
+      }
+      if (bankDetails.accountName.isEmpty) {
+        throw ValidationException.missingAccountName();
+      }
+      if (bankDetails.bankName.isEmpty) {
+        throw ValidationException.missingBankName();
+      }
+
+      // Prepare request body for gRPC payment service
+      final requestBody = jsonEncode({
+        'from_account_id': userId, // TODO: Should be actual account ID
+        'bank_details': {
+          'account_number': bankDetails.accountNumber,
+          'account_name': bankDetails.accountName,
+          'bank_name': bankDetails.bankName,
+          'bank_code': bankDetails.bankCode,
+          'routing_number': bankDetails.routingNumber,
+          'account_type': bankDetails.accountType,
+          'confidence_score': bankDetails.confidenceScore,
+        },
+        'amount': amount,
+        'currency': 'USD', // TODO: Should be dynamic based on user's currency
+        'description': description,
+        'transaction_id': transactionId,
+        'verification_token': verificationToken,
+      });
+
+      // Call payment service via gRPC or HTTP
+      // For now, using HTTP to core-payments-service REST endpoint
+      final paymentServiceUrl =
+          chatGatewayBaseUrl.replaceAll('3011', '8080'); // TODO: Use proper config
+      final uri = Uri.parse('$paymentServiceUrl/api/v1/payments/bank-details');
+
+      final response = await httpClient
+          .post(
+        uri,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $accessToken',
+        },
+        body: requestBody,
+      )
+          .timeout(
+        const Duration(seconds: 45),
+        onTimeout: () {
+          throw NetworkException.timeout();
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final responseData = jsonDecode(response.body) as Map<String, dynamic>;
+
+        // Create receipt from response
+        final payment = responseData['payment'] as Map<String, dynamic>;
+        final recipientName = responseData['recipient_name'] as String;
+        final transferReference = responseData['transfer_reference'] as String?;
+
+        return PaymentReceiptModel(
+          id: payment['id'] as String,
+          reference: payment['reference'] as String,
+          recipientName: recipientName,
+          accountNumber: bankDetails.accountNumber,
+          bankName: bankDetails.bankName,
+          amount: amount,
+          currency: payment['currency'] as String,
+          status: payment['status'] as String,
+          description: description,
+          transactionDate: DateTime.now(),
+          transferReference: transferReference,
+          isExternal: bankDetails.isExternal,
+        );
+      } else if (response.statusCode == 400) {
+        final errorData = jsonDecode(response.body);
+        final errorMessage = errorData['message'] as String?;
+
+        // Check for specific error types
+        if (errorMessage?.toLowerCase().contains('invalid account') ?? false) {
+          throw PaymentException.invalidAccount();
+        } else if (errorMessage?.toLowerCase().contains('invalid pin') ?? false) {
+          throw PaymentException.invalidPin();
+        } else {
+          throw PaymentException.transactionFailed(reason: errorMessage);
+        }
+      } else if (response.statusCode == 401) {
+        throw AuthenticationException.sessionExpired();
+      } else if (response.statusCode == 402) {
+        final errorData = jsonDecode(response.body);
+        final availableBalance =
+            (errorData['available_balance'] as num?)?.toDouble() ?? 0.0;
+        throw PaymentException.insufficientFunds(
+          availableBalance: availableBalance,
+          requestedAmount: amount,
+        );
+      } else if (response.statusCode == 403) {
+        final errorData = jsonDecode(response.body);
+        final unlocksAt = errorData['unlocks_at'] as String?;
+
+        if (unlocksAt != null) {
+          throw PaymentException.pinLocked(unlocksAt: unlocksAt);
+        } else {
+          throw AuthenticationException.unauthorized();
+        }
+      } else if (response.statusCode == 404) {
+        throw PaymentException.invalidAccount();
+      } else if (response.statusCode == 422) {
+        final errorData = jsonDecode(response.body);
+        final errorMessage = errorData['message'] as String?;
+
+        if (errorMessage?.toLowerCase().contains('bank not supported') ?? false) {
+          throw BankValidationException.bankNotSupported(
+            bankName: bankDetails.bankName,
+          );
+        } else {
+          throw BankValidationException.validationFailed(reason: errorMessage);
+        }
+      } else if (response.statusCode == 429) {
+        final retryAfter = int.tryParse(
+          response.headers['retry-after'] ?? '',
+        );
+        throw RateLimitException.tooManyRequests(retryAfter: retryAfter);
+      } else if (response.statusCode >= 500) {
+        throw NetworkException.serverError(statusCode: response.statusCode);
+      } else {
+        throw PaymentException.transactionFailed(
+          reason: 'Unexpected error: ${response.statusCode}',
+        );
+      }
+    } on SocketException {
+      throw NetworkException.noConnection();
+    } on TimeoutException {
+      throw NetworkException.timeout();
+    } on http.ClientException catch (e) {
+      throw NetworkException(
+        errorType: NetworkErrorType.serverError,
+        message: 'Network error: ${e.message}',
+        userMessage: 'Connection failed. Please check your network.',
+      );
+    } on ScanException {
+      // Re-throw our custom exceptions
+      rethrow;
+    } catch (e) {
+      throw PaymentException.transactionFailed(
+        reason: 'An unexpected error occurred: ${e.toString()}',
+      );
+    }
   }
 
   // Helper methods for type conversion

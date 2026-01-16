@@ -267,4 +267,194 @@ class PaymentInstruction extends Equatable {
       additionalData: additionalData ?? this.additionalData,
     );
   }
+}
+
+// Bank Details entity for scan-to-pay
+class BankDetails extends Equatable {
+  final String accountNumber;
+  final String accountName;
+  final String bankName;
+  final String? bankCode;
+  final String? routingNumber;
+  final String? swiftCode;
+  final double confidenceScore;
+  final Map<String, double> fieldConfidence;
+  final String accountType; // "internal" or "external"
+  final String transferMethod; // "send_funds_grpc" or "paystack_transfer"
+
+  const BankDetails({
+    required this.accountNumber,
+    required this.accountName,
+    required this.bankName,
+    this.bankCode,
+    this.routingNumber,
+    this.swiftCode,
+    required this.confidenceScore,
+    required this.fieldConfidence,
+    required this.accountType,
+    required this.transferMethod,
+  });
+
+  bool get isHighConfidence => confidenceScore >= 0.8;
+  bool get isMediumConfidence => confidenceScore >= 0.6 && confidenceScore < 0.8;
+  bool get isLowConfidence => confidenceScore < 0.6;
+  bool get requiresReview => confidenceScore < 0.6;
+  bool get isInternal => accountType == 'internal';
+  bool get isExternal => accountType == 'external';
+
+  String get maskedAccountNumber {
+    if (accountNumber.length <= 4) return accountNumber;
+    final visibleDigits = accountNumber.substring(accountNumber.length - 4);
+    final maskedPart = '*' * (accountNumber.length - 4);
+    return maskedPart + visibleDigits;
+  }
+
+  @override
+  List<Object?> get props => [
+        accountNumber,
+        accountName,
+        bankName,
+        bankCode,
+        routingNumber,
+        swiftCode,
+        confidenceScore,
+        fieldConfidence,
+        accountType,
+        transferMethod,
+      ];
+
+  BankDetails copyWith({
+    String? accountNumber,
+    String? accountName,
+    String? bankName,
+    String? bankCode,
+    String? routingNumber,
+    String? swiftCode,
+    double? confidenceScore,
+    Map<String, double>? fieldConfidence,
+    String? accountType,
+    String? transferMethod,
+  }) {
+    return BankDetails(
+      accountNumber: accountNumber ?? this.accountNumber,
+      accountName: accountName ?? this.accountName,
+      bankName: bankName ?? this.bankName,
+      bankCode: bankCode ?? this.bankCode,
+      routingNumber: routingNumber ?? this.routingNumber,
+      swiftCode: swiftCode ?? this.swiftCode,
+      confidenceScore: confidenceScore ?? this.confidenceScore,
+      fieldConfidence: fieldConfidence ?? this.fieldConfidence,
+      accountType: accountType ?? this.accountType,
+      transferMethod: transferMethod ?? this.transferMethod,
+    );
+  }
+}
+
+// Payment Receipt entity
+class PaymentReceipt extends Equatable {
+  final String id;
+  final String reference;
+  final String recipientName;
+  final String accountNumber;
+  final String bankName;
+  final double amount;
+  final String currency;
+  final String status;
+  final String? description;
+  final DateTime transactionDate;
+  final String? transferReference; // Paystack reference for external transfers
+  final bool isExternal;
+
+  const PaymentReceipt({
+    required this.id,
+    required this.reference,
+    required this.recipientName,
+    required this.accountNumber,
+    required this.bankName,
+    required this.amount,
+    required this.currency,
+    required this.status,
+    this.description,
+    required this.transactionDate,
+    this.transferReference,
+    this.isExternal = false,
+  });
+
+  String get maskedAccountNumber {
+    if (accountNumber.length <= 4) return accountNumber;
+    final visibleDigits = accountNumber.substring(accountNumber.length - 4);
+    final maskedPart = '*' * (accountNumber.length - 4);
+    return maskedPart + visibleDigits;
+  }
+
+  String get formattedDate {
+    return '${transactionDate.day}/${transactionDate.month}/${transactionDate.year}';
+  }
+
+  String get formattedTime {
+    final hour = transactionDate.hour.toString().padLeft(2, '0');
+    final minute = transactionDate.minute.toString().padLeft(2, '0');
+    return '$hour:$minute';
+  }
+
+  String get statusDisplayText {
+    switch (status.toLowerCase()) {
+      case 'completed':
+        return 'Completed';
+      case 'processing':
+        return 'Processing';
+      case 'pending':
+        return 'Pending';
+      case 'failed':
+        return 'Failed';
+      default:
+        return status;
+    }
+  }
+
+  @override
+  List<Object?> get props => [
+        id,
+        reference,
+        recipientName,
+        accountNumber,
+        bankName,
+        amount,
+        currency,
+        status,
+        description,
+        transactionDate,
+        transferReference,
+        isExternal,
+      ];
+
+  PaymentReceipt copyWith({
+    String? id,
+    String? reference,
+    String? recipientName,
+    String? accountNumber,
+    String? bankName,
+    double? amount,
+    String? currency,
+    String? status,
+    String? description,
+    DateTime? transactionDate,
+    String? transferReference,
+    bool? isExternal,
+  }) {
+    return PaymentReceipt(
+      id: id ?? this.id,
+      reference: reference ?? this.reference,
+      recipientName: recipientName ?? this.recipientName,
+      accountNumber: accountNumber ?? this.accountNumber,
+      bankName: bankName ?? this.bankName,
+      amount: amount ?? this.amount,
+      currency: currency ?? this.currency,
+      status: status ?? this.status,
+      description: description ?? this.description,
+      transactionDate: transactionDate ?? this.transactionDate,
+      transferReference: transferReference ?? this.transferReference,
+      isExternal: isExternal ?? this.isExternal,
+    );
+  }
 } 
