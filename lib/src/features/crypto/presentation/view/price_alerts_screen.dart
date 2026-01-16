@@ -1,11 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../cubit/crypto_cubit.dart';
-import '../../cubit/crypto_state.dart';
-import '../../domain/entities/crypto_entity.dart';
 
 class PriceAlertsScreen extends StatefulWidget {
   const PriceAlertsScreen({super.key});
@@ -355,7 +351,7 @@ class _PriceAlertsScreenState extends State<PriceAlertsScreen> {
               Switch(
                 value: alert.isActive,
                 onChanged: (value) => _toggleAlert(alert.id, value),
-                activeColor: const Color(0xFF6C5CE7),
+                activeThumbColor: const Color(0xFF6C5CE7),
               ),
             ],
           ),
@@ -729,7 +725,7 @@ class _CreateAlertBottomSheetState extends State<CreateAlertBottomSheet> {
           ),
         ),
         SizedBox(height: 12.h),
-        Container(
+        SizedBox(
           height: 200.h,
           child: ListView.builder(
             itemCount: _cryptoOptions.length,

@@ -3,8 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:lazervault/core/models/device_contact.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_cubit.dart';
@@ -485,7 +483,7 @@ class _AddRecipientState extends State<AddRecipient> {
                                 Switch(
                                   value: _isFavorite,
                 onChanged: (value) => setState(() => _isFavorite = value),
-                activeColor: Color.fromARGB(255, 78, 3, 208),
+                activeThumbColor: Color.fromARGB(255, 78, 3, 208),
               ),
             ],
           ),

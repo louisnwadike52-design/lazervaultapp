@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart';
 import '../../../../../core/types/app_routes.dart';
 import '../cubit/airtime_cubit.dart';
 import '../cubit/airtime_state.dart';

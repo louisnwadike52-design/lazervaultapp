@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
-import 'package:shimmer/shimmer.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import '../../../../../core/theme/invoice_theme_colors.dart';
 
@@ -15,7 +14,6 @@ import '../cubit/invoice_state.dart';
 import '../widgets/invoice_card.dart';
 import '../widgets/invoice_statistics_card.dart';
 import '../widgets/invoice_filter_chip.dart';
-import 'invoice_details_screen.dart';
 import '../../../authentication/cubit/authentication_cubit.dart';
 import '../../../authentication/cubit/authentication_state.dart';
 
@@ -213,7 +211,7 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
                     isSelected: _selectedFilter == status,
                     onTap: () => _applyFilter(status),
                   ),
-                )).toList(),
+                )),
               ],
             ),
           ),
@@ -396,11 +394,11 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
           SizedBox(height: 24.h),
           ElevatedButton(
             onPressed: () => context.read<InvoiceCubit>().loadInvoices(),
-            child: const Text('Retry'),
             style: ElevatedButton.styleFrom(
               backgroundColor: InvoiceThemeColors.primaryPurple,
               foregroundColor: InvoiceThemeColors.textWhite,
             ),
+            child: const Text('Retry'),
           ),
         ],
       ),
@@ -612,7 +610,7 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             DropdownButtonFormField<PaymentMethod>(
-              value: selectedMethod,
+              initialValue: selectedMethod,
               style: GoogleFonts.inter(color: Colors.white),
               dropdownColor: Colors.grey[800],
               decoration: InputDecoration(

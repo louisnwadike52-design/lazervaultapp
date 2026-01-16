@@ -546,7 +546,7 @@ class VoiceBiometricsException implements Exception {
 
 /// Network-related exception
 class VoiceBiometricsNetworkException extends VoiceBiometricsException {
-  VoiceBiometricsNetworkException(String message) : super(message);
+  VoiceBiometricsNetworkException(super.message);
 
   @override
   String get userMessage {
@@ -565,9 +565,9 @@ class VoiceBiometricsServerException extends VoiceBiometricsException {
   final int? statusCode;
 
   VoiceBiometricsServerException(
-    String message, {
+    super.message, {
     this.statusCode,
-  }) : super(message);
+  });
 
   @override
   String get userMessage {

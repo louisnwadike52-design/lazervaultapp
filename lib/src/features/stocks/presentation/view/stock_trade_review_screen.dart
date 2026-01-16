@@ -104,7 +104,7 @@ class _StockTradeReviewScreenState extends State<StockTradeReviewScreen>
       amount: _estimatedTotal,
       currency: 'USD',
       title: 'Confirm ${_tradeType == 'buy' ? 'Buy' : 'Sell'} Order',
-      message: 'Confirm ${_tradeType} of $_shares shares of ${_selectedStock?.symbol ?? 'stock'} for \$${_estimatedTotal.toStringAsFixed(2)}?',
+      message: 'Confirm $_tradeType of $_shares shares of ${_selectedStock?.symbol ?? 'stock'} for \$${_estimatedTotal.toStringAsFixed(2)}?',
       onPinValidated: (verificationToken) async {
         // PIN is valid, proceed with trade processing
         _executeTradeWithToken(transactionId, verificationToken);

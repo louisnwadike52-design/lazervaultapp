@@ -28,7 +28,7 @@ class _TimePeriodMenuState extends State<TimePeriodMenu> {
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButtonFormField<String>(
-          value: selectedValue,
+          initialValue: selectedValue,
           decoration: const InputDecoration(
             isDense: true,
             contentPadding: EdgeInsets.zero,

@@ -1,4 +1,3 @@
-import 'package:grpc/grpc.dart';
 import '../../../../generated/electricity_bill.pbgrpc.dart' as pb;
 import '../../../../generated/google/protobuf/timestamp.pb.dart' as pb_timestamp;
 import '../../../../core/network/grpc_client.dart';

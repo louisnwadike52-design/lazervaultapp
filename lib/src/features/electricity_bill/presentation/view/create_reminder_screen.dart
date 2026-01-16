@@ -59,8 +59,7 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
               onPrimary: Colors.white,
               surface: Color(0xFF1A1A1A),
               onSurface: Colors.white,
-            ),
-            dialogBackgroundColor: const Color(0xFF1A1A1A),
+            ), dialogTheme: DialogThemeData(backgroundColor: const Color(0xFF1A1A1A)),
           ),
           child: child!,
         );
@@ -86,8 +85,7 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
               onPrimary: Colors.white,
               surface: Color(0xFF1A1A1A),
               onSurface: Colors.white,
-            ),
-            dialogBackgroundColor: const Color(0xFF1A1A1A),
+            ), dialogTheme: DialogThemeData(backgroundColor: const Color(0xFF1A1A1A)),
           ),
           child: child!,
         );
@@ -507,20 +505,20 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
                               color: Colors.white,
                             ),
                           ),
-                          if (beneficiary.nickname != null) ...[
-                            SizedBox(height: 2.h),
-                            Text(
-                              beneficiary.meterNumber,
-                              style: GoogleFonts.inter(
-                                fontSize: 12.sp,
-                                color: Colors.white.withOpacity(0.5),
-                              ),
+                          ...[
+                          SizedBox(height: 2.h),
+                          Text(
+                            beneficiary.meterNumber,
+                            style: GoogleFonts.inter(
+                              fontSize: 12.sp,
+                              color: Colors.white.withOpacity(0.5),
                             ),
-                          ],
+                          ),
+                        ],
                         ],
                       ),
                     );
-                  }).toList(),
+                  }),
                 ],
                 onChanged: (value) {
                   setState(() {
@@ -595,7 +593,7 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
                     _isRecurring = value;
                   });
                 },
-                activeColor: const Color(0xFF4E03D0),
+                activeThumbColor: const Color(0xFF4E03D0),
                 activeTrackColor: const Color(0xFF4E03D0).withOpacity(0.5),
               ),
             ],

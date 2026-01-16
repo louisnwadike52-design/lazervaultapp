@@ -6,9 +6,9 @@ class AutoSaveAnalyticsCard extends StatelessWidget {
   final List<AutoSaveRuleEntity> rules;
 
   const AutoSaveAnalyticsCard({
-    Key? key,
+    super.key,
     required this.rules,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

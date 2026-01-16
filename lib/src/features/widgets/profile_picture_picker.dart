@@ -11,11 +11,11 @@ class ProfilePicturePicker extends StatelessWidget {
   final double size;
 
   const ProfilePicturePicker({
-    Key? key,
+    super.key,
     this.currentProfilePicture,
     required this.onImageSelected,
     this.size = 120,
-  }) : super(key: key);
+  });
 
   Future<void> _pickImage(BuildContext context) async {
     showModalBottomSheet(

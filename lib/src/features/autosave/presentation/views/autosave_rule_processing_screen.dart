@@ -294,7 +294,7 @@ class _AutoSaveRuleProcessingScreenState extends State<AutoSaveRuleProcessingScr
             ),
           ),
           SizedBox(height: 12.h),
-          Container(
+          SizedBox(
             width: 200.w,
             child: Text(
               'We\'re setting up your auto-save rule. This will only take a moment.',

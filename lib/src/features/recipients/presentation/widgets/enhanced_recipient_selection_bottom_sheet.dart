@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/models/device_contact.dart';
 import 'package:lazervault/core/services/contact_service.dart';

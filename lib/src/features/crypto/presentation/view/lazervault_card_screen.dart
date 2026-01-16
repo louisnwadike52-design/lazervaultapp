@@ -18,7 +18,7 @@ class _LazerVaultCardScreenState extends State<LazerVaultCardScreen>
   late Animation<double> _slideAnimation;
   late Animation<double> _cardRotationAnimation;
   
-  bool _hasCard = false;
+  final bool _hasCard = false;
   int _selectedTab = 0;
   final PageController _pageController = PageController();
   
@@ -229,7 +229,7 @@ class _LazerVaultCardScreenState extends State<LazerVaultCardScreen>
   }
 
   Widget _buildHeroCard() {
-    return Container(
+    return SizedBox(
       height: 220.h,
       child: AnimatedBuilder(
         animation: _cardRotationAnimation,

@@ -12,9 +12,9 @@ class PayTaggedInvoiceDialog extends StatefulWidget {
   final TaggedInvoice invoice;
 
   const PayTaggedInvoiceDialog({
-    Key? key,
+    super.key,
     required this.invoice,
-  }) : super(key: key);
+  });
 
   @override
   State<PayTaggedInvoiceDialog> createState() => _PayTaggedInvoiceDialogState();

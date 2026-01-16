@@ -7,10 +7,10 @@ class AutoSaveSearchBar extends StatefulWidget {
   final String? initialQuery;
 
   const AutoSaveSearchBar({
-    Key? key,
+    super.key,
     required this.onSearchChanged,
     this.initialQuery,
-  }) : super(key: key);
+  });
 
   @override
   State<AutoSaveSearchBar> createState() => _AutoSaveSearchBarState();

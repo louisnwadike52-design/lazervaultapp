@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/src/features/widgets/app_services_builder.dart';
 import 'package:lazervault/src/features/account_cards_summary/presentation/view/dashboard_card_summary.dart';
@@ -11,8 +10,6 @@ import 'package:lazervault/src/features/widgets/dashboard/invite_friends.dart';
 import 'package:lazervault/src/features/widgets/dashboard/monthly_summary.dart';
 import 'package:lazervault/src/features/widgets/dashboard/portfolio.dart';
 import 'package:lazervault/src/features/widgets/recent_history.dart';
-import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
-import 'package:lazervault/src/features/profile/cubit/profile_state.dart';
 
 class Dashboard extends StatefulWidget {
   const Dashboard({super.key});

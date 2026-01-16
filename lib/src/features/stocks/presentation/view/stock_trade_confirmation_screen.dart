@@ -307,24 +307,24 @@ Date: ${dateFormat.format(widget.order.createdAt)}
           // Stock details
           Row(
             children: [
-              if (widget.stock.logoUrl != null) ...[
-                Container(
-                  width: 48.w,
-                  height: 48.w,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(8.r),
-                  ),
-                  padding: EdgeInsets.all(8.w),
-                  child: Image.network(
-                    widget.stock.logoUrl!,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Icon(Icons.business, size: 32.sp, color: Colors.grey);
-                    },
-                  ),
+              ...[
+              Container(
+                width: 48.w,
+                height: 48.w,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(8.r),
                 ),
-                SizedBox(width: 16.w),
-              ],
+                padding: EdgeInsets.all(8.w),
+                child: Image.network(
+                  widget.stock.logoUrl,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Icon(Icons.business, size: 32.sp, color: Colors.grey);
+                  },
+                ),
+              ),
+              SizedBox(width: 16.w),
+            ],
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

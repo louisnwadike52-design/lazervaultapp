@@ -12,7 +12,7 @@ import '../../../account_cards_summary/cubit/account_cards_summary_state.dart';
 import '../widgets/tag_details_bottom_sheet.dart';
 
 class IncomingTagsScreen extends StatefulWidget {
-  const IncomingTagsScreen({Key? key}) : super(key: key);
+  const IncomingTagsScreen({super.key});
 
   @override
   State<IncomingTagsScreen> createState() => _IncomingTagsScreenState();

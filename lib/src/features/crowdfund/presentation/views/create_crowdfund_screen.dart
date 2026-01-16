@@ -403,7 +403,7 @@ class _CreateCrowdfundScreenState extends State<CreateCrowdfundScreen> {
         ),
         SizedBox(height: 8.h),
         DropdownButtonFormField<String>(
-          value: value,
+          initialValue: value,
           items: items.map((item) {
             return DropdownMenuItem(
               value: item,

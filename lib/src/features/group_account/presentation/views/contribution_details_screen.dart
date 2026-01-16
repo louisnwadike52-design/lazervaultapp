@@ -8,7 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../../../../core/types/app_routes.dart';
 import '../../domain/entities/group_entities.dart';
-import '../../data/datasources/contribution_payment_local_data_source.dart';
+import '../../data/datasources/group_account_remote_data_source.dart';
 import '../../data/services/contribution_payment_service.dart';
 import '../../data/repositories/contribution_payment_repository_impl.dart';
 import '../cubit/group_account_cubit.dart';
@@ -70,12 +70,9 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
   }
 
   Future<void> _initializePaymentRepository() async {
-    final localDataSource = ContributionPaymentLocalDataSourceImpl();
-    final paymentService = ContributionPaymentServiceImpl(localDataSource: localDataSource);
+    final remoteDataSource = GroupAccountRemoteDataSourceImpl();
+    final paymentService = ContributionPaymentServiceImpl(remoteDataSource: remoteDataSource);
     _paymentRepository = ContributionPaymentRepositoryImpl(paymentService: paymentService);
-    
-    // Initialize the local data source and wait for it to complete
-    await localDataSource.init();
   }
 
   Future<void> _loadLocalPayments() async {

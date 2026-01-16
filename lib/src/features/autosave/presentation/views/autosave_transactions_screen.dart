@@ -8,7 +8,7 @@ import 'package:lazervault/src/features/autosave/presentation/cubit/autosave_cub
 import 'package:lazervault/src/features/autosave/presentation/cubit/autosave_state.dart';
 
 class AutoSaveTransactionsScreen extends StatefulWidget {
-  const AutoSaveTransactionsScreen({Key? key}) : super(key: key);
+  const AutoSaveTransactionsScreen({super.key});
 
   @override
   State<AutoSaveTransactionsScreen> createState() => _AutoSaveTransactionsScreenState();

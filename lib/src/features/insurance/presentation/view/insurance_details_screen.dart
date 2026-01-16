@@ -11,7 +11,6 @@ import '../../domain/entities/insurance_payment_entity.dart';
 import '../../domain/entities/insurance_claim_entity.dart';
 import '../cubit/insurance_cubit.dart';
 import '../cubit/insurance_state.dart';
-import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 
 class InsuranceDetailsScreen extends StatefulWidget {
   final Insurance insurance;

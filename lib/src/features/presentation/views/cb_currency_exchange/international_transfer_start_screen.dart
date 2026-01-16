@@ -146,13 +146,13 @@ class _InternationalTransferStartScreenState extends State<InternationalTransfer
     }
     
     // Add remaining currencies with transactions
-    _allCurrencies.entries.forEach((entry) {
+    for (var entry in _allCurrencies.entries) {
       if (entry.value['hasTransactions'] == true && 
           entry.key != _selectedFromCurrency && 
           entry.key != _selectedToCurrency) {
         cards.add({'code': entry.key, ...entry.value});
       }
-    });
+    }
     
     return cards;
   }
@@ -181,16 +181,16 @@ class _InternationalTransferStartScreenState extends State<InternationalTransfer
       }
       
       // Add remaining currencies
-      _allCurrencies.entries.forEach((entry) {
+      for (var entry in _allCurrencies.entries) {
         if (entry.key != _selectedFromCurrency && entry.key != _selectedToCurrency) {
           rates.add({'code': entry.key, ...entry.value});
         }
-      });
+      }
     } else {
       // Default order - all currencies in original order
-      _allCurrencies.entries.forEach((entry) {
+      for (var entry in _allCurrencies.entries) {
         rates.add({'code': entry.key, ...entry.value});
-      });
+      }
     }
     
     return rates;

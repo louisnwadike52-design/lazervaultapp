@@ -369,7 +369,7 @@ class _WhatsAppSecurityScreenState extends State<WhatsAppSecurityScreen> {
                                     _hasChanges = true;
                                   });
                                 },
-                                activeColor: Color.fromARGB(255, 78, 3, 208),
+                                activeThumbColor: Color.fromARGB(255, 78, 3, 208),
                               ),
                             ],
                           ),

@@ -1,7 +1,4 @@
-import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/network/grpc_client.dart';
-import '../../../authentication/cubit/authentication_cubit.dart';
-import '../../../authentication/cubit/authentication_state.dart';
 import '../../domain/entities/scan_entities.dart';
 import '../../domain/repositories/ai_scan_repository.dart';
 import '../datasources/ai_scan_remote_datasource.dart';

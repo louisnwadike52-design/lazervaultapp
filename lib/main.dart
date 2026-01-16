@@ -22,7 +22,6 @@ import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:device_info_plus/device_info_plus.dart'; // Added device_info_plus
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:lazervault/src/features/voice/managers/voice_activation_manager.dart';
 
 Future<void> _checkPermissions() async {
   var status = await Permission.bluetooth.request();

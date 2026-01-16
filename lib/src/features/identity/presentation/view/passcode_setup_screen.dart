@@ -5,7 +5,7 @@ import 'package:lazervault/src/features/identity/cubit/identity_state.dart';
 import 'package:lazervault/src/features/identity/presentation/widgets/pin_pad_widget.dart';
 
 class PasscodeSetupScreen extends StatefulWidget {
-  const PasscodeSetupScreen({Key? key}) : super(key: key);
+  const PasscodeSetupScreen({super.key});
 
   @override
   State<PasscodeSetupScreen> createState() => _PasscodeSetupScreenState();

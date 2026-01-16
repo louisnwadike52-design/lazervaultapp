@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:rxdart/rxdart.dart';
 import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 
@@ -18,12 +17,12 @@ class AccountSummarySlide extends StatefulWidget {
   final VoidCallback? onLocaleChanged;
 
   const AccountSummarySlide({
-    Key? key,
+    super.key,
     required this.child,
     required this.accounts,
     this.onAccountChanged,
     this.onLocaleChanged,
-  }) : super(key: key);
+  });
 
   @override
   State<AccountSummarySlide> createState() => _AccountSummarySlideState();
@@ -72,11 +71,11 @@ class AccountSummarySlideContent extends StatefulWidget {
   final VoidCallback? onLocaleChanged;
 
   const AccountSummarySlideContent({
-    Key? key,
+    super.key,
     required this.accounts,
     this.onAccountChanged,
     this.onLocaleChanged,
-  }) : super(key: key);
+  });
 
   @override
   State<AccountSummarySlideContent> createState() => _AccountSummarySlideContentState();

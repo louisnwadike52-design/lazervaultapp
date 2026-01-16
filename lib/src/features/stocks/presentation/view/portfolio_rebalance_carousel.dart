@@ -34,8 +34,8 @@ class _PortfolioRebalanceCarouselState extends State<PortfolioRebalanceCarousel>
   // Form state
   String _strategy = 'Balanced'; // Conservative, Balanced, Aggressive, Custom
   Map<String, double> _targetAllocations = {};
-  Map<String, double> _currentAllocations = {};
-  List<RebalanceTrade> _proposedTrades = [];
+  final Map<String, double> _currentAllocations = {};
+  final List<RebalanceTrade> _proposedTrades = [];
   String _rebalanceMethod = 'Automatic'; // Automatic or Manual
 
   final List<String> _pageNames = ['Allocation', 'Strategy', 'Review'];

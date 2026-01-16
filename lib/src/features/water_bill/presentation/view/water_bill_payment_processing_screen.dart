@@ -597,7 +597,7 @@ class WaterBillPaymentReceiptScreen extends StatelessWidget {
                       SizedBox(height: 12.h),
                       _buildReceiptRow(
                         'Payment Date',
-                        '${payment.completedAt?.toLocal().toString().split('.')[0] ?? payment.createdAt.toLocal().toString().split('.')[0]}',
+                        payment.completedAt?.toLocal().toString().split('.')[0] ?? payment.createdAt.toLocal().toString().split('.')[0],
                       ),
                     ],
                   ),
@@ -610,7 +610,7 @@ class WaterBillPaymentReceiptScreen extends StatelessWidget {
                   height: 56.h,
                   child: ElevatedButton(
                     onPressed: () {
-                      Get.backUntil((route) => route.isFirst);
+                      Navigator.of(context).popUntil((route) => route.isFirst);
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF3B82F6),

@@ -110,7 +110,7 @@ class _AddBudgetScreenState extends State<AddBudgetScreen> {
 
               // Currency selector
               DropdownButtonFormField<String>(
-                value: _currency,
+                initialValue: _currency,
                 decoration: InputDecoration(
                   labelText: 'Currency',
                   border: OutlineInputBorder(
@@ -136,7 +136,7 @@ class _AddBudgetScreenState extends State<AddBudgetScreen> {
 
               // Budget period
               DropdownButtonFormField<BudgetPeriod>(
-                value: _selectedPeriod,
+                initialValue: _selectedPeriod,
                 decoration: InputDecoration(
                   labelText: 'Budget Period',
                   border: OutlineInputBorder(
@@ -158,7 +158,7 @@ class _AddBudgetScreenState extends State<AddBudgetScreen> {
 
               // Category dropdown (optional)
               DropdownButtonFormField<ExpenseCategory?>(
-                value: _selectedCategory,
+                initialValue: _selectedCategory,
                 decoration: InputDecoration(
                   labelText: 'Category (Optional)',
                   border: OutlineInputBorder(

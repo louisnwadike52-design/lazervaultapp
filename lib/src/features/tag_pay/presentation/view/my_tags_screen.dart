@@ -8,7 +8,7 @@ import '../cubit/tag_pay_cubit.dart';
 import '../cubit/tag_pay_state.dart';
 
 class MyTagsScreen extends StatefulWidget {
-  const MyTagsScreen({Key? key}) : super(key: key);
+  const MyTagsScreen({super.key});
 
   @override
   State<MyTagsScreen> createState() => _MyTagsScreenState();

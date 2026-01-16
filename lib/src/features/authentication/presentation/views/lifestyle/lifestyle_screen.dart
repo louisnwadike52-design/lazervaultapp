@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import '../../../../../core/services/injection_container.dart';
-import '../../../../../core/services/locale_manager.dart';
+import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/services/locale_manager.dart';
 import '../../../../lifestyle/config/partner_config.dart';
 import '../../../../lifestyle/presentation/screens/partner_webview_screen.dart';
 

@@ -8,11 +8,9 @@ import 'dart:math' as math;
 import '../../domain/entities/stock_entity.dart';
 import '../../cubit/stock_cubit.dart';
 import '../../cubit/stock_state.dart';
-import '../widgets/chart_painters.dart';
 import '../widgets/drawing_elements.dart';
 import '../widgets/drawings_painter.dart';
 import '../widgets/professional_candlestick_painter.dart';
-import '../widgets/indicators_painter.dart';
 import '../widgets/crosshair_painter.dart';
 import 'package:flutter/services.dart';
 import '../widgets/price_overlay_indicators_painter.dart';
@@ -58,8 +56,8 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
   ChartType _selectedChartType = ChartType.candlestick;
   DrawingTool _selectedDrawingTool = DrawingTool.none;
   String _selectedTimeframe = '1D';
-  List<String> _selectedIndicators = [];
-  List<Stock> _comparisonStocks = [];
+  final List<String> _selectedIndicators = [];
+  final List<Stock> _comparisonStocks = [];
   
   // Pan and zoom variables
   double _currentScale = 1.0;
@@ -74,7 +72,7 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
   double _lastPanX = 0.0;
   
   // Drawing data
-  List<DrawingElement> _drawings = [];
+  final List<DrawingElement> _drawings = [];
   DrawingElement? _currentDrawing;
   bool _isDrawing = false;
   Offset? _drawingStartPoint;
@@ -287,7 +285,7 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
             children: [
               // Full screen chart (90% height, 100% width)
               Positioned.fill(
-                child: Container(
+                child: SizedBox(
                   height: MediaQuery.of(context).size.height * 0.9,
                   width: MediaQuery.of(context).size.width,
                   child: _buildFullScreenChart(priceHistory),
@@ -993,7 +991,7 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
           _isScaling = false;
         });
       },
-      child: Container(
+      child: SizedBox(
         width: MediaQuery.of(context).size.width,
         height: MediaQuery.of(context).size.height * 0.9,
         child: Stack(
@@ -1813,7 +1811,7 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
         return _buildEmptyChart();
       }
       
-      return Container(
+      return SizedBox(
         width: double.infinity,
         height: double.infinity,
         child: CustomPaint(
@@ -1836,7 +1834,7 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
   }
 
   Widget _buildEmptyChart() {
-    return Container(
+    return SizedBox(
       width: double.infinity,
       height: double.infinity,
       child: Center(

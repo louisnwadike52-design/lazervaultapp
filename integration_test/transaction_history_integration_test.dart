@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:grpc/grpc.dart';
 import 'package:lazervault/src/generated/accounts.pbgrpc.dart';
 import 'package:lazervault/src/core/grpc/accounts_grpc_client.dart';
@@ -27,7 +28,6 @@ void main() {
         port: 50052,
         options: const ChannelOptions(
           credentials: ChannelCredentials.insecure(),
-          timeout: Duration(seconds: 30),
         ),
       );
 
@@ -90,8 +90,10 @@ void main() {
 
 /// Mock call options helper for testing
 class _TestCallOptionsHelper extends GrpcCallOptionsHelper {
+  _TestCallOptionsHelper() : super(const FlutterSecureStorage());
+
   @override
-  Future<CallOptions> withAuth() async {
-    return CallOptions();
+  Future<CallOptions> withAuth([CallOptions? options]) async {
+    return options ?? CallOptions();
   }
 }

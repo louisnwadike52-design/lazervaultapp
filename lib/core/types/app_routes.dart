@@ -284,6 +284,7 @@ abstract class AppRoutes {
   // Voice Enrollment Routes
   static const String voiceEnrollment = '/voice/enrollment';
   static const String voiceActivationPrompt = '/voice/activation-prompt';
+  static const String voiceVerification = '/voice/verification';
 
   // Family Account Routes
   static const String familySetup = '/family/setup';

@@ -8,7 +8,7 @@ import 'package:lazervault/src/features/identity/cubit/identity_state.dart';
 import 'package:lazervault/src/features/identity/domain/entities/id_document.dart';
 
 class IDVerificationScreen extends StatefulWidget {
-  const IDVerificationScreen({Key? key}) : super(key: key);
+  const IDVerificationScreen({super.key});
 
   @override
   State<IDVerificationScreen> createState() => _IDVerificationScreenState();
@@ -114,7 +114,7 @@ class _IDVerificationScreenState extends State<IDVerificationScreen> {
                 const Text('Document Type', style: TextStyle(fontSize: 16)),
                 const SizedBox(height: 8),
                 DropdownButtonFormField<DocumentType>(
-                  value: _selectedDocumentType,
+                  initialValue: _selectedDocumentType,
                   decoration: InputDecoration(
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),

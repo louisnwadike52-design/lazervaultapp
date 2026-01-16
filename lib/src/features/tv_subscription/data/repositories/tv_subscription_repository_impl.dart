@@ -1,16 +1,11 @@
 import 'package:dartz/dartz.dart';
 import '../../../../core/errors/failures.dart';
-import '../../../../core/network/network_exceptions.dart';
 import '../../domain/entities/tv_provider_entity.dart';
 import '../../domain/entities/tv_package_entity.dart';
 import '../../domain/entities/smartcard_validation_result.dart';
 import '../../domain/entities/tv_payment_entity.dart';
 import '../../domain/repositories/tv_subscription_repository.dart';
 import '../datasources/tv_subscription_remote_datasource.dart';
-import '../models/tv_provider_model.dart';
-import '../models/tv_package_model.dart';
-import '../models/smartcard_validation_result_model.dart';
-import '../models/tv_payment_model.dart';
 
 class TVSubscriptionRepositoryImpl implements TVSubscriptionRepository {
   final TVSubscriptionRemoteDataSource remoteDataSource;

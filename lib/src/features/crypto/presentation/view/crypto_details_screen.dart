@@ -3,10 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../cubit/crypto_cubit.dart';
-import '../../cubit/crypto_state.dart';
 import '../../domain/entities/crypto_entity.dart';
 import '../../../../../core/types/app_routes.dart';
 
@@ -31,10 +29,10 @@ class _CryptoDetailsScreenState extends State<CryptoDetailsScreen>
   final List<String> _timeframes = ['1H', '4H', '1D', '1W', '1M', '3M', '6M', '1Y', 'ALL'];
   String _selectedTimeframe = '1D';
   bool _isInWatchlist = false;
-  bool _showIndicators = false;
+  final bool _showIndicators = false;
   
   // Technical Indicators
-  List<String> _selectedIndicators = [];
+  final List<String> _selectedIndicators = [];
   final List<String> _availableIndicators = [
     'SMA', 'EMA', 'MACD', 'RSI', 'Bollinger Bands', 'Volume', 'Stochastic'
   ];
@@ -333,7 +331,7 @@ class _CryptoDetailsScreenState extends State<CryptoDetailsScreen>
       ),
       child: Column(
         children: [
-          Container(
+          SizedBox(
             height: 300.h,
             child: LineChart(
               LineChartData(
@@ -871,7 +869,7 @@ class _CryptoDetailsScreenState extends State<CryptoDetailsScreen>
           children: [
             Expanded(child: _buildMetricItem('ROI (1Y)', '${(widget.crypto.priceChangePercentage1y ?? 0.0).toStringAsFixed(1)}%')),
             SizedBox(width: 16.w),
-            Expanded(child: _buildMetricItem('Sharpe Ratio', '${(1.2 + (widget.crypto.priceChangePercentage24h / 100)).toStringAsFixed(2)}')),
+            Expanded(child: _buildMetricItem('Sharpe Ratio', (1.2 + (widget.crypto.priceChangePercentage24h / 100)).toStringAsFixed(2))),
           ],
         ),
       ],
@@ -1263,7 +1261,7 @@ class _CryptoDetailsScreenState extends State<CryptoDetailsScreen>
           _buildRiskItem('Volatility Risk', 'High', Colors.red),
           _buildRiskItem('Liquidity Risk', 'Low', Colors.green),
           _buildRiskItem('Market Risk', 'Medium', Colors.orange),
-          _buildRiskItem('Correlation (BTC)', '${(0.85 + (widget.crypto.priceChangePercentage24h / 1000)).toStringAsFixed(2)}', Colors.blue),
+          _buildRiskItem('Correlation (BTC)', (0.85 + (widget.crypto.priceChangePercentage24h / 1000)).toStringAsFixed(2), Colors.blue),
         ],
       ),
     );

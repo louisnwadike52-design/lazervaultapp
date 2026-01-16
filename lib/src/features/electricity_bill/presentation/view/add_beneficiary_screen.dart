@@ -6,7 +6,6 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../domain/entities/provider_entity.dart';
 import '../../domain/entities/bill_payment_entity.dart';
 import '../../domain/repositories/electricity_bill_repository.dart';
-import '../../../../../core/types/app_routes.dart';
 import '../cubit/electricity_bill_cubit.dart';
 import '../cubit/electricity_bill_state.dart';
 import '../cubit/beneficiary_cubit.dart';

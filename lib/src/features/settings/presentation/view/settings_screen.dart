@@ -439,7 +439,7 @@ class _SettingsViewState extends State<_SettingsView> {
                     pushNotifications: value,
                   );
             },
-            activeColor: const Color(0xFF4E03D0),
+            activeThumbColor: const Color(0xFF4E03D0),
           ),
           onTap: null,
         ),
@@ -454,7 +454,7 @@ class _SettingsViewState extends State<_SettingsView> {
                     emailNotifications: value,
                   );
             },
-            activeColor: const Color(0xFF4E03D0),
+            activeThumbColor: const Color(0xFF4E03D0),
           ),
           onTap: null,
         ),
@@ -469,7 +469,7 @@ class _SettingsViewState extends State<_SettingsView> {
                     smsNotifications: value,
                   );
             },
-            activeColor: const Color(0xFF4E03D0),
+            activeThumbColor: const Color(0xFF4E03D0),
           ),
           onTap: null,
         ),
@@ -484,7 +484,7 @@ class _SettingsViewState extends State<_SettingsView> {
                     darkMode: value,
                   );
             },
-            activeColor: const Color(0xFF4E03D0),
+            activeThumbColor: const Color(0xFF4E03D0),
           ),
           onTap: null,
         ),

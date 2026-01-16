@@ -316,8 +316,8 @@ class IndicatorsPainter extends CustomPainter {
       ..style = PaintingStyle.stroke;
 
     // Find MACD range for scaling
-    final macdValues = macdData.map((e) => e['macd'] as double?).where((e) => e != null).cast<double>();
-    final signalValues = macdData.map((e) => e['signal'] as double?).where((e) => e != null).cast<double>();
+    final macdValues = macdData.map((e) => e['macd']).where((e) => e != null).cast<double>();
+    final signalValues = macdData.map((e) => e['signal']).where((e) => e != null).cast<double>();
     
     if (macdValues.isEmpty || signalValues.isEmpty) return;
     
@@ -334,8 +334,8 @@ class IndicatorsPainter extends CustomPainter {
     
     for (int i = 0; i < macdData.length; i++) {
       final data = macdData[i];
-      final macdValue = data['macd'] as double?;
-      final signalValue = data['signal'] as double?;
+      final macdValue = data['macd'];
+      final signalValue = data['signal'];
       
       final x = (i / (priceHistory.length - 1)) * size.width;
       
@@ -441,8 +441,8 @@ class IndicatorsPainter extends CustomPainter {
     
     for (int i = 0; i < stochData.length; i++) {
       final data = stochData[i];
-      final kValue = data['%K'] as double?;
-      final dValue = data['%D'] as double?;
+      final kValue = data['%K'];
+      final dValue = data['%D'];
       
       final x = (i / (priceHistory.length - 1)) * size.width;
       

@@ -15,10 +15,10 @@ class TagDetailsBottomSheet extends StatelessWidget {
   final bool isOutgoing; // true for sent tags, false for received tags
 
   const TagDetailsBottomSheet({
-    Key? key,
+    super.key,
     required this.tag,
     required this.isOutgoing,
-  }) : super(key: key);
+  });
 
   Future<void> _downloadTagDetails(BuildContext context) async {
     try {

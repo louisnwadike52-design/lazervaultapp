@@ -325,7 +325,7 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
             ),
           ),
           SizedBox(height: 16.h),
-          ...items.map((item) => _buildItemCard(item)).toList(),
+          ...items.map((item) => _buildItemCard(item)),
         ],
       ),
     );
@@ -515,7 +515,7 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
                 icon: const Icon(Icons.share),
                 label: const Text('Share'),
                 style: OutlinedButton.styleFrom(
-                  side: BorderSide(color: const Color(0xFF6B7280)!),
+                  side: BorderSide(color: const Color(0xFF6B7280)),
                   foregroundColor: Colors.white,
                   padding: EdgeInsets.symmetric(vertical: 16.h),
                   shape: RoundedRectangleBorder(
@@ -641,7 +641,6 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
               Expanded(
                 child: ElevatedButton(
                   onPressed: () => context.read<InvoiceCubit>().loadInvoiceDetails(widget.invoiceId),
-                  child: const Text('Close'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF3B82F6),
                     foregroundColor: Colors.white,
@@ -650,6 +649,7 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
                       borderRadius: BorderRadius.circular(12.r),
                     ),
                   ),
+                  child: const Text('Close'),
                 ),
               ),
             ],
@@ -715,11 +715,11 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
           SizedBox(height: 24.h),
           ElevatedButton(
             onPressed: () => context.read<InvoiceCubit>().loadInvoiceDetails(widget.invoiceId),
-            child: const Text('Retry'),
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF3B82F6),
               foregroundColor: Colors.white,
             ),
+            child: const Text('Retry'),
           ),
         ],
       ),

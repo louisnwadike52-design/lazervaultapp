@@ -296,7 +296,7 @@ class _PortfolioAnalyticsScreenState extends State<PortfolioAnalyticsScreen> wit
   }
 
   Widget _buildTimeframeSelector() {
-    return Container(
+    return SizedBox(
       height: 50.h,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
@@ -436,9 +436,9 @@ class _PortfolioAnalyticsScreenState extends State<PortfolioAnalyticsScreen> wit
                             break;
                         }
                                                  return SideTitleWidget(
-                           child: text,
                            space: 0,
                            meta: meta,
+                           child: text,
                          );
                       },
                     ),

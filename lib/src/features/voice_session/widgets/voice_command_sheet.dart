@@ -8,7 +8,6 @@ import 'package:lazervault/src/features/authentication/cubit/authentication_stat
 import 'package:lazervault/src/features/voice_session/cubit/voice_session_cubit.dart';
 import 'package:lazervault/src/features/voice_session/cubit/voice_session_state.dart';
 import 'package:lazervault/src/features/voice/managers/voice_activation_manager.dart';
-import 'package:lazervault/src/features/voice/presentation/screens/voice_verification_screen.dart';
 
 class VoiceCommandSheet extends StatefulWidget {
   final List<String>? suggestions;

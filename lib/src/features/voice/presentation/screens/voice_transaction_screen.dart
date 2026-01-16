@@ -8,6 +8,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:get_it/get_it.dart';
 import '../../../../../core/services/voice_biometrics_service.dart';
 import '../../../../../core/services/injection_container.dart';
 import '../screens/voice_registration_screen.dart';
@@ -19,10 +20,10 @@ class VoiceTransactionScreen extends StatefulWidget {
   final String? baseUrl; // Voice agent gateway URL
 
   const VoiceTransactionScreen({
-    Key? key,
+    super.key,
     required this.userId,
     this.baseUrl,
-  }) : super(key: key);
+  });
 
   @override
   State<VoiceTransactionScreen> createState() => _VoiceTransactionScreenState();
@@ -193,7 +194,9 @@ class _VoiceTransactionScreenState extends State<VoiceTransactionScreen>
     if (_isRecording ||
         _isVerifying ||
         _isProcessing ||
-        !_hasPermission) return;
+        !_hasPermission) {
+      return;
+    }
 
     // Check network connectivity before starting
     if (!await _checkNetworkConnectivity()) {

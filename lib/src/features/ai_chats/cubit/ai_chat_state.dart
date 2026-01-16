@@ -1,5 +1,4 @@
 import 'package:equatable/equatable.dart';
-import 'dart:io';
 import '../domain/entities/ai_chat_message_entity.dart'; // Import domain entity
 
 // Base class using ChatMessage defined in the view for simplicity
@@ -66,8 +65,8 @@ class AIChatHistoryLoading extends AIChatState {
   const AIChatHistoryLoading({
     super.suggestions,
     super.messages, 
-    bool isTyping = true // History loading implies typing/loading state
-  }) : super(isTyping: isTyping);
+    super.isTyping = true // History loading implies typing/loading state
+  });
 
   @override
   AIChatHistoryLoading copyWith({
@@ -87,10 +86,10 @@ class AIChatHistorySuccess extends AIChatState {
   // History is now part of the base 'messages' field
   // final List<ChatMessageEntity> history;
   const AIChatHistorySuccess({
-    required List<ChatMessageEntity> messages, // Require messages here
+    required super.messages, // Require messages here
     super.suggestions,
-    bool isTyping = false // History loaded, not typing
-  }) : super(messages: messages, isTyping: isTyping);
+    super.isTyping // History loaded, not typing
+  });
 
   @override
   List<Object?> get props => [suggestions, messages, isTyping];
@@ -115,8 +114,8 @@ class AIChatHistoryError extends AIChatState {
     this.message, {
     super.suggestions,
     super.messages, // Keep previous messages on error if needed
-    bool isTyping = false, // Error occurred, not typing
-  }) : super(isTyping: isTyping);
+    super.isTyping, // Error occurred, not typing
+  });
 
   @override
   List<Object?> get props => [suggestions, messages, isTyping, message];
@@ -143,10 +142,10 @@ class AIChatMessageLoading extends AIChatState {
    // Keep track of messages known to the cubit IF needed for context, but UI manages the list
    // final List<ChatMessageEntity> messages; 
   const AIChatMessageLoading({
-    required List<ChatMessageEntity> messages, // Require current messages
+    required super.messages, // Require current messages
     super.suggestions,
-    bool isTyping = true // Message is being processed, so typing
-  }) : super(messages: messages, isTyping: isTyping);
+    super.isTyping = true // Message is being processed, so typing
+  });
 
   @override
   AIChatMessageLoading copyWith({
@@ -167,10 +166,10 @@ class AIChatMessageSuccess extends AIChatState {
   // The new message is implicitly the last one in the 'messages' list
   // final ChatMessageEntity newAiMessage; 
   const AIChatMessageSuccess({
-    required List<ChatMessageEntity> messages, // Require updated messages list
+    required super.messages, // Require updated messages list
     super.suggestions,
-    bool isTyping = false // Message received, not typing
-  }) : super(messages: messages, isTyping: isTyping);
+    super.isTyping // Message received, not typing
+  });
 
   @override
   List<Object?> get props => [suggestions, messages, isTyping];
@@ -196,10 +195,10 @@ class AIChatMessageError extends AIChatState {
   // final List<ChatMessageEntity> messages;
   const AIChatMessageError({
     required this.errorMessage,
-    required List<ChatMessageEntity> messages, // Require messages list at time of error
+    required super.messages, // Require messages list at time of error
     super.suggestions,
-    bool isTyping = false, // Error occurred, not typing
-  }) : super(messages: messages, isTyping: isTyping);
+    super.isTyping, // Error occurred, not typing
+  });
 
   @override
   List<Object?> get props => [suggestions, messages, isTyping, errorMessage];

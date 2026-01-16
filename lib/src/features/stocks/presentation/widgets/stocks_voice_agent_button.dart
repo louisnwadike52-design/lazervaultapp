@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:livekit_client/livekit_client.dart' as lk;
-import 'dart:convert';
 
 /// Voice agent button for stock trading conversations
 /// Connects to the stocks-voice-agent microservice via LiveKit
@@ -10,11 +9,11 @@ class StocksVoiceAgentButton extends StatefulWidget {
   final VoidCallback? onDisconnected;
 
   const StocksVoiceAgentButton({
-    Key? key,
+    super.key,
     this.accessToken,
     this.onConnected,
     this.onDisconnected,
-  }) : super(key: key);
+  });
 
   @override
   State<StocksVoiceAgentButton> createState() => _StocksVoiceAgentButtonState();
@@ -166,11 +165,11 @@ class StocksVoiceAgentControl extends StatefulWidget {
   final VoidCallback? onDisconnected;
 
   const StocksVoiceAgentControl({
-    Key? key,
+    super.key,
     this.accessToken,
     this.onConnected,
     this.onDisconnected,
-  }) : super(key: key);
+  });
 
   @override
   State<StocksVoiceAgentControl> createState() =>

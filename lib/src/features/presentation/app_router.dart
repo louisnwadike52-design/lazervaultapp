@@ -4,7 +4,6 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/types/electricity_bill_details.dart';
-import 'package:lazervault/core/types/recipient.dart';
 import 'package:lazervault/core/types/transaction.dart';
 import 'package:lazervault/src/features/authentication/domain/entities/user.dart';
 import 'package:lazervault/src/features/authentication/presentation/views/email_sign_in_screen.dart';
@@ -74,12 +73,10 @@ import 'package:lazervault/src/features/recipients/presentation/view/my_qr_code_
 import 'package:lazervault/src/features/funds/presentation/view/split_bills/split_bills_screen.dart';
 import 'package:lazervault/src/features/presentation/views/send_fund_receipt_screen.dart';
 import 'package:lazervault/src/features/presentation/views/send_fund_screen.dart';
-import 'package:lazervault/src/features/funds/presentation/view/send_funds/transfer_proof_screen.dart';
 import 'package:lazervault/src/features/funds/presentation/view/send_funds/transfer_processing_screen.dart';
 import 'package:lazervault/src/features/presentation/views/set_fingerprint_screen.dart';
 import 'package:lazervault/src/features/authentication/presentation/views/passcode_sign_in_screen.dart';
 import 'package:lazervault/src/features/authentication/presentation/views/sign_up_screen.dart';
-import 'package:lazervault/src/features/presentation/views/stocks/stocks_screen.dart';
 import 'package:lazervault/src/features/stocks/presentation/view/stocks_screen.dart' as StockFeature;
 import 'package:lazervault/src/features/stocks/presentation/view/stocks_home_screen.dart';
 import 'package:lazervault/src/features/stocks/presentation/view/stock_details_screen.dart';
@@ -114,7 +111,6 @@ import 'package:lazervault/src/features/cards/presentation/view/card_creation_re
 import 'package:lazervault/src/features/voice_enrollment/cubit/voice_enrollment_cubit.dart';
 import 'package:lazervault/src/features/voice_enrollment/presentation/voice_enrollment_screen.dart';
 import 'package:lazervault/src/features/voice_activation/presentation/voice_activation_prompt_screen.dart';
-import 'package:lazervault/src/features/invoice/presentation/view/invoice_service_screen.dart';
 import 'package:lazervault/src/features/invoice/presentation/cubit/invoice_cubit.dart';
 import 'package:lazervault/src/features/invoice/presentation/view/create_invoice_carousel.dart';
 import 'package:lazervault/src/features/invoice/presentation/cubit/create_invoice_cubit.dart';
@@ -146,7 +142,6 @@ import 'package:lazervault/src/features/group_account/domain/entities/group_enti
 // Insurance imports
 import 'package:lazervault/src/features/insurance/presentation/cubit/insurance_cubit.dart';
 import 'package:lazervault/src/features/insurance/presentation/view/insurance_list_screen.dart';
-import 'package:lazervault/src/features/insurance/presentation/view/insurance_details_screen.dart';
 import 'package:lazervault/src/features/insurance/presentation/view/insurance_policy_detail_view.dart';
 import 'package:lazervault/src/features/insurance/presentation/view/edit_insurance_policy_view.dart';
 import 'package:lazervault/src/features/insurance/presentation/view/insurance_payment_screen.dart';
@@ -168,7 +163,6 @@ import 'package:lazervault/src/features/airtime/presentation/view/airtime_paymen
 import 'package:lazervault/src/features/airtime/presentation/view/airtime_payment_confirmation_screen.dart';
 import 'package:lazervault/src/features/airtime/presentation/view/airtime_history_screen.dart';
 import 'package:lazervault/src/features/airtime/presentation/view/airtime_details_screen.dart';
-import 'package:lazervault/src/features/airtime/domain/entities/airtime_transaction.dart';
 
 // AutoSave imports
 import 'package:lazervault/src/features/autosave/presentation/cubit/autosave_cubit.dart';
@@ -203,8 +197,6 @@ import 'package:lazervault/src/features/tag_pay/presentation/view/request_money_
 import 'package:lazervault/src/features/tag_pay/presentation/view/tag_pay_transactions_screen.dart';
 import 'package:lazervault/src/features/tag_pay/presentation/view/pending_requests_screen.dart';
 import 'package:lazervault/src/features/tag_pay/presentation/view/search_users_screen.dart';
-import 'package:lazervault/src/features/tag_pay/presentation/view/create_tag_screen.dart';
-import 'package:lazervault/src/features/tag_pay/presentation/view/my_tags_screen.dart';
 import 'package:lazervault/src/features/tag_pay/presentation/view/create_tag_screen_redesigned.dart';
 import 'package:lazervault/src/features/tag_pay/presentation/view/my_tags_screen_redesigned.dart';
 import 'package:lazervault/src/features/tag_pay/presentation/view/outgoing_tags_screen.dart';

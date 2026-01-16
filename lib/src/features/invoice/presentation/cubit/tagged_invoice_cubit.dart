@@ -1,5 +1,4 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:lazervault/src/features/invoice/domain/entities/tagged_invoice_entity.dart';
 import 'package:lazervault/src/features/invoice/domain/repositories/tagged_invoice_repository.dart';
 import 'package:lazervault/src/generated/common.pbenum.dart';
 import 'tagged_invoice_state.dart';

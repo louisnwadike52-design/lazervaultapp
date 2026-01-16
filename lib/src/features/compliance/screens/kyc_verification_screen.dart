@@ -7,9 +7,9 @@ class KYCVerificationScreen extends StatefulWidget {
   final KYCLevel targetLevel;
 
   const KYCVerificationScreen({
-    Key? key,
+    super.key,
     required this.targetLevel,
-  }) : super(key: key);
+  });
 
   @override
   State<KYCVerificationScreen> createState() => _KYCVerificationScreenState();
@@ -132,7 +132,7 @@ class _KYCVerificationScreenState extends State<KYCVerificationScreen> {
         ),
         const SizedBox(height: 16),
         DropdownButtonFormField<String>(
-          value: _nationality,
+          initialValue: _nationality,
           decoration: const InputDecoration(
             labelText: 'Nationality',
             border: OutlineInputBorder(),
@@ -316,7 +316,7 @@ class _KYCVerificationScreenState extends State<KYCVerificationScreen> {
         ),
         const SizedBox(height: 16),
         DropdownButtonFormField<String>(
-          value: _country,
+          initialValue: _country,
           decoration: const InputDecoration(
             labelText: 'Country',
             border: OutlineInputBorder(),

@@ -16,7 +16,7 @@ import 'package:lazervault/src/features/autosave/presentation/widgets/autosave_s
 import 'package:lazervault/src/features/autosave/presentation/widgets/bulk_action_bottom_bar.dart';
 
 class AutoSaveRulesListScreen extends StatefulWidget {
-  const AutoSaveRulesListScreen({Key? key}) : super(key: key);
+  const AutoSaveRulesListScreen({super.key});
 
   @override
   State<AutoSaveRulesListScreen> createState() =>

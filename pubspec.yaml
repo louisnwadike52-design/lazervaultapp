@@ -106,21 +106,23 @@ dependencies:
   shared_preferences: ^2.5.3
   path_provider: ^2.1.5
   country_flags: ^3.3.0
-  hive: ^2.2.3
-  hive_flutter: ^1.1.0
   intl_phone_field: ^3.2.0
   screenshot: ^3.0.0
   url_launcher: ^6.3.1
   dio: ^5.7.0
   webview_flutter: ^4.10.0
+  rxdart: ^0.28.0
   # webview_cookie_manager: ^2.0.6  # Removed - incompatible with current Flutter version and not used
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  integration_test:
+    sdk: flutter
   build_runner: ^2.4.7
   injectable_generator: ^2.4.1
-  hive_generator: ^2.0.1
+  mocktail: ^1.0.0
+  bloc_test: ^10.0.0
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is

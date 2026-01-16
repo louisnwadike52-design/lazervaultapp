@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:get/get.dart';
-import 'package:lazervault/core/types/app_routes.dart';
-import '../../domain/entities/family_account_entities.dart';
 import '../../domain/entities/family_account_entities.dart' as entities;
 
 class FamilyAccountCard extends StatelessWidget {

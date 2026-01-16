@@ -1,6 +1,4 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../domain/entities/customer_validation_result.dart';
-import '../../domain/entities/water_payment_entity.dart';
 import '../../domain/repositories/water_bill_repository.dart';
 import 'water_bill_state.dart';
 
@@ -126,54 +124,34 @@ class WaterBillCubit extends Cubit<WaterBillState> {
     final result = await repository.verifyPayment(paymentId: paymentId);
 
     if (isClosed) {
-      if (result.isSuccess) {
-        final payment = result.getOrElse(() => (state as PaymentInitiated).payment);
-
-        // Show progress near completion
-        emit(PaymentProcessing(
-          payment: payment,
-          progress: 0.8,
-          currentStep: 'Finalizing transaction...',
-        ));
-
-        await Future.delayed(const Duration(milliseconds: 500));
-
-        if (payment.isCompleted) {
-          emit(PaymentSuccess(payment: payment));
-        } else if (payment.isFailed) {
-          emit(PaymentFailed(
+      result.fold(
+        (failure) => emit(WaterBillError(message: failure.message)),
+        (payment) async {
+          // Show progress near completion
+          emit(PaymentProcessing(
             payment: payment,
-            errorMessage: payment.errorMessage ?? 'Payment failed',
+            progress: 0.8,
+            currentStep: 'Finalizing transaction...',
           ));
-        } else if (payment.isProcessing) {
-          emit(PaymentProcessing(payment: payment, progress: 0.6, currentStep: 'Processing...'));
-        } else {
-          emit(PaymentVerified(payment: payment));
-        }
-      } else if (result.isError()) {
-        emit(PaymentProcessing(
-          payment: (state as PaymentInitiated).payment,
-          progress: 0.5,
-          currentStep: 'Processing...',
-        ));
 
-        result.fold(
-          (failure) => emit(WaterBillError(message: failure.message)),
-          (payment) {
-            if (payment.isCompleted) {
-              emit(PaymentSuccess(payment: payment));
-            } else if (payment.isFailed) {
-              emit(PaymentFailed(
-                payment: payment,
-                errorMessage: payment.errorMessage ?? 'Payment failed',
-              ));
-            } else {
-              emit(PaymentProcessing(payment: payment));
-            }
-          },
-        );
-      }
+          await Future.delayed(const Duration(milliseconds: 500));
+
+          if (payment.isCompleted) {
+            emit(PaymentSuccess(payment: payment));
+          } else if (payment.isFailed) {
+            emit(PaymentFailed(
+              payment: payment,
+              errorMessage: payment.errorMessage ?? 'Payment failed',
+            ));
+          } else if (payment.isProcessing) {
+            emit(PaymentProcessing(payment: payment, progress: 0.6, currentStep: 'Processing...'));
+          } else {
+            emit(PaymentVerified(payment: payment));
+          }
+        },
+      );
     }
+
   }
 
   Future<void> getPaymentHistory({int? limit, int? offset}) async {

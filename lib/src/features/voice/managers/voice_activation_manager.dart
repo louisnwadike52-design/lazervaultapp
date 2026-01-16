@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:lazervault/core/services/voice_biometrics_service.dart';
-import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/src/features/voice/presentation/screens/voice_verification_screen.dart';
-import 'package:lazervault/src/features/voice/presentation/screens/voice_registration_screen.dart';
 import 'package:lazervault/src/features/voice_enrollment/presentation/voice_enrollment_screen.dart';
 
 /// Voice Activation Manager
@@ -246,7 +244,7 @@ class VoiceActivationManager {
 class BulletPoint extends StatelessWidget {
   final String text;
 
-  const BulletPoint({Key? key, required this.text}) : super(key: key);
+  const BulletPoint({super.key, required this.text});
 
   @override
   Widget build(BuildContext context) {
@@ -279,10 +277,10 @@ class VoiceActivationStatusBadge extends StatelessWidget {
   final VoidCallback? onTap;
 
   const VoiceActivationStatusBadge({
-    Key? key,
+    super.key,
     required this.status,
     this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

@@ -17,12 +17,12 @@ class StockActionBottomSheet extends StatefulWidget {
   final String? selectedFilter;
 
   const StockActionBottomSheet({
-    Key? key,
+    super.key,
     required this.type,
     this.title,
     this.stocks,
     this.selectedFilter,
-  }) : super(key: key);
+  });
 
   @override
   State<StockActionBottomSheet> createState() => _StockActionBottomSheetState();

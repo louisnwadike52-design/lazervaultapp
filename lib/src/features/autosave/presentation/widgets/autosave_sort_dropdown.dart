@@ -7,10 +7,10 @@ class AutoSaveSortDropdown extends StatelessWidget {
   final Function(RuleSortOption) onChanged;
 
   const AutoSaveSortDropdown({
-    Key? key,
+    super.key,
     required this.selectedOption,
     required this.onChanged,
-  }) : super(key: key);
+  });
 
   String _getLabelForOption(RuleSortOption option) {
     switch (option) {

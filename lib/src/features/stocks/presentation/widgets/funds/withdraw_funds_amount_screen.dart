@@ -220,7 +220,7 @@ class _WithdrawFundsAmountScreenState extends State<WithdrawFundsAmountScreen> {
                     ),
                   ),
                 );
-              }).toList(),
+              }),
               // Withdraw All button
               InkWell(
                 onTap: _withdrawAll,

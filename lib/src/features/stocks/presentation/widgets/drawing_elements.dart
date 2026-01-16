@@ -60,15 +60,13 @@ class TrendlineElement extends DrawingElement {
     required this.endValue,
     required this.startIndex,
     required this.endIndex,
-    Color color = Colors.blue,
-    double strokeWidth = 2.0,
+    super.color = Colors.blue,
+    super.strokeWidth,
   }) : super(
           tool: DrawingTool.trendline,
           points: [startPoint, endPoint],
           pricePoints: [startValue, endValue],
           timeIndices: [startIndex, endIndex],
-          color: color,
-          strokeWidth: strokeWidth,
         );
 
   @override
@@ -124,15 +122,13 @@ class HorizontalLineElement extends DrawingElement {
   HorizontalLineElement({
     required this.value,
     required this.yPosition,
-    Color color = Colors.orange,
-    double strokeWidth = 2.0,
+    super.color = Colors.orange,
+    super.strokeWidth,
   }) : super(
           tool: DrawingTool.horizontalLine,
           points: [Offset(0, yPosition), Offset(double.infinity, yPosition)],
           pricePoints: [value],
           timeIndices: [0],
-          color: color,
-          strokeWidth: strokeWidth,
         );
 
   @override
@@ -193,15 +189,13 @@ class VerticalLineElement extends DrawingElement {
     required this.index,
     required this.xPosition,
     required this.timestamp,
-    Color color = Colors.purple,
-    double strokeWidth = 2.0,
+    super.color = Colors.purple,
+    super.strokeWidth,
   }) : super(
           tool: DrawingTool.verticalLine,
           points: [Offset(xPosition, 0), Offset(xPosition, double.infinity)],
           pricePoints: [0],
           timeIndices: [index],
-          color: color,
-          strokeWidth: strokeWidth,
         );
 
   @override
@@ -269,15 +263,13 @@ class MeasureElement extends DrawingElement {
     required this.endValue,
     required this.startIndex,
     required this.endIndex,
-    Color color = Colors.cyan,
-    double strokeWidth = 2.0,
+    super.color = Colors.cyan,
+    super.strokeWidth,
   }) : super(
           tool: DrawingTool.measure,
           points: [startPoint, endPoint],
           pricePoints: [startValue, endValue],
           timeIndices: [startIndex, endIndex],
-          color: color,
-          strokeWidth: strokeWidth,
         );
 
   @override

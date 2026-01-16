@@ -15,10 +15,10 @@ class CountryLocaleBottomSheet extends StatefulWidget {
   final Function(CountryLocale) onCountrySelected;
 
   const CountryLocaleBottomSheet({
-    Key? key,
+    super.key,
     this.selectedCountryCode,
     required this.onCountrySelected,
-  }) : super(key: key);
+  });
 
   /// Show the bottom sheet
   static Future<CountryLocale?> show(

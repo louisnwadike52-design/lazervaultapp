@@ -3,7 +3,6 @@ import 'package:fixnum/fixnum.dart';
 // import 'package:google_protobuf/google_protobuf.dart';
 import 'package:dartz/dartz.dart';
 import 'package:grpc/grpc.dart';
-import 'package:lazervault/core/services/grpc_call_options_helper.dart';
 
 // Ensure correct import path for ServerException
 import 'package:lazervault/core/exceptions/server_exception.dart';

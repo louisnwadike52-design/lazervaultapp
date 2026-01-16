@@ -147,19 +147,23 @@ class ElectricityBillCubit extends Cubit<ElectricityBillState> {
 
     await Future.delayed(const Duration(milliseconds: 500));
 
-    if (isClosed) emit(PaymentProcessing(
+    if (isClosed) {
+      emit(PaymentProcessing(
       payment: (state as PaymentInitiated).payment,
       progress: 0.3,
       currentStep: 'Checking account balance...',
     ));
+    }
 
     await Future.delayed(const Duration(milliseconds: 500));
 
-    if (isClosed) emit(PaymentProcessing(
+    if (isClosed) {
+      emit(PaymentProcessing(
       payment: (state as PaymentInitiated).payment,
       progress: 0.5,
       currentStep: 'Processing with provider...',
     ));
+    }
 
     final result = await repository.verifyPayment(paymentId: paymentId);
 

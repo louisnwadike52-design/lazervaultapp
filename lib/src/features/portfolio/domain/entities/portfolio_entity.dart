@@ -34,11 +34,11 @@ class PortfolioAsset extends Equatable {
 
   bool get isProfit => gainLoss >= 0;
 
-  String get formattedValue => '${currency} ${currentValue.toStringAsFixed(2)}';
+  String get formattedValue => '$currency ${currentValue.toStringAsFixed(2)}';
 
   String get formattedGainLoss {
     final sign = gainLoss >= 0 ? '+' : '';
-    return '$sign${currency} ${gainLoss.toStringAsFixed(2)}';
+    return '$sign$currency ${gainLoss.toStringAsFixed(2)}';
   }
 
   String get formattedGainLossPercent {
@@ -126,11 +126,11 @@ class PortfolioSummary extends Equatable {
 
   bool get isProfit => totalGainLoss >= 0;
 
-  String get formattedTotalValue => '${currency} ${totalValue.toStringAsFixed(2)}';
+  String get formattedTotalValue => '$currency ${totalValue.toStringAsFixed(2)}';
 
   String get formattedGainLoss {
     final sign = totalGainLoss >= 0 ? '+' : '';
-    return '$sign${currency} ${totalGainLoss.toStringAsFixed(2)}';
+    return '$sign$currency ${totalGainLoss.toStringAsFixed(2)}';
   }
 
   String get formattedGainLossPercent {

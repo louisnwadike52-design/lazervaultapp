@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../../domain/entities/lock_fund_entity.dart';
 import '../../cubit/create_lock_cubit.dart';
 import '../../cubit/lock_funds_cubit.dart';
 import '../../cubit/lock_funds_state.dart';
@@ -446,14 +445,14 @@ class _AmountDurationSelectorState extends State<AmountDurationSelector> {
                           SizedBox(height: 8.h),
                           _buildCalculationRow(
                             'Interest Earned',
-                            '${selectedCurrency} ${calc.interestAmount.toStringAsFixed(2)}',
+                            '$selectedCurrency ${calc.interestAmount.toStringAsFixed(2)}',
                           ),
                           SizedBox(height: 8.h),
                           Divider(color: Colors.white.withValues(alpha: 0.2)),
                           SizedBox(height: 8.h),
                           _buildCalculationRow(
                             'Total at Maturity',
-                            '${selectedCurrency} ${calc.totalAmount.toStringAsFixed(2)}',
+                            '$selectedCurrency ${calc.totalAmount.toStringAsFixed(2)}',
                             isTotal: true,
                           ),
                         ],

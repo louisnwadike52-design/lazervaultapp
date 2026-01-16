@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:lazervault/src/core/services/analytics_service.dart';
 
@@ -89,7 +91,7 @@ class _ErrorBoundaryState extends State<ErrorBoundary> {
 class ErrorCapturingWidget extends SingleChildRenderObjectWidget {
   final void Function(Object error, StackTrace? stackTrace) onError;
 
-  const ErrorCapturingWidget({
+  const ErrorCapturingWidget({super.key, 
     super.child,
     required this.onError,
   });
@@ -102,7 +104,7 @@ class ErrorCapturingWidget extends SingleChildRenderObjectWidget {
   @override
   void updateRenderObject(
     BuildContext context,
-    _ErrorCapturingRenderObject renderObject,
+    covariant _ErrorCapturingRenderObject renderObject,
   ) {
     renderObject.onError = onError;
   }

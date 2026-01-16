@@ -1,13 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:shimmer/shimmer.dart';
-import '../../cubit/gift_card_cubit.dart';
-import '../../cubit/gift_card_state.dart';
 import '../../domain/entities/gift_card_entity.dart';
 
 class GiftCardTransactionsScreen extends StatefulWidget {
@@ -379,7 +375,7 @@ class _GiftCardTransactionsScreenState
                   ),
                 ),
                 onSelected: (selected) {
-                  _filterTransactions(selected ? filter['value'] as String? : null);
+                  _filterTransactions(selected ? filter['value'] : null);
                 },
                 backgroundColor: Colors.grey[900],
                 selectedColor: const Color(0xFF6366F1),
@@ -684,7 +680,7 @@ class _GiftCardTransactionsScreenState
             padding: EdgeInsets.symmetric(horizontal: 32.w),
             child: Text(
               _selectedFilter != null
-                  ? 'No ${_selectedFilter} transactions found'
+                  ? 'No $_selectedFilter transactions found'
                   : 'Your transaction history will appear here',
               style: GoogleFonts.inter(
                 fontSize: 14.sp,

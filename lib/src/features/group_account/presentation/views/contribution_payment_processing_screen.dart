@@ -3,11 +3,10 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
 import '../../domain/entities/group_entities.dart';
-import '../../data/datasources/contribution_payment_local_data_source.dart';
+import '../../data/datasources/group_account_remote_data_source.dart';
 import '../../data/services/contribution_payment_service.dart';
 import '../../data/repositories/contribution_payment_repository_impl.dart';
 import 'contribution_payment_confirmation_screen.dart';
-import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 
 class ContributionPaymentProcessingScreen extends StatefulWidget {
   final String contributionId;
@@ -81,12 +80,9 @@ class _ContributionPaymentProcessingScreenState extends State<ContributionPaymen
 
   Future<void> _initializePaymentRepository() async {
     try {
-      final localDataSource = ContributionPaymentLocalDataSourceImpl();
-      final paymentService = ContributionPaymentServiceImpl(localDataSource: localDataSource);
+      final remoteDataSource = GroupAccountRemoteDataSourceImpl();
+      final paymentService = ContributionPaymentServiceImpl(remoteDataSource: remoteDataSource);
       _paymentRepository = ContributionPaymentRepositoryImpl(paymentService: paymentService);
-      
-      // Initialize the local data source and wait for it to complete
-      await localDataSource.init();
     } catch (e) {
       print('❌ Repository initialization error: $e');
       rethrow;
@@ -355,7 +351,7 @@ class _ContributionPaymentProcessingScreenState extends State<ContributionPaymen
       );
     }
 
-    return Container(
+    return SizedBox(
       width: 120.w,
       height: 120.w,
       child: Stack(

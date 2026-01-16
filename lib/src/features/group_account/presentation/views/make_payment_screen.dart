@@ -3,8 +3,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
 import '../../domain/entities/group_entities.dart';
-import '../cubit/group_account_cubit.dart';
-import '../cubit/group_account_state.dart';
 import '../views/contribution_payment_processing_screen.dart';
 
 class MakePaymentScreen extends StatefulWidget {
@@ -27,7 +25,7 @@ class _MakePaymentScreenState extends State<MakePaymentScreen> {
   final _notesController = TextEditingController();
 
   String _selectedPaymentMethod = 'bank_transfer';
-  bool _isProcessing = false;
+  final bool _isProcessing = false;
 
   final List<PaymentMethod> _paymentMethods = [
     PaymentMethod(

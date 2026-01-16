@@ -217,7 +217,7 @@ class _ExchangeHistoryScreenState extends State<ExchangeHistoryScreen> {
       if (_searchQuery.isNotEmpty) {
         final matchesSearch = transaction.fromCurrency.toLowerCase().contains(_searchQuery) ||
             transaction.toCurrency.toLowerCase().contains(_searchQuery) ||
-            (transaction.recipientName?.toLowerCase().contains(_searchQuery) ?? false) ||
+            (transaction.recipientName.toLowerCase().contains(_searchQuery) ?? false) ||
             transaction.transactionId.toLowerCase().contains(_searchQuery);
         if (!matchesSearch) return false;
       }

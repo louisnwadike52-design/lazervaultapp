@@ -53,7 +53,7 @@ class GrpcCallOptionsHelper {
     if (localeManager != null) {
       final localeMetadata = localeManager!.getLocaleMetadata();
       metadata.addAll(localeMetadata);
-      print('Locale metadata added: ${localeMetadata}');
+      print('Locale metadata added: $localeMetadata');
     }
 
     // Add account metadata if AccountManager is available and has active account
@@ -61,7 +61,7 @@ class GrpcCallOptionsHelper {
       final accountMetadata = accountManager!.getAccountMetadata();
       if (accountMetadata.isNotEmpty) {
         metadata.addAll(accountMetadata);
-        print('Account metadata added: ${accountMetadata}');
+        print('Account metadata added: $accountMetadata');
       } else {
         print('WARNING: AccountManager exists but no active account is set');
       }

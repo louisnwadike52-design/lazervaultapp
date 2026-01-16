@@ -221,7 +221,7 @@ class _WithdrawFundsMethodScreenState extends State<WithdrawFundsMethodScreen> {
                 ),
               ),
             );
-          }).toList(),
+          }),
 
           SizedBox(height: 24.h),
 

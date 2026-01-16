@@ -6,12 +6,9 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:camera/camera.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:path_provider/path_provider.dart';
-import 'dart:io';
 import '../../domain/entities/scan_entities.dart';
 import '../cubit/ai_scan_cubit.dart';
 import '../cubit/ai_scan_state.dart';
-import '../widgets/ai_chat_bottom_sheet.dart';
 import 'ai_scan_to_pay_screen.dart';
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 

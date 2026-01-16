@@ -739,7 +739,7 @@ class _FamilyAccountDetailsStepState extends State<FamilyAccountDetailsStep> {
                         _allowMemberContributions = value;
                       });
                     },
-                    activeColor: const Color(0xFF6C5CE7),
+                    activeThumbColor: const Color(0xFF6C5CE7),
                   ),
                 ],
               ),

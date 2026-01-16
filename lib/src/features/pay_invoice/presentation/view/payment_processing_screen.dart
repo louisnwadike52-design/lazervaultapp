@@ -5,7 +5,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
 import '../../../../../core/theme/invoice_theme_colors.dart';
 import '../../domain/entities/tagged_invoice_entity.dart';
-import '../../../../../core/theme/invoice_theme_colors.dart';
 import '../../domain/repositories/pay_invoice_repository.dart';
 import 'transaction_receipt_screen.dart';
 

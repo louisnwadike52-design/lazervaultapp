@@ -2,10 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
-import 'package:lazervault/core/services/voice_biometrics_service.dart';
-import 'package:lazervault/core/services/injection_container.dart';
-import 'package:lazervault/src/features/voice/managers/voice_activation_manager.dart';
-import 'package:lazervault/src/features/voice_enrollment/presentation/voice_enrollment_screen.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:get/get.dart';
 
@@ -16,10 +12,10 @@ class VoiceActivationPromptScreen extends StatefulWidget {
   final bool isMandatory;
 
   const VoiceActivationPromptScreen({
-    Key? key,
+    super.key,
     required this.userId,
     this.isMandatory = false,
-  }) : super(key: key);
+  });
 
   @override
   State<VoiceActivationPromptScreen> createState() =>

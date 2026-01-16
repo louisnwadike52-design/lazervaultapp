@@ -248,7 +248,7 @@ class ThemedDrawer extends StatelessWidget {
             ),
           ),
         ),
-        ...items.map((item) => _buildMenuItem(item)).toList(),
+        ...items.map((item) => _buildMenuItem(item)),
       ],
     );
   }

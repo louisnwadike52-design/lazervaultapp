@@ -4,7 +4,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../domain/entities/user_search_result_entity.dart';
-import '../../../../../core/services/injection_container.dart';
 import '../cubit/tag_pay_cubit.dart';
 import '../cubit/tag_pay_state.dart';
 import '../../../../../core/types/app_routes.dart';
@@ -22,7 +21,7 @@ class _CreateTagScreenRedesignedState extends State<CreateTagScreenRedesigned> {
   final _descriptionController = TextEditingController();
 
   UserSearchResultEntity? _selectedUser;
-  String _currency = 'ZAR';
+  final String _currency = 'ZAR';
   List<UserSearchResultEntity> _searchResults = [];
   bool _isSearching = false;
 

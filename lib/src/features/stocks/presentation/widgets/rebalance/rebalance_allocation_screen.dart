@@ -181,7 +181,7 @@ class _RebalanceAllocationScreenState extends State<RebalanceAllocationScreen> {
                 ),
               ),
             );
-          }).toList(),
+          }),
 
           SizedBox(height: 32.h),
 
@@ -404,7 +404,7 @@ class _RebalanceAllocationScreenState extends State<RebalanceAllocationScreen> {
                 ],
               ),
             );
-          }).toList(),
+          }),
 
           SizedBox(height: 16.h),
 

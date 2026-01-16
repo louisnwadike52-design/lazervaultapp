@@ -9,7 +9,7 @@ import 'package:lazervault/src/features/autosave/presentation/cubit/autosave_sta
 import 'package:lazervault/src/features/autosave/presentation/widgets/autosave_statistics_card.dart';
 
 class AutoSaveDashboardScreen extends StatefulWidget {
-  const AutoSaveDashboardScreen({Key? key}) : super(key: key);
+  const AutoSaveDashboardScreen({super.key});
 
   @override
   State<AutoSaveDashboardScreen> createState() => _AutoSaveDashboardScreenState();
@@ -167,7 +167,7 @@ class _AutoSaveDashboardScreenState extends State<AutoSaveDashboardScreen> {
                 else if (_rules.isEmpty)
                   _buildEmptyRulesState()
                 else
-                  ..._rules.take(5).map((rule) => _buildRuleCard(rule)).toList(),
+                  ..._rules.take(5).map((rule) => _buildRuleCard(rule)),
               ],
             ),
           ),

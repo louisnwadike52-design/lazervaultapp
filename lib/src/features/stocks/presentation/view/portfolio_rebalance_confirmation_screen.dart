@@ -401,7 +401,7 @@ ${widget.trades.map((trade) => '  ${trade.action} ${trade.sharesToTrade} ${trade
                 ],
               ),
             );
-          }).toList(),
+          }),
 
           SizedBox(height: 24.h),
           _buildDivider(),

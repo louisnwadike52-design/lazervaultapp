@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:math' as math;
 import '../../domain/entities/scan_entities.dart';
 import '../models/scan_models.dart';
