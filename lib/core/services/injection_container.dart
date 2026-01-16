@@ -1404,6 +1404,8 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton(() => GeneratePaymentUseCase(serviceLocator<AiScanRepository>()));
   serviceLocator.registerLazySingleton(() => ProcessPaymentUseCase(serviceLocator<AiScanRepository>()));
   serviceLocator.registerLazySingleton(() => GetScanHistoryUseCase(serviceLocator<AiScanRepository>()));
+  serviceLocator.registerLazySingleton(() => ScanBankDetailsUseCase(serviceLocator<AiScanRepository>()));
+  serviceLocator.registerLazySingleton(() => ProcessBankDetailsPaymentUseCase(serviceLocator<AiScanRepository>()));
 
   // Cubit
   serviceLocator.registerFactory(() => AiScanCubit(
@@ -1413,6 +1415,8 @@ Future<void> init() async {
     generatePaymentUseCase: serviceLocator<GeneratePaymentUseCase>(),
     processPaymentUseCase: serviceLocator<ProcessPaymentUseCase>(),
     getScanHistoryUseCase: serviceLocator<GetScanHistoryUseCase>(),
+    scanBankDetailsUseCase: serviceLocator<ScanBankDetailsUseCase>(),
+    processBankDetailsPaymentUseCase: serviceLocator<ProcessBankDetailsPaymentUseCase>(),
   ));
 
   // ================== Feature: Group Account ==================

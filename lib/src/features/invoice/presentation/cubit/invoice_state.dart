@@ -1,6 +1,5 @@
 import 'package:equatable/equatable.dart';
 import '../../domain/entities/invoice_entity.dart';
-import '../../data/models/pagination_model.dart';
 
 abstract class InvoiceState extends Equatable {
   const InvoiceState();
@@ -16,18 +15,14 @@ class InvoiceLoading extends InvoiceState {}
 class InvoicesLoaded extends InvoiceState {
   final List<Invoice> invoices;
   final Map<String, dynamic>? statistics;
-  final PaginationModel? pagination;
-  final InvoiceSearchFilter? filter;
 
   const InvoicesLoaded({
     required this.invoices,
     this.statistics,
-    this.pagination,
-    this.filter,
   });
 
   @override
-  List<Object?> get props => [invoices, statistics, pagination, filter];
+  List<Object?> get props => [invoices, statistics];
 }
 
 class InvoiceDetailsLoaded extends InvoiceState {
@@ -72,18 +67,14 @@ class InvoiceError extends InvoiceState {
 class InvoiceSearchResults extends InvoiceState {
   final List<Invoice> results;
   final String query;
-  final PaginationModel? pagination;
-  final InvoiceSearchFilter? filter;
 
   const InvoiceSearchResults({
     required this.results,
     required this.query,
-    this.pagination,
-    this.filter,
   });
 
   @override
-  List<Object?> get props => [results, query, pagination, filter];
+  List<Object?> get props => [results, query];
 }
 
 class QRCodeGenerated extends InvoiceState {
