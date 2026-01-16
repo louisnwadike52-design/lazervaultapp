@@ -185,4 +185,78 @@ class AiScanError extends AiScanState {
 
   @override
   List<Object?> get props => [message, details];
+}
+
+// Bank details extracted state - shows bottomsheet
+class AiScanBankDetailsExtracted extends AiScanState {
+  final ScanSession session;
+  final BankDetails bankDetails;
+
+  const AiScanBankDetailsExtracted({
+    required this.session,
+    required this.bankDetails,
+  });
+
+  @override
+  List<Object?> get props => [session, bankDetails];
+}
+
+// Bank details awaiting PIN state
+class AiScanBankDetailsAwaitingPIN extends AiScanState {
+  final BankDetails bankDetails;
+  final double amount;
+  final String description;
+  final String transactionId;
+
+  const AiScanBankDetailsAwaitingPIN({
+    required this.bankDetails,
+    required this.amount,
+    required this.description,
+    required this.transactionId,
+  });
+
+  @override
+  List<Object?> get props => [bankDetails, amount, description, transactionId];
+}
+
+// Bank details payment processing state
+class AiScanBankDetailsProcessing extends AiScanState {
+  final String status;
+  final double progress;
+
+  const AiScanBankDetailsProcessing({
+    required this.status,
+    this.progress = 0.0,
+  });
+
+  @override
+  List<Object?> get props => [status, progress];
+}
+
+// Bank details payment success state
+class AiScanBankDetailsPaymentSuccess extends AiScanState {
+  final PaymentReceipt receipt;
+
+  const AiScanBankDetailsPaymentSuccess({
+    required this.receipt,
+  });
+
+  @override
+  List<Object?> get props => [receipt];
+}
+
+// Bank details payment failed state
+class AiScanBankDetailsPaymentFailed extends AiScanState {
+  final String errorMessage;
+  final BankDetails bankDetails;
+  final bool canRetry;
+
+  const AiScanBankDetailsPaymentFailed({
+    required this.errorMessage,
+    required this.bankDetails,
+    this.canRetry = true,
+  });
+
+  @override
+  List<Object?> get props => [errorMessage, bankDetails, canRetry];
 } 

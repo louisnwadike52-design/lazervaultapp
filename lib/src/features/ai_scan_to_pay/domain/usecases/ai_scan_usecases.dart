@@ -65,4 +65,38 @@ class GetScanHistoryUseCase {
   Future<List<ScanSession>> call() async {
     return await repository.getScanHistory();
   }
+}
+
+// Use case for scanning bank details from image
+class ScanBankDetailsUseCase {
+  final AiScanRepository repository;
+
+  ScanBankDetailsUseCase(this.repository);
+
+  Future<BankDetails> call(String imagePath, String sessionId) async {
+    return await repository.scanBankDetails(imagePath, sessionId);
+  }
+}
+
+// Use case for processing bank details payment
+class ProcessBankDetailsPaymentUseCase {
+  final AiScanRepository repository;
+
+  ProcessBankDetailsPaymentUseCase(this.repository);
+
+  Future<PaymentReceipt> call({
+    required BankDetails bankDetails,
+    required double amount,
+    required String description,
+    required String verificationToken,
+    required String transactionId,
+  }) async {
+    return await repository.processBankDetailsPayment(
+      bankDetails: bankDetails,
+      amount: amount,
+      description: description,
+      verificationToken: verificationToken,
+      transactionId: transactionId,
+    );
+  }
 } 

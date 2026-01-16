@@ -38,6 +38,11 @@ class ContributionPaymentServiceImpl implements ContributionPaymentService {
     String? notes,
     String? paymentMethod,
   }) async {
+    // Note: paymentMethod is stored in notes for now until backend supports it
+    final paymentNotes = paymentMethod != null
+        ? (notes != null ? '$notes (Payment method: $paymentMethod)' : 'Payment method: $paymentMethod')
+        : notes;
+
     return await remoteDataSource.makeContributionPayment(
       contributionId: contributionId,
       groupId: groupId,
@@ -45,8 +50,7 @@ class ContributionPaymentServiceImpl implements ContributionPaymentService {
       userName: userName,
       amount: amount,
       currency: currency,
-      notes: notes,
-      paymentMethod: paymentMethod,
+      notes: paymentNotes,
     );
   }
 

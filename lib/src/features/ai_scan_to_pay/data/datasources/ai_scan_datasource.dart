@@ -12,6 +12,17 @@ abstract class AiScanDataSource {
   Future<AiChatMessageModel> processAiResponse(String sessionId, String userMessage, Map<String, dynamic>? extractedData);
   Future<PaymentInstructionModel> generatePaymentInstruction(Map<String, dynamic> extractedData, ScanType scanType, String sessionId);
   Future<bool> processPayment(PaymentInstructionModel instruction, String userId, String sessionId);
+
+  // Bank details scan methods
+  Future<BankDetailsModel> scanBankDetails(String imagePath, String userId, String sessionId, String accessToken);
+  Future<PaymentReceiptModel> processBankDetailsPayment({
+    required BankDetailsModel bankDetails,
+    required double amount,
+    required String description,
+    required String verificationToken,
+    required String transactionId,
+    required String userId,
+  });
 }
 
 class AiScanDataSourceImpl implements AiScanDataSource {
