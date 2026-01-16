@@ -139,9 +139,9 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
       })
       ..on<SpeakingChangedEvent>((event) {
         // Ensure the event participant is not null and is the local participant
-        if (event.participant != null && event.participant == _room?.localParticipant) {
+        if (event.participant == _room?.localParticipant) {
           // Access isSpeaking from the participant
-          if (event.participant!.isSpeaking) { 
+          if (event.participant.isSpeaking) { 
             if (_room != null) emit(VoiceSessionLocalUserSpeaking(_room!));
           } else {
             // When user stops speaking, transition to AgentProcessing state

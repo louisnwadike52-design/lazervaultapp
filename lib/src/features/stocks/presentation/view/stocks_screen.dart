@@ -774,13 +774,13 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
           BlocBuilder<StockCubit, StockState>(
             builder: (context, state) {
               if (state is StockLoading) {
-                return Container(
+                return SizedBox(
                   height: 300.h,
                   child: StockEmptyStates.shimmerLoading(message: 'Loading stocks...'),
                 );
               } else if (state is StockLoaded) {
                 if (state.stocks.isEmpty) {
-                  return Container(
+                  return SizedBox(
                     height: 300.h,
                     child: StockEmptyStates.emptySearchResults(
                       searchQuery: _searchController.text.isEmpty ? null : _searchController.text,
@@ -789,7 +789,7 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
                 }
                 return _buildStocksListScrollable(state.stocks);
               } else if (state is StockError) {
-                return Container(
+                return SizedBox(
                   height: 300.h,
                   child: StockEmptyStates.errorState(
                     message: state.message,
@@ -801,7 +801,7 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
                 );
               }
               // Show loading initially to trigger data load
-              return Container(
+              return SizedBox(
                 height: 300.h,
                 child: StockEmptyStates.shimmerLoading(message: 'Loading stocks...'),
               );
@@ -918,7 +918,7 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
   }
 
   Widget _buildSectorFilter() {
-    return Container(
+    return SizedBox(
       height: 50.h,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
@@ -1006,13 +1006,13 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
             padding: EdgeInsets.symmetric(horizontal: 16.w),
             child: _buildStockItem(stock),
           )
-        ).toList(),
+        ),
         
         // Load More Button
         if (stocks.length >= 10)
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
-            child: Container(
+            child: SizedBox(
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () => _loadMoreStocks(),
@@ -1710,7 +1710,7 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
 
   Widget _buildHoldingItem(StockHolding holding) {
     // Helper method to create Stock from holding
-    Stock _createStockFromHolding() {
+    Stock createStockFromHolding() {
       return Stock(
         symbol: holding.symbol,
         name: '${holding.symbol} Inc.',
@@ -1768,7 +1768,7 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
             child: InkWell(
               borderRadius: BorderRadius.circular(20.r),
               onTap: () {
-                Get.toNamed(AppRoutes.stockDetails, arguments: _createStockFromHolding());
+                Get.toNamed(AppRoutes.stockDetails, arguments: createStockFromHolding());
               },
               child: Padding(
                 padding: EdgeInsets.all(4.w),
@@ -1958,7 +1958,7 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
                 child: OutlinedButton.icon(
                   onPressed: () {
                     Get.to(() => CreateStockTradeCarousel(
-                      stock: _createStockFromHolding(),
+                      stock: createStockFromHolding(),
                       initialSide: OrderSide.sell,
                     ));
                   },
@@ -1979,7 +1979,7 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
                 child: ElevatedButton.icon(
                   onPressed: () {
                     Get.to(() => CreateStockTradeCarousel(
-                      stock: _createStockFromHolding(),
+                      stock: createStockFromHolding(),
                       initialSide: OrderSide.buy,
                     ));
                   },
@@ -3483,11 +3483,11 @@ class _StocksScreenState extends State<StocksScreen> with TickerProviderStateMix
           SizedBox(height: 16.h),
           ElevatedButton(
             onPressed: () => _loadTabData(_selectedTab),
-            child: Text('Retry'),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.blue,
               foregroundColor: Colors.white,
             ),
+            child: Text('Retry'),
           ),
         ],
       ),

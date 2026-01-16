@@ -6,7 +6,7 @@ import 'package:lazervault/src/features/identity/cubit/identity_cubit.dart';
 import 'package:lazervault/src/features/identity/cubit/identity_state.dart';
 
 class FacialRegistrationScreen extends StatefulWidget {
-  const FacialRegistrationScreen({Key? key}) : super(key: key);
+  const FacialRegistrationScreen({super.key});
 
   @override
   State<FacialRegistrationScreen> createState() =>

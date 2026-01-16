@@ -444,7 +444,7 @@ class _InvestmentsScreenState extends State<InvestmentsScreen>
                 spacing: 4.w,
                 runSpacing: 4.h,
                 children: [
-                  _buildMetricChip('${option.expectedReturn}', Colors.green),
+                  _buildMetricChip(option.expectedReturn, Colors.green),
                   _buildMetricChip(option.riskLevel, _getRiskColor(option.riskLevel)),
                 ],
               ),

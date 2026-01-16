@@ -320,7 +320,7 @@ class _AddRecipientDialogState extends State<AddRecipientDialog> with SingleTick
                                       });
                                     },
                                     activeTrackColor: Colors.red[500],
-                                    activeColor: Colors.white,
+                                    activeThumbColor: Colors.white,
                                   ),
                                 ],
                               ),

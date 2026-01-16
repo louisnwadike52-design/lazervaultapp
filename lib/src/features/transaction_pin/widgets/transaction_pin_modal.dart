@@ -204,7 +204,7 @@ class _TransactionPinModalState extends State<TransactionPinModal> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceVariant,
+        color: theme.colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -330,7 +330,7 @@ class _TransactionPinModalState extends State<TransactionPinModal> {
                 ),
               ),
               filled: true,
-              fillColor: theme.colorScheme.surfaceVariant.withOpacity(0.5),
+              fillColor: theme.colorScheme.surfaceContainerHighest.withOpacity(0.5),
             ),
           ),
         );

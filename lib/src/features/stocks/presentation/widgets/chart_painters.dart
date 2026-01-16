@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../domain/entities/stock_entity.dart';
 
 class CandlestickPainter extends CustomPainter {

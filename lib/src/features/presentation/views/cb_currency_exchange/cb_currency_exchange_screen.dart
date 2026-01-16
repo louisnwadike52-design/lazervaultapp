@@ -1483,7 +1483,7 @@ class _CBCurrencyExchangeScreenState extends State<CBCurrencyExchangeScreen>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Avatar with star indicator
-              Container(
+              SizedBox(
                       width: 70.w,
                       height: 70.h,
                       child: Stack(

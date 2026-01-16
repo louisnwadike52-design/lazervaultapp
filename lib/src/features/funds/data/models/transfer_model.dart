@@ -1,7 +1,6 @@
-import 'package:equatable/equatable.dart';
-import 'package:fixnum/fixnum.dart'; // For Int64
-import 'package:grpc/grpc.dart'; // For Timestamp
-import 'package:intl/intl.dart'; // For potential date formatting
+// For Int64
+// For Timestamp
+// For potential date formatting
 // Import the entity
 import 'package:lazervault/src/features/funds/domain/entities/transfer_entity.dart';
 
@@ -10,20 +9,13 @@ class InitiateTransferResponseModel extends TransferEntity {
 
   // Constructor now calls super
   const InitiateTransferResponseModel({
-    required Int64 transferId,
-    required String status,
-    required Int64 amount, // Minor units
-    required Int64 fee, // Minor units
-    required Int64 totalAmount, // Minor units
-    required DateTime createdAt,
-  }) : super(
-          transferId: transferId,
-          status: status,
-          amount: amount,
-          fee: fee,
-          totalAmount: totalAmount,
-          createdAt: createdAt,
-        );
+    required super.transferId,
+    required super.status,
+    required super.amount, // Minor units
+    required super.fee, // Minor units
+    required super.totalAmount, // Minor units
+    required super.createdAt,
+  });
 
   // Factory constructor to create from gRPC response
   // Note: Use the specific generated proto type if available instead of dynamic

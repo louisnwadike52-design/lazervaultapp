@@ -15,9 +15,9 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
   late TabController _tabController;
   late AnimationController _progressController;
   
-  int _totalEarned = 142;
-  int _coursesCompleted = 8;
-  int _currentStreak = 12;
+  final int _totalEarned = 142;
+  final int _coursesCompleted = 8;
+  final int _currentStreak = 12;
 
   @override
   void initState() {
@@ -606,7 +606,7 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
           quiz['reward'] as String,
           quiz['difficulty'] as String,
           quiz['color'] as Color,
-        )).toList(),
+        )),
       ],
     );
   }

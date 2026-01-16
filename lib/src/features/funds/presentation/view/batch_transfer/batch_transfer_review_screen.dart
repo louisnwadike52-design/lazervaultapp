@@ -1,16 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:fixnum/fixnum.dart';
 import 'package:lazervault/core/types/app_routes.dart';
-import 'package:lazervault/src/features/funds/cubit/batch_transfer_cubit.dart';
-import 'package:lazervault/src/features/funds/cubit/batch_transfer_state.dart';
 import 'package:lazervault/src/features/funds/domain/entities/batch_transfer_entity.dart';
-import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
-import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 
@@ -32,7 +26,7 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
 
   Map<String, dynamic> transferData = {};
   Map<String, String> recipientNames = {};
-  bool _isProcessing = false;
+  final bool _isProcessing = false;
 
   @override
   void initState() {

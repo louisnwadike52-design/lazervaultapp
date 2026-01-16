@@ -3,7 +3,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../../../../core/services/injection_container.dart';
 import '../../../../../core/types/app_routes.dart';
 import '../../../../../core/theme/invoice_theme_colors.dart';
 import '../../../authentication/cubit/authentication_cubit.dart';
@@ -13,7 +12,6 @@ import '../cubit/invoice_state.dart';
 import '../cubit/tagged_invoice_cubit.dart';
 import '../cubit/tagged_invoice_state.dart';
 import '../widgets/invoice_voice_agent_button.dart';
-import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 
 class InvoiceHomeScreen extends StatefulWidget {

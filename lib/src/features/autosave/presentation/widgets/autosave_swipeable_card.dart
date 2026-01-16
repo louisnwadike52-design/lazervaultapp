@@ -15,7 +15,7 @@ class AutoSaveSwipeableCard extends StatelessWidget {
   final Function(bool?)? onSelectionChanged;
 
   const AutoSaveSwipeableCard({
-    Key? key,
+    super.key,
     required this.rule,
     this.accountName,
     required this.onTap,
@@ -25,7 +25,7 @@ class AutoSaveSwipeableCard extends StatelessWidget {
     this.isSelected = false,
     this.selectionMode = false,
     this.onSelectionChanged,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

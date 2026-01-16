@@ -7,14 +7,12 @@ import 'package:share_plus/share_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 import 'dart:ui' as ui;
-import 'dart:typed_data';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import '../../../../../core/theme/invoice_theme_colors.dart';
 import '../../domain/entities/invoice_entity.dart';
-import '../../../../../core/theme/invoice_theme_colors.dart';
 import '../../domain/repositories/invoice_repository.dart';
 import '../../services/invoice_pdf_service.dart';
 import '../../services/invoice_qr_service.dart';
@@ -1306,9 +1304,9 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
   late ContactSyncRepository _contactSyncRepository;
 
   String _searchQuery = '';
-  Set<String> _selectedUserIds = {};
-  Set<String> _selectedEmails = {};
-  Set<String> _selectedPhones = {};
+  final Set<String> _selectedUserIds = {};
+  final Set<String> _selectedEmails = {};
+  final Set<String> _selectedPhones = {};
 
   List<InvoiceUser> _searchResults = [];
   List<Map<String, dynamic>> _contacts = [];

@@ -76,7 +76,7 @@ class _BatchTransferHistoryWidgetState extends State<BatchTransferHistoryWidget>
   }
 
   Widget _buildLoadingState() {
-    return Container(
+    return SizedBox(
       height: 200.h,
       child: Center(
         child: CircularProgressIndicator(
@@ -324,7 +324,7 @@ class _BatchTransferHistoryWidgetState extends State<BatchTransferHistoryWidget>
   }
 
   Widget _buildEmptyState() {
-    return Container(
+    return SizedBox(
       height: 200.h,
       child: Center(
         child: Column(
@@ -361,7 +361,7 @@ class _BatchTransferHistoryWidgetState extends State<BatchTransferHistoryWidget>
   }
 
   Widget _buildErrorState(String message) {
-    return Container(
+    return SizedBox(
       height: 200.h,
       child: Center(
         child: Column(

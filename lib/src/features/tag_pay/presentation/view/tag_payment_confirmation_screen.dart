@@ -4,7 +4,6 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../domain/entities/user_tag_entity.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../../core/services/injection_container.dart';
 import '../../../account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import '../../../account_cards_summary/cubit/account_cards_summary_state.dart';
 import '../cubit/tag_pay_cubit.dart';
@@ -370,7 +369,7 @@ class _TagPaymentConfirmationScreenState
                     ),
                   ),
                 );
-              }).toList(),
+              }),
             ],
           );
         }

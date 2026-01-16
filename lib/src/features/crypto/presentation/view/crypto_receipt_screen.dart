@@ -387,7 +387,7 @@ class _CryptoReceiptScreenState extends State<CryptoReceiptScreen>
             ),
           ),
           SizedBox(height: 16.h),
-          _buildDetailRow('Executed at', '${_formatDateTime(widget.receipt.timestamp)}'),
+          _buildDetailRow('Executed at', _formatDateTime(widget.receipt.timestamp)),
           SizedBox(height: 12.h),
           _buildDetailRow('Settlement', 'Instant'),
           SizedBox(height: 12.h),

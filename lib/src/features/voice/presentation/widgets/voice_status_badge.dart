@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
 import '../../../../../core/services/voice_biometrics_service.dart';
 import '../../../../../core/services/injection_container.dart';
 import '../screens/voice_registration_screen.dart';
@@ -9,10 +10,10 @@ class VoiceStatusBadge extends StatefulWidget {
   final VoidCallback? onEnrollmentChanged;
 
   const VoiceStatusBadge({
-    Key? key,
+    super.key,
     required this.userId,
     this.onEnrollmentChanged,
-  }) : super(key: key);
+  });
 
   @override
   State<VoiceStatusBadge> createState() => _VoiceStatusBadgeState();
@@ -168,10 +169,10 @@ class VoiceStatusBadgeCompact extends StatelessWidget {
   final VoidCallback? onTap;
 
   const VoiceStatusBadgeCompact({
-    Key? key,
+    super.key,
     required this.userId,
     this.onTap,
-  }) : super(key: key);
+  });
 
   Future<VoiceEnrollmentStatus> _checkStatus() async {
     final service = GetIt.I<VoiceBiometricsService>();

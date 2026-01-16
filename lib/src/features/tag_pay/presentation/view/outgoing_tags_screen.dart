@@ -10,7 +10,7 @@ import '../../../../../core/types/app_routes.dart';
 import '../widgets/tag_details_bottom_sheet.dart';
 
 class OutgoingTagsScreen extends StatefulWidget {
-  const OutgoingTagsScreen({Key? key}) : super(key: key);
+  const OutgoingTagsScreen({super.key});
 
   @override
   State<OutgoingTagsScreen> createState() => _OutgoingTagsScreenState();

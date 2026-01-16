@@ -388,7 +388,7 @@ class GroupAccountRemoteDataSourceImpl implements GroupAccountRemoteDataSource {
       type: type,
       frequency: frequency,
       regularAmount: regularAmount,
-      nextPaymentDate: frequency != null ? frequency.calculateNextDate(effectiveStartDate) : null,
+      nextPaymentDate: frequency?.calculateNextDate(effectiveStartDate),
       startDate: effectiveStartDate,
       totalCycles: totalCycles,
       currentCycle: 1,

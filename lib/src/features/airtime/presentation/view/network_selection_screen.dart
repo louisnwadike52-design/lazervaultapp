@@ -53,8 +53,7 @@ class _NetworkSelectionScreenState extends State<NetworkSelectionScreen> {
       }
       
       // Set default country if none provided
-      if (selectedCountry == null) {
-        selectedCountry = Country(
+      selectedCountry ??= Country(
           id: 'ng',
           code: 'NG',
           name: 'Nigeria',
@@ -63,7 +62,6 @@ class _NetworkSelectionScreenState extends State<NetworkSelectionScreen> {
           flag: '🇳🇬',
           currencySymbol: '₦',
         );
-      }
       
       networkProviders = args['networkProviders'] as List<NetworkProvider>? ?? [];
     } else {
@@ -222,7 +220,7 @@ class _NetworkSelectionScreenState extends State<NetworkSelectionScreen> {
           ...providers.map((provider) => Padding(
             padding: EdgeInsets.only(bottom: 12.h),
             child: _buildProviderCard(provider),
-          )).toList(),
+          )),
           
           SizedBox(height: 20.h),
         ],

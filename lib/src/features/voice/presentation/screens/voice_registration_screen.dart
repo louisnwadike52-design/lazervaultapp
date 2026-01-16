@@ -8,7 +8,6 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import '../../../../../core/services/voice_biometrics_service.dart';
-import '../../../../../core/services/injection_container.dart';
 
 /// Voice Registration Screen - Records multiple voice samples for enrollment
 /// Production-ready with comprehensive error handling
@@ -17,10 +16,10 @@ class VoiceRegistrationScreen extends StatefulWidget {
   final VoidCallback? onEnrollmentComplete;
 
   const VoiceRegistrationScreen({
-    Key? key,
+    super.key,
     required this.userId,
     this.onEnrollmentComplete,
-  }) : super(key: key);
+  });
 
   @override
   State<VoiceRegistrationScreen> createState() =>
@@ -38,8 +37,8 @@ class _VoiceRegistrationScreenState extends State<VoiceRegistrationScreen>
   static const int minAudioFileSize = 1000; // Minimum 1KB to validate audio
   static const int maxAudioFileSize = 10 * 1024 * 1024; // 10MB max
 
-  List<Uint8List> _audioSamples = [];
-  List<String> _tempFilePaths = []; // Track temp files for cleanup
+  final List<Uint8List> _audioSamples = [];
+  final List<String> _tempFilePaths = []; // Track temp files for cleanup
   int _currentSample = 0;
   bool _isRecording = false;
   bool _isProcessing = false;

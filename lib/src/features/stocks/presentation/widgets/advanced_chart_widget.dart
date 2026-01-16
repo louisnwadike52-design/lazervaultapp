@@ -71,7 +71,7 @@ class _AdvancedChartWidgetState extends State<AdvancedChartWidget> {
   @override
   Widget build(BuildContext context) {
     if (widget.priceHistory.isEmpty) {
-      return Container(
+      return SizedBox(
         height: 300.h,
         child: Center(
           child: Text(
@@ -92,7 +92,7 @@ class _AdvancedChartWidgetState extends State<AdvancedChartWidget> {
         SizedBox(height: 16.h),
         _buildChartInfo(),
         SizedBox(height: 8.h),
-        Container(
+        SizedBox(
           height: 300.h,
           child: Stack(
             children: [

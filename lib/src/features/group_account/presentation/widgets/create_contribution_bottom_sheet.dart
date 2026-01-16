@@ -613,7 +613,7 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
         ),
         SizedBox(height: 8.h),
         DropdownButtonFormField<String>(
-          value: _selectedCurrency,
+          initialValue: _selectedCurrency,
           onChanged: (value) => setState(() => _selectedCurrency = value!),
           style: GoogleFonts.inter(fontSize: 14.sp, color: Colors.white),
           dropdownColor: const Color(0xFF1F1F1F),
@@ -655,7 +655,7 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
         ),
         SizedBox(height: 8.h),
         DropdownButtonFormField<ContributionFrequency?>(
-          value: _selectedFrequency,
+          initialValue: _selectedFrequency,
           onChanged: (value) => setState(() => _selectedFrequency = value),
           style: GoogleFonts.inter(fontSize: 14.sp, color: Colors.white),
           dropdownColor: const Color(0xFF1F1F1F),
@@ -794,7 +794,7 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
           Switch(
             value: value,
             onChanged: onChanged,
-            activeColor: const Color(0xFF6C5CE7),
+            activeThumbColor: const Color(0xFF6C5CE7),
             trackColor: WidgetStateProperty.resolveWith((states) {
               return states.contains(WidgetState.selected) 
                   ? const Color(0xFF6C5CE7).withOpacity(0.3)

@@ -1,4 +1,5 @@
 /// Configuration for Voice Biometrics Service
+library;
 import 'package:grpc/grpc.dart';
 
 class VoiceBiometricsServiceConfig {

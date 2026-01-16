@@ -8,11 +8,11 @@ class AutoSaveFilterTabs extends StatelessWidget {
   final Map<AutoSaveStatus, int> counts;
 
   const AutoSaveFilterTabs({
-    Key? key,
+    super.key,
     required this.selectedStatus,
     required this.onStatusChanged,
     this.counts = const {},
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

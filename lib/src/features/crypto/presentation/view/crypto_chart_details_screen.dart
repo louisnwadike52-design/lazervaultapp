@@ -9,15 +9,10 @@ import '../../domain/entities/crypto_entity.dart';
 import '../../cubit/crypto_cubit.dart';
 import '../../cubit/crypto_state.dart';
 import '../../../stocks/domain/entities/stock_entity.dart';
-import '../../../stocks/presentation/widgets/chart_painters.dart';
 import '../../../stocks/presentation/widgets/drawing_elements.dart';
 import '../../../stocks/presentation/widgets/drawings_painter.dart';
 import '../../../stocks/presentation/widgets/professional_candlestick_painter.dart';
-import '../../../stocks/presentation/widgets/indicators_painter.dart';
-import '../../../stocks/presentation/widgets/crosshair_painter.dart';
 import 'package:flutter/services.dart';
-import '../../../stocks/presentation/widgets/price_overlay_indicators_painter.dart';
-import '../../../stocks/presentation/widgets/bottom_indicators_painter.dart';
 
 enum ChartType { line, candlestick, area, ohlc, volume, heikinAshi, hollowCandles }
 
@@ -78,8 +73,8 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
   ChartType _selectedChartType = ChartType.candlestick;
   DrawingTool _selectedDrawingTool = DrawingTool.none;
   String _selectedTimeframe = '1D';
-  List<String> _selectedIndicators = [];
-  List<Crypto> _comparisonCryptos = [];
+  final List<String> _selectedIndicators = [];
+  final List<Crypto> _comparisonCryptos = [];
   
   // Pan and zoom variables
   double _currentScale = 1.0;
@@ -94,9 +89,9 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
   double _lastPanX = 0.0;
   
   // Drawing data
-  List<DrawingElement> _drawings = [];
+  final List<DrawingElement> _drawings = [];
   DrawingElement? _currentDrawing;
-  bool _isDrawing = false;
+  final bool _isDrawing = false;
   Offset? _drawingStartPoint;
   
   // Drawing selection and dragging
@@ -317,7 +312,7 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
             children: [
               // Full screen chart (90% height, 100% width)
               Positioned.fill(
-                child: Container(
+                child: SizedBox(
                   height: MediaQuery.of(context).size.height * 0.9,
                   width: MediaQuery.of(context).size.width,
                   child: _buildFullScreenChart(priceHistory),
@@ -967,7 +962,7 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
           _isScaling = false;
         });
       },
-      child: Container(
+      child: SizedBox(
         width: MediaQuery.of(context).size.width,
         height: MediaQuery.of(context).size.height * 0.9,
         child: Stack(
@@ -1101,7 +1096,7 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
         volume: crypto.volume,
       )).toList();
       
-      return Container(
+      return SizedBox(
         width: double.infinity,
         height: double.infinity,
         child: CustomPaint(
@@ -1124,7 +1119,7 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
   }
 
   Widget _buildEmptyChart() {
-    return Container(
+    return SizedBox(
       width: double.infinity,
       height: double.infinity,
       child: Center(

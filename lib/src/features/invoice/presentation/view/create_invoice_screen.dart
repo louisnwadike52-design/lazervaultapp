@@ -1090,7 +1090,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
         builder: (context, setDialogState) {
           Map<String, bool> fieldErrors = {};
           
-          void _validateAndSave() {
+          void validateAndSave() {
             fieldErrors.clear();
             List<String> missingFields = [];
             
@@ -1267,7 +1267,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                             borderRadius: BorderRadius.circular(8.r),
                           ),
                           child: ElevatedButton(
-                            onPressed: _validateAndSave,
+                            onPressed: validateAndSave,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.transparent,
                               shadowColor: Colors.transparent,
@@ -1305,7 +1305,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
         builder: (context, setDialogState) {
           Map<String, bool> fieldErrors = {};
           
-          void _validateAndSave() {
+          void validateAndSave() {
             fieldErrors.clear();
             List<String> missingFields = [];
             
@@ -1519,7 +1519,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                             borderRadius: BorderRadius.circular(8.r),
                           ),
                           child: ElevatedButton(
-                            onPressed: _validateAndSave,
+                            onPressed: validateAndSave,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.transparent,
                               shadowColor: Colors.transparent,
@@ -2068,7 +2068,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
         ),
         SizedBox(height: 8.h),
         DropdownButtonFormField<T>(
-          value: value,
+          initialValue: value,
           style: GoogleFonts.inter(
             color: InvoiceThemeColors.textWhite,
             fontSize: 16.sp,
@@ -2474,10 +2474,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
               onPrimary: Colors.white,
               surface: Color(0xFF1F1F1F),
               onSurface: Colors.white,
-              background: Color(0xFF0A0A0A),
-              onBackground: Colors.white,
-            ),
-            dialogBackgroundColor: InvoiceThemeColors.secondaryBackground,
+            ), dialogTheme: DialogThemeData(backgroundColor: InvoiceThemeColors.secondaryBackground),
           ),
           child: child!,
         );

@@ -1,6 +1,5 @@
 import '../../../../../core/theme/invoice_theme_colors.dart';
 import 'package:flutter/material.dart';
-import '../../../../../core/theme/invoice_theme_colors.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -19,7 +18,7 @@ class InvoiceStatisticsCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: InvoiceThemeColors.secondaryBackground,
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: InvoiceThemeColors.borderColor!),
+        border: Border.all(color: InvoiceThemeColors.borderColor),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

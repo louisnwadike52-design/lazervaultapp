@@ -279,7 +279,7 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
     final lowerQuery = query.toLowerCase();
     return allInvoices.where((inv) {
       return inv.title.toLowerCase().contains(lowerQuery) ||
-             (inv.description?.toLowerCase().contains(lowerQuery) ?? false) ||
+             (inv.description.toLowerCase().contains(lowerQuery) ?? false) ||
              inv.toEmail?.toLowerCase().contains(lowerQuery) == true;
     }).toList();
   }

@@ -6,7 +6,6 @@ import 'package:get/get.dart';
 import '../../domain/entities/recipient_entity.dart';
 import '../controllers/exchange_controller.dart';
 import 'exchange_confirmation_screen.dart';
-import 'package:lazervault/core/models/device_contact.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/add_recipient.dart';
 
 class ExchangeRecipientScreen extends StatefulWidget {

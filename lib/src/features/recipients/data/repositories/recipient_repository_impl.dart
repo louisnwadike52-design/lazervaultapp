@@ -1,6 +1,5 @@
 import 'package:dartz/dartz.dart';
 import 'package:fixnum/fixnum.dart';
-import 'package:grpc/grpc.dart';
 import 'package:lazervault/core/services/grpc_call_options_helper.dart';
 import 'package:lazervault/core/error/failure.dart';
 import 'package:lazervault/src/features/recipients/data/models/recipient_model.dart';

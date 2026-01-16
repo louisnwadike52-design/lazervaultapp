@@ -13,33 +13,27 @@ abstract class ValidationError {
 }
 
 class AmountValidationError extends ValidationError {
-  const AmountValidationError(String message, [String? field])
-      : super(message, field);
+  const AmountValidationError(super.message, [super.field]);
 }
 
 class CodeValidationError extends ValidationError {
-  const CodeValidationError(String message, [String? field])
-      : super(message, field);
+  const CodeValidationError(super.message, [super.field]);
 }
 
 class EmailValidationError extends ValidationError {
-  const EmailValidationError(String message, [String? field])
-      : super(message, field);
+  const EmailValidationError(super.message, [super.field]);
 }
 
 class BalanceValidationError extends ValidationError {
-  const BalanceValidationError(String message, [String? field])
-      : super(message, field);
+  const BalanceValidationError(super.message, [super.field]);
 }
 
 class DateValidationError extends ValidationError {
-  const DateValidationError(String message, [String? field])
-      : super(message, field);
+  const DateValidationError(super.message, [super.field]);
 }
 
 class GeneralValidationError extends ValidationError {
-  const GeneralValidationError(String message, [String? field])
-      : super(message, field);
+  const GeneralValidationError(super.message, [super.field]);
 }
 
 /// Comprehensive validation layer for gift card operations
@@ -86,7 +80,7 @@ class GiftCardValidation {
       if (!denominationValues.contains(amount)) {
         final validAmounts = brand.availableDenominations!.join(', ');
         return left(AmountValidationError(
-          'Amount must be one of: \$${validAmounts}',
+          'Amount must be one of: \$$validAmounts',
           'amount',
         ));
       }

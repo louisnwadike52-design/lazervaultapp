@@ -1,6 +1,5 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:lazervault/core/types/unified_transaction.dart';
 
 /// HTTP client for Transaction History Service
 /// Connects to the Core Gateway (port 7878) which routes to the Transaction History microservice

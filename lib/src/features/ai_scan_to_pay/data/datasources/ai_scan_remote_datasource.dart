@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:grpc/grpc.dart';
 import '../../../../core/network/grpc_client.dart';
 import '../../../../generated/ai_scan.pb.dart' as pb;

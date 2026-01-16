@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -6,7 +5,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/src/features/voice_enrollment/cubit/voice_enrollment_cubit.dart';
 import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 // Note: voice_enrollment_state.dart is a part of voice_enrollment_cubit.dart, no need to import separately
-import 'package:lazervault/src/features/widgets/voice_suggestions.dart';
 
 /// Voice Enrollment Screen
 ///

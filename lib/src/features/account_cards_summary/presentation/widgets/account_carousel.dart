@@ -6,7 +6,6 @@ import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/account_cards_summary/domain/entities/account_summary_entity.dart';
-import 'package:lazervault/src/features/family_account/presentation/widgets/family_account_card.dart';
 
 // Type definition for the callback when a card's details are requested
 typedef OnShowDetailsCallback = void Function(Map<String, dynamic> accountArgs);

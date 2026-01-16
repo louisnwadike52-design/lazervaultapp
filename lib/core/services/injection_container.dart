@@ -74,7 +74,6 @@ import 'package:lazervault/src/features/voice_enrollment/cubit/voice_enrollment_
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 import 'package:lazervault/src/features/transaction_pin/cubit/transaction_pin_cubit.dart';
 import 'package:lazervault/src/features/voice_enrollment/domain/repositories/voice_enrollment_repository.dart';
-import 'package:lazervault/src/features/voice_enrollment/data/voice_biometrics_service_config.dart';
 import 'package:lazervault/src/generated/recipient.pbgrpc.dart';
 import 'package:lazervault/src/generated/transfer.pbgrpc.dart' hide TransferTransaction;
 import 'package:lazervault/src/generated/user.pbgrpc.dart' as user_grpc;
@@ -140,7 +139,6 @@ import 'package:lazervault/src/features/funds/domain/usecases/get_batch_transfer
 import 'package:lazervault/src/features/funds/cubit/batch_transfer_cubit.dart';
 
 import '../../src/features/authentication/data/datasources/authentication_remote_data_source.dart';
-import '../../src/features/presentation/views/onboarding_screen.dart';
 import '../../src/features/presentation/views/splash_screen.dart';
 import 'package:lazervault/src/features/funds/data/repositories/deposit_repository_impl.dart';
 import 'package:lazervault/src/features/funds/domain/repositories/i_deposit_repository.dart';
@@ -177,7 +175,6 @@ import 'package:lazervault/src/features/ai_chats/domain/usecases/get_ai_chat_his
 // General Chat Imports
 import 'package:lazervault/src/features/microservice_chat/presentation/screen/general_chat_screen.dart';
 import 'package:lazervault/src/features/microservice_chat/cubit/general_chat_cubit.dart';
-import 'package:lazervault/src/features/microservice_chat/cubit/general_chat_state.dart';
 import 'package:lazervault/src/features/microservice_chat/domain/usecases/send_general_chat_message_usecase.dart';
 import 'package:lazervault/src/features/microservice_chat/data/repositories/general_chat_repository_impl.dart';
 import 'package:lazervault/src/features/microservice_chat/data/datasources/http_general_chat_datasource.dart';
@@ -189,7 +186,6 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:lazervault/src/features/gift_cards/data/datasources/gift_card_remote_data_source.dart';
 import 'package:lazervault/src/features/gift_cards/data/datasources/gift_card_remote_data_source_grpc.dart';
 import 'package:lazervault/src/features/gift_cards/data/datasources/gift_card_remote_data_source_mock.dart';
-import 'package:lazervault/src/features/gift_cards/data/datasources/gift_card_local_datasource.dart';
 import 'package:lazervault/src/features/gift_cards/data/repositories/gift_card_repository_impl.dart';
 import 'package:lazervault/src/features/gift_cards/domain/repositories/i_gift_card_repository.dart';
 import 'package:lazervault/src/features/gift_cards/domain/usecases/get_gift_card_brands_usecase.dart';
@@ -259,7 +255,6 @@ import 'package:lazervault/src/features/crowdfund/presentation/cubit/crowdfund_c
 // End Crowdfund Imports
 
 // Invoice Imports
-import 'package:lazervault/src/features/invoice/data/datasources/invoice_local_datasource.dart';
 import 'package:lazervault/src/features/invoice/data/repositories/invoice_repository_grpc_impl.dart';
 import 'package:lazervault/src/features/invoice/domain/repositories/invoice_repository.dart';
 import 'package:lazervault/src/features/invoice/presentation/cubit/invoice_cubit.dart';
@@ -342,12 +337,10 @@ import 'package:lazervault/src/features/family_account/data/repositories/family_
 import 'package:lazervault/src/features/family_account/domain/repositories/family_account_repository.dart';
 import 'package:lazervault/src/features/family_account/domain/usecases/family_account_usecases.dart';
 import 'package:lazervault/src/features/family_account/presentation/cubit/family_account_cubit.dart';
-import 'package:lazervault/src/features/family_account/presentation/cubit/family_account_state.dart';
 import 'package:lazervault/src/generated/family_accounts.pbgrpc.dart' as family_accounts_grpc;
 import 'package:dio/dio.dart';
 
 // Insurance Imports
-import 'package:lazervault/src/features/insurance/data/datasources/insurance_local_datasource.dart';
 import 'package:lazervault/src/features/insurance/data/datasources/insurance_remote_datasource.dart';
 import 'package:lazervault/src/features/insurance/data/repositories/insurance_repository_impl.dart';
 import 'package:lazervault/src/features/insurance/domain/repositories/insurance_repository.dart';
@@ -409,12 +402,7 @@ import 'package:lazervault/src/features/cards/presentation/cubit/card_cubit.dart
 // Transaction History Imports
 // import 'package:lazervault/core/grpc/transaction_history_grpc_client.dart';
 import 'package:lazervault/src/core/grpc/accounts_grpc_client.dart';
-import 'package:lazervault/src/features/transaction_history/data/datasources/transaction_history_cache_datasource.dart';
-import 'package:lazervault/src/features/transaction_history/data/repository/transaction_history_repository_grpc.dart';
-import 'package:lazervault/src/features/transaction_history/domain/repository/transaction_history_repository.dart';
-import 'package:lazervault/src/features/transaction_history/presentation/cubit/transaction_history_cubit.dart';
 import 'package:lazervault/src/features/transaction_history/presentation/screens/dashboard_transaction_history_screen.dart';
-import 'package:lazervault/src/features/transaction_history/presentation/screens/service_transaction_history_screen.dart';
 // End Transaction History Imports
 
 final serviceLocator = GetIt.instance;
@@ -968,20 +956,10 @@ Future<void> init() async {
     },
   );
 
-  // Local data source for caching
-  serviceLocator.registerLazySingleton<IGiftCardLocalDataSource>(
-    () {
-      final dataSource = GiftCardLocalDataSourceImpl();
-      dataSource.initialize();
-      return dataSource;
-    },
-  );
-
   // Repositories
   serviceLocator.registerLazySingleton<IGiftCardRepository>(
     () => GiftCardRepositoryImpl(
       remoteDataSource: serviceLocator<IGiftCardRemoteDataSource>(),
-      localDataSource: serviceLocator<IGiftCardLocalDataSource>(),
     ),
   );
 
@@ -1144,16 +1122,6 @@ Future<void> init() async {
   ));
 
   // ================== Feature: Invoice ==================
-
-  // Data Sources (local - for offline fallback if needed)
-  serviceLocator.registerLazySingleton<InvoiceLocalDataSource>(
-    () {
-      final dataSource = InvoiceLocalDataSourceImpl();
-      // Initialize Hive when the data source is created
-      dataSource.initializeHive();
-      return dataSource;
-    },
-  );
 
   // Repositories - Using gRPC implementation for backend integration
   serviceLocator.registerLazySingleton<InvoiceRepository>(
@@ -1518,17 +1486,7 @@ Future<void> init() async {
 
   // ================== Feature: Insurance ==================
 
-  // Data Sources
-  serviceLocator.registerLazySingleton<InsuranceLocalDataSource>(
-    () {
-      final dataSource = InsuranceLocalDataSourceImpl();
-      // Initialize Hive for insurance (kept for potential offline fallback)
-      dataSource.initializeHive();
-      return dataSource;
-    },
-  );
-
-  // Remote Data Source - Using gRPC
+  // Data Sources - Using gRPC
   serviceLocator.registerLazySingleton<InsuranceRemoteDataSource>(
     () => InsuranceRemoteDataSourceImpl(
       grpcClient: serviceLocator<GrpcClient>(),

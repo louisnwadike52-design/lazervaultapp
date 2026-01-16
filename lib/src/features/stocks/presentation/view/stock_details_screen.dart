@@ -4,11 +4,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:fl_chart/fl_chart.dart';
 import '../../cubit/stock_cubit.dart';
 import '../../cubit/stock_state.dart';
 import '../../domain/entities/stock_entity.dart';
-import '../../../../../core/types/app_routes.dart';
 import '../widgets/technical_indicators_bottom_sheet.dart';
 import '../widgets/analyst_ratings_section.dart';
 import '../widgets/stock_events_section.dart';
@@ -32,7 +30,7 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
   final List<String> _timeframes = ['1D', '1W', '1M', '3M', '6M', '1Y', '5Y', 'Max'];
   String _selectedTimeframe = '1M';
   bool _isInWatchlist = false;
-  bool _showIndicators = false;
+  final bool _showIndicators = false;
   
   // Technical Indicators
   List<String> _selectedIndicators = [];
@@ -364,7 +362,7 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
                   timeframe: _selectedTimeframe,
                 );
               }
-              return Container(
+              return SizedBox(
                 height: 300.h,
                 child: Center(child: CircularProgressIndicator(color: Colors.blue)),
               );

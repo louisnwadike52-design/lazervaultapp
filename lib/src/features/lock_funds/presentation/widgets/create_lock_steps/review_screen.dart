@@ -298,7 +298,7 @@ class ReviewScreen extends StatelessWidget {
                       onChanged: (value) {
                         cubit.updateAutoRenew(value);
                       },
-                      activeColor: const Color(0xFF6366F1),
+                      activeThumbColor: const Color(0xFF6366F1),
                       activeTrackColor: const Color(0xFF6366F1).withValues(alpha: 0.5),
                       inactiveThumbColor: const Color(0xFF9CA3AF),
                       inactiveTrackColor: Colors.white.withValues(alpha: 0.1),

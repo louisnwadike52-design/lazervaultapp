@@ -8,7 +8,6 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import '../../../../../core/services/voice_biometrics_service.dart';
-import '../../../../../core/services/injection_container.dart';
 
 /// Voice Verification Screen - Verifies user's voice before allowing access
 /// Production-ready with comprehensive error handling and retry mechanisms
@@ -18,11 +17,11 @@ class VoiceVerificationScreen extends StatefulWidget {
   final VoidCallback? onEnrollmentRequired;
 
   const VoiceVerificationScreen({
-    Key? key,
+    super.key,
     required this.userId,
     this.onVerificationSuccess,
     this.onEnrollmentRequired,
-  }) : super(key: key);
+  });
 
   @override
   State<VoiceVerificationScreen> createState() => _VoiceVerificationScreenState();

@@ -563,7 +563,7 @@ class _CardSettingsViewState extends State<_CardSettingsView> {
             value: value,
             onChanged: enabled ? onChanged : null,
             activeTrackColor: const Color(0xFF4E03D0),
-            activeColor: Colors.white,
+            activeThumbColor: Colors.white,
           ),
         ],
       ),

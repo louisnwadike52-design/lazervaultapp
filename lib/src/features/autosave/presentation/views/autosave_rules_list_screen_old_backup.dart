@@ -9,7 +9,7 @@ import 'package:lazervault/src/features/autosave/presentation/cubit/autosave_sta
 import 'package:lazervault/src/features/autosave/presentation/views/create_autosave_rule_screen.dart';
 
 class AutoSaveRulesListScreen extends StatefulWidget {
-  const AutoSaveRulesListScreen({Key? key}) : super(key: key);
+  const AutoSaveRulesListScreen({super.key});
 
   @override
   State<AutoSaveRulesListScreen> createState() => _AutoSaveRulesListScreenState();

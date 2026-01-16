@@ -29,17 +29,20 @@ class VoiceEnrollmentRepositoryImpl implements VoiceEnrollmentRepository {
   );
 
   /// Check if microphone permission is granted
+  @override
   Future<bool> checkMicrophonePermission() async {
     return await Permission.microphone.isGranted;
   }
 
   /// Request microphone permission
+  @override
   Future<bool> requestMicrophonePermission() async {
     final status = await Permission.microphone.request();
     return status.isGranted;
   }
 
   /// Start recording audio
+  @override
   Future<VoiceRecordingStream> startRecording() async {
     try {
       // Check permission first
@@ -107,6 +110,7 @@ class VoiceEnrollmentRepositoryImpl implements VoiceEnrollmentRepository {
   }
 
   /// Stop recording and return audio file
+  @override
   Future<File> stopRecording() async {
     try {
       // Stop amplitude monitoring
@@ -130,11 +134,11 @@ class VoiceEnrollmentRepositoryImpl implements VoiceEnrollmentRepository {
 
       // Log file size for debugging
       final fileSize = await file.length();
-      print('Recording saved: ${file.path} (${fileSize} bytes)');
+      print('Recording saved: ${file.path} ($fileSize bytes)');
 
       // Validate file size (should be at least 10KB for a meaningful recording)
       if (fileSize < 10000) {
-        throw Exception('Recording too short or empty (${fileSize} bytes)');
+        throw Exception('Recording too short or empty ($fileSize bytes)');
       }
 
       // Reset path for next recording
@@ -147,6 +151,7 @@ class VoiceEnrollmentRepositoryImpl implements VoiceEnrollmentRepository {
   }
 
   /// Get current user ID from secure storage
+  @override
   Future<String> getCurrentUserId() async {
     try {
       // Get from token payload
@@ -173,6 +178,7 @@ class VoiceEnrollmentRepositoryImpl implements VoiceEnrollmentRepository {
   }
 
   /// Enroll voice with audio samples via gRPC
+  @override
   Future<VoiceEnrollmentResult> enrollVoice({
     required String userId,
     required List<File> audioSamples,
@@ -205,7 +211,7 @@ class VoiceEnrollmentRepositoryImpl implements VoiceEnrollmentRepository {
         // Read file as bytes
         final bytes = await file.readAsBytes();
         audioBytes.add(bytes);
-        print('✅ Loaded sample $i: ${fileSize} bytes');
+        print('✅ Loaded sample $i: $fileSize bytes');
       }
 
       // Create enrollment request
@@ -258,6 +264,7 @@ class VoiceEnrollmentRepositoryImpl implements VoiceEnrollmentRepository {
   }
 
   /// Check voice enrollment status via gRPC
+  @override
   Future<bool> checkEnrollmentStatus(String userId) async {
     try {
       print('🔍 Checking enrollment status for user: $userId');
@@ -286,6 +293,7 @@ class VoiceEnrollmentRepositoryImpl implements VoiceEnrollmentRepository {
   }
 
   /// Delete voice enrollment
+  @override
   Future<bool> deleteEnrollment(String userId) async {
     try {
       final request = DeleteVoiceEnrollmentRequest()
@@ -309,6 +317,7 @@ class VoiceEnrollmentRepositoryImpl implements VoiceEnrollmentRepository {
   }
 
   /// Clean up resources
+  @override
   void dispose() {
     _amplitudeTimer?.cancel();
     _amplitudeController.close();

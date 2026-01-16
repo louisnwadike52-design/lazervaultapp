@@ -13,7 +13,7 @@ import '../../../account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import '../../../account_cards_summary/cubit/account_cards_summary_state.dart';
 
 class MyTagsScreenRedesigned extends StatefulWidget {
-  const MyTagsScreenRedesigned({Key? key}) : super(key: key);
+  const MyTagsScreenRedesigned({super.key});
 
   @override
   State<MyTagsScreenRedesigned> createState() => _MyTagsScreenRedesignedState();

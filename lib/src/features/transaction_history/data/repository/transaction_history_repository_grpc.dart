@@ -441,10 +441,8 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
     for (final appService in AppServiceName.values) {
       if (appService.backendServiceName == serviceName) {
         final txType = appService.toTransactionServiceType;
-        if (txType != null) {
-          return txType;
-        }
-      }
+        return txType;
+            }
     }
 
     // Fallback for services not in AppServiceName enum

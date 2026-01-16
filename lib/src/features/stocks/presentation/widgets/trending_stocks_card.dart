@@ -86,7 +86,7 @@ class TrendingStocksCard extends StatelessWidget {
               final index = entry.key;
               final stock = entry.value;
               return _buildStockRow(stock, index + 1);
-            }).toList(),
+            }),
         ],
       ),
     );

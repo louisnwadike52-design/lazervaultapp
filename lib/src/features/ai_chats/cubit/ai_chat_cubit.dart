@@ -6,7 +6,6 @@ import './ai_chat_state.dart';
 // Import domain entity
 import '../domain/entities/ai_chat_message_entity.dart';
 // Import gRPC generated types (adjust path if needed)
-import 'package:lazervault/src/generated/ai_chat.pb.dart';
 
 class AIChatCubit extends Cubit<AIChatState> {
   final ProcessChatUseCase _processChatUseCase;

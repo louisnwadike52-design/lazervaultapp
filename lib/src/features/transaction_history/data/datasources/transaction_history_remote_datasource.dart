@@ -1,7 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:lazervault/core/types/unified_transaction.dart';
-import 'package:lazervault/src/features/transaction_history/domain/repository/transaction_history_repository.dart';
 
 /// Remote data source for transaction history
 /// This handles all API calls for fetching transactions

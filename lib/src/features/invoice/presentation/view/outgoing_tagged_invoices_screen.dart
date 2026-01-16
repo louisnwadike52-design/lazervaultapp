@@ -10,7 +10,7 @@ import 'package:lazervault/src/generated/common.pbenum.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 
 class OutgoingTaggedInvoicesScreen extends StatefulWidget {
-  const OutgoingTaggedInvoicesScreen({Key? key}) : super(key: key);
+  const OutgoingTaggedInvoicesScreen({super.key});
 
   @override
   State<OutgoingTaggedInvoicesScreen> createState() =>

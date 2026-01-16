@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:web_socket_channel/web_socket_channel.dart';
-import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/grpc_call_options_helper.dart';
 import 'http_microservice_chat_datasource.dart';
 

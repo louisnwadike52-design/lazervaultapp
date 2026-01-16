@@ -9,13 +9,13 @@ class BulkActionBottomBar extends StatelessWidget {
   final VoidCallback onCancel;
 
   const BulkActionBottomBar({
-    Key? key,
+    super.key,
     required this.selectedCount,
     required this.onPause,
     required this.onResume,
     required this.onDelete,
     required this.onCancel,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

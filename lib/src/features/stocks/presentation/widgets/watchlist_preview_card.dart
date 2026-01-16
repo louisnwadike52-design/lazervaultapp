@@ -108,7 +108,7 @@ class WatchlistPreviewCard extends StatelessWidget {
               ),
             )
           else
-            ...stocks.map((stock) => _buildStockRow(stock)).toList(),
+            ...stocks.map((stock) => _buildStockRow(stock)),
         ],
       ),
     );

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:livekit_client/livekit_client.dart' as lk;
-import 'dart:convert';
 
 /// Voice agent button for invoice management conversations
 /// Connects to the invoice-voice-agent microservice via LiveKit
@@ -10,11 +9,11 @@ class InvoiceVoiceAgentButton extends StatefulWidget {
   final VoidCallback? onDisconnected;
 
   const InvoiceVoiceAgentButton({
-    Key? key,
+    super.key,
     this.accessToken,
     this.onConnected,
     this.onDisconnected,
-  }) : super(key: key);
+  });
 
   @override
   State<InvoiceVoiceAgentButton> createState() =>
@@ -170,11 +169,11 @@ class InvoiceVoiceAgentControl extends StatefulWidget {
   final VoidCallback? onDisconnected;
 
   const InvoiceVoiceAgentControl({
-    Key? key,
+    super.key,
     this.accessToken,
     this.onConnected,
     this.onDisconnected,
-  }) : super(key: key);
+  });
 
   @override
   State<InvoiceVoiceAgentControl> createState() =>

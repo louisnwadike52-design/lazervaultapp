@@ -88,7 +88,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
 
               // Category dropdown
               DropdownButtonFormField<ExpenseCategory>(
-                value: _selectedCategory,
+                initialValue: _selectedCategory,
                 decoration: InputDecoration(
                   labelText: 'Category',
                   border: OutlineInputBorder(
@@ -149,7 +149,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
 
               // Currency selector
               DropdownButtonFormField<String>(
-                value: _currency,
+                initialValue: _currency,
                 decoration: InputDecoration(
                   labelText: 'Currency',
                   border: OutlineInputBorder(

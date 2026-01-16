@@ -611,7 +611,7 @@ class TVPaymentReceiptScreen extends StatelessWidget {
                       ],
                       _buildReceiptRow(
                         'Payment Date',
-                        '${payment.completedAt?.toLocal().toString().split('.')[0] ?? payment.createdAt.toLocal().toString().split('.')[0]}',
+                        payment.completedAt?.toLocal().toString().split('.')[0] ?? payment.createdAt.toLocal().toString().split('.')[0],
                       ),
                     ],
                   ),
@@ -624,7 +624,7 @@ class TVPaymentReceiptScreen extends StatelessWidget {
                   height: 56.h,
                   child: ElevatedButton(
                     onPressed: () {
-                      Get.backUntil((route) => route.isFirst);
+                      Navigator.of(context).popUntil((route) => route.isFirst);
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF8B5CF6),

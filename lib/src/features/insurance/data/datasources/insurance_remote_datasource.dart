@@ -1,4 +1,3 @@
-import 'package:grpc/grpc.dart';
 import '../../../../generated/insurance.pbgrpc.dart' as pb;
 import '../../../../core/network/grpc_client.dart';
 import '../../domain/entities/insurance_entity.dart';

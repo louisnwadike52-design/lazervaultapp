@@ -157,7 +157,7 @@ class VoiceEnrollmentRepository {
 
       // Log file size for debugging
       final fileSize = await file.length();
-      print('Recording saved: ${file.path} (${fileSize} bytes)');
+      print('Recording saved: ${file.path} ($fileSize bytes)');
 
       // Reset path for next recording
       _currentRecordingPath = null;
@@ -206,7 +206,7 @@ class VoiceEnrollmentRepository {
             throw Exception('Audio sample $i is empty: ${file.path}');
           }
 
-          print('Sample $i: ${file.path} (${fileSize} bytes)');
+          print('Sample $i: ${file.path} ($fileSize bytes)');
         }
       }
 

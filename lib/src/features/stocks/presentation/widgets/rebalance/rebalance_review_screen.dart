@@ -267,7 +267,7 @@ class RebalanceReviewScreen extends StatelessWidget {
                 ],
               ),
             );
-          }).toList(),
+          }),
 
           SizedBox(height: 24.h),
 

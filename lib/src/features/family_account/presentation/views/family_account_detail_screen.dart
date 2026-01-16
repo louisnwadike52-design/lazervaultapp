@@ -7,7 +7,6 @@ import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/family_account/domain/entities/family_account_entities.dart';
 import 'package:lazervault/src/features/family_account/presentation/cubit/family_account_cubit.dart';
 import 'package:lazervault/src/features/family_account/presentation/cubit/family_account_state.dart';
-import 'package:lazervault/src/features/family_account/presentation/widgets/family_account_card.dart';
 
 /// Family Account Detail Screen
 /// Shows:

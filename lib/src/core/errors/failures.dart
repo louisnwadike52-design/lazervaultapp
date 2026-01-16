@@ -32,4 +32,8 @@ class CacheFailure extends Failure {
 class NetworkFailure extends Failure {
   const NetworkFailure({required super.message})
       : super(statusCode: 'Network Error'); // Example default status code
+
+  factory NetworkFailure.fromException(dynamic exception) {
+    return NetworkFailure(message: exception.toString());
+  }
 } 

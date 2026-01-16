@@ -79,7 +79,7 @@ class RealtimeIndicator extends StatelessWidget {
           Switch(
             value: isConnected,
             onChanged: (_) => onToggle(),
-            activeColor: const Color(0xFF10B981),
+            activeThumbColor: const Color(0xFF10B981),
             activeTrackColor: const Color(0xFF10B981).withOpacity(0.3),
             inactiveThumbColor: const Color(0xFF6B7280),
             inactiveTrackColor: const Color(0xFF6B7280).withOpacity(0.3),

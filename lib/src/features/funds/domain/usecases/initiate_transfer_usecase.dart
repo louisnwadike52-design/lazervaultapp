@@ -5,7 +5,7 @@ import 'package:equatable/equatable.dart';
 
 import 'package:lazervault/core/error/failure.dart';
 import 'package:lazervault/core/usecase/usecase.dart';
-import 'package:lazervault/core/typedefs.dart'; // Keep typedefs import
+// Keep typedefs import
 import 'package:lazervault/src/features/funds/domain/entities/transfer_entity.dart';
 import 'package:lazervault/src/features/funds/domain/repositories/i_transfer_repository.dart';
 

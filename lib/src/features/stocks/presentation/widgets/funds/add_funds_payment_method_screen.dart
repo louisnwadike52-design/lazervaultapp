@@ -221,7 +221,7 @@ class _AddFundsPaymentMethodScreenState extends State<AddFundsPaymentMethodScree
                 ),
               ),
             );
-          }).toList(),
+          }),
 
           SizedBox(height: 24.h),
 

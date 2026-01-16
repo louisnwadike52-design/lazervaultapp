@@ -1,6 +1,4 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../domain/entities/tv_package_entity.dart';
-import '../../domain/entities/tv_payment_entity.dart';
 import '../../domain/repositories/tv_subscription_repository.dart';
 import 'tv_subscription_state.dart';
 
@@ -151,53 +149,32 @@ class TVSubscriptionCubit extends Cubit<TVSubscriptionState> {
     final result = await repository.verifyPayment(paymentId: paymentId);
 
     if (isClosed) {
-      if (result.isSuccess) {
-        final payment = result.getOrElse(() => (state as PaymentInitiated).payment);
-
-        // Show progress near completion
-        emit(PaymentProcessing(
-          payment: payment,
-          progress: 0.9,
-          currentStep: 'Confirming payment...',
-        ));
-
-        await Future.delayed(const Duration(milliseconds: 500));
-
-        if (payment.isCompleted) {
-          emit(PaymentSuccess(payment: payment));
-        } else if (payment.isFailed) {
-          emit(PaymentFailed(
+      result.fold(
+        (failure) => emit(TVSubscriptionError(message: failure.message)),
+        (payment) async {
+          // Show progress near completion
+          emit(PaymentProcessing(
             payment: payment,
-            errorMessage: payment.errorMessage ?? 'Payment failed',
+            progress: 0.9,
+            currentStep: 'Confirming payment...',
           ));
-        } else if (payment.isProcessing) {
-          emit(PaymentProcessing(payment: payment, progress: 0.7, currentStep: 'Processing...'));
-        } else {
-          emit(PaymentVerified(payment: payment));
-        }
-      } else if (result.isError()) {
-        emit(PaymentProcessing(
-          payment: (state as PaymentInitiated).payment,
-          progress: 0.5,
-          currentStep: 'Processing...',
-        ));
 
-        result.fold(
-          (failure) => emit(TVSubscriptionError(message: failure.message)),
-          (payment) {
-            if (payment.isCompleted) {
-              emit(PaymentSuccess(payment: payment));
-            } else if (payment.isFailed) {
-              emit(PaymentFailed(
-                payment: payment,
-                errorMessage: payment.errorMessage ?? 'Payment failed',
-              ));
-            } else {
-              emit(PaymentProcessing(payment: payment));
-            }
-          },
-        );
-      }
+          await Future.delayed(const Duration(milliseconds: 500));
+
+          if (payment.isCompleted) {
+            emit(PaymentSuccess(payment: payment));
+          } else if (payment.isFailed) {
+            emit(PaymentFailed(
+              payment: payment,
+              errorMessage: payment.errorMessage ?? 'Payment failed',
+            ));
+          } else if (payment.isProcessing) {
+            emit(PaymentProcessing(payment: payment, progress: 0.7, currentStep: 'Processing...'));
+          } else {
+            emit(PaymentVerified(payment: payment));
+          }
+        },
+      );
     }
   }
 

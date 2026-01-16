@@ -10,7 +10,7 @@ import 'package:lazervault/src/generated/common.pbenum.dart';
 import 'package:lazervault/src/features/invoice/presentation/widgets/pay_tagged_invoice_dialog.dart';
 
 class IncomingTaggedInvoicesScreen extends StatefulWidget {
-  const IncomingTaggedInvoicesScreen({Key? key}) : super(key: key);
+  const IncomingTaggedInvoicesScreen({super.key});
 
   @override
   State<IncomingTaggedInvoicesScreen> createState() =>

@@ -158,12 +158,12 @@ class PINEntryScreen extends StatefulWidget {
   final VoidCallback? onCancelled;
 
   const PINEntryScreen({
-    Key? key,
+    super.key,
     required this.workflowManager,
     this.onPINValidated,
     this.onPINBlocked,
     this.onCancelled,
-  }) : super(key: key);
+  });
 
   @override
   State<PINEntryScreen> createState() => _PINEntryScreenState();
@@ -501,12 +501,12 @@ class PINEntryBottomSheet extends StatelessWidget {
   final VoidCallback? onCancelled;
 
   const PINEntryBottomSheet({
-    Key? key,
+    super.key,
     required this.workflowManager,
     this.onPINValidated,
     this.onPINBlocked,
     this.onCancelled,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

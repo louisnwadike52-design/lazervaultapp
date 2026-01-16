@@ -925,7 +925,7 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
           Center(
             child: Column(
               children: [
-                Container(
+                SizedBox(
                   width: 200.w,
                   height: 120.h,
                   child: CustomPaint(

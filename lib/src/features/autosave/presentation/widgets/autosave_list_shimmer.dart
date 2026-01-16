@@ -3,7 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shimmer/shimmer.dart';
 
 class AutoSaveListShimmer extends StatelessWidget {
-  const AutoSaveListShimmer({Key? key}) : super(key: key);
+  const AutoSaveListShimmer({super.key});
 
   @override
   Widget build(BuildContext context) {

@@ -1,14 +1,10 @@
 import 'package:dartz/dartz.dart';
 import '../../../../core/errors/failures.dart';
-import '../../../../core/network/network_exceptions.dart';
 import '../../domain/entities/water_provider_entity.dart';
 import '../../domain/entities/customer_validation_result.dart';
 import '../../domain/entities/water_payment_entity.dart';
 import '../../domain/repositories/water_bill_repository.dart';
 import '../datasources/water_bill_remote_datasource.dart';
-import '../models/water_provider_model.dart';
-import '../models/water_payment_model.dart';
-import '../models/customer_validation_result_model.dart';
 
 class WaterBillRepositoryImpl implements WaterBillRepository {
   final WaterBillRemoteDataSource remoteDataSource;

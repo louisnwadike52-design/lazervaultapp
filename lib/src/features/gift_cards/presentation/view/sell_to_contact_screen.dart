@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../../core/types/app_routes.dart';
 import '../../cubit/gift_card_cubit.dart';
 import '../../cubit/gift_card_state.dart';
 import '../../domain/entities/gift_card_entity.dart';
@@ -20,7 +18,7 @@ class _SellToContactScreenState extends State<SellToContactScreen> {
   final TextEditingController _searchController = TextEditingController();
   final TextEditingController _priceController = TextEditingController();
   GiftCard? _selectedGiftCard;
-  String _selectedContact = '';
+  final String _selectedContact = '';
 
   @override
   void initState() {

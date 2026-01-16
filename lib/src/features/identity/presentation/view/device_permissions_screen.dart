@@ -215,7 +215,7 @@ class _DevicePermissionsScreenState extends State<DevicePermissionsScreen> {
                   type: type,
                   isGranted: _permissions[type] ?? false,
                 );
-              }).toList(),
+              }),
             ],
           );
         },
@@ -250,7 +250,7 @@ class _DevicePermissionsScreenState extends State<DevicePermissionsScreen> {
         subtitle: Text(_getPermissionDescription(type)),
         trailing: Switch(
           value: isGranted,
-          activeColor: Colors.purple.shade700,
+          activeThumbColor: Colors.purple.shade700,
           onChanged: (_) => _togglePermission(type),
         ),
       ),

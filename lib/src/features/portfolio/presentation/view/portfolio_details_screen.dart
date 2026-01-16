@@ -333,7 +333,7 @@ class _PortfolioDetailsScreenState extends State<PortfolioDetailsScreen>
   }
 
   Widget _buildTimeframeSelector() {
-    return Container(
+    return SizedBox(
       height: 40.h,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,

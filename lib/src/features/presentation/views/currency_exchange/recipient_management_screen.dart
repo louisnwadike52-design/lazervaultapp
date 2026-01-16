@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../currency_exchange/domain/entities/recipient_entity.dart';
-import '../../../currency_exchange/domain/entities/currency_entity.dart';
 import '../../../currency_exchange/data/currency_data.dart';
 
 class RecipientManagementScreen extends StatefulWidget {

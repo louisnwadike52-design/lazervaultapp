@@ -1,4 +1,3 @@
-import 'package:grpc/grpc.dart';
 import '../../../../generated/barcode_payment.pbgrpc.dart' as pb;
 import '../../../../core/network/grpc_client.dart';
 import '../models/barcode_payment_model.dart';

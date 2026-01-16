@@ -1,5 +1,4 @@
 import 'package:grpc/grpc.dart';
-import 'package:lazervault/src/generated/voice-biometrics.pb.dart';
 import 'package:lazervault/src/generated/voice-biometrics.pbgrpc.dart';
 
 /// gRPC client for Voice Biometrics Service

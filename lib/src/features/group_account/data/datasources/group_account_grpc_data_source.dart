@@ -175,7 +175,7 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
       // Otherwise, send email/phone/username to let backend handle lookup/creation
       if (userId.isNotEmpty &&
           int.tryParse(userId) != null &&
-          userId.length > 0 &&
+          userId.isNotEmpty &&
           userId.length < 10) {
         request.userId = _stringToInt64(userId);
       } else if (email.isNotEmpty) {

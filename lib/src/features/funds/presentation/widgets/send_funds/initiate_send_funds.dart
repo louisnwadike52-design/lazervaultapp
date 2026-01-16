@@ -5,11 +5,10 @@ import 'package:get/get.dart';
 import 'package:get_it/get_it.dart';
 import 'package:fixnum/fixnum.dart';
 import 'package:intl/intl.dart';
-import 'package:lazervault/core/services/injection_container.dart'; // For serviceLocator
+// For serviceLocator
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_state.dart';
-import 'package:lazervault/src/features/account_cards_summary/domain/entities/account_summary_entity.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/features/funds/cubit/transfer_cubit.dart';
@@ -576,7 +575,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
     }
 
     // 7. Validate recipient exists
-    if (widget.recipient.id == null || widget.recipient.name.isEmpty) {
+    if (widget.recipient.name.isEmpty) {
       Get.snackbar(
         'Invalid Recipient',
         'Recipient information is missing or invalid.',

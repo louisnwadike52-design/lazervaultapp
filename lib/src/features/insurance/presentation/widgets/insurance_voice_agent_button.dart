@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:livekit_client/livekit_client.dart' as livekit;
-import 'dart:convert';
 
 /// Voice agent button for insurance management conversations
 /// Connects to the insurance-voice-agent microservice via LiveKit
@@ -10,11 +9,11 @@ class InsuranceVoiceAgentButton extends StatefulWidget {
   final VoidCallback? onDisconnected;
 
   const InsuranceVoiceAgentButton({
-    Key? key,
+    super.key,
     this.accessToken,
     this.onConnected,
     this.onDisconnected,
-  }) : super(key: key);
+  });
 
   @override
   State<InsuranceVoiceAgentButton> createState() =>
@@ -173,11 +172,11 @@ class InsuranceVoiceAgentControl extends StatefulWidget {
   final VoidCallback? onDisconnected;
 
   const InsuranceVoiceAgentControl({
-    Key? key,
+    super.key,
     this.accessToken,
     this.onConnected,
     this.onDisconnected,
-  }) : super(key: key);
+  });
 
   @override
   State<InsuranceVoiceAgentControl> createState() =>

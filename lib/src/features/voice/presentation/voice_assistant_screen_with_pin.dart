@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:web_socket_channel/web_socket_channel.dart';
 
 import 'voice_integration.dart';
 import 'pin_entry_workflow.dart';
@@ -15,11 +14,11 @@ class VoiceAssistantScreenWithPIN extends StatefulWidget {
   final String accessToken;
 
   const VoiceAssistantScreenWithPIN({
-    Key? key,
+    super.key,
     required this.voiceMode,
     required this.userId,
     required this.accessToken,
-  }) : super(key: key);
+  });
 
   @override
   State<VoiceAssistantScreenWithPIN> createState() => _VoiceAssistantScreenWithPINState();
@@ -41,8 +40,8 @@ class _VoiceAssistantScreenWithPINState extends State<VoiceAssistantScreenWithPI
 
     // Create PIN workflow manager
     _pinWorkflowManager = PINWorkflowManager(
-      channel: widget.voiceMode._channel,
-      sessionId: widget.voiceMode._session?.sessionId ?? '',
+      channel: widget.voiceMode.channel,
+      sessionId: widget.voiceMode.session?.sessionId ?? '',
       userId: widget.userId,
     );
 
@@ -190,7 +189,7 @@ class _VoiceAssistantScreenWithPINState extends State<VoiceAssistantScreenWithPI
     await Future.delayed(const Duration(seconds: 2));
 
     // Simulate user saying "Send $500 to John"
-    await widget.voiceMode.sendTextMessage('Send $500 to John');
+    await widget.voiceMode.sendTextMessage('Send \$500 to John');
   }
 
   void _sendMessage(String text) async {

@@ -71,6 +71,10 @@ class UniversalVoiceMode {
   VoiceSession? _session;
   final List<VoiceResponse> _conversationHistory = [];
 
+  // Public getters
+  WebSocketChannel? get channel => _channel;
+  VoiceSession? get session => _session;
+
   Future<void> connect({
     required String userId,
     required String accessToken,
@@ -95,7 +99,7 @@ class UniversalVoiceMode {
     );
 
     // Send connection confirmation
-    await _channel!.sink.add(jsonEncode({
+    _channel!.sink.add(jsonEncode({
       'type': 'connect',
       'session': _session!.toJson(),
     }));
@@ -174,7 +178,7 @@ class UniversalVoiceMode {
       throw Exception('Not connected to gateway');
     }
 
-    await _channel!.sink.add(jsonEncode({
+    _channel!.sink.add(jsonEncode({
       'type': 'audio',
       'audio_data': base64Encode(audioBytes),
       'session_id': _session!.sessionId,
@@ -186,7 +190,7 @@ class UniversalVoiceMode {
       throw Exception('Not connected to gateway');
     }
 
-    await _channel!.sink.add(jsonEncode({
+    _channel!.sink.add(jsonEncode({
       'type': 'text',
       'text': text,
       'session_id': _session!.sessionId,
@@ -204,7 +208,7 @@ class UniversalVoiceMode {
       throw Exception('Not connected to gateway');
     }
 
-    await _channel!.sink.add(jsonEncode({
+    _channel!.sink.add(jsonEncode({
       'type': 'submit_pin',
       'pin': pin,
       'session_id': _session!.sessionId,
@@ -217,7 +221,7 @@ class UniversalVoiceMode {
       throw Exception('Not connected to gateway');
     }
 
-    await _channel!.sink.add(jsonEncode({
+    _channel!.sink.add(jsonEncode({
       'type': 'cancel_pin',
       'session_id': _session!.sessionId,
       'user_id': _session!.userId,
@@ -314,7 +318,7 @@ class ServiceSpecificVoiceMode {
     );
 
     // Send connection confirmation
-    await _channel!.sink.add(jsonEncode({
+    _channel!.sink.add(jsonEncode({
       'type': 'connect',
       'session': _session!.toJson(),
       'service_context': service,
@@ -357,7 +361,7 @@ class ServiceSpecificVoiceMode {
       throw Exception('Not connected to agent');
     }
 
-    await _channel!.sink.add(jsonEncode({
+    _channel!.sink.add(jsonEncode({
       'type': 'audio',
       'audio_data': base64Encode(audioBytes),
       'session_id': _session!.sessionId,
@@ -369,7 +373,7 @@ class ServiceSpecificVoiceMode {
       throw Exception('Not connected to agent');
     }
 
-    await _channel!.sink.add(jsonEncode({
+    _channel!.sink.add(jsonEncode({
       'type': 'text',
       'text': text,
       'session_id': _session!.sessionId,
@@ -413,10 +417,10 @@ class UniversalMicButton extends StatefulWidget {
   final String accessToken;
 
   const UniversalMicButton({
-    Key? key,
+    super.key,
     required this.userId,
     required this.accessToken,
-  }) : super(key: key);
+  });
 
   @override
   State<UniversalMicButton> createState() => _UniversalMicButtonState();
@@ -462,7 +466,7 @@ class _UniversalMicButtonState extends State<UniversalMicButton> {
   Widget build(BuildContext context) {
     return IconButton(
       icon: _isListening
-          ? Container(
+          ? SizedBox(
               width: 24,
               height: 24,
               child: CircularProgressIndicator(strokeWidth: 2),
@@ -509,11 +513,11 @@ class ServiceMicButton extends StatefulWidget {
   final String service;
 
   const ServiceMicButton({
-    Key? key,
+    super.key,
     required this.userId,
     required this.accessToken,
     required this.service,
-  }) : super(key: key);
+  });
 
   @override
   State<ServiceMicButton> createState() => _ServiceMicButtonState();
@@ -557,7 +561,7 @@ class _ServiceMicButtonState extends State<ServiceMicButton> {
   Widget build(BuildContext context) {
     return IconButton(
       icon: _isListening
-          ? Container(
+          ? SizedBox(
               width: 24,
               height: 24,
               child: CircularProgressIndicator(strokeWidth: 2),
@@ -608,11 +612,11 @@ class VoiceAssistantScreen extends StatefulWidget {
   final String? service;
 
   const VoiceAssistantScreen({
-    Key? key,
+    super.key,
     this.universalMode,
     this.serviceMode,
     this.service,
-  }) : super(key: key);
+  });
 
   @override
   State<VoiceAssistantScreen> createState() => _VoiceAssistantScreenState();
@@ -676,7 +680,7 @@ class _VoiceAssistantScreenState extends State<VoiceAssistantScreen> {
             ? '${widget.service!.toUpperCase()} Voice Assistant'
             : 'Voice Assistant'),
         actions: [
-          if (_responses.length > 0)
+          if (_responses.isNotEmpty)
             IconButton(
               icon: Icon(Icons.history),
               onPressed: () => _showConversationHistory(),
@@ -827,7 +831,7 @@ class _VoiceAssistantScreenState extends State<VoiceAssistantScreen> {
       // Universal mode suggestions
       return [
         _buildSuggestionChip('What\'s my balance?'),
-        _buildSuggestionChip('Transfer $100 to John'),
+        _buildSuggestionChip('Transfer \$100 to John'),
         _buildSuggestionChip('Pay my electricity bill'),
         _buildSuggestionChip('Buy Bitcoin'),
         _buildSuggestionChip('Create an invoice'),
@@ -836,7 +840,7 @@ class _VoiceAssistantScreenState extends State<VoiceAssistantScreen> {
   }
 
   Widget _buildSuggestionChip(String text) {
-    return Chip(
+    return ActionChip(
       label: Text(text),
       onPressed: () {
         // User can tap suggestion to speak it
@@ -853,7 +857,7 @@ class _VoiceAssistantScreenState extends State<VoiceAssistantScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: Text('Conversation History'),
-        content: Container(
+        content: SizedBox(
           width: double.maxFinite,
           child: ListView.builder(
             shrinkWrap: true,
@@ -914,10 +918,10 @@ class DashboardHomeScreen extends StatelessWidget {
   final String accessToken;
 
   const DashboardHomeScreen({
-    Key? key,
+    super.key,
     required this.userId,
     required this.accessToken,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -954,10 +958,10 @@ class InsuranceLandingScreen extends StatelessWidget {
   final String accessToken;
 
   const InsuranceLandingScreen({
-    Key? key,
+    super.key,
     required this.userId,
     required this.accessToken,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

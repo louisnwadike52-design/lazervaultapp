@@ -2,11 +2,11 @@
 /// to various service screens throughout the app.
 ///
 /// Import this file in service screens to easily add "View History" functionality.
+library;
 
 import 'package:flutter/material.dart';
 import 'package:lazervault/core/types/services.dart';
 import 'package:lazervault/src/features/transaction_history/presentation/widgets/view_transaction_history_button.dart';
-import 'package:lazervault/src/features/transaction_history/utils/transaction_history_navigation_helper.dart';
 
 /// Helper class to add transaction history navigation to service screens
 class TransactionHistoryScreenIntegration {
@@ -98,11 +98,12 @@ class TransactionHistoryScreenIntegration {
   }
 
   static void _navigateToServiceHistory(AppServiceName serviceName) {
-    final serviceType = serviceName.toTransactionServiceType();
-    if (serviceType != null) {
-      // Navigate to service-specific history
-      // This will be handled by the navigation helper
-    }
+    // TODO: Implement service-specific history navigation
+    // final serviceType = serviceName.toTransactionServiceType();
+    // if (serviceType != null) {
+    //   // Navigate to service-specific history
+    //   // This will be handled by the navigation helper
+    // }
   }
 }
 

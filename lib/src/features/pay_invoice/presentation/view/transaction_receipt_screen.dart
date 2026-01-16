@@ -10,7 +10,6 @@ import 'package:pdf/widgets.dart' as pw;
 import 'dart:io';
 import '../../../../../core/theme/invoice_theme_colors.dart';
 import '../../domain/entities/tagged_invoice_entity.dart';
-import '../../../../../core/theme/invoice_theme_colors.dart';
 import '../../domain/repositories/pay_invoice_repository.dart';
 
 class TransactionReceiptScreen extends StatefulWidget {

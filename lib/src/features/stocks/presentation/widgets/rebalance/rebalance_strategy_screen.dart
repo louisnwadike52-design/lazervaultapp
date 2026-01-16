@@ -312,7 +312,7 @@ class RebalanceStrategyScreen extends StatelessWidget {
                 ],
               ),
             );
-          }).toList(),
+          }),
 
           SizedBox(height: 24.h),
 

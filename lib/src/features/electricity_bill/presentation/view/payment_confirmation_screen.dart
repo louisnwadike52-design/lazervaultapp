@@ -13,7 +13,6 @@ import '../../../authentication/cubit/authentication_state.dart';
 import '../../../transaction_pin/mixins/transaction_pin_mixin.dart';
 import '../../../transaction_pin/services/transaction_pin_service.dart';
 import '../cubit/electricity_bill_cubit.dart';
-import '../cubit/electricity_bill_state.dart';
 
 class PaymentConfirmationScreen extends StatefulWidget {
   const PaymentConfirmationScreen({super.key});
@@ -25,7 +24,7 @@ class PaymentConfirmationScreen extends StatefulWidget {
 class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
     with TransactionPinMixin {
   final TextEditingController _amountController = TextEditingController();
-  String _selectedAccountId = 'default';
+  final String _selectedAccountId = 'default';
 
   @override
   ITransactionPinService get transactionPinService =>

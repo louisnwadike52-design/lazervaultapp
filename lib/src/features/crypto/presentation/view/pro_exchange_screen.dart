@@ -147,7 +147,7 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
           Switch(
             value: _isAdvancedView,
             onChanged: (value) => setState(() => _isAdvancedView = value),
-            activeColor: Colors.orange,
+            activeThumbColor: Colors.orange,
           ),
           Text(
             'Pro',
@@ -573,7 +573,7 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
   }
 
   Widget _buildOrderBookList() {
-    return Container(
+    return SizedBox(
       height: 400.h,
       child: Column(
         children: [

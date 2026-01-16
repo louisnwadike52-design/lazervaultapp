@@ -7,12 +7,9 @@ import '../../../../../core/services/injection_container.dart';
 import '../../../../../core/types/app_routes.dart';
 import '../cubit/tag_pay_cubit.dart';
 import '../cubit/tag_pay_state.dart';
-import '../../../authentication/cubit/authentication_cubit.dart';
-import '../../../authentication/cubit/authentication_state.dart';
 import '../../../profile/cubit/profile_cubit.dart';
 import '../../../profile/cubit/profile_state.dart';
 import '../../domain/entities/tag_pay_entity.dart';
-import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 
 class TagPayHomeScreen extends StatefulWidget {

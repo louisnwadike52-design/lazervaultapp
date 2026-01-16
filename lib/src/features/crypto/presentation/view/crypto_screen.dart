@@ -584,7 +584,7 @@ class _CryptoScreenState extends State<CryptoScreen>
           Switch(
             value: isActive,
             onChanged: (value) {},
-            activeColor: const Color(0xFF6C5CE7),
+            activeThumbColor: const Color(0xFF6C5CE7),
                 ),
               ],
             ),
@@ -1999,7 +1999,7 @@ class _CryptoScreenState extends State<CryptoScreen>
               ],
             ),
             SizedBox(height: 16.h),
-            Container(
+            SizedBox(
               height: 60.h,
               child: LineChart(
                 LineChartData(

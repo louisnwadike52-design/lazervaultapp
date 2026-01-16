@@ -487,7 +487,7 @@ class _SecureWalletScreenState extends State<SecureWalletScreen>
               Switch(
                 value: _biometricsEnabled,
                 onChanged: (value) => setState(() => _biometricsEnabled = value),
-                activeColor: Colors.green,
+                activeThumbColor: Colors.green,
               ),
             ],
           ),
@@ -535,7 +535,7 @@ class _SecureWalletScreenState extends State<SecureWalletScreen>
               Switch(
                 value: _twoFactorEnabled,
                 onChanged: (value) => setState(() => _twoFactorEnabled = value),
-                activeColor: Colors.blue,
+                activeThumbColor: Colors.blue,
               ),
             ],
           ),
@@ -597,7 +597,7 @@ class _SecureWalletScreenState extends State<SecureWalletScreen>
               Switch(
                 value: _autoLockEnabled,
                 onChanged: (value) => setState(() => _autoLockEnabled = value),
-                activeColor: Colors.orange,
+                activeThumbColor: Colors.orange,
               ),
             ],
           ),
@@ -887,7 +887,7 @@ class _SecureWalletScreenState extends State<SecureWalletScreen>
               Switch(
                 value: enabled,
                 onChanged: (value) {},
-                activeColor: color,
+                activeThumbColor: color,
               ),
             ],
           ),
