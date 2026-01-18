@@ -247,6 +247,19 @@ service AuthService {
     };
   }
 
+  // Resend phone verification SMS
+  rpc ResendPhoneVerification(ResendPhoneVerificationRequest) returns (ResendPhoneVerificationResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/auth/resend-phone-verification"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Resend Phone Verification";
+      description: "Resend phone verification SMS code";
+      tags: ["Authentication"];
+    };
+  }
+
   // Change password (authenticated)
   rpc ChangePassword(ChangePasswordRequest) returns (ChangePasswordResponse) {
     option (google.api.http) = {
@@ -264,46 +277,240 @@ service AuthService {
       };
     };
   }
+
+  // Login with passcode
+  rpc LoginWithPasscode(LoginWithPasscodeRequest) returns (LoginResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/auth/login-passcode"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Login with Passcode";
+      description: "Login using passcode instead of password";
+      tags: ["Authentication"];
+    };
+  }
+
+  // Register passcode
+  rpc RegisterPasscode(RegisterPasscodeRequest) returns (RegisterPasscodeResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/auth/register-passcode"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Register Passcode";
+      description: "Register a passcode for quick login";
+      tags: ["Authentication"];
+      security: {
+        security_requirement: {
+          key: "bearer";
+        }
+      };
+    };
+  }
+
+  // Change passcode
+  rpc ChangePasscode(ChangePasscodeRequest) returns (ChangePasscodeResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/auth/change-passcode"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Change Passcode";
+      description: "Change user passcode";
+      tags: ["Authentication"];
+      security: {
+        security_requirement: {
+          key: "bearer";
+        }
+      };
+    };
+  }
+
+  // Request password reset
+  rpc RequestPasswordReset(RequestPasswordResetRequest) returns (RequestPasswordResetResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/auth/request-password-reset"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Request Password Reset";
+      description: "Request password reset email";
+      tags: ["Authentication"];
+    };
+  }
+
+  // Request email verification
+  rpc RequestEmailVerification(RequestEmailVerificationRequest) returns (RequestEmailVerificationResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/auth/request-email-verification"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Request Email Verification";
+      description: "Request email verification email";
+      tags: ["Authentication"];
+    };
+  }
+
+  // Check email availability
+  rpc CheckEmailAvailability(CheckEmailAvailabilityRequest) returns (CheckEmailAvailabilityResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/auth/check-email-availability"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Check Email Availability";
+      description: "Check if email is available for registration";
+      tags: ["Authentication"];
+    };
+  }
+
+  // Request phone verification
+  rpc RequestPhoneVerification(RequestPhoneVerificationRequest) returns (RequestPhoneVerificationResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/auth/request-phone-verification"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Request Phone Verification";
+      description: "Request phone verification code";
+      tags: ["Authentication"];
+    };
+  }
+
+  // Verify phone number
+  rpc VerifyPhoneNumber(VerifyPhoneNumberRequest) returns (VerifyPhoneNumberResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/auth/verify-phone-number"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Verify Phone Number";
+      description: "Verify phone number with code";
+      tags: ["Authentication"];
+    };
+  }
+
+  // Get signup progress
+  rpc GetSignupProgress(GetSignupProgressRequest) returns (GetSignupProgressResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/auth/signup-progress"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Get Signup Progress";
+      description: "Get signup progress for authenticated user";
+      tags: ["Signup"];
+      security: {
+        security_requirement: {
+          key: "bearer";
+        }
+      };
+    };
+  }
+
+  // Update signup step
+  rpc UpdateSignupStep(UpdateSignupStepRequest) returns (UpdateSignupStepResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/auth/signup-progress/step"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Update Signup Step";
+      description: "Update signup step progress";
+      tags: ["Signup"];
+      security: {
+        security_requirement: {
+          key: "bearer";
+        }
+      };
+    };
+  }
+
+  // Complete signup
+  rpc CompleteSignup(CompleteSignupRequest) returns (CompleteSignupResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/auth/signup-progress/complete"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Complete Signup";
+      description: "Mark signup as complete";
+      tags: ["Signup"];
+      security: {
+        security_requirement: {
+          key: "bearer";
+        }
+      };
+    };
+  }
 }
 
 // ===== Signup =====
+// Enum to specify primary contact method for signup
+enum PrimaryContactType {
+  EMAIL = 0;   // User signed up with email (default)
+  PHONE = 1;   // User signed up with phone number
+}
+
 message SignupRequest {
   string email = 1;
   string password = 2;
   string first_name = 3;
   string last_name = 4;
-  string phone = 5;
-  string country_code = 6;
+  string phone = 5;                              // E.164 format (e.g., +12345678901)
+  string country_code = 6;                       // ISO country code (e.g., "US")
   string device_id = 7;
   string device_name = 8;
+  PrimaryContactType primary_contact_type = 9;   // Which contact method user chose first
+  string username = 10;                          // Optional username
+  string referral_code = 11;                     // Optional referral code
+  string date_of_birth = 12;                     // ISO 8601 date (YYYY-MM-DD)
 }
 
 message SignupResponse {
   string user_id = 1;
   string email = 2;
   string message = 3;
-  bool email_verification_required = 4;
+  bool email_verification_required = 4;          // True if email needs verification
   string access_token = 5;
   string refresh_token = 6;
   int64 expires_in = 7;
   User user = 8;
+  bool phone_verification_required = 9;          // True if phone needs verification
+  string verification_sent_to = 10;              // Email or phone where verification was sent
 }
 
 // ===== Login =====
 message LoginRequest {
-  string email = 1;
+  string email = 1;                 // Email OR phone number (specify one)
   string password = 2;
   string device_id = 3;
   string device_name = 4;
+  string phone = 5;                 // Alternative to email for login
 }
 
 message LoginResponse {
+  bool success = 1;
+  string msg = 2;
+  string access_token = 3;
+  string refresh_token = 4;
+  int64 expires_in = 5;
+  LoginData data = 6;
+  bool two_factor_required = 7;
+  string two_factor_token = 8; // Temporary token for 2FA flow
+}
+
+message LoginData {
+  User user = 1;
+  Session session = 2;
+}
+
+message Session {
   string access_token = 1;
   string refresh_token = 2;
   int64 expires_in = 3;
-  User user = 4;
-  bool two_factor_required = 5;
-  string two_factor_token = 6; // Temporary token for 2FA flow
+  string user_id = 4;
 }
 
 // ===== Refresh Token =====
@@ -315,6 +522,7 @@ message RefreshTokenResponse {
   string access_token = 1;
   string refresh_token = 2;
   int64 expires_in = 3;
+  User user = 4;
 }
 
 // ===== Logout =====
@@ -329,11 +537,11 @@ message LogoutResponse {
 
 // ===== Email Verification =====
 message VerifyEmailRequest {
-  string token = 1;
+  string verificationCode = 1;
 }
 
 message VerifyEmailResponse {
-  string message = 1;
+  string msg = 1;
   bool success = 2;
 }
 
@@ -342,16 +550,29 @@ message ResendVerificationEmailRequest {
 }
 
 message ResendVerificationEmailResponse {
-  string message = 1;
+  bool success = 1;
+  string message = 2;
+  int32 cooldown_seconds = 3;           // Seconds to wait before next resend (60s default)
 }
 
 // ===== Phone Verification =====
 message VerifyPhoneRequest {
   string user_id = 1;
   string code = 2;
+  string phone = 3;                    // Phone number to verify (E.164 format)
 }
 
 message VerifyPhoneResponse {
+  string message = 1;
+  bool success = 2;
+}
+
+message ResendPhoneVerificationRequest {
+  string phone = 1;                    // Phone number in E.164 format
+  string user_id = 2;                  // Optional user ID
+}
+
+message ResendPhoneVerificationResponse {
   string message = 1;
   bool success = 2;
 }
@@ -371,7 +592,7 @@ message ResetPasswordRequest {
 }
 
 message ResetPasswordResponse {
-  string message = 1;
+  string msg = 1;
   bool success = 2;
 }
 
@@ -462,6 +683,89 @@ message ValidateTokenResponse {
   int64 expires_at = 4;
 }
 
+// ===== Passcode Login =====
+message LoginWithPasscodeRequest {
+  string email = 1;
+  string passcode = 2;
+  string device_id = 3;
+  string device_name = 4;
+}
+
+message RegisterPasscodeRequest {
+  string passcode = 1;
+}
+
+message RegisterPasscodeResponse {
+  bool success = 1;
+  string msg = 2;
+}
+
+message ChangePasscodeRequest {
+  string current_passcode = 1;
+  string new_passcode = 2;
+}
+
+message ChangePasscodeResponse {
+  bool success = 1;
+  string msg = 2;
+}
+
+// ===== Password Reset =====
+message RequestPasswordResetRequest {
+  string email = 1;
+}
+
+message RequestPasswordResetResponse {
+  bool success = 1;
+  string msg = 2;
+}
+
+// ===== Email Verification Request =====
+message RequestEmailVerificationRequest {
+  string email = 1;
+}
+
+message RequestEmailVerificationResponse {
+  bool success = 1;
+  string msg = 2;
+}
+
+// ===== Email Availability Check =====
+message CheckEmailAvailabilityRequest {
+  string email = 1;
+}
+
+message CheckEmailAvailabilityResponse {
+  bool available = 1;
+  string msg = 2;
+}
+
+// ===== Phone Verification =====
+message RequestPhoneVerificationRequest {
+  string phone = 1;
+  string country_code = 2;
+}
+
+message RequestPhoneVerificationResponse {
+  bool success = 1;
+  string msg = 2;
+  string verification_id = 3;
+  int64 expires_in = 4;
+}
+
+message VerifyPhoneNumberRequest {
+  string phone = 1;
+  string country_code = 2;
+  string code = 3;
+  string verification_id = 4;
+}
+
+message VerifyPhoneNumberResponse {
+  bool success = 1;
+  string msg = 2;
+  bool is_verified = 3;
+}
+
 // ===== User Model =====
 message User {
   string id = 1;
@@ -477,4 +781,69 @@ message User {
   string profile_picture = 11;
   string created_at = 12;
   string updated_at = 13;
+}
+
+// ===== Signup Progress =====
+enum SignupStatus {
+  SIGNUP_STATUS_CREATED = 0;
+  SIGNUP_STATUS_EMAIL_VERIFIED = 1;
+  SIGNUP_STATUS_PHONE_VERIFIED = 2;
+  SIGNUP_STATUS_PASSCODE_SET = 3;
+  SIGNUP_STATUS_COMPLETE = 4;
+}
+
+enum StepStatus {
+  STEP_STATUS_PENDING = 0;
+  STEP_STATUS_IN_PROGRESS = 1;
+  STEP_STATUS_COMPLETED = 2;
+  STEP_STATUS_SKIPPED = 3;
+}
+
+message SignupProgress {
+  string user_id = 1;
+  SignupStatus status = 2;
+  string current_step = 3;
+  repeated SignupStepProgress steps = 4;
+  string created_at = 5;
+  string updated_at = 6;
+  string completed_at = 7;
+}
+
+message SignupStepProgress {
+  string step_name = 1;
+  StepStatus status = 2;
+  string step_data = 3;           // JSON string with step-specific data
+  string completed_at = 4;
+}
+
+message GetSignupProgressRequest {
+  // User ID is extracted from the JWT token
+}
+
+message GetSignupProgressResponse {
+  bool success = 1;
+  string message = 2;
+  SignupProgress progress = 3;
+}
+
+message UpdateSignupStepRequest {
+  string step_name = 1;
+  StepStatus status = 2;
+  string step_data = 3;           // JSON string with step-specific data
+}
+
+message UpdateSignupStepResponse {
+  bool success = 1;
+  string message = 2;
+  SignupProgress progress = 3;
+}
+
+message CompleteSignupRequest {
+  // User ID is extracted from the JWT token
+}
+
+message CompleteSignupResponse {
+  bool success = 1;
+  string message = 2;
+  SignupProgress progress = 3;
 }

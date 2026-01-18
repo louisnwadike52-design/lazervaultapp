@@ -10,6 +10,10 @@ import 'dart:core' as $core;
 import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
+import 'auth.pbenum.dart';
+
+export 'auth.pbenum.dart';
+
 class SignupRequest extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'SignupRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'auth'), createEmptyInstance: create)
     ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'email')
@@ -20,6 +24,10 @@ class SignupRequest extends $pb.GeneratedMessage {
     ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'countryCode')
     ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'deviceId')
     ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'deviceName')
+    ..e<PrimaryContactType>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'primaryContactType', $pb.PbFieldType.OE, defaultOrMaker: PrimaryContactType.EMAIL, valueOf: PrimaryContactType.valueOf, enumValues: PrimaryContactType.values)
+    ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'username')
+    ..aOS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'referralCode')
+    ..aOS(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'dateOfBirth')
     ..hasRequiredFields = false
   ;
 
@@ -33,6 +41,10 @@ class SignupRequest extends $pb.GeneratedMessage {
     $core.String? countryCode,
     $core.String? deviceId,
     $core.String? deviceName,
+    PrimaryContactType? primaryContactType,
+    $core.String? username,
+    $core.String? referralCode,
+    $core.String? dateOfBirth,
   }) {
     final _result = create();
     if (email != null) {
@@ -58,6 +70,18 @@ class SignupRequest extends $pb.GeneratedMessage {
     }
     if (deviceName != null) {
       _result.deviceName = deviceName;
+    }
+    if (primaryContactType != null) {
+      _result.primaryContactType = primaryContactType;
+    }
+    if (username != null) {
+      _result.username = username;
+    }
+    if (referralCode != null) {
+      _result.referralCode = referralCode;
+    }
+    if (dateOfBirth != null) {
+      _result.dateOfBirth = dateOfBirth;
     }
     return _result;
   }
@@ -153,6 +177,42 @@ class SignupRequest extends $pb.GeneratedMessage {
   $core.bool hasDeviceName() => $_has(7);
   @$pb.TagNumber(8)
   void clearDeviceName() => clearField(8);
+
+  @$pb.TagNumber(9)
+  PrimaryContactType get primaryContactType => $_getN(8);
+  @$pb.TagNumber(9)
+  set primaryContactType(PrimaryContactType v) { setField(9, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasPrimaryContactType() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearPrimaryContactType() => clearField(9);
+
+  @$pb.TagNumber(10)
+  $core.String get username => $_getSZ(9);
+  @$pb.TagNumber(10)
+  set username($core.String v) { $_setString(9, v); }
+  @$pb.TagNumber(10)
+  $core.bool hasUsername() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearUsername() => clearField(10);
+
+  @$pb.TagNumber(11)
+  $core.String get referralCode => $_getSZ(10);
+  @$pb.TagNumber(11)
+  set referralCode($core.String v) { $_setString(10, v); }
+  @$pb.TagNumber(11)
+  $core.bool hasReferralCode() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearReferralCode() => clearField(11);
+
+  @$pb.TagNumber(12)
+  $core.String get dateOfBirth => $_getSZ(11);
+  @$pb.TagNumber(12)
+  set dateOfBirth($core.String v) { $_setString(11, v); }
+  @$pb.TagNumber(12)
+  $core.bool hasDateOfBirth() => $_has(11);
+  @$pb.TagNumber(12)
+  void clearDateOfBirth() => clearField(12);
 }
 
 class SignupResponse extends $pb.GeneratedMessage {
@@ -165,6 +225,8 @@ class SignupResponse extends $pb.GeneratedMessage {
     ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'refreshToken')
     ..aInt64(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'expiresIn')
     ..aOM<User>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'user', subBuilder: User.create)
+    ..aOB(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'phoneVerificationRequired')
+    ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'verificationSentTo')
     ..hasRequiredFields = false
   ;
 
@@ -178,6 +240,8 @@ class SignupResponse extends $pb.GeneratedMessage {
     $core.String? refreshToken,
     $fixnum.Int64? expiresIn,
     User? user,
+    $core.bool? phoneVerificationRequired,
+    $core.String? verificationSentTo,
   }) {
     final _result = create();
     if (userId != null) {
@@ -203,6 +267,12 @@ class SignupResponse extends $pb.GeneratedMessage {
     }
     if (user != null) {
       _result.user = user;
+    }
+    if (phoneVerificationRequired != null) {
+      _result.phoneVerificationRequired = phoneVerificationRequired;
+    }
+    if (verificationSentTo != null) {
+      _result.verificationSentTo = verificationSentTo;
     }
     return _result;
   }
@@ -300,6 +370,24 @@ class SignupResponse extends $pb.GeneratedMessage {
   void clearUser() => clearField(8);
   @$pb.TagNumber(8)
   User ensureUser() => $_ensure(7);
+
+  @$pb.TagNumber(9)
+  $core.bool get phoneVerificationRequired => $_getBF(8);
+  @$pb.TagNumber(9)
+  set phoneVerificationRequired($core.bool v) { $_setBool(8, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasPhoneVerificationRequired() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearPhoneVerificationRequired() => clearField(9);
+
+  @$pb.TagNumber(10)
+  $core.String get verificationSentTo => $_getSZ(9);
+  @$pb.TagNumber(10)
+  set verificationSentTo($core.String v) { $_setString(9, v); }
+  @$pb.TagNumber(10)
+  $core.bool hasVerificationSentTo() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearVerificationSentTo() => clearField(10);
 }
 
 class LoginRequest extends $pb.GeneratedMessage {
@@ -308,6 +396,7 @@ class LoginRequest extends $pb.GeneratedMessage {
     ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'password')
     ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'deviceId')
     ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'deviceName')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'phone')
     ..hasRequiredFields = false
   ;
 
@@ -317,6 +406,7 @@ class LoginRequest extends $pb.GeneratedMessage {
     $core.String? password,
     $core.String? deviceId,
     $core.String? deviceName,
+    $core.String? phone,
   }) {
     final _result = create();
     if (email != null) {
@@ -330,6 +420,9 @@ class LoginRequest extends $pb.GeneratedMessage {
     }
     if (deviceName != null) {
       _result.deviceName = deviceName;
+    }
+    if (phone != null) {
+      _result.phone = phone;
     }
     return _result;
   }
@@ -389,6 +482,15 @@ class LoginRequest extends $pb.GeneratedMessage {
   $core.bool hasDeviceName() => $_has(3);
   @$pb.TagNumber(4)
   void clearDeviceName() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get phone => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set phone($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasPhone() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearPhone() => clearField(5);
 }
 
 class LoginResponse extends $pb.GeneratedMessage {
@@ -1095,17 +1197,27 @@ class ResendVerificationEmailRequest extends $pb.GeneratedMessage {
 
 class ResendVerificationEmailResponse extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ResendVerificationEmailResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'cooldownSeconds', $pb.PbFieldType.O3)
     ..hasRequiredFields = false
   ;
 
   ResendVerificationEmailResponse._() : super();
   factory ResendVerificationEmailResponse({
+    $core.bool? success,
     $core.String? message,
+    $core.int? cooldownSeconds,
   }) {
     final _result = create();
+    if (success != null) {
+      _result.success = success;
+    }
     if (message != null) {
       _result.message = message;
+    }
+    if (cooldownSeconds != null) {
+      _result.cooldownSeconds = cooldownSeconds;
     }
     return _result;
   }
@@ -1131,19 +1243,38 @@ class ResendVerificationEmailResponse extends $pb.GeneratedMessage {
   static ResendVerificationEmailResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $core.String get message => $_getSZ(0);
+  $core.bool get success => $_getBF(0);
   @$pb.TagNumber(1)
-  set message($core.String v) { $_setString(0, v); }
+  set success($core.bool v) { $_setBool(0, v); }
   @$pb.TagNumber(1)
-  $core.bool hasMessage() => $_has(0);
+  $core.bool hasSuccess() => $_has(0);
   @$pb.TagNumber(1)
-  void clearMessage() => clearField(1);
+  void clearSuccess() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get message => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set message($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasMessage() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMessage() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.int get cooldownSeconds => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set cooldownSeconds($core.int v) { $_setSignedInt32(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasCooldownSeconds() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearCooldownSeconds() => clearField(3);
 }
 
 class VerifyPhoneRequest extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'VerifyPhoneRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'auth'), createEmptyInstance: create)
     ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
     ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'code')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'phone')
     ..hasRequiredFields = false
   ;
 
@@ -1151,6 +1282,7 @@ class VerifyPhoneRequest extends $pb.GeneratedMessage {
   factory VerifyPhoneRequest({
     $core.String? userId,
     $core.String? code,
+    $core.String? phone,
   }) {
     final _result = create();
     if (userId != null) {
@@ -1158,6 +1290,9 @@ class VerifyPhoneRequest extends $pb.GeneratedMessage {
     }
     if (code != null) {
       _result.code = code;
+    }
+    if (phone != null) {
+      _result.phone = phone;
     }
     return _result;
   }
@@ -1199,6 +1334,15 @@ class VerifyPhoneRequest extends $pb.GeneratedMessage {
   $core.bool hasCode() => $_has(1);
   @$pb.TagNumber(2)
   void clearCode() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get phone => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set phone($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasPhone() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearPhone() => clearField(3);
 }
 
 class VerifyPhoneResponse extends $pb.GeneratedMessage {
@@ -1242,6 +1386,128 @@ class VerifyPhoneResponse extends $pb.GeneratedMessage {
   @$core.pragma('dart2js:noInline')
   static VerifyPhoneResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<VerifyPhoneResponse>(create);
   static VerifyPhoneResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get message => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set message($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasMessage() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearMessage() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.bool get success => $_getBF(1);
+  @$pb.TagNumber(2)
+  set success($core.bool v) { $_setBool(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasSuccess() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearSuccess() => clearField(2);
+}
+
+class ResendPhoneVerificationRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ResendPhoneVerificationRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'auth'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'phone')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
+    ..hasRequiredFields = false
+  ;
+
+  ResendPhoneVerificationRequest._() : super();
+  factory ResendPhoneVerificationRequest({
+    $core.String? phone,
+    $core.String? userId,
+  }) {
+    final _result = create();
+    if (phone != null) {
+      _result.phone = phone;
+    }
+    if (userId != null) {
+      _result.userId = userId;
+    }
+    return _result;
+  }
+  factory ResendPhoneVerificationRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory ResendPhoneVerificationRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  ResendPhoneVerificationRequest clone() => ResendPhoneVerificationRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  ResendPhoneVerificationRequest copyWith(void Function(ResendPhoneVerificationRequest) updates) => super.copyWith((message) => updates(message as ResendPhoneVerificationRequest)) as ResendPhoneVerificationRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static ResendPhoneVerificationRequest create() => ResendPhoneVerificationRequest._();
+  ResendPhoneVerificationRequest createEmptyInstance() => create();
+  static $pb.PbList<ResendPhoneVerificationRequest> createRepeated() => $pb.PbList<ResendPhoneVerificationRequest>();
+  @$core.pragma('dart2js:noInline')
+  static ResendPhoneVerificationRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ResendPhoneVerificationRequest>(create);
+  static ResendPhoneVerificationRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get phone => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set phone($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasPhone() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearPhone() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get userId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set userId($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasUserId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearUserId() => clearField(2);
+}
+
+class ResendPhoneVerificationResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ResendPhoneVerificationResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'auth'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..aOB(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..hasRequiredFields = false
+  ;
+
+  ResendPhoneVerificationResponse._() : super();
+  factory ResendPhoneVerificationResponse({
+    $core.String? message,
+    $core.bool? success,
+  }) {
+    final _result = create();
+    if (message != null) {
+      _result.message = message;
+    }
+    if (success != null) {
+      _result.success = success;
+    }
+    return _result;
+  }
+  factory ResendPhoneVerificationResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory ResendPhoneVerificationResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  ResendPhoneVerificationResponse clone() => ResendPhoneVerificationResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  ResendPhoneVerificationResponse copyWith(void Function(ResendPhoneVerificationResponse) updates) => super.copyWith((message) => updates(message as ResendPhoneVerificationResponse)) as ResendPhoneVerificationResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static ResendPhoneVerificationResponse create() => ResendPhoneVerificationResponse._();
+  ResendPhoneVerificationResponse createEmptyInstance() => create();
+  static $pb.PbList<ResendPhoneVerificationResponse> createRepeated() => $pb.PbList<ResendPhoneVerificationResponse>();
+  @$core.pragma('dart2js:noInline')
+  static ResendPhoneVerificationResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ResendPhoneVerificationResponse>(create);
+  static ResendPhoneVerificationResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get message => $_getSZ(0);
@@ -3678,5 +3944,583 @@ class User extends $pb.GeneratedMessage {
   $core.bool hasUpdatedAt() => $_has(12);
   @$pb.TagNumber(13)
   void clearUpdatedAt() => clearField(13);
+}
+
+class SignupProgress extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'SignupProgress', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'auth'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
+    ..e<SignupStatus>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: SignupStatus.SIGNUP_STATUS_CREATED, valueOf: SignupStatus.valueOf, enumValues: SignupStatus.values)
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currentStep')
+    ..pc<SignupStepProgress>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'steps', $pb.PbFieldType.PM, subBuilder: SignupStepProgress.create)
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt')
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'completedAt')
+    ..hasRequiredFields = false
+  ;
+
+  SignupProgress._() : super();
+  factory SignupProgress({
+    $core.String? userId,
+    SignupStatus? status,
+    $core.String? currentStep,
+    $core.Iterable<SignupStepProgress>? steps,
+    $core.String? createdAt,
+    $core.String? updatedAt,
+    $core.String? completedAt,
+  }) {
+    final _result = create();
+    if (userId != null) {
+      _result.userId = userId;
+    }
+    if (status != null) {
+      _result.status = status;
+    }
+    if (currentStep != null) {
+      _result.currentStep = currentStep;
+    }
+    if (steps != null) {
+      _result.steps.addAll(steps);
+    }
+    if (createdAt != null) {
+      _result.createdAt = createdAt;
+    }
+    if (updatedAt != null) {
+      _result.updatedAt = updatedAt;
+    }
+    if (completedAt != null) {
+      _result.completedAt = completedAt;
+    }
+    return _result;
+  }
+  factory SignupProgress.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory SignupProgress.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  SignupProgress clone() => SignupProgress()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  SignupProgress copyWith(void Function(SignupProgress) updates) => super.copyWith((message) => updates(message as SignupProgress)) as SignupProgress; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static SignupProgress create() => SignupProgress._();
+  SignupProgress createEmptyInstance() => create();
+  static $pb.PbList<SignupProgress> createRepeated() => $pb.PbList<SignupProgress>();
+  @$core.pragma('dart2js:noInline')
+  static SignupProgress getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<SignupProgress>(create);
+  static SignupProgress? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get userId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set userId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasUserId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearUserId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  SignupStatus get status => $_getN(1);
+  @$pb.TagNumber(2)
+  set status(SignupStatus v) { setField(2, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasStatus() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearStatus() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get currentStep => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set currentStep($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasCurrentStep() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearCurrentStep() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.List<SignupStepProgress> get steps => $_getList(3);
+
+  @$pb.TagNumber(5)
+  $core.String get createdAt => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set createdAt($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasCreatedAt() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearCreatedAt() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get updatedAt => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set updatedAt($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasUpdatedAt() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearUpdatedAt() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.String get completedAt => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set completedAt($core.String v) { $_setString(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasCompletedAt() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearCompletedAt() => clearField(7);
+}
+
+class SignupStepProgress extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'SignupStepProgress', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'auth'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'stepName')
+    ..e<StepStatus>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: StepStatus.STEP_STATUS_PENDING, valueOf: StepStatus.valueOf, enumValues: StepStatus.values)
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'stepData')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'completedAt')
+    ..hasRequiredFields = false
+  ;
+
+  SignupStepProgress._() : super();
+  factory SignupStepProgress({
+    $core.String? stepName,
+    StepStatus? status,
+    $core.String? stepData,
+    $core.String? completedAt,
+  }) {
+    final _result = create();
+    if (stepName != null) {
+      _result.stepName = stepName;
+    }
+    if (status != null) {
+      _result.status = status;
+    }
+    if (stepData != null) {
+      _result.stepData = stepData;
+    }
+    if (completedAt != null) {
+      _result.completedAt = completedAt;
+    }
+    return _result;
+  }
+  factory SignupStepProgress.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory SignupStepProgress.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  SignupStepProgress clone() => SignupStepProgress()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  SignupStepProgress copyWith(void Function(SignupStepProgress) updates) => super.copyWith((message) => updates(message as SignupStepProgress)) as SignupStepProgress; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static SignupStepProgress create() => SignupStepProgress._();
+  SignupStepProgress createEmptyInstance() => create();
+  static $pb.PbList<SignupStepProgress> createRepeated() => $pb.PbList<SignupStepProgress>();
+  @$core.pragma('dart2js:noInline')
+  static SignupStepProgress getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<SignupStepProgress>(create);
+  static SignupStepProgress? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get stepName => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set stepName($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasStepName() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearStepName() => clearField(1);
+
+  @$pb.TagNumber(2)
+  StepStatus get status => $_getN(1);
+  @$pb.TagNumber(2)
+  set status(StepStatus v) { setField(2, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasStatus() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearStatus() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get stepData => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set stepData($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasStepData() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearStepData() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get completedAt => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set completedAt($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasCompletedAt() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearCompletedAt() => clearField(4);
+}
+
+class GetSignupProgressRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetSignupProgressRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'auth'), createEmptyInstance: create)
+    ..hasRequiredFields = false
+  ;
+
+  GetSignupProgressRequest._() : super();
+  factory GetSignupProgressRequest() => create();
+  factory GetSignupProgressRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetSignupProgressRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetSignupProgressRequest clone() => GetSignupProgressRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetSignupProgressRequest copyWith(void Function(GetSignupProgressRequest) updates) => super.copyWith((message) => updates(message as GetSignupProgressRequest)) as GetSignupProgressRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GetSignupProgressRequest create() => GetSignupProgressRequest._();
+  GetSignupProgressRequest createEmptyInstance() => create();
+  static $pb.PbList<GetSignupProgressRequest> createRepeated() => $pb.PbList<GetSignupProgressRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetSignupProgressRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetSignupProgressRequest>(create);
+  static GetSignupProgressRequest? _defaultInstance;
+}
+
+class GetSignupProgressResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetSignupProgressResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'auth'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..aOM<SignupProgress>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'progress', subBuilder: SignupProgress.create)
+    ..hasRequiredFields = false
+  ;
+
+  GetSignupProgressResponse._() : super();
+  factory GetSignupProgressResponse({
+    $core.bool? success,
+    $core.String? message,
+    SignupProgress? progress,
+  }) {
+    final _result = create();
+    if (success != null) {
+      _result.success = success;
+    }
+    if (message != null) {
+      _result.message = message;
+    }
+    if (progress != null) {
+      _result.progress = progress;
+    }
+    return _result;
+  }
+  factory GetSignupProgressResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetSignupProgressResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetSignupProgressResponse clone() => GetSignupProgressResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetSignupProgressResponse copyWith(void Function(GetSignupProgressResponse) updates) => super.copyWith((message) => updates(message as GetSignupProgressResponse)) as GetSignupProgressResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GetSignupProgressResponse create() => GetSignupProgressResponse._();
+  GetSignupProgressResponse createEmptyInstance() => create();
+  static $pb.PbList<GetSignupProgressResponse> createRepeated() => $pb.PbList<GetSignupProgressResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetSignupProgressResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetSignupProgressResponse>(create);
+  static GetSignupProgressResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool v) { $_setBool(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get message => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set message($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasMessage() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMessage() => clearField(2);
+
+  @$pb.TagNumber(3)
+  SignupProgress get progress => $_getN(2);
+  @$pb.TagNumber(3)
+  set progress(SignupProgress v) { setField(3, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasProgress() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearProgress() => clearField(3);
+  @$pb.TagNumber(3)
+  SignupProgress ensureProgress() => $_ensure(2);
+}
+
+class UpdateSignupStepRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UpdateSignupStepRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'auth'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'stepName')
+    ..e<StepStatus>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: StepStatus.STEP_STATUS_PENDING, valueOf: StepStatus.valueOf, enumValues: StepStatus.values)
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'stepData')
+    ..hasRequiredFields = false
+  ;
+
+  UpdateSignupStepRequest._() : super();
+  factory UpdateSignupStepRequest({
+    $core.String? stepName,
+    StepStatus? status,
+    $core.String? stepData,
+  }) {
+    final _result = create();
+    if (stepName != null) {
+      _result.stepName = stepName;
+    }
+    if (status != null) {
+      _result.status = status;
+    }
+    if (stepData != null) {
+      _result.stepData = stepData;
+    }
+    return _result;
+  }
+  factory UpdateSignupStepRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory UpdateSignupStepRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  UpdateSignupStepRequest clone() => UpdateSignupStepRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  UpdateSignupStepRequest copyWith(void Function(UpdateSignupStepRequest) updates) => super.copyWith((message) => updates(message as UpdateSignupStepRequest)) as UpdateSignupStepRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static UpdateSignupStepRequest create() => UpdateSignupStepRequest._();
+  UpdateSignupStepRequest createEmptyInstance() => create();
+  static $pb.PbList<UpdateSignupStepRequest> createRepeated() => $pb.PbList<UpdateSignupStepRequest>();
+  @$core.pragma('dart2js:noInline')
+  static UpdateSignupStepRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<UpdateSignupStepRequest>(create);
+  static UpdateSignupStepRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get stepName => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set stepName($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasStepName() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearStepName() => clearField(1);
+
+  @$pb.TagNumber(2)
+  StepStatus get status => $_getN(1);
+  @$pb.TagNumber(2)
+  set status(StepStatus v) { setField(2, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasStatus() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearStatus() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get stepData => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set stepData($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasStepData() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearStepData() => clearField(3);
+}
+
+class UpdateSignupStepResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UpdateSignupStepResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'auth'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..aOM<SignupProgress>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'progress', subBuilder: SignupProgress.create)
+    ..hasRequiredFields = false
+  ;
+
+  UpdateSignupStepResponse._() : super();
+  factory UpdateSignupStepResponse({
+    $core.bool? success,
+    $core.String? message,
+    SignupProgress? progress,
+  }) {
+    final _result = create();
+    if (success != null) {
+      _result.success = success;
+    }
+    if (message != null) {
+      _result.message = message;
+    }
+    if (progress != null) {
+      _result.progress = progress;
+    }
+    return _result;
+  }
+  factory UpdateSignupStepResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory UpdateSignupStepResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  UpdateSignupStepResponse clone() => UpdateSignupStepResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  UpdateSignupStepResponse copyWith(void Function(UpdateSignupStepResponse) updates) => super.copyWith((message) => updates(message as UpdateSignupStepResponse)) as UpdateSignupStepResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static UpdateSignupStepResponse create() => UpdateSignupStepResponse._();
+  UpdateSignupStepResponse createEmptyInstance() => create();
+  static $pb.PbList<UpdateSignupStepResponse> createRepeated() => $pb.PbList<UpdateSignupStepResponse>();
+  @$core.pragma('dart2js:noInline')
+  static UpdateSignupStepResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<UpdateSignupStepResponse>(create);
+  static UpdateSignupStepResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool v) { $_setBool(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get message => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set message($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasMessage() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMessage() => clearField(2);
+
+  @$pb.TagNumber(3)
+  SignupProgress get progress => $_getN(2);
+  @$pb.TagNumber(3)
+  set progress(SignupProgress v) { setField(3, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasProgress() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearProgress() => clearField(3);
+  @$pb.TagNumber(3)
+  SignupProgress ensureProgress() => $_ensure(2);
+}
+
+class CompleteSignupRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CompleteSignupRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'auth'), createEmptyInstance: create)
+    ..hasRequiredFields = false
+  ;
+
+  CompleteSignupRequest._() : super();
+  factory CompleteSignupRequest() => create();
+  factory CompleteSignupRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory CompleteSignupRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  CompleteSignupRequest clone() => CompleteSignupRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  CompleteSignupRequest copyWith(void Function(CompleteSignupRequest) updates) => super.copyWith((message) => updates(message as CompleteSignupRequest)) as CompleteSignupRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static CompleteSignupRequest create() => CompleteSignupRequest._();
+  CompleteSignupRequest createEmptyInstance() => create();
+  static $pb.PbList<CompleteSignupRequest> createRepeated() => $pb.PbList<CompleteSignupRequest>();
+  @$core.pragma('dart2js:noInline')
+  static CompleteSignupRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<CompleteSignupRequest>(create);
+  static CompleteSignupRequest? _defaultInstance;
+}
+
+class CompleteSignupResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CompleteSignupResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'auth'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..aOM<SignupProgress>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'progress', subBuilder: SignupProgress.create)
+    ..hasRequiredFields = false
+  ;
+
+  CompleteSignupResponse._() : super();
+  factory CompleteSignupResponse({
+    $core.bool? success,
+    $core.String? message,
+    SignupProgress? progress,
+  }) {
+    final _result = create();
+    if (success != null) {
+      _result.success = success;
+    }
+    if (message != null) {
+      _result.message = message;
+    }
+    if (progress != null) {
+      _result.progress = progress;
+    }
+    return _result;
+  }
+  factory CompleteSignupResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory CompleteSignupResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  CompleteSignupResponse clone() => CompleteSignupResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  CompleteSignupResponse copyWith(void Function(CompleteSignupResponse) updates) => super.copyWith((message) => updates(message as CompleteSignupResponse)) as CompleteSignupResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static CompleteSignupResponse create() => CompleteSignupResponse._();
+  CompleteSignupResponse createEmptyInstance() => create();
+  static $pb.PbList<CompleteSignupResponse> createRepeated() => $pb.PbList<CompleteSignupResponse>();
+  @$core.pragma('dart2js:noInline')
+  static CompleteSignupResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<CompleteSignupResponse>(create);
+  static CompleteSignupResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool v) { $_setBool(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get message => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set message($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasMessage() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMessage() => clearField(2);
+
+  @$pb.TagNumber(3)
+  SignupProgress get progress => $_getN(2);
+  @$pb.TagNumber(3)
+  set progress(SignupProgress v) { setField(3, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasProgress() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearProgress() => clearField(3);
+  @$pb.TagNumber(3)
+  SignupProgress ensureProgress() => $_ensure(2);
 }
 

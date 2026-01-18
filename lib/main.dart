@@ -19,6 +19,8 @@ import 'package:lazervault/core/database/database_helper.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/balance_websocket_cubit.dart';
 import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
+import 'package:lazervault/src/features/recipients/presentation/cubit/account_verification_cubit.dart';
+import 'package:lazervault/src/features/recipients/data/datasources/recipient_verification_remote_datasource.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:device_info_plus/device_info_plus.dart'; // Added device_info_plus
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -115,6 +117,20 @@ Future<String> _determineInitialRoute() async {
       return AppRoutes.root; // Show onboarding for first-time users
     }
 
+    // Check for incomplete signup (local draft)
+    final signupDraft = await storage.read(key: 'signup_draft');
+    final hasIncompleteSignup = await storage.read(key: 'has_incomplete_signup');
+    final currentSignupStep = await storage.read(key: 'current_signup_step');
+
+    if (hasIncompleteSignup == 'true' && currentSignupStep != null) {
+      // User has an incomplete signup - route based on step
+      print('📝 Found incomplete signup at step: $currentSignupStep');
+      final route = _getRouteForSignupStep(currentSignupStep);
+      if (route != null) {
+        return route;
+      }
+    }
+
     // Check if user has a stored login method
     final loginMethod = await storage.read(key: 'login_method');
     final storedEmail = await storage.read(key: 'stored_email');
@@ -142,6 +158,28 @@ Future<String> _determineInitialRoute() async {
   } catch (e) {
     print('Error determining initial route: $e');
     return AppRoutes.root;
+  }
+}
+
+/// Get the appropriate route for a signup step
+String? _getRouteForSignupStep(String? step) {
+  if (step == null) return null;
+
+  switch (step) {
+    case 'form_page_0':
+    case 'form_page_1':
+      return AppRoutes.signUp; // Resume signup form
+    case 'account_created':
+    case 'email_verify':
+      return AppRoutes.emailVerification; // Resume email verification
+    case 'phone_verify':
+      return AppRoutes.phoneVerification; // Resume phone verification
+    case 'passcode_setup':
+      return AppRoutes.passcodeSetup; // Resume passcode setup
+    case 'complete':
+      return AppRoutes.dashboard; // Signup complete, go to dashboard
+    default:
+      return null;
   }
 }
 
@@ -213,6 +251,14 @@ class _MyAppState extends State<MyApp> {
         ),
         BlocProvider<BalanceWebSocketCubit>.value(
           value: serviceLocator<BalanceWebSocketCubit>(),
+        ),
+        BlocProvider<AccountVerificationCubit>(
+          create: (_) => AccountVerificationCubit(
+            dataSource: RecipientVerificationRemoteDataSourceImpl(
+              // Use Golang payments gateway for account verification (not Python chat gateway)
+              baseUrl: dotenv.env['PAYMENTS_GATEWAY_URL'] ?? 'http://localhost:8081',
+            ),
+          ),
         ),
       ],
       child: ScreenUtilInit(

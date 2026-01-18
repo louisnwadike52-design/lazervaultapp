@@ -153,77 +153,71 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
             // fullName, selectedDate, and phoneNumber after this error to prevent fields clearing.
             break;
           case AuthenticationSuccess():
-            // Signup successful, navigate to verification screen based on primary contact type
-            final signupState = context.read<AuthenticationCubit>().state;
-            if (signupState is SignUpInProgress) {
-              final primaryType = signupState.primaryContactType;
-              if (primaryType == PrimaryContactType.phone) {
-                Get.snackbar(
-                  'Account Created!',
-                  'Please verify your phone number to continue.',
-                  snackPosition: SnackPosition.TOP,
-                  backgroundColor: Colors.green,
-                  colorText: Colors.white,
-                  margin: EdgeInsets.all(15.w),
-                  borderRadius: 10.r,
-                );
-                Get.offAllNamed(AppRoutes.phoneVerification, arguments: signupState.phoneNumber);
-              } else {
-                Get.snackbar(
-                  'Account Created!',
-                  'Please verify your email to continue.',
-                  snackPosition: SnackPosition.TOP,
-                  backgroundColor: Colors.green,
-                  colorText: Colors.white,
-                  margin: EdgeInsets.all(15.w),
-                  borderRadius: 10.r,
-                );
-                Get.offAllNamed(AppRoutes.emailVerification, arguments: signupState.email);
-              }
-            } else {
-              // Fallback to email verification
-              Get.offAllNamed(AppRoutes.emailVerification);
-            }
+            // This case is typically for login, not signup
+            // Signup uses UserCreated state
             break;
           case UserCreated(): // Handle successful user creation
-            // Determine primary contact type from previous signup state to route correctly
+            // Navigate to PRIMARY credential OTP screen only
+            // Secondary verification will be shown after primary is complete
             final cubit = context.read<AuthenticationCubit>();
-            final profile = cubit.currentProfile;
+            final signupState = cubit.state;
 
-            // Try to get the primary contact type from the stored user data
             String? phoneNumber;
             String? email;
-            bool usePhoneVerification = false;
+            PrimaryContactType primaryType = PrimaryContactType.email;
 
-            if (profile != null) {
-              phoneNumber = profile.user.phoneNumber;
-              email = profile.user.email;
-              // If phone exists and email is empty, assume phone signup
-              usePhoneVerification = phoneNumber != null && phoneNumber.isNotEmpty;
+            // Get data from SignUpInProgress state if available
+            if (signupState is SignUpInProgress) {
+              phoneNumber = signupState.phoneNumber;
+              email = signupState.email;
+              primaryType = signupState.primaryContactType;
+            } else if (cubit.currentProfile != null) {
+              // Fallback to profile data
+              phoneNumber = cubit.currentProfile!.user.phoneNumber;
+              email = cubit.currentProfile!.user.email;
             }
 
-            if (usePhoneVerification) {
+            // Determine if secondary verification is needed
+            final hasSecondaryPhone = phoneNumber != null && phoneNumber.isNotEmpty;
+            final hasSecondaryEmail = email != null && email.isNotEmpty;
+
+            // Navigate based on PRIMARY contact type (show single snackbar)
+            if (primaryType == PrimaryContactType.phone) {
               Get.snackbar(
-                'Success',
-                'Sign up successful! Please verify your phone number.',
+                'Account Created!',
+                'Please verify your phone number to continue.',
                 snackPosition: SnackPosition.TOP,
                 backgroundColor: Colors.green,
                 colorText: Colors.white,
                 margin: EdgeInsets.all(15.w),
                 borderRadius: 10.r,
               );
-              Get.offAllNamed(AppRoutes.phoneVerification, arguments: phoneNumber);
+              // Navigate to phone OTP (required) - pass secondary email info
+              Get.offAllNamed(AppRoutes.phoneVerification, arguments: {
+                'phoneNumber': phoneNumber,
+                'codeSent': true,
+                'expiresIn': 600,
+                'isRequired': true,
+                'secondaryEmail': hasSecondaryEmail ? email : null,
+              });
             } else {
+              // Default to email verification (email is primary)
               Get.snackbar(
-                'Success',
-                'Sign up successful! Please verify your email.',
+                'Account Created!',
+                'Please verify your email to continue.',
                 snackPosition: SnackPosition.TOP,
                 backgroundColor: Colors.green,
                 colorText: Colors.white,
                 margin: EdgeInsets.all(15.w),
                 borderRadius: 10.r,
               );
-              Get.offAllNamed(AppRoutes.emailVerification, arguments: email);
+              // Navigate to email OTP (required) - pass secondary phone info
+              Get.offAllNamed(AppRoutes.emailVerification, arguments: {
+                'email': email,
+                'codeSent': true,
+                'isRequired': true,
+                'secondaryPhone': hasSecondaryPhone ? phoneNumber : null,
+              });
             }
             break;
           default:
