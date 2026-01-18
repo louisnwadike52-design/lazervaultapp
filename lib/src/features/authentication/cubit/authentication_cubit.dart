@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:lazervault/core/services/currency_sync_service.dart';
+import 'package:lazervault/core/services/signup_state_service.dart';
 import '../domain/usecases/login_usecase.dart';
 import '../domain/usecases/login_with_passcode_usecase.dart';
 import '../domain/usecases/register_passcode_usecase.dart';
@@ -16,6 +19,7 @@ import '../domain/usecases/resend_verification_usecase.dart';
 import '../domain/usecases/check_email_availability_usecase.dart';
 import '../domain/entities/profile_entity.dart';
 import '../domain/entities/user.dart';
+import '../domain/entities/signup_draft.dart';
 import 'authentication_state.dart';
 
 class AuthenticationCubit extends Cubit<AuthenticationState> {
@@ -32,8 +36,10 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
   final CheckEmailAvailabilityUseCase _checkEmailAvailabilityUseCase;
   final FlutterSecureStorage _storage;
   final CurrencySyncService _currencySyncService;
+  final SignupStateService? _signupStateService;
 
   ProfileEntity? _currentProfile;
+  Timer? _draftSaveTimer;
 
   AuthenticationCubit({
     required LoginUseCase login,
@@ -49,6 +55,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     required CheckEmailAvailabilityUseCase checkEmailAvailability,
     FlutterSecureStorage? storage,
     required CurrencySyncService currencySyncService,
+    SignupStateService? signupStateService,
   })  : _loginUseCase = login,
         _loginWithPasscodeUseCase = loginWithPasscode,
         _registerPasscodeUseCase = registerPasscode,
@@ -62,6 +69,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
         _checkEmailAvailabilityUseCase = checkEmailAvailability,
         _storage = storage ?? const FlutterSecureStorage(),
         _currencySyncService = currencySyncService,
+        _signupStateService = signupStateService,
         super(AuthenticationInitial());
 
   // Getters
@@ -286,6 +294,11 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
         await _saveSession(profile);
         // Sync currency from server after successful registration
         await _currencySyncService.syncFromServer();
+
+        // Clear the local signup draft as account is now created
+        // Backend will track progress from here
+        await clearSignupDraft();
+        await _signupStateService?.markAccountCreated();
 
         if (!profile.user.isEmailVerified) {
           _showInfoSnackbar(
@@ -594,18 +607,105 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
   }
 
   // --- Sign Up Flow Methods ---
-  void startSignUp() {
+
+  /// Start signup flow, loading any existing draft
+  Future<void> startSignUp() async {
+    // Try to load existing draft
+    final draft = await _signupStateService?.loadDraft();
+
+    if (draft != null && draft.hasData && !draft.isExpired) {
+      // Restore from draft
+      emit(SignUpInProgress(
+        email: draft.email ?? '',
+        firstName: draft.firstName ?? '',
+        lastName: draft.lastName ?? '',
+        username: draft.username ?? '',
+        referralCode: draft.referralCode ?? '',
+        selectedDate: draft.dateOfBirth,
+        phoneNumber: draft.phone ?? '',
+        currentPage: draft.currentPage,
+        primaryContactType: _stringToPrimaryContactType(draft.primaryContactType),
+      ));
+    } else {
+      emit(const SignUpInProgress());
+    }
+  }
+
+  /// Start signup flow synchronously (for compatibility)
+  void startSignUpSync() {
     emit(const SignUpInProgress());
   }
 
   void cancelSignUp() {
+    _draftSaveTimer?.cancel();
     emit(const AuthenticationInitial());
+  }
+
+  /// Clear signup draft and state
+  Future<void> clearSignupDraft() async {
+    _draftSaveTimer?.cancel();
+    await _signupStateService?.clearDraft();
+  }
+
+  /// Save current signup state to draft (debounced)
+  void _scheduleDraftSave() {
+    _draftSaveTimer?.cancel();
+    _draftSaveTimer = Timer(const Duration(milliseconds: 500), () {
+      _saveCurrentStateToDraft();
+    });
+  }
+
+  /// Save current state to draft immediately
+  Future<void> _saveCurrentStateToDraft() async {
+    if (_signupStateService == null) return;
+
+    final currentState = state;
+    if (currentState is SignUpInProgress) {
+      final draft = SignupDraft(
+        email: currentState.email.isNotEmpty ? currentState.email : null,
+        phone: currentState.phoneNumber.isNotEmpty ? currentState.phoneNumber : null,
+        firstName: currentState.firstName.isNotEmpty ? currentState.firstName : null,
+        lastName: currentState.lastName.isNotEmpty ? currentState.lastName : null,
+        username: currentState.username.isNotEmpty ? currentState.username : null,
+        referralCode: currentState.referralCode.isNotEmpty ? currentState.referralCode : null,
+        dateOfBirth: currentState.selectedDate,
+        primaryContactType: _primaryContactTypeToString(currentState.primaryContactType),
+        currentPage: currentState.currentPage,
+        currentStep: currentState.currentPage == 0
+            ? SignupDraft.stepFormPage0
+            : SignupDraft.stepFormPage1,
+      );
+      await _signupStateService!.saveDraft(draft);
+    }
+  }
+
+  PrimaryContactType _stringToPrimaryContactType(String? type) {
+    switch (type) {
+      case 'email':
+        return PrimaryContactType.email;
+      case 'phone':
+        return PrimaryContactType.phone;
+      default:
+        return PrimaryContactType.none;
+    }
+  }
+
+  String? _primaryContactTypeToString(PrimaryContactType type) {
+    switch (type) {
+      case PrimaryContactType.email:
+        return 'email';
+      case PrimaryContactType.phone:
+        return 'phone';
+      case PrimaryContactType.none:
+        return null;
+    }
   }
 
   void signUpEmailChanged(String value) {
     if (state is SignUpInProgress) {
       final currentState = state as SignUpInProgress;
       emit(currentState.copyWith(email: value, clearErrorMessage: true, isLoading: false));
+      _scheduleDraftSave(); // Auto-save draft
     }
   }
 
@@ -613,6 +713,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     if (state is SignUpInProgress) {
       final currentState = state as SignUpInProgress;
       emit(currentState.copyWith(password: value, clearErrorMessage: true, isLoading: false));
+      // Note: We don't save password to draft for security
     }
   }
 
@@ -620,6 +721,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     if (state is SignUpInProgress) {
       final currentState = state as SignUpInProgress;
       emit(currentState.copyWith(confirmPassword: value, clearErrorMessage: true, isLoading: false));
+      // Note: We don't save password to draft for security
     }
   }
 
@@ -627,6 +729,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     if (state is SignUpInProgress) {
       final currentState = state as SignUpInProgress;
       emit(currentState.copyWith(firstName: value, clearErrorMessage: true, isLoading: false));
+      _scheduleDraftSave(); // Auto-save draft
     }
   }
 
@@ -634,6 +737,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     if (state is SignUpInProgress) {
       final currentState = state as SignUpInProgress;
       emit(currentState.copyWith(lastName: value, clearErrorMessage: true, isLoading: false));
+      _scheduleDraftSave(); // Auto-save draft
     }
   }
 
@@ -641,6 +745,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     if (state is SignUpInProgress) {
       final currentState = state as SignUpInProgress;
       emit(currentState.copyWith(username: value, clearErrorMessage: true, isLoading: false));
+      _scheduleDraftSave(); // Auto-save draft
     }
   }
 
@@ -648,6 +753,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     if (state is SignUpInProgress) {
       final currentState = state as SignUpInProgress;
       emit(currentState.copyWith(referralCode: value, clearErrorMessage: true, isLoading: false));
+      _scheduleDraftSave(); // Auto-save draft
     }
   }
 
@@ -655,6 +761,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     if (state is SignUpInProgress) {
       final currentState = state as SignUpInProgress;
       emit(currentState.copyWith(selectedDate: value, clearErrorMessage: true, isLoading: false));
+      _scheduleDraftSave(); // Auto-save draft
     }
   }
 
@@ -664,6 +771,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       // Format phone number to remove spaces and special characters
       final formattedPhone = _formatPhoneNumber(value);
       emit(currentState.copyWith(phoneNumber: formattedPhone, clearErrorMessage: true, isLoading: false));
+      _scheduleDraftSave(); // Auto-save draft
     }
   }
 
@@ -685,6 +793,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
           clearErrorMessage: true,
         ));
       }
+      _scheduleDraftSave(); // Auto-save draft
     }
   }
 
@@ -770,36 +879,44 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
         }
 
         // Check email availability before proceeding (only if email is primary contact)
-        if (currentState.primaryContactType == PrimaryContactType.email) {
+        if (currentState.primaryContactType == PrimaryContactType.email ||
+            currentState.primaryContactType == PrimaryContactType.none) {
           if (isClosed) return;
           emit(currentState.copyWith(isLoading: true, clearErrorMessage: true));
 
           final result = await _checkEmailAvailabilityUseCase(email: currentState.email);
 
           if (isClosed) return;
-          result.fold(
+
+          // Handle result with proper control flow (fold callbacks don't return from outer function)
+          final bool shouldProceed = result.fold(
             (failure) {
               final errorMsg = 'Failed to verify email availability. Please try again.';
               _showErrorSnackbar('Connection Error', errorMsg);
               emit(currentState.copyWith(errorMessage: errorMsg, isLoading: false));
-              return;
+              return false;
             },
             (isAvailable) {
               if (!isAvailable) {
                 final errorMsg = 'This email is already registered. Please use a different email or sign in.';
                 _showErrorSnackbar('Email Already Exists', errorMsg);
                 emit(currentState.copyWith(errorMessage: errorMsg, isLoading: false));
-                return;
+                return false;
               }
-              // Email is available, proceed to next page
-              emit(currentState.copyWith(currentPage: currentState.currentPage + 1, clearErrorMessage: true, isLoading: false));
+              return true;
             },
           );
-        } else {
+
+          if (!shouldProceed) return;
+
+          // Email is available, proceed to next page
+          emit(currentState.copyWith(currentPage: currentState.currentPage + 1, clearErrorMessage: true, isLoading: false));
+          return;
+        } else if (currentState.primaryContactType == PrimaryContactType.phone) {
           // Phone signup - proceed to next page (phone availability can be checked on backend)
           emit(currentState.copyWith(currentPage: currentState.currentPage + 1, clearErrorMessage: true, isLoading: false));
+          return;
         }
-        return; // Return early as we handled page transition in the fold
       } else if (currentState.currentPage == 1) {
         // Validation for page 1: Personal Info
         final firstNameError = _validateName(currentState.firstName, 'First name');
@@ -1202,6 +1319,10 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
         if (_currentProfile != null) {
           await _storage.write(key: 'stored_email', value: _currentProfile!.user.email);
         }
+
+        // Mark signup as complete (passcode is the final step)
+        await _signupStateService?.markSignupComplete();
+
         _showSuccessSnackbar('Success!', 'Passcode registered successfully');
 
         // Navigate to dashboard by emitting success
@@ -1214,8 +1335,11 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     );
   }
 
-  void skipPasscodeSetup() {
-    // Just emit success to navigate to dashboard
+  Future<void> skipPasscodeSetup() async {
+    // Mark signup as complete even when skipping passcode
+    await _signupStateService?.markSignupComplete();
+
+    // Emit success to navigate to dashboard
     if (_currentProfile != null) {
       emit(AuthenticationSuccess(_currentProfile!));
     } else {

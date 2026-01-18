@@ -10,6 +10,9 @@ import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:lazervault/core/services/voice_biometrics_service.dart';
 import 'package:lazervault/core/services/currency_sync_service.dart';
+import 'package:lazervault/core/services/signup_state_service.dart';
+import 'package:lazervault/core/services/device_service.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:lazervault/core/types/electricity_bill_details.dart';
 import 'package:lazervault/core/types/recipient.dart' as core_recipient;
 import 'package:lazervault/core/types/transaction.dart';
@@ -460,6 +463,24 @@ Future<void> init() async {
     () => SecureStorageService(serviceLocator<FlutterSecureStorage>()),
   );
 
+  // Register DeviceInfoPlugin for device identification
+  serviceLocator.registerLazySingleton<DeviceInfoPlugin>(
+    () => DeviceInfoPlugin(),
+  );
+
+  // Register DeviceService for device tracking (signup flow)
+  serviceLocator.registerLazySingleton<DeviceService>(
+    () => DeviceService(
+      serviceLocator<FlutterSecureStorage>(),
+      serviceLocator<DeviceInfoPlugin>(),
+    ),
+  );
+
+  // Register SignupStateService for signup draft persistence
+  serviceLocator.registerLazySingleton<SignupStateService>(
+    () => SignupStateService(serviceLocator<FlutterSecureStorage>()),
+  );
+
   // Register LocaleManager for centralized locale/country state management
   serviceLocator.registerLazySingleton<LocaleManager>(
     () => LocaleManager(serviceLocator<FlutterSecureStorage>()),
@@ -651,6 +672,7 @@ Future<void> init() async {
         checkEmailAvailability: serviceLocator<CheckEmailAvailabilityUseCase>(),
         storage: serviceLocator<FlutterSecureStorage>(),
         currencySyncService: serviceLocator<CurrencySyncService>(),
+        signupStateService: serviceLocator<SignupStateService>(),
       ));
 
   serviceLocator.registerFactory(() => FaceVerificationCubit(

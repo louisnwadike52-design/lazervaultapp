@@ -8,6 +8,44 @@
 import 'dart:core' as $core;
 import 'dart:convert' as $convert;
 import 'dart:typed_data' as $typed_data;
+@$core.Deprecated('Use primaryContactTypeDescriptor instead')
+const PrimaryContactType$json = const {
+  '1': 'PrimaryContactType',
+  '2': const [
+    const {'1': 'EMAIL', '2': 0},
+    const {'1': 'PHONE', '2': 1},
+  ],
+};
+
+/// Descriptor for `PrimaryContactType`. Decode as a `google.protobuf.EnumDescriptorProto`.
+final $typed_data.Uint8List primaryContactTypeDescriptor = $convert.base64Decode('ChJQcmltYXJ5Q29udGFjdFR5cGUSCQoFRU1BSUwQABIJCgVQSE9ORRAB');
+@$core.Deprecated('Use signupStatusDescriptor instead')
+const SignupStatus$json = const {
+  '1': 'SignupStatus',
+  '2': const [
+    const {'1': 'SIGNUP_STATUS_CREATED', '2': 0},
+    const {'1': 'SIGNUP_STATUS_EMAIL_VERIFIED', '2': 1},
+    const {'1': 'SIGNUP_STATUS_PHONE_VERIFIED', '2': 2},
+    const {'1': 'SIGNUP_STATUS_PASSCODE_SET', '2': 3},
+    const {'1': 'SIGNUP_STATUS_COMPLETE', '2': 4},
+  ],
+};
+
+/// Descriptor for `SignupStatus`. Decode as a `google.protobuf.EnumDescriptorProto`.
+final $typed_data.Uint8List signupStatusDescriptor = $convert.base64Decode('CgxTaWdudXBTdGF0dXMSGQoVU0lHTlVQX1NUQVRVU19DUkVBVEVEEAASIAocU0lHTlVQX1NUQVRVU19FTUFJTF9WRVJJRklFRBABEiAKHFNJR05VUF9TVEFUVVNfUEhPTkVfVkVSSUZJRUQQAhIeChpTSUdOVVBfU1RBVFVTX1BBU1NDT0RFX1NFVBADEhoKFlNJR05VUF9TVEFUVVNfQ09NUExFVEUQBA==');
+@$core.Deprecated('Use stepStatusDescriptor instead')
+const StepStatus$json = const {
+  '1': 'StepStatus',
+  '2': const [
+    const {'1': 'STEP_STATUS_PENDING', '2': 0},
+    const {'1': 'STEP_STATUS_IN_PROGRESS', '2': 1},
+    const {'1': 'STEP_STATUS_COMPLETED', '2': 2},
+    const {'1': 'STEP_STATUS_SKIPPED', '2': 3},
+  ],
+};
+
+/// Descriptor for `StepStatus`. Decode as a `google.protobuf.EnumDescriptorProto`.
+final $typed_data.Uint8List stepStatusDescriptor = $convert.base64Decode('CgpTdGVwU3RhdHVzEhcKE1NURVBfU1RBVFVTX1BFTkRJTkcQABIbChdTVEVQX1NUQVRVU19JTl9QUk9HUkVTUxABEhkKFVNURVBfU1RBVFVTX0NPTVBMRVRFRBACEhcKE1NURVBfU1RBVFVTX1NLSVBQRUQQAw==');
 @$core.Deprecated('Use signupRequestDescriptor instead')
 const SignupRequest$json = const {
   '1': 'SignupRequest',
@@ -20,11 +58,15 @@ const SignupRequest$json = const {
     const {'1': 'country_code', '3': 6, '4': 1, '5': 9, '10': 'countryCode'},
     const {'1': 'device_id', '3': 7, '4': 1, '5': 9, '10': 'deviceId'},
     const {'1': 'device_name', '3': 8, '4': 1, '5': 9, '10': 'deviceName'},
+    const {'1': 'primary_contact_type', '3': 9, '4': 1, '5': 14, '6': '.auth.PrimaryContactType', '10': 'primaryContactType'},
+    const {'1': 'username', '3': 10, '4': 1, '5': 9, '10': 'username'},
+    const {'1': 'referral_code', '3': 11, '4': 1, '5': 9, '10': 'referralCode'},
+    const {'1': 'date_of_birth', '3': 12, '4': 1, '5': 9, '10': 'dateOfBirth'},
   ],
 };
 
 /// Descriptor for `SignupRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List signupRequestDescriptor = $convert.base64Decode('Cg1TaWdudXBSZXF1ZXN0EhQKBWVtYWlsGAEgASgJUgVlbWFpbBIaCghwYXNzd29yZBgCIAEoCVIIcGFzc3dvcmQSHQoKZmlyc3RfbmFtZRgDIAEoCVIJZmlyc3ROYW1lEhsKCWxhc3RfbmFtZRgEIAEoCVIIbGFzdE5hbWUSFAoFcGhvbmUYBSABKAlSBXBob25lEiEKDGNvdW50cnlfY29kZRgGIAEoCVILY291bnRyeUNvZGUSGwoJZGV2aWNlX2lkGAcgASgJUghkZXZpY2VJZBIfCgtkZXZpY2VfbmFtZRgIIAEoCVIKZGV2aWNlTmFtZQ==');
+final $typed_data.Uint8List signupRequestDescriptor = $convert.base64Decode('Cg1TaWdudXBSZXF1ZXN0EhQKBWVtYWlsGAEgASgJUgVlbWFpbBIaCghwYXNzd29yZBgCIAEoCVIIcGFzc3dvcmQSHQoKZmlyc3RfbmFtZRgDIAEoCVIJZmlyc3ROYW1lEhsKCWxhc3RfbmFtZRgEIAEoCVIIbGFzdE5hbWUSFAoFcGhvbmUYBSABKAlSBXBob25lEiEKDGNvdW50cnlfY29kZRgGIAEoCVILY291bnRyeUNvZGUSGwoJZGV2aWNlX2lkGAcgASgJUghkZXZpY2VJZBIfCgtkZXZpY2VfbmFtZRgIIAEoCVIKZGV2aWNlTmFtZRJKChRwcmltYXJ5X2NvbnRhY3RfdHlwZRgJIAEoDjIYLmF1dGguUHJpbWFyeUNvbnRhY3RUeXBlUhJwcmltYXJ5Q29udGFjdFR5cGUSGgoIdXNlcm5hbWUYCiABKAlSCHVzZXJuYW1lEiMKDXJlZmVycmFsX2NvZGUYCyABKAlSDHJlZmVycmFsQ29kZRIiCg1kYXRlX29mX2JpcnRoGAwgASgJUgtkYXRlT2ZCaXJ0aA==');
 @$core.Deprecated('Use signupResponseDescriptor instead')
 const SignupResponse$json = const {
   '1': 'SignupResponse',
@@ -37,11 +79,13 @@ const SignupResponse$json = const {
     const {'1': 'refresh_token', '3': 6, '4': 1, '5': 9, '10': 'refreshToken'},
     const {'1': 'expires_in', '3': 7, '4': 1, '5': 3, '10': 'expiresIn'},
     const {'1': 'user', '3': 8, '4': 1, '5': 11, '6': '.auth.User', '10': 'user'},
+    const {'1': 'phone_verification_required', '3': 9, '4': 1, '5': 8, '10': 'phoneVerificationRequired'},
+    const {'1': 'verification_sent_to', '3': 10, '4': 1, '5': 9, '10': 'verificationSentTo'},
   ],
 };
 
 /// Descriptor for `SignupResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List signupResponseDescriptor = $convert.base64Decode('Cg5TaWdudXBSZXNwb25zZRIXCgd1c2VyX2lkGAEgASgJUgZ1c2VySWQSFAoFZW1haWwYAiABKAlSBWVtYWlsEhgKB21lc3NhZ2UYAyABKAlSB21lc3NhZ2USPgobZW1haWxfdmVyaWZpY2F0aW9uX3JlcXVpcmVkGAQgASgIUhllbWFpbFZlcmlmaWNhdGlvblJlcXVpcmVkEiEKDGFjY2Vzc190b2tlbhgFIAEoCVILYWNjZXNzVG9rZW4SIwoNcmVmcmVzaF90b2tlbhgGIAEoCVIMcmVmcmVzaFRva2VuEh0KCmV4cGlyZXNfaW4YByABKANSCWV4cGlyZXNJbhIeCgR1c2VyGAggASgLMgouYXV0aC5Vc2VyUgR1c2Vy');
+final $typed_data.Uint8List signupResponseDescriptor = $convert.base64Decode('Cg5TaWdudXBSZXNwb25zZRIXCgd1c2VyX2lkGAEgASgJUgZ1c2VySWQSFAoFZW1haWwYAiABKAlSBWVtYWlsEhgKB21lc3NhZ2UYAyABKAlSB21lc3NhZ2USPgobZW1haWxfdmVyaWZpY2F0aW9uX3JlcXVpcmVkGAQgASgIUhllbWFpbFZlcmlmaWNhdGlvblJlcXVpcmVkEiEKDGFjY2Vzc190b2tlbhgFIAEoCVILYWNjZXNzVG9rZW4SIwoNcmVmcmVzaF90b2tlbhgGIAEoCVIMcmVmcmVzaFRva2VuEh0KCmV4cGlyZXNfaW4YByABKANSCWV4cGlyZXNJbhIeCgR1c2VyGAggASgLMgouYXV0aC5Vc2VyUgR1c2VyEj4KG3Bob25lX3ZlcmlmaWNhdGlvbl9yZXF1aXJlZBgJIAEoCFIZcGhvbmVWZXJpZmljYXRpb25SZXF1aXJlZBIwChR2ZXJpZmljYXRpb25fc2VudF90bxgKIAEoCVISdmVyaWZpY2F0aW9uU2VudFRv');
 @$core.Deprecated('Use loginRequestDescriptor instead')
 const LoginRequest$json = const {
   '1': 'LoginRequest',
@@ -50,11 +94,12 @@ const LoginRequest$json = const {
     const {'1': 'password', '3': 2, '4': 1, '5': 9, '10': 'password'},
     const {'1': 'device_id', '3': 3, '4': 1, '5': 9, '10': 'deviceId'},
     const {'1': 'device_name', '3': 4, '4': 1, '5': 9, '10': 'deviceName'},
+    const {'1': 'phone', '3': 5, '4': 1, '5': 9, '10': 'phone'},
   ],
 };
 
 /// Descriptor for `LoginRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List loginRequestDescriptor = $convert.base64Decode('CgxMb2dpblJlcXVlc3QSFAoFZW1haWwYASABKAlSBWVtYWlsEhoKCHBhc3N3b3JkGAIgASgJUghwYXNzd29yZBIbCglkZXZpY2VfaWQYAyABKAlSCGRldmljZUlkEh8KC2RldmljZV9uYW1lGAQgASgJUgpkZXZpY2VOYW1l');
+final $typed_data.Uint8List loginRequestDescriptor = $convert.base64Decode('CgxMb2dpblJlcXVlc3QSFAoFZW1haWwYASABKAlSBWVtYWlsEhoKCHBhc3N3b3JkGAIgASgJUghwYXNzd29yZBIbCglkZXZpY2VfaWQYAyABKAlSCGRldmljZUlkEh8KC2RldmljZV9uYW1lGAQgASgJUgpkZXZpY2VOYW1lEhQKBXBob25lGAUgASgJUgVwaG9uZQ==');
 @$core.Deprecated('Use loginResponseDescriptor instead')
 const LoginResponse$json = const {
   '1': 'LoginResponse',
@@ -175,23 +220,26 @@ final $typed_data.Uint8List resendVerificationEmailRequestDescriptor = $convert.
 const ResendVerificationEmailResponse$json = const {
   '1': 'ResendVerificationEmailResponse',
   '2': const [
-    const {'1': 'message', '3': 1, '4': 1, '5': 9, '10': 'message'},
+    const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    const {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+    const {'1': 'cooldown_seconds', '3': 3, '4': 1, '5': 5, '10': 'cooldownSeconds'},
   ],
 };
 
 /// Descriptor for `ResendVerificationEmailResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List resendVerificationEmailResponseDescriptor = $convert.base64Decode('Ch9SZXNlbmRWZXJpZmljYXRpb25FbWFpbFJlc3BvbnNlEhgKB21lc3NhZ2UYASABKAlSB21lc3NhZ2U=');
+final $typed_data.Uint8List resendVerificationEmailResponseDescriptor = $convert.base64Decode('Ch9SZXNlbmRWZXJpZmljYXRpb25FbWFpbFJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3MSGAoHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZRIpChBjb29sZG93bl9zZWNvbmRzGAMgASgFUg9jb29sZG93blNlY29uZHM=');
 @$core.Deprecated('Use verifyPhoneRequestDescriptor instead')
 const VerifyPhoneRequest$json = const {
   '1': 'VerifyPhoneRequest',
   '2': const [
     const {'1': 'user_id', '3': 1, '4': 1, '5': 9, '10': 'userId'},
     const {'1': 'code', '3': 2, '4': 1, '5': 9, '10': 'code'},
+    const {'1': 'phone', '3': 3, '4': 1, '5': 9, '10': 'phone'},
   ],
 };
 
 /// Descriptor for `VerifyPhoneRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List verifyPhoneRequestDescriptor = $convert.base64Decode('ChJWZXJpZnlQaG9uZVJlcXVlc3QSFwoHdXNlcl9pZBgBIAEoCVIGdXNlcklkEhIKBGNvZGUYAiABKAlSBGNvZGU=');
+final $typed_data.Uint8List verifyPhoneRequestDescriptor = $convert.base64Decode('ChJWZXJpZnlQaG9uZVJlcXVlc3QSFwoHdXNlcl9pZBgBIAEoCVIGdXNlcklkEhIKBGNvZGUYAiABKAlSBGNvZGUSFAoFcGhvbmUYAyABKAlSBXBob25l');
 @$core.Deprecated('Use verifyPhoneResponseDescriptor instead')
 const VerifyPhoneResponse$json = const {
   '1': 'VerifyPhoneResponse',
@@ -203,6 +251,28 @@ const VerifyPhoneResponse$json = const {
 
 /// Descriptor for `VerifyPhoneResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List verifyPhoneResponseDescriptor = $convert.base64Decode('ChNWZXJpZnlQaG9uZVJlc3BvbnNlEhgKB21lc3NhZ2UYASABKAlSB21lc3NhZ2USGAoHc3VjY2VzcxgCIAEoCFIHc3VjY2Vzcw==');
+@$core.Deprecated('Use resendPhoneVerificationRequestDescriptor instead')
+const ResendPhoneVerificationRequest$json = const {
+  '1': 'ResendPhoneVerificationRequest',
+  '2': const [
+    const {'1': 'phone', '3': 1, '4': 1, '5': 9, '10': 'phone'},
+    const {'1': 'user_id', '3': 2, '4': 1, '5': 9, '10': 'userId'},
+  ],
+};
+
+/// Descriptor for `ResendPhoneVerificationRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List resendPhoneVerificationRequestDescriptor = $convert.base64Decode('Ch5SZXNlbmRQaG9uZVZlcmlmaWNhdGlvblJlcXVlc3QSFAoFcGhvbmUYASABKAlSBXBob25lEhcKB3VzZXJfaWQYAiABKAlSBnVzZXJJZA==');
+@$core.Deprecated('Use resendPhoneVerificationResponseDescriptor instead')
+const ResendPhoneVerificationResponse$json = const {
+  '1': 'ResendPhoneVerificationResponse',
+  '2': const [
+    const {'1': 'message', '3': 1, '4': 1, '5': 9, '10': 'message'},
+    const {'1': 'success', '3': 2, '4': 1, '5': 8, '10': 'success'},
+  ],
+};
+
+/// Descriptor for `ResendPhoneVerificationResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List resendPhoneVerificationResponseDescriptor = $convert.base64Decode('Ch9SZXNlbmRQaG9uZVZlcmlmaWNhdGlvblJlc3BvbnNlEhgKB21lc3NhZ2UYASABKAlSB21lc3NhZ2USGAoHc3VjY2VzcxgCIAEoCFIHc3VjY2Vzcw==');
 @$core.Deprecated('Use forgotPasswordRequestDescriptor instead')
 const ForgotPasswordRequest$json = const {
   '1': 'ForgotPasswordRequest',
@@ -601,3 +671,94 @@ const User$json = const {
 
 /// Descriptor for `User`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List userDescriptor = $convert.base64Decode('CgRVc2VyEg4KAmlkGAEgASgJUgJpZBIUCgVlbWFpbBgCIAEoCVIFZW1haWwSHQoKZmlyc3RfbmFtZRgDIAEoCVIJZmlyc3ROYW1lEhsKCWxhc3RfbmFtZRgEIAEoCVIIbGFzdE5hbWUSFAoFcGhvbmUYBSABKAlSBXBob25lEiEKDGNvdW50cnlfY29kZRgGIAEoCVILY291bnRyeUNvZGUSJQoOZW1haWxfdmVyaWZpZWQYByABKAhSDWVtYWlsVmVyaWZpZWQSJQoOcGhvbmVfdmVyaWZpZWQYCCABKAhSDXBob25lVmVyaWZpZWQSLAoSdHdvX2ZhY3Rvcl9lbmFibGVkGAkgASgIUhB0d29GYWN0b3JFbmFibGVkEioKEXR3b19mYWN0b3JfbWV0aG9kGAogASgJUg90d29GYWN0b3JNZXRob2QSJwoPcHJvZmlsZV9waWN0dXJlGAsgASgJUg5wcm9maWxlUGljdHVyZRIdCgpjcmVhdGVkX2F0GAwgASgJUgljcmVhdGVkQXQSHQoKdXBkYXRlZF9hdBgNIAEoCVIJdXBkYXRlZEF0');
+@$core.Deprecated('Use signupProgressDescriptor instead')
+const SignupProgress$json = const {
+  '1': 'SignupProgress',
+  '2': const [
+    const {'1': 'user_id', '3': 1, '4': 1, '5': 9, '10': 'userId'},
+    const {'1': 'status', '3': 2, '4': 1, '5': 14, '6': '.auth.SignupStatus', '10': 'status'},
+    const {'1': 'current_step', '3': 3, '4': 1, '5': 9, '10': 'currentStep'},
+    const {'1': 'steps', '3': 4, '4': 3, '5': 11, '6': '.auth.SignupStepProgress', '10': 'steps'},
+    const {'1': 'created_at', '3': 5, '4': 1, '5': 9, '10': 'createdAt'},
+    const {'1': 'updated_at', '3': 6, '4': 1, '5': 9, '10': 'updatedAt'},
+    const {'1': 'completed_at', '3': 7, '4': 1, '5': 9, '10': 'completedAt'},
+  ],
+};
+
+/// Descriptor for `SignupProgress`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List signupProgressDescriptor = $convert.base64Decode('Cg5TaWdudXBQcm9ncmVzcxIXCgd1c2VyX2lkGAEgASgJUgZ1c2VySWQSKgoGc3RhdHVzGAIgASgOMhIuYXV0aC5TaWdudXBTdGF0dXNSBnN0YXR1cxIhCgxjdXJyZW50X3N0ZXAYAyABKAlSC2N1cnJlbnRTdGVwEi4KBXN0ZXBzGAQgAygLMhguYXV0aC5TaWdudXBTdGVwUHJvZ3Jlc3NSBXN0ZXBzEh0KCmNyZWF0ZWRfYXQYBSABKAlSCWNyZWF0ZWRBdBIdCgp1cGRhdGVkX2F0GAYgASgJUgl1cGRhdGVkQXQSIQoMY29tcGxldGVkX2F0GAcgASgJUgtjb21wbGV0ZWRBdA==');
+@$core.Deprecated('Use signupStepProgressDescriptor instead')
+const SignupStepProgress$json = const {
+  '1': 'SignupStepProgress',
+  '2': const [
+    const {'1': 'step_name', '3': 1, '4': 1, '5': 9, '10': 'stepName'},
+    const {'1': 'status', '3': 2, '4': 1, '5': 14, '6': '.auth.StepStatus', '10': 'status'},
+    const {'1': 'step_data', '3': 3, '4': 1, '5': 9, '10': 'stepData'},
+    const {'1': 'completed_at', '3': 4, '4': 1, '5': 9, '10': 'completedAt'},
+  ],
+};
+
+/// Descriptor for `SignupStepProgress`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List signupStepProgressDescriptor = $convert.base64Decode('ChJTaWdudXBTdGVwUHJvZ3Jlc3MSGwoJc3RlcF9uYW1lGAEgASgJUghzdGVwTmFtZRIoCgZzdGF0dXMYAiABKA4yEC5hdXRoLlN0ZXBTdGF0dXNSBnN0YXR1cxIbCglzdGVwX2RhdGEYAyABKAlSCHN0ZXBEYXRhEiEKDGNvbXBsZXRlZF9hdBgEIAEoCVILY29tcGxldGVkQXQ=');
+@$core.Deprecated('Use getSignupProgressRequestDescriptor instead')
+const GetSignupProgressRequest$json = const {
+  '1': 'GetSignupProgressRequest',
+};
+
+/// Descriptor for `GetSignupProgressRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getSignupProgressRequestDescriptor = $convert.base64Decode('ChhHZXRTaWdudXBQcm9ncmVzc1JlcXVlc3Q=');
+@$core.Deprecated('Use getSignupProgressResponseDescriptor instead')
+const GetSignupProgressResponse$json = const {
+  '1': 'GetSignupProgressResponse',
+  '2': const [
+    const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    const {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+    const {'1': 'progress', '3': 3, '4': 1, '5': 11, '6': '.auth.SignupProgress', '10': 'progress'},
+  ],
+};
+
+/// Descriptor for `GetSignupProgressResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getSignupProgressResponseDescriptor = $convert.base64Decode('ChlHZXRTaWdudXBQcm9ncmVzc1Jlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3MSGAoHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZRIwCghwcm9ncmVzcxgDIAEoCzIULmF1dGguU2lnbnVwUHJvZ3Jlc3NSCHByb2dyZXNz');
+@$core.Deprecated('Use updateSignupStepRequestDescriptor instead')
+const UpdateSignupStepRequest$json = const {
+  '1': 'UpdateSignupStepRequest',
+  '2': const [
+    const {'1': 'step_name', '3': 1, '4': 1, '5': 9, '10': 'stepName'},
+    const {'1': 'status', '3': 2, '4': 1, '5': 14, '6': '.auth.StepStatus', '10': 'status'},
+    const {'1': 'step_data', '3': 3, '4': 1, '5': 9, '10': 'stepData'},
+  ],
+};
+
+/// Descriptor for `UpdateSignupStepRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List updateSignupStepRequestDescriptor = $convert.base64Decode('ChdVcGRhdGVTaWdudXBTdGVwUmVxdWVzdBIbCglzdGVwX25hbWUYASABKAlSCHN0ZXBOYW1lEigKBnN0YXR1cxgCIAEoDjIQLmF1dGguU3RlcFN0YXR1c1IGc3RhdHVzEhsKCXN0ZXBfZGF0YRgDIAEoCVIIc3RlcERhdGE=');
+@$core.Deprecated('Use updateSignupStepResponseDescriptor instead')
+const UpdateSignupStepResponse$json = const {
+  '1': 'UpdateSignupStepResponse',
+  '2': const [
+    const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    const {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+    const {'1': 'progress', '3': 3, '4': 1, '5': 11, '6': '.auth.SignupProgress', '10': 'progress'},
+  ],
+};
+
+/// Descriptor for `UpdateSignupStepResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List updateSignupStepResponseDescriptor = $convert.base64Decode('ChhVcGRhdGVTaWdudXBTdGVwUmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2VzcxIYCgdtZXNzYWdlGAIgASgJUgdtZXNzYWdlEjAKCHByb2dyZXNzGAMgASgLMhQuYXV0aC5TaWdudXBQcm9ncmVzc1IIcHJvZ3Jlc3M=');
+@$core.Deprecated('Use completeSignupRequestDescriptor instead')
+const CompleteSignupRequest$json = const {
+  '1': 'CompleteSignupRequest',
+};
+
+/// Descriptor for `CompleteSignupRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List completeSignupRequestDescriptor = $convert.base64Decode('ChVDb21wbGV0ZVNpZ251cFJlcXVlc3Q=');
+@$core.Deprecated('Use completeSignupResponseDescriptor instead')
+const CompleteSignupResponse$json = const {
+  '1': 'CompleteSignupResponse',
+  '2': const [
+    const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    const {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+    const {'1': 'progress', '3': 3, '4': 1, '5': 11, '6': '.auth.SignupProgress', '10': 'progress'},
+  ],
+};
+
+/// Descriptor for `CompleteSignupResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List completeSignupResponseDescriptor = $convert.base64Decode('ChZDb21wbGV0ZVNpZ251cFJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3MSGAoHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZRIwCghwcm9ncmVzcxgDIAEoCzIULmF1dGguU2lnbnVwUHJvZ3Jlc3NSCHByb2dyZXNz');
