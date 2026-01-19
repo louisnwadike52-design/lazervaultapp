@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lazervault/core/error/failure.dart';
 import 'package:lazervault/src/features/authentication/domain/usecases/resend_verification_usecase.dart';
 import 'package:lazervault/src/features/authentication/domain/usecases/verify_email_usecase.dart';
 import 'email_verification_state.dart';
@@ -18,7 +19,12 @@ class EmailVerificationCubit extends Cubit<EmailVerificationState> {
     if (state is EmailVerificationInProgress) {
       final currentState = state as EmailVerificationInProgress;
       if (isClosed) return;
-      emit(currentState.copyWith(verificationCode: code, errorMessage: ''));
+      // Clear both error and success messages when user types
+      emit(currentState.copyWith(
+        verificationCode: code,
+        errorMessage: '',
+        successMessage: '',
+      ));
     } else {
       if (isClosed) return;
       emit(EmailVerificationInProgress(verificationCode: code));
@@ -49,7 +55,12 @@ class EmailVerificationCubit extends Cubit<EmailVerificationState> {
       }
 
       if (isClosed) return;
-      emit(currentState.copyWith(isLoading: true, errorMessage: ''));
+      // Clear messages before starting verification
+      emit(currentState.copyWith(
+        isLoading: true,
+        errorMessage: '',
+        successMessage: '',
+      ));
 
       final result = await _verifyEmailUseCase(code);
 
@@ -79,7 +90,12 @@ class EmailVerificationCubit extends Cubit<EmailVerificationState> {
       }
 
       if (isClosed) return;
-      emit(currentState.copyWith(isResending: true, errorMessage: ''));
+      // Clear messages before starting resend
+      emit(currentState.copyWith(
+        isResending: true,
+        errorMessage: '',
+        successMessage: '',
+      ));
 
       final result = await _resendVerificationUseCase();
 
@@ -87,16 +103,23 @@ class EmailVerificationCubit extends Cubit<EmailVerificationState> {
       result.fold(
         (failure) {
           print('Failed to resend verification email: ${failure.message}');
+          // Extract cooldown seconds from failure if available (rate limit scenario)
+          int? cooldown;
+          if (failure is ServerFailure) {
+            cooldown = failure.cooldownSeconds;
+          }
           emit(currentState.copyWith(
             isResending: false,
             errorMessage: failure.message,
+            cooldownSeconds: cooldown,
           ));
         },
-        (_) {
-          print('Verification email resent successfully');
+        (cooldownSeconds) {
+          print('Verification email resent successfully, cooldown: ${cooldownSeconds}s');
           emit(currentState.copyWith(
             isResending: false,
             successMessage: 'Verification code sent! Check your email.',
+            cooldownSeconds: cooldownSeconds,
           ));
         },
       );

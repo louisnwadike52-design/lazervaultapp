@@ -86,12 +86,24 @@ class PaymentsServiceClient extends $grpc.Client {
       ($0.GetAirtimeProvidersRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
           $0.GetAirtimeProvidersResponse.fromBuffer(value));
+  static final _$payWithBankDetails = $grpc.ClientMethod<
+          $0.PayWithBankDetailsRequest, $0.PayWithBankDetailsResponse>(
+      '/payments.PaymentsService/PayWithBankDetails',
+      ($0.PayWithBankDetailsRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $0.PayWithBankDetailsResponse.fromBuffer(value));
   static final _$resolveTag =
       $grpc.ClientMethod<$0.ResolveTagRequest, $0.ResolveTagResponse>(
           '/payments.PaymentsService/ResolveTag',
           ($0.ResolveTagRequest value) => value.writeToBuffer(),
           ($core.List<$core.int> value) =>
               $0.ResolveTagResponse.fromBuffer(value));
+  static final _$verifyBankAccount = $grpc.ClientMethod<
+          $0.VerifyBankAccountRequest, $0.VerifyBankAccountResponse>(
+      '/payments.PaymentsService/VerifyBankAccount',
+      ($0.VerifyBankAccountRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $0.VerifyBankAccountResponse.fromBuffer(value));
 
   PaymentsServiceClient($grpc.ClientChannel channel,
       {$grpc.CallOptions? options,
@@ -168,10 +180,22 @@ class PaymentsServiceClient extends $grpc.Client {
     return $createUnaryCall(_$getAirtimeProviders, request, options: options);
   }
 
+  $grpc.ResponseFuture<$0.PayWithBankDetailsResponse> payWithBankDetails(
+      $0.PayWithBankDetailsRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$payWithBankDetails, request, options: options);
+  }
+
   $grpc.ResponseFuture<$0.ResolveTagResponse> resolveTag(
       $0.ResolveTagRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$resolveTag, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.VerifyBankAccountResponse> verifyBankAccount(
+      $0.VerifyBankAccountRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$verifyBankAccount, request, options: options);
   }
 }
 
@@ -273,6 +297,15 @@ abstract class PaymentsServiceBase extends $grpc.Service {
         ($core.List<$core.int> value) =>
             $0.GetAirtimeProvidersRequest.fromBuffer(value),
         ($0.GetAirtimeProvidersResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.PayWithBankDetailsRequest,
+            $0.PayWithBankDetailsResponse>(
+        'PayWithBankDetails',
+        payWithBankDetails_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.PayWithBankDetailsRequest.fromBuffer(value),
+        ($0.PayWithBankDetailsResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.ResolveTagRequest, $0.ResolveTagResponse>(
         'ResolveTag',
         resolveTag_Pre,
@@ -280,6 +313,15 @@ abstract class PaymentsServiceBase extends $grpc.Service {
         false,
         ($core.List<$core.int> value) => $0.ResolveTagRequest.fromBuffer(value),
         ($0.ResolveTagResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.VerifyBankAccountRequest,
+            $0.VerifyBankAccountResponse>(
+        'VerifyBankAccount',
+        verifyBankAccount_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.VerifyBankAccountRequest.fromBuffer(value),
+        ($0.VerifyBankAccountResponse value) => value.writeToBuffer()));
   }
 
   $async.Future<$0.SendFundsResponse> sendFunds_Pre($grpc.ServiceCall call,
@@ -347,9 +389,21 @@ abstract class PaymentsServiceBase extends $grpc.Service {
     return getAirtimeProviders(call, await request);
   }
 
+  $async.Future<$0.PayWithBankDetailsResponse> payWithBankDetails_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$0.PayWithBankDetailsRequest> request) async {
+    return payWithBankDetails(call, await request);
+  }
+
   $async.Future<$0.ResolveTagResponse> resolveTag_Pre($grpc.ServiceCall call,
       $async.Future<$0.ResolveTagRequest> request) async {
     return resolveTag(call, await request);
+  }
+
+  $async.Future<$0.VerifyBankAccountResponse> verifyBankAccount_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$0.VerifyBankAccountRequest> request) async {
+    return verifyBankAccount(call, await request);
   }
 
   $async.Future<$0.SendFundsResponse> sendFunds(
@@ -376,6 +430,10 @@ abstract class PaymentsServiceBase extends $grpc.Service {
       $grpc.ServiceCall call, $0.GetBillProvidersRequest request);
   $async.Future<$0.GetAirtimeProvidersResponse> getAirtimeProviders(
       $grpc.ServiceCall call, $0.GetAirtimeProvidersRequest request);
+  $async.Future<$0.PayWithBankDetailsResponse> payWithBankDetails(
+      $grpc.ServiceCall call, $0.PayWithBankDetailsRequest request);
   $async.Future<$0.ResolveTagResponse> resolveTag(
       $grpc.ServiceCall call, $0.ResolveTagRequest request);
+  $async.Future<$0.VerifyBankAccountResponse> verifyBankAccount(
+      $grpc.ServiceCall call, $0.VerifyBankAccountRequest request);
 }

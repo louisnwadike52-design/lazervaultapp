@@ -181,9 +181,47 @@ class _EmailOtpVerificationViewState extends State<_EmailOtpVerificationView> {
                 _navigateToNextScreen();
               });
             } else if (state is EmailVerificationInProgress) {
-              // Handle cooldown from backend response (for resend rate limiting)
-              if (state.cooldownSeconds != null && state.cooldownSeconds! > 0) {
+              // Handle resend success - show feedback and restart cooldown
+              if (state.successMessage.isNotEmpty) {
+                Get.snackbar(
+                  'Code Sent',
+                  state.successMessage,
+                  snackPosition: SnackPosition.TOP,
+                  backgroundColor: Colors.green,
+                  colorText: Colors.white,
+                  margin: EdgeInsets.all(16.w),
+                  borderRadius: 12.r,
+                  duration: const Duration(seconds: 2),
+                );
+                // Start cooldown from backend response (default 60s if not provided)
+                _startResendCooldown(state.cooldownSeconds ?? 60);
+              }
+              // Handle resend error with cooldown (rate limit scenario)
+              else if (state.errorMessage.isNotEmpty && state.cooldownSeconds != null && state.cooldownSeconds! > 0) {
+                Get.snackbar(
+                  'Please Wait',
+                  state.errorMessage,
+                  snackPosition: SnackPosition.TOP,
+                  backgroundColor: Colors.orange,
+                  colorText: Colors.white,
+                  margin: EdgeInsets.all(16.w),
+                  borderRadius: 12.r,
+                  duration: const Duration(seconds: 2),
+                );
                 _startResendCooldown(state.cooldownSeconds!);
+              }
+              // Handle verification error (wrong code)
+              else if (state.errorMessage.isNotEmpty) {
+                Get.snackbar(
+                  'Error',
+                  state.errorMessage,
+                  snackPosition: SnackPosition.TOP,
+                  backgroundColor: Colors.redAccent,
+                  colorText: Colors.white,
+                  margin: EdgeInsets.all(16.w),
+                  borderRadius: 12.r,
+                  duration: const Duration(seconds: 3),
+                );
               }
             }
           },
@@ -275,30 +313,7 @@ class _EmailOtpVerificationViewState extends State<_EmailOtpVerificationView> {
                           context.read<EmailVerificationCubit>().updateVerificationCode(code);
                         },
                       ),
-                      SizedBox(height: 16.h),
-
-                      // Countdown timer display
-                      if (_resendCooldown > 0)
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.timer_outlined,
-                              size: 18.sp,
-                              color: const Color(0xFF6B7280),
-                            ),
-                            SizedBox(width: 6.w),
-                            Text(
-                              'You can resend code in ${_resendCooldown}s',
-                              style: GoogleFonts.inter(
-                                fontSize: 14.sp,
-                                color: const Color(0xFF6B7280),
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        ),
-                      SizedBox(height: 16.h),
+                      SizedBox(height: 24.h),
 
                       // Verify Button
                       SizedBox(

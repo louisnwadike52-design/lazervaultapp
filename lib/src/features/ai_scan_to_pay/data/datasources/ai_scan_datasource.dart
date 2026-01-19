@@ -254,4 +254,23 @@ class AiScanDataSourceImpl implements AiScanDataSource {
     return "I understand. Could you please clarify what you'd like me to help you with? "
         "I can assist with payment processing, answer questions about the extracted details, or guide you through any step of the process.";
   }
+
+  @override
+  Future<BankDetailsModel> scanBankDetails(String imagePath, String userId, String sessionId, String accessToken) async {
+    // Stub implementation - actual implementation is in AiScanRemoteDataSource
+    throw UnimplementedError('scanBankDetails is not implemented in mock datasource');
+  }
+
+  @override
+  Future<PaymentReceiptModel> processBankDetailsPayment({
+    required BankDetailsModel bankDetails,
+    required double amount,
+    required String description,
+    required String verificationToken,
+    required String transactionId,
+    required String userId,
+  }) async {
+    // Stub implementation - actual implementation is in AiScanRemoteDataSource
+    throw UnimplementedError('processBankDetailsPayment is not implemented in mock datasource');
+  }
 } 

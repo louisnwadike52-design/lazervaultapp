@@ -3,7 +3,7 @@ import 'dart:io';
 import 'dart:async';
 import 'package:grpc/grpc.dart';
 import 'package:http/http.dart' as http;
-import '../../../../../core/network/grpc_client.dart';
+import '../../../../core/network/grpc_client.dart';
 import '../../../../../core/services/secure_storage_service.dart';
 import '../../../../generated/ai_scan.pb.dart' as pb;
 import '../../domain/entities/scan_entities.dart';
@@ -168,7 +168,7 @@ class AiScanRemoteDataSourceImpl implements AiScanRemoteDataSource {
           (instruction.additionalData ?? {}).map((key, value) => MapEntry(key, value.toString()))
         );
 
-      final request = pb.ProcessPaymentRequest()
+      final request = pb.ScanProcessPaymentRequest()
         ..userId = userId
         ..sessionId = sessionId
         ..instruction = pbInstruction;

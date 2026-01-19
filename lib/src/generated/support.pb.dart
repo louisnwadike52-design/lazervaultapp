@@ -9,7 +9,7 @@ import 'dart:core' as $core;
 
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'google/protobuf/timestamp.pb.dart' as $34;
+import 'google/protobuf/timestamp.pb.dart' as $36;
 
 import 'support.pbenum.dart';
 
@@ -25,9 +25,9 @@ class SupportTicket extends $pb.GeneratedMessage {
     ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
     ..e<TicketStatus>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: TicketStatus.TICKET_STATUS_UNSPECIFIED, valueOf: TicketStatus.valueOf, enumValues: TicketStatus.values)
     ..e<TicketPriority>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'priority', $pb.PbFieldType.OE, defaultOrMaker: TicketPriority.TICKET_PRIORITY_UNSPECIFIED, valueOf: TicketPriority.valueOf, enumValues: TicketPriority.values)
-    ..aOM<$34.Timestamp>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $34.Timestamp.create)
-    ..aOM<$34.Timestamp>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $34.Timestamp.create)
-    ..aOM<$34.Timestamp>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'resolvedAt', subBuilder: $34.Timestamp.create)
+    ..aOM<$36.Timestamp>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $36.Timestamp.create)
+    ..aOM<$36.Timestamp>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $36.Timestamp.create)
+    ..aOM<$36.Timestamp>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'resolvedAt', subBuilder: $36.Timestamp.create)
     ..pc<TicketReply>(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'replies', $pb.PbFieldType.PM, subBuilder: TicketReply.create)
     ..hasRequiredFields = false
   ;
@@ -42,9 +42,9 @@ class SupportTicket extends $pb.GeneratedMessage {
     $core.String? description,
     TicketStatus? status,
     TicketPriority? priority,
-    $34.Timestamp? createdAt,
-    $34.Timestamp? updatedAt,
-    $34.Timestamp? resolvedAt,
+    $36.Timestamp? createdAt,
+    $36.Timestamp? updatedAt,
+    $36.Timestamp? resolvedAt,
     $core.Iterable<TicketReply>? replies,
   }) {
     final _result = create();
@@ -180,37 +180,37 @@ class SupportTicket extends $pb.GeneratedMessage {
   void clearPriority() => clearField(8);
 
   @$pb.TagNumber(9)
-  $34.Timestamp get createdAt => $_getN(8);
+  $36.Timestamp get createdAt => $_getN(8);
   @$pb.TagNumber(9)
-  set createdAt($34.Timestamp v) { setField(9, v); }
+  set createdAt($36.Timestamp v) { setField(9, v); }
   @$pb.TagNumber(9)
   $core.bool hasCreatedAt() => $_has(8);
   @$pb.TagNumber(9)
   void clearCreatedAt() => clearField(9);
   @$pb.TagNumber(9)
-  $34.Timestamp ensureCreatedAt() => $_ensure(8);
+  $36.Timestamp ensureCreatedAt() => $_ensure(8);
 
   @$pb.TagNumber(10)
-  $34.Timestamp get updatedAt => $_getN(9);
+  $36.Timestamp get updatedAt => $_getN(9);
   @$pb.TagNumber(10)
-  set updatedAt($34.Timestamp v) { setField(10, v); }
+  set updatedAt($36.Timestamp v) { setField(10, v); }
   @$pb.TagNumber(10)
   $core.bool hasUpdatedAt() => $_has(9);
   @$pb.TagNumber(10)
   void clearUpdatedAt() => clearField(10);
   @$pb.TagNumber(10)
-  $34.Timestamp ensureUpdatedAt() => $_ensure(9);
+  $36.Timestamp ensureUpdatedAt() => $_ensure(9);
 
   @$pb.TagNumber(11)
-  $34.Timestamp get resolvedAt => $_getN(10);
+  $36.Timestamp get resolvedAt => $_getN(10);
   @$pb.TagNumber(11)
-  set resolvedAt($34.Timestamp v) { setField(11, v); }
+  set resolvedAt($36.Timestamp v) { setField(11, v); }
   @$pb.TagNumber(11)
   $core.bool hasResolvedAt() => $_has(10);
   @$pb.TagNumber(11)
   void clearResolvedAt() => clearField(11);
   @$pb.TagNumber(11)
-  $34.Timestamp ensureResolvedAt() => $_ensure(10);
+  $36.Timestamp ensureResolvedAt() => $_ensure(10);
 
   @$pb.TagNumber(12)
   $core.List<TicketReply> get replies => $_getList(11);
@@ -223,7 +223,7 @@ class TicketReply extends $pb.GeneratedMessage {
     ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId', $pb.PbFieldType.O3)
     ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
     ..aOB(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isStaff')
-    ..aOM<$34.Timestamp>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $34.Timestamp.create)
+    ..aOM<$36.Timestamp>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $36.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -234,7 +234,7 @@ class TicketReply extends $pb.GeneratedMessage {
     $core.int? userId,
     $core.String? message,
     $core.bool? isStaff,
-    $34.Timestamp? createdAt,
+    $36.Timestamp? createdAt,
   }) {
     final _result = create();
     if (id != null) {
@@ -324,15 +324,15 @@ class TicketReply extends $pb.GeneratedMessage {
   void clearIsStaff() => clearField(5);
 
   @$pb.TagNumber(6)
-  $34.Timestamp get createdAt => $_getN(5);
+  $36.Timestamp get createdAt => $_getN(5);
   @$pb.TagNumber(6)
-  set createdAt($34.Timestamp v) { setField(6, v); }
+  set createdAt($36.Timestamp v) { setField(6, v); }
   @$pb.TagNumber(6)
   $core.bool hasCreatedAt() => $_has(5);
   @$pb.TagNumber(6)
   void clearCreatedAt() => clearField(6);
   @$pb.TagNumber(6)
-  $34.Timestamp ensureCreatedAt() => $_ensure(5);
+  $36.Timestamp ensureCreatedAt() => $_ensure(5);
 }
 
 class ContactMessage extends $pb.GeneratedMessage {
@@ -344,7 +344,7 @@ class ContactMessage extends $pb.GeneratedMessage {
     ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'subject')
     ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
     ..a<$core.int>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId', $pb.PbFieldType.O3)
-    ..aOM<$34.Timestamp>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $34.Timestamp.create)
+    ..aOM<$36.Timestamp>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $36.Timestamp.create)
     ..aOB(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isRead')
     ..hasRequiredFields = false
   ;
@@ -358,7 +358,7 @@ class ContactMessage extends $pb.GeneratedMessage {
     $core.String? subject,
     $core.String? message,
     $core.int? userId,
-    $34.Timestamp? createdAt,
+    $36.Timestamp? createdAt,
     $core.bool? isRead,
   }) {
     final _result = create();
@@ -476,15 +476,15 @@ class ContactMessage extends $pb.GeneratedMessage {
   void clearUserId() => clearField(7);
 
   @$pb.TagNumber(8)
-  $34.Timestamp get createdAt => $_getN(7);
+  $36.Timestamp get createdAt => $_getN(7);
   @$pb.TagNumber(8)
-  set createdAt($34.Timestamp v) { setField(8, v); }
+  set createdAt($36.Timestamp v) { setField(8, v); }
   @$pb.TagNumber(8)
   $core.bool hasCreatedAt() => $_has(7);
   @$pb.TagNumber(8)
   void clearCreatedAt() => clearField(8);
   @$pb.TagNumber(8)
-  $34.Timestamp ensureCreatedAt() => $_ensure(7);
+  $36.Timestamp ensureCreatedAt() => $_ensure(7);
 
   @$pb.TagNumber(9)
   $core.bool get isRead => $_getBF(8);

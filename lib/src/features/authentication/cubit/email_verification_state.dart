@@ -18,6 +18,7 @@ class EmailVerificationInProgress extends EmailVerificationState {
   final bool isResending;
   final String errorMessage;
   final String successMessage;
+  final int? cooldownSeconds;  // Seconds to wait before next resend (from backend)
 
   const EmailVerificationInProgress({
     this.verificationCode = '',
@@ -25,6 +26,7 @@ class EmailVerificationInProgress extends EmailVerificationState {
     this.isResending = false,
     this.errorMessage = '',
     this.successMessage = '',
+    this.cooldownSeconds,
   });
 
   EmailVerificationInProgress copyWith({
@@ -33,6 +35,7 @@ class EmailVerificationInProgress extends EmailVerificationState {
     bool? isResending,
     String? errorMessage,
     String? successMessage,
+    int? cooldownSeconds,
   }) {
     return EmailVerificationInProgress(
       verificationCode: verificationCode ?? this.verificationCode,
@@ -40,6 +43,7 @@ class EmailVerificationInProgress extends EmailVerificationState {
       isResending: isResending ?? this.isResending,
       errorMessage: errorMessage ?? this.errorMessage,
       successMessage: successMessage ?? this.successMessage,
+      cooldownSeconds: cooldownSeconds ?? this.cooldownSeconds,
     );
   }
 
@@ -50,6 +54,7 @@ class EmailVerificationInProgress extends EmailVerificationState {
         isResending,
         errorMessage,
         successMessage,
+        cooldownSeconds,
       ];
 }
 

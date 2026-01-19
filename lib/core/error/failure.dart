@@ -10,9 +10,12 @@ class Failure {
 }
 
 class ServerFailure extends Failure {
+  final int? cooldownSeconds;
+
   const ServerFailure({
     required super.message,
     required super.statusCode,
+    this.cooldownSeconds,
   });
 }
 

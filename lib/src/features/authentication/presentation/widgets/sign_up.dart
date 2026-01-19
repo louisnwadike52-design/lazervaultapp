@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart'; // Import intl for date formatting
@@ -373,75 +374,8 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Toggle between Email and Phone Number
-            Container(
-              padding: EdgeInsets.symmetric(vertical: 8.h),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () => context.read<AuthenticationCubit>().signUpSetPrimaryContactType(PrimaryContactType.email),
-                      child: Container(
-                        padding: EdgeInsets.symmetric(vertical: 12.h),
-                        decoration: BoxDecoration(
-                          color: primaryContactType == PrimaryContactType.email || primaryContactType == PrimaryContactType.none
-                              ? Colors.blue
-                              : Colors.grey[300],
-                          borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(24.r),
-                            bottomLeft: Radius.circular(24.r),
-                          ),
-                        ),
-                        child: Text(
-                          'Email',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: primaryContactType == PrimaryContactType.email || primaryContactType == PrimaryContactType.none
-                                ? Colors.white
-                                : Colors.black54,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 15.sp,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () => context.read<AuthenticationCubit>().signUpSetPrimaryContactType(PrimaryContactType.phone),
-                      child: Container(
-                        padding: EdgeInsets.symmetric(vertical: 12.h),
-                        decoration: BoxDecoration(
-                          color: primaryContactType == PrimaryContactType.phone
-                              ? Colors.blue
-                              : Colors.grey[300],
-                          borderRadius: BorderRadius.only(
-                            topRight: Radius.circular(24.r),
-                            bottomRight: Radius.circular(24.r),
-                          ),
-                        ),
-                        child: Text(
-                          'Phone Number',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: primaryContactType == PrimaryContactType.phone
-                                ? Colors.white
-                                : Colors.black54,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 15.sp,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(height: 16.0.h),
-
             // Show Email OR Phone Number field based on selection
-            if (primaryContactType == PrimaryContactType.email || primaryContactType == PrimaryContactType.none)
+            if (primaryContactType == PrimaryContactType.email || primaryContactType == PrimaryContactType.none) ...[
               BuildFormField(
                 name: "email",
                 placeholder: "Email",
@@ -449,8 +383,32 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
                 prefixIcon: const Icon(Icons.email, color: Colors.black45),
                 initialValue: initialEmail,
                 onChanged: (value) => context.read<AuthenticationCubit>().signUpEmailChanged(value),
-              )
-            else
+              ),
+              SizedBox(height: 8.0.h),
+              // CTA to switch to phone number
+              GestureDetector(
+                onTap: () => context.read<AuthenticationCubit>().signUpSetPrimaryContactType(PrimaryContactType.phone),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Use phone number instead',
+                      style: TextStyle(
+                        color: const Color(0xFF4E03D0),
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    SizedBox(width: 4.w),
+                    Icon(
+                      Icons.arrow_forward_ios,
+                      size: 12.sp,
+                      color: const Color(0xFF4E03D0),
+                    ),
+                  ],
+                ),
+              ),
+            ] else ...[
               IntlPhoneField(
                 decoration: InputDecoration(
                   hintText: 'Phone Number',
@@ -477,6 +435,8 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
                     vertical: 12.0.h,
                   ),
                 ),
+                keyboardType: TextInputType.phone,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 style: TextStyle(fontSize: 16.sp),
                 dropdownTextStyle: TextStyle(fontSize: 16.sp),
                 initialCountryCode: 'US',
@@ -484,6 +444,31 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
                   context.read<AuthenticationCubit>().signUpPhoneNumberChanged(phone.completeNumber);
                 },
               ),
+              SizedBox(height: 8.0.h),
+              // CTA to switch to email
+              GestureDetector(
+                onTap: () => context.read<AuthenticationCubit>().signUpSetPrimaryContactType(PrimaryContactType.email),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Use email instead',
+                      style: TextStyle(
+                        color: const Color(0xFF4E03D0),
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    SizedBox(width: 4.w),
+                    Icon(
+                      Icons.arrow_forward_ios,
+                      size: 12.sp,
+                      color: const Color(0xFF4E03D0),
+                    ),
+                  ],
+                ),
+              ),
+            ],
             SizedBox(height: 8.0.h),
             BuildFormField(
               name: "password",
@@ -694,6 +679,8 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
                     vertical: 12.0.h,
                   ),
                 ),
+                keyboardType: TextInputType.phone,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 style: TextStyle(fontSize: 16.sp),
                 dropdownTextStyle: TextStyle(fontSize: 16.sp),
                 initialCountryCode: 'US',
@@ -738,6 +725,8 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
                     vertical: 12.0.h,
                   ),
                 ),
+                keyboardType: TextInputType.phone,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 style: TextStyle(fontSize: 16.sp),
                 dropdownTextStyle: TextStyle(fontSize: 16.sp),
                 initialCountryCode: 'US',

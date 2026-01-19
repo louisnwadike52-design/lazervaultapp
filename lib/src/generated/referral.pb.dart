@@ -10,7 +10,7 @@ import 'dart:core' as $core;
 import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'google/protobuf/timestamp.pb.dart' as $34;
+import 'google/protobuf/timestamp.pb.dart' as $36;
 
 import 'referral.pbenum.dart';
 
@@ -22,8 +22,8 @@ class ReferralCode extends $pb.GeneratedMessage {
     ..a<$fixnum.Int64>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'code')
     ..aOB(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isActive')
-    ..aOM<$34.Timestamp>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $34.Timestamp.create)
-    ..aOM<$34.Timestamp>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $34.Timestamp.create)
+    ..aOM<$36.Timestamp>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $36.Timestamp.create)
+    ..aOM<$36.Timestamp>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $36.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -33,8 +33,8 @@ class ReferralCode extends $pb.GeneratedMessage {
     $fixnum.Int64? userId,
     $core.String? code,
     $core.bool? isActive,
-    $34.Timestamp? createdAt,
-    $34.Timestamp? updatedAt,
+    $36.Timestamp? createdAt,
+    $36.Timestamp? updatedAt,
   }) {
     final _result = create();
     if (id != null) {
@@ -115,26 +115,26 @@ class ReferralCode extends $pb.GeneratedMessage {
   void clearIsActive() => clearField(4);
 
   @$pb.TagNumber(5)
-  $34.Timestamp get createdAt => $_getN(4);
+  $36.Timestamp get createdAt => $_getN(4);
   @$pb.TagNumber(5)
-  set createdAt($34.Timestamp v) { setField(5, v); }
+  set createdAt($36.Timestamp v) { setField(5, v); }
   @$pb.TagNumber(5)
   $core.bool hasCreatedAt() => $_has(4);
   @$pb.TagNumber(5)
   void clearCreatedAt() => clearField(5);
   @$pb.TagNumber(5)
-  $34.Timestamp ensureCreatedAt() => $_ensure(4);
+  $36.Timestamp ensureCreatedAt() => $_ensure(4);
 
   @$pb.TagNumber(6)
-  $34.Timestamp get updatedAt => $_getN(5);
+  $36.Timestamp get updatedAt => $_getN(5);
   @$pb.TagNumber(6)
-  set updatedAt($34.Timestamp v) { setField(6, v); }
+  set updatedAt($36.Timestamp v) { setField(6, v); }
   @$pb.TagNumber(6)
   $core.bool hasUpdatedAt() => $_has(5);
   @$pb.TagNumber(6)
   void clearUpdatedAt() => clearField(6);
   @$pb.TagNumber(6)
-  $34.Timestamp ensureUpdatedAt() => $_ensure(5);
+  $36.Timestamp ensureUpdatedAt() => $_ensure(5);
 }
 
 class ReferralTransaction extends $pb.GeneratedMessage {
@@ -147,8 +147,8 @@ class ReferralTransaction extends $pb.GeneratedMessage {
     ..a<$core.int>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'referrerRewardAmount', $pb.PbFieldType.O3)
     ..a<$core.int>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'refereeRewardAmount', $pb.PbFieldType.O3)
     ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
-    ..aOM<$34.Timestamp>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $34.Timestamp.create)
-    ..aOM<$34.Timestamp>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'completedAt', subBuilder: $34.Timestamp.create)
+    ..aOM<$36.Timestamp>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $36.Timestamp.create)
+    ..aOM<$36.Timestamp>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'completedAt', subBuilder: $36.Timestamp.create)
     ..aOS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'failureReason')
     ..hasRequiredFields = false
   ;
@@ -163,8 +163,8 @@ class ReferralTransaction extends $pb.GeneratedMessage {
     $core.int? referrerRewardAmount,
     $core.int? refereeRewardAmount,
     $core.String? currency,
-    $34.Timestamp? createdAt,
-    $34.Timestamp? completedAt,
+    $36.Timestamp? createdAt,
+    $36.Timestamp? completedAt,
     $core.String? failureReason,
   }) {
     final _result = create();
@@ -297,26 +297,26 @@ class ReferralTransaction extends $pb.GeneratedMessage {
   void clearCurrency() => clearField(8);
 
   @$pb.TagNumber(9)
-  $34.Timestamp get createdAt => $_getN(8);
+  $36.Timestamp get createdAt => $_getN(8);
   @$pb.TagNumber(9)
-  set createdAt($34.Timestamp v) { setField(9, v); }
+  set createdAt($36.Timestamp v) { setField(9, v); }
   @$pb.TagNumber(9)
   $core.bool hasCreatedAt() => $_has(8);
   @$pb.TagNumber(9)
   void clearCreatedAt() => clearField(9);
   @$pb.TagNumber(9)
-  $34.Timestamp ensureCreatedAt() => $_ensure(8);
+  $36.Timestamp ensureCreatedAt() => $_ensure(8);
 
   @$pb.TagNumber(10)
-  $34.Timestamp get completedAt => $_getN(9);
+  $36.Timestamp get completedAt => $_getN(9);
   @$pb.TagNumber(10)
-  set completedAt($34.Timestamp v) { setField(10, v); }
+  set completedAt($36.Timestamp v) { setField(10, v); }
   @$pb.TagNumber(10)
   $core.bool hasCompletedAt() => $_has(9);
   @$pb.TagNumber(10)
   void clearCompletedAt() => clearField(10);
   @$pb.TagNumber(10)
-  $34.Timestamp ensureCompletedAt() => $_ensure(9);
+  $36.Timestamp ensureCompletedAt() => $_ensure(9);
 
   @$pb.TagNumber(11)
   $core.String get failureReason => $_getSZ(10);
@@ -336,8 +336,8 @@ class CountryRewardConfig extends $pb.GeneratedMessage {
     ..a<$core.int>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'referrerReward', $pb.PbFieldType.O3)
     ..a<$core.int>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'refereeReward', $pb.PbFieldType.O3)
     ..aOB(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isActive')
-    ..aOM<$34.Timestamp>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $34.Timestamp.create)
-    ..aOM<$34.Timestamp>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $34.Timestamp.create)
+    ..aOM<$36.Timestamp>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $36.Timestamp.create)
+    ..aOM<$36.Timestamp>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $36.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -349,8 +349,8 @@ class CountryRewardConfig extends $pb.GeneratedMessage {
     $core.int? referrerReward,
     $core.int? refereeReward,
     $core.bool? isActive,
-    $34.Timestamp? createdAt,
-    $34.Timestamp? updatedAt,
+    $36.Timestamp? createdAt,
+    $36.Timestamp? updatedAt,
   }) {
     final _result = create();
     if (id != null) {
@@ -455,26 +455,26 @@ class CountryRewardConfig extends $pb.GeneratedMessage {
   void clearIsActive() => clearField(6);
 
   @$pb.TagNumber(7)
-  $34.Timestamp get createdAt => $_getN(6);
+  $36.Timestamp get createdAt => $_getN(6);
   @$pb.TagNumber(7)
-  set createdAt($34.Timestamp v) { setField(7, v); }
+  set createdAt($36.Timestamp v) { setField(7, v); }
   @$pb.TagNumber(7)
   $core.bool hasCreatedAt() => $_has(6);
   @$pb.TagNumber(7)
   void clearCreatedAt() => clearField(7);
   @$pb.TagNumber(7)
-  $34.Timestamp ensureCreatedAt() => $_ensure(6);
+  $36.Timestamp ensureCreatedAt() => $_ensure(6);
 
   @$pb.TagNumber(8)
-  $34.Timestamp get updatedAt => $_getN(7);
+  $36.Timestamp get updatedAt => $_getN(7);
   @$pb.TagNumber(8)
-  set updatedAt($34.Timestamp v) { setField(8, v); }
+  set updatedAt($36.Timestamp v) { setField(8, v); }
   @$pb.TagNumber(8)
   $core.bool hasUpdatedAt() => $_has(7);
   @$pb.TagNumber(8)
   void clearUpdatedAt() => clearField(8);
   @$pb.TagNumber(8)
-  $34.Timestamp ensureUpdatedAt() => $_ensure(7);
+  $36.Timestamp ensureUpdatedAt() => $_ensure(7);
 }
 
 class ReferralStats extends $pb.GeneratedMessage {

@@ -2,6 +2,7 @@ import 'package:dartz/dartz.dart';
 import 'package:lazervault/core/error/failure.dart';
 import '../entities/profile_entity.dart';
 import '../entities/phone_verification_entity.dart';
+import '../usecases/sign_up_usecase.dart';
 
 abstract class IAuthRepository {
   // Authentication methods - return ProfileEntity on success
@@ -29,6 +30,7 @@ abstract class IAuthRepository {
     required String lastName,
     required String email,
     required String password,
+    required SignupPrimaryContact primaryContact,
     String? phoneNumber,
     String? username,
     String? referralCode,
@@ -54,7 +56,8 @@ abstract class IAuthRepository {
     required String verificationCode,
   });
 
-  Future<Either<Failure, void>> resendVerificationEmail();
+  /// Returns the cooldown seconds (time to wait before next resend attempt)
+  Future<Either<Failure, int>> resendVerificationEmail();
 
   // Email availability check
   Future<Either<Failure, bool>> checkEmailAvailability({

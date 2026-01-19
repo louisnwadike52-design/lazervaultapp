@@ -421,3 +421,81 @@ const ResolveTagResponse$json = const {
 
 /// Descriptor for `ResolveTagResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List resolveTagResponseDescriptor = $convert.base64Decode('ChJSZXNvbHZlVGFnUmVzcG9uc2USJQoOYWNjb3VudF9udW1iZXIYASABKAlSDWFjY291bnROdW1iZXISIQoMYWNjb3VudF9uYW1lGAIgASgJUgthY2NvdW50TmFtZRIQCgN0YWcYAyABKAlSA3RhZxIZCghpc192YWxpZBgEIAEoCFIHaXNWYWxpZA==');
+@$core.Deprecated('Use bankDetailsDescriptor instead')
+const BankDetails$json = const {
+  '1': 'BankDetails',
+  '2': const [
+    const {'1': 'account_number', '3': 1, '4': 1, '5': 9, '10': 'accountNumber'},
+    const {'1': 'account_name', '3': 2, '4': 1, '5': 9, '10': 'accountName'},
+    const {'1': 'bank_name', '3': 3, '4': 1, '5': 9, '10': 'bankName'},
+    const {'1': 'bank_code', '3': 4, '4': 1, '5': 9, '10': 'bankCode'},
+    const {'1': 'routing_number', '3': 5, '4': 1, '5': 9, '10': 'routingNumber'},
+    const {'1': 'account_type', '3': 6, '4': 1, '5': 9, '10': 'accountType'},
+    const {'1': 'confidence_score', '3': 7, '4': 1, '5': 1, '10': 'confidenceScore'},
+    const {'1': 'mono_account_id', '3': 8, '4': 1, '5': 9, '10': 'monoAccountId'},
+    const {'1': 'balance', '3': 9, '4': 1, '5': 1, '10': 'balance'},
+  ],
+};
+
+/// Descriptor for `BankDetails`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List bankDetailsDescriptor = $convert.base64Decode('CgtCYW5rRGV0YWlscxIlCg5hY2NvdW50X251bWJlchgBIAEoCVINYWNjb3VudE51bWJlchIhCgxhY2NvdW50X25hbWUYAiABKAlSC2FjY291bnROYW1lEhsKCWJhbmtfbmFtZRgDIAEoCVIIYmFua05hbWUSGwoJYmFua19jb2RlGAQgASgJUghiYW5rQ29kZRIlCg5yb3V0aW5nX251bWJlchgFIAEoCVINcm91dGluZ051bWJlchIhCgxhY2NvdW50X3R5cGUYBiABKAlSC2FjY291bnRUeXBlEikKEGNvbmZpZGVuY2Vfc2NvcmUYByABKAFSD2NvbmZpZGVuY2VTY29yZRImCg9tb25vX2FjY291bnRfaWQYCCABKAlSDW1vbm9BY2NvdW50SWQSGAoHYmFsYW5jZRgJIAEoAVIHYmFsYW5jZQ==');
+@$core.Deprecated('Use payWithBankDetailsRequestDescriptor instead')
+const PayWithBankDetailsRequest$json = const {
+  '1': 'PayWithBankDetailsRequest',
+  '2': const [
+    const {'1': 'from_account_id', '3': 1, '4': 1, '5': 9, '10': 'fromAccountId'},
+    const {'1': 'bank_details', '3': 2, '4': 1, '5': 11, '6': '.payments.BankDetails', '10': 'bankDetails'},
+    const {'1': 'amount', '3': 3, '4': 1, '5': 1, '10': 'amount'},
+    const {'1': 'currency', '3': 4, '4': 1, '5': 9, '10': 'currency'},
+    const {'1': 'description', '3': 5, '4': 1, '5': 9, '10': 'description'},
+    const {'1': 'transaction_id', '3': 6, '4': 1, '5': 9, '10': 'transactionId'},
+    const {'1': 'verification_token', '3': 7, '4': 1, '5': 9, '10': 'verificationToken'},
+  ],
+};
+
+/// Descriptor for `PayWithBankDetailsRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List payWithBankDetailsRequestDescriptor = $convert.base64Decode('ChlQYXlXaXRoQmFua0RldGFpbHNSZXF1ZXN0EiYKD2Zyb21fYWNjb3VudF9pZBgBIAEoCVINZnJvbUFjY291bnRJZBI4CgxiYW5rX2RldGFpbHMYAiABKAsyFS5wYXltZW50cy5CYW5rRGV0YWlsc1ILYmFua0RldGFpbHMSFgoGYW1vdW50GAMgASgBUgZhbW91bnQSGgoIY3VycmVuY3kYBCABKAlSCGN1cnJlbmN5EiAKC2Rlc2NyaXB0aW9uGAUgASgJUgtkZXNjcmlwdGlvbhIlCg50cmFuc2FjdGlvbl9pZBgGIAEoCVINdHJhbnNhY3Rpb25JZBItChJ2ZXJpZmljYXRpb25fdG9rZW4YByABKAlSEXZlcmlmaWNhdGlvblRva2Vu');
+@$core.Deprecated('Use payWithBankDetailsResponseDescriptor instead')
+const PayWithBankDetailsResponse$json = const {
+  '1': 'PayWithBankDetailsResponse',
+  '2': const [
+    const {'1': 'payment', '3': 1, '4': 1, '5': 11, '6': '.payments.Payment', '10': 'payment'},
+    const {'1': 'new_balance', '3': 2, '4': 1, '5': 1, '10': 'newBalance'},
+    const {'1': 'recipient_name', '3': 3, '4': 1, '5': 9, '10': 'recipientName'},
+    const {'1': 'transfer_reference', '3': 4, '4': 1, '5': 9, '10': 'transferReference'},
+    const {'1': 'message', '3': 5, '4': 1, '5': 9, '10': 'message'},
+  ],
+};
+
+/// Descriptor for `PayWithBankDetailsResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List payWithBankDetailsResponseDescriptor = $convert.base64Decode('ChpQYXlXaXRoQmFua0RldGFpbHNSZXNwb25zZRIrCgdwYXltZW50GAEgASgLMhEucGF5bWVudHMuUGF5bWVudFIHcGF5bWVudBIfCgtuZXdfYmFsYW5jZRgCIAEoAVIKbmV3QmFsYW5jZRIlCg5yZWNpcGllbnRfbmFtZRgDIAEoCVINcmVjaXBpZW50TmFtZRItChJ0cmFuc2Zlcl9yZWZlcmVuY2UYBCABKAlSEXRyYW5zZmVyUmVmZXJlbmNlEhgKB21lc3NhZ2UYBSABKAlSB21lc3NhZ2U=');
+@$core.Deprecated('Use verifyBankAccountRequestDescriptor instead')
+const VerifyBankAccountRequest$json = const {
+  '1': 'VerifyBankAccountRequest',
+  '2': const [
+    const {'1': 'bank_code', '3': 1, '4': 1, '5': 9, '10': 'bankCode'},
+    const {'1': 'account_number', '3': 2, '4': 1, '5': 9, '10': 'accountNumber'},
+    const {'1': 'country', '3': 3, '4': 1, '5': 9, '10': 'country'},
+  ],
+};
+
+/// Descriptor for `VerifyBankAccountRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List verifyBankAccountRequestDescriptor = $convert.base64Decode('ChhWZXJpZnlCYW5rQWNjb3VudFJlcXVlc3QSGwoJYmFua19jb2RlGAEgASgJUghiYW5rQ29kZRIlCg5hY2NvdW50X251bWJlchgCIAEoCVINYWNjb3VudE51bWJlchIYCgdjb3VudHJ5GAMgASgJUgdjb3VudHJ5');
+@$core.Deprecated('Use verifyBankAccountResponseDescriptor instead')
+const VerifyBankAccountResponse$json = const {
+  '1': 'VerifyBankAccountResponse',
+  '2': const [
+    const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    const {'1': 'account_number', '3': 2, '4': 1, '5': 9, '10': 'accountNumber'},
+    const {'1': 'account_name', '3': 3, '4': 1, '5': 9, '10': 'accountName'},
+    const {'1': 'bank_name', '3': 4, '4': 1, '5': 9, '10': 'bankName'},
+    const {'1': 'bank_code', '3': 5, '4': 1, '5': 9, '10': 'bankCode'},
+    const {'1': 'verification_status', '3': 6, '4': 1, '5': 9, '10': 'verificationStatus'},
+    const {'1': 'error_code', '3': 7, '4': 1, '5': 9, '10': 'errorCode'},
+    const {'1': 'error_message', '3': 8, '4': 1, '5': 9, '10': 'errorMessage'},
+    const {'1': 'user_message', '3': 9, '4': 1, '5': 9, '10': 'userMessage'},
+  ],
+};
+
+/// Descriptor for `VerifyBankAccountResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List verifyBankAccountResponseDescriptor = $convert.base64Decode('ChlWZXJpZnlCYW5rQWNjb3VudFJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3MSJQoOYWNjb3VudF9udW1iZXIYAiABKAlSDWFjY291bnROdW1iZXISIQoMYWNjb3VudF9uYW1lGAMgASgJUgthY2NvdW50TmFtZRIbCgliYW5rX25hbWUYBCABKAlSCGJhbmtOYW1lEhsKCWJhbmtfY29kZRgFIAEoCVIIYmFua0NvZGUSLwoTdmVyaWZpY2F0aW9uX3N0YXR1cxgGIAEoCVISdmVyaWZpY2F0aW9uU3RhdHVzEh0KCmVycm9yX2NvZGUYByABKAlSCWVycm9yQ29kZRIjCg1lcnJvcl9tZXNzYWdlGAggASgJUgxlcnJvck1lc3NhZ2USIQoMdXNlcl9tZXNzYWdlGAkgASgJUgt1c2VyTWVzc2FnZQ==');

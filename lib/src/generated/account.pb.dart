@@ -10,7 +10,7 @@ import 'dart:core' as $core;
 import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'google/protobuf/timestamp.pb.dart' as $34;
+import 'google/protobuf/timestamp.pb.dart' as $36;
 
 class Account extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'Account', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
@@ -20,8 +20,8 @@ class Account extends $pb.GeneratedMessage {
     ..a<$core.double>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'balance', $pb.PbFieldType.OD)
     ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accountNumber')
     ..aOB(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isActive')
-    ..aOM<$34.Timestamp>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $34.Timestamp.create)
-    ..aOM<$34.Timestamp>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $34.Timestamp.create)
+    ..aOM<$36.Timestamp>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $36.Timestamp.create)
+    ..aOM<$36.Timestamp>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $36.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -33,8 +33,8 @@ class Account extends $pb.GeneratedMessage {
     $core.double? balance,
     $core.String? accountNumber,
     $core.bool? isActive,
-    $34.Timestamp? createdAt,
-    $34.Timestamp? updatedAt,
+    $36.Timestamp? createdAt,
+    $36.Timestamp? updatedAt,
   }) {
     final _result = create();
     if (id != null) {
@@ -139,26 +139,26 @@ class Account extends $pb.GeneratedMessage {
   void clearIsActive() => clearField(6);
 
   @$pb.TagNumber(7)
-  $34.Timestamp get createdAt => $_getN(6);
+  $36.Timestamp get createdAt => $_getN(6);
   @$pb.TagNumber(7)
-  set createdAt($34.Timestamp v) { setField(7, v); }
+  set createdAt($36.Timestamp v) { setField(7, v); }
   @$pb.TagNumber(7)
   $core.bool hasCreatedAt() => $_has(6);
   @$pb.TagNumber(7)
   void clearCreatedAt() => clearField(7);
   @$pb.TagNumber(7)
-  $34.Timestamp ensureCreatedAt() => $_ensure(6);
+  $36.Timestamp ensureCreatedAt() => $_ensure(6);
 
   @$pb.TagNumber(8)
-  $34.Timestamp get updatedAt => $_getN(7);
+  $36.Timestamp get updatedAt => $_getN(7);
   @$pb.TagNumber(8)
-  set updatedAt($34.Timestamp v) { setField(8, v); }
+  set updatedAt($36.Timestamp v) { setField(8, v); }
   @$pb.TagNumber(8)
   $core.bool hasUpdatedAt() => $_has(7);
   @$pb.TagNumber(8)
   void clearUpdatedAt() => clearField(8);
   @$pb.TagNumber(8)
-  $34.Timestamp ensureUpdatedAt() => $_ensure(7);
+  $36.Timestamp ensureUpdatedAt() => $_ensure(7);
 }
 
 class CreateAccountRequest extends $pb.GeneratedMessage {
@@ -490,8 +490,8 @@ class AccountDetails extends $pb.GeneratedMessage {
     ..aOS(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accountNumber')
     ..aOS(16, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'iban')
     ..aOS(17, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'bicSwift')
-    ..aOM<$34.Timestamp>(18, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $34.Timestamp.create)
-    ..aOM<$34.Timestamp>(19, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $34.Timestamp.create)
+    ..aOM<$36.Timestamp>(18, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $36.Timestamp.create)
+    ..aOM<$36.Timestamp>(19, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $36.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -513,8 +513,8 @@ class AccountDetails extends $pb.GeneratedMessage {
     $core.String? accountNumber,
     $core.String? iban,
     $core.String? bicSwift,
-    $34.Timestamp? createdAt,
-    $34.Timestamp? updatedAt,
+    $36.Timestamp? createdAt,
+    $36.Timestamp? updatedAt,
   }) {
     final _result = create();
     if (id != null) {
@@ -739,26 +739,26 @@ class AccountDetails extends $pb.GeneratedMessage {
   void clearBicSwift() => clearField(17);
 
   @$pb.TagNumber(18)
-  $34.Timestamp get createdAt => $_getN(16);
+  $36.Timestamp get createdAt => $_getN(16);
   @$pb.TagNumber(18)
-  set createdAt($34.Timestamp v) { setField(18, v); }
+  set createdAt($36.Timestamp v) { setField(18, v); }
   @$pb.TagNumber(18)
   $core.bool hasCreatedAt() => $_has(16);
   @$pb.TagNumber(18)
   void clearCreatedAt() => clearField(18);
   @$pb.TagNumber(18)
-  $34.Timestamp ensureCreatedAt() => $_ensure(16);
+  $36.Timestamp ensureCreatedAt() => $_ensure(16);
 
   @$pb.TagNumber(19)
-  $34.Timestamp get updatedAt => $_getN(17);
+  $36.Timestamp get updatedAt => $_getN(17);
   @$pb.TagNumber(19)
-  set updatedAt($34.Timestamp v) { setField(19, v); }
+  set updatedAt($36.Timestamp v) { setField(19, v); }
   @$pb.TagNumber(19)
   $core.bool hasUpdatedAt() => $_has(17);
   @$pb.TagNumber(19)
   void clearUpdatedAt() => clearField(19);
   @$pb.TagNumber(19)
-  $34.Timestamp ensureUpdatedAt() => $_ensure(17);
+  $36.Timestamp ensureUpdatedAt() => $_ensure(17);
 }
 
 class SecuritySettings extends $pb.GeneratedMessage {

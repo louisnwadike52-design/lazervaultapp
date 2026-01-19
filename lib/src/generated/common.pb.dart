@@ -10,7 +10,7 @@ import 'dart:core' as $core;
 import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'google/protobuf/timestamp.pb.dart' as $34;
+import 'google/protobuf/timestamp.pb.dart' as $36;
 
 export 'common.pbenum.dart';
 
@@ -25,8 +25,8 @@ class User extends $pb.GeneratedMessage {
     ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'role')
     ..aOB(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'verified')
     ..aOB(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isEmailVerified')
-    ..aOM<$34.Timestamp>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $34.Timestamp.create)
-    ..aOM<$34.Timestamp>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $34.Timestamp.create)
+    ..aOM<$36.Timestamp>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $36.Timestamp.create)
+    ..aOM<$36.Timestamp>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $36.Timestamp.create)
     ..aOS(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'language')
     ..aOS(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
     ..aOS(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'country')
@@ -45,8 +45,8 @@ class User extends $pb.GeneratedMessage {
     $core.String? role,
     $core.bool? verified,
     $core.bool? isEmailVerified,
-    $34.Timestamp? createdAt,
-    $34.Timestamp? updatedAt,
+    $36.Timestamp? createdAt,
+    $36.Timestamp? updatedAt,
     $core.String? language,
     $core.String? currency,
     $core.String? country,
@@ -203,26 +203,26 @@ class User extends $pb.GeneratedMessage {
   void clearIsEmailVerified() => clearField(9);
 
   @$pb.TagNumber(10)
-  $34.Timestamp get createdAt => $_getN(9);
+  $36.Timestamp get createdAt => $_getN(9);
   @$pb.TagNumber(10)
-  set createdAt($34.Timestamp v) { setField(10, v); }
+  set createdAt($36.Timestamp v) { setField(10, v); }
   @$pb.TagNumber(10)
   $core.bool hasCreatedAt() => $_has(9);
   @$pb.TagNumber(10)
   void clearCreatedAt() => clearField(10);
   @$pb.TagNumber(10)
-  $34.Timestamp ensureCreatedAt() => $_ensure(9);
+  $36.Timestamp ensureCreatedAt() => $_ensure(9);
 
   @$pb.TagNumber(11)
-  $34.Timestamp get updatedAt => $_getN(10);
+  $36.Timestamp get updatedAt => $_getN(10);
   @$pb.TagNumber(11)
-  set updatedAt($34.Timestamp v) { setField(11, v); }
+  set updatedAt($36.Timestamp v) { setField(11, v); }
   @$pb.TagNumber(11)
   $core.bool hasUpdatedAt() => $_has(10);
   @$pb.TagNumber(11)
   void clearUpdatedAt() => clearField(11);
   @$pb.TagNumber(11)
-  $34.Timestamp ensureUpdatedAt() => $_ensure(10);
+  $36.Timestamp ensureUpdatedAt() => $_ensure(10);
 
   @$pb.TagNumber(12)
   $core.String get language => $_getSZ(11);
@@ -332,8 +332,8 @@ class Session extends $pb.GeneratedMessage {
     ..a<$fixnum.Int64>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accessToken')
     ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'refreshToken')
-    ..aOM<$34.Timestamp>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accessTokenExpiresAt', subBuilder: $34.Timestamp.create)
-    ..aOM<$34.Timestamp>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'refreshTokenExpiresAt', subBuilder: $34.Timestamp.create)
+    ..aOM<$36.Timestamp>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accessTokenExpiresAt', subBuilder: $36.Timestamp.create)
+    ..aOM<$36.Timestamp>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'refreshTokenExpiresAt', subBuilder: $36.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -343,8 +343,8 @@ class Session extends $pb.GeneratedMessage {
     $fixnum.Int64? userId,
     $core.String? accessToken,
     $core.String? refreshToken,
-    $34.Timestamp? accessTokenExpiresAt,
-    $34.Timestamp? refreshTokenExpiresAt,
+    $36.Timestamp? accessTokenExpiresAt,
+    $36.Timestamp? refreshTokenExpiresAt,
   }) {
     final _result = create();
     if (id != null) {
@@ -425,26 +425,26 @@ class Session extends $pb.GeneratedMessage {
   void clearRefreshToken() => clearField(4);
 
   @$pb.TagNumber(5)
-  $34.Timestamp get accessTokenExpiresAt => $_getN(4);
+  $36.Timestamp get accessTokenExpiresAt => $_getN(4);
   @$pb.TagNumber(5)
-  set accessTokenExpiresAt($34.Timestamp v) { setField(5, v); }
+  set accessTokenExpiresAt($36.Timestamp v) { setField(5, v); }
   @$pb.TagNumber(5)
   $core.bool hasAccessTokenExpiresAt() => $_has(4);
   @$pb.TagNumber(5)
   void clearAccessTokenExpiresAt() => clearField(5);
   @$pb.TagNumber(5)
-  $34.Timestamp ensureAccessTokenExpiresAt() => $_ensure(4);
+  $36.Timestamp ensureAccessTokenExpiresAt() => $_ensure(4);
 
   @$pb.TagNumber(6)
-  $34.Timestamp get refreshTokenExpiresAt => $_getN(5);
+  $36.Timestamp get refreshTokenExpiresAt => $_getN(5);
   @$pb.TagNumber(6)
-  set refreshTokenExpiresAt($34.Timestamp v) { setField(6, v); }
+  set refreshTokenExpiresAt($36.Timestamp v) { setField(6, v); }
   @$pb.TagNumber(6)
   $core.bool hasRefreshTokenExpiresAt() => $_has(5);
   @$pb.TagNumber(6)
   void clearRefreshTokenExpiresAt() => clearField(6);
   @$pb.TagNumber(6)
-  $34.Timestamp ensureRefreshTokenExpiresAt() => $_ensure(5);
+  $36.Timestamp ensureRefreshTokenExpiresAt() => $_ensure(5);
 }
 
 class PaginationInfo extends $pb.GeneratedMessage {

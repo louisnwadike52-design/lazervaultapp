@@ -14,6 +14,10 @@ import 'package:lazervault/src/features/recipients/presentation/widgets/enhanced
 import 'package:lazervault/src/features/widgets/common/back_navigator.dart';
 import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
 import 'package:lazervault/src/features/profile/cubit/profile_state.dart';
+import 'package:lazervault/src/features/recipients/presentation/cubit/account_verification_cubit.dart';
+import 'package:lazervault/src/features/recipients/presentation/cubit/account_verification_state.dart';
+import 'package:lazervault/src/features/recipients/domain/entities/account_verification_result.dart';
+import 'package:lazervault/src/features/recipients/presentation/widgets/account_confirmation_bottom_sheet.dart';
 
 enum AddRecipientMethod { bankDetails, username, contacts }
 
@@ -40,12 +44,34 @@ class _AddRecipientState extends State<AddRecipient> {
   // Username Form Controller
   final TextEditingController _usernameController = TextEditingController();
 
-  final List<Map<String, dynamic>> ukBanks = [
-    {"name": "Barclays", "logo": "https://upload.wikimedia.org/wikipedia/commons/3/3e/Barclays_logo.svg"},
-    {"name": "HSBC", "logo": "https://upload.wikimedia.org/wikipedia/commons/5/5a/HSBC_logo_%282018%29.svg"},
-    {"name": "Lloyds Bank", "logo": "https://images.app.goo.gl/e69Fa8zSismMDCb5A"},
-    {"name": "NatWest", "logo": "https://upload.wikimedia.org/wikipedia/commons/3/31/NatWest_logo.svg"},
-    {"name": "Santander UK", "logo": "https://upload.wikimedia.org/wikipedia/commons/b/b3/Santander_Logo.svg"},
+  // Account verification state
+  AccountVerificationResult? _verificationResult;
+  bool _isVerifying = false;
+  String? _selectedBankCode;
+
+  // Nigerian banks with codes (for Paystack API)
+  final List<Map<String, String>> nigerianBanks = [
+    {"name": "Access Bank", "code": "044"},
+    {"name": "Citibank", "code": "023"},
+    {"name": "Ecobank Nigeria", "code": "050"},
+    {"name": "Fidelity Bank", "code": "070"},
+    {"name": "First Bank of Nigeria", "code": "011"},
+    {"name": "First City Monument Bank", "code": "214"},
+    {"name": "Globus Bank", "code": "00103"},
+    {"name": "Guaranty Trust Bank", "code": "058"},
+    {"name": "Heritage Bank", "code": "030"},
+    {"name": "Keystone Bank", "code": "082"},
+    {"name": "Polaris Bank", "code": "076"},
+    {"name": "Providus Bank", "code": "101"},
+    {"name": "Stanbic IBTC Bank", "code": "221"},
+    {"name": "Standard Chartered Bank", "code": "068"},
+    {"name": "Sterling Bank", "code": "232"},
+    {"name": "Suntrust Bank", "code": "100"},
+    {"name": "Union Bank of Nigeria", "code": "032"},
+    {"name": "United Bank for Africa", "code": "033"},
+    {"name": "Unity Bank", "code": "215"},
+    {"name": "Wema Bank", "code": "035"},
+    {"name": "Zenith Bank", "code": "057"},
   ];
 
   @override
@@ -61,39 +87,80 @@ class _AddRecipientState extends State<AddRecipient> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<RecipientCubit, RecipientState>(
-      listener: (context, state) {
-        if (state is RecipientError) {
-          Get.snackbar(
-            'Error',
-            state.message,
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.red.withOpacity(0.8),
-            colorText: Colors.white,
-          );
-        } else if (state is RecipientSuccess) {
-          Get.snackbar(
-            'Success',
-            state.message,
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.green.withOpacity(0.8),
-            colorText: Colors.white,
+    return BlocListener<AccountVerificationCubit, AccountVerificationState>(
+      listener: (context, verificationState) {
+        setState(() {
+          _isVerifying = verificationState is AccountVerificationLoading;
+        });
+
+        if (verificationState is AccountVerificationSuccess) {
+          // Store verification result
+          _verificationResult = AccountVerificationResult(
+            accountNumber: verificationState.accountNumber,
+            accountName: verificationState.accountName,
+            bankName: verificationState.bankName,
+            bankCode: verificationState.bankCode,
+            verificationStatus: verificationState.verificationStatus,
           );
 
-          // Navigate to initiate send funds screen with the newly created recipient
-          if (state.recipient != null) {
-            Get.offNamed(
-              AppRoutes.initiateSendFunds,
-              arguments: state.recipient,
-            );
-          } else {
-            // If no recipient is returned (shouldn't happen), just go back
-            Get.back();
-          }
+          // Show confirmation bottomsheet
+          _showAccountConfirmationBottomSheet(_verificationResult!);
+        } else if (verificationState is AccountVerificationFailure) {
+          // Show error snackbar
+          Get.snackbar(
+            'Verification Failed',
+            verificationState.userMessage,
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: verificationState.canRetry
+                ? Colors.orange.withOpacity(0.8)
+                : Colors.red.withOpacity(0.8),
+            colorText: Colors.white,
+            duration: Duration(seconds: 4),
+            mainButton: verificationState.canRetry
+                ? TextButton(
+                    onPressed: () {
+                      Get.back();
+                      _handleVerifyAccount();
+                    },
+                    child: Text('Retry', style: TextStyle(color: Colors.white)),
+                  )
+                : null,
+          );
         }
       },
-      builder: (context, state) {
-        return Scaffold(
+      child: BlocConsumer<RecipientCubit, RecipientState>(
+        listener: (context, state) {
+          if (state is RecipientError) {
+            Get.snackbar(
+              'Error',
+              state.message,
+              snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: Colors.red.withOpacity(0.8),
+              colorText: Colors.white,
+            );
+          } else if (state is RecipientSuccess) {
+            Get.snackbar(
+              'Success',
+              state.message,
+              snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: Colors.green.withOpacity(0.8),
+              colorText: Colors.white,
+            );
+
+            // Navigate to initiate send funds screen with the newly created recipient
+            if (state.recipient != null) {
+              Get.offNamed(
+                AppRoutes.initiateSendFunds,
+                arguments: state.recipient,
+              );
+            } else {
+              // If no recipient is returned (shouldn't happen), just go back
+              Get.back();
+            }
+          }
+        },
+        builder: (context, state) {
+          return Scaffold(
           backgroundColor: Colors.white,
           body: Stack(
             children: [
@@ -217,6 +284,7 @@ class _AddRecipientState extends State<AddRecipient> {
           ),
         );
       },
+    ),
     );
   }
 
@@ -283,8 +351,8 @@ class _AddRecipientState extends State<AddRecipient> {
 
   Widget _buildBankDetailsForm() {
     return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
         Text(
           'Bank Account Details',
           style: TextStyle(
@@ -295,98 +363,13 @@ class _AddRecipientState extends State<AddRecipient> {
         ),
         SizedBox(height: 8.h),
         Text(
-          'Enter the recipient\'s banking information',
+          'Enter account number and we\'ll verify the account holder name',
           style: TextStyle(
             color: Colors.grey[600],
             fontSize: 14.sp,
           ),
         ),
         SizedBox(height: 24.h),
-
-        // Account Type Selector
-                      Container(
-          padding: EdgeInsets.all(4.w),
-                        decoration: BoxDecoration(
-            color: Colors.grey[100],
-                          borderRadius: BorderRadius.circular(12.r),
-                        ),
-                        child: Row(
-                          children: [
-                            Expanded(
-                child: GestureDetector(
-                  onTap: () => setState(() => _isPersonal = true),
-                  child: Container(
-                    padding: EdgeInsets.symmetric(vertical: 12.h),
-                    decoration: BoxDecoration(
-                      color: _isPersonal ? Colors.white : Colors.transparent,
-                      borderRadius: BorderRadius.circular(8.r),
-                      boxShadow: _isPersonal ? [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
-                          blurRadius: 4,
-                          offset: Offset(0, 2),
-                        )
-                      ] : null,
-                    ),
-                              child: Text(
-                      'Personal',
-                      textAlign: TextAlign.center,
-                                style: TextStyle(
-                        color: _isPersonal ? Color.fromARGB(255, 78, 3, 208) : Colors.grey[600],
-                                  fontSize: 14.sp,
-                        fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                ),
-              ),
-              Expanded(
-                child: GestureDetector(
-                  onTap: () => setState(() => _isPersonal = false),
-                  child: Container(
-                    padding: EdgeInsets.symmetric(vertical: 12.h),
-                    decoration: BoxDecoration(
-                      color: !_isPersonal ? Colors.white : Colors.transparent,
-                      borderRadius: BorderRadius.circular(8.r),
-                      boxShadow: !_isPersonal ? [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
-                          blurRadius: 4,
-                          offset: Offset(0, 2),
-                        )
-                      ] : null,
-                    ),
-                    child: Text(
-                      'Business',
-                      textAlign: TextAlign.center,
-                        style: TextStyle(
-                        color: !_isPersonal ? Color.fromARGB(255, 78, 3, 208) : Colors.grey[600],
-                        fontSize: 14.sp,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        SizedBox(height: 24.h),
-
-        // Form Fields
-                            _buildFormField(
-                              controller: _nameController,
-          label: _isPersonal? 'Full Name' : 'Business Name',
-          hint: _isPersonal ? 'Enter recipient\'s full name' : 'Enter business name',
-          icon: _isPersonal ? Icons.person_outline : Icons.business_outlined,
-                            ),
-                            SizedBox(height: 16.h),
-        
-                            _buildAccountNumberField(),
-                            SizedBox(height: 16.h),
-        
-                            _buildSortCodeField(),
-                            SizedBox(height: 16.h),
 
         // Bank Selection
         Column(
@@ -403,91 +386,190 @@ class _AddRecipientState extends State<AddRecipient> {
             SizedBox(height: 8.h),
             GestureDetector(
               onTap: _showBankSelectionBottomSheet,
-                                child: Container(
-                                  padding: EdgeInsets.all(16.w),
-                                  decoration: BoxDecoration(
+              child: Container(
+                padding: EdgeInsets.all(16.w),
+                decoration: BoxDecoration(
                   color: Colors.grey[50],
-                                    borderRadius: BorderRadius.circular(12.r),
+                  borderRadius: BorderRadius.circular(12.r),
                   border: Border.all(color: Colors.grey[200]!),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Icon(
-                                        Icons.account_balance,
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.account_balance,
                       color: Colors.grey[600],
-                                        size: 24.sp,
-                                      ),
-                                      SizedBox(width: 16.w),
-                                      Expanded(
-                                        child: Text(
-                                          _bankController.text,
-                                          style: TextStyle(
+                      size: 24.sp,
+                    ),
+                    SizedBox(width: 16.w),
+                    Expanded(
+                      child: Text(
+                        _bankController.text,
+                        style: TextStyle(
                           color: _bankController.text == "Select Bank"
                               ? Colors.grey[600]
                               : Colors.black87,
-                                            fontSize: 16.sp,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                      ),
-                                      Icon(
-                                        Icons.arrow_forward_ios,
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                    Icon(
+                      Icons.arrow_forward_ios,
                       color: Colors.grey[600],
-                                        size: 16.sp,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
+                      size: 16.sp,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: 16.h),
+
+        // Account Number Field (10 digits for Nigerian accounts)
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Account Number',
+              style: TextStyle(
+                color: Colors.black87,
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            SizedBox(height: 8.h),
+            TextField(
+              controller: _accountController,
+              keyboardType: TextInputType.number,
+              maxLength: 10,
+              decoration: InputDecoration(
+                filled: true,
+                fillColor: Colors.grey[50],
+                hintText: 'Enter 10-digit account number',
+                hintStyle: TextStyle(color: Colors.grey[500]),
+                prefixIcon: Icon(Icons.numbers_outlined, color: Colors.grey[600]),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12.r),
+                  borderSide: BorderSide(color: Colors.grey[200]!),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12.r),
+                  borderSide: BorderSide(color: Colors.grey[200]!),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12.r),
+                  borderSide: BorderSide(
+                    color: Color.fromARGB(255, 78, 3, 208),
+                    width: 2,
+                  ),
+                ),
+                counterText: '',
+                suffixIcon: _accountController.text.length == 10
+                    ? Icon(Icons.check_circle, color: Colors.green)
+                    : null,
+              ),
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              onChanged: (value) {
+                setState(() {}); // Refresh for check icon
+              },
+            ),
           ],
         ),
         SizedBox(height: 24.h),
 
-        // Favorite Toggle
-        Container(
-          padding: EdgeInsets.all(16.w),
-          decoration: BoxDecoration(
-            color: Colors.grey[50],
-            borderRadius: BorderRadius.circular(12.r),
+        // Verify Account Button
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Color.fromARGB(255, 78, 3, 208),
+            foregroundColor: Colors.white,
+            padding: EdgeInsets.symmetric(vertical: 16.h),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12.r),
+            ),
+            elevation: 0,
+            minimumSize: Size(double.infinity, 56.h),
           ),
-          child: Row(
-                                  children: [
-                                    Icon(
-                                      Icons.favorite_border,
-                color: Color.fromARGB(255, 78, 3, 208),
-                                      size: 24.sp,
-                                    ),
-              SizedBox(width: 12.w),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+          onPressed: _isVerifying ? null : _handleVerifyAccount,
+          child: _isVerifying
+              ? Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                                    Text(
-                                      'Save as Favorite',
-                                      style: TextStyle(
-                        color: Colors.black87,
-                        fontSize: 16.sp,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
+                    SizedBox(
+                      width: 20.w,
+                      height: 20.h,
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2,
+                      ),
+                    ),
+                    SizedBox(width: 12.w),
                     Text(
-                      'Quick access for future transfers',
+                      'Verifying...',
                       style: TextStyle(
-                        color: Colors.grey[600],
-                        fontSize: 12.sp,
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                )
+              : Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.verified_user, size: 20.sp),
+                    SizedBox(width: 8.w),
+                    Text(
+                      'Verify Account',
+                      style: TextStyle(
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ],
                 ),
-                                ),
-                                Switch(
-                                  value: _isFavorite,
-                onChanged: (value) => setState(() => _isFavorite = value),
-                activeThumbColor: Color.fromARGB(255, 78, 3, 208),
-              ),
-            ],
-          ),
         ),
+
+        // Show verification result if successful
+        if (_verificationResult != null) ...[
+          SizedBox(height: 16.h),
+          Container(
+            padding: EdgeInsets.all(16.w),
+            decoration: BoxDecoration(
+              color: Colors.green.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12.r),
+              border: Border.all(color: Colors.green, width: 1),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.check_circle, color: Colors.green, size: 24.sp),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Account Verified',
+                        style: TextStyle(
+                          color: Colors.green.shade700,
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      Text(
+                        _verificationResult!.accountName,
+                        style: TextStyle(
+                          color: Colors.black87,
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ],
     );
   }
@@ -1436,8 +1518,8 @@ class _AddRecipientState extends State<AddRecipient> {
                 child: Builder(
                   builder: (context) {
                     final filteredBanks = _bankSearchQuery.isEmpty
-                        ? ukBanks
-                        : ukBanks.where((bank) =>
+                        ? nigerianBanks
+                        : nigerianBanks.where((bank) =>
                             bank["name"]!.toLowerCase().contains(_bankSearchQuery)
                           ).toList();
 
@@ -1488,6 +1570,7 @@ class _AddRecipientState extends State<AddRecipient> {
                           onTap: () {
                             setState(() {
                               _bankController.text = bank["name"]!;
+                              _selectedBankCode = bank["code"]; // Store bank code for verification
                             });
                             Navigator.pop(context);
                           },
@@ -1733,6 +1816,133 @@ class _AddRecipientState extends State<AddRecipient> {
           ),
         ),
       ],
+    );
+  }
+
+  // ========== New Account Verification Methods ==========
+
+  /// Handle account verification via Paystack API
+  Future<void> _handleVerifyAccount() async {
+    final accountNumber = _accountController.text.trim();
+    final bankName = _bankController.text;
+
+    // Validate bank selection
+    if (bankName == "Select Bank") {
+      Get.snackbar(
+        'Bank Required',
+        'Please select a bank first',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.orange.withOpacity(0.8),
+        colorText: Colors.white,
+      );
+      return;
+    }
+
+    // Validate account number
+    if (accountNumber.isEmpty) {
+      Get.snackbar(
+        'Account Number Required',
+        'Please enter the account number',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.orange.withOpacity(0.8),
+        colorText: Colors.white,
+      );
+      return;
+    }
+
+    // Validate 10 digits for Nigerian accounts
+    if (accountNumber.length != 10 || !RegExp(r'^\d+$').hasMatch(accountNumber)) {
+      Get.snackbar(
+        'Invalid Account Number',
+        'Account number must be exactly 10 digits',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.withOpacity(0.8),
+        colorText: Colors.white,
+      );
+      return;
+    }
+
+    if (_selectedBankCode == null) {
+      Get.snackbar(
+        'Error',
+        'Bank code not found. Please reselect the bank.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.withOpacity(0.8),
+        colorText: Colors.white,
+      );
+      return;
+    }
+
+    // Call verification cubit
+    await context.read<AccountVerificationCubit>().verifyAccount(
+          bankCode: _selectedBankCode!,
+          accountNumber: accountNumber,
+          bankName: bankName,
+        );
+  }
+
+  /// Show account confirmation bottomsheet after successful verification
+  void _showAccountConfirmationBottomSheet(AccountVerificationResult result) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      isDismissible: false,
+      builder: (context) {
+        return AccountConfirmationBottomSheet(
+          accountNumber: result.accountNumber,
+          accountName: result.accountName,
+          bankName: result.bankName,
+          bankCode: result.bankCode,
+          onConfirm: () {
+            // Get favorite status from bottomsheet
+            final bottomSheet = context.findAncestorStateOfType<AccountConfirmationBottomSheetState>();
+            final isFavorite = bottomSheet?.isFavorite ?? false;
+
+            // Close bottomsheet
+            Navigator.pop(context);
+
+            // Proceed to payment WITHOUT saving to DB (Lemfi-style)
+            _proceedToPayment(result, isFavorite);
+          },
+          onCancel: () {
+            // Close bottomsheet and reset verification
+            Navigator.pop(context);
+            setState(() {
+              _verificationResult = null;
+            });
+          },
+        );
+      },
+    );
+  }
+
+  /// Proceed to payment screen without saving recipient to database
+  /// (Lemfi-style: only save after successful payment if favorited)
+  void _proceedToPayment(AccountVerificationResult result, bool isFavorite) {
+    // Create temporary recipient model (not saved to DB yet)
+    final temporaryRecipient = RecipientModel(
+      id: DateTime.now().millisecondsSinceEpoch.toString(), // Temporary ID
+      name: result.accountName,
+      accountNumber: result.accountNumber,
+      bankName: result.bankName,
+      sortCode: result.bankCode, // Use bank code as sort code for Nigerian banks
+      isFavorite: isFavorite,
+      countryCode: 'NG',
+      currency: 'NGN',
+    );
+
+    // Navigate to payment screen with temporary recipient
+    // The recipient will only be saved to DB:
+    // 1. After successful payment if isFavorite is true
+    // 2. Or when user explicitly saves it during/after payment
+    Get.offNamed(
+      AppRoutes.initiateSendFunds,
+      arguments: {
+        'recipient': temporaryRecipient,
+        'isTemporary': true, // Flag indicating this recipient is not yet saved
+        'shouldSaveOnSuccess': isFavorite, // Save to DB after successful payment if favorited
+      },
     );
   }
 }

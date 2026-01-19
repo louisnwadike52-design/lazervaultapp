@@ -9,7 +9,7 @@ import 'dart:core' as $core;
 
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'google/protobuf/timestamp.pb.dart' as $34;
+import 'google/protobuf/timestamp.pb.dart' as $36;
 
 class PortfolioAsset extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'PortfolioAsset', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
@@ -24,7 +24,7 @@ class PortfolioAsset extends $pb.GeneratedMessage {
     ..a<$core.double>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'gainLoss', $pb.PbFieldType.OD)
     ..a<$core.double>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'gainLossPercent', $pb.PbFieldType.OD)
     ..aOS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
-    ..aOM<$34.Timestamp>(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastUpdated', subBuilder: $34.Timestamp.create)
+    ..aOM<$36.Timestamp>(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastUpdated', subBuilder: $36.Timestamp.create)
     ..aOS(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'iconUrl')
     ..hasRequiredFields = false
   ;
@@ -42,7 +42,7 @@ class PortfolioAsset extends $pb.GeneratedMessage {
     $core.double? gainLoss,
     $core.double? gainLossPercent,
     $core.String? currency,
-    $34.Timestamp? lastUpdated,
+    $36.Timestamp? lastUpdated,
     $core.String? iconUrl,
   }) {
     final _result = create();
@@ -208,15 +208,15 @@ class PortfolioAsset extends $pb.GeneratedMessage {
   void clearCurrency() => clearField(11);
 
   @$pb.TagNumber(12)
-  $34.Timestamp get lastUpdated => $_getN(11);
+  $36.Timestamp get lastUpdated => $_getN(11);
   @$pb.TagNumber(12)
-  set lastUpdated($34.Timestamp v) { setField(12, v); }
+  set lastUpdated($36.Timestamp v) { setField(12, v); }
   @$pb.TagNumber(12)
   $core.bool hasLastUpdated() => $_has(11);
   @$pb.TagNumber(12)
   void clearLastUpdated() => clearField(12);
   @$pb.TagNumber(12)
-  $34.Timestamp ensureLastUpdated() => $_ensure(11);
+  $36.Timestamp ensureLastUpdated() => $_ensure(11);
 
   @$pb.TagNumber(13)
   $core.String get iconUrl => $_getSZ(12);
@@ -237,7 +237,7 @@ class PortfolioSummary extends $pb.GeneratedMessage {
     ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
     ..m<$core.String, $core.double>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'assetsByType', entryClassName: 'PortfolioSummary.AssetsByTypeEntry', keyFieldType: $pb.PbFieldType.OS, valueFieldType: $pb.PbFieldType.OD, packageName: const $pb.PackageName('pb'))
     ..a<$core.int>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'assetCount', $pb.PbFieldType.O3)
-    ..aOM<$34.Timestamp>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastUpdated', subBuilder: $34.Timestamp.create)
+    ..aOM<$36.Timestamp>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastUpdated', subBuilder: $36.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -250,7 +250,7 @@ class PortfolioSummary extends $pb.GeneratedMessage {
     $core.String? currency,
     $core.Map<$core.String, $core.double>? assetsByType,
     $core.int? assetCount,
-    $34.Timestamp? lastUpdated,
+    $36.Timestamp? lastUpdated,
   }) {
     final _result = create();
     if (totalValue != null) {
@@ -358,15 +358,15 @@ class PortfolioSummary extends $pb.GeneratedMessage {
   void clearAssetCount() => clearField(7);
 
   @$pb.TagNumber(8)
-  $34.Timestamp get lastUpdated => $_getN(7);
+  $36.Timestamp get lastUpdated => $_getN(7);
   @$pb.TagNumber(8)
-  set lastUpdated($34.Timestamp v) { setField(8, v); }
+  set lastUpdated($36.Timestamp v) { setField(8, v); }
   @$pb.TagNumber(8)
   $core.bool hasLastUpdated() => $_has(7);
   @$pb.TagNumber(8)
   void clearLastUpdated() => clearField(8);
   @$pb.TagNumber(8)
-  $34.Timestamp ensureLastUpdated() => $_ensure(7);
+  $36.Timestamp ensureLastUpdated() => $_ensure(7);
 }
 
 class GetCompletePortfolioRequest extends $pb.GeneratedMessage {
@@ -662,14 +662,14 @@ class GetPortfolioHistoryRequest extends $pb.GeneratedMessage {
 
 class PortfolioHistoryPoint extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'PortfolioHistoryPoint', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<$34.Timestamp>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'date', subBuilder: $34.Timestamp.create)
+    ..aOM<$36.Timestamp>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'date', subBuilder: $36.Timestamp.create)
     ..a<$core.double>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'value', $pb.PbFieldType.OD)
     ..hasRequiredFields = false
   ;
 
   PortfolioHistoryPoint._() : super();
   factory PortfolioHistoryPoint({
-    $34.Timestamp? date,
+    $36.Timestamp? date,
     $core.double? value,
   }) {
     final _result = create();
@@ -703,15 +703,15 @@ class PortfolioHistoryPoint extends $pb.GeneratedMessage {
   static PortfolioHistoryPoint? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $34.Timestamp get date => $_getN(0);
+  $36.Timestamp get date => $_getN(0);
   @$pb.TagNumber(1)
-  set date($34.Timestamp v) { setField(1, v); }
+  set date($36.Timestamp v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasDate() => $_has(0);
   @$pb.TagNumber(1)
   void clearDate() => clearField(1);
   @$pb.TagNumber(1)
-  $34.Timestamp ensureDate() => $_ensure(0);
+  $36.Timestamp ensureDate() => $_ensure(0);
 
   @$pb.TagNumber(2)
   $core.double get value => $_getN(1);
