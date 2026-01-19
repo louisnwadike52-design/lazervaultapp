@@ -8,7 +8,7 @@ class ResendVerificationUseCase {
   ResendVerificationUseCase(this.repository);
 
   /// Returns cooldown seconds (time to wait before next resend) on success
-  Future<Either<Failure, int>> call() {
-    return repository.resendVerificationEmail();
+  Future<Either<Failure, int>> call({required String email}) {
+    return repository.resendVerificationEmail(email: email);
   }
 }

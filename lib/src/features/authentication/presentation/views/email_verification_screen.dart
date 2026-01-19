@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -89,8 +90,9 @@ class _EmailOtpVerificationViewState extends State<_EmailOtpVerificationView> {
   void initState() {
     super.initState();
 
-    // Initialize the cubit
+    // Initialize the cubit with email for resending
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<EmailVerificationCubit>().initialize(widget.email);
       context.read<EmailVerificationCubit>().updateVerificationCode('');
     });
 
@@ -160,7 +162,8 @@ class _EmailOtpVerificationViewState extends State<_EmailOtpVerificationView> {
   }
 
   void _skipVerification() {
-    if (!widget.isRequired) {
+    // Allow skip if not required OR in development mode
+    if (!widget.isRequired || kDebugMode) {
       _navigateToNextScreen();
     }
   }
@@ -170,7 +173,7 @@ class _EmailOtpVerificationViewState extends State<_EmailOtpVerificationView> {
     final maskedEmail = _maskEmail(widget.email);
 
     return PopScope(
-      canPop: !widget.isRequired, // Allow back only if not required
+      canPop: !widget.isRequired || kDebugMode, // Allow back if not required OR in dev mode
       child: Scaffold(
         backgroundColor: Colors.white,
         body: BlocListener<EmailVerificationCubit, EmailVerificationState>(
@@ -402,8 +405,8 @@ class _EmailOtpVerificationViewState extends State<_EmailOtpVerificationView> {
                         ],
                       ),
 
-                      // Skip Button (only shown if not required)
-                      if (!widget.isRequired) ...[
+                      // Skip Button (shown if not required OR in development mode)
+                      if (!widget.isRequired || kDebugMode) ...[
                         SizedBox(height: 16.h),
                         TextButton(
                           onPressed: _skipVerification,
@@ -413,7 +416,6 @@ class _EmailOtpVerificationViewState extends State<_EmailOtpVerificationView> {
                               fontSize: 14.sp,
                               fontWeight: FontWeight.w500,
                               color: const Color(0xFF6B7280),
-                              decoration: TextDecoration.underline,
                             ),
                           ),
                         ),

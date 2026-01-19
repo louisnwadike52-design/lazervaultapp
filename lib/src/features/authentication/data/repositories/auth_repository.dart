@@ -228,6 +228,8 @@ class AuthRepositoryImpl implements IAuthRepository {
         deviceId: 'flutter-app', // TODO: Get actual device ID
         deviceName: 'Flutter App', // TODO: Get actual device name
         primaryContactType: protoPrimaryContact,
+        username: username ?? '', // Pass empty string if not provided - backend handles as optional
+        referralCode: referralCode ?? '',
       );
       print('Sending gRPC Signup request...');
       final signupResponse = await _authServiceClient.signup(signupRequest);
@@ -417,10 +419,10 @@ class AuthRepositoryImpl implements IAuthRepository {
   }
 
   @override
-  Future<Either<Failure, int>> resendVerificationEmail() async {
+  Future<Either<Failure, int>> resendVerificationEmail({required String email}) async {
     try {
-      final request = auth_req_resp.ResendVerificationEmailRequest();
-      print('Sending gRPC ResendVerificationEmail request');
+      final request = auth_req_resp.ResendVerificationEmailRequest(email: email);
+      print('Sending gRPC ResendVerificationEmail request for email: $email');
 
       // Use helper to get call options with authorization header from secure storage
       final callOptions = await _callOptionsHelper.withAuth();

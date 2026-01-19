@@ -7,6 +7,7 @@ import 'email_verification_state.dart';
 class EmailVerificationCubit extends Cubit<EmailVerificationState> {
   final VerifyEmailUseCase _verifyEmailUseCase;
   final ResendVerificationUseCase _resendVerificationUseCase;
+  String _email = '';
 
   EmailVerificationCubit({
     required VerifyEmailUseCase verifyEmailUseCase,
@@ -14,6 +15,11 @@ class EmailVerificationCubit extends Cubit<EmailVerificationState> {
   })  : _verifyEmailUseCase = verifyEmailUseCase,
         _resendVerificationUseCase = resendVerificationUseCase,
         super(const EmailVerificationInitial());
+
+  /// Initialize the cubit with the email address for resending verification
+  void initialize(String email) {
+    _email = email;
+  }
 
   void updateVerificationCode(String code) {
     if (state is EmailVerificationInProgress) {
@@ -97,7 +103,7 @@ class EmailVerificationCubit extends Cubit<EmailVerificationState> {
         successMessage: '',
       ));
 
-      final result = await _resendVerificationUseCase();
+      final result = await _resendVerificationUseCase(email: _email);
 
       if (isClosed) return;
       result.fold(

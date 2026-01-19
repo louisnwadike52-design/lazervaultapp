@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/family_account/presentation/cubit/family_account_cubit.dart';
 import 'package:lazervault/src/features/family_account/presentation/cubit/family_account_state.dart';
 
@@ -25,6 +26,7 @@ class _FamilySetupFlowScreenState extends State<FamilySetupFlowScreen> {
 
   int _currentStep = 0;
   final int _totalSteps = 4;
+  String? _createdFamilyId; // Store the created family account ID
 
   // Form data
   final Map<String, dynamic> _formData = {
@@ -115,28 +117,25 @@ class _FamilySetupFlowScreenState extends State<FamilySetupFlowScreen> {
       ),
       child: Column(
         children: [
-          // Title and Back Button
+          // Title and Back/Close Button
           Row(
             children: [
-              if (_currentStep > 0)
-                GestureDetector(
-                  onTap: _previousStep,
-                  child: Container(
-                    width: 40.w,
-                    height: 40.h,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.1),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      Icons.arrow_back_ios_new,
-                      color: Colors.white,
-                      size: 20.sp,
-                    ),
+              GestureDetector(
+                onTap: _currentStep > 0 ? _previousStep : () => Get.back(),
+                child: Container(
+                  width: 40.w,
+                  height: 40.h,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.1),
+                    shape: BoxShape.circle,
                   ),
-                )
-              else
-                SizedBox(width: 40.w),
+                  child: Icon(
+                    _currentStep > 0 ? Icons.arrow_back_ios_new : Icons.close,
+                    color: Colors.white,
+                    size: 20.sp,
+                  ),
+                ),
+              ),
               SizedBox(width: 16.w),
               Expanded(
                 child: Text(
@@ -234,7 +233,10 @@ class _FamilySetupFlowScreenState extends State<FamilySetupFlowScreen> {
     return FamilyFundingConfirmationStep(
       formData: _formData,
       cubit: _cubit,
-      onNext: () {
+      onNext: (String familyId) {
+        setState(() {
+          _createdFamilyId = familyId;
+        });
         _nextStep();
       },
     );
@@ -242,7 +244,7 @@ class _FamilySetupFlowScreenState extends State<FamilySetupFlowScreen> {
 
   Widget _buildInviteMembersStep() {
     return FamilyInviteMembersStep(
-      familyId: '', // Will be set after account creation
+      familyId: _createdFamilyId ?? '',
       cubit: _cubit,
       onComplete: _onComplete,
       onSkip: _onComplete,
@@ -261,15 +263,16 @@ class FamilyWelcomeStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
+    return SingleChildScrollView(
       padding: EdgeInsets.symmetric(horizontal: 24.w),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          SizedBox(height: 20.h),
           // Illustration
           Container(
-            width: 200.w,
-            height: 200.h,
+            width: 150.w,
+            height: 150.h,
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
@@ -283,36 +286,36 @@ class FamilyWelcomeStep extends StatelessWidget {
             ),
             child: Icon(
               Icons.family_restroom,
-              size: 100.sp,
+              size: 70.sp,
               color: Colors.white,
             ),
           ),
-          SizedBox(height: 40.h),
+          SizedBox(height: 24.h),
 
           // Title
           Text(
             'Share Money\nwith Loved Ones',
             style: TextStyle(
               color: Colors.white,
-              fontSize: 28.sp,
+              fontSize: 24.sp,
               fontWeight: FontWeight.bold,
               height: 1.2,
             ),
             textAlign: TextAlign.center,
           ),
-          SizedBox(height: 20.h),
+          SizedBox(height: 12.h),
 
           // Description
           Text(
             'Create a Family & Friends account to manage shared expenses, set spending limits for members, and stay in control together.',
             style: TextStyle(
               color: Colors.white.withOpacity(0.8),
-              fontSize: 15.sp,
+              fontSize: 14.sp,
               height: 1.5,
             ),
             textAlign: TextAlign.center,
           ),
-          SizedBox(height: 40.h),
+          SizedBox(height: 24.h),
 
           // Features
           _buildFeature(
@@ -320,19 +323,19 @@ class FamilyWelcomeStep extends StatelessWidget {
             'Add Members',
             'Invite family and friends to your account',
           ),
-          SizedBox(height: 16.h),
+          SizedBox(height: 12.h),
           _buildFeature(
             Icons.account_balance_wallet_outlined,
             'Set Limits',
             'Control spending with daily, monthly, and per-transaction limits',
           ),
-          SizedBox(height: 16.h),
+          SizedBox(height: 12.h),
           _buildFeature(
             Icons.visibility_outlined,
             'Full Transparency',
             'Everyone sees the same balance and transactions',
           ),
-          const Spacer(),
+          SizedBox(height: 32.h),
 
           // CTA Button
           Container(
@@ -793,7 +796,7 @@ class _FamilyAccountDetailsStepState extends State<FamilyAccountDetailsStep> {
 class FamilyFundingConfirmationStep extends StatelessWidget {
   final Map<String, dynamic> formData;
   final FamilyAccountCubit cubit;
-  final VoidCallback onNext;
+  final void Function(String familyId) onNext;
 
   const FamilyFundingConfirmationStep({
     super.key,
@@ -804,11 +807,12 @@ class FamilyFundingConfirmationStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
+    return SingleChildScrollView(
       padding: EdgeInsets.symmetric(horizontal: 24.w),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          SizedBox(height: 40.h),
           // Success Icon
           Container(
             width: 100.w,
@@ -882,14 +886,14 @@ class FamilyFundingConfirmationStep extends StatelessWidget {
               ],
             ),
           ),
-          const Spacer(),
+          SizedBox(height: 32.h),
 
           // Confirm & Create Button
           BlocConsumer<FamilyAccountCubit, FamilyAccountState>(
             bloc: cubit,
             listener: (context, state) {
               if (state is FamilyAccountCreated) {
-                onNext();
+                onNext(state.familyAccount.id);
               } else if (state is FamilyAccountError) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
@@ -1006,15 +1010,50 @@ class FamilyInviteMembersStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
+    return SingleChildScrollView(
       padding: EdgeInsets.symmetric(horizontal: 24.w),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Icon
+          SizedBox(height: 40.h),
+          // Success Icon
           Container(
-            width: 120.w,
-            height: 120.h,
+            width: 100.w,
+            height: 100.h,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Colors.green.withOpacity(0.3),
+                  Colors.green.withOpacity(0.1),
+                ],
+              ),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.check_circle,
+              size: 50.sp,
+              color: Colors.green[300],
+            ),
+          ),
+          SizedBox(height: 24.h),
+
+          // Success Title
+          Text(
+            'Account Created!',
+            style: TextStyle(
+              color: Colors.green[300],
+              fontSize: 20.sp,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          SizedBox(height: 32.h),
+
+          // Invite Icon
+          Container(
+            width: 80.w,
+            height: 80.h,
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
@@ -1028,18 +1067,18 @@ class FamilyInviteMembersStep extends StatelessWidget {
             ),
             child: Icon(
               Icons.group_add,
-              size: 60.sp,
+              size: 40.sp,
               color: Colors.white,
             ),
           ),
-          SizedBox(height: 32.h),
+          SizedBox(height: 24.h),
 
           // Title
           Text(
             'Invite Family & Friends',
             style: TextStyle(
               color: Colors.white,
-              fontSize: 24.sp,
+              fontSize: 22.sp,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -1052,7 +1091,7 @@ class FamilyInviteMembersStep extends StatelessWidget {
             ),
             textAlign: TextAlign.center,
           ),
-          SizedBox(height: 40.h),
+          SizedBox(height: 32.h),
 
           // Invite Button
           Container(
@@ -1075,9 +1114,12 @@ class FamilyInviteMembersStep extends StatelessWidget {
               color: Colors.transparent,
               child: InkWell(
                 onTap: () {
-                  // Navigate to invite members screen
-                  // TODO: Implement dedicated invite screen
-                  onComplete();
+                  // Navigate to family details to add members
+                  if (familyId.isNotEmpty) {
+                    Get.offNamed(AppRoutes.familyDetails, arguments: {'familyId': familyId});
+                  } else {
+                    onComplete();
+                  }
                 },
                 borderRadius: BorderRadius.circular(28.r),
                 child: Center(
@@ -1106,7 +1148,7 @@ class FamilyInviteMembersStep extends StatelessWidget {
           ),
           SizedBox(height: 16.h),
 
-          // Skip Button
+          // Done Button
           Container(
             width: double.infinity,
             height: 56.h,
@@ -1125,7 +1167,7 @@ class FamilyInviteMembersStep extends StatelessWidget {
                 borderRadius: BorderRadius.circular(28.r),
                 child: Center(
                   child: Text(
-                    'Skip for Now',
+                    'Done',
                     style: TextStyle(
                       color: Colors.white.withOpacity(0.8),
                       fontSize: 16.sp,

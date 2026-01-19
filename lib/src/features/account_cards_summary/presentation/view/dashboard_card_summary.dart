@@ -11,7 +11,6 @@ import 'package:lazervault/src/features/authentication/cubit/authentication_stat
 import 'package:lazervault/src/features/authentication/domain/entities/user.dart';
 import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
 import 'package:lazervault/src/features/profile/cubit/profile_state.dart';
-import 'package:lazervault/src/features/family_account/presentation/widgets/family_setup_card.dart';
 import '../widgets/dashboard_header.dart';
 import '../widgets/account_carousel.dart';
 import '../widgets/card_details_bottom_sheet.dart';
@@ -232,20 +231,10 @@ class _DashboardCardSummaryViewState extends State<_DashboardCardSummaryView> {
                       (account) => account.isFamilyAccount,
                     );
 
-                    return Column(
-                      children: [
-                        // Account Carousel
-                        AccountCarousel(
-                          accountSummaries: state.accountSummaries,
-                          onShowDetails:
-                              _showCardDetailsSheet, // Pass the method reference
-                        ),
-                        // Show FamilySetupCard if no family account exists
-                        if (!hasFamilyAccount) ...[
-                          SizedBox(height: 16.h),
-                          _buildFamilySetupCard(),
-                        ],
-                      ],
+                    return AccountCarousel(
+                      accountSummaries: state.accountSummaries,
+                      onShowDetails: _showCardDetailsSheet,
+                      showFamilySetupCard: !hasFamilyAccount, // Show setup card in carousel if no family account
                     );
                   }
                   return SizedBox(
@@ -261,11 +250,4 @@ class _DashboardCardSummaryViewState extends State<_DashboardCardSummaryView> {
     );
   }
 
-  Widget _buildFamilySetupCard() {
-    return FamilySetupCard(
-      onGetStarted: () {
-        Get.toNamed(AppRoutes.familySetup);
-      },
-    );
-  }
 }

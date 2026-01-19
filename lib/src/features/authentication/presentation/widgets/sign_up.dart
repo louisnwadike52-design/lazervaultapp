@@ -354,6 +354,7 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
         final password = state is SignUpInProgress ? state.password : '';
         final confirmPassword = state is SignUpInProgress ? state.confirmPassword : '';
         final primaryContactType = state is SignUpInProgress ? state.primaryContactType : PrimaryContactType.none;
+        final email = state is SignUpInProgress ? state.email : '';
         final phoneNumber = state is SignUpInProgress ? state.phoneNumber : '';
 
         // Password validation checks
@@ -371,101 +372,41 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
         // All password requirements met
         final allPasswordRequirementsMet = hasMinLength && hasUppercase && hasLowercase && hasDigit && hasSpecialChar;
 
+        // Get current value for unified field (email or phone)
+        final currentContactValue = primaryContactType == PrimaryContactType.phone
+            ? phoneNumber
+            : (email.isNotEmpty ? email : initialEmail ?? '');
+
+        // Determine icon based on detected type
+        final contactIcon = primaryContactType == PrimaryContactType.phone
+            ? Icons.phone
+            : (primaryContactType == PrimaryContactType.email ? Icons.email : Icons.person_outline);
+
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Show Email OR Phone Number field based on selection
-            if (primaryContactType == PrimaryContactType.email || primaryContactType == PrimaryContactType.none) ...[
-              BuildFormField(
-                name: "email",
-                placeholder: "Email",
-                keyboardType: TextInputType.emailAddress,
-                prefixIcon: const Icon(Icons.email, color: Colors.black45),
-                initialValue: initialEmail,
-                onChanged: (value) => context.read<AuthenticationCubit>().signUpEmailChanged(value),
-              ),
-              SizedBox(height: 8.0.h),
-              // CTA to switch to phone number
-              GestureDetector(
-                onTap: () => context.read<AuthenticationCubit>().signUpSetPrimaryContactType(PrimaryContactType.phone),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Use phone number instead',
-                      style: TextStyle(
-                        color: const Color(0xFF4E03D0),
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    SizedBox(width: 4.w),
-                    Icon(
-                      Icons.arrow_forward_ios,
-                      size: 12.sp,
-                      color: const Color(0xFF4E03D0),
-                    ),
-                  ],
-                ),
-              ),
-            ] else ...[
-              IntlPhoneField(
-                decoration: InputDecoration(
-                  hintText: 'Phone Number',
-                  hintStyle: TextStyle(
-                    fontSize: 16.sp,
+            // Unified Email or Phone Number field
+            BuildFormField(
+              name: "emailOrPhone",
+              placeholder: "Email or Phone Number",
+              keyboardType: TextInputType.emailAddress,
+              prefixIcon: Icon(contactIcon, color: Colors.black45),
+              initialValue: currentContactValue,
+              onChanged: (value) => context.read<AuthenticationCubit>().signUpEmailOrPhoneChanged(value),
+            ),
+            // Show hint about detected type
+            if (primaryContactType != PrimaryContactType.none) ...[
+              SizedBox(height: 4.0.h),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 12.0.w),
+                child: Text(
+                  primaryContactType == PrimaryContactType.phone
+                      ? 'Detected: Phone number'
+                      : 'Detected: Email address',
+                  style: TextStyle(
                     color: Colors.grey.shade600,
+                    fontSize: 12.sp,
                   ),
-                  fillColor: const Color(0xFFF0F0F0),
-                  filled: true,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(24.0.r),
-                    borderSide: BorderSide.none,
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(24.0.r),
-                    borderSide: BorderSide.none,
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(24.0.r),
-                    borderSide: BorderSide.none,
-                  ),
-                  contentPadding: EdgeInsets.symmetric(
-                    horizontal: 12.0.w,
-                    vertical: 12.0.h,
-                  ),
-                ),
-                keyboardType: TextInputType.phone,
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                style: TextStyle(fontSize: 16.sp),
-                dropdownTextStyle: TextStyle(fontSize: 16.sp),
-                initialCountryCode: 'US',
-                onChanged: (phone) {
-                  context.read<AuthenticationCubit>().signUpPhoneNumberChanged(phone.completeNumber);
-                },
-              ),
-              SizedBox(height: 8.0.h),
-              // CTA to switch to email
-              GestureDetector(
-                onTap: () => context.read<AuthenticationCubit>().signUpSetPrimaryContactType(PrimaryContactType.email),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Use email instead',
-                      style: TextStyle(
-                        color: const Color(0xFF4E03D0),
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    SizedBox(width: 4.w),
-                    Icon(
-                      Icons.arrow_forward_ios,
-                      size: 12.sp,
-                      color: const Color(0xFF4E03D0),
-                    ),
-                  ],
                 ),
               ),
             ],

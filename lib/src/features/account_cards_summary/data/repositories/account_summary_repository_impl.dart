@@ -5,16 +5,16 @@ import 'package:lazervault/core/services/grpc_call_options_helper.dart';
 import 'package:lazervault/src/features/account_cards_summary/data/models/account_summary_model.dart';
 import 'package:lazervault/src/features/account_cards_summary/domain/entities/account_summary_entity.dart';
 import 'package:lazervault/src/features/account_cards_summary/domain/repositories/i_account_summary_repository.dart';
-import 'package:lazervault/src/generated/account.pbgrpc.dart';
-import 'package:lazervault/src/generated/account.pb.dart' as req_resp;
+import 'package:lazervault/src/generated/accounts.pbgrpc.dart';
+import 'package:lazervault/src/generated/accounts.pb.dart' as req_resp;
 
 
 class AccountSummaryRepositoryImpl implements IAccountSummaryRepository {
-  final AccountServiceClient _accountServiceClient;
+  final AccountsServiceClient _accountsServiceClient;
   final GrpcCallOptionsHelper _callOptionsHelper;
 
   AccountSummaryRepositoryImpl(
-    this._accountServiceClient,
+    this._accountsServiceClient,
     this._callOptionsHelper,
   );
 
@@ -45,7 +45,7 @@ class AccountSummaryRepositoryImpl implements IAccountSummaryRepository {
           );
         }
 
-        return await _accountServiceClient.getUserAccounts(
+        return await _accountsServiceClient.getUserAccounts(
           request,
           options: callOptions,
         );

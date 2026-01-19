@@ -789,7 +789,7 @@ Future<void> init() async {
   // Repositories
   serviceLocator.registerLazySingleton<IAccountSummaryRepository>(
       () => AccountSummaryRepositoryImpl(
-        serviceLocator<account_grpc.AccountServiceClient>(),
+        serviceLocator<accounts_grpc.AccountsServiceClient>(),
         serviceLocator<GrpcCallOptionsHelper>(),
       ));
 
