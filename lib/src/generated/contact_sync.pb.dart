@@ -9,7 +9,7 @@ import 'dart:core' as $core;
 
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'google/protobuf/timestamp.pb.dart' as $34;
+import 'google/protobuf/timestamp.pb.dart' as $36;
 
 import 'contact_sync.pbenum.dart';
 
@@ -23,8 +23,8 @@ class SyncedContact extends $pb.GeneratedMessage {
     ..pPS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'phoneNumbers')
     ..pPS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'emails')
     ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'photoUrl')
-    ..aOM<$34.Timestamp>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $34.Timestamp.create)
-    ..aOM<$34.Timestamp>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $34.Timestamp.create)
+    ..aOM<$36.Timestamp>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $36.Timestamp.create)
+    ..aOM<$36.Timestamp>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $36.Timestamp.create)
     ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'deviceContactId')
     ..aOB(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isLazervaultUser')
     ..aOS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lazervaultUserId')
@@ -40,8 +40,8 @@ class SyncedContact extends $pb.GeneratedMessage {
     $core.Iterable<$core.String>? phoneNumbers,
     $core.Iterable<$core.String>? emails,
     $core.String? photoUrl,
-    $34.Timestamp? createdAt,
-    $34.Timestamp? updatedAt,
+    $36.Timestamp? createdAt,
+    $36.Timestamp? updatedAt,
     $core.String? deviceContactId,
     $core.bool? isLazervaultUser,
     $core.String? lazervaultUserId,
@@ -150,26 +150,26 @@ class SyncedContact extends $pb.GeneratedMessage {
   void clearPhotoUrl() => clearField(6);
 
   @$pb.TagNumber(7)
-  $34.Timestamp get createdAt => $_getN(6);
+  $36.Timestamp get createdAt => $_getN(6);
   @$pb.TagNumber(7)
-  set createdAt($34.Timestamp v) { setField(7, v); }
+  set createdAt($36.Timestamp v) { setField(7, v); }
   @$pb.TagNumber(7)
   $core.bool hasCreatedAt() => $_has(6);
   @$pb.TagNumber(7)
   void clearCreatedAt() => clearField(7);
   @$pb.TagNumber(7)
-  $34.Timestamp ensureCreatedAt() => $_ensure(6);
+  $36.Timestamp ensureCreatedAt() => $_ensure(6);
 
   @$pb.TagNumber(8)
-  $34.Timestamp get updatedAt => $_getN(7);
+  $36.Timestamp get updatedAt => $_getN(7);
   @$pb.TagNumber(8)
-  set updatedAt($34.Timestamp v) { setField(8, v); }
+  set updatedAt($36.Timestamp v) { setField(8, v); }
   @$pb.TagNumber(8)
   $core.bool hasUpdatedAt() => $_has(7);
   @$pb.TagNumber(8)
   void clearUpdatedAt() => clearField(8);
   @$pb.TagNumber(8)
-  $34.Timestamp ensureUpdatedAt() => $_ensure(7);
+  $36.Timestamp ensureUpdatedAt() => $_ensure(7);
 
   @$pb.TagNumber(9)
   $core.String get deviceContactId => $_getSZ(8);
@@ -1494,7 +1494,7 @@ class SyncPreferences extends $pb.GeneratedMessage {
     ..e<SyncFrequency>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'syncFrequency', $pb.PbFieldType.OE, defaultOrMaker: SyncFrequency.SYNC_FREQUENCY_UNSPECIFIED, valueOf: SyncFrequency.valueOf, enumValues: SyncFrequency.values)
     ..aOB(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'matchWithUsers')
     ..aOB(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'syncPhotos')
-    ..aOM<$34.Timestamp>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastSyncAt', subBuilder: $34.Timestamp.create)
+    ..aOM<$36.Timestamp>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastSyncAt', subBuilder: $36.Timestamp.create)
     ..a<$core.int>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalSyncedContacts', $pb.PbFieldType.O3)
     ..a<$core.int>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalMatchedUsers', $pb.PbFieldType.O3)
     ..hasRequiredFields = false
@@ -1507,7 +1507,7 @@ class SyncPreferences extends $pb.GeneratedMessage {
     SyncFrequency? syncFrequency,
     $core.bool? matchWithUsers,
     $core.bool? syncPhotos,
-    $34.Timestamp? lastSyncAt,
+    $36.Timestamp? lastSyncAt,
     $core.int? totalSyncedContacts,
     $core.int? totalMatchedUsers,
   }) {
@@ -1605,15 +1605,15 @@ class SyncPreferences extends $pb.GeneratedMessage {
   void clearSyncPhotos() => clearField(5);
 
   @$pb.TagNumber(6)
-  $34.Timestamp get lastSyncAt => $_getN(5);
+  $36.Timestamp get lastSyncAt => $_getN(5);
   @$pb.TagNumber(6)
-  set lastSyncAt($34.Timestamp v) { setField(6, v); }
+  set lastSyncAt($36.Timestamp v) { setField(6, v); }
   @$pb.TagNumber(6)
   $core.bool hasLastSyncAt() => $_has(5);
   @$pb.TagNumber(6)
   void clearLastSyncAt() => clearField(6);
   @$pb.TagNumber(6)
-  $34.Timestamp ensureLastSyncAt() => $_ensure(5);
+  $36.Timestamp ensureLastSyncAt() => $_ensure(5);
 
   @$pb.TagNumber(7)
   $core.int get totalSyncedContacts => $_getIZ(6);

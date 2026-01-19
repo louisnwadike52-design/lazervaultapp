@@ -1,4 +1,4 @@
-import '../../../../../core/network/grpc_client.dart';
+import '../../../../core/network/grpc_client.dart';
 import '../../../../../core/services/secure_storage_service.dart';
 import '../../domain/entities/scan_entities.dart';
 import '../../domain/repositories/ai_scan_repository.dart';

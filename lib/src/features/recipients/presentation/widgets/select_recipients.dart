@@ -317,33 +317,70 @@ class _SelectRecipientsState extends State<SelectRecipients> {
     }
 
     if (state is RecipientLoaded) {
-      // Handle case where recipients list is empty
-      if (state.recipients.isEmpty) {
-        return const Center(
-            child: Text('No previous recipients')); // User requested text
+      // Filter to show only favorited recipients (Lemfi-style)
+      final favoriteRecipients = state.recipients
+          .where((recipient) => recipient.isFavorite)
+          .toList();
+
+      // Handle case where there are no favorited recipients
+      if (favoriteRecipients.isEmpty) {
+        return Center(
+          child: Padding(
+            padding: EdgeInsets.all(24.w),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.people_outline,
+                  size: 64,
+                  color: Colors.grey[400],
+                ),
+                SizedBox(height: 16.h),
+                Text(
+                  'No Saved Recipients',
+                  style: TextStyle(
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                  ),
+                ),
+                SizedBox(height: 8.h),
+                Text(
+                  'Favorite recipients during payment\nto see them here',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    color: Colors.grey[600],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
       }
-      // Build the UI for displaying the list
+
+      // Build the UI for displaying favorited recipients only
       return SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Frequent Section
+            // Frequent Section (favorited recipients only)
             Padding(
               padding: EdgeInsets.all(16.w),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  RecipientChipsBuilder(recipients: state.recipients),
+                  RecipientChipsBuilder(recipients: favoriteRecipients),
                 ],
               ),
             ),
 
-            // All Recipients Section
+            // All Recipients Section (favorited recipients only)
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Recipients(recipients: state.recipients),
+                Recipients(recipients: favoriteRecipients),
               ],
             ),
           ],

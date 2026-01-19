@@ -8,7 +8,6 @@ import '../../../../../core/theme/invoice_theme_colors.dart';
 
 import '../../domain/entities/invoice_entity.dart';
 import '../../services/invoice_pdf_service.dart';
-import '../../data/models/pagination_model.dart';
 import '../cubit/invoice_cubit.dart';
 import '../cubit/invoice_state.dart';
 import '../widgets/invoice_card.dart';
@@ -426,8 +425,7 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
     if (status == null) {
       context.read<InvoiceCubit>().loadInvoices();
     } else {
-      final filter = InvoiceSearchFilter(statuses: [status.name]);
-      context.read<InvoiceCubit>().applyFilters(filter);
+      context.read<InvoiceCubit>().loadInvoices(statusFilter: [status.name]);
     }
   }
 

@@ -39,12 +39,12 @@ class AiScanServiceClient extends $grpc.Client {
       ($3.GeneratePaymentInstructionRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
           $3.GeneratePaymentInstructionResponse.fromBuffer(value));
-  static final _$processPayment =
-      $grpc.ClientMethod<$3.ProcessPaymentRequest, $3.ProcessPaymentResponse>(
-          '/ai_scan.AiScanService/ProcessPayment',
-          ($3.ProcessPaymentRequest value) => value.writeToBuffer(),
-          ($core.List<$core.int> value) =>
-              $3.ProcessPaymentResponse.fromBuffer(value));
+  static final _$processPayment = $grpc.ClientMethod<
+          $3.ScanProcessPaymentRequest, $3.ScanProcessPaymentResponse>(
+      '/ai_scan.AiScanService/ProcessPayment',
+      ($3.ScanProcessPaymentRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $3.ScanProcessPaymentResponse.fromBuffer(value));
   static final _$getScanHistory =
       $grpc.ClientMethod<$3.GetScanHistoryRequest, $3.GetScanHistoryResponse>(
           '/ai_scan.AiScanService/GetScanHistory',
@@ -82,8 +82,8 @@ class AiScanServiceClient extends $grpc.Client {
         options: options);
   }
 
-  $grpc.ResponseFuture<$3.ProcessPaymentResponse> processPayment(
-      $3.ProcessPaymentRequest request,
+  $grpc.ResponseFuture<$3.ScanProcessPaymentResponse> processPayment(
+      $3.ScanProcessPaymentRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$processPayment, request, options: options);
   }
@@ -136,15 +136,15 @@ abstract class AiScanServiceBase extends $grpc.Service {
             $3.GeneratePaymentInstructionRequest.fromBuffer(value),
         ($3.GeneratePaymentInstructionResponse value) =>
             value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$3.ProcessPaymentRequest,
-            $3.ProcessPaymentResponse>(
+    $addMethod($grpc.ServiceMethod<$3.ScanProcessPaymentRequest,
+            $3.ScanProcessPaymentResponse>(
         'ProcessPayment',
         processPayment_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $3.ProcessPaymentRequest.fromBuffer(value),
-        ($3.ProcessPaymentResponse value) => value.writeToBuffer()));
+            $3.ScanProcessPaymentRequest.fromBuffer(value),
+        ($3.ScanProcessPaymentResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$3.GetScanHistoryRequest,
             $3.GetScanHistoryResponse>(
         'GetScanHistory',
@@ -180,9 +180,9 @@ abstract class AiScanServiceBase extends $grpc.Service {
     return generatePaymentInstruction(call, await request);
   }
 
-  $async.Future<$3.ProcessPaymentResponse> processPayment_Pre(
+  $async.Future<$3.ScanProcessPaymentResponse> processPayment_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$3.ProcessPaymentRequest> request) async {
+      $async.Future<$3.ScanProcessPaymentRequest> request) async {
     return processPayment(call, await request);
   }
 
@@ -201,8 +201,8 @@ abstract class AiScanServiceBase extends $grpc.Service {
   $async.Future<$3.GeneratePaymentInstructionResponse>
       generatePaymentInstruction(
           $grpc.ServiceCall call, $3.GeneratePaymentInstructionRequest request);
-  $async.Future<$3.ProcessPaymentResponse> processPayment(
-      $grpc.ServiceCall call, $3.ProcessPaymentRequest request);
+  $async.Future<$3.ScanProcessPaymentResponse> processPayment(
+      $grpc.ServiceCall call, $3.ScanProcessPaymentRequest request);
   $async.Future<$3.GetScanHistoryResponse> getScanHistory(
       $grpc.ServiceCall call, $3.GetScanHistoryRequest request);
 }

@@ -956,16 +956,16 @@ class GeneratePaymentInstructionResponse extends $pb.GeneratedMessage {
   void clearErrorMessage() => clearField(3);
 }
 
-class ProcessPaymentRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ProcessPaymentRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ai_scan'), createEmptyInstance: create)
+class ScanProcessPaymentRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ScanProcessPaymentRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ai_scan'), createEmptyInstance: create)
     ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
     ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sessionId')
     ..aOM<PaymentInstruction>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'instruction', subBuilder: PaymentInstruction.create)
     ..hasRequiredFields = false
   ;
 
-  ProcessPaymentRequest._() : super();
-  factory ProcessPaymentRequest({
+  ScanProcessPaymentRequest._() : super();
+  factory ScanProcessPaymentRequest({
     $core.String? userId,
     $core.String? sessionId,
     PaymentInstruction? instruction,
@@ -982,26 +982,26 @@ class ProcessPaymentRequest extends $pb.GeneratedMessage {
     }
     return _result;
   }
-  factory ProcessPaymentRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory ProcessPaymentRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  factory ScanProcessPaymentRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory ScanProcessPaymentRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
   'Will be removed in next major version')
-  ProcessPaymentRequest clone() => ProcessPaymentRequest()..mergeFromMessage(this);
+  ScanProcessPaymentRequest clone() => ScanProcessPaymentRequest()..mergeFromMessage(this);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ProcessPaymentRequest copyWith(void Function(ProcessPaymentRequest) updates) => super.copyWith((message) => updates(message as ProcessPaymentRequest)) as ProcessPaymentRequest; // ignore: deprecated_member_use
+  ScanProcessPaymentRequest copyWith(void Function(ScanProcessPaymentRequest) updates) => super.copyWith((message) => updates(message as ScanProcessPaymentRequest)) as ScanProcessPaymentRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
   @$core.pragma('dart2js:noInline')
-  static ProcessPaymentRequest create() => ProcessPaymentRequest._();
-  ProcessPaymentRequest createEmptyInstance() => create();
-  static $pb.PbList<ProcessPaymentRequest> createRepeated() => $pb.PbList<ProcessPaymentRequest>();
+  static ScanProcessPaymentRequest create() => ScanProcessPaymentRequest._();
+  ScanProcessPaymentRequest createEmptyInstance() => create();
+  static $pb.PbList<ScanProcessPaymentRequest> createRepeated() => $pb.PbList<ScanProcessPaymentRequest>();
   @$core.pragma('dart2js:noInline')
-  static ProcessPaymentRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ProcessPaymentRequest>(create);
-  static ProcessPaymentRequest? _defaultInstance;
+  static ScanProcessPaymentRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ScanProcessPaymentRequest>(create);
+  static ScanProcessPaymentRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get userId => $_getSZ(0);
@@ -1033,8 +1033,8 @@ class ProcessPaymentRequest extends $pb.GeneratedMessage {
   PaymentInstruction ensureInstruction() => $_ensure(2);
 }
 
-class ProcessPaymentResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ProcessPaymentResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ai_scan'), createEmptyInstance: create)
+class ScanProcessPaymentResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ScanProcessPaymentResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ai_scan'), createEmptyInstance: create)
     ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactionId')
     ..aOB(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
     ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status')
@@ -1043,8 +1043,8 @@ class ProcessPaymentResponse extends $pb.GeneratedMessage {
     ..hasRequiredFields = false
   ;
 
-  ProcessPaymentResponse._() : super();
-  factory ProcessPaymentResponse({
+  ScanProcessPaymentResponse._() : super();
+  factory ScanProcessPaymentResponse({
     $core.String? transactionId,
     $core.bool? success,
     $core.String? status,
@@ -1069,26 +1069,26 @@ class ProcessPaymentResponse extends $pb.GeneratedMessage {
     }
     return _result;
   }
-  factory ProcessPaymentResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory ProcessPaymentResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  factory ScanProcessPaymentResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory ScanProcessPaymentResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
   'Will be removed in next major version')
-  ProcessPaymentResponse clone() => ProcessPaymentResponse()..mergeFromMessage(this);
+  ScanProcessPaymentResponse clone() => ScanProcessPaymentResponse()..mergeFromMessage(this);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ProcessPaymentResponse copyWith(void Function(ProcessPaymentResponse) updates) => super.copyWith((message) => updates(message as ProcessPaymentResponse)) as ProcessPaymentResponse; // ignore: deprecated_member_use
+  ScanProcessPaymentResponse copyWith(void Function(ScanProcessPaymentResponse) updates) => super.copyWith((message) => updates(message as ScanProcessPaymentResponse)) as ScanProcessPaymentResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
   @$core.pragma('dart2js:noInline')
-  static ProcessPaymentResponse create() => ProcessPaymentResponse._();
-  ProcessPaymentResponse createEmptyInstance() => create();
-  static $pb.PbList<ProcessPaymentResponse> createRepeated() => $pb.PbList<ProcessPaymentResponse>();
+  static ScanProcessPaymentResponse create() => ScanProcessPaymentResponse._();
+  ScanProcessPaymentResponse createEmptyInstance() => create();
+  static $pb.PbList<ScanProcessPaymentResponse> createRepeated() => $pb.PbList<ScanProcessPaymentResponse>();
   @$core.pragma('dart2js:noInline')
-  static ProcessPaymentResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ProcessPaymentResponse>(create);
-  static ProcessPaymentResponse? _defaultInstance;
+  static ScanProcessPaymentResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ScanProcessPaymentResponse>(create);
+  static ScanProcessPaymentResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get transactionId => $_getSZ(0);

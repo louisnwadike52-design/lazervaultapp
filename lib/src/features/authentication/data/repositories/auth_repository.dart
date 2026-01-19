@@ -12,7 +12,9 @@ import 'package:lazervault/src/features/authentication/domain/entities/profile_e
 import 'package:lazervault/src/features/authentication/domain/entities/phone_verification_entity.dart';
 import 'package:lazervault/src/features/authentication/data/models/phone_verification_model.dart';
 import 'package:lazervault/src/features/authentication/domain/repositories/i_auth_repository.dart';
+import 'package:lazervault/src/features/authentication/domain/usecases/sign_up_usecase.dart';
 import 'package:lazervault/src/generated/auth.pbgrpc.dart';
+import 'package:lazervault/src/generated/auth.pbenum.dart' as auth_enum;
 import 'package:lazervault/src/generated/user.pbgrpc.dart';
 import 'package:lazervault/src/generated/auth.pb.dart' as auth_req_resp;
 // Import google_sign_in and sign_in_with_apple if implementing those methods
@@ -204,11 +206,17 @@ class AuthRepositoryImpl implements IAuthRepository {
     required String lastName,
     required String email,
     required String password,
+    required SignupPrimaryContact primaryContact,
     String? phoneNumber,
     String? username,
     String? referralCode,
   }) async {
     try {
+      // Map domain enum to proto enum
+      final protoPrimaryContact = primaryContact == SignupPrimaryContact.phone
+          ? auth_enum.PrimaryContactType.PHONE
+          : auth_enum.PrimaryContactType.EMAIL;
+
       // Use new AuthService.Signup endpoint that returns tokens directly
       final signupRequest = auth_req_resp.SignupRequest(
         firstName: firstName,
@@ -219,6 +227,7 @@ class AuthRepositoryImpl implements IAuthRepository {
         countryCode: '', // Extract from phone if needed
         deviceId: 'flutter-app', // TODO: Get actual device ID
         deviceName: 'Flutter App', // TODO: Get actual device name
+        primaryContactType: protoPrimaryContact,
       );
       print('Sending gRPC Signup request...');
       final signupResponse = await _authServiceClient.signup(signupRequest);
@@ -408,22 +417,31 @@ class AuthRepositoryImpl implements IAuthRepository {
   }
 
   @override
-  Future<Either<Failure, void>> resendVerificationEmail() async {
+  Future<Either<Failure, int>> resendVerificationEmail() async {
     try {
-      final request = auth_req_resp.RequestEmailVerificationRequest();
-      print('Sending gRPC RequestEmailVerification request');
+      final request = auth_req_resp.ResendVerificationEmailRequest();
+      print('Sending gRPC ResendVerificationEmail request');
 
       // Use helper to get call options with authorization header from secure storage
       final callOptions = await _callOptionsHelper.withAuth();
-      final response = await _authServiceClient.requestEmailVerification(request, options: callOptions);
+      final response = await _authServiceClient.resendVerificationEmail(request, options: callOptions);
 
       if (response.success) {
-        print('Verification email sent successfully');
-        return const Right(null);
+        print('Verification email sent successfully, cooldown: ${response.cooldownSeconds}s');
+        // Return the cooldown seconds from the backend (default 60 if not set)
+        return Right(response.cooldownSeconds > 0 ? response.cooldownSeconds : 60);
       } else {
-        print('Resend verification email failed: ${response.msg}');
+        print('Resend verification email failed: ${response.message}');
+        // Return the cooldown seconds even on failure (rate limit scenario)
+        if (response.cooldownSeconds > 0) {
+          return Left(ServerFailure(
+            message: response.message.isNotEmpty ? response.message : 'Please wait before requesting another code.',
+            statusCode: 429, // Too Many Requests
+            cooldownSeconds: response.cooldownSeconds,
+          ));
+        }
         return Left(ServerFailure(
-          message: response.msg.isNotEmpty ? response.msg : 'Failed to send verification email.',
+          message: response.message.isNotEmpty ? response.message : 'Failed to send verification email.',
           statusCode: 400,
         ));
       }

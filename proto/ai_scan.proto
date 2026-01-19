@@ -42,7 +42,7 @@ service AiScanService {
   }
 
   // Process the generated payment
-  rpc ProcessPayment(ProcessPaymentRequest) returns (ProcessPaymentResponse) {
+  rpc ProcessPayment(ScanProcessPaymentRequest) returns (ScanProcessPaymentResponse) {
     option (google.api.http) = {
       post: "/v1/ai-scan/process-payment"
       body: "*"
@@ -158,13 +158,13 @@ message GeneratePaymentInstructionResponse {
 }
 
 // Process Payment
-message ProcessPaymentRequest {
+message ScanProcessPaymentRequest {
   string user_id = 1;
   string session_id = 2;
   PaymentInstruction instruction = 3;
 }
 
-message ProcessPaymentResponse {
+message ScanProcessPaymentResponse {
   string transaction_id = 1;
   bool success = 2;
   string status = 3;

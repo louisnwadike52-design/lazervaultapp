@@ -943,12 +943,27 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
           return;
         }
 
-        final phoneError = _validatePhoneNumber(currentState.phoneNumber);
-        if (phoneError != null) {
-          _showErrorSnackbar('Validation Error', phoneError);
-          if (isClosed) return;
-          emit(currentState.copyWith(errorMessage: phoneError));
-          return;
+        // Secondary contact validation (optional based on primary contact type)
+        if (currentState.primaryContactType == PrimaryContactType.phone) {
+          // Phone is primary, so email (secondary) is optional
+          // Only validate email format if provided
+          if (currentState.email.isNotEmpty && !_isValidEmail(currentState.email)) {
+            final errorMsg = 'Please enter a valid email address';
+            _showErrorSnackbar('Validation Error', errorMsg);
+            if (isClosed) return;
+            emit(currentState.copyWith(errorMessage: errorMsg));
+            return;
+          }
+        } else {
+          // Email is primary, so phone (secondary) is optional
+          // Only validate phone format if provided
+          final phoneError = _validateOptionalPhoneNumber(currentState.phoneNumber);
+          if (phoneError != null) {
+            _showErrorSnackbar('Validation Error', phoneError);
+            if (isClosed) return;
+            emit(currentState.copyWith(errorMessage: phoneError));
+            return;
+          }
         }
       }
 
@@ -973,12 +988,26 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       final currentState = state as SignUpInProgress;
 
       // Comprehensive validation before submission
-      if (!_isValidEmail(currentState.email)) {
-        final errorMsg = 'Please enter a valid email address';
-        _showErrorSnackbar('Validation Error', errorMsg);
-        if (isClosed) return;
-        emit(currentState.copyWith(errorMessage: errorMsg, isLoading: false));
-        return;
+      // Email validation - required only if email is primary contact
+      if (currentState.primaryContactType == PrimaryContactType.email ||
+          currentState.primaryContactType == PrimaryContactType.none) {
+        // Email is primary - must be valid
+        if (!_isValidEmail(currentState.email)) {
+          final errorMsg = 'Please enter a valid email address';
+          _showErrorSnackbar('Validation Error', errorMsg);
+          if (isClosed) return;
+          emit(currentState.copyWith(errorMessage: errorMsg, isLoading: false));
+          return;
+        }
+      } else {
+        // Phone is primary - email is optional, only validate format if provided
+        if (currentState.email.isNotEmpty && !_isValidEmail(currentState.email)) {
+          final errorMsg = 'Please enter a valid email address';
+          _showErrorSnackbar('Validation Error', errorMsg);
+          if (isClosed) return;
+          emit(currentState.copyWith(errorMessage: errorMsg, isLoading: false));
+          return;
+        }
       }
 
       final passwordError = _validatePassword(currentState.password);
@@ -1021,17 +1050,35 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
         return;
       }
 
-      final phoneError = _validatePhoneNumber(currentState.phoneNumber);
-      if (phoneError != null) {
-        _showErrorSnackbar('Validation Error', phoneError);
-        if (isClosed) return;
-        emit(currentState.copyWith(errorMessage: phoneError, isLoading: false));
-        return;
+      // Phone validation - required only if phone is primary contact
+      if (currentState.primaryContactType == PrimaryContactType.phone) {
+        // Phone is primary - must be valid
+        final phoneError = _validatePhoneNumber(currentState.phoneNumber);
+        if (phoneError != null) {
+          _showErrorSnackbar('Validation Error', phoneError);
+          if (isClosed) return;
+          emit(currentState.copyWith(errorMessage: phoneError, isLoading: false));
+          return;
+        }
+      } else {
+        // Email is primary - phone is optional, only validate format if provided
+        final phoneError = _validateOptionalPhoneNumber(currentState.phoneNumber);
+        if (phoneError != null) {
+          _showErrorSnackbar('Validation Error', phoneError);
+          if (isClosed) return;
+          emit(currentState.copyWith(errorMessage: phoneError, isLoading: false));
+          return;
+        }
       }
 
       if (currentState.isLoading) return;
       if (isClosed) return;
       emit(currentState.copyWith(isLoading: true, clearErrorMessage: true));
+
+      // Determine primary contact for backend
+      final primaryContact = currentState.primaryContactType == PrimaryContactType.phone
+          ? SignupPrimaryContact.phone
+          : SignupPrimaryContact.email;
 
       // Call the sign up use case
       final result = await _signUpUseCase(
@@ -1039,7 +1086,8 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
         lastName: currentState.lastName,
         email: currentState.email,
         password: currentState.password,
-        phoneNumber: currentState.phoneNumber,
+        primaryContact: primaryContact,
+        phoneNumber: currentState.phoneNumber.isEmpty ? null : currentState.phoneNumber,
         username: currentState.username.isEmpty ? null : currentState.username,
         referralCode: currentState.referralCode.isEmpty ? null : currentState.referralCode,
       );
@@ -1134,6 +1182,25 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
   String? _validatePhoneNumber(String phoneNumber) {
     if (phoneNumber.isEmpty) return 'Phone number is required';
 
+    // IntlPhoneField already validates and formats phone numbers
+    // Just ensure it starts with + and has reasonable length
+    if (!phoneNumber.startsWith('+')) {
+      return 'Please select a country code for your phone number';
+    }
+
+    if (phoneNumber.length < 8) {
+      return 'Please enter a complete phone number';
+    }
+
+    return null; // Phone number is valid
+  }
+
+  // Validates phone number only if provided (for optional secondary contact)
+  String? _validateOptionalPhoneNumber(String phoneNumber) {
+    // If empty, it's valid (optional field)
+    if (phoneNumber.isEmpty) return null;
+
+    // If provided, validate the format
     // IntlPhoneField already validates and formats phone numbers
     // Just ensure it starts with + and has reasonable length
     if (!phoneNumber.startsWith('+')) {

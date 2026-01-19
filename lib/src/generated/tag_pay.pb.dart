@@ -9,7 +9,7 @@ import 'dart:core' as $core;
 
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'google/protobuf/timestamp.pb.dart' as $34;
+import 'google/protobuf/timestamp.pb.dart' as $36;
 
 import 'tag_pay.pbenum.dart';
 
@@ -23,8 +23,8 @@ class TagPay extends $pb.GeneratedMessage {
     ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'displayName')
     ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'avatarUrl')
     ..aOB(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isActive')
-    ..aOM<$34.Timestamp>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $34.Timestamp.create)
-    ..aOM<$34.Timestamp>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $34.Timestamp.create)
+    ..aOM<$36.Timestamp>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $36.Timestamp.create)
+    ..aOM<$36.Timestamp>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $36.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -36,8 +36,8 @@ class TagPay extends $pb.GeneratedMessage {
     $core.String? displayName,
     $core.String? avatarUrl,
     $core.bool? isActive,
-    $34.Timestamp? createdAt,
-    $34.Timestamp? updatedAt,
+    $36.Timestamp? createdAt,
+    $36.Timestamp? updatedAt,
   }) {
     final _result = create();
     if (id != null) {
@@ -142,26 +142,26 @@ class TagPay extends $pb.GeneratedMessage {
   void clearIsActive() => clearField(6);
 
   @$pb.TagNumber(7)
-  $34.Timestamp get createdAt => $_getN(6);
+  $36.Timestamp get createdAt => $_getN(6);
   @$pb.TagNumber(7)
-  set createdAt($34.Timestamp v) { setField(7, v); }
+  set createdAt($36.Timestamp v) { setField(7, v); }
   @$pb.TagNumber(7)
   $core.bool hasCreatedAt() => $_has(6);
   @$pb.TagNumber(7)
   void clearCreatedAt() => clearField(7);
   @$pb.TagNumber(7)
-  $34.Timestamp ensureCreatedAt() => $_ensure(6);
+  $36.Timestamp ensureCreatedAt() => $_ensure(6);
 
   @$pb.TagNumber(8)
-  $34.Timestamp get updatedAt => $_getN(7);
+  $36.Timestamp get updatedAt => $_getN(7);
   @$pb.TagNumber(8)
-  set updatedAt($34.Timestamp v) { setField(8, v); }
+  set updatedAt($36.Timestamp v) { setField(8, v); }
   @$pb.TagNumber(8)
   $core.bool hasUpdatedAt() => $_has(7);
   @$pb.TagNumber(8)
   void clearUpdatedAt() => clearField(8);
   @$pb.TagNumber(8)
-  $34.Timestamp ensureUpdatedAt() => $_ensure(7);
+  $36.Timestamp ensureUpdatedAt() => $_ensure(7);
 }
 
 class TagPayTransaction extends $pb.GeneratedMessage {
@@ -179,8 +179,8 @@ class TagPayTransaction extends $pb.GeneratedMessage {
     ..e<TagPayTransactionStatus>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: TagPayTransactionStatus.TAG_PAY_TRANSACTION_STATUS_PENDING, valueOf: TagPayTransactionStatus.valueOf, enumValues: TagPayTransactionStatus.values)
     ..e<TagPayTransactionType>(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'type', $pb.PbFieldType.OE, defaultOrMaker: TagPayTransactionType.TAG_PAY_TRANSACTION_TYPE_SEND, valueOf: TagPayTransactionType.valueOf, enumValues: TagPayTransactionType.values)
     ..aOS(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'referenceNumber')
-    ..aOM<$34.Timestamp>(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $34.Timestamp.create)
-    ..aOM<$34.Timestamp>(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'completedAt', subBuilder: $34.Timestamp.create)
+    ..aOM<$36.Timestamp>(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $36.Timestamp.create)
+    ..aOM<$36.Timestamp>(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'completedAt', subBuilder: $36.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -199,8 +199,8 @@ class TagPayTransaction extends $pb.GeneratedMessage {
     TagPayTransactionStatus? status,
     TagPayTransactionType? type,
     $core.String? referenceNumber,
-    $34.Timestamp? createdAt,
-    $34.Timestamp? completedAt,
+    $36.Timestamp? createdAt,
+    $36.Timestamp? completedAt,
   }) {
     final _result = create();
     if (id != null) {
@@ -389,26 +389,26 @@ class TagPayTransaction extends $pb.GeneratedMessage {
   void clearReferenceNumber() => clearField(13);
 
   @$pb.TagNumber(14)
-  $34.Timestamp get createdAt => $_getN(13);
+  $36.Timestamp get createdAt => $_getN(13);
   @$pb.TagNumber(14)
-  set createdAt($34.Timestamp v) { setField(14, v); }
+  set createdAt($36.Timestamp v) { setField(14, v); }
   @$pb.TagNumber(14)
   $core.bool hasCreatedAt() => $_has(13);
   @$pb.TagNumber(14)
   void clearCreatedAt() => clearField(14);
   @$pb.TagNumber(14)
-  $34.Timestamp ensureCreatedAt() => $_ensure(13);
+  $36.Timestamp ensureCreatedAt() => $_ensure(13);
 
   @$pb.TagNumber(15)
-  $34.Timestamp get completedAt => $_getN(14);
+  $36.Timestamp get completedAt => $_getN(14);
   @$pb.TagNumber(15)
-  set completedAt($34.Timestamp v) { setField(15, v); }
+  set completedAt($36.Timestamp v) { setField(15, v); }
   @$pb.TagNumber(15)
   $core.bool hasCompletedAt() => $_has(14);
   @$pb.TagNumber(15)
   void clearCompletedAt() => clearField(15);
   @$pb.TagNumber(15)
-  $34.Timestamp ensureCompletedAt() => $_ensure(14);
+  $36.Timestamp ensureCompletedAt() => $_ensure(14);
 }
 
 class MoneyRequest extends $pb.GeneratedMessage {
@@ -424,9 +424,9 @@ class MoneyRequest extends $pb.GeneratedMessage {
     ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
     ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
     ..e<MoneyRequestStatus>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: MoneyRequestStatus.MONEY_REQUEST_STATUS_PENDING, valueOf: MoneyRequestStatus.valueOf, enumValues: MoneyRequestStatus.values)
-    ..aOM<$34.Timestamp>(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $34.Timestamp.create)
-    ..aOM<$34.Timestamp>(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'respondedAt', subBuilder: $34.Timestamp.create)
-    ..aOM<$34.Timestamp>(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'expiresAt', subBuilder: $34.Timestamp.create)
+    ..aOM<$36.Timestamp>(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $36.Timestamp.create)
+    ..aOM<$36.Timestamp>(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'respondedAt', subBuilder: $36.Timestamp.create)
+    ..aOM<$36.Timestamp>(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'expiresAt', subBuilder: $36.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -443,9 +443,9 @@ class MoneyRequest extends $pb.GeneratedMessage {
     $core.String? currency,
     $core.String? description,
     MoneyRequestStatus? status,
-    $34.Timestamp? createdAt,
-    $34.Timestamp? respondedAt,
-    $34.Timestamp? expiresAt,
+    $36.Timestamp? createdAt,
+    $36.Timestamp? respondedAt,
+    $36.Timestamp? expiresAt,
   }) {
     final _result = create();
     if (id != null) {
@@ -613,37 +613,37 @@ class MoneyRequest extends $pb.GeneratedMessage {
   void clearStatus() => clearField(11);
 
   @$pb.TagNumber(12)
-  $34.Timestamp get createdAt => $_getN(11);
+  $36.Timestamp get createdAt => $_getN(11);
   @$pb.TagNumber(12)
-  set createdAt($34.Timestamp v) { setField(12, v); }
+  set createdAt($36.Timestamp v) { setField(12, v); }
   @$pb.TagNumber(12)
   $core.bool hasCreatedAt() => $_has(11);
   @$pb.TagNumber(12)
   void clearCreatedAt() => clearField(12);
   @$pb.TagNumber(12)
-  $34.Timestamp ensureCreatedAt() => $_ensure(11);
+  $36.Timestamp ensureCreatedAt() => $_ensure(11);
 
   @$pb.TagNumber(13)
-  $34.Timestamp get respondedAt => $_getN(12);
+  $36.Timestamp get respondedAt => $_getN(12);
   @$pb.TagNumber(13)
-  set respondedAt($34.Timestamp v) { setField(13, v); }
+  set respondedAt($36.Timestamp v) { setField(13, v); }
   @$pb.TagNumber(13)
   $core.bool hasRespondedAt() => $_has(12);
   @$pb.TagNumber(13)
   void clearRespondedAt() => clearField(13);
   @$pb.TagNumber(13)
-  $34.Timestamp ensureRespondedAt() => $_ensure(12);
+  $36.Timestamp ensureRespondedAt() => $_ensure(12);
 
   @$pb.TagNumber(14)
-  $34.Timestamp get expiresAt => $_getN(13);
+  $36.Timestamp get expiresAt => $_getN(13);
   @$pb.TagNumber(14)
-  set expiresAt($34.Timestamp v) { setField(14, v); }
+  set expiresAt($36.Timestamp v) { setField(14, v); }
   @$pb.TagNumber(14)
   $core.bool hasExpiresAt() => $_has(13);
   @$pb.TagNumber(14)
   void clearExpiresAt() => clearField(14);
   @$pb.TagNumber(14)
-  $34.Timestamp ensureExpiresAt() => $_ensure(13);
+  $36.Timestamp ensureExpiresAt() => $_ensure(13);
 }
 
 class UserTag extends $pb.GeneratedMessage {
@@ -659,8 +659,8 @@ class UserTag extends $pb.GeneratedMessage {
     ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
     ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
     ..e<TagStatus>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: TagStatus.TAG_STATUS_PENDING, valueOf: TagStatus.valueOf, enumValues: TagStatus.values)
-    ..aOM<$34.Timestamp>(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $34.Timestamp.create)
-    ..aOM<$34.Timestamp>(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'paidAt', subBuilder: $34.Timestamp.create)
+    ..aOM<$36.Timestamp>(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $36.Timestamp.create)
+    ..aOM<$36.Timestamp>(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'paidAt', subBuilder: $36.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -677,8 +677,8 @@ class UserTag extends $pb.GeneratedMessage {
     $core.String? currency,
     $core.String? description,
     TagStatus? status,
-    $34.Timestamp? createdAt,
-    $34.Timestamp? paidAt,
+    $36.Timestamp? createdAt,
+    $36.Timestamp? paidAt,
   }) {
     final _result = create();
     if (id != null) {
@@ -843,26 +843,26 @@ class UserTag extends $pb.GeneratedMessage {
   void clearStatus() => clearField(11);
 
   @$pb.TagNumber(12)
-  $34.Timestamp get createdAt => $_getN(11);
+  $36.Timestamp get createdAt => $_getN(11);
   @$pb.TagNumber(12)
-  set createdAt($34.Timestamp v) { setField(12, v); }
+  set createdAt($36.Timestamp v) { setField(12, v); }
   @$pb.TagNumber(12)
   $core.bool hasCreatedAt() => $_has(11);
   @$pb.TagNumber(12)
   void clearCreatedAt() => clearField(12);
   @$pb.TagNumber(12)
-  $34.Timestamp ensureCreatedAt() => $_ensure(11);
+  $36.Timestamp ensureCreatedAt() => $_ensure(11);
 
   @$pb.TagNumber(13)
-  $34.Timestamp get paidAt => $_getN(12);
+  $36.Timestamp get paidAt => $_getN(12);
   @$pb.TagNumber(13)
-  set paidAt($34.Timestamp v) { setField(13, v); }
+  set paidAt($36.Timestamp v) { setField(13, v); }
   @$pb.TagNumber(13)
   $core.bool hasPaidAt() => $_has(12);
   @$pb.TagNumber(13)
   void clearPaidAt() => clearField(13);
   @$pb.TagNumber(13)
-  $34.Timestamp ensurePaidAt() => $_ensure(12);
+  $36.Timestamp ensurePaidAt() => $_ensure(12);
 }
 
 class CreateTagPayRequest extends $pb.GeneratedMessage {

@@ -14,13 +14,15 @@ import 'package:lazervault/src/features/authentication/cubit/authentication_stat
 import 'package:lazervault/src/features/funds/cubit/transfer_cubit.dart';
 import 'package:lazervault/src/features/funds/cubit/transfer_state.dart';
 import 'package:lazervault/src/features/recipients/data/models/recipient_model.dart';
+import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_cubit.dart';
 import 'package:lazervault/src/features/widgets/common/back_navigator.dart';
 import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 
 class InitiateSendFunds extends StatefulWidget {
-  const InitiateSendFunds({super.key, required this.recipient});
-  final RecipientModel recipient;
+  final RecipientModel? recipient;
+
+  const InitiateSendFunds({super.key, this.recipient});
 
   @override
   State<InitiateSendFunds> createState() => _InitiateSendFundsState();
@@ -31,6 +33,12 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
   @override
   ITransactionPinService get transactionPinService =>
       GetIt.I<ITransactionPinService>();
+
+  // Recipient handling variables
+  RecipientModel? _recipient;
+  bool _isTemporary = false;
+  bool _shouldSaveOnSuccess = false;
+
   String amount =
       ''; // Stores amount as string of MINOR units (e.g., "2000" for £20.00)
   // final double maxAmount = 15358.00; // TODO: Get max from selected card/account later
@@ -80,6 +88,29 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
   @override
   void initState() {
     super.initState();
+
+    // First check if recipient was passed directly via widget parameter
+    if (widget.recipient != null) {
+      _recipient = widget.recipient;
+      _isTemporary = false;
+      _shouldSaveOnSuccess = false;
+    } else {
+      // Get arguments and determine recipient details
+      final args = Get.arguments;
+
+      if (args is Map) {
+        // NEW: Handle map arguments from add_recipient (temporary recipient)
+        _recipient = args['recipient'] as RecipientModel;
+        _isTemporary = args['isTemporary'] as bool? ?? false;
+        _shouldSaveOnSuccess = args['shouldSaveOnSuccess'] as bool? ?? false;
+      } else if (args is RecipientModel) {
+        // OLD: Handle direct RecipientModel for saved recipients
+        _recipient = args;
+        _isTemporary = false;
+        _shouldSaveOnSuccess = false;
+      }
+    }
+
     // Check the current state of the accounts cubit
     final accountCubit = context.read<AccountCardsSummaryCubit>();
     final currentState = accountCubit.state;
@@ -575,7 +606,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
     }
 
     // 7. Validate recipient exists
-    if (widget.recipient.name.isEmpty) {
+    if (_recipient!.name.isEmpty) {
       Get.snackbar(
         'Invalid Recipient',
         'Recipient information is missing or invalid.',
@@ -688,11 +719,11 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                               ),
                               _buildConfirmationRow(
                                 'To',
-                                widget.recipient.name,
-                                widget.recipient.accountNumber.length >
+                                _recipient!.name,
+                                _recipient!.accountNumber.length >
                                         4 // Mask account number
-                                    ? '•••• ${widget.recipient.accountNumber.substring(widget.recipient.accountNumber.length - 4)}'
-                                    : widget.recipient.accountNumber,
+                                    ? '•••• ${_recipient!.accountNumber.substring(_recipient!.accountNumber.length - 4)}'
+                                    : _recipient!.accountNumber,
                               ),
                               if (selectedCategory != null)
                                 _buildConfirmationRow(
@@ -783,7 +814,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                                   : () async {
                                       print("Dialog Button: Pressed!");
                                       // Generate unique transaction ID
-                                      final transactionId = 'transfer_${DateTime.now().millisecondsSinceEpoch}_${widget.recipient.id}';
+                                      final transactionId = 'transfer_${DateTime.now().millisecondsSinceEpoch}_${_recipient!.id}';
 
                                       // Calculate amounts for PIN validation
                                       double transferAmountMajor = double.parse(amount) / 100.0;
@@ -796,7 +827,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                                         amount: transferAmountMajor,
                                         currency: 'GBP',
                                         title: 'Confirm Transfer',
-                                        message: 'Confirm transfer of £${transferAmountMajor.toStringAsFixed(2)} to ${widget.recipient.name}?',
+                                        message: 'Confirm transfer of £${transferAmountMajor.toStringAsFixed(2)} to ${_recipient!.name}?',
                                         onPinValidated: (verificationToken) async {
                                           // PIN is valid, proceed with transfer
                                           _executeTransferWithPin(
@@ -929,10 +960,10 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
       return;
     }
 
-    // Get recipient ID - Ensure widget.recipient.id is not null and can be parsed to int
+    // Get recipient ID - Ensure _recipient!.id is not null and can be parsed to int
     int recipientIdInt; // Use non-nullable int
     try {
-      final dynamic id = widget.recipient.id; // Use dynamic type
+      final dynamic id = _recipient!.id; // Use dynamic type
       if (id is String) {
         recipientIdInt =
             int.parse(id); // Use int.parse, will throw if invalid format
@@ -1035,10 +1066,10 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
       return;
     }
 
-    // Get recipient ID - Ensure widget.recipient.id is not null and can be parsed to int
+    // Get recipient ID - Ensure _recipient!.id is not null and can be parsed to int
     int recipientIdInt;
     try {
-      final dynamic id = widget.recipient.id;
+      final dynamic id = _recipient!.id;
       if (id is String) {
         recipientIdInt = int.parse(id);
       } else if (id is int) {
@@ -1195,6 +1226,26 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
             });
           }
 
+          // --- Save Recipient if Temporary ---
+          // IMPORTANT: Based on user requirement, ALL recipients should be saved after successful payment
+          // The isFavorite flag is preserved for filtering purposes in the recipients list
+          if (_isTemporary && _recipient != null) {
+            print("Listener: Saving temporary recipient to database...");
+            final authStateForSave = context.read<AuthenticationCubit>().state;
+            if (authStateForSave is AuthenticationSuccess) {
+              final accessToken = authStateForSave.profile.session.accessToken;
+              context.read<RecipientCubit>().addRecipient(
+                    recipient: _recipient!,
+                    accessToken: accessToken,
+                  );
+              print("Listener: Temporary recipient saved successfully.");
+            } else {
+              print(
+                  "Warning: Could not save recipient as user is not authenticated.");
+            }
+          }
+          // --- End Save Recipient ---
+
           // --- Refresh Account Summaries ---
           print(
               "Listener: Refreshing account summaries after successful transfer...");
@@ -1254,17 +1305,16 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                   "Warning: Could not get source account info for proof screen.");
             }
 
-            String recipientAccountMasked = widget
-                        .recipient.accountNumber.length >
+            String recipientAccountMasked = _recipient!.accountNumber.length >
                     4
-                ? '•••• ${widget.recipient.accountNumber.substring(widget.recipient.accountNumber.length - 4)}'
-                : widget.recipient.accountNumber;
+                ? '•••• ${_recipient!.accountNumber.substring(_recipient!.accountNumber.length - 4)}'
+                : _recipient!.accountNumber;
 
             final transferDetails = {
               'amount': transferAmount,
               'fee': transferFee,
               'totalAmount': totalAmount,
-              'recipientName': widget.recipient.name,
+              'recipientName': _recipient!.name,
               'recipientAccountMasked': recipientAccountMasked,
               'sourceAccountInfo': sourceAccountInfo,
               // Use transferId from response (assuming it's Int64)
@@ -1451,7 +1501,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                                     child: Column(
                                       children: [
                                         Text(
-                                          widget.recipient.name,
+                                          _recipient!.name,
                                           style: const TextStyle(
                                             color: Colors.white,
                                             fontSize: 20,
@@ -1516,9 +1566,9 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                                           )
                                         else
                                           Text(
-                                            widget.recipient.accountNumber.length > 4
-                                                ? '•••• ${widget.recipient.accountNumber.substring(widget.recipient.accountNumber.length - 4)}'
-                                                : widget.recipient.accountNumber,
+                                            _recipient!.accountNumber.length > 4
+                                                ? '•••• ${_recipient!.accountNumber.substring(_recipient!.accountNumber.length - 4)}'
+                                                : _recipient!.accountNumber,
                                             style: TextStyle(
                                               color: Colors.white.withValues(alpha: 0.7),
                                               fontSize: 12,
@@ -1547,8 +1597,8 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                                     backgroundColor: Colors
                                         .blueGrey[700], // Slightly darker grey
                                     child: Text(
-                                        widget.recipient.name.isNotEmpty
-                                            ? widget.recipient.name[0]
+                                        _recipient!.name.isNotEmpty
+                                            ? _recipient!.name[0]
                                                 .toUpperCase()
                                             : '?',
                                         style: const TextStyle(

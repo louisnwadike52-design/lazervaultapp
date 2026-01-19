@@ -555,22 +555,55 @@ class AppRouter {
     ),
     GetPage(
       name: AppRoutes.emailVerification,
-      page: () => BlocProvider(
-        create: (context) => serviceLocator<EmailVerificationCubit>(),
-        child: EmailVerificationScreen(
-          email: Get.arguments ?? Get.parameters['email'],
-        ),
-      ),
+      page: () {
+        // Handle both Map arguments and direct String arguments
+        final args = Get.arguments;
+        String? email;
+        bool codeSent = true;
+        bool isRequired = true;
+        String? secondaryPhone;
+
+        if (args is Map) {
+          final mapArgs = Map<String, dynamic>.from(args);
+          email = mapArgs['email']?.toString();
+          codeSent = mapArgs['codeSent'] as bool? ?? true;
+          isRequired = mapArgs['isRequired'] as bool? ?? true;
+          secondaryPhone = mapArgs['secondaryPhone']?.toString();
+        } else if (args is String) {
+          email = args;
+        } else {
+          email = Get.parameters['email'];
+        }
+
+        return BlocProvider(
+          create: (context) => serviceLocator<EmailVerificationCubit>(),
+          child: EmailVerificationScreen(
+            email: email,
+            codeSent: codeSent,
+            isRequired: isRequired,
+            secondaryPhone: secondaryPhone,
+          ),
+        );
+      },
       transition: Transition.rightToLeft,
     ),
     GetPage(
       name: AppRoutes.phoneVerification,
       page: () {
-        // Import added at top of file
+        // Handle both Map arguments and direct String arguments
+        final args = Get.arguments;
+        String? phoneNumber;
+        if (args is Map<String, dynamic>) {
+          phoneNumber = args['phoneNumber'] as String?;
+        } else if (args is String) {
+          phoneNumber = args;
+        } else {
+          phoneNumber = Get.parameters['phoneNumber'];
+        }
         return BlocProvider(
           create: (context) => serviceLocator<PhoneVerificationCubit>(),
           child: PhoneVerificationScreen(
-            phoneNumber: Get.arguments ?? Get.parameters['phoneNumber'],
+            phoneNumber: phoneNumber,
           ),
         );
       },

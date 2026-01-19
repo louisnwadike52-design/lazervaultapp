@@ -196,9 +196,9 @@ const GeneratePaymentInstructionResponse$json = const {
 
 /// Descriptor for `GeneratePaymentInstructionResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List generatePaymentInstructionResponseDescriptor = $convert.base64Decode('CiJHZW5lcmF0ZVBheW1lbnRJbnN0cnVjdGlvblJlc3BvbnNlEj0KC2luc3RydWN0aW9uGAEgASgLMhsuYWlfc2Nhbi5QYXltZW50SW5zdHJ1Y3Rpb25SC2luc3RydWN0aW9uEhgKB3N1Y2Nlc3MYAiABKAhSB3N1Y2Nlc3MSIwoNZXJyb3JfbWVzc2FnZRgDIAEoCVIMZXJyb3JNZXNzYWdl');
-@$core.Deprecated('Use processPaymentRequestDescriptor instead')
-const ProcessPaymentRequest$json = const {
-  '1': 'ProcessPaymentRequest',
+@$core.Deprecated('Use scanProcessPaymentRequestDescriptor instead')
+const ScanProcessPaymentRequest$json = const {
+  '1': 'ScanProcessPaymentRequest',
   '2': const [
     const {'1': 'user_id', '3': 1, '4': 1, '5': 9, '10': 'userId'},
     const {'1': 'session_id', '3': 2, '4': 1, '5': 9, '10': 'sessionId'},
@@ -206,11 +206,11 @@ const ProcessPaymentRequest$json = const {
   ],
 };
 
-/// Descriptor for `ProcessPaymentRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List processPaymentRequestDescriptor = $convert.base64Decode('ChVQcm9jZXNzUGF5bWVudFJlcXVlc3QSFwoHdXNlcl9pZBgBIAEoCVIGdXNlcklkEh0KCnNlc3Npb25faWQYAiABKAlSCXNlc3Npb25JZBI9CgtpbnN0cnVjdGlvbhgDIAEoCzIbLmFpX3NjYW4uUGF5bWVudEluc3RydWN0aW9uUgtpbnN0cnVjdGlvbg==');
-@$core.Deprecated('Use processPaymentResponseDescriptor instead')
-const ProcessPaymentResponse$json = const {
-  '1': 'ProcessPaymentResponse',
+/// Descriptor for `ScanProcessPaymentRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List scanProcessPaymentRequestDescriptor = $convert.base64Decode('ChlTY2FuUHJvY2Vzc1BheW1lbnRSZXF1ZXN0EhcKB3VzZXJfaWQYASABKAlSBnVzZXJJZBIdCgpzZXNzaW9uX2lkGAIgASgJUglzZXNzaW9uSWQSPQoLaW5zdHJ1Y3Rpb24YAyABKAsyGy5haV9zY2FuLlBheW1lbnRJbnN0cnVjdGlvblILaW5zdHJ1Y3Rpb24=');
+@$core.Deprecated('Use scanProcessPaymentResponseDescriptor instead')
+const ScanProcessPaymentResponse$json = const {
+  '1': 'ScanProcessPaymentResponse',
   '2': const [
     const {'1': 'transaction_id', '3': 1, '4': 1, '5': 9, '10': 'transactionId'},
     const {'1': 'success', '3': 2, '4': 1, '5': 8, '10': 'success'},
@@ -220,8 +220,8 @@ const ProcessPaymentResponse$json = const {
   ],
 };
 
-/// Descriptor for `ProcessPaymentResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List processPaymentResponseDescriptor = $convert.base64Decode('ChZQcm9jZXNzUGF5bWVudFJlc3BvbnNlEiUKDnRyYW5zYWN0aW9uX2lkGAEgASgJUg10cmFuc2FjdGlvbklkEhgKB3N1Y2Nlc3MYAiABKAhSB3N1Y2Nlc3MSFgoGc3RhdHVzGAMgASgJUgZzdGF0dXMSIwoNZXJyb3JfbWVzc2FnZRgEIAEoCVIMZXJyb3JNZXNzYWdlEhwKCXRpbWVzdGFtcBgFIAEoA1IJdGltZXN0YW1w');
+/// Descriptor for `ScanProcessPaymentResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List scanProcessPaymentResponseDescriptor = $convert.base64Decode('ChpTY2FuUHJvY2Vzc1BheW1lbnRSZXNwb25zZRIlCg50cmFuc2FjdGlvbl9pZBgBIAEoCVINdHJhbnNhY3Rpb25JZBIYCgdzdWNjZXNzGAIgASgIUgdzdWNjZXNzEhYKBnN0YXR1cxgDIAEoCVIGc3RhdHVzEiMKDWVycm9yX21lc3NhZ2UYBCABKAlSDGVycm9yTWVzc2FnZRIcCgl0aW1lc3RhbXAYBSABKANSCXRpbWVzdGFtcA==');
 @$core.Deprecated('Use getScanHistoryRequestDescriptor instead')
 const GetScanHistoryRequest$json = const {
   '1': 'GetScanHistoryRequest',
