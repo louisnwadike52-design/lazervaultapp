@@ -544,7 +544,6 @@ class _PhoneOtpVerificationViewState extends State<_PhoneOtpVerificationView> {
                               fontSize: 14.sp,
                               fontWeight: FontWeight.w500,
                               color: const Color(0xFF6B7280),
-                              decoration: TextDecoration.underline,
                             ),
                           ),
                         ),

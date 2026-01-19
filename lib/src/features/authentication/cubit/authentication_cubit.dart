@@ -278,6 +278,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       lastName: lastName,
       email: email,
       password: password,
+      primaryContact: SignupPrimaryContact.email,
       phoneNumber: phoneNumber,
     );
 
@@ -555,10 +556,16 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       return;
     }
 
+    final email = _currentProfile!.user.email;
+    if (email.isEmpty) {
+      _showErrorSnackbar('Error', 'No email address found');
+      return;
+    }
+
     if (isClosed) return;
     emit(AuthenticationLoading());
 
-    final result = await _resendVerificationUseCase();
+    final result = await _resendVerificationUseCase(email: email);
 
     if (isClosed) return;
     result.fold(
@@ -775,6 +782,102 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     }
   }
 
+  /// Unified method to handle email or phone number input
+  /// Intelligently detects whether input is an email or phone number
+  void signUpEmailOrPhoneChanged(String value) {
+    if (state is SignUpInProgress) {
+      final currentState = state as SignUpInProgress;
+      final trimmedValue = value.trim();
+
+      // Detect if input looks like an email or phone number
+      final isEmail = _looksLikeEmail(trimmedValue);
+      final isPhone = _looksLikePhone(trimmedValue);
+
+      if (isEmail) {
+        // Store as email and set primary contact type
+        emit(currentState.copyWith(
+          email: trimmedValue,
+          phoneNumber: '', // Clear phone
+          primaryContactType: PrimaryContactType.email,
+          clearErrorMessage: true,
+          isLoading: false,
+        ));
+      } else if (isPhone) {
+        // Store as phone and set primary contact type
+        final formattedPhone = _formatPhoneNumber(trimmedValue);
+        emit(currentState.copyWith(
+          phoneNumber: formattedPhone,
+          email: '', // Clear email
+          primaryContactType: PrimaryContactType.phone,
+          clearErrorMessage: true,
+          isLoading: false,
+        ));
+      } else {
+        // Input is ambiguous - store in both fields temporarily
+        // and let validation determine the type later
+        // If it contains @ it's likely email, otherwise treat as phone
+        if (trimmedValue.contains('@')) {
+          emit(currentState.copyWith(
+            email: trimmedValue,
+            phoneNumber: '',
+            primaryContactType: PrimaryContactType.email,
+            clearErrorMessage: true,
+            isLoading: false,
+          ));
+        } else if (trimmedValue.isNotEmpty && RegExp(r'^[0-9+\-\s()]+$').hasMatch(trimmedValue)) {
+          // Contains only phone-like characters
+          emit(currentState.copyWith(
+            phoneNumber: _formatPhoneNumber(trimmedValue),
+            email: '',
+            primaryContactType: PrimaryContactType.phone,
+            clearErrorMessage: true,
+            isLoading: false,
+          ));
+        } else {
+          // Default to email field (most common)
+          emit(currentState.copyWith(
+            email: trimmedValue,
+            primaryContactType: trimmedValue.isEmpty ? PrimaryContactType.none : PrimaryContactType.email,
+            clearErrorMessage: true,
+            isLoading: false,
+          ));
+        }
+      }
+      _scheduleDraftSave();
+    }
+  }
+
+  /// Check if input looks like an email address
+  bool _looksLikeEmail(String value) {
+    if (value.isEmpty) return false;
+    // Simple check: contains @ and has text before and after
+    return value.contains('@') &&
+           value.indexOf('@') > 0 &&
+           value.indexOf('@') < value.length - 1;
+  }
+
+  /// Check if input looks like a phone number
+  bool _looksLikePhone(String value) {
+    if (value.isEmpty) return false;
+    // Remove common phone formatting characters
+    final cleaned = value.replaceAll(RegExp(r'[\s\-\(\)\+]'), '');
+    // Check if remaining characters are mostly digits (allowing for some letters in some formats)
+    final digitCount = cleaned.replaceAll(RegExp(r'[^0-9]'), '').length;
+    return digitCount >= 7 && digitCount <= 15 && digitCount / cleaned.length > 0.8;
+  }
+
+  /// Get the current primary contact value (email or phone) for display
+  String get currentPrimaryContactValue {
+    if (state is SignUpInProgress) {
+      final currentState = state as SignUpInProgress;
+      if (currentState.primaryContactType == PrimaryContactType.phone) {
+        return currentState.phoneNumber;
+      }
+      return currentState.email;
+    }
+    return '';
+  }
+
   // New method to set primary contact type (email or phone)
   void signUpSetPrimaryContactType(PrimaryContactType type) {
     if (state is SignUpInProgress) {
@@ -803,17 +906,22 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
 
       if (currentState.currentPage == 0) {
         // Validation for page 0: Email OR Phone + Password
-        // Validate based on primary contact type
-        if (currentState.primaryContactType == PrimaryContactType.email || currentState.primaryContactType == PrimaryContactType.none) {
-          // Validate email
-          if (currentState.email.isEmpty) {
-            final errorMsg = 'Email is required';
-            _showErrorSnackbar('Validation Error', errorMsg);
-            if (isClosed) return;
-            emit(currentState.copyWith(errorMessage: errorMsg));
-            return;
-          }
+        // Check if user has entered either email or phone
+        final hasEmail = currentState.email.isNotEmpty;
+        final hasPhone = currentState.phoneNumber.isNotEmpty;
 
+        if (!hasEmail && !hasPhone) {
+          final errorMsg = 'Email or phone number is required';
+          _showErrorSnackbar('Validation Error', errorMsg);
+          if (isClosed) return;
+          emit(currentState.copyWith(errorMessage: errorMsg));
+          return;
+        }
+
+        // Validate based on what was entered
+        if (currentState.primaryContactType == PrimaryContactType.email ||
+            (currentState.primaryContactType == PrimaryContactType.none && hasEmail)) {
+          // Validate email
           if (!_isValidEmail(currentState.email)) {
             final errorMsg = 'Please enter a valid email address';
             _showErrorSnackbar('Validation Error', errorMsg);
@@ -826,22 +934,20 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
           if (currentState.primaryContactType == PrimaryContactType.none) {
             emit(currentState.copyWith(primaryContactType: PrimaryContactType.email));
           }
-        } else if (currentState.primaryContactType == PrimaryContactType.phone) {
+        } else if (currentState.primaryContactType == PrimaryContactType.phone ||
+                   (currentState.primaryContactType == PrimaryContactType.none && hasPhone)) {
           // Validate phone number
-          if (currentState.phoneNumber.isEmpty) {
-            final errorMsg = 'Phone number is required';
-            _showErrorSnackbar('Validation Error', errorMsg);
-            if (isClosed) return;
-            emit(currentState.copyWith(errorMessage: errorMsg));
-            return;
-          }
-
           if (!_isValidPhoneNumber(currentState.phoneNumber)) {
             final errorMsg = 'Please enter a valid phone number';
             _showErrorSnackbar('Validation Error', errorMsg);
             if (isClosed) return;
             emit(currentState.copyWith(errorMessage: errorMsg));
             return;
+          }
+
+          // Set primary contact type to phone if not already set
+          if (currentState.primaryContactType == PrimaryContactType.none) {
+            emit(currentState.copyWith(primaryContactType: PrimaryContactType.phone));
           }
         }
 

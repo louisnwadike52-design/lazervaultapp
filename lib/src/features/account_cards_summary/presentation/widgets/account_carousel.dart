@@ -13,11 +13,13 @@ typedef OnShowDetailsCallback = void Function(Map<String, dynamic> accountArgs);
 class AccountCarousel extends StatefulWidget {
   final List<AccountSummaryEntity> accountSummaries;
   final OnShowDetailsCallback onShowDetails; // Callback to show bottom sheet
+  final bool showFamilySetupCard; // Whether to show the family setup card in carousel
 
   const AccountCarousel({
     super.key,
     required this.accountSummaries,
     required this.onShowDetails,
+    this.showFamilySetupCard = false,
   });
 
   @override
@@ -58,9 +60,16 @@ class _AccountCarouselState extends State<AccountCarousel> {
     }
   }
 
+  // Calculate total item count including optional family setup card
+  int get _totalItemCount {
+    int count = widget.accountSummaries.length;
+    if (widget.showFamilySetupCard) count++;
+    return count;
+  }
+
   @override
   Widget build(BuildContext context) {
-     if (widget.accountSummaries.isEmpty) {
+     if (widget.accountSummaries.isEmpty && !widget.showFamilySetupCard) {
         return SizedBox(
           height: 228.h,
           child: const Center(
@@ -71,7 +80,7 @@ class _AccountCarouselState extends State<AccountCarousel> {
     return Column(
       children: [
         CarouselSlider.builder(
-          itemCount: widget.accountSummaries.length,
+          itemCount: _totalItemCount,
           options: CarouselOptions(
             height: 200.h,
             viewportFraction: 0.9,
@@ -79,12 +88,16 @@ class _AccountCarouselState extends State<AccountCarousel> {
             onPageChanged: _onPageChanged, // Automatically sets active account on swipe
           ),
           itemBuilder: (context, index, realIndex) {
+            // If showing family setup card and this is the last index
+            if (widget.showFamilySetupCard && index == widget.accountSummaries.length) {
+              return _buildFamilySetupCard(context);
+            }
             final account = widget.accountSummaries[index];
             return _buildAccountCard(context, account);
           },
         ),
         SizedBox(height: 20.h),
-        _buildCarouselIndicators(widget.accountSummaries.length),
+        _buildCarouselIndicators(_totalItemCount),
       ],
     );
   }
@@ -132,12 +145,6 @@ class _AccountCarouselState extends State<AccountCarousel> {
                   ],
                 ),
                 borderRadius: BorderRadius.circular(20.r),
-                border: isActiveAccount
-                    ? Border.all(
-                        color: Colors.green.withOpacity(0.6),
-                        width: 2,
-                      )
-                    : null,
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: 0.08),
@@ -162,41 +169,6 @@ class _AccountCarouselState extends State<AccountCarousel> {
                           ),
                         ),
                       ),
-                      if (isActiveAccount)
-                        Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 8.w,
-                            vertical: 4.h,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.green.withOpacity(0.3),
-                            borderRadius: BorderRadius.circular(12.r),
-                            border: Border.all(
-                              color: Colors.green.withOpacity(0.6),
-                              width: 1,
-                            ),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.check_circle,
-                                color: Colors.green[300],
-                                size: 14.sp,
-                              ),
-                              SizedBox(width: 4.w),
-                              Text(
-                                'ACTIVE',
-                                style: TextStyle(
-                                  color: Colors.green[300],
-                                  fontSize: 10.sp,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      SizedBox(width: 8.w),
                       Container(
                         padding: EdgeInsets.symmetric(
                           horizontal: 12.w,
@@ -361,6 +333,129 @@ class _AccountCarouselState extends State<AccountCarousel> {
     );
   }
 
+  Widget _buildFamilySetupCard(BuildContext context) {
+    return GestureDetector(
+      onTap: () => Get.toNamed(AppRoutes.familySetup),
+      child: Container(
+        margin: EdgeInsets.symmetric(horizontal: 8.w),
+        padding: EdgeInsets.all(20.w),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              const Color(0xFF6C5CE7).withOpacity(0.2),
+              const Color(0xFFA29BFE).withOpacity(0.1),
+            ],
+          ),
+          borderRadius: BorderRadius.circular(20.r),
+          border: Border.all(
+            color: const Color(0xFF6C5CE7).withOpacity(0.5),
+            width: 1.5,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF6C5CE7).withOpacity(0.3),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      Icons.family_restroom,
+                      color: Colors.white,
+                      size: 20.sp,
+                    ),
+                    SizedBox(width: 8.w),
+                    Text(
+                      'Family & Friends',
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.9),
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF6C5CE7).withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(20.r),
+                  ),
+                  child: Text(
+                    'NEW',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 10.sp,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 16.h),
+            Text(
+              'Share & Manage',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 24.sp,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.5,
+              ),
+            ),
+            SizedBox(height: 4.h),
+            Text(
+              'Money Together',
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.8),
+                fontSize: 18.sp,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const Spacer(),
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF6C5CE7), Color(0xFFA29BFE)],
+                ),
+                borderRadius: BorderRadius.circular(20.r),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Get Started',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  SizedBox(width: 8.w),
+                  Icon(
+                    Icons.arrow_forward,
+                    color: Colors.white,
+                    size: 16.sp,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildFamilyAccountCard(BuildContext context, AccountSummaryEntity account) {
     // Build a simplified family account card using AccountSummaryEntity data
     // TODO: Replace with full FamilyAccountCard widget when FamilyAccountCubit is integrated
@@ -383,15 +478,10 @@ class _AccountCarouselState extends State<AccountCarousel> {
               ],
             ),
             borderRadius: BorderRadius.circular(20.r),
-            border: isActiveAccount
-                ? Border.all(
-                    color: Colors.green.withOpacity(0.6),
-                    width: 2,
-                  )
-                : Border.all(
-                    color: const Color(0xFF6C5CE7).withOpacity(0.5),
-                    width: 1,
-                  ),
+            border: Border.all(
+              color: const Color(0xFF6C5CE7).withOpacity(0.5),
+              width: 1,
+            ),
             boxShadow: [
               BoxShadow(
                 color: const Color(0xFF6C5CE7).withOpacity(0.3),

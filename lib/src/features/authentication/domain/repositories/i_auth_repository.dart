@@ -57,7 +57,7 @@ abstract class IAuthRepository {
   });
 
   /// Returns the cooldown seconds (time to wait before next resend attempt)
-  Future<Either<Failure, int>> resendVerificationEmail();
+  Future<Either<Failure, int>> resendVerificationEmail({required String email});
 
   // Email availability check
   Future<Either<Failure, bool>> checkEmailAvailability({

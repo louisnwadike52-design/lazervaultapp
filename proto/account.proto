@@ -171,6 +171,8 @@ message RevealPINResponse {
 // --- Account Service Definition ---
 
 // The AccountService provides methods for managing user accounts.
+// NOTE: This service is for card settings features. For dashboard accounts (GetUserAccounts),
+// use accounts.AccountsService from accounts.proto instead.
 service AccountService {
   // Creates a new account for the authenticated user.
   rpc CreateAccount (CreateAccountRequest) returns (CreateAccountResponse) {

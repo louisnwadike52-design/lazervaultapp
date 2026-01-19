@@ -1,5 +1,5 @@
 import 'package:lazervault/src/features/account_cards_summary/domain/entities/account_summary_entity.dart';
-import 'package:lazervault/src/generated/account.pb.dart' as pb; // Use the correct proto file
+import 'package:lazervault/src/generated/accounts.pb.dart' as pb; // Use accounts.proto from backend
 
 class AccountSummaryModel extends AccountSummaryEntity {
   const AccountSummaryModel({

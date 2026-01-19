@@ -26,6 +26,12 @@ class AccountsServiceClient extends $grpc.Client {
           ($0.GetAccountsRequest value) => value.writeToBuffer(),
           ($core.List<$core.int> value) =>
               $0.GetAccountsResponse.fromBuffer(value));
+  static final _$getUserAccounts =
+      $grpc.ClientMethod<$0.GetUserAccountsRequest, $0.GetUserAccountsResponse>(
+          '/accounts.AccountsService/GetUserAccounts',
+          ($0.GetUserAccountsRequest value) => value.writeToBuffer(),
+          ($core.List<$core.int> value) =>
+              $0.GetUserAccountsResponse.fromBuffer(value));
   static final _$getAccount =
       $grpc.ClientMethod<$0.GetAccountRequest, $0.GetAccountResponse>(
           '/accounts.AccountsService/GetAccount',
@@ -157,6 +163,12 @@ class AccountsServiceClient extends $grpc.Client {
       $0.GetAccountsRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getAccounts, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetUserAccountsResponse> getUserAccounts(
+      $0.GetUserAccountsRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getUserAccounts, request, options: options);
   }
 
   $grpc.ResponseFuture<$0.GetAccountResponse> getAccount(
@@ -297,6 +309,15 @@ abstract class AccountsServiceBase extends $grpc.Service {
             ($core.List<$core.int> value) =>
                 $0.GetAccountsRequest.fromBuffer(value),
             ($0.GetAccountsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetUserAccountsRequest,
+            $0.GetUserAccountsResponse>(
+        'GetUserAccounts',
+        getUserAccounts_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.GetUserAccountsRequest.fromBuffer(value),
+        ($0.GetUserAccountsResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.GetAccountRequest, $0.GetAccountResponse>(
         'GetAccount',
         getAccount_Pre,
@@ -477,6 +498,12 @@ abstract class AccountsServiceBase extends $grpc.Service {
     return getAccounts(call, await request);
   }
 
+  $async.Future<$0.GetUserAccountsResponse> getUserAccounts_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$0.GetUserAccountsRequest> request) async {
+    return getUserAccounts(call, await request);
+  }
+
   $async.Future<$0.GetAccountResponse> getAccount_Pre($grpc.ServiceCall call,
       $async.Future<$0.GetAccountRequest> request) async {
     return getAccount(call, await request);
@@ -592,6 +619,8 @@ abstract class AccountsServiceBase extends $grpc.Service {
       $grpc.ServiceCall call, $0.CreateAccountRequest request);
   $async.Future<$0.GetAccountsResponse> getAccounts(
       $grpc.ServiceCall call, $0.GetAccountsRequest request);
+  $async.Future<$0.GetUserAccountsResponse> getUserAccounts(
+      $grpc.ServiceCall call, $0.GetUserAccountsRequest request);
   $async.Future<$0.GetAccountResponse> getAccount(
       $grpc.ServiceCall call, $0.GetAccountRequest request);
   $async.Future<$0.UpdateAccountResponse> updateAccount(
