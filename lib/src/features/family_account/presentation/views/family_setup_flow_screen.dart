@@ -68,15 +68,14 @@ class _FamilySetupFlowScreenState extends State<FamilySetupFlowScreen> {
   }
 
   void _onComplete() {
-    // Navigate back to dashboard
-    Get.back();
-    // Show success message or navigate to family account details
+    // Navigate back to dashboard with result to trigger refresh
+    Get.back(result: true);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF1E1E2E),
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Column(
           children: [
@@ -106,10 +105,10 @@ class _FamilySetupFlowScreenState extends State<FamilySetupFlowScreen> {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 20.h),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E1E2E),
+        color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withOpacity(0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -126,12 +125,12 @@ class _FamilySetupFlowScreenState extends State<FamilySetupFlowScreen> {
                   width: 40.w,
                   height: 40.h,
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.1),
+                    color: const Color(0xFFF5F5F5),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
                     _currentStep > 0 ? Icons.arrow_back_ios_new : Icons.close,
-                    color: Colors.white,
+                    color: const Color(0xFF1E1E2E),
                     size: 20.sp,
                   ),
                 ),
@@ -141,7 +140,7 @@ class _FamilySetupFlowScreenState extends State<FamilySetupFlowScreen> {
                 child: Text(
                   _getStepTitle(),
                   style: TextStyle(
-                    color: Colors.white,
+                    color: const Color(0xFF1E1E2E),
                     fontSize: 20.sp,
                     fontWeight: FontWeight.bold,
                   ),
@@ -191,7 +190,7 @@ class _FamilySetupFlowScreenState extends State<FamilySetupFlowScreen> {
                           colors: [Color(0xFF6C5CE7), Color(0xFFA29BFE)],
                         )
                       : null,
-                  color: index <= _currentStep ? null : Colors.white.withOpacity(0.2),
+                  color: index <= _currentStep ? null : const Color(0xFFE0E0E0),
                   borderRadius: BorderRadius.circular(2.r),
                 ),
               ),
@@ -202,7 +201,7 @@ class _FamilySetupFlowScreenState extends State<FamilySetupFlowScreen> {
         Text(
           'Step ${_currentStep + 1} of $_totalSteps',
           style: TextStyle(
-            color: Colors.white.withOpacity(0.7),
+            color: const Color(0xFF666666),
             fontSize: 12.sp,
             fontWeight: FontWeight.w500,
           ),
@@ -266,19 +265,19 @@ class FamilyWelcomeStep extends StatelessWidget {
     return SingleChildScrollView(
       padding: EdgeInsets.symmetric(horizontal: 24.w),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          SizedBox(height: 20.h),
+          SizedBox(height: 16.h),
           // Illustration
           Container(
-            width: 150.w,
-            height: 150.h,
+            width: 100.w,
+            height: 100.h,
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  const Color(0xFF6C5CE7).withOpacity(0.3),
+                  const Color(0xFF6C5CE7).withOpacity(0.2),
                   const Color(0xFFA29BFE).withOpacity(0.1),
                 ],
               ),
@@ -286,71 +285,71 @@ class FamilyWelcomeStep extends StatelessWidget {
             ),
             child: Icon(
               Icons.family_restroom,
-              size: 70.sp,
-              color: Colors.white,
+              size: 50.sp,
+              color: const Color(0xFF6C5CE7),
             ),
           ),
-          SizedBox(height: 24.h),
+          SizedBox(height: 20.h),
 
           // Title
           Text(
             'Share Money\nwith Loved Ones',
             style: TextStyle(
-              color: Colors.white,
-              fontSize: 24.sp,
+              color: const Color(0xFF1E1E2E),
+              fontSize: 22.sp,
               fontWeight: FontWeight.bold,
               height: 1.2,
             ),
             textAlign: TextAlign.center,
           ),
-          SizedBox(height: 12.h),
+          SizedBox(height: 10.h),
 
           // Description
           Text(
-            'Create a Family & Friends account to manage shared expenses, set spending limits for members, and stay in control together.',
+            'Create a Family & Friends account to manage shared expenses, set spending limits, and stay in control together.',
             style: TextStyle(
-              color: Colors.white.withOpacity(0.8),
-              fontSize: 14.sp,
-              height: 1.5,
+              color: const Color(0xFF666666),
+              fontSize: 13.sp,
+              height: 1.4,
             ),
             textAlign: TextAlign.center,
           ),
-          SizedBox(height: 24.h),
+          SizedBox(height: 20.h),
 
           // Features
           _buildFeature(
             Icons.people_outline,
             'Add Members',
-            'Invite family and friends to your account',
+            'Invite family and friends',
           ),
-          SizedBox(height: 12.h),
+          SizedBox(height: 10.h),
           _buildFeature(
             Icons.account_balance_wallet_outlined,
             'Set Limits',
-            'Control spending with daily, monthly, and per-transaction limits',
+            'Control spending limits',
           ),
-          SizedBox(height: 12.h),
+          SizedBox(height: 10.h),
           _buildFeature(
             Icons.visibility_outlined,
             'Full Transparency',
-            'Everyone sees the same balance and transactions',
+            'Shared balance and transactions',
           ),
-          SizedBox(height: 32.h),
+          SizedBox(height: 24.h),
 
           // CTA Button
           Container(
             width: double.infinity,
-            height: 56.h,
+            height: 50.h,
             decoration: BoxDecoration(
               gradient: const LinearGradient(
                 colors: [Color(0xFF6C5CE7), Color(0xFFA29BFE)],
               ),
-              borderRadius: BorderRadius.circular(28.r),
+              borderRadius: BorderRadius.circular(25.r),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF6C5CE7).withOpacity(0.4),
-                  blurRadius: 20,
-                  offset: const Offset(0, 10),
+                  color: const Color(0xFF6C5CE7).withOpacity(0.3),
+                  blurRadius: 15,
+                  offset: const Offset(0, 8),
                 ),
               ],
             ),
@@ -358,7 +357,7 @@ class FamilyWelcomeStep extends StatelessWidget {
               color: Colors.transparent,
               child: InkWell(
                 onTap: onNext,
-                borderRadius: BorderRadius.circular(28.r),
+                borderRadius: BorderRadius.circular(25.r),
                 child: Center(
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -367,7 +366,7 @@ class FamilyWelcomeStep extends StatelessWidget {
                         'Get Started',
                         style: TextStyle(
                           color: Colors.white,
-                          fontSize: 16.sp,
+                          fontSize: 15.sp,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -375,7 +374,7 @@ class FamilyWelcomeStep extends StatelessWidget {
                       Icon(
                         Icons.arrow_forward,
                         color: Colors.white,
-                        size: 20.sp,
+                        size: 18.sp,
                       ),
                     ],
                   ),
@@ -383,7 +382,7 @@ class FamilyWelcomeStep extends StatelessWidget {
               ),
             ),
           ),
-          SizedBox(height: 20.h),
+          SizedBox(height: 16.h),
         ],
       ),
     );
@@ -391,31 +390,31 @@ class FamilyWelcomeStep extends StatelessWidget {
 
   Widget _buildFeature(IconData icon, String title, String description) {
     return Container(
-      padding: EdgeInsets.all(16.w),
+      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(16.r),
+        color: const Color(0xFFF8F8F8),
+        borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
-          color: Colors.white.withOpacity(0.1),
+          color: const Color(0xFFE0E0E0),
           width: 1,
         ),
       ),
       child: Row(
         children: [
           Container(
-            width: 48.w,
-            height: 48.h,
+            width: 40.w,
+            height: 40.h,
             decoration: BoxDecoration(
-              color: const Color(0xFF6C5CE7).withOpacity(0.2),
+              color: const Color(0xFF6C5CE7).withOpacity(0.15),
               shape: BoxShape.circle,
             ),
             child: Icon(
               icon,
               color: const Color(0xFF6C5CE7),
-              size: 24.sp,
+              size: 20.sp,
             ),
           ),
-          SizedBox(width: 16.w),
+          SizedBox(width: 12.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -423,17 +422,17 @@ class FamilyWelcomeStep extends StatelessWidget {
                 Text(
                   title,
                   style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 15.sp,
+                    color: const Color(0xFF1E1E2E),
+                    fontSize: 14.sp,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                SizedBox(height: 4.h),
+                SizedBox(height: 2.h),
                 Text(
                   description,
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.6),
-                    fontSize: 12.sp,
+                    color: const Color(0xFF888888),
+                    fontSize: 11.sp,
                   ),
                 ),
               ],
@@ -512,7 +511,7 @@ class _FamilyAccountDetailsStepState extends State<FamilyAccountDetailsStep> {
             Text(
               'Family Account Name',
               style: TextStyle(
-                color: Colors.white,
+                color: const Color(0xFF1E1E2E),
                 fontSize: 14.sp,
                 fontWeight: FontWeight.w600,
               ),
@@ -521,25 +520,25 @@ class _FamilyAccountDetailsStepState extends State<FamilyAccountDetailsStep> {
             TextFormField(
               controller: _nameController,
               style: TextStyle(
-                color: Colors.white,
+                color: const Color(0xFF1E1E2E),
                 fontSize: 16.sp,
               ),
               decoration: InputDecoration(
                 hintText: 'e.g., "Smith Family" or "Vacation Fund"',
                 hintStyle: TextStyle(
-                  color: Colors.white.withOpacity(0.4),
+                  color: const Color(0xFF999999),
                   fontSize: 14.sp,
                 ),
                 filled: true,
-                fillColor: Colors.white.withOpacity(0.05),
+                fillColor: const Color(0xFFF8F8F8),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12.r),
                   borderSide: BorderSide.none,
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12.r),
-                  borderSide: BorderSide(
-                    color: Colors.white.withOpacity(0.1),
+                  borderSide: const BorderSide(
+                    color: Color(0xFFE0E0E0),
                     width: 1,
                   ),
                 ),
@@ -585,7 +584,7 @@ class _FamilyAccountDetailsStepState extends State<FamilyAccountDetailsStep> {
             Text(
               'Description (Optional)',
               style: TextStyle(
-                color: Colors.white,
+                color: const Color(0xFF1E1E2E),
                 fontSize: 14.sp,
                 fontWeight: FontWeight.w600,
               ),
@@ -595,25 +594,25 @@ class _FamilyAccountDetailsStepState extends State<FamilyAccountDetailsStep> {
               controller: _descriptionController,
               maxLines: 3,
               style: TextStyle(
-                color: Colors.white,
+                color: const Color(0xFF1E1E2E),
                 fontSize: 16.sp,
               ),
               decoration: InputDecoration(
                 hintText: 'What is this account for?',
                 hintStyle: TextStyle(
-                  color: Colors.white.withOpacity(0.4),
+                  color: const Color(0xFF999999),
                   fontSize: 14.sp,
                 ),
                 filled: true,
-                fillColor: Colors.white.withOpacity(0.05),
+                fillColor: const Color(0xFFF8F8F8),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12.r),
                   borderSide: BorderSide.none,
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12.r),
-                  borderSide: BorderSide(
-                    color: Colors.white.withOpacity(0.1),
+                  borderSide: const BorderSide(
+                    color: Color(0xFFE0E0E0),
                     width: 1,
                   ),
                 ),
@@ -636,7 +635,7 @@ class _FamilyAccountDetailsStepState extends State<FamilyAccountDetailsStep> {
             Text(
               'Initial Funding',
               style: TextStyle(
-                color: Colors.white,
+                color: const Color(0xFF1E1E2E),
                 fontSize: 14.sp,
                 fontWeight: FontWeight.w600,
               ),
@@ -646,31 +645,31 @@ class _FamilyAccountDetailsStepState extends State<FamilyAccountDetailsStep> {
               controller: _fundingController,
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
               style: TextStyle(
-                color: Colors.white,
+                color: const Color(0xFF1E1E2E),
                 fontSize: 16.sp,
               ),
               decoration: InputDecoration(
                 prefixText: '\$ ',
                 prefixStyle: TextStyle(
-                  color: Colors.white,
+                  color: const Color(0xFF1E1E2E),
                   fontSize: 20.sp,
                   fontWeight: FontWeight.bold,
                 ),
                 hintText: '0.00',
                 hintStyle: TextStyle(
-                  color: Colors.white.withOpacity(0.4),
+                  color: const Color(0xFF999999),
                   fontSize: 20.sp,
                 ),
                 filled: true,
-                fillColor: Colors.white.withOpacity(0.05),
+                fillColor: const Color(0xFFF8F8F8),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12.r),
                   borderSide: BorderSide.none,
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12.r),
-                  borderSide: BorderSide(
-                    color: Colors.white.withOpacity(0.1),
+                  borderSide: const BorderSide(
+                    color: Color(0xFFE0E0E0),
                     width: 1,
                   ),
                 ),
@@ -703,10 +702,10 @@ class _FamilyAccountDetailsStepState extends State<FamilyAccountDetailsStep> {
             Container(
               padding: EdgeInsets.all(16.w),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.05),
+                color: const Color(0xFFF8F8F8),
                 borderRadius: BorderRadius.circular(12.r),
                 border: Border.all(
-                  color: Colors.white.withOpacity(0.1),
+                  color: const Color(0xFFE0E0E0),
                   width: 1,
                 ),
               ),
@@ -719,7 +718,7 @@ class _FamilyAccountDetailsStepState extends State<FamilyAccountDetailsStep> {
                         Text(
                           'Allow Member Contributions',
                           style: TextStyle(
-                            color: Colors.white,
+                            color: const Color(0xFF1E1E2E),
                             fontSize: 14.sp,
                             fontWeight: FontWeight.w600,
                           ),
@@ -728,7 +727,7 @@ class _FamilyAccountDetailsStepState extends State<FamilyAccountDetailsStep> {
                         Text(
                           'Let members contribute to the family pool',
                           style: TextStyle(
-                            color: Colors.white.withOpacity(0.6),
+                            color: const Color(0xFF888888),
                             fontSize: 12.sp,
                           ),
                         ),
@@ -742,7 +741,7 @@ class _FamilyAccountDetailsStepState extends State<FamilyAccountDetailsStep> {
                         _allowMemberContributions = value;
                       });
                     },
-                    activeThumbColor: const Color(0xFF6C5CE7),
+                    activeColor: const Color(0xFF6C5CE7),
                   ),
                 ],
               ),
@@ -808,7 +807,7 @@ class FamilyFundingConfirmationStep extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: EdgeInsets.symmetric(horizontal: 24.w),
+      padding: EdgeInsets.symmetric(horizontal: 12.w),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -822,7 +821,7 @@ class FamilyFundingConfirmationStep extends StatelessWidget {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  const Color(0xFF6C5CE7).withOpacity(0.3),
+                  const Color(0xFF6C5CE7).withOpacity(0.2),
                   const Color(0xFFA29BFE).withOpacity(0.1),
                 ],
               ),
@@ -831,7 +830,7 @@ class FamilyFundingConfirmationStep extends StatelessWidget {
             child: Icon(
               Icons.check,
               size: 50.sp,
-              color: Colors.white,
+              color: const Color(0xFF6C5CE7),
             ),
           ),
           SizedBox(height: 32.h),
@@ -840,7 +839,7 @@ class FamilyFundingConfirmationStep extends StatelessWidget {
           Text(
             'Account Details',
             style: TextStyle(
-              color: Colors.white,
+              color: const Color(0xFF1E1E2E),
               fontSize: 24.sp,
               fontWeight: FontWeight.bold,
             ),
@@ -849,20 +848,21 @@ class FamilyFundingConfirmationStep extends StatelessWidget {
           Text(
             'Review your family account information',
             style: TextStyle(
-              color: Colors.white.withOpacity(0.7),
+              color: const Color(0xFF666666),
               fontSize: 14.sp,
             ),
           ),
           SizedBox(height: 32.h),
 
-          // Summary Card
+          // Summary Card - Full width
           Container(
+            width: double.infinity,
             padding: EdgeInsets.all(20.w),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.05),
+              color: const Color(0xFFF8F8F8),
               borderRadius: BorderRadius.circular(16.r),
               border: Border.all(
-                color: Colors.white.withOpacity(0.1),
+                color: const Color(0xFFE0E0E0),
                 width: 1,
               ),
             ),
@@ -871,9 +871,10 @@ class FamilyFundingConfirmationStep extends StatelessWidget {
               children: [
                 _buildSummaryRow('Account Name', formData['name'] as String? ?? ''),
                 SizedBox(height: 16.h),
-                if (formData['description'] != null && (formData['description'] as String).isNotEmpty)
+                if (formData['description'] != null && (formData['description'] as String).isNotEmpty) ...[
                   _buildSummaryRow('Description', formData['description'] as String? ?? ''),
-                SizedBox(height: 16.h),
+                  SizedBox(height: 16.h),
+                ],
                 _buildSummaryRow(
                   'Initial Funding',
                   '\$${(formData['initialFunding'] as double).toStringAsFixed(2)}',
@@ -974,7 +975,7 @@ class FamilyFundingConfirmationStep extends StatelessWidget {
         Text(
           label,
           style: TextStyle(
-            color: Colors.white.withOpacity(0.6),
+            color: const Color(0xFF888888),
             fontSize: 12.sp,
             fontWeight: FontWeight.w500,
           ),
@@ -983,7 +984,7 @@ class FamilyFundingConfirmationStep extends StatelessWidget {
         Text(
           value,
           style: TextStyle(
-            color: Colors.white,
+            color: const Color(0xFF1E1E2E),
             fontSize: 16.sp,
             fontWeight: FontWeight.w600,
           ),
@@ -1025,7 +1026,7 @@ class FamilyInviteMembersStep extends StatelessWidget {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  Colors.green.withOpacity(0.3),
+                  Colors.green.withOpacity(0.2),
                   Colors.green.withOpacity(0.1),
                 ],
               ),
@@ -1034,7 +1035,7 @@ class FamilyInviteMembersStep extends StatelessWidget {
             child: Icon(
               Icons.check_circle,
               size: 50.sp,
-              color: Colors.green[300],
+              color: Colors.green,
             ),
           ),
           SizedBox(height: 24.h),
@@ -1043,7 +1044,7 @@ class FamilyInviteMembersStep extends StatelessWidget {
           Text(
             'Account Created!',
             style: TextStyle(
-              color: Colors.green[300],
+              color: Colors.green,
               fontSize: 20.sp,
               fontWeight: FontWeight.bold,
             ),
@@ -1059,7 +1060,7 @@ class FamilyInviteMembersStep extends StatelessWidget {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  const Color(0xFF6C5CE7).withOpacity(0.3),
+                  const Color(0xFF6C5CE7).withOpacity(0.2),
                   const Color(0xFFA29BFE).withOpacity(0.1),
                 ],
               ),
@@ -1068,7 +1069,7 @@ class FamilyInviteMembersStep extends StatelessWidget {
             child: Icon(
               Icons.group_add,
               size: 40.sp,
-              color: Colors.white,
+              color: const Color(0xFF6C5CE7),
             ),
           ),
           SizedBox(height: 24.h),
@@ -1077,7 +1078,7 @@ class FamilyInviteMembersStep extends StatelessWidget {
           Text(
             'Invite Family & Friends',
             style: TextStyle(
-              color: Colors.white,
+              color: const Color(0xFF1E1E2E),
               fontSize: 22.sp,
               fontWeight: FontWeight.bold,
             ),
@@ -1086,7 +1087,7 @@ class FamilyInviteMembersStep extends StatelessWidget {
           Text(
             'Add members to your family account now or do it later from settings',
             style: TextStyle(
-              color: Colors.white.withOpacity(0.7),
+              color: const Color(0xFF666666),
               fontSize: 14.sp,
             ),
             textAlign: TextAlign.center,
@@ -1153,10 +1154,10 @@ class FamilyInviteMembersStep extends StatelessWidget {
             width: double.infinity,
             height: 56.h,
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.05),
+              color: const Color(0xFFF8F8F8),
               borderRadius: BorderRadius.circular(28.r),
               border: Border.all(
-                color: Colors.white.withOpacity(0.1),
+                color: const Color(0xFFE0E0E0),
                 width: 1,
               ),
             ),
@@ -1169,7 +1170,7 @@ class FamilyInviteMembersStep extends StatelessWidget {
                   child: Text(
                     'Done',
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.8),
+                      color: const Color(0xFF666666),
                       fontSize: 16.sp,
                       fontWeight: FontWeight.w600,
                     ),
@@ -1184,10 +1185,10 @@ class FamilyInviteMembersStep extends StatelessWidget {
           Container(
             padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
-              color: const Color(0xFF6C5CE7).withOpacity(0.1),
+              color: const Color(0xFF6C5CE7).withOpacity(0.08),
               borderRadius: BorderRadius.circular(12.r),
               border: Border.all(
-                color: const Color(0xFF6C5CE7).withOpacity(0.3),
+                color: const Color(0xFF6C5CE7).withOpacity(0.2),
                 width: 1,
               ),
             ),
@@ -1203,7 +1204,7 @@ class FamilyInviteMembersStep extends StatelessWidget {
                   child: Text(
                     'You can always invite more members later from the family account settings',
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.8),
+                      color: const Color(0xFF666666),
                       fontSize: 12.sp,
                       height: 1.4,
                     ),

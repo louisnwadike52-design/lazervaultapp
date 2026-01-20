@@ -18,6 +18,8 @@ import 'package:lazervault/src/features/recipients/presentation/cubit/account_ve
 import 'package:lazervault/src/features/recipients/presentation/cubit/account_verification_state.dart';
 import 'package:lazervault/src/features/recipients/domain/entities/account_verification_result.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/account_confirmation_bottom_sheet.dart';
+import 'package:lazervault/src/features/recipients/presentation/widgets/username_search_bottom_sheet.dart';
+import 'package:lazervault/src/features/tag_pay/domain/entities/user_search_result_entity.dart';
 
 enum AddRecipientMethod { bankDetails, username, contacts }
 
@@ -43,6 +45,9 @@ class _AddRecipientState extends State<AddRecipient> {
 
   // Username Form Controller
   final TextEditingController _usernameController = TextEditingController();
+
+  // Selected user from username search
+  UserSearchResultEntity? _selectedUser;
 
   // Account verification state
   AccountVerificationResult? _verificationResult;
@@ -471,64 +476,16 @@ class _AddRecipientState extends State<AddRecipient> {
               ),
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               onChanged: (value) {
-                setState(() {}); // Refresh for check icon
+                setState(() {
+                  // Reset verification when account number changes
+                  if (_verificationResult != null) {
+                    _verificationResult = null;
+                  }
+                }); // Refresh for check icon
               },
             ),
           ],
         ),
-        SizedBox(height: 24.h),
-
-        // Verify Account Button
-        ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Color.fromARGB(255, 78, 3, 208),
-            foregroundColor: Colors.white,
-            padding: EdgeInsets.symmetric(vertical: 16.h),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12.r),
-            ),
-            elevation: 0,
-            minimumSize: Size(double.infinity, 56.h),
-          ),
-          onPressed: _isVerifying ? null : _handleVerifyAccount,
-          child: _isVerifying
-              ? Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    SizedBox(
-                      width: 20.w,
-                      height: 20.h,
-                      child: CircularProgressIndicator(
-                        color: Colors.white,
-                        strokeWidth: 2,
-                      ),
-                    ),
-                    SizedBox(width: 12.w),
-                    Text(
-                      'Verifying...',
-                      style: TextStyle(
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                )
-              : Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.verified_user, size: 20.sp),
-                    SizedBox(width: 8.w),
-                    Text(
-                      'Verify Account',
-                      style: TextStyle(
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-        ),
-
         // Show verification result if successful
         if (_verificationResult != null) ...[
           SizedBox(height: 16.h),
@@ -588,7 +545,7 @@ class _AddRecipientState extends State<AddRecipient> {
         ),
         SizedBox(height: 8.h),
         Text(
-          'Add recipients using their LazerVault username',
+          'Search and add recipients by their LazerVault username',
           style: TextStyle(
             color: Colors.grey[600],
             fontSize: 14.sp,
@@ -596,7 +553,7 @@ class _AddRecipientState extends State<AddRecipient> {
         ),
         SizedBox(height: 24.h),
 
-        // Username Input
+        // Username Search Field - Tappable to open search bottom sheet
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -609,84 +566,86 @@ class _AddRecipientState extends State<AddRecipient> {
               ),
             ),
             SizedBox(height: 8.h),
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 16.w),
-              decoration: BoxDecoration(
-                color: Colors.grey[50],
-                borderRadius: BorderRadius.circular(12.r),
-                border: Border.all(color: Colors.grey[200]!),
-              ),
-              child: TextField(
-                controller: _usernameController,
-                style: TextStyle(
-                  color: Colors.black87,
-                  fontSize: 16.sp,
-                ),
-                decoration: InputDecoration(
-                  hintText: 'Enter @username',
-                  hintStyle: TextStyle(
-                    color: Colors.grey[600],
-                    fontSize: 16.sp,
-                  ),
-                  border: InputBorder.none,
-                  icon: Icon(
-                    Icons.alternate_email,
-                    color: Color.fromARGB(255, 78, 3, 208),
-                    size: 24.sp,
+            GestureDetector(
+              onTap: _showUsernameSearchSheet,
+              child: Container(
+                padding: EdgeInsets.all(16.w),
+                decoration: BoxDecoration(
+                  color: Colors.grey[50],
+                  borderRadius: BorderRadius.circular(12.r),
+                  border: Border.all(
+                    color: _selectedUser != null
+                        ? const Color.fromARGB(255, 78, 3, 208)
+                        : Colors.grey[200]!,
+                    width: _selectedUser != null ? 2 : 1,
                   ),
                 ),
-                                  onChanged: (value) {
-                  if (!value.startsWith('@') && value.isNotEmpty) {
-                    _usernameController.text = '@$value';
-                    _usernameController.selection = TextSelection.fromPosition(
-                      TextPosition(offset: _usernameController.text.length),
-                    );
-                  }
-                },
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.search,
+                      color: _selectedUser != null
+                          ? const Color.fromARGB(255, 78, 3, 208)
+                          : Colors.grey[600],
+                      size: 22.sp,
+                    ),
+                    SizedBox(width: 12.w),
+                    Expanded(
+                      child: _selectedUser != null
+                          ? Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  _selectedUser!.fullName,
+                                  style: TextStyle(
+                                    color: Colors.black87,
+                                    fontSize: 16.sp,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                SizedBox(height: 2.h),
+                                Text(
+                                  '@${_selectedUser!.username}',
+                                  style: TextStyle(
+                                    color: const Color.fromARGB(255, 78, 3, 208),
+                                    fontSize: 14.sp,
+                                  ),
+                                ),
+                              ],
+                            )
+                          : Text(
+                              'Tap to search for username',
+                              style: TextStyle(
+                                color: Colors.grey[500],
+                                fontSize: 16.sp,
+                              ),
+                            ),
+                    ),
+                    if (_selectedUser != null)
+                      GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _selectedUser = null;
+                            _usernameController.clear();
+                          });
+                        },
+                        child: Icon(
+                          Icons.close,
+                          color: Colors.grey[600],
+                          size: 20.sp,
+                        ),
+                      )
+                    else
+                      Icon(
+                        Icons.chevron_right,
+                        color: Colors.grey[400],
+                        size: 24.sp,
+                      ),
+                  ],
+                ),
               ),
             ),
           ],
-        ),
-        SizedBox(height: 24.h),
-
-        // Example Tags
-        Text(
-          'Try searching for:',
-          style: TextStyle(
-            color: Colors.grey[600],
-            fontSize: 14.sp,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        SizedBox(height: 12.h),
-        Wrap(
-          spacing: 8.w,
-          runSpacing: 8.h,
-          children: ['@louis', '@sarah', '@mike'].map((username) {
-            return GestureDetector(
-              onTap: () {
-                _usernameController.text = username;
-              },
-              child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-                decoration: BoxDecoration(
-                  color: Color.fromARGB(255, 78, 3, 208).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(16.r),
-                  border: Border.all(
-                    color: Color.fromARGB(255, 78, 3, 208).withOpacity(0.3),
-                  ),
-                ),
-                child: Text(
-                  username,
-                  style: TextStyle(
-                    color: Color.fromARGB(255, 78, 3, 208),
-                    fontSize: 12.sp,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-            );
-          }).toList(),
         ),
         SizedBox(height: 24.h),
 
@@ -708,18 +667,30 @@ class _AddRecipientState extends State<AddRecipient> {
               SizedBox(width: 12.w),
               Expanded(
                 child: Text(
-                  'Recipients added by username will be automatically verified as LazerVault users',
+                  'Search for LazerVault users by username. Selected users will be automatically verified.',
                   style: TextStyle(
                     color: Colors.blue[700],
                     fontSize: 12.sp,
                   ),
                 ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+              ),
+            ],
+          ),
+        ),
+      ],
     );
+  }
+
+  /// Show the username search bottom sheet
+  void _showUsernameSearchSheet() async {
+    final selectedUser = await UsernameSearchBottomSheet.show(context);
+    if (selectedUser != null) {
+      setState(() {
+        _selectedUser = selectedUser;
+        // Store just the username without @ - will add single @ when sending to backend
+        _usernameController.text = selectedUser.username;
+      });
+    }
   }
 
   Widget _buildContactsForm() {
@@ -989,26 +960,41 @@ class _AddRecipientState extends State<AddRecipient> {
   }
 
   Widget _buildActionButton(RecipientState state) {
+    final isLoading = state is RecipientLoading || _isVerifying;
+
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
         backgroundColor: Color.fromARGB(255, 78, 3, 208),
-                    foregroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(vertical: 16.h),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12.r),
-                    ),
-                    elevation: 0,
-                    minimumSize: Size(double.infinity, 56.h),
+        foregroundColor: Colors.white,
+        padding: EdgeInsets.symmetric(vertical: 16.h),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12.r),
+        ),
+        elevation: 0,
+        minimumSize: Size(double.infinity, 56.h),
+      ),
+      onPressed: isLoading ? null : _handleAddRecipient,
+      child: isLoading
+          ? Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SizedBox(
+                  width: 20.w,
+                  height: 20.h,
+                  child: CircularProgressIndicator(
+                    color: Colors.white,
+                    strokeWidth: 2,
                   ),
-      onPressed: state is RecipientLoading ? null : _handleAddRecipient,
-      child: state is RecipientLoading
-          ? SizedBox(
-              width: 20.w,
-              height: 20.h,
-              child: CircularProgressIndicator(
-                color: Colors.white,
-                strokeWidth: 2,
-              ),
+                ),
+                SizedBox(width: 12.w),
+                Text(
+                  _isVerifying ? 'Verifying...' : 'Processing...',
+                  style: TextStyle(
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
             )
           : Text(
               _getActionButtonText(),
@@ -1023,9 +1009,13 @@ class _AddRecipientState extends State<AddRecipient> {
   String _getActionButtonText() {
     switch (_selectedMethod) {
       case AddRecipientMethod.bankDetails:
-        return 'Add Recipient';
+        // Show "Verify Recipient" if verification hasn't been done yet
+        if (_verificationResult == null) {
+          return 'Verify Recipient';
+        }
+        return 'Proceed to Payment';
       case AddRecipientMethod.username:
-        return 'Find & Add User';
+        return 'Add Recipient';
       case AddRecipientMethod.contacts:
         return 'Browse Contacts';
     }
@@ -1034,7 +1024,13 @@ class _AddRecipientState extends State<AddRecipient> {
   void _handleAddRecipient() {
     switch (_selectedMethod) {
       case AddRecipientMethod.bankDetails:
-        _addBankDetailsRecipient();
+        // If verification hasn't been done yet, verify first
+        if (_verificationResult == null) {
+          _handleVerifyAccount();
+        } else {
+          // Verification already done, proceed to payment
+          _proceedToPayment(_verificationResult!, _isFavorite);
+        }
         break;
       case AddRecipientMethod.username:
         _addUsernameRecipient();
@@ -1150,10 +1146,11 @@ class _AddRecipientState extends State<AddRecipient> {
   }
 
   void _addUsernameRecipient() {
-    if (_usernameController.text.isEmpty || _usernameController.text == '@') {
+    // Check if a user was selected from search
+    if (_selectedUser == null) {
       Get.snackbar(
-        'Username Required',
-        'Please enter a valid username',
+        'No User Selected',
+        'Please search and select a user first',
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.orange.withOpacity(0.8),
         colorText: Colors.white,
@@ -1161,55 +1158,36 @@ class _AddRecipientState extends State<AddRecipient> {
       return;
     }
 
-    // Mock implementation - in real app, this would search for the user
-    final username = _usernameController.text;
-    final mockUser = _getMockUserByUsername(username);
-    
-    if (mockUser != null) {
-      final authState = context.read<AuthenticationCubit>().state;
-      if (authState is AuthenticationSuccess) {
-        final accessToken = authState.profile.session.accessToken;
+    final authState = context.read<AuthenticationCubit>().state;
+    if (authState is AuthenticationSuccess) {
+      final accessToken = authState.profile.session.accessToken;
 
-        // Get active country from profile preferences
-        String? countryCode;
-        final profileState = context.read<ProfileCubit>().state;
-        if (profileState is ProfileLoaded) {
-          countryCode = profileState.preferences.activeCountry.isNotEmpty
-              ? profileState.preferences.activeCountry
-              : null;
-        }
-
-        context.read<RecipientCubit>().addRecipient(
-          recipient: RecipientModel(
-            id: mockUser['id']!,
-            name: mockUser['name']!,
-            accountNumber: username,
-            bankName: 'LazerVault',
-            sortCode: '',
-            isFavorite: false,
-            countryCode: countryCode,
-          ),
-          accessToken: accessToken,
-        );
+      // Get active country from profile preferences
+      String? countryCode;
+      final profileState = context.read<ProfileCubit>().state;
+      if (profileState is ProfileLoaded) {
+        countryCode = profileState.preferences.activeCountry.isNotEmpty
+            ? profileState.preferences.activeCountry
+            : null;
       }
-    } else {
-      Get.snackbar(
-        'User Not Found',
-        'No LazerVault user found with username $username',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withOpacity(0.8),
-        colorText: Colors.white,
+
+      // Create username with single @ prefix for backend
+      final usernameForBackend = '@${_selectedUser!.username}';
+
+      context.read<RecipientCubit>().addRecipient(
+        recipient: RecipientModel(
+          id: _selectedUser!.userId,
+          name: _selectedUser!.fullName,
+          accountNumber: usernameForBackend, // Username with single @ for backend
+          bankName: 'LazerVault',
+          sortCode: '',
+          isFavorite: false,
+          countryCode: countryCode,
+          email: _selectedUser!.email.isNotEmpty ? _selectedUser!.email : null,
+        ),
+        accessToken: accessToken,
       );
     }
-  }
-
-  Map<String, String>? _getMockUserByUsername(String username) {
-    final mockUsers = {
-      '@louis': {'id': 'lz1', 'name': 'Louis Lawrence'},
-      '@sarah': {'id': 'lz2', 'name': 'Sarah Johnson'},
-      '@mike': {'id': 'lz3', 'name': 'Mike Davis'},
-    };
-    return mockUsers[username.toLowerCase()];
   }
 
   void _showContactSelection() {
@@ -1571,6 +1549,8 @@ class _AddRecipientState extends State<AddRecipient> {
                             setState(() {
                               _bankController.text = bank["name"]!;
                               _selectedBankCode = bank["code"]; // Store bank code for verification
+                              // Reset verification when bank changes
+                              _verificationResult = null;
                             });
                             Navigator.pop(context);
                           },
@@ -1933,16 +1913,9 @@ class _AddRecipientState extends State<AddRecipient> {
     );
 
     // Navigate to payment screen with temporary recipient
-    // The recipient will only be saved to DB:
-    // 1. After successful payment if isFavorite is true
-    // 2. Or when user explicitly saves it during/after payment
     Get.offNamed(
       AppRoutes.initiateSendFunds,
-      arguments: {
-        'recipient': temporaryRecipient,
-        'isTemporary': true, // Flag indicating this recipient is not yet saved
-        'shouldSaveOnSuccess': isFavorite, // Save to DB after successful payment if favorited
-      },
+      arguments: temporaryRecipient,
     );
   }
 }

@@ -38,16 +38,34 @@ option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
   }
 };
 
+// VirtualAccountType represents the type of virtual account
+enum VirtualAccountType {
+  ACCOUNT_TYPE_UNSPECIFIED = 0;
+  ACCOUNT_TYPE_PERSONAL = 1;   // Personal account (primary spending)
+  ACCOUNT_TYPE_SAVINGS = 2;    // Savings account
+  ACCOUNT_TYPE_INVESTMENT = 3; // Investment account
+  ACCOUNT_TYPE_FAMILY = 4;     // Family & Friends account
+  ACCOUNT_TYPE_BUSINESS = 5;   // Business account
+  ACCOUNT_TYPE_MAIN = 6;       // Main account (legacy)
+  ACCOUNT_TYPE_USD = 7;        // USD wallet
+  ACCOUNT_TYPE_GBP = 8;        // GBP wallet
+  ACCOUNT_TYPE_EUR = 9;        // EUR wallet
+}
+
 // The Account message represents a user's financial account.
 message Account {
   uint64 id = 1; // Unique identifier for the account
-  string account_type = 2; // Type of account (e.g., "Checking", "Savings")
-  string currency = 3; // Currency code (e.g., "USD", "EUR")
+  string account_type = 2; // Type of account (e.g., "Personal", "Savings", "Investment")
+  string currency = 3; // Currency code (e.g., "USD", "EUR", "NGN")
   double balance = 4; // Current balance of the account
   string account_number = 5; // Unique account number
   bool is_active = 6; // Whether the account is currently active
   google.protobuf.Timestamp created_at = 7; // Timestamp when the account was created
   google.protobuf.Timestamp updated_at = 8; // Timestamp when the account was last updated
+  bool is_primary = 9; // Whether this is the user's primary account
+  string account_label = 10; // Custom label for the account
+  string bank_name = 11; // Bank name for the account
+  string bank_code = 12; // Bank code (e.g., for NUBAN accounts)
 }
 
 // Request message for creating a new account.
@@ -81,11 +99,21 @@ message GetAccountsResponse {
 // AccountSummary: Used for listing accounts (e.g., in the carousel)
 message AccountSummary {
     uint64 id = 1;
-    string account_type = 2;      // e.g., "personal", "savings"
-    string currency = 3;          // e.g., "GBP", "USD"
-    uint64 balance = 4;           // Changed to uint64 (minor units)
+    string account_type = 2;      // e.g., "Personal", "Savings", "Investment", "Family & Friends"
+    string currency = 3;          // e.g., "GBP", "USD", "NGN"
+    uint64 balance = 4;           // Balance in minor units (kobo, cents)
     string masked_account_number = 5; // e.g., "•••• 7890"
     string status = 6;            // e.g., "active", "blocked_temporary"
+    bool is_primary = 7;          // Whether this is the user's primary account
+    string account_label = 8;     // Custom label for the account
+    string bank_name = 9;         // Bank name (e.g., "VFD Microfinance Bank")
+    double trend_percentage = 10; // Trend percentage for balance change
+
+    // Family account specific fields
+    bool is_family_account = 11;          // Whether this is a family account
+    uint64 family_total_balance = 12;     // Total family pool balance (minor units)
+    uint64 member_allocated_balance = 13; // Member's allocated balance (minor units)
+    int32 member_count = 14;              // Total member count
 }
 
 // AccountDetails: Used for the detailed view
@@ -166,6 +194,40 @@ message RevealPINRequest {
 
 message RevealPINResponse {
     string pin = 1;
+}
+
+// --- Signup Multi-Account Creation ---
+
+// CreateSignupAccountsRequest: Request to create multiple accounts during signup (Nigeria only)
+message CreateSignupAccountsRequest {
+    string user_id = 1;           // User ID
+    string first_name = 2;        // User's first name
+    string last_name = 3;         // User's last name
+    string email = 4;             // User's email
+    string phone_number = 5;      // User's phone number
+    string country_code = 6;      // Country code (e.g., "NG" for Nigeria)
+    string bvn = 7;               // BVN (for Nigerian users)
+}
+
+// SignupAccountInfo: Information about a created account
+message SignupAccountInfo {
+    string account_id = 1;        // Account ID
+    string account_number = 2;    // Account number (NUBAN for Nigeria)
+    string account_name = 3;      // Account holder name
+    string account_type = 4;      // Account type (Personal, Savings, Investment)
+    string account_label = 5;     // Display label
+    string bank_name = 6;         // Bank name
+    string bank_code = 7;         // Bank code
+    string currency = 8;          // Currency code
+    bool is_primary = 9;          // Whether this is the primary account
+}
+
+// CreateSignupAccountsResponse: Response after creating signup accounts
+message CreateSignupAccountsResponse {
+    bool success = 1;                           // Whether account creation was successful
+    string error_code = 2;                      // Error code if failed
+    string error_message = 3;                   // Error message if failed
+    repeated SignupAccountInfo accounts = 4;   // List of created accounts
 }
 
 // --- Account Service Definition ---

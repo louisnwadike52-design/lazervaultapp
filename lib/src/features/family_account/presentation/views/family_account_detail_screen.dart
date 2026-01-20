@@ -50,84 +50,15 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
   }
 
   void _showAddMemberSheet() {
-    Get.bottomSheet(
-      Container(
-        padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 20.h),
-        decoration: BoxDecoration(
-          color: const Color(0xFF1E1E2E),
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Handle
-            Container(
-              width: 40.w,
-              height: 4.h,
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.3),
-                borderRadius: BorderRadius.circular(2.r),
-              ),
-            ),
-            SizedBox(height: 20.h),
-
-            // Title
-            Text(
-              'Add Family Member',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 20.sp,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            SizedBox(height: 20.h),
-
-            // Options
-            _buildSheetOption(
-              Icons.email,
-              'Invite by Email',
-              'Send invitation via email',
-              () {
-                Get.back();
-                Get.toNamed(AppRoutes.familyAddMember, arguments: {
-                  'familyId': widget.familyId,
-                  'invitationMethod': 'email',
-                });
-              },
-            ),
-            SizedBox(height: 12.h),
-            _buildSheetOption(
-              Icons.sms,
-              'Invite by SMS',
-              'Send invitation via text message',
-              () {
-                Get.back();
-                Get.toNamed(AppRoutes.familyAddMember, arguments: {
-                  'familyId': widget.familyId,
-                  'invitationMethod': 'sms',
-                });
-              },
-            ),
-            SizedBox(height: 12.h),
-            _buildSheetOption(
-              Icons.person,
-              'Invite by Username',
-              'Send invitation to username',
-              () {
-                Get.back();
-                Get.toNamed(AppRoutes.familyAddMember, arguments: {
-                  'familyId': widget.familyId,
-                  'invitationMethod': 'username',
-                });
-              },
-            ),
-            SizedBox(height: 20.h),
-          ],
-        ),
-      ),
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-    );
+    // Navigate directly to the new invite member flow screen
+    Get.toNamed(AppRoutes.familyInviteMemberFlow, arguments: {
+      'familyId': widget.familyId,
+    })?.then((result) {
+      // Reload the family account if a member was added
+      if (result == true) {
+        _loadFamilyAccount();
+      }
+    });
   }
 
   void _showMemberOptions(FamilyMember member) {

@@ -782,6 +782,177 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     }
   }
 
+  // ========== COUNTRY & IDENTITY VERIFICATION METHODS ==========
+
+  /// Change selected country (Nigeria only for now)
+  void signUpCountryChanged(String countryCode, String countryName, String currencyCode) {
+    if (state is SignUpInProgress) {
+      final currentState = state as SignUpInProgress;
+      emit(currentState.copyWith(
+        countryCode: countryCode,
+        countryName: countryName,
+        currencyCode: currencyCode,
+        clearErrorMessage: true,
+        isLoading: false,
+      ));
+      _scheduleDraftSave();
+    }
+  }
+
+  /// Change identity verification type (BVN or NIN)
+  void signUpIdentityTypeChanged(IdentityType type) {
+    if (state is SignUpInProgress) {
+      final currentState = state as SignUpInProgress;
+      emit(currentState.copyWith(
+        identityType: type,
+        // Clear both fields when switching types
+        bvn: type == IdentityType.bvn ? currentState.bvn : '',
+        nin: type == IdentityType.nin ? currentState.nin : '',
+        bvnVerified: false,
+        clearErrorMessage: true,
+        isLoading: false,
+      ));
+    }
+  }
+
+  /// Change BVN value
+  void signUpBvnChanged(String value) {
+    if (state is SignUpInProgress) {
+      final currentState = state as SignUpInProgress;
+      // Remove any non-digit characters
+      final cleanedBvn = value.replaceAll(RegExp(r'[^0-9]'), '');
+      emit(currentState.copyWith(
+        bvn: cleanedBvn,
+        bvnVerified: false, // Reset verification when BVN changes
+        clearErrorMessage: true,
+        isLoading: false,
+      ));
+    }
+  }
+
+  /// Change NIN value
+  void signUpNinChanged(String value) {
+    if (state is SignUpInProgress) {
+      final currentState = state as SignUpInProgress;
+      // Remove any non-digit characters
+      final cleanedNin = value.replaceAll(RegExp(r'[^0-9]'), '');
+      emit(currentState.copyWith(
+        nin: cleanedNin,
+        bvnVerified: false, // Reset verification when NIN changes
+        clearErrorMessage: true,
+        isLoading: false,
+      ));
+    }
+  }
+
+  /// Validate BVN format (must be exactly 11 digits)
+  String? _validateBvn(String bvn) {
+    if (bvn.isEmpty) return 'BVN is required';
+    if (bvn.length != 11) return 'BVN must be exactly 11 digits';
+    if (!RegExp(r'^\d{11}$').hasMatch(bvn)) return 'BVN must contain only numbers';
+    return null;
+  }
+
+  /// Validate NIN format (must be exactly 11 digits)
+  String? _validateNin(String nin) {
+    if (nin.isEmpty) return 'NIN is required';
+    if (nin.length != 11) return 'NIN must be exactly 11 digits';
+    if (!RegExp(r'^\d{11}$').hasMatch(nin)) return 'NIN must contain only numbers';
+    return null;
+  }
+
+  /// Verify BVN/NIN with backend
+  /// This calls the auth service which connects to banking service to verify identity
+  Future<void> verifyIdentity() async {
+    if (state is! SignUpInProgress) return;
+
+    final currentState = state as SignUpInProgress;
+    final identityNumber = currentState.identityType == IdentityType.bvn
+        ? currentState.bvn
+        : currentState.nin;
+
+    // Validate format
+    final error = currentState.identityType == IdentityType.bvn
+        ? _validateBvn(identityNumber)
+        : _validateNin(identityNumber);
+
+    if (error != null) {
+      _showErrorSnackbar('Validation Error', error);
+      emit(currentState.copyWith(errorMessage: error));
+      return;
+    }
+
+    // Validate date of birth is set
+    if (currentState.selectedDate == null) {
+      _showErrorSnackbar('Validation Error', 'Date of birth is required for verification');
+      emit(currentState.copyWith(errorMessage: 'Date of birth is required'));
+      return;
+    }
+
+    if (isClosed) return;
+    emit(currentState.copyWith(isLoading: true, clearErrorMessage: true));
+
+    try {
+      // Format date as YYYY-MM-DD
+      final dob = currentState.selectedDate!;
+      final formattedDob = '${dob.year}-${dob.month.toString().padLeft(2, '0')}-${dob.day.toString().padLeft(2, '0')}';
+
+      // Call the actual backend endpoint via repository
+      final result = await _authRepository.verifyIdentity(
+        identityType: currentState.identityType == IdentityType.bvn ? 'bvn' : 'nin',
+        identityNumber: identityNumber,
+        dateOfBirth: formattedDob,
+      );
+
+      if (isClosed) return;
+
+      result.fold(
+        (failure) {
+          final errorMsg = failure.message ?? 'Failed to verify identity';
+          _showErrorSnackbar('Verification Failed', errorMsg);
+          emit(currentState.copyWith(
+            isLoading: false,
+            bvnVerified: false,
+            errorMessage: errorMsg,
+          ));
+        },
+        (verificationResult) {
+          if (verificationResult.verified) {
+            emit(currentState.copyWith(
+              isLoading: false,
+              bvnVerified: true,
+              verifiedFirstName: verificationResult.firstName ?? currentState.firstName,
+              verifiedLastName: verificationResult.lastName ?? currentState.lastName,
+              verifiedDateOfBirth: verificationResult.dateOfBirth ?? formattedDob,
+              clearErrorMessage: true,
+            ));
+
+            _showSuccessSnackbar(
+              'Identity Verified!',
+              'Your ${currentState.identityType == IdentityType.bvn ? 'BVN' : 'NIN'} has been verified successfully.',
+            );
+          } else {
+            _showErrorSnackbar('Verification Failed', 'Identity could not be verified');
+            emit(currentState.copyWith(
+              isLoading: false,
+              bvnVerified: false,
+              errorMessage: 'Identity could not be verified',
+            ));
+          }
+        },
+      );
+    } catch (e) {
+      if (isClosed) return;
+      final errorMsg = 'Failed to verify identity: ${e.toString()}';
+      _showErrorSnackbar('Verification Failed', errorMsg);
+      emit(currentState.copyWith(
+        isLoading: false,
+        bvnVerified: false,
+        errorMessage: errorMsg,
+      ));
+    }
+  }
+
   /// Unified method to handle email or phone number input
   /// Intelligently detects whether input is an email or phone number
   void signUpEmailOrPhoneChanged(String value) {
@@ -900,13 +1071,41 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     }
   }
 
+  /// Signup flow pages:
+  /// Page 0: Country Selection (Nigeria only for now)
+  /// Page 1: Email/Phone + Password
+  /// Page 2: Personal Info (First Name, Last Name, DOB)
+  /// Page 3: BVN/NIN Verification
   Future<void> signUpNextPage() async {
     if (state is SignUpInProgress) {
       final currentState = state as SignUpInProgress;
 
       if (currentState.currentPage == 0) {
-        // Validation for page 0: Email OR Phone + Password
-        // Check if user has entered either email or phone
+        // ========== PAGE 0: Country Selection ==========
+        // For now, only Nigeria is supported
+        if (currentState.countryCode.isEmpty) {
+          final errorMsg = 'Please select your country';
+          _showErrorSnackbar('Validation Error', errorMsg);
+          if (isClosed) return;
+          emit(currentState.copyWith(errorMessage: errorMsg));
+          return;
+        }
+
+        // Only allow Nigeria for now
+        if (currentState.countryCode != 'NG') {
+          final errorMsg = 'Only Nigeria is currently supported. More countries coming soon!';
+          _showErrorSnackbar('Country Not Supported', errorMsg);
+          if (isClosed) return;
+          emit(currentState.copyWith(errorMessage: errorMsg));
+          return;
+        }
+
+        // Proceed to page 1
+        if (isClosed) return;
+        emit(currentState.copyWith(currentPage: 1, clearErrorMessage: true));
+        return;
+      } else if (currentState.currentPage == 1) {
+        // ========== PAGE 1: Email/Phone + Password ==========
         final hasEmail = currentState.email.isNotEmpty;
         final hasPhone = currentState.phoneNumber.isNotEmpty;
 
@@ -921,7 +1120,6 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
         // Validate based on what was entered
         if (currentState.primaryContactType == PrimaryContactType.email ||
             (currentState.primaryContactType == PrimaryContactType.none && hasEmail)) {
-          // Validate email
           if (!_isValidEmail(currentState.email)) {
             final errorMsg = 'Please enter a valid email address';
             _showErrorSnackbar('Validation Error', errorMsg);
@@ -929,14 +1127,11 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
             emit(currentState.copyWith(errorMessage: errorMsg));
             return;
           }
-
-          // Set primary contact type to email if not already set
           if (currentState.primaryContactType == PrimaryContactType.none) {
             emit(currentState.copyWith(primaryContactType: PrimaryContactType.email));
           }
         } else if (currentState.primaryContactType == PrimaryContactType.phone ||
                    (currentState.primaryContactType == PrimaryContactType.none && hasPhone)) {
-          // Validate phone number
           if (!_isValidPhoneNumber(currentState.phoneNumber)) {
             final errorMsg = 'Please enter a valid phone number';
             _showErrorSnackbar('Validation Error', errorMsg);
@@ -944,14 +1139,12 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
             emit(currentState.copyWith(errorMessage: errorMsg));
             return;
           }
-
-          // Set primary contact type to phone if not already set
           if (currentState.primaryContactType == PrimaryContactType.none) {
             emit(currentState.copyWith(primaryContactType: PrimaryContactType.phone));
           }
         }
 
-        // Validate password (required for both email and phone signup)
+        // Validate password
         if (currentState.password.isEmpty) {
           final errorMsg = 'Password is required';
           _showErrorSnackbar('Validation Error', errorMsg);
@@ -984,7 +1177,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
           return;
         }
 
-        // Check email availability before proceeding (only if email is primary contact)
+        // Check email availability
         if (currentState.primaryContactType == PrimaryContactType.email ||
             currentState.primaryContactType == PrimaryContactType.none) {
           if (isClosed) return;
@@ -994,7 +1187,6 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
 
           if (isClosed) return;
 
-          // Handle result with proper control flow (fold callbacks don't return from outer function)
           final bool shouldProceed = result.fold(
             (failure) {
               final errorMsg = 'Failed to verify email availability. Please try again.';
@@ -1015,16 +1207,14 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
 
           if (!shouldProceed) return;
 
-          // Email is available, proceed to next page
-          emit(currentState.copyWith(currentPage: currentState.currentPage + 1, clearErrorMessage: true, isLoading: false));
+          emit(currentState.copyWith(currentPage: 2, clearErrorMessage: true, isLoading: false));
           return;
-        } else if (currentState.primaryContactType == PrimaryContactType.phone) {
-          // Phone signup - proceed to next page (phone availability can be checked on backend)
-          emit(currentState.copyWith(currentPage: currentState.currentPage + 1, clearErrorMessage: true, isLoading: false));
+        } else {
+          emit(currentState.copyWith(currentPage: 2, clearErrorMessage: true, isLoading: false));
           return;
         }
-      } else if (currentState.currentPage == 1) {
-        // Validation for page 1: Personal Info
+      } else if (currentState.currentPage == 2) {
+        // ========== PAGE 2: Personal Info ==========
         final firstNameError = _validateName(currentState.firstName, 'First name');
         if (firstNameError != null) {
           _showErrorSnackbar('Validation Error', firstNameError);
@@ -1049,10 +1239,8 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
           return;
         }
 
-        // Secondary contact validation (optional based on primary contact type)
+        // Secondary contact validation (optional)
         if (currentState.primaryContactType == PrimaryContactType.phone) {
-          // Phone is primary, so email (secondary) is optional
-          // Only validate email format if provided
           if (currentState.email.isNotEmpty && !_isValidEmail(currentState.email)) {
             final errorMsg = 'Please enter a valid email address';
             _showErrorSnackbar('Validation Error', errorMsg);
@@ -1061,8 +1249,6 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
             return;
           }
         } else {
-          // Email is primary, so phone (secondary) is optional
-          // Only validate phone format if provided
           final phoneError = _validateOptionalPhoneNumber(currentState.phoneNumber);
           if (phoneError != null) {
             _showErrorSnackbar('Validation Error', phoneError);
@@ -1071,11 +1257,39 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
             return;
           }
         }
-      }
 
-      if (currentState.currentPage < 1) {
+        // Proceed to BVN/NIN verification page
         if (isClosed) return;
-        emit(currentState.copyWith(currentPage: currentState.currentPage + 1, clearErrorMessage: true));
+        emit(currentState.copyWith(currentPage: 3, clearErrorMessage: true));
+        return;
+      } else if (currentState.currentPage == 3) {
+        // ========== PAGE 3: BVN/NIN Verification ==========
+        final identityNumber = currentState.identityType == IdentityType.bvn
+            ? currentState.bvn
+            : currentState.nin;
+
+        final error = currentState.identityType == IdentityType.bvn
+            ? _validateBvn(identityNumber)
+            : _validateNin(identityNumber);
+
+        if (error != null) {
+          _showErrorSnackbar('Validation Error', error);
+          if (isClosed) return;
+          emit(currentState.copyWith(errorMessage: error));
+          return;
+        }
+
+        // Check if already verified
+        if (!currentState.bvnVerified) {
+          final errorMsg = 'Please verify your ${currentState.identityType == IdentityType.bvn ? 'BVN' : 'NIN'} before proceeding';
+          _showInfoSnackbar('Verification Required', errorMsg);
+          if (isClosed) return;
+          emit(currentState.copyWith(errorMessage: errorMsg));
+          return;
+        }
+
+        // BVN is verified, can proceed with signup submission
+        // The actual submission happens in signUpSubmitted()
       }
     }
   }
@@ -1177,6 +1391,15 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
         }
       }
 
+      // BVN/NIN verification is required for Nigerian users
+      if (currentState.countryCode == 'NG' && !currentState.bvnVerified) {
+        final errorMsg = 'Please verify your BVN/NIN before completing signup';
+        _showErrorSnackbar('Verification Required', errorMsg);
+        if (isClosed) return;
+        emit(currentState.copyWith(errorMessage: errorMsg, isLoading: false));
+        return;
+      }
+
       if (currentState.isLoading) return;
       if (isClosed) return;
       emit(currentState.copyWith(isLoading: true, clearErrorMessage: true));
@@ -1186,7 +1409,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
           ? SignupPrimaryContact.phone
           : SignupPrimaryContact.email;
 
-      // Call the sign up use case
+      // Call the sign up use case with country and BVN info
       final result = await _signUpUseCase(
         firstName: currentState.firstName,
         lastName: currentState.lastName,
@@ -1196,6 +1419,10 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
         phoneNumber: currentState.phoneNumber.isEmpty ? null : currentState.phoneNumber,
         username: currentState.username.isEmpty ? null : currentState.username,
         referralCode: currentState.referralCode.isEmpty ? null : currentState.referralCode,
+        countryCode: currentState.countryCode,
+        currencyCode: currentState.currencyCode,
+        bvn: currentState.bvn.isEmpty ? null : currentState.bvn,
+        nin: currentState.nin.isEmpty ? null : currentState.nin,
       );
 
       if (isClosed) return;

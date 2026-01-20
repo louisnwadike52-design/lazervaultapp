@@ -12,6 +12,10 @@ import './detail_row.dart';
 import './copyable_detail_row.dart';
 import './switch_detail_row.dart';
 import './card_blocking_row.dart';
+
+// Import deposit and withdrawal flows
+import 'package:lazervault/src/features/funds/presentation/view/deposit/deposit_flow_screen.dart';
+import 'package:lazervault/src/features/funds/presentation/view/withdrawal/withdrawal_flow_screen.dart';
 // Keep imports for dialogs/logic methods if they need specific types
 
 class CardDetailsBottomSheet extends StatefulWidget {
@@ -526,46 +530,130 @@ class _CardDetailsBottomSheetState extends State<CardDetailsBottomSheet> {
   }
 
   Widget _buildActionButtons(Map<String, dynamic> accountArgs) {
-    return Row(
+    return Column(
       children: [
-        Expanded(
-          child: _buildCardActionButton(
-            'Copy Details',
-            Icons.copy_rounded,
-            () {
-              Clipboard.setData(ClipboardData(
-                text: 'Card Number: ${accountArgs["accountNumber"]}\n'
-                    'Expiry: 12/25\n'
-                    'Currency: ${accountArgs["currency"]}',
-              ));
-              Get.snackbar(
-                'Success',
-                'Card details copied to clipboard',
-                backgroundColor: Colors.green,
-                colorText: Colors.white,
-                snackPosition: SnackPosition.BOTTOM,
-              );
-            },
-          ),
+        // Primary actions: Deposit & Withdraw
+        Row(
+          children: [
+            Expanded(
+              child: _buildPrimaryActionButton(
+                'Deposit',
+                Icons.add_rounded,
+                Colors.green,
+                () {
+                  Get.back(); // Close bottom sheet
+                  Get.to(
+                    () => _DepositFlowNavigator(selectedAccount: accountArgs),
+                    transition: Transition.rightToLeft,
+                  );
+                },
+              ),
+            ),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: _buildPrimaryActionButton(
+                'Withdraw',
+                Icons.arrow_upward_rounded,
+                Colors.orange,
+                () {
+                  Get.back(); // Close bottom sheet
+                  Get.to(
+                    () => _WithdrawalFlowNavigator(selectedAccount: accountArgs),
+                    transition: Transition.rightToLeft,
+                  );
+                },
+              ),
+            ),
+          ],
         ),
-        SizedBox(width: 12.w),
-        Expanded(
-          child: _buildCardActionButton(
-            'Share Details',
-            Icons.share_rounded,
-            () {
-              // Implement share functionality
-              Get.snackbar(
-                'Coming Soon',
-                'Share functionality will be available in the next update',
-                backgroundColor: Colors.blue.withOpacity(0.1),
-                colorText: Colors.white,
-                snackPosition: SnackPosition.BOTTOM,
-              );
-            },
-          ),
+        SizedBox(height: 12.h),
+        // Secondary actions: Copy & Share
+        Row(
+          children: [
+            Expanded(
+              child: _buildCardActionButton(
+                'Copy Details',
+                Icons.copy_rounded,
+                () {
+                  Clipboard.setData(ClipboardData(
+                    text: 'Card Number: ${accountArgs["accountNumber"]}\n'
+                        'Expiry: 12/25\n'
+                        'Currency: ${accountArgs["currency"]}',
+                  ));
+                  Get.snackbar(
+                    'Success',
+                    'Card details copied to clipboard',
+                    backgroundColor: Colors.green,
+                    colorText: Colors.white,
+                    snackPosition: SnackPosition.BOTTOM,
+                  );
+                },
+              ),
+            ),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: _buildCardActionButton(
+                'Share Details',
+                Icons.share_rounded,
+                () {
+                  Get.snackbar(
+                    'Coming Soon',
+                    'Share functionality will be available in the next update',
+                    backgroundColor: Colors.blue.withValues(alpha: 0.1),
+                    colorText: Colors.white,
+                    snackPosition: SnackPosition.BOTTOM,
+                  );
+                },
+              ),
+            ),
+          ],
         ),
       ],
+    );
+  }
+
+  Widget _buildPrimaryActionButton(String label, IconData icon, Color color, VoidCallback onTap) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12.r),
+        child: Container(
+          padding: EdgeInsets.symmetric(vertical: 16.h),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [color, color.withValues(alpha: 0.8)],
+            ),
+            borderRadius: BorderRadius.circular(12.r),
+            boxShadow: [
+              BoxShadow(
+                color: color.withValues(alpha: 0.3),
+                blurRadius: 8,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                color: Colors.white,
+                size: 20.sp,
+              ),
+              SizedBox(width: 8.w),
+              Text(
+                label,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -1327,16 +1415,15 @@ class _CardDetailsBottomSheetState extends State<CardDetailsBottomSheet> {
         child: Container(
           padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.05),
+            color: Colors.white.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(12.r),
             boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.08),
+                blurRadius: 6,
+                offset: Offset(0, 2),
+              ),
+            ],
           ),
           child: Text(
             amount,
@@ -1350,6 +1437,28 @@ class _CardDetailsBottomSheetState extends State<CardDetailsBottomSheet> {
       ),
     );
   }
+}
 
-  // ... existing code ...
+/// Navigator widget for Deposit Flow
+class _DepositFlowNavigator extends StatelessWidget {
+  final Map<String, dynamic> selectedAccount;
+
+  const _DepositFlowNavigator({required this.selectedAccount});
+
+  @override
+  Widget build(BuildContext context) {
+    return DepositFlowScreen(selectedAccount: selectedAccount);
+  }
+}
+
+/// Navigator widget for Withdrawal Flow
+class _WithdrawalFlowNavigator extends StatelessWidget {
+  final Map<String, dynamic> selectedAccount;
+
+  const _WithdrawalFlowNavigator({required this.selectedAccount});
+
+  @override
+  Widget build(BuildContext context) {
+    return WithdrawalFlowScreen(selectedAccount: selectedAccount);
+  }
 } 

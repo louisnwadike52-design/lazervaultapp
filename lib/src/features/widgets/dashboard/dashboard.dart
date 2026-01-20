@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:get/get.dart';
 import 'package:lazervault/src/features/widgets/app_services_builder.dart';
 import 'package:lazervault/src/features/account_cards_summary/presentation/view/dashboard_card_summary.dart';
+import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
+import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
+import 'package:lazervault/src/features/profile/cubit/profile_state.dart';
 import 'package:lazervault/src/features/widgets/dashboard/exchange_rates.dart';
-import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/widgets/dashboard/generate_bank_card.dart';
 import 'package:lazervault/src/features/widgets/dashboard/invite_friends.dart';
 import 'package:lazervault/src/features/widgets/dashboard/monthly_summary.dart';
@@ -20,8 +24,28 @@ class Dashboard extends StatefulWidget {
 
 class _DashboardState extends State<Dashboard> {
   Future<void> _onRefresh() async {
-    await Future.delayed(const Duration(milliseconds: 500));
-    Get.toNamed(AppRoutes.myAccount);
+    // Refresh dashboard data by fetching account summaries
+    final authState = context.read<AuthenticationCubit>().state;
+    if (authState is AuthenticationSuccess) {
+      final userId = authState.profile.user.id;
+      final accessToken = authState.profile.session.accessToken;
+
+      // Get active country from ProfileCubit
+      final profileState = context.read<ProfileCubit>().state;
+      String? activeCountry;
+      if (profileState is ProfileLoaded) {
+        activeCountry = profileState.preferences.activeCountry.isNotEmpty
+            ? profileState.preferences.activeCountry
+            : null;
+      }
+
+      // Refresh account summaries
+      await context.read<AccountCardsSummaryCubit>().fetchAccountSummaries(
+            userId: userId,
+            accessToken: accessToken,
+            country: activeCountry,
+          );
+    }
   }
 
   @override

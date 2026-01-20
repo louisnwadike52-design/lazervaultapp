@@ -210,6 +210,10 @@ class AuthRepositoryImpl implements IAuthRepository {
     String? phoneNumber,
     String? username,
     String? referralCode,
+    String? countryCode,
+    String? currencyCode,
+    String? bvn,
+    String? nin,
   }) async {
     try {
       // Map domain enum to proto enum
@@ -224,12 +228,15 @@ class AuthRepositoryImpl implements IAuthRepository {
         email: email,
         password: password,
         phone: phoneNumber ?? '',
-        countryCode: '', // Extract from phone if needed
+        countryCode: countryCode ?? 'NG', // Default to Nigeria
+        currencyCode: currencyCode ?? 'NGN', // Default to Naira
         deviceId: 'flutter-app', // TODO: Get actual device ID
         deviceName: 'Flutter App', // TODO: Get actual device name
         primaryContactType: protoPrimaryContact,
         username: username ?? '', // Pass empty string if not provided - backend handles as optional
         referralCode: referralCode ?? '',
+        bvn: bvn ?? '', // Bank Verification Number
+        nin: nin ?? '', // National Identification Number
       );
       print('Sending gRPC Signup request...');
       final signupResponse = await _authServiceClient.signup(signupRequest);
@@ -674,6 +681,81 @@ class AuthRepositoryImpl implements IAuthRepository {
       print('Unexpected error during verifyPhoneNumber: $e');
       return Left(ServerFailure(
         message: 'An unexpected error occurred while verifying phone number.',
+        statusCode: 500,
+      ));
+    }
+  }
+
+  @override
+  Future<Either<Failure, IdentityVerificationResult>> verifyIdentity({
+    required String identityType,
+    required String identityNumber,
+    required String dateOfBirth,
+  }) async {
+    try {
+      // Map identity type string to proto enum
+      final protoIdentityType = identityType.toLowerCase() == 'bvn'
+          ? auth_req_resp.IdentityType.IDENTITY_TYPE_BVN
+          : auth_req_resp.IdentityType.IDENTITY_TYPE_NIN;
+
+      final request = auth_req_resp.VerifyIdentityRequest(
+        identityType: protoIdentityType,
+        identityNumber: identityNumber,
+        dateOfBirth: dateOfBirth,
+      );
+
+      print('Sending gRPC VerifyIdentity request: type=$identityType, number=${identityNumber.substring(0, 4)}****, dob=$dateOfBirth');
+
+      // Use helper to get call options with authorization header from secure storage
+      final callOptions = await _callOptionsHelper.withAuth();
+      final response = await _authServiceClient.verifyIdentity(request, options: callOptions);
+
+      print('VerifyIdentity response: success=${response.success}, verified=${response.verified}');
+
+      if (response.success && response.verified) {
+        // Build virtual account info if present
+        VirtualAccountInfo? virtualAccount;
+        if (response.hasVirtualAccount()) {
+          virtualAccount = VirtualAccountInfo(
+            accountNumber: response.virtualAccount.accountNumber,
+            bankName: response.virtualAccount.bankName,
+            bankCode: response.virtualAccount.bankCode,
+            accountName: response.virtualAccount.accountName,
+            currency: response.virtualAccount.currency,
+            provider: response.virtualAccount.provider,
+          );
+        }
+
+        return Right(IdentityVerificationResult(
+          verified: true,
+          firstName: response.hasIdentity() ? response.identity.firstName : null,
+          lastName: response.hasIdentity() ? response.identity.lastName : null,
+          middleName: response.hasIdentity() ? response.identity.middleName : null,
+          phoneNumber: response.hasIdentity() ? response.identity.phoneNumber : null,
+          dateOfBirth: response.hasIdentity() ? response.identity.dateOfBirth : null,
+          gender: response.hasIdentity() ? response.identity.gender : null,
+          photoUrl: response.hasIdentity() ? response.identity.photoUrl : null,
+          virtualAccount: virtualAccount,
+        ));
+      } else {
+        final errorMsg = response.errorMessage.isNotEmpty
+            ? response.errorMessage
+            : 'Identity verification failed.';
+        return Left(ServerFailure(
+          message: errorMsg,
+          statusCode: 400,
+        ));
+      }
+    } on GrpcError catch (e) {
+      print('gRPC Error during verifyIdentity: ${e.codeName} - ${e.message}');
+      return Left(ServerFailure(
+        message: e.message ?? 'Failed to verify identity.',
+        statusCode: e.code,
+      ));
+    } catch (e) {
+      print('Unexpected error during verifyIdentity: $e');
+      return Left(ServerFailure(
+        message: 'An unexpected error occurred while verifying identity.',
         statusCode: 500,
       ));
     }

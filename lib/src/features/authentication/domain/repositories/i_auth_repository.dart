@@ -34,6 +34,10 @@ abstract class IAuthRepository {
     String? phoneNumber,
     String? username,
     String? referralCode,
+    String? countryCode,
+    String? currencyCode,
+    String? bvn,
+    String? nin,
   });
 
   Future<Either<Failure, ProfileEntity>> signInWithGoogle();
@@ -77,5 +81,57 @@ abstract class IAuthRepository {
   Future<Either<Failure, VerifyPhoneEntity>> verifyPhoneNumber({
     required String phoneNumber,
     required String verificationCode,
+  });
+
+  /// Verify identity (BVN or NIN) with the banking service
+  /// Returns verified identity details and virtual account info on success
+  Future<Either<Failure, IdentityVerificationResult>> verifyIdentity({
+    required String identityType, // 'bvn' or 'nin'
+    required String identityNumber,
+    required String dateOfBirth, // YYYY-MM-DD format
+  });
+}
+
+/// Result of identity verification
+class IdentityVerificationResult {
+  final bool verified;
+  final String? firstName;
+  final String? lastName;
+  final String? middleName;
+  final String? phoneNumber;
+  final String? dateOfBirth;
+  final String? gender;
+  final String? photoUrl;
+  final VirtualAccountInfo? virtualAccount;
+
+  IdentityVerificationResult({
+    required this.verified,
+    this.firstName,
+    this.lastName,
+    this.middleName,
+    this.phoneNumber,
+    this.dateOfBirth,
+    this.gender,
+    this.photoUrl,
+    this.virtualAccount,
+  });
+}
+
+/// Virtual account info created after verification
+class VirtualAccountInfo {
+  final String accountNumber;
+  final String bankName;
+  final String bankCode;
+  final String accountName;
+  final String currency;
+  final String provider;
+
+  VirtualAccountInfo({
+    required this.accountNumber,
+    required this.bankName,
+    required this.bankCode,
+    required this.accountName,
+    required this.currency,
+    required this.provider,
   });
 } 

@@ -159,6 +159,12 @@ enum PrimaryContactType {
   none, // Initial state before user chooses
 }
 
+// Enum to track identity verification type
+enum IdentityType {
+  bvn,  // Bank Verification Number (11 digits)
+  nin,  // National Identification Number (11 digits)
+}
+
 class SignUpInProgress extends AuthenticationState {
   const SignUpInProgress({
     this.currentPage = 0,
@@ -173,7 +179,19 @@ class SignUpInProgress extends AuthenticationState {
     this.phoneNumber = '',
     this.isLoading = false,
     this.errorMessage,
-    this.primaryContactType = PrimaryContactType.none, // Track which contact type user entered first
+    this.primaryContactType = PrimaryContactType.none,
+    // Country selection (Nigeria only for now)
+    this.countryCode = 'NG',
+    this.countryName = 'Nigeria',
+    this.currencyCode = 'NGN',
+    // BVN/NIN verification
+    this.identityType = IdentityType.bvn,
+    this.bvn = '',
+    this.nin = '',
+    this.bvnVerified = false,
+    this.verifiedFirstName,
+    this.verifiedLastName,
+    this.verifiedDateOfBirth,
   });
 
   final int currentPage;
@@ -190,6 +208,20 @@ class SignUpInProgress extends AuthenticationState {
   final String? errorMessage;
   final PrimaryContactType primaryContactType;
 
+  // Country selection
+  final String countryCode;
+  final String countryName;
+  final String currencyCode;
+
+  // BVN/NIN verification
+  final IdentityType identityType;
+  final String bvn;
+  final String nin;
+  final bool bvnVerified;
+  final String? verifiedFirstName;
+  final String? verifiedLastName;
+  final String? verifiedDateOfBirth;
+
   SignUpInProgress copyWith({
     int? currentPage,
     String? email,
@@ -205,6 +237,16 @@ class SignUpInProgress extends AuthenticationState {
     String? errorMessage,
     bool clearErrorMessage = false,
     PrimaryContactType? primaryContactType,
+    String? countryCode,
+    String? countryName,
+    String? currencyCode,
+    IdentityType? identityType,
+    String? bvn,
+    String? nin,
+    bool? bvnVerified,
+    String? verifiedFirstName,
+    String? verifiedLastName,
+    String? verifiedDateOfBirth,
   }) {
     return SignUpInProgress(
       currentPage: currentPage ?? this.currentPage,
@@ -220,6 +262,16 @@ class SignUpInProgress extends AuthenticationState {
       isLoading: isLoading ?? this.isLoading,
       errorMessage: clearErrorMessage ? null : errorMessage ?? this.errorMessage,
       primaryContactType: primaryContactType ?? this.primaryContactType,
+      countryCode: countryCode ?? this.countryCode,
+      countryName: countryName ?? this.countryName,
+      currencyCode: currencyCode ?? this.currencyCode,
+      identityType: identityType ?? this.identityType,
+      bvn: bvn ?? this.bvn,
+      nin: nin ?? this.nin,
+      bvnVerified: bvnVerified ?? this.bvnVerified,
+      verifiedFirstName: verifiedFirstName ?? this.verifiedFirstName,
+      verifiedLastName: verifiedLastName ?? this.verifiedLastName,
+      verifiedDateOfBirth: verifiedDateOfBirth ?? this.verifiedDateOfBirth,
     );
   }
 
@@ -238,6 +290,16 @@ class SignUpInProgress extends AuthenticationState {
         isLoading,
         errorMessage,
         primaryContactType,
+        countryCode,
+        countryName,
+        currencyCode,
+        identityType,
+        bvn,
+        nin,
+        bvnVerified,
+        verifiedFirstName,
+        verifiedLastName,
+        verifiedDateOfBirth,
       ];
 }
 
@@ -375,6 +437,43 @@ class FacialRecognitionLoginSuccess extends AuthenticationState {
 
 class FacialRecognitionCheckInProgress extends AuthenticationState {
   const FacialRecognitionCheckInProgress();
+}
+
+// BVN/NIN Verification States
+class BVNVerificationInProgress extends AuthenticationState {
+  const BVNVerificationInProgress();
+}
+
+class BVNVerificationSuccess extends AuthenticationState {
+  final String verifiedFirstName;
+  final String verifiedLastName;
+  final String? verifiedDateOfBirth;
+  final String? verifiedPhoneNumber;
+
+  const BVNVerificationSuccess({
+    required this.verifiedFirstName,
+    required this.verifiedLastName,
+    this.verifiedDateOfBirth,
+    this.verifiedPhoneNumber,
+  });
+
+  @override
+  List<Object?> get props => [
+        verifiedFirstName,
+        verifiedLastName,
+        verifiedDateOfBirth,
+        verifiedPhoneNumber,
+      ];
+}
+
+class BVNVerificationFailure extends AuthenticationState {
+  final String message;
+  final String? errorCode;
+
+  const BVNVerificationFailure(this.message, {this.errorCode});
+
+  @override
+  List<Object?> get props => [message, errorCode];
 }
 
 class FacialRecognitionEnabled extends AuthenticationState {
