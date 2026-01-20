@@ -88,6 +88,7 @@ import 'package:lazervault/src/generated/group_account.pbgrpc.dart';
 import 'package:lazervault/src/generated/referral.pbgrpc.dart';
 import 'package:lazervault/src/generated/exchange.pbgrpc.dart';
 import 'package:lazervault/src/generated/voice-biometrics.pbgrpc.dart';
+import 'package:lazervault/src/generated/payments.pbgrpc.dart' as payments_grpc;
 import 'package:lazervault/src/features/currency_exchange/data/repositories/exchange_repository_impl.dart';
 import 'package:lazervault/src/features/currency_exchange/domain/repositories/i_exchange_repository.dart';
 import 'package:lazervault/src/features/voice_enrollment/data/voice_enrollment_repository_impl.dart';
@@ -603,6 +604,14 @@ Future<void> init() async {
   // Voice Biometrics Service Client
   serviceLocator.registerLazySingleton<VoiceBiometricsServiceClient>(
     () => VoiceBiometricsServiceClient(serviceLocator<ClientChannel>()),
+  );
+
+  // Payments Service Client (for account verification, transfers, etc.)
+  // Uses Financial Gateway (8100) for payments-related operations
+  serviceLocator.registerLazySingleton<payments_grpc.PaymentsServiceClient>(
+    () => payments_grpc.PaymentsServiceClient(
+      serviceLocator<ClientChannel>(instanceName: 'financialChannel'),
+    ),
   );
 
 
@@ -1681,7 +1690,8 @@ Future<void> init() async {
   // Remote Data Source (gRPC implementation)
   serviceLocator.registerLazySingleton<FamilyAccountRemoteDataSource>(
     () => FamilyAccountGrpcDataSource(
-      serviceLocator<family_accounts_grpc.FamilyAccountsServiceClient>(),
+      client: serviceLocator<family_accounts_grpc.FamilyAccountsServiceClient>(),
+      callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
     ),
   );
 

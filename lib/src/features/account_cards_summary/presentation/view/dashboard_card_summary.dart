@@ -14,6 +14,7 @@ import 'package:lazervault/src/features/profile/cubit/profile_state.dart';
 import '../widgets/dashboard_header.dart';
 import '../widgets/account_carousel.dart';
 import '../widgets/card_details_bottom_sheet.dart';
+import '../widgets/empty_account_state.dart';
 
 // Wrapper Widget to Provide the Cubit
 class DashboardCardSummary extends StatelessWidget {
@@ -209,6 +210,16 @@ class _DashboardCardSummaryViewState extends State<_DashboardCardSummaryView> {
                   // }
                 },
                 builder: (context, state) {
+                  // Get country code from profile for empty state handling
+                  // Default to 'NG' (Nigeria) since signup is now Nigeria-only
+                  String countryCode = 'NG';
+                  final profileState = context.read<ProfileCubit>().state;
+                  if (profileState is ProfileLoaded) {
+                    countryCode = profileState.preferences.activeCountry.isNotEmpty
+                        ? profileState.preferences.activeCountry
+                        : 'NG'; // Default to Nigeria
+                  }
+
                   if (state is AccountCardsSummaryLoading ||
                       state is AccountCardsSummaryInitial) {
                     return SizedBox(
@@ -226,15 +237,42 @@ class _DashboardCardSummaryViewState extends State<_DashboardCardSummaryView> {
                     );
                   }
                   if (state is AccountCardsSummaryLoaded) {
+                    // Check if user has no accounts (non-Nigeria or accounts not yet created)
+                    if (state.accountSummaries.isEmpty) {
+                      final isNigeriaUser = EmptyAccountState.isCountrySupported(countryCode);
+                      return SizedBox(
+                        height: 228.h,
+                        child: EmptyAccountState(
+                          countryCode: countryCode,
+                          isVirtualAccountSupported: isNigeriaUser,
+                          onNotifyMe: () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  'We\'ll notify you when virtual accounts become available in your region!',
+                                ),
+                                duration: Duration(seconds: 3),
+                                backgroundColor: Color(0xFF6C5CE7),
+                              ),
+                            );
+                          },
+                        ),
+                      );
+                    }
+
                     // Check if there's a family account in the summaries
                     final hasFamilyAccount = state.accountSummaries.any(
                       (account) => account.isFamilyAccount,
                     );
 
+                    // Show family setup card for users without family account
+                    // Since signup is now Nigeria-only, all users can set up family accounts
+                    final isNigeriaUser = EmptyAccountState.isCountrySupported(countryCode);
+
                     return AccountCarousel(
                       accountSummaries: state.accountSummaries,
                       onShowDetails: _showCardDetailsSheet,
-                      showFamilySetupCard: !hasFamilyAccount, // Show setup card in carousel if no family account
+                      showFamilySetupCard: !hasFamilyAccount, // Show setup card for all users without family account
                     );
                   }
                   return SizedBox(

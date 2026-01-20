@@ -289,6 +289,7 @@ abstract class AppRoutes {
   // Family Account Routes
   static const String familySetup = '/family/setup';
   static const String familyAddMember = '/family/add-member';
+  static const String familyInviteMemberFlow = '/family/invite-member';
   static const String familyDetails = '/family/details';
   static const String familyEditMemberLimits = '/family/edit-limits';
   static const String familyInvitations = '/family/invitations';

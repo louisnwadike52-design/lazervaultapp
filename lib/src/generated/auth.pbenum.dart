@@ -64,3 +64,20 @@ class StepStatus extends $pb.ProtobufEnum {
   const StepStatus._($core.int v, $core.String n) : super(v, n);
 }
 
+class IdentityType extends $pb.ProtobufEnum {
+  static const IdentityType IDENTITY_TYPE_UNSPECIFIED = IdentityType._(0, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'IDENTITY_TYPE_UNSPECIFIED');
+  static const IdentityType IDENTITY_TYPE_BVN = IdentityType._(1, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'IDENTITY_TYPE_BVN');
+  static const IdentityType IDENTITY_TYPE_NIN = IdentityType._(2, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'IDENTITY_TYPE_NIN');
+
+  static const $core.List<IdentityType> values = <IdentityType> [
+    IDENTITY_TYPE_UNSPECIFIED,
+    IDENTITY_TYPE_BVN,
+    IDENTITY_TYPE_NIN,
+  ];
+
+  static final $core.Map<$core.int, IdentityType> _byValue = $pb.ProtobufEnum.initByValue(values);
+  static IdentityType? valueOf($core.int value) => _byValue[value];
+
+  const IdentityType._($core.int v, $core.String n) : super(v, n);
+}
+

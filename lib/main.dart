@@ -20,7 +20,9 @@ import 'package:lazervault/src/features/account_cards_summary/cubit/account_card
 import 'package:lazervault/src/features/account_cards_summary/cubit/balance_websocket_cubit.dart';
 import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/account_verification_cubit.dart';
-import 'package:lazervault/src/features/recipients/data/datasources/recipient_verification_remote_datasource.dart';
+import 'package:lazervault/src/features/recipients/data/datasources/recipient_verification_grpc_datasource.dart';
+import 'package:lazervault/src/generated/payments.pbgrpc.dart' as payments_grpc;
+import 'package:lazervault/core/services/grpc_call_options_helper.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:device_info_plus/device_info_plus.dart'; // Added device_info_plus
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -254,9 +256,9 @@ class _MyAppState extends State<MyApp> {
         ),
         BlocProvider<AccountVerificationCubit>(
           create: (_) => AccountVerificationCubit(
-            dataSource: RecipientVerificationRemoteDataSourceImpl(
-              // Use Golang payments gateway for account verification (not Python chat gateway)
-              baseUrl: dotenv.env['PAYMENTS_GATEWAY_URL'] ?? 'http://localhost:8081',
+            dataSource: RecipientVerificationGrpcDataSource(
+              client: serviceLocator<payments_grpc.PaymentsServiceClient>(),
+              callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
             ),
           ),
         ),

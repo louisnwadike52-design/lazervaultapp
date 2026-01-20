@@ -46,6 +46,18 @@ const StepStatus$json = const {
 
 /// Descriptor for `StepStatus`. Decode as a `google.protobuf.EnumDescriptorProto`.
 final $typed_data.Uint8List stepStatusDescriptor = $convert.base64Decode('CgpTdGVwU3RhdHVzEhcKE1NURVBfU1RBVFVTX1BFTkRJTkcQABIbChdTVEVQX1NUQVRVU19JTl9QUk9HUkVTUxABEhkKFVNURVBfU1RBVFVTX0NPTVBMRVRFRBACEhcKE1NURVBfU1RBVFVTX1NLSVBQRUQQAw==');
+@$core.Deprecated('Use identityTypeDescriptor instead')
+const IdentityType$json = const {
+  '1': 'IdentityType',
+  '2': const [
+    const {'1': 'IDENTITY_TYPE_UNSPECIFIED', '2': 0},
+    const {'1': 'IDENTITY_TYPE_BVN', '2': 1},
+    const {'1': 'IDENTITY_TYPE_NIN', '2': 2},
+  ],
+};
+
+/// Descriptor for `IdentityType`. Decode as a `google.protobuf.EnumDescriptorProto`.
+final $typed_data.Uint8List identityTypeDescriptor = $convert.base64Decode('CgxJZGVudGl0eVR5cGUSHQoZSURFTlRJVFlfVFlQRV9VTlNQRUNJRklFRBAAEhUKEUlERU5USVRZX1RZUEVfQlZOEAESFQoRSURFTlRJVFlfVFlQRV9OSU4QAg==');
 @$core.Deprecated('Use signupRequestDescriptor instead')
 const SignupRequest$json = const {
   '1': 'SignupRequest',
@@ -762,3 +774,64 @@ const CompleteSignupResponse$json = const {
 
 /// Descriptor for `CompleteSignupResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List completeSignupResponseDescriptor = $convert.base64Decode('ChZDb21wbGV0ZVNpZ251cFJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3MSGAoHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZRIwCghwcm9ncmVzcxgDIAEoCzIULmF1dGguU2lnbnVwUHJvZ3Jlc3NSCHByb2dyZXNz');
+@$core.Deprecated('Use verifyIdentityRequestDescriptor instead')
+const VerifyIdentityRequest$json = const {
+  '1': 'VerifyIdentityRequest',
+  '2': const [
+    const {'1': 'identity_type', '3': 1, '4': 1, '5': 14, '6': '.auth.IdentityType', '10': 'identityType'},
+    const {'1': 'identity_number', '3': 2, '4': 1, '5': 9, '10': 'identityNumber'},
+    const {'1': 'date_of_birth', '3': 3, '4': 1, '5': 9, '10': 'dateOfBirth'},
+  ],
+};
+
+/// Descriptor for `VerifyIdentityRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List verifyIdentityRequestDescriptor = $convert.base64Decode('ChVWZXJpZnlJZGVudGl0eVJlcXVlc3QSNwoNaWRlbnRpdHlfdHlwZRgBIAEoDjISLmF1dGguSWRlbnRpdHlUeXBlUgxpZGVudGl0eVR5cGUSJwoPaWRlbnRpdHlfbnVtYmVyGAIgASgJUg5pZGVudGl0eU51bWJlchIiCg1kYXRlX29mX2JpcnRoGAMgASgJUgtkYXRlT2ZCaXJ0aA==');
+@$core.Deprecated('Use verifiedIdentityDescriptor instead')
+const VerifiedIdentity$json = const {
+  '1': 'VerifiedIdentity',
+  '2': const [
+    const {'1': 'first_name', '3': 1, '4': 1, '5': 9, '10': 'firstName'},
+    const {'1': 'last_name', '3': 2, '4': 1, '5': 9, '10': 'lastName'},
+    const {'1': 'middle_name', '3': 3, '4': 1, '5': 9, '10': 'middleName'},
+    const {'1': 'phone_number', '3': 4, '4': 1, '5': 9, '10': 'phoneNumber'},
+    const {'1': 'date_of_birth', '3': 5, '4': 1, '5': 9, '10': 'dateOfBirth'},
+    const {'1': 'gender', '3': 6, '4': 1, '5': 9, '10': 'gender'},
+    const {'1': 'photo_url', '3': 7, '4': 1, '5': 9, '10': 'photoUrl'},
+    const {'1': 'address', '3': 8, '4': 1, '5': 9, '10': 'address'},
+    const {'1': 'state_of_origin', '3': 9, '4': 1, '5': 9, '10': 'stateOfOrigin'},
+    const {'1': 'lga_of_origin', '3': 10, '4': 1, '5': 9, '10': 'lgaOfOrigin'},
+  ],
+};
+
+/// Descriptor for `VerifiedIdentity`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List verifiedIdentityDescriptor = $convert.base64Decode('ChBWZXJpZmllZElkZW50aXR5Eh0KCmZpcnN0X25hbWUYASABKAlSCWZpcnN0TmFtZRIbCglsYXN0X25hbWUYAiABKAlSCGxhc3ROYW1lEh8KC21pZGRsZV9uYW1lGAMgASgJUgptaWRkbGVOYW1lEiEKDHBob25lX251bWJlchgEIAEoCVILcGhvbmVOdW1iZXISIgoNZGF0ZV9vZl9iaXJ0aBgFIAEoCVILZGF0ZU9mQmlydGgSFgoGZ2VuZGVyGAYgASgJUgZnZW5kZXISGwoJcGhvdG9fdXJsGAcgASgJUghwaG90b1VybBIYCgdhZGRyZXNzGAggASgJUgdhZGRyZXNzEiYKD3N0YXRlX29mX29yaWdpbhgJIAEoCVINc3RhdGVPZk9yaWdpbhIiCg1sZ2Ffb2Zfb3JpZ2luGAogASgJUgtsZ2FPZk9yaWdpbg==');
+@$core.Deprecated('Use virtualAccountInfoDescriptor instead')
+const VirtualAccountInfo$json = const {
+  '1': 'VirtualAccountInfo',
+  '2': const [
+    const {'1': 'account_number', '3': 1, '4': 1, '5': 9, '10': 'accountNumber'},
+    const {'1': 'bank_name', '3': 2, '4': 1, '5': 9, '10': 'bankName'},
+    const {'1': 'bank_code', '3': 3, '4': 1, '5': 9, '10': 'bankCode'},
+    const {'1': 'account_name', '3': 4, '4': 1, '5': 9, '10': 'accountName'},
+    const {'1': 'currency', '3': 5, '4': 1, '5': 9, '10': 'currency'},
+    const {'1': 'provider', '3': 6, '4': 1, '5': 9, '10': 'provider'},
+  ],
+};
+
+/// Descriptor for `VirtualAccountInfo`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List virtualAccountInfoDescriptor = $convert.base64Decode('ChJWaXJ0dWFsQWNjb3VudEluZm8SJQoOYWNjb3VudF9udW1iZXIYASABKAlSDWFjY291bnROdW1iZXISGwoJYmFua19uYW1lGAIgASgJUghiYW5rTmFtZRIbCgliYW5rX2NvZGUYAyABKAlSCGJhbmtDb2RlEiEKDGFjY291bnRfbmFtZRgEIAEoCVILYWNjb3VudE5hbWUSGgoIY3VycmVuY3kYBSABKAlSCGN1cnJlbmN5EhoKCHByb3ZpZGVyGAYgASgJUghwcm92aWRlcg==');
+@$core.Deprecated('Use verifyIdentityResponseDescriptor instead')
+const VerifyIdentityResponse$json = const {
+  '1': 'VerifyIdentityResponse',
+  '2': const [
+    const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    const {'1': 'verified', '3': 2, '4': 1, '5': 8, '10': 'verified'},
+    const {'1': 'error_code', '3': 3, '4': 1, '5': 9, '10': 'errorCode'},
+    const {'1': 'error_message', '3': 4, '4': 1, '5': 9, '10': 'errorMessage'},
+    const {'1': 'identity', '3': 5, '4': 1, '5': 11, '6': '.auth.VerifiedIdentity', '10': 'identity'},
+    const {'1': 'virtual_account', '3': 6, '4': 1, '5': 11, '6': '.auth.VirtualAccountInfo', '10': 'virtualAccount'},
+  ],
+};
+
+/// Descriptor for `VerifyIdentityResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List verifyIdentityResponseDescriptor = $convert.base64Decode('ChZWZXJpZnlJZGVudGl0eVJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3MSGgoIdmVyaWZpZWQYAiABKAhSCHZlcmlmaWVkEh0KCmVycm9yX2NvZGUYAyABKAlSCWVycm9yQ29kZRIjCg1lcnJvcl9tZXNzYWdlGAQgASgJUgxlcnJvck1lc3NhZ2USMgoIaWRlbnRpdHkYBSABKAsyFi5hdXRoLlZlcmlmaWVkSWRlbnRpdHlSCGlkZW50aXR5EkEKD3ZpcnR1YWxfYWNjb3VudBgGIAEoCzIYLmF1dGguVmlydHVhbEFjY291bnRJbmZvUg52aXJ0dWFsQWNjb3VudA==');

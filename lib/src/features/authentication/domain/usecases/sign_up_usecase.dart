@@ -23,6 +23,10 @@ class SignUpUseCase {
     String? phoneNumber,
     String? username,
     String? referralCode,
+    String? countryCode,
+    String? currencyCode,
+    String? bvn,
+    String? nin,
   }) async {
     // Input validation could go here if needed
     return _repository.signUp(
@@ -34,6 +38,10 @@ class SignUpUseCase {
       phoneNumber: phoneNumber,
       username: username,
       referralCode: referralCode,
+      countryCode: countryCode,
+      currencyCode: currencyCode,
+      bvn: bvn,
+      nin: nin,
     );
   }
 }

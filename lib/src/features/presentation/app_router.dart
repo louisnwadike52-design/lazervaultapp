@@ -271,6 +271,7 @@ import 'package:lazervault/src/features/family_account/presentation/cubit/family
 import 'package:lazervault/src/features/family_account/domain/entities/family_account_entities.dart';
 import 'package:lazervault/src/features/family_account/presentation/views/family_setup_flow_screen.dart';
 import 'package:lazervault/src/features/family_account/presentation/views/family_add_member_screen.dart';
+import 'package:lazervault/src/features/family_account/presentation/views/family_invite_member_flow_screen.dart';
 import 'package:lazervault/src/features/family_account/presentation/views/family_account_detail_screen.dart';
 import 'package:lazervault/src/features/family_account/presentation/views/family_edit_member_limits_screen.dart';
 
@@ -1992,6 +1993,23 @@ class AppRouter {
           familyName: Get.parameters['familyName'],
         ),
       ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.familyInviteMemberFlow,
+      page: () {
+        final args = Get.arguments as Map<String, dynamic>?;
+        final familyId = args?['familyId'] as String? ?? '';
+        final familyName = args?['familyName'] as String?;
+
+        return BlocProvider(
+          create: (_) => serviceLocator<FamilyAccountCubit>(),
+          child: FamilyInviteMemberFlowScreen(
+            familyId: familyId,
+            familyName: familyName,
+          ),
+        );
+      },
       transition: Transition.rightToLeft,
     ),
     GetPage(

@@ -444,6 +444,24 @@ service AuthService {
       };
     };
   }
+
+  // Verify identity (BVN or NIN) - Synchronous flow during signup
+  rpc VerifyIdentity(VerifyIdentityRequest) returns (VerifyIdentityResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/auth/verify-identity"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Verify Identity";
+      description: "Verify user identity using BVN or NIN. This is a synchronous operation that verifies with the banking service and creates a virtual account on success.";
+      tags: ["Identity Verification"];
+      security: {
+        security_requirement: {
+          key: "bearer";
+        }
+      };
+    };
+  }
 }
 
 // ===== Signup =====
@@ -846,4 +864,54 @@ message CompleteSignupResponse {
   bool success = 1;
   string message = 2;
   SignupProgress progress = 3;
+}
+
+// ===== Identity Verification (BVN/NIN) =====
+
+// Identity type for verification
+enum IdentityType {
+  IDENTITY_TYPE_UNSPECIFIED = 0;
+  IDENTITY_TYPE_BVN = 1;   // Bank Verification Number (Nigeria)
+  IDENTITY_TYPE_NIN = 2;   // National Identification Number (Nigeria)
+}
+
+// Verify identity request (BVN or NIN)
+message VerifyIdentityRequest {
+  IdentityType identity_type = 1;     // BVN or NIN
+  string identity_number = 2;         // 11-digit BVN or NIN
+  string date_of_birth = 3;           // YYYY-MM-DD format, required for verification
+}
+
+// Verified identity details returned from provider
+message VerifiedIdentity {
+  string first_name = 1;
+  string last_name = 2;
+  string middle_name = 3;
+  string phone_number = 4;
+  string date_of_birth = 5;
+  string gender = 6;
+  string photo_url = 7;              // Base64 encoded photo from BVN record
+  string address = 8;
+  string state_of_origin = 9;
+  string lga_of_origin = 10;
+}
+
+// Virtual account info created after identity verification
+message VirtualAccountInfo {
+  string account_number = 1;
+  string bank_name = 2;
+  string bank_code = 3;
+  string account_name = 4;
+  string currency = 5;
+  string provider = 6;
+}
+
+// Verify identity response
+message VerifyIdentityResponse {
+  bool success = 1;
+  bool verified = 2;                  // True if identity was verified
+  string error_code = 3;              // Error code if verification failed
+  string error_message = 4;           // Human-readable error message
+  VerifiedIdentity identity = 5;      // Verified identity details
+  VirtualAccountInfo virtual_account = 6; // Virtual account created after verification
 }

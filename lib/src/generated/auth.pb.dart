@@ -4524,3 +4524,489 @@ class CompleteSignupResponse extends $pb.GeneratedMessage {
   SignupProgress ensureProgress() => $_ensure(2);
 }
 
+class VerifyIdentityRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'VerifyIdentityRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'auth'), createEmptyInstance: create)
+    ..e<IdentityType>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'identityType', $pb.PbFieldType.OE, defaultOrMaker: IdentityType.IDENTITY_TYPE_UNSPECIFIED, valueOf: IdentityType.valueOf, enumValues: IdentityType.values)
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'identityNumber')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'dateOfBirth')
+    ..hasRequiredFields = false
+  ;
+
+  VerifyIdentityRequest._() : super();
+  factory VerifyIdentityRequest({
+    IdentityType? identityType,
+    $core.String? identityNumber,
+    $core.String? dateOfBirth,
+  }) {
+    final _result = create();
+    if (identityType != null) {
+      _result.identityType = identityType;
+    }
+    if (identityNumber != null) {
+      _result.identityNumber = identityNumber;
+    }
+    if (dateOfBirth != null) {
+      _result.dateOfBirth = dateOfBirth;
+    }
+    return _result;
+  }
+  factory VerifyIdentityRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory VerifyIdentityRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  VerifyIdentityRequest clone() => VerifyIdentityRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  VerifyIdentityRequest copyWith(void Function(VerifyIdentityRequest) updates) => super.copyWith((message) => updates(message as VerifyIdentityRequest)) as VerifyIdentityRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static VerifyIdentityRequest create() => VerifyIdentityRequest._();
+  VerifyIdentityRequest createEmptyInstance() => create();
+  static $pb.PbList<VerifyIdentityRequest> createRepeated() => $pb.PbList<VerifyIdentityRequest>();
+  @$core.pragma('dart2js:noInline')
+  static VerifyIdentityRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<VerifyIdentityRequest>(create);
+  static VerifyIdentityRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  IdentityType get identityType => $_getN(0);
+  @$pb.TagNumber(1)
+  set identityType(IdentityType v) { setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasIdentityType() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearIdentityType() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get identityNumber => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set identityNumber($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasIdentityNumber() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearIdentityNumber() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get dateOfBirth => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set dateOfBirth($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasDateOfBirth() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearDateOfBirth() => clearField(3);
+}
+
+class VerifiedIdentity extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'VerifiedIdentity', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'auth'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'firstName')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastName')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'middleName')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'phoneNumber')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'dateOfBirth')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'gender')
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'photoUrl')
+    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'address')
+    ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'stateOfOrigin')
+    ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lgaOfOrigin')
+    ..hasRequiredFields = false
+  ;
+
+  VerifiedIdentity._() : super();
+  factory VerifiedIdentity({
+    $core.String? firstName,
+    $core.String? lastName,
+    $core.String? middleName,
+    $core.String? phoneNumber,
+    $core.String? dateOfBirth,
+    $core.String? gender,
+    $core.String? photoUrl,
+    $core.String? address,
+    $core.String? stateOfOrigin,
+    $core.String? lgaOfOrigin,
+  }) {
+    final _result = create();
+    if (firstName != null) {
+      _result.firstName = firstName;
+    }
+    if (lastName != null) {
+      _result.lastName = lastName;
+    }
+    if (middleName != null) {
+      _result.middleName = middleName;
+    }
+    if (phoneNumber != null) {
+      _result.phoneNumber = phoneNumber;
+    }
+    if (dateOfBirth != null) {
+      _result.dateOfBirth = dateOfBirth;
+    }
+    if (gender != null) {
+      _result.gender = gender;
+    }
+    if (photoUrl != null) {
+      _result.photoUrl = photoUrl;
+    }
+    if (address != null) {
+      _result.address = address;
+    }
+    if (stateOfOrigin != null) {
+      _result.stateOfOrigin = stateOfOrigin;
+    }
+    if (lgaOfOrigin != null) {
+      _result.lgaOfOrigin = lgaOfOrigin;
+    }
+    return _result;
+  }
+  factory VerifiedIdentity.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory VerifiedIdentity.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  VerifiedIdentity clone() => VerifiedIdentity()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  VerifiedIdentity copyWith(void Function(VerifiedIdentity) updates) => super.copyWith((message) => updates(message as VerifiedIdentity)) as VerifiedIdentity; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static VerifiedIdentity create() => VerifiedIdentity._();
+  VerifiedIdentity createEmptyInstance() => create();
+  static $pb.PbList<VerifiedIdentity> createRepeated() => $pb.PbList<VerifiedIdentity>();
+  @$core.pragma('dart2js:noInline')
+  static VerifiedIdentity getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<VerifiedIdentity>(create);
+  static VerifiedIdentity? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get firstName => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set firstName($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasFirstName() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearFirstName() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get lastName => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set lastName($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasLastName() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearLastName() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get middleName => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set middleName($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasMiddleName() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearMiddleName() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get phoneNumber => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set phoneNumber($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasPhoneNumber() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearPhoneNumber() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get dateOfBirth => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set dateOfBirth($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasDateOfBirth() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearDateOfBirth() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get gender => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set gender($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasGender() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearGender() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.String get photoUrl => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set photoUrl($core.String v) { $_setString(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasPhotoUrl() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearPhotoUrl() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.String get address => $_getSZ(7);
+  @$pb.TagNumber(8)
+  set address($core.String v) { $_setString(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasAddress() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearAddress() => clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.String get stateOfOrigin => $_getSZ(8);
+  @$pb.TagNumber(9)
+  set stateOfOrigin($core.String v) { $_setString(8, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasStateOfOrigin() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearStateOfOrigin() => clearField(9);
+
+  @$pb.TagNumber(10)
+  $core.String get lgaOfOrigin => $_getSZ(9);
+  @$pb.TagNumber(10)
+  set lgaOfOrigin($core.String v) { $_setString(9, v); }
+  @$pb.TagNumber(10)
+  $core.bool hasLgaOfOrigin() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearLgaOfOrigin() => clearField(10);
+}
+
+class VirtualAccountInfo extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'VirtualAccountInfo', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'auth'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accountNumber')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'bankName')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'bankCode')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accountName')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'provider')
+    ..hasRequiredFields = false
+  ;
+
+  VirtualAccountInfo._() : super();
+  factory VirtualAccountInfo({
+    $core.String? accountNumber,
+    $core.String? bankName,
+    $core.String? bankCode,
+    $core.String? accountName,
+    $core.String? currency,
+    $core.String? provider,
+  }) {
+    final _result = create();
+    if (accountNumber != null) {
+      _result.accountNumber = accountNumber;
+    }
+    if (bankName != null) {
+      _result.bankName = bankName;
+    }
+    if (bankCode != null) {
+      _result.bankCode = bankCode;
+    }
+    if (accountName != null) {
+      _result.accountName = accountName;
+    }
+    if (currency != null) {
+      _result.currency = currency;
+    }
+    if (provider != null) {
+      _result.provider = provider;
+    }
+    return _result;
+  }
+  factory VirtualAccountInfo.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory VirtualAccountInfo.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  VirtualAccountInfo clone() => VirtualAccountInfo()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  VirtualAccountInfo copyWith(void Function(VirtualAccountInfo) updates) => super.copyWith((message) => updates(message as VirtualAccountInfo)) as VirtualAccountInfo; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static VirtualAccountInfo create() => VirtualAccountInfo._();
+  VirtualAccountInfo createEmptyInstance() => create();
+  static $pb.PbList<VirtualAccountInfo> createRepeated() => $pb.PbList<VirtualAccountInfo>();
+  @$core.pragma('dart2js:noInline')
+  static VirtualAccountInfo getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<VirtualAccountInfo>(create);
+  static VirtualAccountInfo? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get accountNumber => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set accountNumber($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasAccountNumber() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearAccountNumber() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get bankName => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set bankName($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasBankName() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearBankName() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get bankCode => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set bankCode($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasBankCode() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearBankCode() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get accountName => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set accountName($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasAccountName() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearAccountName() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get currency => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set currency($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasCurrency() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearCurrency() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get provider => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set provider($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasProvider() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearProvider() => clearField(6);
+}
+
+class VerifyIdentityResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'VerifyIdentityResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'auth'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOB(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'verified')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'errorCode')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'errorMessage')
+    ..aOM<VerifiedIdentity>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'identity', subBuilder: VerifiedIdentity.create)
+    ..aOM<VirtualAccountInfo>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'virtualAccount', subBuilder: VirtualAccountInfo.create)
+    ..hasRequiredFields = false
+  ;
+
+  VerifyIdentityResponse._() : super();
+  factory VerifyIdentityResponse({
+    $core.bool? success,
+    $core.bool? verified,
+    $core.String? errorCode,
+    $core.String? errorMessage,
+    VerifiedIdentity? identity,
+    VirtualAccountInfo? virtualAccount,
+  }) {
+    final _result = create();
+    if (success != null) {
+      _result.success = success;
+    }
+    if (verified != null) {
+      _result.verified = verified;
+    }
+    if (errorCode != null) {
+      _result.errorCode = errorCode;
+    }
+    if (errorMessage != null) {
+      _result.errorMessage = errorMessage;
+    }
+    if (identity != null) {
+      _result.identity = identity;
+    }
+    if (virtualAccount != null) {
+      _result.virtualAccount = virtualAccount;
+    }
+    return _result;
+  }
+  factory VerifyIdentityResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory VerifyIdentityResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  VerifyIdentityResponse clone() => VerifyIdentityResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  VerifyIdentityResponse copyWith(void Function(VerifyIdentityResponse) updates) => super.copyWith((message) => updates(message as VerifyIdentityResponse)) as VerifyIdentityResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static VerifyIdentityResponse create() => VerifyIdentityResponse._();
+  VerifyIdentityResponse createEmptyInstance() => create();
+  static $pb.PbList<VerifyIdentityResponse> createRepeated() => $pb.PbList<VerifyIdentityResponse>();
+  @$core.pragma('dart2js:noInline')
+  static VerifyIdentityResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<VerifyIdentityResponse>(create);
+  static VerifyIdentityResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool v) { $_setBool(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.bool get verified => $_getBF(1);
+  @$pb.TagNumber(2)
+  set verified($core.bool v) { $_setBool(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasVerified() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearVerified() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get errorCode => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set errorCode($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasErrorCode() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearErrorCode() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get errorMessage => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set errorMessage($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasErrorMessage() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearErrorMessage() => clearField(4);
+
+  @$pb.TagNumber(5)
+  VerifiedIdentity get identity => $_getN(4);
+  @$pb.TagNumber(5)
+  set identity(VerifiedIdentity v) { setField(5, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasIdentity() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearIdentity() => clearField(5);
+  @$pb.TagNumber(5)
+  VerifiedIdentity ensureIdentity() => $_ensure(4);
+
+  @$pb.TagNumber(6)
+  VirtualAccountInfo get virtualAccount => $_getN(5);
+  @$pb.TagNumber(6)
+  set virtualAccount(VirtualAccountInfo v) { setField(6, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasVirtualAccount() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearVirtualAccount() => clearField(6);
+  @$pb.TagNumber(6)
+  VirtualAccountInfo ensureVirtualAccount() => $_ensure(5);
+}
+
