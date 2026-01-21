@@ -94,20 +94,16 @@ class AppConfig {
   // =========================================================================
 
   /// Banking Service API URL
-  static String get bankingApiUrl =>
-      dotenv.env['BANKING_API_URL'] ?? _defaultBankingUrl;
+  static String get bankingApiUrl => _defaultBankingUrl;
 
   /// Chat Gateway URL
-  static String get chatGatewayUrl =>
-      dotenv.env['CHAT_GATEWAY_URL'] ?? _defaultChatGatewayUrl;
+  static String get chatGatewayUrl => _defaultChatGatewayUrl;
 
   /// HTTP API Host
-  static String get httpApiHost =>
-      dotenv.env['HTTP_API_HOST'] ?? _defaultHttpApiHost;
+  static String get httpApiHost => _defaultHttpApiHost;
 
   /// gRPC API Host
-  static String get grpcApiHost =>
-      dotenv.env['GRPC_API_HOST'] ?? _defaultGrpcApiHost;
+  static String get grpcApiHost => _defaultGrpcApiHost;
 
   /// gRPC API Port
   static int get grpcApiPort =>
@@ -117,11 +113,31 @@ class AppConfig {
   // DEFAULT VALUES (Development)
   // =========================================================================
 
-  static const String _defaultBankingUrl = 'http://10.0.2.2:8080/api/v1';
-  static const String _defaultChatGatewayUrl = 'http://10.0.2.2:3011';
-  static const String _defaultHttpApiHost = 'http://10.0.2.2:7878';
-  static const String _defaultGrpcApiHost = '10.0.2.2';
-  static const int _defaultGrpcApiPort = 50070;
+  /// Default Banking API URL - uses environment variable or production gateway
+  /// The banking API is served through the main chat gateway
+  static String get _defaultBankingUrl {
+    // Try banking specific URL first, then fall back to chat gateway
+    return dotenv.env['BANKING_API_URL'] ??
+           dotenv.env['CHAT_GATEWAY_URL'] ??
+           'https://api.lazervault.com/v1';
+  }
+
+  /// Default Chat Gateway URL
+  static String get _defaultChatGatewayUrl =>
+      dotenv.env['CHAT_GATEWAY_URL'] ??
+      'https://api.lazervault.com';
+
+  /// Default HTTP API Host
+  static String get _defaultHttpApiHost =>
+      dotenv.env['HTTP_API_HOST'] ??
+      'https://api.lazervault.com';
+
+  /// Default gRPC API Host
+  static String get _defaultGrpcApiHost =>
+      dotenv.env['GRPC_API_HOST'] ??
+      'grpc.lazervault.com';
+
+  static const int _defaultGrpcApiPort = 443;
 
   // =========================================================================
   // FEATURE FLAGS

@@ -763,4 +763,43 @@ class StatisticsRepository {
       },
     );
   }
+
+  // ========================================
+  // FINANCIAL WRAPPED
+  // ========================================
+  // TODO: Implement when proto types are available
+  // /// Get Financial Wrapped experience data
+  // Future<pb.FinancialWrapped> getFinancialWrapped({
+  //   required pb.WrappedPeriod period,
+  //   int? year,
+  //   int? month,
+  // }) async {
+  //   return retryWithBackoff(
+  //     operation: () async {
+  //       final request = pb.GetFinancialWrappedRequest()
+  //         ..period = period;
+  //
+  //       if (year != null) {
+  //         request.year = year;
+  //       }
+  //       if (month != null) {
+  //         request.month = month;
+  //       }
+  //
+  //       final options = await grpcClient.callOptions;
+  //       final response = await grpcClient.statisticsClient.getFinancialWrapped(
+  //         request,
+  //         options: options,
+  //       );
+  //
+  //       if (!response.success) {
+  //         throw Exception(response.error.isNotEmpty
+  //             ? response.error
+  //             : 'Failed to get financial wrapped');
+  //       }
+  //
+  //       return response.wrapped;
+  //     },
+  //   );
+  // }
 }

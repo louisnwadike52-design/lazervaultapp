@@ -65,11 +65,11 @@ class CryptoModel extends Crypto {
       atl: json['atl']?.toDouble(),
       atlChangePercentage: json['atl_change_percentage']?.toDouble(),
       atlDate: json['atl_date'] != null ? DateTime.parse(json['atl_date']) : null,
-      lastUpdated: json['last_updated'] != null 
-          ? DateTime.parse(json['last_updated']) 
+      lastUpdated: json['last_updated'] != null
+          ? DateTime.parse(json['last_updated'])
           : DateTime.now(),
-      sparklineIn7d: json['sparkline_in_7d']?['price']?.isNotEmpty == true 
-          ? (json['sparkline_in_7d']['price'] as List).last.toDouble() 
+      sparklineIn7d: json['sparkline_in_7d']?['price']?.isNotEmpty == true
+          ? (json['sparkline_in_7d']['price'] as List).last.toDouble()
           : null,
       priceHistory: json['price_history'] != null
           ? (json['price_history'] as List)
@@ -126,115 +126,84 @@ class CryptoModel extends Crypto {
     };
   }
 
-  // Create sample data for development
-  static List<CryptoModel> sampleCryptos() {
-    return [
-      CryptoModel(
-        id: 'bitcoin',
-        symbol: 'BTC',
-        name: 'Bitcoin',
-        image: 'https://assets.coingecko.com/coins/images/1/large/bitcoin.png',
-        currentPrice: 43250.50,
-        marketCap: 847500000000,
-        marketCapRank: 1,
-        totalVolume: 23500000000,
-        high24h: 43890.25,
-        low24h: 42100.75,
-        priceChange24h: 1150.25,
-        priceChangePercentage24h: 2.73,
-        priceChangePercentage7d: -1.45,
-        priceChangePercentage30d: 5.67,
-        priceChangePercentage1y: 156.23,
-        circulatingSupply: 19600000,
-        totalSupply: 21000000,
-        maxSupply: 21000000,
-        ath: 69045.0,
-        athChangePercentage: -37.35,
-        athDate: DateTime.parse('2021-11-10'),
-        atl: 67.81,
-        atlChangePercentage: 63658.12,
-        atlDate: DateTime.parse('2013-07-06'),
-        lastUpdated: DateTime.now(),
-        priceHistory: _generateSamplePriceHistory(43250.50),
-      ),
-      CryptoModel(
-        id: 'ethereum',
-        symbol: 'ETH',
-        name: 'Ethereum',
-        image: 'https://assets.coingecko.com/coins/images/279/large/ethereum.png',
-        currentPrice: 2650.75,
-        marketCap: 318700000000,
-        marketCapRank: 2,
-        totalVolume: 15200000000,
-        high24h: 2698.50,
-        low24h: 2580.25,
-        priceChange24h: 70.50,
-        priceChangePercentage24h: 2.73,
-        priceChangePercentage7d: -0.85,
-        priceChangePercentage30d: 8.45,
-        priceChangePercentage1y: 89.67,
-        circulatingSupply: 120280000,
-        totalSupply: 120280000,
-        ath: 4878.26,
-        athChangePercentage: -45.67,
-        athDate: DateTime.parse('2021-11-10'),
-        atl: 0.432979,
-        atlChangePercentage: 612345.78,
-        atlDate: DateTime.parse('2015-10-20'),
-        lastUpdated: DateTime.now(),
-        priceHistory: _generateSamplePriceHistory(2650.75),
-      ),
-      CryptoModel(
-        id: 'binancecoin',
-        symbol: 'BNB',
-        name: 'BNB',
-        image: 'https://assets.coingecko.com/coins/images/825/large/bnb-icon2_2x.png',
-        currentPrice: 310.25,
-        marketCap: 46500000000,
-        marketCapRank: 4,
-        totalVolume: 890000000,
-        high24h: 315.80,
-        low24h: 305.10,
-        priceChange24h: 5.15,
-        priceChangePercentage24h: 1.69,
-        priceChangePercentage7d: 3.22,
-        priceChangePercentage30d: -2.34,
-        priceChangePercentage1y: 45.78,
-        circulatingSupply: 149800000,
-        totalSupply: 149800000,
-        maxSupply: 200000000,
-        ath: 686.31,
-        athChangePercentage: -54.78,
-        athDate: DateTime.parse('2021-05-10'),
-        atl: 0.0398177,
-        atlChangePercentage: 778900.56,
-        atlDate: DateTime.parse('2017-10-19'),
-        lastUpdated: DateTime.now(),
-        priceHistory: _generateSamplePriceHistory(310.25),
-      ),
-    ];
+  /// Convert from proto message to CryptoModel
+  factory CryptoModel.fromProto(dynamic proto) {
+    return CryptoModel(
+      id: proto.id,
+      symbol: proto.symbol.toUpperCase(),
+      name: proto.name,
+      image: proto.image,
+      currentPrice: proto.currentPrice,
+      marketCap: proto.marketCap.toDouble(),
+      marketCapRank: proto.marketCapRank,
+      fullyDilutedValuation: proto.hasFullyDilutedValuation() ? proto.fullyDilutedValuation : null,
+      totalVolume: proto.totalVolume.toDouble(),
+      high24h: proto.hasHigh24h() ? proto.high24h : 0.0,
+      low24h: proto.hasLow24h() ? proto.low24h : 0.0,
+      priceChange24h: proto.hasPriceChange24h() ? proto.priceChange24h : 0.0,
+      priceChangePercentage24h: proto.hasPriceChangePercentage24h() ? proto.priceChangePercentage24h : 0.0,
+      priceChangePercentage7d: proto.hasPriceChangePercentage7d() ? proto.priceChangePercentage7d : null,
+      priceChangePercentage30d: proto.hasPriceChangePercentage30d() ? proto.priceChangePercentage30d : null,
+      priceChangePercentage1y: proto.hasPriceChangePercentage1y() ? proto.priceChangePercentage1y : null,
+      marketCapChange24h: proto.hasMarketCapChange24h() ? proto.marketCapChange24h : null,
+      marketCapChangePercentage24h: proto.hasMarketCapChangePercentage24h() ? proto.marketCapChangePercentage24h : null,
+      circulatingSupply: proto.circulatingSupply,
+      totalSupply: proto.hasTotalSupply() ? proto.totalSupply : null,
+      maxSupply: proto.hasMaxSupply() ? proto.maxSupply : null,
+      ath: proto.hasAth() ? proto.ath : null,
+      athChangePercentage: proto.hasAthChangePercentage() ? proto.athChangePercentage : null,
+      athDate: proto.hasAthDate() ? proto.athDate.toDateTime() : null,
+      atl: proto.hasAtl() ? proto.atl : null,
+      atlChangePercentage: proto.hasAtlChangePercentage() ? proto.atlChangePercentage : null,
+      atlDate: proto.hasAtlDate() ? proto.atlDate.toDateTime() : null,
+      lastUpdated: proto.hasLastUpdated() ? proto.lastUpdated.toDateTime() : DateTime.now(),
+      sparklineIn7d: null,
+      priceHistory: proto.priceHistory
+          .map((point) => PricePoint(
+                timestamp: point.timestamp.toDateTime(),
+                price: point.price,
+                volume: point.volume,
+                open: point.hasOpen() ? point.open : null,
+                high: point.hasHigh() ? point.high : null,
+                low: point.hasLow() ? point.low : null,
+                close: point.hasClose() ? point.close : null,
+              ))
+          .toList(),
+      isFavorite: false,
+    );
   }
 
-  static List<PricePoint> _generateSamplePriceHistory(double currentPrice) {
-    final now = DateTime.now();
-    final List<PricePoint> history = [];
-    
-    for (int i = 30; i >= 0; i--) {
-      final date = now.subtract(Duration(days: i));
-      final variation = (i * 0.02 - 0.3) * currentPrice;
-      final price = currentPrice + variation;
-      
-      history.add(PricePoint(
-        timestamp: date,
-        price: price,
-        open: price * 0.99,
-        high: price * 1.02,
-        low: price * 0.98,
-        close: price,
-        volume: 1000000 + (i * 50000),
-      ));
-    }
-    
-    return history;
-  }
+  Crypto toEntity() => Crypto(
+    id: id,
+    symbol: symbol,
+    name: name,
+    image: image,
+    currentPrice: currentPrice,
+    marketCap: marketCap,
+    marketCapRank: marketCapRank,
+    fullyDilutedValuation: fullyDilutedValuation,
+    totalVolume: totalVolume,
+    high24h: high24h,
+    low24h: low24h,
+    priceChange24h: priceChange24h,
+    priceChangePercentage24h: priceChangePercentage24h,
+    priceChangePercentage7d: priceChangePercentage7d,
+    priceChangePercentage30d: priceChangePercentage30d,
+    priceChangePercentage1y: priceChangePercentage1y,
+    marketCapChange24h: marketCapChange24h,
+    marketCapChangePercentage24h: marketCapChangePercentage24h,
+    circulatingSupply: circulatingSupply,
+    totalSupply: totalSupply,
+    maxSupply: maxSupply,
+    ath: ath,
+    athChangePercentage: athChangePercentage,
+    athDate: athDate,
+    atl: atl,
+    atlChangePercentage: atlChangePercentage,
+    atlDate: atlDate,
+    lastUpdated: lastUpdated,
+    sparklineIn7d: sparklineIn7d,
+    priceHistory: priceHistory,
+    isFavorite: isFavorite,
+  );
 } 

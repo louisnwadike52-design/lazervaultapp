@@ -186,6 +186,146 @@ message GetGlobalMarketDataResponse {
 }
 
 // ============================================================================
+// WALLET & TRADING METHODS
+// ============================================================================
+
+// Get Crypto Holdings (User's portfolio)
+message GetCryptoHoldingsRequest {
+  string user_id = 1;
+}
+
+message GetCryptoHolding {
+  string crypto_id = 1;
+  string symbol = 2;
+  string name = 3;
+  double balance = 4;
+  double fiat_value = 5;
+  string fiat_currency = 6;
+  google.protobuf.Timestamp acquired_at = 7;
+}
+
+message GetCryptoHoldingsResponse {
+  repeated GetCryptoHolding holdings = 1;
+  double total_fiat_value = 2;
+  string fiat_currency = 3;
+}
+
+// Get Crypto Transactions
+message GetCryptoTransactionsRequest {
+  string user_id = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+}
+
+message CryptoTransaction {
+  string id = 1;
+  string type = 2; // buy, sell, deposit, withdrawal
+  string crypto_id = 3;
+  string crypto_symbol = 4;
+  double amount = 5;
+  double fiat_value = 6;
+  string fiat_currency = 7;
+  google.protobuf.Timestamp timestamp = 8;
+  string status = 9;
+}
+
+message GetCryptoTransactionsResponse {
+  repeated CryptoTransaction transactions = 1;
+  int32 total_count = 2;
+}
+
+// Buy Crypto
+message BuyCryptoRequest {
+  string user_id = 1;
+  string crypto_id = 2;
+  double fiat_amount = 3;
+  string fiat_currency = 4;
+}
+
+message BuyCryptoResponse {
+  string transaction_id = 1;
+  string crypto_id = 2;
+  double crypto_amount = 3;
+  double fiat_amount = 4;
+  string status = 5;
+}
+
+// Sell Crypto
+message SellCryptoRequest {
+  string user_id = 1;
+  string crypto_id = 2;
+  double crypto_amount = 3;
+  string fiat_currency = 4;
+}
+
+message SellCryptoResponse {
+  string transaction_id = 1;
+  string crypto_id = 2;
+  double fiat_amount = 3;
+  double crypto_amount = 4;
+  string status = 5;
+}
+
+// Convert Crypto
+message ConvertCryptoRequest {
+  string user_id = 1;
+  string from_crypto_id = 2;
+  string to_crypto_id = 3;
+  double from_amount = 4;
+}
+
+message ConvertCryptoResponse {
+  string transaction_id = 1;
+  double to_amount = 2;
+  double rate = 3;
+  string status = 4;
+}
+
+// Get Wallets
+message GetWalletsRequest {
+  string user_id = 1;
+}
+
+message CryptoWallet {
+  string id = 1;
+  string crypto_id = 2;
+  string crypto_symbol = 3;
+  string address = 4;
+  double balance = 5;
+  string wallet_type = 6; // hot, cold, exchange
+}
+
+message GetWalletsResponse {
+  repeated CryptoWallet wallets = 1;
+}
+
+// Create Wallet
+message CreateWalletRequest {
+  string user_id = 1;
+  string crypto_id = 2;
+  string wallet_type = 3;
+}
+
+message CreateWalletResponse {
+  string wallet_id = 1;
+  string address = 2;
+  string crypto_id = 3;
+  string status = 4;
+}
+
+// Get Wallet Balance
+message GetWalletBalanceRequest {
+  string wallet_id = 1;
+}
+
+message GetWalletBalanceResponse {
+  string wallet_id = 1;
+  string crypto_id = 2;
+  double balance = 3;
+  double fiat_value = 4;
+}
+
+// ============================================================================
 // PAGINATION INFO
 // ============================================================================
 
@@ -256,6 +396,66 @@ service CryptoService {
   rpc GetGlobalMarketData(GetGlobalMarketDataRequest) returns (GetGlobalMarketDataResponse) {
     option (google.api.http) = {
       get: "/v1/cryptos/global"
+    };
+  }
+
+  // Get user's crypto holdings
+  rpc GetCryptoHoldings(GetCryptoHoldingsRequest) returns (GetCryptoHoldingsResponse) {
+    option (google.api.http) = {
+      get: "/v1/crypto/holdings"
+    };
+  }
+
+  // Get user's crypto transactions
+  rpc GetCryptoTransactions(GetCryptoTransactionsRequest) returns (GetCryptoTransactionsResponse) {
+    option (google.api.http) = {
+      get: "/v1/crypto/transactions"
+    };
+  }
+
+  // Buy cryptocurrency
+  rpc BuyCrypto(BuyCryptoRequest) returns (BuyCryptoResponse) {
+    option (google.api.http) = {
+      post: "/v1/crypto/buy"
+      body: "*"
+    };
+  }
+
+  // Sell cryptocurrency
+  rpc SellCrypto(SellCryptoRequest) returns (SellCryptoResponse) {
+    option (google.api.http) = {
+      post: "/v1/crypto/sell"
+      body: "*"
+    };
+  }
+
+  // Convert between cryptocurrencies
+  rpc ConvertCrypto(ConvertCryptoRequest) returns (ConvertCryptoResponse) {
+    option (google.api.http) = {
+      post: "/v1/crypto/convert"
+      body: "*"
+    };
+  }
+
+  // Get user's crypto wallets
+  rpc GetWallets(GetWalletsRequest) returns (GetWalletsResponse) {
+    option (google.api.http) = {
+      get: "/v1/crypto/wallets"
+    };
+  }
+
+  // Create a new crypto wallet
+  rpc CreateWallet(CreateWalletRequest) returns (CreateWalletResponse) {
+    option (google.api.http) = {
+      post: "/v1/crypto/wallets"
+      body: "*"
+    };
+  }
+
+  // Get wallet balance
+  rpc GetWalletBalance(GetWalletBalanceRequest) returns (GetWalletBalanceResponse) {
+    option (google.api.http) = {
+      get: "/v1/crypto/wallets/{wallet_id}/balance"
     };
   }
 }

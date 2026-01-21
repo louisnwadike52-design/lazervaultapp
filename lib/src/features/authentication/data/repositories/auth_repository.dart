@@ -13,7 +13,7 @@ import 'package:lazervault/src/features/authentication/domain/entities/phone_ver
 import 'package:lazervault/src/features/authentication/data/models/phone_verification_model.dart';
 import 'package:lazervault/src/features/authentication/domain/repositories/i_auth_repository.dart';
 import 'package:lazervault/src/features/authentication/domain/usecases/sign_up_usecase.dart';
-import 'package:lazervault/src/generated/auth.pbgrpc.dart';
+import 'package:lazervault/src/generated/auth.pbgrpc.dart' hide VirtualAccountInfo;
 import 'package:lazervault/src/generated/auth.pbenum.dart' as auth_enum;
 import 'package:lazervault/src/generated/user.pbgrpc.dart';
 import 'package:lazervault/src/generated/auth.pb.dart' as auth_req_resp;
@@ -222,6 +222,7 @@ class AuthRepositoryImpl implements IAuthRepository {
           : auth_enum.PrimaryContactType.EMAIL;
 
       // Use new AuthService.Signup endpoint that returns tokens directly
+      // Note: currencyCode, bvn, nin are not part of SignupRequest proto - they're handled separately via VerifyIdentity
       final signupRequest = auth_req_resp.SignupRequest(
         firstName: firstName,
         lastName: lastName,
@@ -229,14 +230,11 @@ class AuthRepositoryImpl implements IAuthRepository {
         password: password,
         phone: phoneNumber ?? '',
         countryCode: countryCode ?? 'NG', // Default to Nigeria
-        currencyCode: currencyCode ?? 'NGN', // Default to Naira
         deviceId: 'flutter-app', // TODO: Get actual device ID
         deviceName: 'Flutter App', // TODO: Get actual device name
         primaryContactType: protoPrimaryContact,
         username: username ?? '', // Pass empty string if not provided - backend handles as optional
         referralCode: referralCode ?? '',
-        bvn: bvn ?? '', // Bank Verification Number
-        nin: nin ?? '', // National Identification Number
       );
       print('Sending gRPC Signup request...');
       final signupResponse = await _authServiceClient.signup(signupRequest);
@@ -541,6 +539,70 @@ class AuthRepositoryImpl implements IAuthRepository {
     }
   }
 
+  @override
+  Future<Either<Failure, ProfileEntity>> validateToken({required String accessToken}) async {
+    try {
+      final request = auth_req_resp.ValidateTokenRequest(token: accessToken);
+      print('Validating access token...');
+
+      final response = await _authServiceClient.validateToken(request);
+
+      if (response.valid) {
+        print('Token is valid for user: ${response.email}');
+
+        // Create user model from validation response
+        final userModel = UserModel(
+          id: response.userId,
+          email: response.email,
+          firstName: '', // Not returned in validation response
+          lastName: '', // Not returned in validation response
+          phoneNumber: '', // Not returned in validation response
+          verified: true, // Token is valid, assume verified
+          isEmailVerified: true, // Token validation implies email is verified
+          profilePicture: null,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+        );
+
+        // Create a minimal session model
+        final now = DateTime.now();
+        final expiresAt = response.hasExpiresAt()
+            ? DateTime.fromMillisecondsSinceEpoch(response.expiresAt.toInt() * 1000)
+            : now.add(const Duration(hours: 1));
+
+        final sessionModel = SessionModel(
+          id: response.userId,
+          userId: response.userId,
+          accessToken: accessToken,
+          refreshToken: '', // Not returned in validation response
+          accessTokenExpiresAt: expiresAt,
+          refreshTokenExpiresAt: expiresAt,
+        );
+
+        final profileModel = ProfileModel(user: userModel, session: sessionModel);
+        return Right(profileModel);
+      } else {
+        print('Token validation failed: token is invalid');
+        return Left(ServerFailure(
+          message: 'Token is invalid or expired.',
+          statusCode: 401,
+        ));
+      }
+    } on GrpcError catch (e) {
+      print('gRPC Error during token validation: ${e.codeName} - ${e.message}');
+      return Left(ServerFailure(
+        message: e.message ?? 'Token validation failed.',
+        statusCode: e.code,
+      ));
+    } catch (e) {
+      print('Unexpected error during token validation: $e');
+      return Left(ServerFailure(
+        message: 'An unexpected error occurred during token validation.',
+        statusCode: 500,
+      ));
+    }
+  }
+
   /// Helper method for token rotation - returns tokens as a simple map
   /// This is used by GrpcCallOptionsHelper for automatic token refresh
   Future<Map<String, String>?> refreshTokensSimple() async {
@@ -691,12 +753,33 @@ class AuthRepositoryImpl implements IAuthRepository {
     required String identityType,
     required String identityNumber,
     required String dateOfBirth,
+    String? countryCode,
   }) async {
     try {
       // Map identity type string to proto enum
-      final protoIdentityType = identityType.toLowerCase() == 'bvn'
-          ? auth_req_resp.IdentityType.IDENTITY_TYPE_BVN
-          : auth_req_resp.IdentityType.IDENTITY_TYPE_NIN;
+      // Note: Current proto only supports BVN and NIN. Other identity types
+      // (SSN, NI Number, Ghana Card, etc.) will be mapped to NIN as fallback
+      // until backend support is added.
+      auth_req_resp.IdentityType protoIdentityType;
+
+      final country = countryCode?.toUpperCase() ?? 'NG';
+
+      switch (identityType.toLowerCase()) {
+        case 'bvn':
+          protoIdentityType = auth_req_resp.IdentityType.IDENTITY_TYPE_BVN;
+          break;
+        case 'nin':
+        case 'ssn':
+        case 'ssn_last4':
+        case 'ni_number':
+        case 'ghana_card':
+        case 'national_id':
+        default:
+          // For now, map all other types to NIN
+          // TODO: Update proto to support multi-country identity types
+          // Once backend supports SSN, NI_NUMBER, GHANA_CARD, etc., update mapping here
+          protoIdentityType = auth_req_resp.IdentityType.IDENTITY_TYPE_NIN;
+      }
 
       final request = auth_req_resp.VerifyIdentityRequest(
         identityType: protoIdentityType,
@@ -704,7 +787,7 @@ class AuthRepositoryImpl implements IAuthRepository {
         dateOfBirth: dateOfBirth,
       );
 
-      print('Sending gRPC VerifyIdentity request: type=$identityType, number=${identityNumber.substring(0, 4)}****, dob=$dateOfBirth');
+      print('Sending gRPC VerifyIdentity request: type=$identityType, country=$country, number=${identityNumber.length > 4 ? identityNumber.substring(0, 4) : identityNumber}****, dob=$dateOfBirth');
 
       // Use helper to get call options with authorization header from secure storage
       final callOptions = await _callOptionsHelper.withAuth();

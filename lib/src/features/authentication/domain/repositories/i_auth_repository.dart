@@ -73,6 +73,11 @@ abstract class IAuthRepository {
     required String refreshToken,
   });
 
+  /// Validate access token and return user profile if valid
+  Future<Either<Failure, ProfileEntity>> validateToken({
+    required String accessToken,
+  });
+
   // Phone verification methods
   Future<Either<Failure, PhoneVerificationEntity>> requestPhoneVerification({
     required String phoneNumber,
@@ -83,12 +88,13 @@ abstract class IAuthRepository {
     required String verificationCode,
   });
 
-  /// Verify identity (BVN or NIN) with the banking service
+  /// Verify identity (BVN, NIN, SSN, etc.) with the banking service
   /// Returns verified identity details and virtual account info on success
   Future<Either<Failure, IdentityVerificationResult>> verifyIdentity({
-    required String identityType, // 'bvn' or 'nin'
+    required String identityType, // 'bvn', 'nin', 'ssn', etc.
     required String identityNumber,
     required String dateOfBirth, // YYYY-MM-DD format
+    String? countryCode, // ISO country code (e.g., 'NG', 'US', 'GB')
   });
 }
 

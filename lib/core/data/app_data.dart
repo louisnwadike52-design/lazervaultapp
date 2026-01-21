@@ -1,9 +1,75 @@
+import 'package:flutter/material.dart';
 import 'package:lazervault/core/types/countries.dart';
 import 'package:lazervault/core/types/language.dart';
+
+/// Onboarding slide data model
+class OnboardingSlide {
+  final String title;
+  final String subtitle;
+  final String imagePath;
+  final Color backgroundColor;
+  final Color textColor;
+  final IconData? icon;
+
+  const OnboardingSlide({
+    required this.title,
+    required this.subtitle,
+    required this.imagePath,
+    required this.backgroundColor,
+    required this.textColor,
+    this.icon,
+  });
+}
 
 abstract class AppData {
   AppData._();
 
+  // ========== ONBOARDING SLIDES ==========
+  // LazerVault onboarding content with proper fintech branding
+  static const List<OnboardingSlide> onboardingSlides = [
+    OnboardingSlide(
+      title: 'Welcome to LazerVault',
+      subtitle: 'Your secure gateway to seamless financial management. Send, receive, and manage your money with ease.',
+      imagePath: 'assets/images/logos/lazervault-logo-only.png',
+      backgroundColor: Color(0xFFF5F7FA), // Light gray-blue
+      textColor: Color(0xFF1A1A2E), // Dark navy
+      icon: Icons.account_balance_wallet,
+    ),
+    OnboardingSlide(
+      title: '100% Secure Transactions',
+      subtitle: 'Bank-grade encryption protects your money. Your security is our top priority.',
+      imagePath: 'assets/images/dollar-money-send.png',
+      backgroundColor: Color(0xFFE8F4FD), // Light blue
+      textColor: Color(0xFF0D47A1), // Dark blue
+      icon: Icons.security,
+    ),
+    OnboardingSlide(
+      title: 'Multi-Currency Support',
+      subtitle: 'Hold and exchange multiple currencies. Get the best rates with real-time conversion.',
+      imagePath: 'assets/images/currencies/usa-flag.png',
+      backgroundColor: Color(0xFFF0F4F8), // Soft gray
+      textColor: Color(0xFF1A237E), // Navy
+      icon: Icons.currency_exchange,
+    ),
+    OnboardingSlide(
+      title: 'Crypto Investments',
+      subtitle: 'Buy, sell, and track cryptocurrencies. Start your investment journey with confidence.',
+      imagePath: 'assets/images/exchange.png',
+      backgroundColor: Color(0xFFE8F5E9), // Light green
+      textColor: Color(0xFF1B5E20), // Dark green
+      icon: Icons.trending_up,
+    ),
+    OnboardingSlide(
+      title: 'Start Your Journey',
+      subtitle: 'Join thousands of users who trust LazerVault for their financial needs. Let\'s get started!',
+      imagePath: 'assets/images/logos/lazervault-full-logo-no-background.png',
+      backgroundColor: Color(0xFFF3E5F5), // Light purple
+      textColor: Color(0xFF4A148C), // Dark purple
+      icon: Icons.rocket_launch,
+    ),
+  ];
+
+  // Legacy image lists (kept for backward compatibility)
   static final List<String> innerStyleImages = [
     'https://d1csarkz8obe9u.cloudfront.net/posterpreviews/clothing-store-banner-design-template-e7332aaf6402c88cb4623bf8eb6f97e2_screen.jpg?ts=1620867237',
     'https://cdn.venngage.com/template/thumbnail/small/01b644bd-e75b-4e70-b476-3a786261f066.webp',
@@ -24,7 +90,9 @@ abstract class AppData {
     // 'https://graphicsfamily.com/wp-content/uploads/2020/07/Shoes-Advertising-Banner-Design-Template-scaled.jpg',
   ];
 
-  static const String appLogo = "assets/images/logos/app-logo.png";
+  // ========== ASSETS ==========
+  static const String appLogo = "assets/images/logos/lazervault-logo-only.png";
+  static const String appLogoFull = "assets/images/logos/lazervault-full-logo-no-background.png";
   static const String defaultAvatar = "assets/images/users/default-avatar.png";
   static const String dp = "assets/images/dp.png";
   static const String dollarMoneySend = "assets/images/dollar-money-send.png";
@@ -33,6 +101,12 @@ abstract class AppData {
   static const String googleLogo = "assets/images/logos/google-logo.png";
   static const String appleLogo = "assets/images/logos/apple-logo-black.png";
   static const String orDivider = "assets/images/or-divider.png";
+
+  // ========== BRANDING COLORS ==========
+  static const Color primaryColor = Color(0xFF6C63FF); // Purple
+  static const Color secondaryColor = Color(0xFF2D3436); // Dark gray
+  static const Color accentColor = Color(0xFF00D4AA); // Teal
+  static const Color backgroundColor = Color(0xFFF5F7FA); // Light background
 
   static List<Country> countries = [
     const Country(

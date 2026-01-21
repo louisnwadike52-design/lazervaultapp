@@ -292,6 +292,248 @@ const GetGlobalMarketDataResponse$json = const {
 
 /// Descriptor for `GetGlobalMarketDataResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List getGlobalMarketDataResponseDescriptor = $convert.base64Decode('ChtHZXRHbG9iYWxNYXJrZXREYXRhUmVzcG9uc2USKAoQdG90YWxfbWFya2V0X2NhcBgBIAEoAVIOdG90YWxNYXJrZXRDYXASKAoQdG90YWxfdm9sdW1lXzI0aBgCIAEoAVIOdG90YWxWb2x1bWUyNGgSOQoZbWFya2V0X2NhcF9wZXJjZW50YWdlX2J0YxgDIAEoAVIWbWFya2V0Q2FwUGVyY2VudGFnZUJ0YxI5ChltYXJrZXRfY2FwX3BlcmNlbnRhZ2VfZXRoGAQgASgBUhZtYXJrZXRDYXBQZXJjZW50YWdlRXRoEjcKF2FjdGl2ZV9jcnlwdG9jdXJyZW5jaWVzGAUgASgFUhZhY3RpdmVDcnlwdG9jdXJyZW5jaWVzEhgKB21hcmtldHMYBiABKAVSB21hcmtldHMSOQoKdXBkYXRlZF9hdBgHIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXBSCXVwZGF0ZWRBdA==');
+@$core.Deprecated('Use getCryptoHoldingsRequestDescriptor instead')
+const GetCryptoHoldingsRequest$json = const {
+  '1': 'GetCryptoHoldingsRequest',
+  '2': const [
+    const {'1': 'user_id', '3': 1, '4': 1, '5': 9, '10': 'userId'},
+  ],
+};
+
+/// Descriptor for `GetCryptoHoldingsRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getCryptoHoldingsRequestDescriptor = $convert.base64Decode('ChhHZXRDcnlwdG9Ib2xkaW5nc1JlcXVlc3QSFwoHdXNlcl9pZBgBIAEoCVIGdXNlcklk');
+@$core.Deprecated('Use getCryptoHoldingDescriptor instead')
+const GetCryptoHolding$json = const {
+  '1': 'GetCryptoHolding',
+  '2': const [
+    const {'1': 'crypto_id', '3': 1, '4': 1, '5': 9, '10': 'cryptoId'},
+    const {'1': 'symbol', '3': 2, '4': 1, '5': 9, '10': 'symbol'},
+    const {'1': 'name', '3': 3, '4': 1, '5': 9, '10': 'name'},
+    const {'1': 'balance', '3': 4, '4': 1, '5': 1, '10': 'balance'},
+    const {'1': 'fiat_value', '3': 5, '4': 1, '5': 1, '10': 'fiatValue'},
+    const {'1': 'fiat_currency', '3': 6, '4': 1, '5': 9, '10': 'fiatCurrency'},
+    const {'1': 'acquired_at', '3': 7, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'acquiredAt'},
+  ],
+};
+
+/// Descriptor for `GetCryptoHolding`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getCryptoHoldingDescriptor = $convert.base64Decode('ChBHZXRDcnlwdG9Ib2xkaW5nEhsKCWNyeXB0b19pZBgBIAEoCVIIY3J5cHRvSWQSFgoGc3ltYm9sGAIgASgJUgZzeW1ib2wSEgoEbmFtZRgDIAEoCVIEbmFtZRIYCgdiYWxhbmNlGAQgASgBUgdiYWxhbmNlEh0KCmZpYXRfdmFsdWUYBSABKAFSCWZpYXRWYWx1ZRIjCg1maWF0X2N1cnJlbmN5GAYgASgJUgxmaWF0Q3VycmVuY3kSOwoLYWNxdWlyZWRfYXQYByABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUgphY3F1aXJlZEF0');
+@$core.Deprecated('Use getCryptoHoldingsResponseDescriptor instead')
+const GetCryptoHoldingsResponse$json = const {
+  '1': 'GetCryptoHoldingsResponse',
+  '2': const [
+    const {'1': 'holdings', '3': 1, '4': 3, '5': 11, '6': '.pb.GetCryptoHolding', '10': 'holdings'},
+    const {'1': 'total_fiat_value', '3': 2, '4': 1, '5': 1, '10': 'totalFiatValue'},
+    const {'1': 'fiat_currency', '3': 3, '4': 1, '5': 9, '10': 'fiatCurrency'},
+  ],
+};
+
+/// Descriptor for `GetCryptoHoldingsResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getCryptoHoldingsResponseDescriptor = $convert.base64Decode('ChlHZXRDcnlwdG9Ib2xkaW5nc1Jlc3BvbnNlEjAKCGhvbGRpbmdzGAEgAygLMhQucGIuR2V0Q3J5cHRvSG9sZGluZ1IIaG9sZGluZ3MSKAoQdG90YWxfZmlhdF92YWx1ZRgCIAEoAVIOdG90YWxGaWF0VmFsdWUSIwoNZmlhdF9jdXJyZW5jeRgDIAEoCVIMZmlhdEN1cnJlbmN5');
+@$core.Deprecated('Use getCryptoTransactionsRequestDescriptor instead')
+const GetCryptoTransactionsRequest$json = const {
+  '1': 'GetCryptoTransactionsRequest',
+  '2': const [
+    const {'1': 'user_id', '3': 1, '4': 1, '5': 9, '10': 'userId'},
+    const {'1': 'limit', '3': 2, '4': 1, '5': 5, '10': 'limit'},
+    const {'1': 'offset', '3': 3, '4': 1, '5': 5, '10': 'offset'},
+  ],
+};
+
+/// Descriptor for `GetCryptoTransactionsRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getCryptoTransactionsRequestDescriptor = $convert.base64Decode('ChxHZXRDcnlwdG9UcmFuc2FjdGlvbnNSZXF1ZXN0EhcKB3VzZXJfaWQYASABKAlSBnVzZXJJZBIUCgVsaW1pdBgCIAEoBVIFbGltaXQSFgoGb2Zmc2V0GAMgASgFUgZvZmZzZXQ=');
+@$core.Deprecated('Use cryptoTransactionDescriptor instead')
+const CryptoTransaction$json = const {
+  '1': 'CryptoTransaction',
+  '2': const [
+    const {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
+    const {'1': 'type', '3': 2, '4': 1, '5': 9, '10': 'type'},
+    const {'1': 'crypto_id', '3': 3, '4': 1, '5': 9, '10': 'cryptoId'},
+    const {'1': 'crypto_symbol', '3': 4, '4': 1, '5': 9, '10': 'cryptoSymbol'},
+    const {'1': 'amount', '3': 5, '4': 1, '5': 1, '10': 'amount'},
+    const {'1': 'fiat_value', '3': 6, '4': 1, '5': 1, '10': 'fiatValue'},
+    const {'1': 'fiat_currency', '3': 7, '4': 1, '5': 9, '10': 'fiatCurrency'},
+    const {'1': 'timestamp', '3': 8, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'timestamp'},
+    const {'1': 'status', '3': 9, '4': 1, '5': 9, '10': 'status'},
+  ],
+};
+
+/// Descriptor for `CryptoTransaction`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List cryptoTransactionDescriptor = $convert.base64Decode('ChFDcnlwdG9UcmFuc2FjdGlvbhIOCgJpZBgBIAEoCVICaWQSEgoEdHlwZRgCIAEoCVIEdHlwZRIbCgljcnlwdG9faWQYAyABKAlSCGNyeXB0b0lkEiMKDWNyeXB0b19zeW1ib2wYBCABKAlSDGNyeXB0b1N5bWJvbBIWCgZhbW91bnQYBSABKAFSBmFtb3VudBIdCgpmaWF0X3ZhbHVlGAYgASgBUglmaWF0VmFsdWUSIwoNZmlhdF9jdXJyZW5jeRgHIAEoCVIMZmlhdEN1cnJlbmN5EjgKCXRpbWVzdGFtcBgIIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXBSCXRpbWVzdGFtcBIWCgZzdGF0dXMYCSABKAlSBnN0YXR1cw==');
+@$core.Deprecated('Use getCryptoTransactionsResponseDescriptor instead')
+const GetCryptoTransactionsResponse$json = const {
+  '1': 'GetCryptoTransactionsResponse',
+  '2': const [
+    const {'1': 'transactions', '3': 1, '4': 3, '5': 11, '6': '.pb.CryptoTransaction', '10': 'transactions'},
+    const {'1': 'total_count', '3': 2, '4': 1, '5': 5, '10': 'totalCount'},
+  ],
+};
+
+/// Descriptor for `GetCryptoTransactionsResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getCryptoTransactionsResponseDescriptor = $convert.base64Decode('Ch1HZXRDcnlwdG9UcmFuc2FjdGlvbnNSZXNwb25zZRI5Cgx0cmFuc2FjdGlvbnMYASADKAsyFS5wYi5DcnlwdG9UcmFuc2FjdGlvblIMdHJhbnNhY3Rpb25zEh8KC3RvdGFsX2NvdW50GAIgASgFUgp0b3RhbENvdW50');
+@$core.Deprecated('Use buyCryptoRequestDescriptor instead')
+const BuyCryptoRequest$json = const {
+  '1': 'BuyCryptoRequest',
+  '2': const [
+    const {'1': 'user_id', '3': 1, '4': 1, '5': 9, '10': 'userId'},
+    const {'1': 'crypto_id', '3': 2, '4': 1, '5': 9, '10': 'cryptoId'},
+    const {'1': 'fiat_amount', '3': 3, '4': 1, '5': 1, '10': 'fiatAmount'},
+    const {'1': 'fiat_currency', '3': 4, '4': 1, '5': 9, '10': 'fiatCurrency'},
+  ],
+};
+
+/// Descriptor for `BuyCryptoRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List buyCryptoRequestDescriptor = $convert.base64Decode('ChBCdXlDcnlwdG9SZXF1ZXN0EhcKB3VzZXJfaWQYASABKAlSBnVzZXJJZBIbCgljcnlwdG9faWQYAiABKAlSCGNyeXB0b0lkEh8KC2ZpYXRfYW1vdW50GAMgASgBUgpmaWF0QW1vdW50EiMKDWZpYXRfY3VycmVuY3kYBCABKAlSDGZpYXRDdXJyZW5jeQ==');
+@$core.Deprecated('Use buyCryptoResponseDescriptor instead')
+const BuyCryptoResponse$json = const {
+  '1': 'BuyCryptoResponse',
+  '2': const [
+    const {'1': 'transaction_id', '3': 1, '4': 1, '5': 9, '10': 'transactionId'},
+    const {'1': 'crypto_id', '3': 2, '4': 1, '5': 9, '10': 'cryptoId'},
+    const {'1': 'crypto_amount', '3': 3, '4': 1, '5': 1, '10': 'cryptoAmount'},
+    const {'1': 'fiat_amount', '3': 4, '4': 1, '5': 1, '10': 'fiatAmount'},
+    const {'1': 'status', '3': 5, '4': 1, '5': 9, '10': 'status'},
+  ],
+};
+
+/// Descriptor for `BuyCryptoResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List buyCryptoResponseDescriptor = $convert.base64Decode('ChFCdXlDcnlwdG9SZXNwb25zZRIlCg50cmFuc2FjdGlvbl9pZBgBIAEoCVINdHJhbnNhY3Rpb25JZBIbCgljcnlwdG9faWQYAiABKAlSCGNyeXB0b0lkEiMKDWNyeXB0b19hbW91bnQYAyABKAFSDGNyeXB0b0Ftb3VudBIfCgtmaWF0X2Ftb3VudBgEIAEoAVIKZmlhdEFtb3VudBIWCgZzdGF0dXMYBSABKAlSBnN0YXR1cw==');
+@$core.Deprecated('Use sellCryptoRequestDescriptor instead')
+const SellCryptoRequest$json = const {
+  '1': 'SellCryptoRequest',
+  '2': const [
+    const {'1': 'user_id', '3': 1, '4': 1, '5': 9, '10': 'userId'},
+    const {'1': 'crypto_id', '3': 2, '4': 1, '5': 9, '10': 'cryptoId'},
+    const {'1': 'crypto_amount', '3': 3, '4': 1, '5': 1, '10': 'cryptoAmount'},
+    const {'1': 'fiat_currency', '3': 4, '4': 1, '5': 9, '10': 'fiatCurrency'},
+  ],
+};
+
+/// Descriptor for `SellCryptoRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List sellCryptoRequestDescriptor = $convert.base64Decode('ChFTZWxsQ3J5cHRvUmVxdWVzdBIXCgd1c2VyX2lkGAEgASgJUgZ1c2VySWQSGwoJY3J5cHRvX2lkGAIgASgJUghjcnlwdG9JZBIjCg1jcnlwdG9fYW1vdW50GAMgASgBUgxjcnlwdG9BbW91bnQSIwoNZmlhdF9jdXJyZW5jeRgEIAEoCVIMZmlhdEN1cnJlbmN5');
+@$core.Deprecated('Use sellCryptoResponseDescriptor instead')
+const SellCryptoResponse$json = const {
+  '1': 'SellCryptoResponse',
+  '2': const [
+    const {'1': 'transaction_id', '3': 1, '4': 1, '5': 9, '10': 'transactionId'},
+    const {'1': 'crypto_id', '3': 2, '4': 1, '5': 9, '10': 'cryptoId'},
+    const {'1': 'fiat_amount', '3': 3, '4': 1, '5': 1, '10': 'fiatAmount'},
+    const {'1': 'crypto_amount', '3': 4, '4': 1, '5': 1, '10': 'cryptoAmount'},
+    const {'1': 'status', '3': 5, '4': 1, '5': 9, '10': 'status'},
+  ],
+};
+
+/// Descriptor for `SellCryptoResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List sellCryptoResponseDescriptor = $convert.base64Decode('ChJTZWxsQ3J5cHRvUmVzcG9uc2USJQoOdHJhbnNhY3Rpb25faWQYASABKAlSDXRyYW5zYWN0aW9uSWQSGwoJY3J5cHRvX2lkGAIgASgJUghjcnlwdG9JZBIfCgtmaWF0X2Ftb3VudBgDIAEoAVIKZmlhdEFtb3VudBIjCg1jcnlwdG9fYW1vdW50GAQgASgBUgxjcnlwdG9BbW91bnQSFgoGc3RhdHVzGAUgASgJUgZzdGF0dXM=');
+@$core.Deprecated('Use convertCryptoRequestDescriptor instead')
+const ConvertCryptoRequest$json = const {
+  '1': 'ConvertCryptoRequest',
+  '2': const [
+    const {'1': 'user_id', '3': 1, '4': 1, '5': 9, '10': 'userId'},
+    const {'1': 'from_crypto_id', '3': 2, '4': 1, '5': 9, '10': 'fromCryptoId'},
+    const {'1': 'to_crypto_id', '3': 3, '4': 1, '5': 9, '10': 'toCryptoId'},
+    const {'1': 'from_amount', '3': 4, '4': 1, '5': 1, '10': 'fromAmount'},
+  ],
+};
+
+/// Descriptor for `ConvertCryptoRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List convertCryptoRequestDescriptor = $convert.base64Decode('ChRDb252ZXJ0Q3J5cHRvUmVxdWVzdBIXCgd1c2VyX2lkGAEgASgJUgZ1c2VySWQSJAoOZnJvbV9jcnlwdG9faWQYAiABKAlSDGZyb21DcnlwdG9JZBIgCgx0b19jcnlwdG9faWQYAyABKAlSCnRvQ3J5cHRvSWQSHwoLZnJvbV9hbW91bnQYBCABKAFSCmZyb21BbW91bnQ=');
+@$core.Deprecated('Use convertCryptoResponseDescriptor instead')
+const ConvertCryptoResponse$json = const {
+  '1': 'ConvertCryptoResponse',
+  '2': const [
+    const {'1': 'transaction_id', '3': 1, '4': 1, '5': 9, '10': 'transactionId'},
+    const {'1': 'to_amount', '3': 2, '4': 1, '5': 1, '10': 'toAmount'},
+    const {'1': 'rate', '3': 3, '4': 1, '5': 1, '10': 'rate'},
+    const {'1': 'status', '3': 4, '4': 1, '5': 9, '10': 'status'},
+  ],
+};
+
+/// Descriptor for `ConvertCryptoResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List convertCryptoResponseDescriptor = $convert.base64Decode('ChVDb252ZXJ0Q3J5cHRvUmVzcG9uc2USJQoOdHJhbnNhY3Rpb25faWQYASABKAlSDXRyYW5zYWN0aW9uSWQSGwoJdG9fYW1vdW50GAIgASgBUgh0b0Ftb3VudBISCgRyYXRlGAMgASgBUgRyYXRlEhYKBnN0YXR1cxgEIAEoCVIGc3RhdHVz');
+@$core.Deprecated('Use getWalletsRequestDescriptor instead')
+const GetWalletsRequest$json = const {
+  '1': 'GetWalletsRequest',
+  '2': const [
+    const {'1': 'user_id', '3': 1, '4': 1, '5': 9, '10': 'userId'},
+  ],
+};
+
+/// Descriptor for `GetWalletsRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getWalletsRequestDescriptor = $convert.base64Decode('ChFHZXRXYWxsZXRzUmVxdWVzdBIXCgd1c2VyX2lkGAEgASgJUgZ1c2VySWQ=');
+@$core.Deprecated('Use cryptoWalletDescriptor instead')
+const CryptoWallet$json = const {
+  '1': 'CryptoWallet',
+  '2': const [
+    const {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
+    const {'1': 'crypto_id', '3': 2, '4': 1, '5': 9, '10': 'cryptoId'},
+    const {'1': 'crypto_symbol', '3': 3, '4': 1, '5': 9, '10': 'cryptoSymbol'},
+    const {'1': 'address', '3': 4, '4': 1, '5': 9, '10': 'address'},
+    const {'1': 'balance', '3': 5, '4': 1, '5': 1, '10': 'balance'},
+    const {'1': 'wallet_type', '3': 6, '4': 1, '5': 9, '10': 'walletType'},
+  ],
+};
+
+/// Descriptor for `CryptoWallet`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List cryptoWalletDescriptor = $convert.base64Decode('CgxDcnlwdG9XYWxsZXQSDgoCaWQYASABKAlSAmlkEhsKCWNyeXB0b19pZBgCIAEoCVIIY3J5cHRvSWQSIwoNY3J5cHRvX3N5bWJvbBgDIAEoCVIMY3J5cHRvU3ltYm9sEhgKB2FkZHJlc3MYBCABKAlSB2FkZHJlc3MSGAoHYmFsYW5jZRgFIAEoAVIHYmFsYW5jZRIfCgt3YWxsZXRfdHlwZRgGIAEoCVIKd2FsbGV0VHlwZQ==');
+@$core.Deprecated('Use getWalletsResponseDescriptor instead')
+const GetWalletsResponse$json = const {
+  '1': 'GetWalletsResponse',
+  '2': const [
+    const {'1': 'wallets', '3': 1, '4': 3, '5': 11, '6': '.pb.CryptoWallet', '10': 'wallets'},
+  ],
+};
+
+/// Descriptor for `GetWalletsResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getWalletsResponseDescriptor = $convert.base64Decode('ChJHZXRXYWxsZXRzUmVzcG9uc2USKgoHd2FsbGV0cxgBIAMoCzIQLnBiLkNyeXB0b1dhbGxldFIHd2FsbGV0cw==');
+@$core.Deprecated('Use createWalletRequestDescriptor instead')
+const CreateWalletRequest$json = const {
+  '1': 'CreateWalletRequest',
+  '2': const [
+    const {'1': 'user_id', '3': 1, '4': 1, '5': 9, '10': 'userId'},
+    const {'1': 'crypto_id', '3': 2, '4': 1, '5': 9, '10': 'cryptoId'},
+    const {'1': 'wallet_type', '3': 3, '4': 1, '5': 9, '10': 'walletType'},
+  ],
+};
+
+/// Descriptor for `CreateWalletRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List createWalletRequestDescriptor = $convert.base64Decode('ChNDcmVhdGVXYWxsZXRSZXF1ZXN0EhcKB3VzZXJfaWQYASABKAlSBnVzZXJJZBIbCgljcnlwdG9faWQYAiABKAlSCGNyeXB0b0lkEh8KC3dhbGxldF90eXBlGAMgASgJUgp3YWxsZXRUeXBl');
+@$core.Deprecated('Use createWalletResponseDescriptor instead')
+const CreateWalletResponse$json = const {
+  '1': 'CreateWalletResponse',
+  '2': const [
+    const {'1': 'wallet_id', '3': 1, '4': 1, '5': 9, '10': 'walletId'},
+    const {'1': 'address', '3': 2, '4': 1, '5': 9, '10': 'address'},
+    const {'1': 'crypto_id', '3': 3, '4': 1, '5': 9, '10': 'cryptoId'},
+    const {'1': 'status', '3': 4, '4': 1, '5': 9, '10': 'status'},
+  ],
+};
+
+/// Descriptor for `CreateWalletResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List createWalletResponseDescriptor = $convert.base64Decode('ChRDcmVhdGVXYWxsZXRSZXNwb25zZRIbCgl3YWxsZXRfaWQYASABKAlSCHdhbGxldElkEhgKB2FkZHJlc3MYAiABKAlSB2FkZHJlc3MSGwoJY3J5cHRvX2lkGAMgASgJUghjcnlwdG9JZBIWCgZzdGF0dXMYBCABKAlSBnN0YXR1cw==');
+@$core.Deprecated('Use getWalletBalanceRequestDescriptor instead')
+const GetWalletBalanceRequest$json = const {
+  '1': 'GetWalletBalanceRequest',
+  '2': const [
+    const {'1': 'wallet_id', '3': 1, '4': 1, '5': 9, '10': 'walletId'},
+  ],
+};
+
+/// Descriptor for `GetWalletBalanceRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getWalletBalanceRequestDescriptor = $convert.base64Decode('ChdHZXRXYWxsZXRCYWxhbmNlUmVxdWVzdBIbCgl3YWxsZXRfaWQYASABKAlSCHdhbGxldElk');
+@$core.Deprecated('Use getWalletBalanceResponseDescriptor instead')
+const GetWalletBalanceResponse$json = const {
+  '1': 'GetWalletBalanceResponse',
+  '2': const [
+    const {'1': 'wallet_id', '3': 1, '4': 1, '5': 9, '10': 'walletId'},
+    const {'1': 'crypto_id', '3': 2, '4': 1, '5': 9, '10': 'cryptoId'},
+    const {'1': 'balance', '3': 3, '4': 1, '5': 1, '10': 'balance'},
+    const {'1': 'fiat_value', '3': 4, '4': 1, '5': 1, '10': 'fiatValue'},
+  ],
+};
+
+/// Descriptor for `GetWalletBalanceResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getWalletBalanceResponseDescriptor = $convert.base64Decode('ChhHZXRXYWxsZXRCYWxhbmNlUmVzcG9uc2USGwoJd2FsbGV0X2lkGAEgASgJUgh3YWxsZXRJZBIbCgljcnlwdG9faWQYAiABKAlSCGNyeXB0b0lkEhgKB2JhbGFuY2UYAyABKAFSB2JhbGFuY2USHQoKZmlhdF92YWx1ZRgEIAEoAVIJZmlhdFZhbHVl');
 @$core.Deprecated('Use cryptoPaginationInfoDescriptor instead')
 const CryptoPaginationInfo$json = const {
   '1': 'CryptoPaginationInfo',

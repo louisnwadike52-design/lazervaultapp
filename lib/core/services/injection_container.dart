@@ -39,6 +39,8 @@ import 'package:lazervault/src/features/authentication/domain/usecases/register_
 import 'package:lazervault/src/features/authentication/domain/usecases/verify_face_usecase.dart';
 import 'package:lazervault/src/features/authentication/domain/usecases/request_phone_verification_usecase.dart';
 import 'package:lazervault/src/features/authentication/domain/usecases/verify_phone_number_usecase.dart';
+import 'package:lazervault/src/features/authentication/domain/usecases/verify_identity_usecase.dart';
+import 'package:lazervault/src/features/authentication/domain/usecases/validate_token_usecase.dart';
 import 'package:lazervault/src/features/authentication/cubit/phone_verification_cubit.dart';
 import 'package:lazervault/src/features/authentication/data/repositories/face_recognition_repository.dart';
 import 'package:lazervault/src/features/statements/domain/repositories/i_statement_repository.dart';
@@ -76,6 +78,12 @@ import 'package:lazervault/src/features/voice_session/cubit/voice_session_cubit.
 import 'package:lazervault/src/features/voice_enrollment/cubit/voice_enrollment_cubit.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 import 'package:lazervault/src/features/transaction_pin/cubit/transaction_pin_cubit.dart';
+// KYC Imports
+import 'package:lazervault/src/features/kyc/data/datasources/kyc_remote_datasource.dart';
+import 'package:lazervault/src/features/kyc/data/repositories/kyc_repository_impl.dart';
+import 'package:lazervault/src/features/kyc/domain/repositories/kyc_repository.dart';
+import 'package:lazervault/src/features/kyc/presentation/cubits/kyc_cubit.dart';
+// End KYC Imports
 import 'package:lazervault/src/features/voice_enrollment/domain/repositories/voice_enrollment_repository.dart';
 import 'package:lazervault/src/generated/recipient.pbgrpc.dart';
 import 'package:lazervault/src/generated/transfer.pbgrpc.dart' hide TransferTransaction;
@@ -665,6 +673,8 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton(() => VerifyFaceUseCase(serviceLocator<IFaceRecognitionRepository>()));
   serviceLocator.registerLazySingleton(() => RequestPhoneVerificationUseCase(serviceLocator<IAuthRepository>()));
   serviceLocator.registerLazySingleton(() => VerifyPhoneNumberUseCase(serviceLocator<IAuthRepository>()));
+  serviceLocator.registerLazySingleton(() => VerifyIdentityUseCase(serviceLocator<IAuthRepository>()));
+  serviceLocator.registerLazySingleton(() => ValidateTokenUseCase(serviceLocator<IAuthRepository>()));
 
   // Blocs/Cubits
   serviceLocator.registerFactory(() => AuthenticationCubit(
@@ -679,6 +689,8 @@ Future<void> init() async {
         verifyEmail: serviceLocator<VerifyEmailUseCase>(),
         resendVerification: serviceLocator<ResendVerificationUseCase>(),
         checkEmailAvailability: serviceLocator<CheckEmailAvailabilityUseCase>(),
+        verifyIdentity: serviceLocator<VerifyIdentityUseCase>(),
+        validateToken: serviceLocator<ValidateTokenUseCase>(),
         storage: serviceLocator<FlutterSecureStorage>(),
         currencySyncService: serviceLocator<CurrencySyncService>(),
         signupStateService: serviceLocator<SignupStateService>(),
@@ -727,6 +739,26 @@ Future<void> init() async {
   // Blocs/Cubits
   serviceLocator.registerFactory(() => IdentityCubit(
         repository: serviceLocator<IIdentityRepository>(),
+      ));
+
+  // ================== Feature: KYC ==================
+
+  // Data Sources
+  serviceLocator.registerLazySingleton<KYCRemoteDataSource>(
+      () => KYCRemoteDataSource(
+          client: serviceLocator<http.Client>(),
+          baseUrl: dotenv.env['KYC_API_URL'] ?? 'https://api.lazervault.com',
+        ));
+
+  // Repositories
+  serviceLocator.registerLazySingleton<KYCRepository>(
+      () => KYCRepositoryImpl(
+          remoteDataSource: serviceLocator<KYCRemoteDataSource>(),
+        ));
+
+  // Blocs/Cubits
+  serviceLocator.registerFactory(() => KYCCubit(
+        repository: serviceLocator<KYCRepository>(),
       ));
 
   // ================== Feature: Support & Help ==================
@@ -1074,7 +1106,10 @@ Future<void> init() async {
 
   // Repositories
   serviceLocator.registerLazySingleton<CryptoRepository>(
-    () => CryptoRepositoryImpl(remoteDataSource: serviceLocator<CryptoRemoteDataSource>()),
+    () => CryptoRepositoryImpl(
+      remoteDataSource: serviceLocator<CryptoRemoteDataSource>(),
+      grpcClient: serviceLocator<CryptoGrpcClient>(),
+    ),
   );
 
   // Blocs/Cubits

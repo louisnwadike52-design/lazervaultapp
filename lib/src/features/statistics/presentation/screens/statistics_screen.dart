@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../generated/statistics.pb.dart';
+import '../../data/wrapped_types_stub.dart';
 import '../../cubit/statistics_cubit.dart';
 import '../../cubit/statistics_state.dart';
 import '../widgets/expense_list_widget.dart';
@@ -10,6 +13,7 @@ import '../widgets/ai_budget_recommendations_card.dart';
 import '../widgets/ai_financial_advice_widget.dart';
 import 'add_expense_screen.dart';
 import 'add_budget_screen.dart';
+import 'wrapped_screen.dart';
 
 /// Main statistics screen with tabbed interface
 /// Shows expenses, budgets, and analytics in separate tabs
@@ -354,6 +358,9 @@ class _AIInsightsTab extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              // Financial Wrapped Entry Button
+              const WrappedEntryButton(),
+              const SizedBox(height: 8),
               AIInsightsCard(
                 insights: state.aiSpendingInsights,
                 isLoading: state.isLoadingAIInsights,
@@ -448,6 +455,93 @@ class _AIInsightsTab extends StatelessWidget {
           onPressed: () {
             // Navigate to create budget screen
           },
+        ),
+      ),
+    );
+  }
+}
+
+/// Entry button to launch Financial Wrapped experience
+class WrappedEntryButton extends StatelessWidget {
+  final int? year;
+
+  const WrappedEntryButton({super.key, this.year});
+
+  @override
+  Widget build(BuildContext context) {
+    final displayYear = year ?? DateTime.now().year;
+
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.mediumImpact();
+        Navigator.push(
+          context,
+          WrappedScreen.route(
+            year: displayYear,
+            period: WrappedPeriod.WRAPPED_PERIOD_YEARLY,
+          ),
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF667eea), Color(0xFF764ba2)],
+          ),
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF667eea).withOpacity(0.4),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(
+                Icons.auto_awesome,
+                color: Colors.white,
+                size: 32,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Your $displayYear Financial Wrapped',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'See your personalized financial journey',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Colors.white.withOpacity(0.8),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.arrow_forward_ios,
+              color: Colors.white.withOpacity(0.7),
+              size: 20,
+            ),
+          ],
         ),
       ),
     );

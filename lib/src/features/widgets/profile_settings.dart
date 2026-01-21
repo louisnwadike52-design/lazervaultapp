@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_advanced_switch/flutter_advanced_switch.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:hybrid_hex_color_converter/hybrid_hex_color_converter.dart';
 import 'package:lazervault/core/data/app_data.dart';
@@ -9,6 +10,9 @@ import 'package:lazervault/core/types/countries.dart';
 import 'package:lazervault/core/utilities/responsive_controller.dart';
 import 'package:lazervault/src/features/widgets/rounded_centered_image.dart';
 import 'package:lazervault/src/features/widgets/universal_image_loader.dart';
+import 'package:lazervault/src/features/kyc/presentation/cubits/kyc_cubit.dart';
+import 'package:lazervault/src/features/kyc/presentation/widgets/kyc_settings_tile.dart';
+import 'package:lazervault/core/services/injection_container.dart';
 
 class ProfileSettings extends StatefulWidget {
   const ProfileSettings({super.key});
@@ -53,6 +57,13 @@ class _ProfileSettingsState extends State<ProfileSettings> {
                             size: 16.0, color: Colors.grey),
                       ),
                     ),
+                  ),
+                  const SizedBox(height: 8.0),
+                  // KYC Verification Tile
+                  BlocProvider(
+                    create: (context) => serviceLocator<KYCCubit>()
+                      ..getKYCStatus('current_user_id'),
+                    child: const KYCSettingsTile(),
                   ),
                   const SizedBox(height: 8.0),
                   _buildListTile(
@@ -138,6 +149,24 @@ class _ProfileSettingsState extends State<ProfileSettings> {
                         onPressed: () {
                           Get.toNamed(
                               "/report-a-bug"); // Navigate to Report a Bug
+                        },
+                        icon: const Icon(Icons.arrow_forward_ios,
+                            size: 16.0, color: Colors.grey),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8.0),
+
+                  // Debug Settings (Development Only - Remove before production)
+                  _buildListTile(
+                    context,
+                    config: ListTileConfig(
+                      title: "Debug Settings",
+                      imagePath: "assets/images/profile/info-circle.png",
+                      color: "#9E9E9E",
+                      trailing: IconButton(
+                        onPressed: () {
+                          Get.toNamed(AppRoutes.debugSettings);
                         },
                         icon: const Icon(Icons.arrow_forward_ios,
                             size: 16.0, color: Colors.grey),
