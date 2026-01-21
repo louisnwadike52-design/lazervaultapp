@@ -32,10 +32,11 @@ class _ModernOnboardingScreenState extends State<ModernOnboardingScreen> with Ti
         'Real-time transaction tracking',
         'Secure and encrypted data',
       ],
+      useLightTheme: true,
       gradient: const LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
-        colors: [Color(0xFF6366F1), Color(0xFF8B5CF6), Color(0xFF7C3AED)],
+        colors: [Color(0xFFFFFFFF), Color(0xFFF8FAFC), Color(0xFFF1F5F9)],
       ),
     ),
     OnboardingPage(
@@ -187,15 +188,16 @@ class _ModernOnboardingScreenState extends State<ModernOnboardingScreen> with Ti
                       child: Image.asset(
                         'assets/images/logos/lazervault-full-logo-no-background.png',
                         height: 36.h,
-                        color: Colors.white,
                       ),
                     ),
                     // Skip button
                     TextButton(
                       onPressed: _completeOnboarding,
                       style: TextButton.styleFrom(
-                        foregroundColor: Colors.white,
-                        backgroundColor: Colors.white.withOpacity(0.15),
+                        foregroundColor: _pages[_currentPage].useLightTheme ? const Color(0xFF6366F1) : Colors.white,
+                        backgroundColor: _pages[_currentPage].useLightTheme
+                            ? const Color(0xFF6366F1).withOpacity(0.1)
+                            : Colors.white.withOpacity(0.15),
                         padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(20.r),
@@ -236,8 +238,8 @@ class _ModernOnboardingScreenState extends State<ModernOnboardingScreen> with Ti
                       controller: _pageController,
                       count: _pages.length,
                       effect: ExpandingDotsEffect(
-                        activeDotColor: Colors.white,
-                        dotColor: Colors.white.withOpacity(0.3),
+                        activeDotColor: _pages[_currentPage].useLightTheme ? const Color(0xFF6366F1) : Colors.white,
+                        dotColor: _pages[_currentPage].useLightTheme ? const Color(0xFF6366F1).withOpacity(0.3) : Colors.white.withOpacity(0.3),
                         dotHeight: 10.h,
                         dotWidth: 10.w,
                         expansionFactor: 4,
@@ -253,8 +255,8 @@ class _ModernOnboardingScreenState extends State<ModernOnboardingScreen> with Ti
                       child: ElevatedButton(
                         onPressed: _nextPage,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: _pages[_currentPage].gradient.colors.first,
+                          backgroundColor: _pages[_currentPage].useLightTheme ? const Color(0xFF6366F1) : Colors.white,
+                          foregroundColor: _pages[_currentPage].useLightTheme ? Colors.white : _pages[_currentPage].gradient.colors.first,
                           elevation: 8,
                           shadowColor: Colors.black.withOpacity(0.3),
                           shape: RoundedRectangleBorder(
@@ -341,10 +343,15 @@ class _ModernOnboardingScreenState extends State<ModernOnboardingScreen> with Ti
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 gradient: RadialGradient(
-                                  colors: [
-                                    Colors.white.withOpacity(0.2),
-                                    Colors.white.withOpacity(0.05),
-                                  ],
+                                  colors: page.useLightTheme
+                                      ? [
+                                          const Color(0xFF6366F1).withOpacity(0.15),
+                                          const Color(0xFF6366F1).withOpacity(0.05),
+                                        ]
+                                      : [
+                                          Colors.white.withOpacity(0.2),
+                                          Colors.white.withOpacity(0.05),
+                                        ],
                                 ),
                                 boxShadow: [
                                   BoxShadow(
@@ -366,7 +373,7 @@ class _ModernOnboardingScreenState extends State<ModernOnboardingScreen> with Ti
                                           return Container(
                                             padding: EdgeInsets.all(32.w),
                                             decoration: BoxDecoration(
-                                              color: Colors.white,
+                                              color: page.useLightTheme ? const Color(0xFF6366F1) : Colors.white,
                                               shape: BoxShape.circle,
                                               boxShadow: [
                                                 BoxShadow(
@@ -379,7 +386,7 @@ class _ModernOnboardingScreenState extends State<ModernOnboardingScreen> with Ti
                                             child: Icon(
                                               page.icon,
                                               size: 72.sp,
-                                              color: page.gradient.colors.first,
+                                              color: page.useLightTheme ? Colors.white : page.gradient.colors.first,
                                             ),
                                           );
                                         },
@@ -387,7 +394,7 @@ class _ModernOnboardingScreenState extends State<ModernOnboardingScreen> with Ti
                                     : Container(
                                         padding: EdgeInsets.all(32.w),
                                         decoration: BoxDecoration(
-                                          color: Colors.white,
+                                          color: page.useLightTheme ? const Color(0xFF6366F1) : Colors.white,
                                           shape: BoxShape.circle,
                                           boxShadow: [
                                             BoxShadow(
@@ -400,7 +407,7 @@ class _ModernOnboardingScreenState extends State<ModernOnboardingScreen> with Ti
                                         child: Icon(
                                           page.icon,
                                           size: 72.sp,
-                                          color: page.gradient.colors.first,
+                                          color: page.useLightTheme ? Colors.white : page.gradient.colors.first,
                                         ),
                                       ),
                               ),
@@ -418,16 +425,18 @@ class _ModernOnboardingScreenState extends State<ModernOnboardingScreen> with Ti
                           style: TextStyle(
                             fontSize: 30.sp,
                             fontWeight: FontWeight.w900,
-                            color: Colors.white,
+                            color: page.useLightTheme ? const Color(0xFF1E293B) : Colors.white,
                             height: 1.2,
                             letterSpacing: -0.5,
-                            shadows: [
-                              Shadow(
-                                color: Colors.black.withOpacity(0.2),
-                                blurRadius: 10,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
+                            shadows: page.useLightTheme
+                                ? null
+                                : [
+                                    Shadow(
+                                      color: Colors.black.withOpacity(0.2),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ],
                           ),
                         ),
                         SizedBox(height: 12.h),
@@ -441,7 +450,7 @@ class _ModernOnboardingScreenState extends State<ModernOnboardingScreen> with Ti
                           style: TextStyle(
                             fontSize: 18.sp,
                             fontWeight: FontWeight.w700,
-                            color: Colors.white.withOpacity(0.95),
+                            color: page.useLightTheme ? const Color(0xFF64748B) : Colors.white.withOpacity(0.95),
                             height: 1.3,
                             letterSpacing: 0.3,
                           ),
@@ -457,7 +466,7 @@ class _ModernOnboardingScreenState extends State<ModernOnboardingScreen> with Ti
                           style: TextStyle(
                             fontSize: 15.sp,
                             fontWeight: FontWeight.w400,
-                            color: Colors.white.withOpacity(0.85),
+                            color: page.useLightTheme ? const Color(0xFF475569) : Colors.white.withOpacity(0.85),
                             height: 1.5,
                             letterSpacing: 0.2,
                           ),
@@ -469,10 +478,14 @@ class _ModernOnboardingScreenState extends State<ModernOnboardingScreen> with Ti
                           child: Container(
                             padding: EdgeInsets.all(20.w),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.1),
+                              color: page.useLightTheme
+                                  ? const Color(0xFFF1F5F9)
+                                  : Colors.white.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(20.r),
                               border: Border.all(
-                                color: Colors.white.withOpacity(0.2),
+                                color: page.useLightTheme
+                                    ? const Color(0xFFE2E8F0)
+                                    : Colors.white.withOpacity(0.2),
                                 width: 1.5,
                               ),
                             ),
@@ -486,13 +499,13 @@ class _ModernOnboardingScreenState extends State<ModernOnboardingScreen> with Ti
                                       Container(
                                         padding: EdgeInsets.all(6.w),
                                         decoration: BoxDecoration(
-                                          color: Colors.white.withOpacity(0.9),
+                                          color: page.useLightTheme ? const Color(0xFF6366F1) : Colors.white.withOpacity(0.9),
                                           shape: BoxShape.circle,
                                         ),
                                         child: Icon(
                                           Icons.check_rounded,
                                           size: 16.sp,
-                                          color: page.gradient.colors.first,
+                                          color: page.useLightTheme ? Colors.white : page.gradient.colors.first,
                                         ),
                                       ),
                                       SizedBox(width: 12.w),
@@ -504,7 +517,7 @@ class _ModernOnboardingScreenState extends State<ModernOnboardingScreen> with Ti
                                           style: TextStyle(
                                             fontSize: 14.sp,
                                             fontWeight: FontWeight.w600,
-                                            color: Colors.white,
+                                            color: page.useLightTheme ? const Color(0xFF334155) : Colors.white,
                                             height: 1.4,
                                             letterSpacing: 0.2,
                                           ),
@@ -539,6 +552,7 @@ class OnboardingPage {
   final String? imagePath;
   final List<String> features;
   final LinearGradient gradient;
+  final bool useLightTheme;
 
   OnboardingPage({
     required this.title,
@@ -548,5 +562,6 @@ class OnboardingPage {
     this.imagePath,
     required this.features,
     required this.gradient,
+    this.useLightTheme = false,
   });
 }

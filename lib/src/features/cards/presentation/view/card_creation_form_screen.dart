@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
+import 'package:lazervault/src/features/account_cards_summary/domain/usecases/get_account_summaries_usecase.dart';
 import 'package:lazervault/src/features/cards/domain/entities/card_entity.dart';
 import 'package:lazervault/src/features/cards/presentation/cubit/card_cubit.dart';
 import 'package:lazervault/src/features/cards/presentation/cubit/card_state.dart';
@@ -28,6 +29,8 @@ class _CardCreationFormScreenState extends State<CardCreationFormScreen> {
   int? _maxUsageCount;
   bool _isLoading = false;
   String cardHolderName = '';
+  int? _accountId; // Will be fetched from user's virtual accounts
+  String _currency = 'GBP'; // Default currency
 
   final List<int> quickLimits = [50, 100, 200, 500]; // Quick spending limits
 
@@ -35,6 +38,7 @@ class _CardCreationFormScreenState extends State<CardCreationFormScreen> {
   void initState() {
     super.initState();
     _initializeForm();
+    _fetchUserAccounts();
   }
 
   void _initializeForm() {
@@ -43,12 +47,71 @@ class _CardCreationFormScreenState extends State<CardCreationFormScreen> {
     if (args != null && args['cardType'] != null) {
       _cardType = args['cardType'] as CardType;
     }
+    if (args != null && args['currency'] != null) {
+      _currency = args['currency'] as String;
+    }
 
     // Pre-fill card holder name from user profile
     final authState = context.read<AuthenticationCubit>().state;
-    if (authState is AuthenticationSuccess) {
+    if (authState is AuthenticationAuthenticated) {
       final profile = authState.profile;
       cardHolderName = '${profile.user.firstName} ${profile.user.lastName}';
+    } else if (authState is AuthenticationSuccess) {
+      final profile = authState.profile;
+      cardHolderName = '${profile.user.firstName} ${profile.user.lastName}';
+    }
+  }
+
+  /// Fetch user's virtual accounts and get the primary/default account ID
+  Future<void> _fetchUserAccounts() async {
+    try {
+      final authState = context.read<AuthenticationCubit>().state;
+      String userId = '';
+
+      if (authState is AuthenticationAuthenticated) {
+        userId = authState.profile.user.id;
+      } else if (authState is AuthenticationSuccess) {
+        userId = authState.profile.user.id;
+      }
+
+      if (userId.isEmpty) {
+        print('No user ID found for fetching accounts');
+        return;
+      }
+
+      final getAccountSummariesUseCase = context.read<GetAccountSummariesUseCase>();
+      final result = await getAccountSummariesUseCase(userId: userId);
+
+      result.fold(
+        (failure) {
+          print('Failed to fetch accounts: ${failure.message}');
+        },
+        (accounts) {
+          if (accounts.isNotEmpty) {
+            // Find primary account or first account matching the currency
+            final primaryAccount = accounts.firstWhere(
+              (acc) => acc.isPrimary && acc.currency == _currency,
+              orElse: () => accounts.firstWhere(
+                (acc) => acc.currency == _currency,
+                orElse: () => accounts.first,
+              ),
+            );
+
+            // Parse account ID - the proto returns Int64, convert to int
+            setState(() {
+              _accountId = int.tryParse(primaryAccount.id);
+              // Update currency from account
+              if (_currency != primaryAccount.currency) {
+                _currency = primaryAccount.currency;
+              }
+            });
+
+            print('Using account ID: $_accountId for card creation');
+          }
+        },
+      );
+    } catch (e) {
+      print('Error fetching accounts: $e');
     }
   }
 
@@ -104,6 +167,20 @@ class _CardCreationFormScreenState extends State<CardCreationFormScreen> {
         backgroundColor: Colors.red.withValues(alpha: 0.7),
         colorText: Colors.white,
       );
+      return;
+    }
+
+    // Validate account ID is available
+    if (_accountId == null) {
+      Get.snackbar(
+        'Account Not Found',
+        'Unable to fetch your account. Please try again.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.withValues(alpha: 0.7),
+        colorText: Colors.white,
+      );
+      // Retry fetching accounts
+      _fetchUserAccounts();
       return;
     }
 
@@ -319,18 +396,16 @@ class _CardCreationFormScreenState extends State<CardCreationFormScreen> {
     setState(() => _isLoading = true);
 
     final cardCubit = context.read<CardCubit>();
-    const int accountId = 1;
     final String? nickname = _nicknameController.text.trim().isNotEmpty
         ? _nicknameController.text.trim()
         : null;
-    const String currency = 'GBP';
 
     if (_cardType == CardType.virtual) {
       cardCubit.createVirtualCard(
-        accountId: accountId,
+        accountId: _accountId!,
         cardHolderName: cardHolderName,
         nickname: nickname,
-        currency: currency,
+        currency: _currency,
       );
     } else {
       final double? spendingLimit = spendingLimitAmount.isNotEmpty
@@ -338,13 +413,13 @@ class _CardCreationFormScreenState extends State<CardCreationFormScreen> {
           : null;
 
       cardCubit.createDisposableCard(
-        accountId: accountId,
+        accountId: _accountId!,
         cardHolderName: cardHolderName,
         nickname: nickname,
         spendingLimit: spendingLimit,
         maxUsageCount: _maxUsageCount,
         expiresInHours: _selectedExpiryHours,
-        currency: currency,
+        currency: _currency,
       );
     }
   }

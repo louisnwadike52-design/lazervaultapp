@@ -2,11 +2,16 @@ import '../../domain/entities/crypto_entity.dart';
 import '../../domain/entities/price_point.dart';
 import '../../domain/repositories/crypto_repository.dart';
 import '../datasources/crypto_remote_data_source.dart';
+import '../../../../core/grpc/crypto_grpc_client.dart';
 
 class CryptoRepositoryImpl implements CryptoRepository {
   final CryptoRemoteDataSource remoteDataSource;
+  final CryptoGrpcClient grpcClient;
 
-  CryptoRepositoryImpl({required this.remoteDataSource});
+  CryptoRepositoryImpl({
+    required this.remoteDataSource,
+    required this.grpcClient,
+  });
 
   @override
   Future<List<Crypto>> getCryptos({int page = 1, int perPage = 100}) async {
@@ -40,93 +45,57 @@ class CryptoRepositoryImpl implements CryptoRepository {
 
   @override
   Future<List<CryptoWatchlist>> getWatchlists() async {
-    // Mock implementation - in production, this would fetch from local storage
-    await Future.delayed(const Duration(milliseconds: 200));
-    return [
-      CryptoWatchlist(
-        id: '1',
-        name: 'My Favorites',
-        description: 'My favorite cryptocurrencies',
-        cryptoIds: ['bitcoin', 'ethereum'],
-        createdAt: DateTime.now().subtract(const Duration(days: 30)),
-        updatedAt: DateTime.now(),
-      ),
-      CryptoWatchlist(
-        id: '2',
-        name: 'DeFi Tokens',
-        description: 'Decentralized Finance tokens',
-        cryptoIds: ['ethereum', 'cardano'],
-        createdAt: DateTime.now().subtract(const Duration(days: 15)),
-        updatedAt: DateTime.now(),
-      ),
-    ];
+    // TODO: Implement watchlist feature when backend gRPC methods are available
+    // For now, return empty list to prevent compilation errors
+    return [];
   }
 
   @override
   Future<CryptoWatchlist> createWatchlist(String name, String description) async {
-    await Future.delayed(const Duration(milliseconds: 300));
-    return CryptoWatchlist(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      name: name,
-      description: description,
-      cryptoIds: [],
-      createdAt: DateTime.now(),
-      updatedAt: DateTime.now(),
-    );
+    // TODO: Implement watchlist feature when backend gRPC methods are available
+    throw UnimplementedError('Watchlist feature not yet implemented');
   }
 
   @override
   Future<void> addToWatchlist(String watchlistId, String cryptoId) async {
-    await Future.delayed(const Duration(milliseconds: 200));
-    // Mock implementation - in production, this would update local storage
+    // TODO: Implement watchlist feature when backend gRPC methods are available
   }
 
   @override
   Future<void> removeFromWatchlist(String watchlistId, String cryptoId) async {
-    await Future.delayed(const Duration(milliseconds: 200));
-    // Mock implementation - in production, this would update local storage
+    // TODO: Implement watchlist feature when backend gRPC methods are available
   }
 
   @override
   Future<void> deleteWatchlist(String watchlistId) async {
-    await Future.delayed(const Duration(milliseconds: 200));
-    // Mock implementation - in production, this would delete from local storage
+    // TODO: Implement watchlist feature when backend gRPC methods are available
   }
 
   @override
   Future<List<CryptoHolding>> getHoldings() async {
-    await Future.delayed(const Duration(milliseconds: 300));
-    // Mock holdings data
-    return [
-      CryptoHolding(
-        id: '1',
-        cryptoId: 'bitcoin',
-        cryptoSymbol: 'BTC',
-        cryptoName: 'Bitcoin',
-        quantity: 0.25,
-        averagePrice: 40000,
-        currentPrice: 43250.50,
-        totalValue: 10812.62,
-        totalGainLoss: 812.62,
-        totalGainLossPercentage: 8.13,
-        purchaseDate: DateTime.now().subtract(const Duration(days: 45)),
+    // Fetch real holdings from backend via gRPC
+    try {
+      final response = await grpcClient.getHoldings();
+      return response.holdings.map((h) => CryptoHolding(
+        id: h.cryptoId, // Use cryptoId as id
+        cryptoId: h.cryptoId,
+        cryptoSymbol: h.symbol, // Changed from cryptoSymbol
+        cryptoName: h.name, // Changed from cryptoName
+        quantity: h.balance, // Changed from quantity to balance
+        averagePrice: h.fiatValue / (h.balance > 0 ? h.balance : 1), // Calculate avg
+        currentPrice: h.fiatValue / (h.balance > 0 ? h.balance : 1),
+        totalValue: h.fiatValue,
+        totalGainLoss: 0, // Not in proto
+        totalGainLossPercentage: 0.0, // Not in proto
+        purchaseDate: h.acquiredAt != null
+            ? DateTime.fromMillisecondsSinceEpoch(h.acquiredAt.toDateTime().millisecondsSinceEpoch)
+            : DateTime.now(),
         lastUpdated: DateTime.now(),
-      ),
-      CryptoHolding(
-        id: '2',
-        cryptoId: 'ethereum',
-        cryptoSymbol: 'ETH',
-        cryptoName: 'Ethereum',
-        quantity: 2.5,
-        averagePrice: 2400,
-        currentPrice: 2650.75,
-        totalValue: 6626.87,
-        totalGainLoss: 626.87,
-        totalGainLossPercentage: 10.45,
-        purchaseDate: DateTime.now().subtract(const Duration(days: 30)),
-        lastUpdated: DateTime.now(),
-      ),
-    ];
+      )).toList();
+    } catch (e) {
+      // If backend not available, return empty list
+      return [];
+    }
   }
 
   @override
@@ -135,24 +104,28 @@ class CryptoRepositoryImpl implements CryptoRepository {
     required double quantity,
     required double price,
   }) async {
-    await Future.delayed(const Duration(seconds: 2)); // Simulate processing time
-    
+    // Execute buy via backend gRPC service
+    final response = await grpcClient.buyCrypto(
+      cryptoId: cryptoId,
+      fiatAmount: quantity * price,
+      fiatCurrency: 'GBP', // TODO: Use user's preferred currency
+    );
+
+    // Get crypto details for the response
     final crypto = await getCryptoById(cryptoId);
-    final totalAmount = quantity * price;
-    const fees = 2.99; // Fixed fee for demo
-    
+
     return CryptoTransaction(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      id: response.transactionId,
       cryptoId: cryptoId,
       cryptoSymbol: crypto.symbol,
       cryptoName: crypto.name,
       type: TransactionType.buy,
-      quantity: quantity,
-      price: price,
-      totalAmount: totalAmount + fees,
-      fees: fees,
+      quantity: response.cryptoAmount,
+      price: response.fiatAmount / response.cryptoAmount,
+      totalAmount: response.fiatAmount,
+      fees: 0.0, // Fee not returned by proto response
       timestamp: DateTime.now(),
-      status: 'completed',
+      status: response.status,
     );
   }
 
@@ -162,64 +135,59 @@ class CryptoRepositoryImpl implements CryptoRepository {
     required double quantity,
     required double price,
   }) async {
-    await Future.delayed(const Duration(seconds: 2)); // Simulate processing time
-    
+    // Execute sell via backend gRPC service
+    final response = await grpcClient.sellCrypto(
+      cryptoId: cryptoId,
+      quantity: quantity, // grpc client expects 'quantity' parameter name
+      fiatCurrency: 'GBP', // TODO: Use user's preferred currency
+    );
+
+    // Get crypto details for the response
     final crypto = await getCryptoById(cryptoId);
-    final totalAmount = quantity * price;
-    const fees = 2.99; // Fixed fee for demo
-    
+
     return CryptoTransaction(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      id: response.transactionId,
       cryptoId: cryptoId,
       cryptoSymbol: crypto.symbol,
       cryptoName: crypto.name,
       type: TransactionType.sell,
-      quantity: quantity,
-      price: price,
-      totalAmount: totalAmount - fees,
-      fees: fees,
+      quantity: response.cryptoAmount,
+      price: response.fiatAmount / response.cryptoAmount,
+      totalAmount: response.fiatAmount,
+      fees: 0.0, // Fee not returned by proto response
       timestamp: DateTime.now(),
-      status: 'completed',
+      status: response.status,
     );
   }
 
   @override
   Future<List<CryptoTransaction>> getTransactions() async {
-    await Future.delayed(const Duration(milliseconds: 400));
-    // Mock transaction data
-    return [
-      CryptoTransaction(
-        id: '1',
-        cryptoId: 'bitcoin',
-        cryptoSymbol: 'BTC',
-        cryptoName: 'Bitcoin',
-        type: TransactionType.buy,
-        quantity: 0.1,
-        price: 42000,
-        totalAmount: 4202.99,
-        fees: 2.99,
-        timestamp: DateTime.now().subtract(const Duration(days: 7)),
-        status: 'completed',
-      ),
-      CryptoTransaction(
-        id: '2',
-        cryptoId: 'ethereum',
-        cryptoSymbol: 'ETH',
-        cryptoName: 'Ethereum',
-        type: TransactionType.buy,
-        quantity: 1.0,
-        price: 2500,
-        totalAmount: 2502.99,
-        fees: 2.99,
-        timestamp: DateTime.now().subtract(const Duration(days: 14)),
-        status: 'completed',
-      ),
-    ];
+    // Fetch real transactions from backend via gRPC
+    try {
+      final response = await grpcClient.getTransactions(limit: 100);
+      return response.transactions.map((t) => CryptoTransaction(
+        id: t.id,
+        cryptoId: t.cryptoId,
+        cryptoSymbol: t.cryptoSymbol,
+        cryptoName: '', // cryptoName not in proto, would need separate fetch
+        type: t.type == 'buy' ? TransactionType.buy : TransactionType.sell,
+        quantity: t.amount, // proto uses 'amount' not 'quantity'
+        price: t.fiatValue > 0 && t.amount > 0 ? t.fiatValue / t.amount : 0, // calculate price
+        totalAmount: t.fiatValue, // proto uses 'fiatValue' not 'totalAmount'
+        fees: 0.0, // fees not in proto
+        timestamp: t.timestamp.toDateTime(), // proto uses Timestamp type
+        status: t.status,
+      )).toList();
+    } catch (e) {
+      // If backend not available, return empty list
+      return [];
+    }
   }
 
   @override
   Future<void> toggleFavorite(String cryptoId) async {
-    await Future.delayed(const Duration(milliseconds: 200));
-    // Mock implementation - in production, this would update local storage
+    // TODO: Implement toggleFavorite when backend gRPC method is available
+    // For now, this is a no-op to prevent compilation errors
+    throw UnimplementedError('Toggle favorite feature not yet implemented');
   }
 } 

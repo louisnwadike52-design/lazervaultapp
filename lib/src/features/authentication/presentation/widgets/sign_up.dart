@@ -4,13 +4,14 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart'; // Import intl for date formatting
-import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/utilities/responsive_controller.dart';
 import 'package:lazervault/src/features/widgets/build_form_field.dart';
 import 'package:lazervault/src/features/widgets/universal_image_loader.dart';
+import 'package:lazervault/src/features/widgets/locked_country_phone_input.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:lazervault/core/data/app_data.dart';
+import 'package:lazervault/core/config/country_config.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
@@ -316,18 +317,21 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
                               height: 70.0.h,
                               width: 70.0.w),
                         ),
-                        Text("Hi there 👋",
-                            style: TextStyle(
-                                fontSize: 18.0.sp,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.black)),
-                        SizedBox(height: 8.0.h),
-                        Text("Welcome to Lazervault, let's get started!",
-                            style: TextStyle(
-                                fontSize: 16.0.sp,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.black54)),
-                        SizedBox(height: 20.0.h),
+                        // Hide "Hi there" text on page 3 (ID verification) since it has its own heading
+                        if (currentPage != 3) ...[
+                          Text("Hi there 👋",
+                              style: TextStyle(
+                                  fontSize: 18.0.sp,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.black)),
+                          SizedBox(height: 8.0.h),
+                          Text("Welcome to Lazervault, let's get started!",
+                              style: TextStyle(
+                                  fontSize: 16.0.sp,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.black54)),
+                          SizedBox(height: 20.0.h),
+                        ],
                         // Page content based on currentPage
                         // Page 0: Country Selection
                         // Page 1: Email/Phone + Password
@@ -383,6 +387,9 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
 
   // Helper method for Country Selection Page (Page 0)
   Widget _buildCountrySelectionPage(BuildContext context, {required String countryCode, required String countryName, required bool isLoading}) {
+    // Get active countries from CountryConfigs
+    final activeCountries = CountryConfigs.activeCountries;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -404,57 +411,23 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
         ),
         SizedBox(height: 24.h),
 
-        // Nigeria Option (only supported country for now)
-        _buildCountryOption(
-          context,
-          countryCode: 'NG',
-          countryName: 'Nigeria',
-          currencyCode: 'NGN',
-          flag: '🇳🇬',
-          isSelected: countryCode == 'NG',
-          isSupported: true,
-        ),
-        SizedBox(height: 12.h),
+        // Supported Countries from CountryConfigs
+        ...activeCountries.map((config) {
+          return Padding(
+            padding: EdgeInsets.only(bottom: 8.h),
+            child: _buildCountryOption(
+              context,
+              countryCode: config.code,
+              countryName: config.name,
+              currencyCode: config.currency,
+              flag: config.flag,
+              isSelected: countryCode == config.code,
+              isSupported: config.isAvailableForSignup,
+              isBeta: config.isBeta,
+            ),
+          );
+        }),
 
-        // Coming Soon Countries
-        Text(
-          "Coming Soon",
-          style: TextStyle(
-            fontSize: 14.sp,
-            fontWeight: FontWeight.w500,
-            color: Colors.black45,
-          ),
-        ),
-        SizedBox(height: 8.h),
-        _buildCountryOption(
-          context,
-          countryCode: 'GB',
-          countryName: 'United Kingdom',
-          currencyCode: 'GBP',
-          flag: '🇬🇧',
-          isSelected: false,
-          isSupported: false,
-        ),
-        SizedBox(height: 8.h),
-        _buildCountryOption(
-          context,
-          countryCode: 'US',
-          countryName: 'United States',
-          currencyCode: 'USD',
-          flag: '🇺🇸',
-          isSelected: false,
-          isSupported: false,
-        ),
-        SizedBox(height: 8.h),
-        _buildCountryOption(
-          context,
-          countryCode: 'GH',
-          countryName: 'Ghana',
-          currencyCode: 'GHS',
-          flag: '🇬🇭',
-          isSelected: false,
-          isSupported: false,
-        ),
         SizedBox(height: 32.h),
 
         // Continue Button
@@ -463,12 +436,12 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
           height: 50.h,
           child: ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: countryCode == 'NG' ? Colors.blue : Colors.grey,
+              backgroundColor: countryCode.isNotEmpty ? Colors.blue : Colors.grey,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12.r),
               ),
             ),
-            onPressed: isLoading || countryCode != 'NG'
+            onPressed: isLoading || countryCode.isEmpty
                 ? null
                 : () => context.read<AuthenticationCubit>().signUpNextPage(),
             child: isLoading
@@ -503,6 +476,7 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
     required String flag,
     required bool isSelected,
     required bool isSupported,
+    bool isBeta = false,
   }) {
     return GestureDetector(
       onTap: isSupported
@@ -546,6 +520,18 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
             ),
             if (isSelected)
               Icon(Icons.check_circle, color: Colors.blue, size: 24.sp)
+            else if (isBeta)
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                decoration: BoxDecoration(
+                  color: Colors.purple.shade100,
+                  borderRadius: BorderRadius.circular(8.r),
+                ),
+                child: Text(
+                  "Beta",
+                  style: TextStyle(fontSize: 12.sp, color: Colors.purple.shade700),
+                ),
+              )
             else if (!isSupported)
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
@@ -750,6 +736,7 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
       builder: (context, state) {
         final primaryContactType = state is SignUpInProgress ? state.primaryContactType : PrimaryContactType.none;
         final email = state is SignUpInProgress ? state.email : '';
+        final countryCode = state is SignUpInProgress ? state.countryCode : 'NG';
 
         return Column(
           children: [
@@ -810,39 +797,14 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
             // If user entered email on page 1, show phone field (optional)
             // If user entered phone on page 1, show email field (optional)
             if (primaryContactType == PrimaryContactType.email)
-              IntlPhoneField(
-                decoration: InputDecoration(
-                  hintText: 'Phone Number (Optional)',
-                  hintStyle: TextStyle(
-                    fontSize: 16.sp,
-                    color: Colors.grey.shade600,
-                  ),
-                  fillColor: const Color(0xFFF0F0F0),
-                  filled: true,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(24.0.r),
-                    borderSide: BorderSide.none,
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(24.0.r),
-                    borderSide: BorderSide.none,
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(24.0.r),
-                    borderSide: BorderSide.none,
-                  ),
-                  contentPadding: EdgeInsets.symmetric(
-                    horizontal: 12.0.w,
-                    vertical: 12.0.h,
-                  ),
-                ),
-                keyboardType: TextInputType.phone,
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                style: TextStyle(fontSize: 16.sp),
-                dropdownTextStyle: TextStyle(fontSize: 16.sp),
-                initialCountryCode: 'US',
-                onChanged: (phone) {
-                  context.read<AuthenticationCubit>().signUpPhoneNumberChanged(phone.completeNumber);
+              LockedCountryPhoneInput(
+                countryCode: countryCode,
+                initialValue: initialPhoneNumber,
+                labelText: 'Phone Number (Optional)',
+                hintText: 'Enter phone number',
+                isRequired: false,
+                onChanged: (value) {
+                  context.read<AuthenticationCubit>().signUpPhoneNumberChanged(value);
                 },
               )
             else if (primaryContactType == PrimaryContactType.phone)
@@ -856,70 +818,57 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
               )
             else
               // Fallback: Show phone if primaryContactType is none (shouldn't happen if page 1 validation works)
-              IntlPhoneField(
-                decoration: InputDecoration(
-                  hintText: 'Phone Number',
-                  hintStyle: TextStyle(
-                    fontSize: 16.sp,
-                    color: Colors.grey.shade600,
-                  ),
-                  fillColor: const Color(0xFFF0F0F0),
-                  filled: true,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(24.0.r),
-                    borderSide: BorderSide.none,
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(24.0.r),
-                    borderSide: BorderSide.none,
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(24.0.r),
-                    borderSide: BorderSide.none,
-                  ),
-                  contentPadding: EdgeInsets.symmetric(
-                    horizontal: 12.0.w,
-                    vertical: 12.0.h,
-                  ),
-                ),
-                keyboardType: TextInputType.phone,
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                style: TextStyle(fontSize: 16.sp),
-                dropdownTextStyle: TextStyle(fontSize: 16.sp),
-                initialCountryCode: 'US',
-                onChanged: (phone) {
-                  context.read<AuthenticationCubit>().signUpPhoneNumberChanged(phone.completeNumber);
+              // Use LockedCountryPhoneInput with pre-filled country code
+              LockedCountryPhoneInput(
+                countryCode: countryCode,
+                initialValue: initialPhoneNumber,
+                labelText: 'Phone Number',
+                hintText: 'Enter phone number',
+                onChanged: (value) {
+                  context.read<AuthenticationCubit>().signUpPhoneNumberChanged(value);
                 },
               ),
             SizedBox(height: 32.0.h),
             // --- Navigation Button (Continue to BVN verification) ---
-            isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : Center(
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
-                        foregroundColor: Colors.white,
-                        padding: EdgeInsets.symmetric(
-                            vertical: 12.0,
-                            horizontal: _responsiveController.screenWidth * 0.4),
-                      ),
-                      onPressed: () {
-                        context.read<AuthenticationCubit>().signUpNextPage();
-                      },
-                      child: const Text(
-                        "Continue",
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                    ),
+            SizedBox(
+              width: double.infinity,
+              height: 50.h,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.r),
                   ),
+                ),
+                onPressed: isLoading
+                    ? null
+                    : () => context.read<AuthenticationCubit>().signUpNextPage(),
+                child: isLoading
+                    ? SizedBox(
+                        height: 24.h,
+                        width: 24.h,
+                        child: const CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      )
+                    : Text(
+                        "Continue",
+                        style: TextStyle(
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+              ),
+            ),
           ],
         );
       },
     );
   }
 
-  // Helper method for BVN/NIN Verification Page (Page 3)
+  // Helper method for Identity Verification Page (Page 3) - Multi-country support
   Widget _buildBvnVerificationPage(
     BuildContext context, {
     required String bvn,
@@ -928,225 +877,337 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
     required bool bvnVerified,
     required bool isLoading,
   }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          "Verify Your Identity",
-          style: TextStyle(
-            fontSize: 18.sp,
-            fontWeight: FontWeight.w600,
-            color: Colors.black87,
-          ),
-        ),
-        SizedBox(height: 8.h),
-        Text(
-          "For security and compliance, we need to verify your identity using your BVN or NIN.",
-          style: TextStyle(
-            fontSize: 14.sp,
-            color: Colors.black54,
-          ),
-        ),
-        SizedBox(height: 24.h),
+    return BlocBuilder<AuthenticationCubit, AuthenticationState>(
+      builder: (context, state) {
+        final countryCode = state is SignUpInProgress ? state.countryCode : 'NG';
+        final identityValue = state is SignUpInProgress ? state.identityValue : '';
+        final availableIdTypes = IdentityTypeExtension.forCountry(countryCode);
 
-        // Identity Type Selector
-        Row(
+        // Get description text based on country
+        String getCountryVerificationDescription() {
+          switch (countryCode) {
+            case 'NG':
+              return "For security and compliance, we need to verify your identity using your BVN or NIN.";
+            case 'GB':
+              return "For security and compliance, we need to verify your identity using your passport or driving licence.";
+            case 'US':
+              return "For security and compliance, we need to verify your identity. We only need the last 4 digits of your SSN.";
+            case 'GH':
+              return "For security and compliance, we need to verify your identity using your Ghana Card or other government ID.";
+            case 'KE':
+              return "For security and compliance, we need to verify your identity using your National ID or passport.";
+            case 'ZA':
+              return "For security and compliance, we need to verify your identity using your South African ID number.";
+            default:
+              return "For security and compliance, we need to verify your identity.";
+          }
+        }
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(
-              child: GestureDetector(
-                onTap: () => context.read<AuthenticationCubit>().signUpIdentityTypeChanged(IdentityType.bvn),
-                child: Container(
-                  padding: EdgeInsets.symmetric(vertical: 12.h),
-                  decoration: BoxDecoration(
-                    color: identityType == IdentityType.bvn ? Colors.blue : Colors.grey.shade200,
-                    borderRadius: BorderRadius.circular(8.r),
-                  ),
-                  child: Center(
+            Text(
+              "Verify Your Identity",
+              style: TextStyle(
+                fontSize: 18.sp,
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
+              ),
+            ),
+            SizedBox(height: 8.h),
+            Text(
+              getCountryVerificationDescription(),
+              style: TextStyle(
+                fontSize: 14.sp,
+                color: Colors.black54,
+              ),
+            ),
+            SizedBox(height: 24.h),
+
+            // Identity Type Selector - Dynamic based on country
+            if (availableIdTypes.length > 1)
+              Wrap(
+                spacing: 8.w,
+                runSpacing: 8.h,
+                children: availableIdTypes.map((idType) {
+                  final isSelected = identityType == idType;
+                  return GestureDetector(
+                    onTap: () => context.read<AuthenticationCubit>().signUpIdentityTypeChanged(idType),
+                    child: Container(
+                      padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 16.w),
+                      decoration: BoxDecoration(
+                        color: isSelected ? Colors.blue : Colors.grey.shade200,
+                        borderRadius: BorderRadius.circular(8.r),
+                      ),
+                      child: Text(
+                        idType.displayName,
+                        style: TextStyle(
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w600,
+                          color: isSelected ? Colors.white : Colors.black54,
+                        ),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            SizedBox(height: 20.h),
+
+            // Identity Input Field - Dynamic based on identity type
+            BuildFormField(
+              name: "identityValue",
+              placeholder: identityType.placeholder,
+              keyboardType: _getKeyboardType(identityType),
+              prefixIcon: Icon(Icons.badge_outlined, color: Colors.black45),
+              initialValue: _getInitialValue(identityType, bvn, nin, identityValue),
+              maxLength: identityType.maxLength,
+              onChanged: (value) {
+                // Update the appropriate field based on identity type
+                if (identityType == IdentityType.bvn) {
+                  context.read<AuthenticationCubit>().signUpBvnChanged(value);
+                } else if (identityType == IdentityType.nin) {
+                  context.read<AuthenticationCubit>().signUpNinChanged(value);
+                } else {
+                  context.read<AuthenticationCubit>().signUpIdentityValueChanged(value);
+                }
+              },
+            ),
+            SizedBox(height: 8.h),
+
+            // Info text about the selected identity type
+            Container(
+              padding: EdgeInsets.all(12.w),
+              decoration: BoxDecoration(
+                color: Colors.blue.shade50,
+                borderRadius: BorderRadius.circular(8.r),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.info_outline, color: Colors.blue, size: 20.sp),
+                  SizedBox(width: 8.w),
+                  Expanded(
                     child: Text(
-                      "BVN",
+                      identityType.description,
+                      style: TextStyle(
+                        fontSize: 12.sp,
+                        color: Colors.blue.shade700,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(height: 20.h),
+
+            // Verification Status
+            if (bvnVerified)
+              Container(
+                padding: EdgeInsets.all(12.w),
+                decoration: BoxDecoration(
+                  color: Colors.green.shade50,
+                  borderRadius: BorderRadius.circular(8.r),
+                  border: Border.all(color: Colors.green.shade300),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.check_circle, color: Colors.green, size: 24.sp),
+                    SizedBox(width: 12.w),
+                    Text(
+                      "Identity verified successfully!",
                       style: TextStyle(
                         fontSize: 14.sp,
                         fontWeight: FontWeight.w600,
-                        color: identityType == IdentityType.bvn ? Colors.white : Colors.black54,
+                        color: Colors.green.shade700,
                       ),
+                    ),
+                  ],
+                ),
+              ),
+            SizedBox(height: 24.h),
+
+            // Progressive KYC info card - explains why verification matters
+            Container(
+              padding: EdgeInsets.all(16.w),
+              decoration: BoxDecoration(
+                color: Colors.amber.shade50,
+                borderRadius: BorderRadius.circular(12.r),
+                border: Border.all(color: Colors.amber.shade200),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.info_outline, color: Colors.amber.shade700, size: 20.sp),
+                      SizedBox(width: 8.w),
+                      Text(
+                        'Why verify now?',
+                        style: TextStyle(
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.amber.shade700,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 8.h),
+                  Text(
+                    countryCode == 'NG'
+                        ? 'Verification unlocks ₦500,000 daily limit. Without it, you\'ll be limited to ₦50,000/day.'
+                        : 'Verification unlocks higher transaction limits and full access to all features.',
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      color: Colors.brown.shade700,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(height: 20.h),
+
+            // Verify Button
+            if (!bvnVerified)
+              SizedBox(
+                width: double.infinity,
+                height: 50.h,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                  ),
+                  onPressed: isLoading
+                      ? null
+                      : () => context.read<AuthenticationCubit>().verifyIdentity(),
+                  child: isLoading
+                      ? SizedBox(
+                          height: 24.h,
+                          width: 24.h,
+                          child: const CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          ),
+                        )
+                      : Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.verified, color: Colors.white, size: 20.sp),
+                            SizedBox(width: 8.w),
+                            Text(
+                              "Verify ${identityType.displayName}",
+                              style: TextStyle(
+                                fontSize: 16.sp,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                ),
+              ),
+            SizedBox(height: 12.h),
+
+            // Skip for now button (only shown if not verified)
+            if (!bvnVerified)
+              SizedBox(
+                width: double.infinity,
+                child: TextButton(
+                  style: TextButton.styleFrom(
+                    foregroundColor: Colors.grey.shade700,
+                    padding: EdgeInsets.symmetric(vertical: 12.h),
+                  ),
+                  onPressed: isLoading ? null : () => _showSkipDialog(context, countryCode),
+                  child: Text(
+                    'Skip for now',
+                    style: TextStyle(
+                      fontSize: 15.sp,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ),
               ),
-            ),
-            SizedBox(width: 12.w),
-            Expanded(
-              child: GestureDetector(
-                onTap: () => context.read<AuthenticationCubit>().signUpIdentityTypeChanged(IdentityType.nin),
-                child: Container(
-                  padding: EdgeInsets.symmetric(vertical: 12.h),
-                  decoration: BoxDecoration(
-                    color: identityType == IdentityType.nin ? Colors.blue : Colors.grey.shade200,
-                    borderRadius: BorderRadius.circular(8.r),
-                  ),
-                  child: Center(
-                    child: Text(
-                      "NIN",
-                      style: TextStyle(
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w600,
-                        color: identityType == IdentityType.nin ? Colors.white : Colors.black54,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-        SizedBox(height: 20.h),
+            SizedBox(height: 8.h),
 
-        // BVN/NIN Input Field
-        BuildFormField(
-          name: identityType == IdentityType.bvn ? "bvn" : "nin",
-          placeholder: identityType == IdentityType.bvn
-              ? "Enter your 11-digit BVN"
-              : "Enter your 11-digit NIN",
-          keyboardType: TextInputType.number,
-          prefixIcon: Icon(Icons.badge_outlined, color: Colors.black45),
-          initialValue: identityType == IdentityType.bvn ? bvn : nin,
-          maxLength: 11,
-          onChanged: (value) {
-            if (identityType == IdentityType.bvn) {
-              context.read<AuthenticationCubit>().signUpBvnChanged(value);
-            } else {
-              context.read<AuthenticationCubit>().signUpNinChanged(value);
-            }
-          },
-        ),
-        SizedBox(height: 8.h),
-
-        // Info text about BVN/NIN
-        Container(
-          padding: EdgeInsets.all(12.w),
-          decoration: BoxDecoration(
-            color: Colors.blue.shade50,
-            borderRadius: BorderRadius.circular(8.r),
-          ),
-          child: Row(
-            children: [
-              Icon(Icons.info_outline, color: Colors.blue, size: 20.sp),
-              SizedBox(width: 8.w),
-              Expanded(
+            // Small info text
+            if (!bvnVerified)
+              Center(
                 child: Text(
-                  identityType == IdentityType.bvn
-                      ? "Your BVN (Bank Verification Number) is an 11-digit number linked to your bank accounts."
-                      : "Your NIN (National Identification Number) is an 11-digit number from your National ID card.",
+                  'You can complete verification anytime from Settings',
                   style: TextStyle(
-                    fontSize: 12.sp,
-                    color: Colors.blue.shade700,
+                    fontSize: 11.sp,
+                    color: Colors.grey.shade600,
                   ),
+                ),
+              ),
+            SizedBox(height: bvnVerified ? 24.h : 0.h),
+
+            // Complete Signup Button (only shown after verification)
+            if (bvnVerified) ...[
+              SizedBox(height: 16.h),
+              SizedBox(
+                width: double.infinity,
+                height: 50.h,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                  ),
+                  onPressed: isLoading
+                      ? null
+                      : () => context.read<AuthenticationCubit>().signUpSubmitted(),
+                  child: isLoading
+                      ? SizedBox(
+                          height: 24.h,
+                          width: 24.h,
+                          child: const CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          ),
+                        )
+                      : Text(
+                          "Complete Sign Up",
+                          style: TextStyle(
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
+                        ),
                 ),
               ),
             ],
-          ),
-        ),
-        SizedBox(height: 20.h),
-
-        // Verification Status
-        if (bvnVerified)
-          Container(
-            padding: EdgeInsets.all(12.w),
-            decoration: BoxDecoration(
-              color: Colors.green.shade50,
-              borderRadius: BorderRadius.circular(8.r),
-              border: Border.all(color: Colors.green.shade300),
-            ),
-            child: Row(
-              children: [
-                Icon(Icons.check_circle, color: Colors.green, size: 24.sp),
-                SizedBox(width: 12.w),
-                Text(
-                  "Identity verified successfully!",
-                  style: TextStyle(
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.green.shade700,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        SizedBox(height: 24.h),
-
-        // Verify Button
-        if (!bvnVerified)
-          SizedBox(
-            width: double.infinity,
-            height: 50.h,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12.r),
-                ),
-              ),
-              onPressed: isLoading
-                  ? null
-                  : () => context.read<AuthenticationCubit>().verifyIdentity(),
-              child: isLoading
-                  ? SizedBox(
-                      height: 24.h,
-                      width: 24.h,
-                      child: const CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                      ),
-                    )
-                  : Text(
-                      "Verify ${identityType == IdentityType.bvn ? 'BVN' : 'NIN'}",
-                      style: TextStyle(
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                    ),
-            ),
-          ),
-
-        // Complete Signup Button (only shown after verification)
-        if (bvnVerified) ...[
-          SizedBox(height: 16.h),
-          SizedBox(
-            width: double.infinity,
-            height: 50.h,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12.r),
-                ),
-              ),
-              onPressed: isLoading
-                  ? null
-                  : () => context.read<AuthenticationCubit>().signUpSubmitted(),
-              child: isLoading
-                  ? SizedBox(
-                      height: 24.h,
-                      width: 24.h,
-                      child: const CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                      ),
-                    )
-                  : Text(
-                      "Complete Sign Up",
-                      style: TextStyle(
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                    ),
-            ),
-          ),
-        ],
-      ],
+          ],
+        );
+      },
     );
+  }
+
+  // Helper to get keyboard type based on identity type
+  TextInputType _getKeyboardType(IdentityType identityType) {
+    switch (identityType) {
+      case IdentityType.bvn:
+      case IdentityType.nin:
+      case IdentityType.ssn:
+      case IdentityType.kenyaNationalId:
+      case IdentityType.saId:
+        return TextInputType.number;
+      default:
+        return TextInputType.text;
+    }
+  }
+
+  // Helper to get initial value based on identity type
+  String _getInitialValue(IdentityType identityType, String bvn, String nin, String identityValue) {
+    switch (identityType) {
+      case IdentityType.bvn:
+        return bvn;
+      case IdentityType.nin:
+        return nin;
+      default:
+        return identityValue;
+    }
   }
 
   Widget _socialLoginButton(String imagePath) {
@@ -1171,6 +1232,42 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
           width: 24.0.w,
         ),
       ),
+    );
+  }
+
+  /// Shows skip confirmation dialog for progressive KYC
+  void _showSkipDialog(BuildContext context, String countryCode) {
+    final tier1Limit = countryCode == 'NG' ? '₦50,000' : 'limited amount';
+
+    Get.defaultDialog(
+      title: 'Skip Identity Verification?',
+      titleStyle: TextStyle(
+        fontSize: 18.sp,
+        fontWeight: FontWeight.bold,
+        color: Colors.black87,
+      ),
+      middleText: 'You\'ll have a Tier 1 account with a daily limit of $tier1Limit. You can complete verification later from Settings to unlock higher limits.',
+      middleTextStyle: TextStyle(
+        fontSize: 14.sp,
+        color: Colors.black54,
+        height: 1.5,
+      ),
+      textConfirm: 'Skip & Continue',
+      textCancel: 'Verify Now',
+      confirmTextColor: Colors.white,
+      buttonColor: Colors.grey.shade600,
+      cancelTextColor: Colors.blue,
+      radius: 16.r,
+      onConfirm: () {
+        Get.back(); // Close dialog
+        // Skip verification and proceed with signup as Tier 1
+        context.read<AuthenticationCubit>().skipIdentityVerification();
+      },
+      onCancel: () {
+        Get.back(); // Close dialog
+        // User stays on verification page
+      },
+      barrierDismissible: true,
     );
   }
 }

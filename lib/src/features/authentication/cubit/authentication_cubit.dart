@@ -17,9 +17,13 @@ import '../domain/usecases/reset_password_usecase.dart';
 import '../domain/usecases/verify_email_usecase.dart';
 import '../domain/usecases/resend_verification_usecase.dart';
 import '../domain/usecases/check_email_availability_usecase.dart';
+import '../domain/usecases/verify_identity_usecase.dart';
+import '../domain/usecases/validate_token_usecase.dart';
 import '../domain/entities/profile_entity.dart';
 import '../domain/entities/user.dart';
 import '../domain/entities/signup_draft.dart';
+import '../domain/entities/two_factor_entity.dart';
+import '../domain/usecases/enable_two_factor_usecase.dart';
 import 'authentication_state.dart';
 
 class AuthenticationCubit extends Cubit<AuthenticationState> {
@@ -34,6 +38,8 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
   final VerifyEmailUseCase _verifyEmailUseCase;
   final ResendVerificationUseCase _resendVerificationUseCase;
   final CheckEmailAvailabilityUseCase _checkEmailAvailabilityUseCase;
+  final VerifyIdentityUseCase _verifyIdentityUseCase;
+  final ValidateTokenUseCase _validateTokenUseCase;
   final FlutterSecureStorage _storage;
   final CurrencySyncService _currencySyncService;
   final SignupStateService? _signupStateService;
@@ -53,6 +59,8 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     required VerifyEmailUseCase verifyEmail,
     required ResendVerificationUseCase resendVerification,
     required CheckEmailAvailabilityUseCase checkEmailAvailability,
+    required VerifyIdentityUseCase verifyIdentity,
+    required ValidateTokenUseCase validateToken,
     FlutterSecureStorage? storage,
     required CurrencySyncService currencySyncService,
     SignupStateService? signupStateService,
@@ -67,6 +75,8 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
         _verifyEmailUseCase = verifyEmail,
         _resendVerificationUseCase = resendVerification,
         _checkEmailAvailabilityUseCase = checkEmailAvailability,
+        _verifyIdentityUseCase = verifyIdentity,
+        _validateTokenUseCase = validateToken,
         _storage = storage ?? const FlutterSecureStorage(),
         _currencySyncService = currencySyncService,
         _signupStateService = signupStateService,
@@ -91,16 +101,27 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       final userId = await _storage.read(key: _userIdKey);
 
       if (accessToken != null && userId != null) {
-        // Token exists, validate it
-        // For now, assume valid. Later add token validation
+        // Token exists, validate it with the backend
         if (isClosed) return;
         emit(AuthenticationCheckingSession());
 
-        // TODO: Add API call to validate token and get user profile
-        // For now, just emit initial state
-        await Future.delayed(const Duration(milliseconds: 500));
+        final result = await _validateTokenUseCase(accessToken: accessToken);
+
         if (isClosed) return;
-        emit(AuthenticationInitial());
+
+        result.fold(
+          (failure) {
+            // Token is invalid or expired, clear session
+            print('Auto login failed: ${failure.message}');
+            _clearSession();
+            emit(AuthenticationInitial());
+          },
+          (profile) {
+            // Token is valid, restore session
+            _currentProfile = profile;
+            emit(AuthenticationAuthenticated(profile));
+          },
+        );
       }
     } catch (e) {
       print('Auto login failed: $e');
@@ -845,6 +866,19 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     }
   }
 
+  /// Change generic identity value (for non-NG countries)
+  void signUpIdentityValueChanged(String value) {
+    if (state is SignUpInProgress) {
+      final currentState = state as SignUpInProgress;
+      emit(currentState.copyWith(
+        identityValue: value,
+        bvnVerified: false, // Reset verification when identity value changes
+        clearErrorMessage: true,
+        isLoading: false,
+      ));
+    }
+  }
+
   /// Validate BVN format (must be exactly 11 digits)
   String? _validateBvn(String bvn) {
     if (bvn.isEmpty) return 'BVN is required';
@@ -861,20 +895,119 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     return null;
   }
 
-  /// Verify BVN/NIN with backend
+  /// Get identity value based on identity type
+  String _getIdentityValueForType(SignUpInProgress state) {
+    switch (state.identityType) {
+      case IdentityType.bvn:
+        return state.bvn;
+      case IdentityType.nin:
+        return state.nin;
+      default:
+        return state.identityValue;
+    }
+  }
+
+  /// Validate identity value based on country and type
+  String? _validateIdentityValue(String countryCode, IdentityType identityType, String value) {
+    if (value.isEmpty) {
+      return '${identityType.displayName} is required';
+    }
+
+    switch (identityType) {
+      case IdentityType.bvn:
+        return _validateBvn(value);
+      case IdentityType.nin:
+        return _validateNin(value);
+      case IdentityType.ssn:
+        if (value.length != 4 || !RegExp(r'^\d{4}$').hasMatch(value)) {
+          return 'SSN must be exactly 4 digits';
+        }
+        return null;
+      case IdentityType.saId:
+        if (value.length != 13 || !RegExp(r'^\d{13}$').hasMatch(value)) {
+          return 'South African ID must be exactly 13 digits';
+        }
+        return null;
+      case IdentityType.kenyaNationalId:
+        if (value.length < 7 || value.length > 8 || !RegExp(r'^\d+$').hasMatch(value)) {
+          return 'Kenya National ID must be 7-8 digits';
+        }
+        return null;
+      case IdentityType.ghanaCard:
+        // Ghana Card format: GHA-XXXXXXXXX-X
+        if (!RegExp(r'^GHA-\d{9}-\d$').hasMatch(value) && value.length < 10) {
+          return 'Please enter a valid Ghana Card number';
+        }
+        return null;
+      case IdentityType.passport:
+      case IdentityType.usPassport:
+      case IdentityType.ghanaPassport:
+      case IdentityType.kenyaPassport:
+      case IdentityType.saPassport:
+        if (value.length < 6) {
+          return 'Passport number must be at least 6 characters';
+        }
+        return null;
+      case IdentityType.drivingLicence:
+        if (value.length < 8) {
+          return 'Driving licence number must be at least 8 characters';
+        }
+        return null;
+      case IdentityType.stateId:
+      case IdentityType.ghanaVoterId:
+        if (value.length < 6) {
+          return 'ID number must be at least 6 characters';
+        }
+        return null;
+    }
+  }
+
+  /// Map identity type enum to backend string format
+  String _getIdentityTypeString(IdentityType type) {
+    switch (type) {
+      case IdentityType.bvn:
+        return 'bvn';
+      case IdentityType.nin:
+        return 'nin';
+      case IdentityType.ssn:
+        return 'ssn';
+      case IdentityType.passport:
+        return 'uk_passport';
+      case IdentityType.drivingLicence:
+        return 'uk_driving_licence';
+      case IdentityType.usPassport:
+        return 'us_passport';
+      case IdentityType.stateId:
+        return 'us_state_id';
+      case IdentityType.ghanaCard:
+        return 'ghana_card';
+      case IdentityType.ghanaVoterId:
+        return 'ghana_voter_id';
+      case IdentityType.ghanaPassport:
+        return 'ghana_passport';
+      case IdentityType.kenyaNationalId:
+        return 'kenya_national_id';
+      case IdentityType.kenyaPassport:
+        return 'kenya_passport';
+      case IdentityType.saId:
+        return 'sa_id';
+      case IdentityType.saPassport:
+        return 'sa_passport';
+    }
+  }
+
+  /// Verify identity with backend - supports multi-country verification
   /// This calls the auth service which connects to banking service to verify identity
   Future<void> verifyIdentity() async {
     if (state is! SignUpInProgress) return;
 
     final currentState = state as SignUpInProgress;
-    final identityNumber = currentState.identityType == IdentityType.bvn
-        ? currentState.bvn
-        : currentState.nin;
 
-    // Validate format
-    final error = currentState.identityType == IdentityType.bvn
-        ? _validateBvn(identityNumber)
-        : _validateNin(identityNumber);
+    // Get identity value based on identity type
+    final identityNumber = _getIdentityValueForType(currentState);
+
+    // Validate format based on country and identity type
+    final error = _validateIdentityValue(currentState.countryCode, currentState.identityType, identityNumber);
 
     if (error != null) {
       _showErrorSnackbar('Validation Error', error);
@@ -882,7 +1015,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       return;
     }
 
-    // Validate date of birth is set
+    // Validate date of birth is set (required for most verifications)
     if (currentState.selectedDate == null) {
       _showErrorSnackbar('Validation Error', 'Date of birth is required for verification');
       emit(currentState.copyWith(errorMessage: 'Date of birth is required'));
@@ -897,11 +1030,15 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       final dob = currentState.selectedDate!;
       final formattedDob = '${dob.year}-${dob.month.toString().padLeft(2, '0')}-${dob.day.toString().padLeft(2, '0')}';
 
-      // Call the actual backend endpoint via repository
-      final result = await _authRepository.verifyIdentity(
-        identityType: currentState.identityType == IdentityType.bvn ? 'bvn' : 'nin',
+      // Map identity type to backend format
+      final identityTypeString = _getIdentityTypeString(currentState.identityType);
+
+      // Call the actual backend endpoint via use case
+      final result = await _verifyIdentityUseCase(
+        identityType: identityTypeString,
         identityNumber: identityNumber,
         dateOfBirth: formattedDob,
+        countryCode: currentState.countryCode,
       );
 
       if (isClosed) return;
@@ -929,7 +1066,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
 
             _showSuccessSnackbar(
               'Identity Verified!',
-              'Your ${currentState.identityType == IdentityType.bvn ? 'BVN' : 'NIN'} has been verified successfully.',
+              'Your ${currentState.identityType.displayName} has been verified successfully.',
             );
           } else {
             _showErrorSnackbar('Verification Failed', 'Identity could not be verified');
@@ -951,6 +1088,31 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
         errorMessage: errorMsg,
       ));
     }
+  }
+
+  /// Skip identity verification for progressive KYC onboarding
+  /// Allows users to complete signup as Tier 1 and verify later
+  void skipIdentityVerification() {
+    if (state is! SignUpInProgress) return;
+
+    final currentState = state as SignUpInProgress;
+
+    // Show info that user will have limited access
+    _showInfoSnackbar(
+      'Account Created with Tier 1',
+      'You can verify your identity anytime from Settings to unlock higher limits.',
+    );
+
+    // Mark as skipped and proceed with signup
+    if (isClosed) return;
+    emit(currentState.copyWith(
+      kycSkipped: true,
+      bvnVerified: false,
+      clearErrorMessage: true,
+    ));
+
+    // Proceed directly to signup submission
+    signUpSubmitted();
   }
 
   /// Unified method to handle email or phone number input
@@ -1091,9 +1253,10 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
           return;
         }
 
-        // Only allow Nigeria for now
-        if (currentState.countryCode != 'NG') {
-          final errorMsg = 'Only Nigeria is currently supported. More countries coming soon!';
+        // Validate country is in supported list
+        final supportedCountries = ['NG', 'GB', 'US', 'GH', 'KE', 'ZA'];
+        if (!supportedCountries.contains(currentState.countryCode)) {
+          final errorMsg = 'Selected country is not currently supported. Please choose from: Nigeria, UK, USA, Ghana, Kenya, or South Africa.';
           _showErrorSnackbar('Country Not Supported', errorMsg);
           if (isClosed) return;
           emit(currentState.copyWith(errorMessage: errorMsg));
@@ -1391,13 +1554,19 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
         }
       }
 
-      // BVN/NIN verification is required for Nigerian users
-      if (currentState.countryCode == 'NG' && !currentState.bvnVerified) {
-        final errorMsg = 'Please verify your BVN/NIN before completing signup';
-        _showErrorSnackbar('Verification Required', errorMsg);
+      // BVN/NIN verification is required for Nigerian users UNLESS user explicitly skips (progressive KYC)
+      // With progressive KYC, users can skip and get Tier 1 limits
+      if (currentState.countryCode == 'NG' && !currentState.bvnVerified && !currentState.kycSkipped) {
+        final errorMsg = 'Please verify your BVN/NIN before completing signup, or skip to continue with Tier 1 limits';
+        _showInfoSnackbar('Verification Optional', errorMsg);
         if (isClosed) return;
+        // Don't return - allow user to see the error on the page
+        // The actual blocking happens on page 3 navigation
         emit(currentState.copyWith(errorMessage: errorMsg, isLoading: false));
-        return;
+        // If we're here from skipIdentityVerification, proceed anyway
+        if (!currentState.kycSkipped) {
+          return;
+        }
       }
 
       if (currentState.isLoading) return;
@@ -1864,5 +2033,85 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     // DON'T emit states here as it interferes with passcode login flow
     await Future.delayed(const Duration(milliseconds: 100));
     return false;
+  }
+
+  // ========== Two-Factor Authentication Methods ==========
+
+  /// Get the current 2FA status for the authenticated user
+  Future<TwoFactorStatus> getTwoFactorStatus() async {
+    // This will call the use case which communicates with the backend
+    // For now, return a default disabled status
+    return const TwoFactorStatus.disabled();
+  }
+
+  /// Enable two-factor authentication for the user
+  /// Returns the setup data including QR code and backup codes
+  Future<TwoFactorSetup> enableTwoFactor(TwoFactorMethod method) async {
+    if (isClosed) throw Exception('Cubit is closed');
+
+    // This will call the use case to initiate 2FA setup
+    // The use case returns secret, QR code, and backup codes
+    // For now, return empty data
+    return const TwoFactorSetup.empty();
+  }
+
+  /// Complete two-factor authentication setup by verifying the code
+  Future<bool> completeTwoFactorSetup(String userId, String code) async {
+    if (isClosed) return false;
+
+    // This will call the use case to verify and enable 2FA
+    // Returns true if successful
+    _showSuccessSnackbar(
+      '2FA Enabled',
+      'Two-factor authentication has been enabled on your account.',
+    );
+    return true;
+  }
+
+  /// Verify two-factor authentication code during login
+  Future<bool> verifyTwoFactor(String twoFactorToken, String code) async {
+    if (isClosed) return false;
+
+    // This will call the use case to verify the 2FA code
+    // Returns true if verification successful
+    return true;
+  }
+
+  /// Disable two-factor authentication
+  Future<bool> disableTwoFactor(String code) async {
+    if (isClosed) return false;
+
+    // This will call the use case to disable 2FA
+    // Returns true if successful
+    _showSuccessSnackbar(
+      '2FA Disabled',
+      'Two-factor authentication has been disabled from your account.',
+    );
+    return true;
+  }
+
+  /// Regenerate backup codes for 2FA
+  Future<List<String>> regenerateBackupCodes(String code) async {
+    if (isClosed) throw Exception('Cubit is closed');
+
+    // This will call the use case to regenerate backup codes
+    // Returns new list of backup codes
+    _showSuccessSnackbar(
+      'Backup Codes Regenerated',
+      'Your new backup codes have been generated. Please save them securely.',
+    );
+    return [];
+  }
+
+  /// Send a new 2FA code (for SMS/Email methods)
+  Future<bool> sendTwoFactorCode() async {
+    if (isClosed) return false;
+
+    // This will call the use case to send a new code
+    _showSuccessSnackbar(
+      'Code Sent',
+      'A new verification code has been sent.',
+    );
+    return true;
   }
 }

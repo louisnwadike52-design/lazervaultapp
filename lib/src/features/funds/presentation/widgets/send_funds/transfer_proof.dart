@@ -74,12 +74,17 @@ class _TransferProofState extends State<TransferProof>
     final double amount = widget.transferDetails['amount'] as double? ?? 0.0;
     final double fee = widget.transferDetails['fee'] as double? ?? 0.0;
     final double totalAmount = widget.transferDetails['totalAmount'] as double? ?? 0.0;
+    final String currency = widget.transferDetails['currency'] as String? ?? 'USD';
     final String recipientName = widget.transferDetails['recipientName'] as String? ?? 'Recipient';
     final String recipientAccount = widget.transferDetails['recipientAccountMasked'] as String? ?? 'N/A';
     final String sourceAccount = widget.transferDetails['sourceAccountInfo'] as String? ?? 'N/A';
     final String transferId = widget.transferDetails['transferId']?.toString() ?? 'N/A';
     final DateTime timestamp = widget.transferDetails['timestamp'] as DateTime? ?? DateTime.now();
     final String status = widget.transferDetails['status'] as String? ?? 'completed';
+    final String network = widget.transferDetails['network'] as String? ?? 'Internal Transfer';
+    final String processingTime = widget.transferDetails['processingTime'] as String? ?? 'Instant';
+    final String currencySymbol = _getCurrencySymbol(currency);
+    final String currencyDisplay = _getCurrencyDisplayName(currency);
     
     Get.bottomSheet(
       Screenshot(
@@ -218,10 +223,10 @@ class _TransferProofState extends State<TransferProof>
                     ),
                     child: Column(
                       children: [
-                        _buildReceiptRow('Amount Sent', '\$${amount.toStringAsFixed(2)}'),
-                        _buildReceiptRow('Transfer Fee', '\$${fee.toStringAsFixed(2)}'),
+                        _buildReceiptRow('Amount Sent', '$currencySymbol${amount.toStringAsFixed(2)}'),
+                        _buildReceiptRow('Transfer Fee', '$currencySymbol${fee.toStringAsFixed(2)}'),
                         Divider(color: Colors.white.withValues(alpha: 0.2), height: 20.h),
-                        _buildReceiptRow('Total Amount', '\$${totalAmount.toStringAsFixed(2)}', isHighlighted: true),
+                        _buildReceiptRow('Total Amount', '$currencySymbol${totalAmount.toStringAsFixed(2)}', isHighlighted: true),
                         SizedBox(height: 16.h),
                         _buildReceiptRow('Recipient', recipientName),
                         _buildReceiptRow('Recipient Account', recipientAccount),
@@ -229,8 +234,9 @@ class _TransferProofState extends State<TransferProof>
                         _buildReceiptRow('Transfer ID', transferId),
                         _buildReceiptRow('Date & Time', DateFormat('d MMM yyyy, HH:mm').format(timestamp)),
                         _buildReceiptRow('Status', status.toUpperCase(), isHighlighted: true),
-                        _buildReceiptRow('Processing Time', 'Instant'),
-                        _buildReceiptRow('Network', 'Internal Transfer'),
+                        _buildReceiptRow('Currency', currencyDisplay),
+                        _buildReceiptRow('Processing Time', processingTime),
+                        _buildReceiptRow('Network', network),
                         _buildReceiptRow('Reference', 'REF${timestamp.millisecondsSinceEpoch.toString().substring(6)}'),
                         SizedBox(height: 20.h),
                       ],
@@ -498,10 +504,15 @@ class _TransferProofState extends State<TransferProof>
   Widget build(BuildContext context) {
     // Extract data from the map with default values
     final double amount = widget.transferDetails['amount'] as double? ?? 0.0;
+    final double fee = widget.transferDetails['fee'] as double? ?? 0.0;
+    final String currency = widget.transferDetails['currency'] as String? ?? 'USD';
     final String recipientName = widget.transferDetails['recipientName'] as String? ?? 'Recipient';
     final DateTime timestamp = widget.transferDetails['timestamp'] as DateTime? ?? DateTime.now();
     final String transferId = widget.transferDetails['transferId']?.toString() ?? 'N/A';
     final String status = widget.transferDetails['status'] as String? ?? 'completed';
+    final String network = widget.transferDetails['network'] as String? ?? 'Internal Transfer';
+    final String transferType = widget.transferDetails['transferType'] as String? ?? 'Peer-to-Peer Transfer';
+    final String processingTime = widget.transferDetails['processingTime'] as String? ?? 'Instant';
 
     return Scaffold(
       backgroundColor: const Color(0xFF0F0F23),
@@ -533,9 +544,9 @@ class _TransferProofState extends State<TransferProof>
                         SizedBox(height: 8.h),
                         _buildSuccessMessage(recipientName),
                         SizedBox(height: 12.h),
-                        _buildTransferSummary(amount),
+                        _buildTransferSummary(amount, currency),
                         SizedBox(height: 16.h),
-                        _buildTransactionDetails(transferId, timestamp, status, recipientName),
+                        _buildTransactionDetails(transferId, timestamp, status, recipientName, fee, currency, network, transferType, processingTime),
                         SizedBox(height: 16.h),
                         _buildActionButtons(),
                       ],
@@ -645,7 +656,9 @@ class _TransferProofState extends State<TransferProof>
     );
   }
 
-  Widget _buildTransferSummary(double amount) {
+  Widget _buildTransferSummary(double amount, String currency) {
+    final currencySymbol = _getCurrencySymbol(currency);
+
     return Container(
       padding: EdgeInsets.all(12.w),
       decoration: BoxDecoration(
@@ -674,7 +687,7 @@ class _TransferProofState extends State<TransferProof>
               Icon(Icons.send, color: Colors.green, size: 20.sp),
               SizedBox(width: 8.w),
               Text(
-                'USD',
+                currency.toUpperCase(),
                 style: GoogleFonts.inter(
                   color: Colors.white,
                   fontSize: 14.sp,
@@ -685,7 +698,7 @@ class _TransferProofState extends State<TransferProof>
           ),
           SizedBox(height: 8.h),
           Text(
-            '\$${amount.toStringAsFixed(2)}',
+            '$currencySymbol${amount.toStringAsFixed(2)}',
             style: GoogleFonts.inter(
               color: Colors.white,
               fontSize: 22.sp,
@@ -706,7 +719,24 @@ class _TransferProofState extends State<TransferProof>
     );
   }
 
-  Widget _buildTransactionDetails(String transferId, DateTime timestamp, String status, String recipientName) {
+  Widget _buildTransactionDetails(
+    String transferId,
+    DateTime timestamp,
+    String status,
+    String recipientName,
+    double fee,
+    String currency,
+    String network,
+    String transferType,
+    String processingTime,
+  ) {
+    // Get currency symbol
+    final currencySymbol = _getCurrencySymbol(currency);
+    // Format fee - show "Free" if fee is 0, otherwise show amount
+    final feeDisplay = fee == 0.0 ? 'Free' : '$currencySymbol${fee.toStringAsFixed(2)}';
+    // Format currency display
+    final currencyDisplay = _getCurrencyDisplayName(currency);
+
     return Flexible(
       child: Container(
         padding: EdgeInsets.all(16.w),
@@ -742,12 +772,12 @@ class _TransferProofState extends State<TransferProof>
                     _buildDetailRow('Recipient', recipientName),
                     _buildDetailRow('Date & Time', DateFormat('d MMM yyyy, HH:mm').format(timestamp)),
                     _buildDetailRow('Status', status.toUpperCase(), isHighlighted: true),
-                    _buildDetailRow('Currency', 'US Dollar (USD)'),
-                    _buildDetailRow('Processing Time', 'Instant'),
-                    _buildDetailRow('Fee', 'Free'),
+                    _buildDetailRow('Currency', currencyDisplay),
+                    _buildDetailRow('Processing Time', processingTime),
+                    _buildDetailRow('Fee', feeDisplay),
                     _buildDetailRow('Reference', 'REF${timestamp.millisecondsSinceEpoch.toString().substring(6)}'),
-                    _buildDetailRow('Network', 'Internal Transfer'),
-                    _buildDetailRow('Type', 'Peer-to-Peer Transfer'),
+                    _buildDetailRow('Network', network),
+                    _buildDetailRow('Type', transferType),
                   ],
                 ),
               ),
@@ -756,6 +786,40 @@ class _TransferProofState extends State<TransferProof>
         ),
       ),
     );
+  }
+
+  String _getCurrencySymbol(String currency) {
+    switch (currency.toUpperCase()) {
+      case 'NGN':
+        return '₦';
+      case 'GBP':
+        return '£';
+      case 'EUR':
+        return '€';
+      case 'USD':
+      default:
+        return '\$';
+    }
+  }
+
+  String _getCurrencyDisplayName(String currency) {
+    switch (currency.toUpperCase()) {
+      case 'NGN':
+        return 'Nigerian Naira (NGN)';
+      case 'GBP':
+        return 'British Pound (GBP)';
+      case 'EUR':
+        return 'Euro (EUR)';
+      case 'GHS':
+        return 'Ghanaian Cedi (GHS)';
+      case 'KES':
+        return 'Kenyan Shilling (KES)';
+      case 'ZAR':
+        return 'South African Rand (ZAR)';
+      case 'USD':
+      default:
+        return 'US Dollar (USD)';
+    }
   }
 
   Widget _buildDetailRow(String label, String value, {bool isHighlighted = false}) {

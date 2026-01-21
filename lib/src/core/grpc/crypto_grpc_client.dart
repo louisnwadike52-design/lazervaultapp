@@ -118,6 +118,155 @@ class CryptoGrpcClient {
     }
   }
 
+  // ============================================================
+  // WALLET & TRANSACTION OPERATIONS
+  // These methods connect to the crypto microservice backend
+  // ============================================================
+
+  /// Get user's crypto holdings
+  ///
+  /// Returns list of user's cryptocurrency holdings with current values
+  Future<GetCryptoHoldingsResponse> getHoldings() async {
+    try {
+      final request = GetCryptoHoldingsRequest();
+      final response = await _client.getCryptoHoldings(request);
+      return response;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Get user's crypto transaction history
+  ///
+  /// [limit] - Maximum number of transactions to return
+  /// [offset] - Pagination offset
+  Future<GetCryptoTransactionsResponse> getTransactions({
+    int limit = 50,
+    int offset = 0,
+  }) async {
+    try {
+      final request = GetCryptoTransactionsRequest()
+        ..limit = limit
+        ..offset = offset;
+      final response = await _client.getCryptoTransactions(request);
+      return response;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Buy cryptocurrency
+  ///
+  /// [cryptoId] - ID of cryptocurrency to buy (e.g., 'bitcoin')
+  /// [fiatAmount] - Amount in fiat currency to spend
+  /// [fiatCurrency] - Fiat currency code (e.g., 'USD', 'GBP', 'NGN')
+  Future<BuyCryptoResponse> buyCrypto({
+    required String cryptoId,
+    required double fiatAmount,
+    required String fiatCurrency,
+  }) async {
+    try {
+      final request = BuyCryptoRequest()
+        ..cryptoId = cryptoId
+        ..fiatAmount = fiatAmount
+        ..fiatCurrency = fiatCurrency;
+      final response = await _client.buyCrypto(request);
+      return response;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Sell cryptocurrency
+  ///
+  /// [cryptoId] - ID of cryptocurrency to sell (e.g., 'bitcoin')
+  /// [quantity] - Amount of cryptocurrency to sell
+  /// [fiatCurrency] - Fiat currency to receive (e.g., 'USD', 'GBP', 'NGN')
+  Future<SellCryptoResponse> sellCrypto({
+    required String cryptoId,
+    required double quantity,
+    required String fiatCurrency,
+  }) async {
+    try {
+      final request = SellCryptoRequest()
+        ..cryptoId = cryptoId
+        ..cryptoAmount = quantity
+        ..fiatCurrency = fiatCurrency;
+      final response = await _client.sellCrypto(request);
+      return response;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Convert cryptocurrency to fiat
+  ///
+  /// [fromCryptoId] - Source cryptocurrency ID
+  /// [toCryptoId] - Target cryptocurrency/fiat ID
+  /// [amount] - Amount to convert
+  Future<ConvertCryptoResponse> convertCrypto({
+    required String fromCryptoId,
+    required String toCryptoId,
+    required double amount,
+  }) async {
+    try {
+      final request = ConvertCryptoRequest()
+        ..fromCryptoId = fromCryptoId
+        ..toCryptoId = toCryptoId
+        ..fromAmount = amount;
+      final response = await _client.convertCrypto(request);
+      return response;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Get user's crypto wallets
+  Future<GetWalletsResponse> getWallets() async {
+    try {
+      final request = GetWalletsRequest();
+      final response = await _client.getWallets(request);
+      return response;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Create a new crypto wallet
+  ///
+  /// [cryptoId] - Cryptocurrency ID (e.g., 'bitcoin', 'ethereum')
+  /// [walletType] - Wallet type (e.g., 'metamask', 'trust_wallet')
+  Future<CreateWalletResponse> createWallet({
+    required String cryptoId,
+    String? walletType,
+  }) async {
+    try {
+      final request = CreateWalletRequest()
+        ..cryptoId = cryptoId
+        ..walletType = walletType ?? 'default';
+      final response = await _client.createWallet(request);
+      return response;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Get wallet balance
+  ///
+  /// [walletId] - Wallet ID or address
+  Future<GetWalletBalanceResponse> getWalletBalance({
+    required String walletId,
+  }) async {
+    try {
+      final request = GetWalletBalanceRequest()
+        ..walletId = walletId;
+      final response = await _client.getWalletBalance(request);
+      return response;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   /// Close the gRPC channel
   Future<void> close() async {
     await _channel.shutdown();

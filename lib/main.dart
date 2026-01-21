@@ -27,6 +27,21 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:device_info_plus/device_info_plus.dart'; // Added device_info_plus
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
+/// Development utility to reset onboarding state
+/// Call this function to simulate a fresh install
+Future<void> resetOnboardingForDevelopment() async {
+  const storage = FlutterSecureStorage();
+  await storage.write(key: 'force_onboarding', value: 'true');
+  print('✅ Onboarding will be reset on next app launch');
+}
+
+/// Development utility to check if onboarding will be shown
+Future<bool> willShowOnboarding() async {
+  const storage = FlutterSecureStorage();
+  final hasSeenOnboarding = await storage.read(key: 'has_seen_onboarding');
+  return hasSeenOnboarding != 'true';
+}
+
 Future<void> _checkPermissions() async {
   var status = await Permission.bluetooth.request();
   if (status.isPermanentlyDenied) {
@@ -113,9 +128,27 @@ Future<String> _determineInitialRoute() async {
   const storage = FlutterSecureStorage();
 
   try {
+    // DEVELOPMENT: Check if we should force onboarding (for testing fresh install)
+    // Set 'force_onboarding' to 'true' in secure storage to reset onboarding
+    final forceOnboarding = await storage.read(key: 'force_onboarding');
+    if (forceOnboarding == 'true') {
+      // Clear the flag so it only happens once
+      await storage.delete(key: 'force_onboarding');
+      await storage.delete(key: 'has_seen_onboarding');
+      await storage.delete(key: 'user_id');
+      await storage.delete(key: 'stored_email');
+      await storage.delete(key: 'login_method');
+      await storage.delete(key: 'has_incomplete_signup');
+      await storage.delete(key: 'signup_draft');
+      await storage.delete(key: 'current_signup_step');
+      print('🔄 Onboarding reset for development - showing onboarding screens');
+      return AppRoutes.root; // Show onboarding
+    }
+
     // Check if user has seen onboarding
     final hasSeenOnboarding = await storage.read(key: 'has_seen_onboarding');
     if (hasSeenOnboarding != 'true') {
+      print('👋 First-time user - showing onboarding screens');
       return AppRoutes.root; // Show onboarding for first-time users
     }
 

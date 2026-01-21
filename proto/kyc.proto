@@ -1,0 +1,256 @@
+syntax = "proto3";
+
+package kyc;
+
+option go_package = "github.com/lazervault/protos/kyc";
+option dart_package = "lazervaultapp/proto";
+
+import "google/protobuf/timestamp.proto";
+import "common.proto";
+
+// KYC Tier levels
+enum KYCTier {
+  TIER_UNKNOWN = 0;
+  TIER_1 = 1;      // Basic - Phone/Email verified
+  TIER_2 = 2;      // Standard - ID verified (BVN/NIN)
+  TIER_3 = 3;      // Enhanced - Full KYC with address proof
+}
+
+// KYC Verification status
+enum KYCStatus {
+  STATUS_UNKNOWN = 0;
+  NOT_STARTED = 1;         // User hasn't started KYC
+  IN_PROGRESS = 2;         // KYC in progress
+  PENDING_REVIEW = 3;      // Awaiting manual review
+  APPROVED = 4;            // KYC approved
+  REJECTED = 5;            // KYC rejected
+  EXPIRED = 6;             // KYC needs renewal
+}
+
+// ID Type for different countries
+enum IDType {
+  ID_UNKNOWN = 0;
+  // Nigeria
+  BVN = 1;
+  NIN = 2;
+  DRIVERS_LICENSE = 3;
+  INTERNATIONAL_PASSPORT = 4;
+  VOTERS_CARD = 5;
+  // Ghana
+  GHANA_CARD = 10;
+  // Kenya
+  KENYA_NATIONAL_ID = 20;
+  KRA_PIN = 21;
+  // South Africa
+  SA_ID_CARD = 30;
+  SA_PASSPORT = 31;
+  // UK
+  UK_PASSPORT = 40;
+  UK_DRIVING_LICENSE = 41;
+  // USA
+  US_SSN = 50;
+  US_STATE_ID = 51;
+  US_PASSPORT = 52;
+}
+
+// Country-specific KYC requirements
+message CountryKYCRequirements {
+  string country_code = 1;
+  repeated IDType accepted_id_types = 2;
+  repeated IDType mandatory_id_types = 3;
+  bool address_proof_required = 4;
+  bool liveness_check_required = 5;
+  int64 tier_1_daily_limit = 6;      // in minor units (kobo, cents, etc.)
+  int64 tier_2_daily_limit = 7;
+  int64 tier_3_daily_limit = 8;
+}
+
+// KYC Tier information
+message KYCTierInfo {
+  KYCTier tier = 1;
+  KYCStatus status = 2;
+  string display_name = 3;
+  string description = 4;
+  repeated string benefits = 5;
+  int64 daily_transaction_limit = 6;  // in minor units
+  int64 daily_receive_limit = 7;
+  int64 max_balance = 8;
+  google.protobuf.Timestamp verified_at = 9;
+  google.protobuf.Timestamp expires_at = 10;
+  bool is_current = 11;
+  bool is_locked = 12;  // True if locked due to expired KYC
+}
+
+// ID Verification request
+message VerifyIDRequest {
+  string user_id = 1;
+  IDType id_type = 2;
+  string id_number = 3;
+  string first_name = 4;
+  string last_name = 5;
+  string date_of_birth = 6;  // YYYY-MM-DD format
+  string phone_number = 7;
+}
+
+// Document upload request
+message UploadDocumentRequest {
+  string user_id = 1;
+  IDType document_type = 2;
+  string document_front_url = 3;   // S3/GCS URL
+  string document_back_url = 4;    // For IDs with back side
+  string selfie_url = 5;           // User selfie for liveness
+  string proof_of_address_url = 6;  // For Tier 3
+}
+
+// KYC Verification response
+message VerifyIDResponse {
+  bool success = 1;
+  string message = 2;
+  KYCStatus status = 3;
+  KYCTier current_tier = 4;
+  google.protobuf.Timestamp verified_at = 5;
+  string reference = 6;  // Transaction reference
+}
+
+// Get user KYC status request
+message GetKYCStatusRequest {
+  string user_id = 1;
+}
+
+// Get user KYC status response
+message GetKYCStatusResponse {
+  bool success = 1;
+  KYCStatus status = 2;
+  KYCTier current_tier = 3;
+  repeated KYCTierInfo tier_info = 4;
+  google.protobuf.Timestamp last_updated = 5;
+  string rejection_reason = 6;
+}
+
+// Skip KYC request (for progressive onboarding)
+message SkipKYCRequest {
+  string user_id = 1;
+  bool skip_tier_2 = 2;  // Skip to Tier 1 only
+}
+
+// Skip KYC response
+message SkipKYCResponse {
+  bool success = 1;
+  KYCTier assigned_tier = 2;
+  string message = 3;
+  repeated string next_steps = 4;  // Steps to complete for upgrade
+}
+
+// Get country requirements request
+message GetCountryRequirementsRequest {
+  string country_code = 1;
+}
+
+// Get country requirements response
+message GetCountryRequirementsResponse {
+  bool success = 1;
+  CountryKYCRequirements requirements = 2;
+}
+
+// Initiate KYC request (starts verification flow)
+message InitiateKYCRequest {
+  string user_id = 1;
+  KYCTier target_tier = 2;
+}
+
+// Initiate KYC response
+message InitiateKYCResponse {
+  bool success = 1;
+  string session_id = 2;  // KYC session ID for tracking
+  repeated string required_documents = 3;
+  repeated string required_fields = 4;
+  string redirect_url = 5;  // For external provider redirects
+}
+
+// Verification document metadata
+message VerificationDocument {
+  string id = 1;
+  IDType document_type = 2;
+  string document_url = 3;
+  common.DocumentStatus status = 4;
+  google.protobuf.Timestamp uploaded_at = 5;
+  google.protobuf.Timestamp verified_at = 6;
+  string rejection_reason = 7;
+}
+
+// Document status enum
+enum DocumentStatus {
+  DOC_STATUS_UNKNOWN = 0;
+  PENDING_UPLOAD = 1;
+  UPLOADED = 2;
+  UNDER_REVIEW = 3;
+  APPROVED = 4;
+  REJECTED = 5;
+}
+
+// Get user documents request
+message GetUserDocumentsRequest {
+  string user_id = 1;
+}
+
+// Get user documents response
+message GetUserDocumentsResponse {
+  bool success = 1;
+  repeated VerificationDocument documents = 2;
+}
+
+// KYC Service
+service KYCService {
+  // Get current KYC status
+  rpc GetKYCStatus(GetKYCStatusRequest) returns (GetKYCStatusResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/kyc/status"
+    };
+  }
+
+  // Get country-specific requirements
+  rpc GetCountryRequirements(GetCountryRequirementsRequest) returns (GetCountryRequirementsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/kyc/requirements/{country_code}"
+    };
+  }
+
+  // Initiate KYC verification flow
+  rpc InitiateKYC(InitiateKYCRequest) returns (InitiateKYCResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/kyc/initiate"
+      body: "*"
+    };
+  }
+
+  // Verify ID (BVN, NIN, etc.)
+  rpc VerifyID(VerifyIDRequest) returns (VerifyIDResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/kyc/verify-id"
+      body: "*"
+    };
+  }
+
+  // Upload KYC document
+  rpc UploadDocument(UploadDocumentRequest) returns (VerifyIDResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/kyc/upload-document"
+      body: "*"
+    };
+  }
+
+  // Get user's uploaded documents
+  rpc GetUserDocuments(GetUserDocumentsRequest) returns (GetUserDocumentsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/kyc/documents"
+    };
+  }
+
+  // Skip KYC upgrade (progressive onboarding)
+  rpc SkipKYCUpgrade(SkipKYCRequest) returns (SkipKYCResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/kyc/skip"
+      body: "*"
+    };
+  }
+}

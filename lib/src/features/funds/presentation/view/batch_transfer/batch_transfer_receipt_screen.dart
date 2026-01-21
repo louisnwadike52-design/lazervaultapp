@@ -126,13 +126,19 @@ class _BatchTransferReceiptScreenState extends State<BatchTransferReceiptScreen>
 
   Future<pw.Document> _generatePDF() async {
     final pdf = pw.Document();
-    
-    // Mock data - replace with actual data from batchTransferDetails
-    final batchId = batchTransferDetails['batchId'] ?? 'BTX${DateTime.now().millisecondsSinceEpoch}';
-    final totalAmount = batchTransferDetails['totalAmount'] ?? 250.00;
-    final totalFee = batchTransferDetails['totalFee'] ?? 2.50;
-    final timestamp = DateTime.now();
-    
+
+    // Extract data from batchTransferDetails
+    final batchId = batchTransferDetails['batchId']?.toString() ?? 'BTX${DateTime.now().millisecondsSinceEpoch}';
+    final totalAmount = (batchTransferDetails['totalAmount'] as num?)?.toDouble() ?? 0.0;
+    final totalFee = (batchTransferDetails['totalFee'] as num?)?.toDouble() ?? 0.0;
+    final currency = batchTransferDetails['currency'] as String? ?? 'GBP';
+    final timestamp = batchTransferDetails['timestamp'] as DateTime? ?? DateTime.now();
+    final status = batchTransferDetails['status'] as String? ?? 'Completed';
+    final transfers = batchTransferDetails['transfers'] as List<dynamic>? ?? [];
+
+    // Get currency symbol
+    final currencySymbol = _getCurrencySymbol(currency);
+
     pdf.addPage(
       pw.Page(
         pageFormat: PdfPageFormat.a4,
@@ -158,7 +164,7 @@ class _BatchTransferReceiptScreenState extends State<BatchTransferReceiptScreen>
                 ),
               ),
               pw.SizedBox(height: 30),
-              
+
               // Transfer Details
               pw.Row(
                 mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
@@ -170,72 +176,96 @@ class _BatchTransferReceiptScreenState extends State<BatchTransferReceiptScreen>
                       pw.SizedBox(height: 5),
                       pw.Text('Date: ${DateFormat('MMM dd, yyyy HH:mm').format(timestamp)}'),
                       pw.SizedBox(height: 5),
-                      pw.Text('Status: Completed'),
+                      pw.Text('Status: $status'),
+                      pw.SizedBox(height: 5),
+                      pw.Text('Currency: $currency'),
                     ],
                   ),
                   pw.Column(
                     crossAxisAlignment: pw.CrossAxisAlignment.end,
                     children: [
-                      pw.Text('Total Amount: £${totalAmount.toStringAsFixed(2)}'),
+                      pw.Text('Total Amount: $currencySymbol${totalAmount.toStringAsFixed(2)}'),
                       pw.SizedBox(height: 5),
-                      pw.Text('Total Fee: £${totalFee.toStringAsFixed(2)}'),
+                      pw.Text('Total Fee: $currencySymbol${totalFee.toStringAsFixed(2)}'),
                       pw.SizedBox(height: 5),
-                      pw.Text('Grand Total: £${(totalAmount + totalFee).toStringAsFixed(2)}'),
+                      pw.Text('Grand Total: $currencySymbol${(totalAmount + totalFee).toStringAsFixed(2)}'),
                     ],
                   ),
                 ],
               ),
               pw.SizedBox(height: 30),
-              
+
               // Transfer Results
               pw.Text(
-                'Transfer Results',
+                'Transfer Results (${transfers.length})',
                 style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold),
               ),
               pw.SizedBox(height: 15),
-              
-              // Mock transfer results table
-              pw.Table(
-                border: pw.TableBorder.all(),
-                children: [
-                  pw.TableRow(
-                    children: [
-                      pw.Padding(
-                        padding: const pw.EdgeInsets.all(8),
-                        child: pw.Text('Recipient', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                      ),
-                      pw.Padding(
-                        padding: const pw.EdgeInsets.all(8),
-                        child: pw.Text('Amount', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                      ),
-                      pw.Padding(
-                        padding: const pw.EdgeInsets.all(8),
-                        child: pw.Text('Status', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                      ),
-                    ],
-                  ),
-                  // Mock data rows
-                  ...List.generate(3, (index) => pw.TableRow(
-                    children: [
-                      pw.Padding(
-                        padding: const pw.EdgeInsets.all(8),
-                        child: pw.Text('Recipient ${index + 1}'),
-                      ),
-                      pw.Padding(
-                        padding: const pw.EdgeInsets.all(8),
-                        child: pw.Text('£${(75.0 + index * 25).toStringAsFixed(2)}'),
-                      ),
-                      pw.Padding(
-                        padding: const pw.EdgeInsets.all(8),
-                        child: pw.Text('Completed'),
-                      ),
-                    ],
-                  )),
-                ],
-              ),
-              
+
+              // Transfer results table
+              if (transfers.isNotEmpty)
+                pw.Table(
+                  border: pw.TableBorder.all(),
+                  children: [
+                    pw.TableRow(
+                      children: [
+                        pw.Padding(
+                          padding: const pw.EdgeInsets.all(8),
+                          child: pw.Text('Recipient', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                        ),
+                        pw.Padding(
+                          padding: const pw.EdgeInsets.all(8),
+                          child: pw.Text('Account', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                        ),
+                        pw.Padding(
+                          padding: const pw.EdgeInsets.all(8),
+                          child: pw.Text('Amount', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                        ),
+                        pw.Padding(
+                          padding: const pw.EdgeInsets.all(8),
+                          child: pw.Text('Status', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                        ),
+                      ],
+                    ),
+                    // Actual transfer rows
+                    ...transfers.map<pw.TableRow>((transfer) {
+                      final transferMap = transfer as Map<String, dynamic>;
+                      final name = transferMap['recipientName'] as String? ?? transferMap['name'] as String? ?? 'Unknown';
+                      final account = transferMap['recipientAccount'] as String? ?? transferMap['account'] as String? ?? 'N/A';
+                      final amount = (transferMap['amount'] as num?)?.toDouble() ?? 0.0;
+                      final transferStatus = transferMap['status'] as String? ?? 'Pending';
+
+                      return pw.TableRow(
+                        children: [
+                          pw.Padding(
+                            padding: const pw.EdgeInsets.all(8),
+                            child: pw.Text(name),
+                          ),
+                          pw.Padding(
+                            padding: const pw.EdgeInsets.all(8),
+                            child: pw.Text(account),
+                          ),
+                          pw.Padding(
+                            padding: const pw.EdgeInsets.all(8),
+                            child: pw.Text('$currencySymbol${amount.toStringAsFixed(2)}'),
+                          ),
+                          pw.Padding(
+                            padding: const pw.EdgeInsets.all(8),
+                            child: pw.Text(transferStatus),
+                          ),
+                        ],
+                      );
+                    }).toList(),
+                  ],
+                )
+              else
+                pw.Padding(
+                  padding: const pw.EdgeInsets.all(16),
+                  child: pw.Text('No transfer details available'),
+                ),
+
               pw.Spacer(),
-              
+
               // Footer
               pw.Container(
                 alignment: pw.Alignment.center,
@@ -249,8 +279,22 @@ class _BatchTransferReceiptScreenState extends State<BatchTransferReceiptScreen>
         },
       ),
     );
-    
+
     return pdf;
+  }
+
+  String _getCurrencySymbol(String currency) {
+    switch (currency.toUpperCase()) {
+      case 'NGN':
+        return '₦';
+      case 'GBP':
+        return '£';
+      case 'EUR':
+        return '€';
+      case 'USD':
+      default:
+        return '\$';
+    }
   }
 
   Future<void> _savePDFToDevice(pw.Document pdf) async {
@@ -271,21 +315,27 @@ class _BatchTransferReceiptScreenState extends State<BatchTransferReceiptScreen>
   }
 
   String _generateShareText() {
-    final batchId = batchTransferDetails['batchId'] ?? 'BTX${DateTime.now().millisecondsSinceEpoch}';
-    final totalAmount = batchTransferDetails['totalAmount'] ?? 250.00;
-    final totalFee = batchTransferDetails['totalFee'] ?? 2.50;
-    final timestamp = DateTime.now();
-    
+    final batchId = batchTransferDetails['batchId']?.toString() ?? 'BTX${DateTime.now().millisecondsSinceEpoch}';
+    final totalAmount = (batchTransferDetails['totalAmount'] as num?)?.toDouble() ?? 0.0;
+    final totalFee = (batchTransferDetails['totalFee'] as num?)?.toDouble() ?? 0.0;
+    final currency = batchTransferDetails['currency'] as String? ?? 'GBP';
+    final timestamp = batchTransferDetails['timestamp'] as DateTime? ?? DateTime.now();
+    final status = batchTransferDetails['status'] as String? ?? 'Completed';
+    final recipientCount = batchTransferDetails['recipientCount'] as int? ?? 0;
+    final currencySymbol = _getCurrencySymbol(currency);
+
     return '''
 LazerVault - Batch Transfer Receipt
 
 Batch ID: $batchId
 Date: ${DateFormat('MMM dd, yyyy HH:mm').format(timestamp)}
-Status: Completed
+Status: $status
+Recipients: $recipientCount transfers
+Currency: $currency
 
-Total Amount: £${totalAmount.toStringAsFixed(2)}
-Total Fee: £${totalFee.toStringAsFixed(2)}
-Grand Total: £${(totalAmount + totalFee).toStringAsFixed(2)}
+Total Amount: $currencySymbol${totalAmount.toStringAsFixed(2)}
+Total Fee: $currencySymbol${totalFee.toStringAsFixed(2)}
+Grand Total: $currencySymbol${(totalAmount + totalFee).toStringAsFixed(2)}
 
 Thank you for using LazerVault!
 ''';
@@ -492,12 +542,15 @@ Thank you for using LazerVault!
   }
 
   Widget _buildBatchSummary() {
-    // Mock data - replace with actual data from batchTransferDetails
-    final batchId = batchTransferDetails['batchId'] ?? 'BTX${DateTime.now().millisecondsSinceEpoch}';
-    final totalAmount = batchTransferDetails['totalAmount'] ?? 250.00;
-    final totalFee = batchTransferDetails['totalFee'] ?? 2.50;
-    final recipientCount = batchTransferDetails['recipientCount'] ?? 3;
-    final timestamp = DateTime.now();
+    // Extract data from batchTransferDetails
+    final batchId = batchTransferDetails['batchId']?.toString() ?? 'BTX${DateTime.now().millisecondsSinceEpoch}';
+    final totalAmount = (batchTransferDetails['totalAmount'] as num?)?.toDouble() ?? 0.0;
+    final totalFee = (batchTransferDetails['totalFee'] as num?)?.toDouble() ?? 0.0;
+    final currency = batchTransferDetails['currency'] as String? ?? 'GBP';
+    final recipientCount = batchTransferDetails['recipientCount'] as int? ?? 0;
+    final timestamp = batchTransferDetails['timestamp'] as DateTime? ?? DateTime.now();
+    final status = batchTransferDetails['status'] as String? ?? 'Completed';
+    final currencySymbol = _getCurrencySymbol(currency);
 
     return Container(
       padding: EdgeInsets.all(20.w),
@@ -518,15 +571,17 @@ Thank you for using LazerVault!
             ),
           ),
           SizedBox(height: 16.h),
-          
+
           _buildSummaryRow('Batch ID', batchId),
           _buildSummaryRow('Date & Time', DateFormat('MMM dd, yyyy • HH:mm').format(timestamp)),
-          _buildSummaryRow('Recipients', '$recipientCount transfers'),
-          _buildSummaryRow('Total Amount', '£${totalAmount.toStringAsFixed(2)}'),
-          _buildSummaryRow('Total Fee', '£${totalFee.toStringAsFixed(2)}'),
-          
+          _buildSummaryRow('Status', status),
+          _buildSummaryRow('Recipients', '$recipientCount transfer${recipientCount == 1 ? '' : 's'}'),
+          _buildSummaryRow('Currency', currency),
+          _buildSummaryRow('Total Amount', '$currencySymbol${totalAmount.toStringAsFixed(2)}'),
+          _buildSummaryRow('Total Fee', totalFee == 0 ? 'Free' : '$currencySymbol${totalFee.toStringAsFixed(2)}'),
+
           Divider(color: Colors.white.withValues(alpha: 0.2), height: 24.h),
-          
+
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -539,7 +594,7 @@ Thank you for using LazerVault!
                 ),
               ),
               Text(
-                '£${(totalAmount + totalFee).toStringAsFixed(2)}',
+                '$currencySymbol${(totalAmount + totalFee).toStringAsFixed(2)}',
                 style: GoogleFonts.inter(
                   color: Colors.green[400],
                   fontSize: 18.sp,
@@ -581,12 +636,10 @@ Thank you for using LazerVault!
   }
 
   Widget _buildTransferResults() {
-    // Mock results - replace with actual data from batchTransferDetails
-    final mockResults = [
-      {'name': 'John Doe', 'account': '••• 1234', 'amount': 75.00, 'status': 'Completed'},
-      {'name': 'Jane Smith', 'account': '••• 5678', 'amount': 100.00, 'status': 'Completed'},
-      {'name': 'Bob Johnson', 'account': '••• 9012', 'amount': 75.00, 'status': 'Completed'},
-    ];
+    // Extract transfer results from batchTransferDetails
+    final transfers = batchTransferDetails['transfers'] as List<dynamic>? ?? [];
+    final currency = batchTransferDetails['currency'] as String? ?? 'GBP';
+    final currencySymbol = _getCurrencySymbol(currency);
 
     return Container(
       padding: EdgeInsets.all(20.w),
@@ -606,86 +659,102 @@ Thank you for using LazerVault!
               fontWeight: FontWeight.w700,
             ),
           ),
-          SizedBox(height: 16.h),
-          
-          ...mockResults.asMap().entries.map((entry) {
-            final index = entry.key;
-            final result = entry.value;
-            
-            return Container(
-              margin: EdgeInsets.only(bottom: index < mockResults.length - 1 ? 16.h : 0),
+          if (transfers.isEmpty)
+            Padding(
               padding: EdgeInsets.all(16.w),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.05),
-                borderRadius: BorderRadius.circular(12.r),
-                border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+              child: Text(
+                'No transfer details available',
+                style: GoogleFonts.inter(
+                  color: Colors.grey[400],
+                  fontSize: 14.sp,
+                ),
               ),
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    backgroundColor: Colors.green[600],
-                    radius: 20.r,
-                    child: Icon(
-                      Icons.check,
-                      color: Colors.white,
-                      size: 16.sp,
+            )
+          else
+            ...transfers.asMap().entries.map((entry) {
+              final index = entry.key;
+              final transfer = entry.value as Map<String, dynamic>;
+
+              final name = transfer['recipientName'] as String? ?? transfer['name'] as String? ?? 'Unknown';
+              final account = transfer['recipientAccount'] as String? ?? transfer['account'] as String? ?? '••• ••••';
+              final amount = (transfer['amount'] as num?)?.toDouble() ?? 0.0;
+              final status = transfer['status'] as String? ?? 'Pending';
+              final isCompleted = status.toLowerCase() == 'completed' || status.toLowerCase() == 'success';
+
+              return Container(
+                margin: EdgeInsets.only(bottom: index < transfers.length - 1 ? 16.h : 0),
+                padding: EdgeInsets.all(16.w),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.05),
+                  borderRadius: BorderRadius.circular(12.r),
+                  border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                ),
+                child: Row(
+                  children: [
+                    CircleAvatar(
+                      backgroundColor: isCompleted ? Colors.green[600] : Colors.orange[600],
+                      radius: 20.r,
+                      child: Icon(
+                        isCompleted ? Icons.check : Icons.access_time,
+                        color: Colors.white,
+                        size: 16.sp,
+                      ),
                     ),
-                  ),
-                  SizedBox(width: 12.w),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    SizedBox(width: 12.w),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            name,
+                            style: GoogleFonts.inter(
+                              color: Colors.white,
+                              fontSize: 14.sp,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          Text(
+                            account,
+                            style: GoogleFonts.inter(
+                              color: Colors.grey[400],
+                              fontSize: 12.sp,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         Text(
-                          result['name'] as String,
+                          '$currencySymbol${amount.toStringAsFixed(2)}',
                           style: GoogleFonts.inter(
                             color: Colors.white,
                             fontSize: 14.sp,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
-                        Text(
-                          result['account'] as String,
-                          style: GoogleFonts.inter(
-                            color: Colors.grey[400],
-                            fontSize: 12.sp,
+                        Container(
+                          padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                          decoration: BoxDecoration(
+                            color: isCompleted ? Colors.green[600] : Colors.orange[600],
+                            borderRadius: BorderRadius.circular(6.r),
+                          ),
+                          child: Text(
+                            status,
+                            style: GoogleFonts.inter(
+                              color: Colors.white,
+                              fontSize: 10.sp,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
                       ],
                     ),
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        '£${(result['amount'] as double).toStringAsFixed(2)}',
-                        style: GoogleFonts.inter(
-                          color: Colors.white,
-                          fontSize: 14.sp,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      Container(
-                        padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
-                        decoration: BoxDecoration(
-                          color: Colors.green[600],
-                          borderRadius: BorderRadius.circular(6.r),
-                        ),
-                        child: Text(
-                          result['status'] as String,
-                          style: GoogleFonts.inter(
-                            color: Colors.white,
-                            fontSize: 10.sp,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            );
-          }),
+                  ],
+                ),
+              );
+            }),
         ],
       ),
     );

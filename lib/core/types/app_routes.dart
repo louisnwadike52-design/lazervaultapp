@@ -298,4 +298,19 @@ abstract class AppRoutes {
   // Microservice Chat Routes
   static const String microserviceChat = '/microservice-chat';
   static const String generalChat = '/general-chat';
+
+  // Two-Factor Authentication Routes
+  static const String twoFactorSetup = '/auth/2fa/setup';
+  static const String twoFactorVerification = '/auth/2fa/verify';
+  static const String twoFactorSettings = '/settings/2fa';
+
+  // KYC Routes
+  static const String kycProgressive = '/kyc/progressive';
+  static const String kycVerifyId = '/kyc/verify-id';
+  static const String kycStatus = '/kyc/status';
+  static const String kycDocuments = '/kyc/documents';
+  static const String kycSkip = '/kyc/skip';
+
+  // Debug Routes (Remove before production)
+  static const String debugSettings = '/debug/settings';
 }

@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/funds/cubit/batch_transfer_cubit.dart';
 import 'package:lazervault/src/features/funds/cubit/batch_transfer_state.dart';
 import 'package:lazervault/src/features/funds/domain/entities/batch_transfer_entity.dart';
@@ -20,9 +21,26 @@ class _BatchTransferHistoryWidgetState extends State<BatchTransferHistoryWidget>
   void initState() {
     super.initState();
     // Load history when widget initializes
-    context.read<BatchTransferCubit>().getBatchTransferHistory(
-      accessToken: 'mock_token', // In real app, get from auth state
-    );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadHistory();
+    });
+  }
+
+  void _loadHistory() {
+    final authCubit = context.read<AuthenticationCubit>();
+    final profile = authCubit.currentProfile;
+
+    if (profile != null) {
+      context.read<BatchTransferCubit>().getBatchTransferHistory(
+        accessToken: profile.session.accessToken,
+      );
+    }
+  }
+
+  String _getAccessToken() {
+    final authCubit = context.read<AuthenticationCubit>();
+    final profile = authCubit.currentProfile;
+    return profile?.session.accessToken ?? '';
   }
 
   @override
@@ -45,9 +63,12 @@ class _BatchTransferHistoryWidgetState extends State<BatchTransferHistoryWidget>
               ),
               IconButton(
                 onPressed: () {
-                  context.read<BatchTransferCubit>().getBatchTransferHistory(
-                    accessToken: 'mock_token',
-                  );
+                  final token = _getAccessToken();
+                  if (token.isNotEmpty) {
+                    context.read<BatchTransferCubit>().getBatchTransferHistory(
+                      accessToken: token,
+                    );
+                  }
                 },
                 icon: Icon(
                   Icons.refresh,
@@ -394,9 +415,12 @@ class _BatchTransferHistoryWidgetState extends State<BatchTransferHistoryWidget>
             SizedBox(height: 16.h),
             ElevatedButton(
               onPressed: () {
-                context.read<BatchTransferCubit>().getBatchTransferHistory(
-                  accessToken: 'mock_token',
-                );
+                final token = _getAccessToken();
+                if (token.isNotEmpty) {
+                  context.read<BatchTransferCubit>().getBatchTransferHistory(
+                    accessToken: token,
+                  );
+                }
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.blue[400],

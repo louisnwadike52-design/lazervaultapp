@@ -32,8 +32,11 @@ class FlutterwaveConfig {
       dotenv.env['FLUTTERWAVE_ENCRYPTION_KEY'] ?? '';
 
   /// Banking API URL (backend handles secret key)
+  /// Uses environment variable or falls back to production gateway
   static String get bankingApiUrl =>
-      dotenv.env['BANKING_API_URL'] ?? 'http://10.0.2.2:8080/api/v1';
+      dotenv.env['BANKING_API_URL'] ??
+      dotenv.env['CHAT_GATEWAY_URL'] ??
+      'https://api.lazervault.com/v1';
 
   /// Current environment
   static String get environment =>

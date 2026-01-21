@@ -77,6 +77,9 @@ import 'package:lazervault/src/features/funds/presentation/view/send_funds/trans
 import 'package:lazervault/src/features/presentation/views/set_fingerprint_screen.dart';
 import 'package:lazervault/src/features/authentication/presentation/views/passcode_sign_in_screen.dart';
 import 'package:lazervault/src/features/authentication/presentation/views/sign_up_screen.dart';
+import 'package:lazervault/src/features/authentication/presentation/views/two_factor_setup_screen.dart';
+import 'package:lazervault/src/features/authentication/presentation/views/two_factor_verification_screen.dart';
+import 'package:lazervault/src/features/authentication/presentation/views/two_factor_settings_screen.dart';
 import 'package:lazervault/src/features/stocks/presentation/view/stocks_screen.dart' as StockFeature;
 import 'package:lazervault/src/features/stocks/presentation/view/stocks_home_screen.dart';
 import 'package:lazervault/src/features/stocks/presentation/view/stock_details_screen.dart';
@@ -261,6 +264,16 @@ import 'package:lazervault/src/features/settings/presentation/view/help_support_
 import 'package:lazervault/src/features/settings/presentation/view/contact_us_screen.dart';
 import 'package:lazervault/src/features/referral/presentation/screens/referral_dashboard_screen.dart';
 import 'package:lazervault/src/features/referral/presentation/cubit/referral_cubit.dart';
+
+// KYC imports
+import 'package:lazervault/src/features/kyc/presentation/views/progressive_kyc_screen.dart';
+import 'package:lazervault/src/features/kyc/presentation/views/id_verification_screen.dart';
+import 'package:lazervault/src/features/kyc/presentation/cubits/kyc_cubit.dart';
+import 'package:lazervault/src/features/kyc/data/repositories/kyc_repository_impl.dart';
+import 'package:lazervault/src/features/kyc/data/datasources/kyc_remote_datasource.dart';
+import 'package:lazervault/src/features/kyc/domain/entities/kyc_tier_entity.dart';
+import 'package:http/http.dart' as http;
+import 'package:lazervault/src/features/presentation/views/debug_settings_screen.dart';
 
 // Lock Funds imports
 import 'package:lazervault/src/features/lock_funds/presentation/cubit/lock_funds_cubit.dart';
@@ -2028,6 +2041,75 @@ class AppRouter {
           ),
         );
       },
+      transition: Transition.rightToLeft,
+    ),
+
+    // Two-Factor Authentication Routes
+    GetPage(
+      name: AppRoutes.twoFactorSetup,
+      page: () => const TwoFactorSetupScreen(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.twoFactorVerification,
+      page: () {
+        final args = Get.arguments as Map<String, dynamic>?;
+        return TwoFactorVerificationScreen(
+          twoFactorToken: args?['twoFactorToken'] as String? ?? '',
+          userEmail: args?['userEmail'] as String?,
+          userFirstName: args?['userFirstName'] as String?,
+        );
+      },
+      transition: Transition.fadeIn,
+    ),
+    GetPage(
+      name: AppRoutes.twoFactorSettings,
+      page: () => const TwoFactorSettingsScreen(),
+      transition: Transition.rightToLeft,
+    ),
+
+    // KYC Routes - Progressive Onboarding
+    GetPage(
+      name: AppRoutes.kycProgressive,
+      page: () => BlocProvider(
+        create: (_) => KYCCubit(
+          repository: KYCRepositoryImpl(
+            remoteDataSource: KYCRemoteDataSource(
+              client: http.Client(),
+              baseUrl: 'https://api.lazervault.com', // Configure as needed
+            ),
+          ),
+        ),
+        child: const ProgressiveKYCScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.kycVerifyId,
+      page: () {
+        final args = Get.arguments as Map<String, dynamic>? ?? {};
+        return BlocProvider(
+          create: (_) => KYCCubit(
+            repository: KYCRepositoryImpl(
+              remoteDataSource: KYCRemoteDataSource(
+                client: http.Client(),
+                baseUrl: 'https://api.lazervault.com',
+              ),
+            ),
+          ),
+          child: IdVerificationScreen(
+            targetTier: args['targetTier'] as KYCTier? ?? KYCTier.tier2,
+            preferredIdType: args['preferredIdType'] as IDType?,
+          ),
+        );
+      },
+      transition: Transition.rightToLeft,
+    ),
+
+    // Debug Routes (Remove before production)
+    GetPage(
+      name: AppRoutes.debugSettings,
+      page: () => const DebugSettingsScreen(),
       transition: Transition.rightToLeft,
     ),
   ];

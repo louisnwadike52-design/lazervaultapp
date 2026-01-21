@@ -9,6 +9,10 @@ import 'package:lazervault/src/features/authentication/cubit/authentication_cubi
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/features/funds/cubit/withdrawal_cubit.dart';
 import 'package:lazervault/src/features/funds/cubit/withdrawal_state.dart';
+import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_cubit.dart';
+import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_state.dart';
+import 'package:lazervault/src/features/recipients/presentation/cubit/account_verification_cubit.dart';
+import 'package:lazervault/src/features/recipients/presentation/cubit/account_verification_state.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 
 /// Withdrawal Flow Screen - Standard fintech withdrawal flow
@@ -40,60 +44,76 @@ class _WithdrawalFlowScreenState extends State<WithdrawalFlowScreen> {
   final _bankNameController = TextEditingController();
   final _accountNumberController = TextEditingController();
   final _accountNameController = TextEditingController();
+  String? _selectedBankCode;
 
-  // Nigerian banks list
-  final List<Map<String, dynamic>> _nigerianBanks = [
-    {'code': '044', 'name': 'Access Bank', 'icon': Icons.account_balance},
-    {'code': '023', 'name': 'Citibank', 'icon': Icons.account_balance},
-    {'code': '063', 'name': 'Diamond Bank', 'icon': Icons.account_balance},
-    {'code': '050', 'name': 'Ecobank', 'icon': Icons.account_balance},
-    {'code': '084', 'name': 'Enterprise Bank', 'icon': Icons.account_balance},
-    {'code': '070', 'name': 'Fidelity Bank', 'icon': Icons.account_balance},
-    {'code': '011', 'name': 'First Bank', 'icon': Icons.account_balance},
-    {'code': '214', 'name': 'First City Monument Bank', 'icon': Icons.account_balance},
-    {'code': '058', 'name': 'GTBank', 'icon': Icons.account_balance},
-    {'code': '030', 'name': 'Heritage Bank', 'icon': Icons.account_balance},
-    {'code': '301', 'name': 'Jaiz Bank', 'icon': Icons.account_balance},
-    {'code': '082', 'name': 'Keystone Bank', 'icon': Icons.account_balance},
-    {'code': '526', 'name': 'Parallex Bank', 'icon': Icons.account_balance},
-    {'code': '076', 'name': 'Polaris Bank', 'icon': Icons.account_balance},
-    {'code': '101', 'name': 'Providus Bank', 'icon': Icons.account_balance},
-    {'code': '221', 'name': 'Stanbic IBTC', 'icon': Icons.account_balance},
-    {'code': '068', 'name': 'Standard Chartered', 'icon': Icons.account_balance},
-    {'code': '232', 'name': 'Sterling Bank', 'icon': Icons.account_balance},
-    {'code': '100', 'name': 'SunTrust Bank', 'icon': Icons.account_balance},
-    {'code': '032', 'name': 'Union Bank', 'icon': Icons.account_balance},
-    {'code': '033', 'name': 'United Bank for Africa', 'icon': Icons.account_balance},
-    {'code': '215', 'name': 'Unity Bank', 'icon': Icons.account_balance},
-    {'code': '035', 'name': 'Wema Bank', 'icon': Icons.account_balance},
-    {'code': '057', 'name': 'Zenith Bank', 'icon': Icons.account_balance},
-    {'code': '999', 'name': 'Kuda MFB', 'icon': Icons.account_balance},
-    {'code': '090110', 'name': 'VFD MFB', 'icon': Icons.account_balance},
-    {'code': '090267', 'name': 'Kuda MFB', 'icon': Icons.account_balance},
-    {'code': '090405', 'name': 'Moniepoint MFB', 'icon': Icons.account_balance},
-    {'code': '100004', 'name': 'Opay', 'icon': Icons.account_balance},
-    {'code': '100033', 'name': 'PalmPay', 'icon': Icons.account_balance},
-  ];
+  // Dynamic data from backend
+  List<Map<String, dynamic>> _banksList = [];
+  List<Map<String, dynamic>> _savedRecipients = [];
+  bool _isLoadingBanks = false;
+  bool _isLoadingRecipients = false;
+  bool _isVerifyingAccount = false;
+  String? _banksError;
+  String? _recipientsError;
 
-  // Saved recipients (mock data - would come from backend)
-  final List<Map<String, dynamic>> _savedRecipients = [
-    {
-      'id': '1',
-      'name': 'John Doe',
-      'bank': 'GTBank',
-      'bankCode': '058',
-      'accountNumber': '0123456789',
-      'lastUsed': DateTime.now().subtract(const Duration(days: 1)),
-    },
-    {
-      'id': '2',
-      'name': 'Jane Smith',
-      'bank': 'Access Bank',
-      'bankCode': '044',
-      'accountNumber': '9876543210',
-      'lastUsed': DateTime.now().subtract(const Duration(days: 7)),
-    },
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _loadBanks();
+    _loadRecipients();
+  }
+
+  Future<void> _loadBanks() async {
+    setState(() {
+      _isLoadingBanks = true;
+      _banksError = null;
+    });
+
+    try {
+      final cubit = context.read<AccountVerificationCubit>();
+      final banks = await cubit.getSupportedBanks(country: 'NG');
+      if (mounted) {
+        setState(() {
+          _banksList = banks.map((bank) => {
+            'code': bank['code'],
+            'name': bank['name'],
+            'icon': Icons.account_balance,
+          }).toList();
+          _isLoadingBanks = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _banksError = e.toString();
+          _isLoadingBanks = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _loadRecipients() async {
+    final authState = context.read<AuthenticationCubit>().state;
+    if (authState is! AuthenticationSuccess) return;
+
+    setState(() {
+      _isLoadingRecipients = true;
+      _recipientsError = null;
+    });
+
+    try {
+      final recipientCubit = context.read<RecipientCubit>();
+      await recipientCubit.getRecipients(
+        accessToken: authState.profile.session.accessToken,
+      );
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _recipientsError = e.toString();
+          _isLoadingRecipients = false;
+        });
+      }
+    }
+  }
 
   void _nextStep() {
     if (_currentStep < 4) {
@@ -128,47 +148,102 @@ class _WithdrawalFlowScreenState extends State<WithdrawalFlowScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => serviceLocator<WithdrawalCubit>(),
-      child: Scaffold(
-        backgroundColor: const Color(0xFF1A1A1A),
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
-            onPressed: _previousStep,
-          ),
-          title: Text(
-            _getStepTitle(),
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 18.sp,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          centerTitle: true,
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (_) => serviceLocator<WithdrawalCubit>()),
+        BlocProvider.value(
+          value: context.read<RecipientCubit>(),
         ),
-        body: Column(
-          children: [
-            // Progress indicator
-            _buildProgressIndicator(),
+        BlocProvider.value(
+          value: context.read<AccountVerificationCubit>(),
+        ),
+      ],
+      child: MultiBlocListener(
+        listeners: [
+          BlocListener<RecipientCubit, RecipientState>(
+            listener: (context, state) {
+              if (state is RecipientLoaded) {
+                setState(() {
+                  _savedRecipients = state.recipients.map((r) => {
+                    'id': r.id,
+                    'name': r.name,
+                    'bank': r.bankName,
+                    'bankCode': r.sortCode,
+                    'accountNumber': r.accountNumber,
+                    'lastUsed': DateTime.now().subtract(const Duration(days: 1)),
+                  }).toList();
+                  _isLoadingRecipients = false;
+                });
+              } else if (state is RecipientError) {
+                setState(() {
+                  _recipientsError = state.message;
+                  _isLoadingRecipients = false;
+                });
+              }
+            },
+          ),
+          BlocListener<AccountVerificationCubit, AccountVerificationState>(
+            listener: (context, state) {
+              setState(() {
+                _isVerifyingAccount = state is AccountVerificationLoading;
+              });
 
-            // Page content
-            Expanded(
-              child: PageView(
-                controller: _pageController,
-                physics: const NeverScrollableScrollPhysics(),
-                children: [
-                  _buildRecipientSelectionStep(),
-                  _buildAmountEntryStep(),
-                  _buildReviewStep(),
-                  _buildPinAuthStep(),
-                  _buildProcessingStep(),
-                ],
+              if (state is AccountVerificationSuccess) {
+                setState(() {
+                  _accountNameController.text = state.accountName;
+                });
+              } else if (state is AccountVerificationFailure) {
+                Get.snackbar(
+                  'Verification Failed',
+                  state.userMessage,
+                  backgroundColor: Colors.red.withValues(alpha: 0.9),
+                  colorText: Colors.white,
+                  snackPosition: SnackPosition.BOTTOM,
+                );
+              }
+            },
+          ),
+        ],
+        child: Scaffold(
+          backgroundColor: const Color(0xFF1A1A1A),
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+              onPressed: _previousStep,
+            ),
+            title: Text(
+              _getStepTitle(),
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 18.sp,
+                fontWeight: FontWeight.w600,
               ),
             ),
-          ],
+            centerTitle: true,
+          ),
+          body: Column(
+            children: [
+              // Progress indicator
+              _buildProgressIndicator(),
+
+              // Page content
+              Expanded(
+                child: PageView(
+                  controller: _pageController,
+                  physics: const NeverScrollableScrollPhysics(),
+                  children: [
+                    _buildRecipientSelectionStep(),
+                    _buildAmountEntryStep(),
+                    _buildReviewStep(),
+                    _buildPinAuthStep(),
+                    _buildProcessingStep(),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -233,8 +308,29 @@ class _WithdrawalFlowScreenState extends State<WithdrawalFlowScreen> {
           _buildBalanceHeader(),
           SizedBox(height: 24.h),
 
+          // Loading state for recipients
+          if (_isLoadingRecipients && !_isNewRecipient)
+            Center(
+              child: Padding(
+                padding: EdgeInsets.all(32.h),
+                child: Column(
+                  children: [
+                    CircularProgressIndicator(color: Colors.orange),
+                    SizedBox(height: 16.h),
+                    Text(
+                      'Loading recipients...',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.7),
+                        fontSize: 14.sp,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
           // Saved recipients
-          if (_savedRecipients.isNotEmpty && !_isNewRecipient) ...[
+          if (!_isLoadingRecipients && _savedRecipients.isNotEmpty && !_isNewRecipient) ...[
             Text(
               'Recent Recipients',
               style: TextStyle(
@@ -247,6 +343,34 @@ class _WithdrawalFlowScreenState extends State<WithdrawalFlowScreen> {
             ..._savedRecipients.map((r) => _buildRecipientCard(r)),
             SizedBox(height: 24.h),
           ],
+
+          // No recipients message
+          if (!_isLoadingRecipients && _savedRecipients.isEmpty && !_isNewRecipient)
+            Container(
+              padding: EdgeInsets.all(24.w),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.05),
+                borderRadius: BorderRadius.circular(12.r),
+              ),
+              child: Column(
+                children: [
+                  Icon(
+                    Icons.person_outline,
+                    size: 48.sp,
+                    color: Colors.white.withValues(alpha: 0.3),
+                  ),
+                  SizedBox(height: 12.h),
+                  Text(
+                    'No saved recipients',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.6),
+                      fontSize: 14.sp,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          SizedBox(height: 24.h),
 
           // New recipient option
           if (!_isNewRecipient)
@@ -559,16 +683,55 @@ class _WithdrawalFlowScreenState extends State<WithdrawalFlowScreen> {
             counterText: '',
           ),
           onChanged: (value) {
-            if (value.length == 10) {
-              // TODO: Call name enquiry API
-              _accountNameController.text = 'Account Name (Verified)';
+            if (value.length == 10 && _selectedBankCode != null) {
+              // Call name enquiry API via AccountVerificationCubit
+              _verifyAccount();
+            } else if (value.length < 10) {
+              // Clear verification result if account number is shortened
+              _accountNameController.clear();
             }
           },
         ),
         SizedBox(height: 16.h),
 
         // Account name (auto-filled after verification)
-        if (_accountNameController.text.isNotEmpty) ...[
+        if (_isVerifyingAccount)
+          Container(
+            padding: EdgeInsets.all(16.w),
+            decoration: BoxDecoration(
+              color: Colors.orange.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12.r),
+              border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
+            ),
+            child: Row(
+              children: [
+                SizedBox(
+                  width: 20.w,
+                  height: 20.h,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.orange,
+                  ),
+                ),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Verifying Account...',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.6),
+                          fontSize: 12.sp,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        if (_accountNameController.text.isNotEmpty && !_isVerifyingAccount) ...[
           Container(
             padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
@@ -639,13 +802,30 @@ class _WithdrawalFlowScreenState extends State<WithdrawalFlowScreen> {
   bool _canProceedWithNewRecipient() {
     return _bankNameController.text.isNotEmpty &&
         _accountNumberController.text.length == 10 &&
-        _accountNameController.text.isNotEmpty;
+        _accountNameController.text.isNotEmpty &&
+        _selectedBankCode != null;
+  }
+
+  Future<void> _verifyAccount() async {
+    if (_selectedBankCode == null || _accountNumberController.text.length != 10) {
+      return;
+    }
+
+    final bankName = _bankNameController.text;
+    final accountNumber = _accountNumberController.text;
+
+    await context.read<AccountVerificationCubit>().verifyAccount(
+          bankCode: _selectedBankCode!,
+          accountNumber: accountNumber,
+          bankName: bankName,
+          country: 'NG',
+        );
   }
 
   void _proceedWithNewRecipient() {
-    final bank = _nigerianBanks.firstWhere(
+    final bank = _banksList.firstWhere(
       (b) => b['name'] == _bankNameController.text,
-      orElse: () => {'code': '', 'name': _bankNameController.text},
+      orElse: () => {'code': _selectedBankCode ?? '', 'name': _bankNameController.text},
     );
 
     setState(() {
@@ -687,37 +867,116 @@ class _WithdrawalFlowScreenState extends State<WithdrawalFlowScreen> {
             ),
             Padding(
               padding: EdgeInsets.all(16.w),
-              child: Text(
-                'Select Bank',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 18.sp,
-                  fontWeight: FontWeight.w600,
-                ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Select Bank',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  if (_isLoadingBanks)
+                    Padding(
+                      padding: EdgeInsets.only(left: 8.w),
+                      child: SizedBox(
+                        width: 16.w,
+                        height: 16.h,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.orange,
+                        ),
+                      ),
+                    ),
+                ],
               ),
             ),
-            Expanded(
-              child: ListView.builder(
-                controller: scrollController,
-                itemCount: _nigerianBanks.length,
-                itemBuilder: (context, index) {
-                  final bank = _nigerianBanks[index];
-                  return ListTile(
-                    leading: Icon(
-                      bank['icon'],
-                      color: Colors.white.withValues(alpha: 0.7),
-                    ),
-                    title: Text(
-                      bank['name'],
-                      style: TextStyle(color: Colors.white, fontSize: 14.sp),
-                    ),
-                    onTap: () {
-                      setState(() => _bankNameController.text = bank['name']);
-                      Navigator.pop(context);
-                    },
-                  );
-                },
+            if (_banksError != null)
+              Padding(
+                padding: EdgeInsets.all(16.w),
+                child: Container(
+                  padding: EdgeInsets.all(12.w),
+                  decoration: BoxDecoration(
+                    color: Colors.red.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8.r),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.error_outline, color: Colors.red, size: 20.sp),
+                      SizedBox(width: 8.w),
+                      Expanded(
+                        child: Text(
+                          'Failed to load banks',
+                          style: TextStyle(color: Colors.red, fontSize: 14.sp),
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          _loadBanks();
+                        },
+                        child: Text('Retry', style: TextStyle(color: Colors.orange)),
+                      ),
+                    ],
+                  ),
+                ),
               ),
+            Expanded(
+              child: _isLoadingBanks
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          CircularProgressIndicator(color: Colors.orange),
+                          SizedBox(height: 16.h),
+                          Text(
+                            'Loading banks...',
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.7),
+                              fontSize: 14.sp,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  : _banksList.isEmpty
+                      ? Center(
+                          child: Text(
+                            'No banks available',
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.5),
+                              fontSize: 14.sp,
+                            ),
+                          ),
+                        )
+                      : ListView.builder(
+                          controller: scrollController,
+                          itemCount: _banksList.length,
+                          itemBuilder: (context, index) {
+                            final bank = _banksList[index];
+                            return ListTile(
+                              leading: Icon(
+                                bank['icon'] ?? Icons.account_balance,
+                                color: Colors.white.withValues(alpha: 0.7),
+                              ),
+                              title: Text(
+                                bank['name'],
+                                style: TextStyle(color: Colors.white, fontSize: 14.sp),
+                              ),
+                              onTap: () {
+                                setState(() {
+                                  _bankNameController.text = bank['name'];
+                                  _selectedBankCode = bank['code'];
+                                  // Clear verification when bank changes
+                                  _accountNameController.clear();
+                                });
+                                Navigator.pop(context);
+                              },
+                            );
+                          },
+                        ),
             ),
           ],
         ),
@@ -1012,7 +1271,34 @@ class _WithdrawalFlowScreenState extends State<WithdrawalFlowScreen> {
   Widget _buildReviewStep() {
     final currency = widget.selectedAccount['currency'] ?? 'NGN';
     final currencySymbol = currency == 'NGN' ? '₦' : '£';
-    const fee = 10.0; // VFD transfer fee
+
+    // Calculate transfer fee dynamically based on amount and currency
+    // For NG: flat fee for small amounts, percentage for larger amounts
+    // For GBP: percentage-based fee
+    double fee;
+    if (currency == 'NGN') {
+      // Nigerian Naira fee structure
+      if (_amount <= 5000) {
+        fee = 10.0; // Minimum fee for small transfers
+      } else if (_amount <= 50000) {
+        fee = 25.0;
+      } else {
+        fee = _amount * 0.001; // 0.1% for larger transfers
+      }
+    } else {
+      // GBP and other currencies: percentage-based
+      fee = _amount * 0.005; // 0.5% fee
+    }
+
+    // Ensure fee doesn't exceed maximum cap
+    const maxFeeNGN = 100.0;
+    const maxFeeGBP = 5.0;
+    if (currency == 'NGN' && fee > maxFeeNGN) {
+      fee = maxFeeNGN;
+    } else if (currency != 'NGN' && fee > maxFeeGBP) {
+      fee = maxFeeGBP;
+    }
+
     final total = _amount + fee;
 
     return SingleChildScrollView(

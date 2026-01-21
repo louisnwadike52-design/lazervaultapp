@@ -8,6 +8,7 @@ import 'package:lazervault/src/features/authentication/cubit/authentication_cubi
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/features/funds/cubit/deposit_cubit.dart';
 import 'package:lazervault/src/features/funds/cubit/deposit_state.dart';
+import 'package:lazervault/src/features/recipients/presentation/cubit/account_verification_cubit.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
@@ -32,19 +33,13 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
   String _recognizedText = '';
   bool _isVoiceEnabled = false;
   bool _wasSelectedFromBottomSheet = false;
+  bool _isLoadingBanks = false;
 
-  final List<Map<String, dynamic>> _banks = [
-    {'name': 'Barclays', 'icon': Icons.account_balance, 'color': Colors.blue},
-    {'name': 'HSBC UK', 'icon': Icons.account_balance, 'color': Colors.red},
-    {'name': 'NatWest', 'icon': Icons.account_balance, 'color': Colors.green},
-    {'name': 'Lloyds Bank', 'icon': Icons.account_balance, 'color': Colors.orange},
-    {'name': 'Santander UK', 'icon': Icons.account_balance, 'color': Colors.purple},
-    {'name': 'Royal Bank of Scotland', 'icon': Icons.account_balance, 'color': Colors.teal},
-    {'name': 'Standard Chartered', 'icon': Icons.account_balance, 'color': Colors.indigo},
-    {'name': 'Metro Bank', 'icon': Icons.account_balance, 'color': Colors.pink},
-  ];
+  // Dynamic bank list loaded from API
+  List<Map<String, dynamic>> _banks = [];
 
   List<Map<String, dynamic>> get _displayedBanks {
+    if (_banks.isEmpty) return [];
     if (_selectedBank.isEmpty) return _banks.take(4).toList();
     if (!_wasSelectedFromBottomSheet) {
       return _banks.take(4).toList();
@@ -61,6 +56,63 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
   void initState() {
     super.initState();
     _initializeSpeech();
+    _loadBanks();
+  }
+
+  /// Load supported banks from the API
+  Future<void> _loadBanks() async {
+    setState(() => _isLoadingBanks = true);
+    try {
+      final cubit = context.read<AccountVerificationCubit>();
+      // Get country from selected card or default to NG
+      final String country = _getCountryFromCard();
+      final banks = await cubit.getSupportedBanks(country: country);
+
+      if (mounted) {
+        setState(() {
+          // Convert bank data to display format
+          _banks = banks.map((bank) => {
+            'name': bank['name'] ?? bank['bankName'] ?? 'Unknown Bank',
+            'code': bank['code'] ?? bank['bankCode'] ?? '',
+            'icon': Icons.account_balance,
+            'color': _getBankColor(bank['name'] ?? bank['bankName'] ?? ''),
+          }).toList();
+          _isLoadingBanks = false;
+        });
+      }
+    } catch (e) {
+      print('Error loading banks: $e');
+      if (mounted) {
+        setState(() => _isLoadingBanks = false);
+      }
+    }
+  }
+
+  /// Get country code from selected card or auth state
+  String _getCountryFromCard() {
+    // Try to get country from selected card
+    if (widget.selectedCard.containsKey('countryCode')) {
+      return widget.selectedCard['countryCode'] as String;
+    }
+    // Fall back to auth state
+    final authState = context.read<AuthenticationCubit>().state;
+    if (authState is AuthenticationAuthenticated) {
+      // Could add country to profile, for now default to NG
+      return 'NG';
+    } else if (authState is AuthenticationSuccess) {
+      return 'NG';
+    }
+    return 'NG';
+  }
+
+  /// Get a consistent color for a bank based on its name
+  Color _getBankColor(String bankName) {
+    final colors = [
+      Colors.blue, Colors.red, Colors.green, Colors.orange,
+      Colors.purple, Colors.teal, Colors.indigo, Colors.pink,
+    ];
+    final index = bankName.hashCode.abs() % colors.length;
+    return colors[index];
   }
 
   Future<void> _initializeSpeech() async {
