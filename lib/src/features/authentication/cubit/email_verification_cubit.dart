@@ -51,14 +51,17 @@ class EmailVerificationCubit extends Cubit<EmailVerificationState> {
         return;
       }
 
-      if (code.length < 6) {
+      // Validate 6-digit numeric code
+      if (code.length != 6 || code.contains(RegExp(r'[^\d]'))) {
         if (isClosed) return;
         emit(currentState.copyWith(
-          errorMessage: 'Verification code must be at least 6 characters',
+          errorMessage: 'Please enter a valid 6-digit code',
           isLoading: false,
         ));
         return;
       }
+
+      final finalCode = code;
 
       if (isClosed) return;
       // Clear messages before starting verification
@@ -68,7 +71,7 @@ class EmailVerificationCubit extends Cubit<EmailVerificationState> {
         successMessage: '',
       ));
 
-      final result = await _verifyEmailUseCase(code);
+      final result = await _verifyEmailUseCase(finalCode);
 
       if (isClosed) return;
       result.fold(

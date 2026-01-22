@@ -747,7 +747,8 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton<KYCRemoteDataSource>(
       () => KYCRemoteDataSource(
           client: serviceLocator<http.Client>(),
-          baseUrl: dotenv.env['KYC_API_URL'] ?? 'https://api.lazervault.com',
+          baseUrl: dotenv.env['CORE_API_URL'] ?? 'http://localhost:7878',
+          storage: serviceLocator<FlutterSecureStorage>(),
         ));
 
   // Repositories

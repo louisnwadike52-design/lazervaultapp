@@ -8,6 +8,9 @@
 import 'dart:core' as $core;
 import 'dart:convert' as $convert;
 import 'dart:typed_data' as $typed_data;
+import 'common.pbjson.dart' as $0;
+import 'google/protobuf/timestamp.pbjson.dart' as $1;
+
 @$core.Deprecated('Use documentTypeDescriptor instead')
 const DocumentType$json = const {
   '1': 'DocumentType',
@@ -16,11 +19,23 @@ const DocumentType$json = const {
     const {'1': 'DOCUMENT_TYPE_DRIVERS_LICENSE', '2': 1},
     const {'1': 'DOCUMENT_TYPE_NATIONAL_ID', '2': 2},
     const {'1': 'DOCUMENT_TYPE_RESIDENCE_PERMIT', '2': 3},
+    const {'1': 'DOCUMENT_TYPE_BVN', '2': 4},
+    const {'1': 'DOCUMENT_TYPE_NIN', '2': 5},
+    const {'1': 'DOCUMENT_TYPE_NIN_NUMBER', '2': 6},
+    const {'1': 'DOCUMENT_TYPE_SSN', '2': 7},
+    const {'1': 'DOCUMENT_TYPE_SSN_LAST4', '2': 8},
+    const {'1': 'DOCUMENT_TYPE_STATE_ID', '2': 9},
+    const {'1': 'DOCUMENT_TYPE_ITIN', '2': 10},
+    const {'1': 'DOCUMENT_TYPE_GHANA_CARD', '2': 11},
+    const {'1': 'DOCUMENT_TYPE_VOTER_CARD', '2': 12},
+    const {'1': 'DOCUMENT_TYPE_SSNIT', '2': 13},
+    const {'1': 'DOCUMENT_TYPE_KRA_PIN', '2': 14},
+    const {'1': 'DOCUMENT_TYPE_ALIEN_ID', '2': 15},
   ],
 };
 
 /// Descriptor for `DocumentType`. Decode as a `google.protobuf.EnumDescriptorProto`.
-final $typed_data.Uint8List documentTypeDescriptor = $convert.base64Decode('CgxEb2N1bWVudFR5cGUSGgoWRE9DVU1FTlRfVFlQRV9QQVNTUE9SVBAAEiEKHURPQ1VNRU5UX1RZUEVfRFJJVkVSU19MSUNFTlNFEAESHQoZRE9DVU1FTlRfVFlQRV9OQVRJT05BTF9JRBACEiIKHkRPQ1VNRU5UX1RZUEVfUkVTSURFTkNFX1BFUk1JVBAD');
+final $typed_data.Uint8List documentTypeDescriptor = $convert.base64Decode('CgxEb2N1bWVudFR5cGUSGgoWRE9DVU1FTlRfVFlQRV9QQVNTUE9SVBAAEiEKHURPQ1VNRU5UX1RZUEVfRFJJVkVSU19MSUNFTlNFEAESHQoZRE9DVU1FTlRfVFlQRV9OQVRJT05BTF9JRBACEiIKHkRPQ1VNRU5UX1RZUEVfUkVTSURFTkNFX1BFUk1JVBADEhUKEURPQ1VNRU5UX1RZUEVfQlZOEAQSFQoRRE9DVU1FTlRfVFlQRV9OSU4QBRIcChhET0NVTUVOVF9UWVBFX05JTl9OVU1CRVIQBhIVChFET0NVTUVOVF9UWVBFX1NTThAHEhsKF0RPQ1VNRU5UX1RZUEVfU1NOX0xBU1Q0EAgSGgoWRE9DVU1FTlRfVFlQRV9TVEFURV9JRBAJEhYKEkRPQ1VNRU5UX1RZUEVfSVRJThAKEhwKGERPQ1VNRU5UX1RZUEVfR0hBTkFfQ0FSRBALEhwKGERPQ1VNRU5UX1RZUEVfVk9URVJfQ0FSRBAMEhcKE0RPQ1VNRU5UX1RZUEVfU1NOSVQQDRIZChVET0NVTUVOVF9UWVBFX0tSQV9QSU4QDhIaChZET0NVTUVOVF9UWVBFX0FMSUVOX0lEEA8=');
 @$core.Deprecated('Use verificationStatusDescriptor instead')
 const VerificationStatus$json = const {
   '1': 'VerificationStatus',
@@ -504,3 +519,74 @@ const GetDevicePermissionsResponse$json = const {
 
 /// Descriptor for `GetDevicePermissionsResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List getDevicePermissionsResponseDescriptor = $convert.base64Decode('ChxHZXREZXZpY2VQZXJtaXNzaW9uc1Jlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3MSGAoHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZRI2CgtwZXJtaXNzaW9ucxgDIAMoCzIULnBiLkRldmljZVBlcm1pc3Npb25SC3Blcm1pc3Npb25z');
+const $core.Map<$core.String, $core.dynamic> UserServiceBase$json = const {
+  '1': 'UserService',
+  '2': const [
+    const {'1': 'CreateUser', '2': '.pb.CreateUserRequest', '3': '.pb.CreateUserResponse', '4': const {}},
+    const {'1': 'GetUserProfile', '2': '.pb.GetUserProfileRequest', '3': '.pb.GetUserProfileResponse', '4': const {}},
+    const {'1': 'UpdateUserProfile', '2': '.pb.UpdateUserProfileRequest', '3': '.pb.UpdateUserProfileResponse', '4': const {}},
+    const {'1': 'UpdatePassword', '2': '.pb.UpdatePasswordRequest', '3': '.pb.UpdatePasswordResponse', '4': const {}},
+    const {'1': 'UpdatePreferences', '2': '.pb.UpdatePreferencesRequest', '3': '.pb.UpdatePreferencesResponse', '4': const {}},
+    const {'1': 'UploadIDDocument', '2': '.pb.UploadIDDocumentRequest', '3': '.pb.UploadIDDocumentResponse', '4': const {}},
+    const {'1': 'GetIDDocuments', '2': '.pb.GetIDDocumentsRequest', '3': '.pb.GetIDDocumentsResponse', '4': const {}},
+    const {'1': 'VerifyIDDocument', '2': '.pb.VerifyIDDocumentRequest', '3': '.pb.VerifyIDDocumentResponse', '4': const {}},
+    const {'1': 'RegisterFace', '2': '.pb.UserRegisterFaceRequest', '3': '.pb.UserRegisterFaceResponse', '4': const {}},
+    const {'1': 'VerifyFace', '2': '.pb.UserVerifyFaceRequest', '3': '.pb.UserVerifyFaceResponse', '4': const {}},
+    const {'1': 'GetFacialData', '2': '.pb.GetFacialDataRequest', '3': '.pb.GetFacialDataResponse', '4': const {}},
+    const {'1': 'SetPasscode', '2': '.pb.SetPasscodeRequest', '3': '.pb.SetPasscodeResponse', '4': const {}},
+    const {'1': 'VerifyPasscode', '2': '.pb.VerifyPasscodeRequest', '3': '.pb.VerifyPasscodeResponse', '4': const {}},
+    const {'1': 'RemovePasscode', '2': '.pb.RemovePasscodeRequest', '3': '.pb.RemovePasscodeResponse', '4': const {}},
+    const {'1': 'CheckPasscodeExists', '2': '.pb.CheckPasscodeExistsRequest', '3': '.pb.CheckPasscodeExistsResponse', '4': const {}},
+    const {'1': 'UpdateDevicePermissions', '2': '.pb.UpdateDevicePermissionsRequest', '3': '.pb.UpdateDevicePermissionsResponse', '4': const {}},
+    const {'1': 'GetDevicePermissions', '2': '.pb.GetDevicePermissionsRequest', '3': '.pb.GetDevicePermissionsResponse', '4': const {}},
+  ],
+};
+
+@$core.Deprecated('Use userServiceDescriptor instead')
+const $core.Map<$core.String, $core.Map<$core.String, $core.dynamic>> UserServiceBase$messageJson = const {
+  '.pb.CreateUserRequest': CreateUserRequest$json,
+  '.pb.CreateUserResponse': CreateUserResponse$json,
+  '.pb.Data': $0.Data$json,
+  '.pb.User': $0.User$json,
+  '.google.protobuf.Timestamp': $1.Timestamp$json,
+  '.pb.Session': $0.Session$json,
+  '.pb.GetUserProfileRequest': GetUserProfileRequest$json,
+  '.pb.GetUserProfileResponse': GetUserProfileResponse$json,
+  '.pb.UserPreferences': UserPreferences$json,
+  '.pb.UpdateUserProfileRequest': UpdateUserProfileRequest$json,
+  '.pb.UpdateUserProfileResponse': UpdateUserProfileResponse$json,
+  '.pb.UpdatePasswordRequest': UpdatePasswordRequest$json,
+  '.pb.UpdatePasswordResponse': UpdatePasswordResponse$json,
+  '.pb.UpdatePreferencesRequest': UpdatePreferencesRequest$json,
+  '.pb.UpdatePreferencesResponse': UpdatePreferencesResponse$json,
+  '.pb.UploadIDDocumentRequest': UploadIDDocumentRequest$json,
+  '.pb.UploadIDDocumentResponse': UploadIDDocumentResponse$json,
+  '.pb.IDDocument': IDDocument$json,
+  '.pb.GetIDDocumentsRequest': GetIDDocumentsRequest$json,
+  '.pb.GetIDDocumentsResponse': GetIDDocumentsResponse$json,
+  '.pb.VerifyIDDocumentRequest': VerifyIDDocumentRequest$json,
+  '.pb.VerifyIDDocumentResponse': VerifyIDDocumentResponse$json,
+  '.pb.UserRegisterFaceRequest': UserRegisterFaceRequest$json,
+  '.pb.UserRegisterFaceResponse': UserRegisterFaceResponse$json,
+  '.pb.FacialData': FacialData$json,
+  '.pb.UserVerifyFaceRequest': UserVerifyFaceRequest$json,
+  '.pb.UserVerifyFaceResponse': UserVerifyFaceResponse$json,
+  '.pb.GetFacialDataRequest': GetFacialDataRequest$json,
+  '.pb.GetFacialDataResponse': GetFacialDataResponse$json,
+  '.pb.SetPasscodeRequest': SetPasscodeRequest$json,
+  '.pb.SetPasscodeResponse': SetPasscodeResponse$json,
+  '.pb.VerifyPasscodeRequest': VerifyPasscodeRequest$json,
+  '.pb.VerifyPasscodeResponse': VerifyPasscodeResponse$json,
+  '.pb.RemovePasscodeRequest': RemovePasscodeRequest$json,
+  '.pb.RemovePasscodeResponse': RemovePasscodeResponse$json,
+  '.pb.CheckPasscodeExistsRequest': CheckPasscodeExistsRequest$json,
+  '.pb.CheckPasscodeExistsResponse': CheckPasscodeExistsResponse$json,
+  '.pb.UpdateDevicePermissionsRequest': UpdateDevicePermissionsRequest$json,
+  '.pb.DevicePermission': DevicePermission$json,
+  '.pb.UpdateDevicePermissionsResponse': UpdateDevicePermissionsResponse$json,
+  '.pb.GetDevicePermissionsRequest': GetDevicePermissionsRequest$json,
+  '.pb.GetDevicePermissionsResponse': GetDevicePermissionsResponse$json,
+};
+
+/// Descriptor for `UserService`. Decode as a `google.protobuf.ServiceDescriptorProto`.
+final $typed_data.Uint8List userServiceDescriptor = $convert.base64Decode('CgtVc2VyU2VydmljZRKcAQoKQ3JlYXRlVXNlchIVLnBiLkNyZWF0ZVVzZXJSZXF1ZXN0GhYucGIuQ3JlYXRlVXNlclJlc3BvbnNlIl+SQUgKBXVzZXJzEhFDcmVhdGUgYSBuZXcgdXNlchosQ3JlYXRlcyBhIG5ldyB1c2VyIHdpdGggdGhlIHByb3ZpZGVkIGRldGFpbHOC0+STAg4iCS92MS91c2VyczoBKhK2AQoOR2V0VXNlclByb2ZpbGUSGS5wYi5HZXRVc2VyUHJvZmlsZVJlcXVlc3QaGi5wYi5HZXRVc2VyUHJvZmlsZVJlc3BvbnNlIm2SQVEKBXVzZXJzEhBHZXQgdXNlciBwcm9maWxlGiRHZXQgdGhlIGF1dGhlbnRpY2F0ZWQgdXNlcidzIHByb2ZpbGViEAoOCgpiZWFyZXJBdXRoEgCC0+STAhMSES92MS91c2Vycy9wcm9maWxlEsgBChFVcGRhdGVVc2VyUHJvZmlsZRIcLnBiLlVwZGF0ZVVzZXJQcm9maWxlUmVxdWVzdBodLnBiLlVwZGF0ZVVzZXJQcm9maWxlUmVzcG9uc2UidpJBVwoFdXNlcnMSE1VwZGF0ZSB1c2VyIHByb2ZpbGUaJ1VwZGF0ZSB0aGUgYXV0aGVudGljYXRlZCB1c2VyJ3MgcHJvZmlsZWIQCg4KCmJlYXJlckF1dGgSAILT5JMCFhoRL3YxL3VzZXJzL3Byb2ZpbGU6ASoSvQEKDlVwZGF0ZVBhc3N3b3JkEhkucGIuVXBkYXRlUGFzc3dvcmRSZXF1ZXN0GhoucGIuVXBkYXRlUGFzc3dvcmRSZXNwb25zZSJ0kkFUCgV1c2VycxIPVXBkYXRlIHBhc3N3b3JkGihVcGRhdGUgdGhlIGF1dGhlbnRpY2F0ZWQgdXNlcidzIHBhc3N3b3JkYhAKDgoKYmVhcmVyQXV0aBIAgtPkkwIXGhIvdjEvdXNlcnMvcGFzc3dvcmQ6ASoS1QEKEVVwZGF0ZVByZWZlcmVuY2VzEhwucGIuVXBkYXRlUHJlZmVyZW5jZXNSZXF1ZXN0Gh0ucGIuVXBkYXRlUHJlZmVyZW5jZXNSZXNwb25zZSKCAZJBXwoFdXNlcnMSF1VwZGF0ZSB1c2VyIHByZWZlcmVuY2VzGitVcGRhdGUgdGhlIGF1dGhlbnRpY2F0ZWQgdXNlcidzIHByZWZlcmVuY2VzYhAKDgoKYmVhcmVyQXV0aBIAgtPkkwIaGhUvdjEvdXNlcnMvcHJlZmVyZW5jZXM6ASoS0gEKEFVwbG9hZElERG9jdW1lbnQSGy5wYi5VcGxvYWRJRERvY3VtZW50UmVxdWVzdBocLnBiLlVwbG9hZElERG9jdW1lbnRSZXNwb25zZSKCAZJBWAoIaWRlbnRpdHkSElVwbG9hZCBJRCBkb2N1bWVudBomVXBsb2FkIGFuZCB2ZXJpZnkgYW4gaWRlbnRpdHkgZG9jdW1lbnRiEAoOCgpiZWFyZXJBdXRoEgCC0+STAiEiHC92MS91c2Vycy9pZGVudGl0eS9kb2N1bWVudHM6ASoS0AEKDkdldElERG9jdW1lbnRzEhkucGIuR2V0SUREb2N1bWVudHNSZXF1ZXN0GhoucGIuR2V0SUREb2N1bWVudHNSZXNwb25zZSKGAZJBXwoIaWRlbnRpdHkSEEdldCBJRCBkb2N1bWVudHMaL0dldCBhbGwgSUQgZG9jdW1lbnRzIGZvciB0aGUgYXV0aGVudGljYXRlZCB1c2VyYhAKDgoKYmVhcmVyQXV0aBIAgtPkkwIeEhwvdjEvdXNlcnMvaWRlbnRpdHkvZG9jdW1lbnRzEvABChBWZXJpZnlJRERvY3VtZW50EhsucGIuVmVyaWZ5SUREb2N1bWVudFJlcXVlc3QaHC5wYi5WZXJpZnlJRERvY3VtZW50UmVzcG9uc2UioAGSQWEKCGlkZW50aXR5EhJWZXJpZnkgSUQgZG9jdW1lbnQaL01hbnVhbGx5IHRyaWdnZXIgdmVyaWZpY2F0aW9uIG9mIGFuIElEIGRvY3VtZW50YhAKDgoKYmVhcmVyQXV0aBIAgtPkkwI2IjEvdjEvdXNlcnMvaWRlbnRpdHkvZG9jdW1lbnRzL3tkb2N1bWVudF9pZH0vdmVyaWZ5OgEqErsBCgxSZWdpc3RlckZhY2USGy5wYi5Vc2VyUmVnaXN0ZXJGYWNlUmVxdWVzdBocLnBiLlVzZXJSZWdpc3RlckZhY2VSZXNwb25zZSJwkkFLCghpZGVudGl0eRINUmVnaXN0ZXIgZmFjZRoeUmVnaXN0ZXIgZmFjaWFsIGJpb21ldHJpYyBkYXRhYhAKDgoKYmVhcmVyQXV0aBIAgtPkkwIcIhcvdjEvdXNlcnMvaWRlbnRpdHkvZmFjZToBKhLKAQoKVmVyaWZ5RmFjZRIZLnBiLlVzZXJWZXJpZnlGYWNlUmVxdWVzdBoaLnBiLlVzZXJWZXJpZnlGYWNlUmVzcG9uc2UihAGSQVgKCGlkZW50aXR5EgtWZXJpZnkgZmFjZRotVmVyaWZ5IGZhY2UgYWdhaW5zdCByZWdpc3RlcmVkIGJpb21ldHJpYyBkYXRhYhAKDgoKYmVhcmVyQXV0aBIAgtPkkwIjIh4vdjEvdXNlcnMvaWRlbnRpdHkvZmFjZS92ZXJpZnk6ASoSuwEKDUdldEZhY2lhbERhdGESGC5wYi5HZXRGYWNpYWxEYXRhUmVxdWVzdBoZLnBiLkdldEZhY2lhbERhdGFSZXNwb25zZSJ1kkFTCghpZGVudGl0eRIPR2V0IGZhY2lhbCBkYXRhGiRHZXQgcmVnaXN0ZXJlZCBmYWNpYWwgYmlvbWV0cmljIGRhdGFiEAoOCgpiZWFyZXJBdXRoEgCC0+STAhkSFy92MS91c2Vycy9pZGVudGl0eS9mYWNlEqgBCgtTZXRQYXNzY29kZRIWLnBiLlNldFBhc3Njb2RlUmVxdWVzdBoXLnBiLlNldFBhc3Njb2RlUmVzcG9uc2UiaJJBSAoIc2VjdXJpdHkSDFNldCBwYXNzY29kZRocU2V0IG9yIHVwZGF0ZSBsb2dpbiBwYXNzY29kZWIQCg4KCmJlYXJlckF1dGgSAILT5JMCFyISL3YxL3VzZXJzL3Bhc3Njb2RlOgEqErQBCg5WZXJpZnlQYXNzY29kZRIZLnBiLlZlcmlmeVBhc3Njb2RlUmVxdWVzdBoaLnBiLlZlcmlmeVBhc3Njb2RlUmVzcG9uc2Uia5JBRAoIc2VjdXJpdHkSD1ZlcmlmeSBwYXNzY29kZRoVVmVyaWZ5IGxvZ2luIHBhc3Njb2RlYhAKDgoKYmVhcmVyQXV0aBIAgtPkkwIeIhkvdjEvdXNlcnMvcGFzc2NvZGUvdmVyaWZ5OgEqErQBCg5SZW1vdmVQYXNzY29kZRIZLnBiLlJlbW92ZVBhc3Njb2RlUmVxdWVzdBoaLnBiLlJlbW92ZVBhc3Njb2RlUmVzcG9uc2Uia5JBRAoIc2VjdXJpdHkSD1JlbW92ZSBwYXNzY29kZRoVUmVtb3ZlIGxvZ2luIHBhc3Njb2RlYhAKDgoKYmVhcmVyQXV0aBIAgtPkkwIeIhkvdjEvdXNlcnMvcGFzc2NvZGUvcmVtb3ZlOgEqEtEBChNDaGVja1Bhc3Njb2RlRXhpc3RzEh4ucGIuQ2hlY2tQYXNzY29kZUV4aXN0c1JlcXVlc3QaHy5wYi5DaGVja1Bhc3Njb2RlRXhpc3RzUmVzcG9uc2UieZJBVQoIc2VjdXJpdHkSFUNoZWNrIHBhc3Njb2RlIGV4aXN0cxogQ2hlY2sgaWYgdXNlciBoYXMgYSBwYXNzY29kZSBzZXRiEAoOCgpiZWFyZXJBdXRoEgCC0+STAhsSGS92MS91c2Vycy9wYXNzY29kZS9leGlzdHMS6AEKF1VwZGF0ZURldmljZVBlcm1pc3Npb25zEiIucGIuVXBkYXRlRGV2aWNlUGVybWlzc2lvbnNSZXF1ZXN0GiMucGIuVXBkYXRlRGV2aWNlUGVybWlzc2lvbnNSZXNwb25zZSKDAZJBYAoLcGVybWlzc2lvbnMSGVVwZGF0ZSBkZXZpY2UgcGVybWlzc2lvbnMaJFVwZGF0ZSBkZXZpY2UgcGVybWlzc2lvbiBwcmVmZXJlbmNlc2IQCg4KCmJlYXJlckF1dGgSAILT5JMCGhoVL3YxL3VzZXJzL3Blcm1pc3Npb25zOgEqEtABChRHZXREZXZpY2VQZXJtaXNzaW9ucxIfLnBiLkdldERldmljZVBlcm1pc3Npb25zUmVxdWVzdBogLnBiLkdldERldmljZVBlcm1pc3Npb25zUmVzcG9uc2UidZJBVQoLcGVybWlzc2lvbnMSFkdldCBkZXZpY2UgcGVybWlzc2lvbnMaHEdldCBkZXZpY2UgcGVybWlzc2lvbiBzdGF0dXNiEAoOCgpiZWFyZXJBdXRoEgCC0+STAhcSFS92MS91c2Vycy9wZXJtaXNzaW9ucw==');

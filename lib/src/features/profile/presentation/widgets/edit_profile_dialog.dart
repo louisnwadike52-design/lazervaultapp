@@ -210,8 +210,7 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
                 controller: _phoneController,
                 keyboardType: TextInputType.phone,
                 decoration: InputDecoration(
-                  labelText: 'Phone Number',
-                  hintText: 'Optional',
+                  hintText: 'Phone Number (Optional)',
                   prefixIcon: const Icon(Icons.phone_outlined),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12.r),

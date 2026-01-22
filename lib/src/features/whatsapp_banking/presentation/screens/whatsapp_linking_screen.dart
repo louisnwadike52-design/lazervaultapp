@@ -306,8 +306,7 @@ class _WhatsAppLinkingScreenState extends State<WhatsAppLinkingScreen> {
                     keyboardType: TextInputType.phone,
                     style: TextStyle(fontSize: 16.sp),
                     decoration: InputDecoration(
-                      labelText: 'Phone Number',
-                      hintText: '+234 XXX XXX XXXX',
+                      hintText: 'Phone Number',
                       prefixIcon: Icon(
                         Icons.phone,
                         color: Color.fromARGB(255, 78, 3, 208),

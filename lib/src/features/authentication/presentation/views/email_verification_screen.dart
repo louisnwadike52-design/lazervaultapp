@@ -305,7 +305,7 @@ class _EmailOtpVerificationViewState extends State<_EmailOtpVerificationView> {
                       ),
                       SizedBox(height: 40.h),
 
-                      // OTP Input
+                      // 6-Digit OTP Input
                       VerificationCodeInput(
                         onCompleted: (code) {
                           context.read<EmailVerificationCubit>().updateVerificationCode(code);
@@ -464,7 +464,7 @@ class _EmailOtpVerificationViewState extends State<_EmailOtpVerificationView> {
                                   ),
                                   SizedBox(height: 4.h),
                                   Text(
-                                    'Check your inbox and spam folder for the verification code. The code expires in 24 hours.',
+                                    'Check your inbox and spam folder for the 6-digit verification code. The code expires in 15 minutes.',
                                     style: GoogleFonts.inter(
                                       fontSize: 12.sp,
                                       color: const Color(0xFF6B7280),

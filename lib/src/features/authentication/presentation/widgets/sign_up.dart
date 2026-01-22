@@ -800,8 +800,7 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
               LockedCountryPhoneInput(
                 countryCode: countryCode,
                 initialValue: initialPhoneNumber,
-                labelText: 'Phone Number (Optional)',
-                hintText: 'Enter phone number',
+                hintText: 'Phone Number (Optional)',
                 isRequired: false,
                 onChanged: (value) {
                   context.read<AuthenticationCubit>().signUpPhoneNumberChanged(value);
@@ -822,8 +821,7 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
               LockedCountryPhoneInput(
                 countryCode: countryCode,
                 initialValue: initialPhoneNumber,
-                labelText: 'Phone Number',
-                hintText: 'Enter phone number',
+                hintText: 'Phone Number',
                 onChanged: (value) {
                   context.read<AuthenticationCubit>().signUpPhoneNumberChanged(value);
                 },
@@ -926,25 +924,31 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
 
             // Identity Type Selector - Dynamic based on country
             if (availableIdTypes.length > 1)
-              Wrap(
-                spacing: 8.w,
-                runSpacing: 8.h,
+              Row(
                 children: availableIdTypes.map((idType) {
                   final isSelected = identityType == idType;
-                  return GestureDetector(
-                    onTap: () => context.read<AuthenticationCubit>().signUpIdentityTypeChanged(idType),
-                    child: Container(
-                      padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 16.w),
-                      decoration: BoxDecoration(
-                        color: isSelected ? Colors.blue : Colors.grey.shade200,
-                        borderRadius: BorderRadius.circular(8.r),
+                  return Expanded(
+                    child: Padding(
+                      padding: EdgeInsets.only(
+                        right: idType != availableIdTypes.last ? 12.w : 0,
                       ),
-                      child: Text(
-                        idType.displayName,
-                        style: TextStyle(
-                          fontSize: 14.sp,
-                          fontWeight: FontWeight.w600,
-                          color: isSelected ? Colors.white : Colors.black54,
+                      child: GestureDetector(
+                        onTap: () => context.read<AuthenticationCubit>().signUpIdentityTypeChanged(idType),
+                        child: Container(
+                          padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 16.w),
+                          decoration: BoxDecoration(
+                            color: isSelected ? Colors.blue : Colors.grey.shade200,
+                            borderRadius: BorderRadius.circular(8.r),
+                          ),
+                          child: Text(
+                            idType.displayName,
+                            style: TextStyle(
+                              fontSize: 14.sp,
+                              fontWeight: FontWeight.w600,
+                              color: isSelected ? Colors.white : Colors.black54,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
                         ),
                       ),
                     ),
@@ -983,14 +987,14 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
               ),
               child: Row(
                 children: [
-                  Icon(Icons.info_outline, color: Colors.blue, size: 20.sp),
+                  Icon(Icons.info_outline, color: Colors.blue.shade400, size: 20.sp),
                   SizedBox(width: 8.w),
                   Expanded(
                     child: Text(
                       identityType.description,
                       style: TextStyle(
                         fontSize: 12.sp,
-                        color: Colors.blue.shade700,
+                        color: Colors.blue.shade800,
                       ),
                     ),
                   ),
@@ -1136,7 +1140,7 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
                   'You can complete verification anytime from Settings',
                   style: TextStyle(
                     fontSize: 11.sp,
-                    color: Colors.grey.shade600,
+                    color: const Color.fromARGB(255, 246, 239, 239)
                   ),
                 ),
               ),
@@ -1168,7 +1172,7 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
                           ),
                         )
                       : Text(
-                          "Complete Sign Up",
+                          "Continue",
                           style: TextStyle(
                             fontSize: 16.sp,
                             fontWeight: FontWeight.w600,

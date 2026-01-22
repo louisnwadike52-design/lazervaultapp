@@ -63,73 +63,104 @@ class _LockedCountryPhoneInputState extends State<LockedCountryPhoneInput> {
           Text(
             widget.labelText!,
             style: TextStyle(
-              fontSize: 14.sp,
+              fontSize: 16.sp,
               fontWeight: FontWeight.w500,
-              color: Colors.grey.shade700,
+              color: const Color(0xFF262626),
             ),
           ),
           SizedBox(height: 8.h),
         ],
-        Container(
-          decoration: BoxDecoration(
-            color: widget.enabled ? Colors.white : Colors.grey.shade100,
-            borderRadius: BorderRadius.circular(24.r),
-            border: Border.all(
-              color: _errorText != null
-                  ? Colors.red.shade300
-                  : Colors.grey.shade300,
-            ),
-          ),
-          child: Row(
-            children: [
-              // Locked country code section
-              _buildLockedCountrySection(),
-
-              // Phone number input
-              Expanded(
-                child: TextField(
-                  controller: _controller,
-                  enabled: widget.enabled,
-                  keyboardType: TextInputType.phone,
-                  inputFormatters: [
-                    FilteringTextInputFormatter.digitsOnly,
-                    LengthLimitingTextInputFormatter(15),
-                  ],
-                  decoration: InputDecoration(
-                    hintText: widget.hintText ?? 'Phone number',
-                    hintStyle: TextStyle(
-                      fontSize: 16.sp,
-                      color: Colors.grey.shade400,
-                    ),
-                    border: InputBorder.none,
-                    contentPadding: EdgeInsets.symmetric(
-                      horizontal: 16.w,
-                      vertical: 16.h,
-                    ),
-                  ),
-                  style: TextStyle(
-                    fontSize: 16.sp,
-                    color: widget.enabled ? Colors.black : Colors.grey.shade600,
-                  ),
-                  onChanged: _onChanged,
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            // Country code section (left side - matches BuildFormField leading)
+            Container(
+              height: 48.h,
+              padding: EdgeInsets.symmetric(horizontal: 12.w),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF0F0F0),
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(24.r),
+                  bottomLeft: Radius.circular(24.r),
                 ),
               ),
-
-              // Clear button
-              if (_controller.text.isNotEmpty && widget.enabled)
-                Padding(
-                  padding: EdgeInsets.only(right: 12.w),
-                  child: GestureDetector(
-                    onTap: _clearInput,
-                    child: Icon(
-                      Icons.clear,
-                      size: 20.sp,
-                      color: Colors.grey.shade400,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    _countryConfig.flag,
+                    style: TextStyle(fontSize: 18.sp),
+                  ),
+                  SizedBox(width: 6.w),
+                  Text(
+                    _countryConfig.dialingCode,
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey.shade700,
                     ),
                   ),
+                ],
+              ),
+            ),
+            // Phone number input (right side - matches BuildFormField)
+            Expanded(
+              child: Container(
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF0F0F0),
+                  borderRadius: BorderRadius.only(
+                    topRight: Radius.circular(24.r),
+                    bottomRight: Radius.circular(24.r),
+                  ),
                 ),
-            ],
-          ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _controller,
+                        enabled: widget.enabled,
+                        keyboardType: TextInputType.phone,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                          LengthLimitingTextInputFormatter(15),
+                        ],
+                        decoration: InputDecoration(
+                          hintText: widget.hintText ?? 'Phone number',
+                          hintStyle: TextStyle(
+                            fontSize: 16.sp,
+                            color: Colors.grey.shade600,
+                          ),
+                          border: InputBorder.none,
+                          contentPadding: EdgeInsets.symmetric(
+                            horizontal: 12.w,
+                            vertical: 12.h,
+                          ),
+                        ),
+                        style: TextStyle(
+                          fontSize: 16.sp,
+                          color: widget.enabled ? Colors.black : Colors.grey.shade600,
+                        ),
+                        onChanged: _onChanged,
+                      ),
+                    ),
+                    // Clear button
+                    if (_controller.text.isNotEmpty && widget.enabled)
+                      Padding(
+                        padding: EdgeInsets.only(right: 12.w),
+                        child: GestureDetector(
+                          onTap: _clearInput,
+                          child: Icon(
+                            Icons.clear,
+                            size: 20.sp,
+                            color: Colors.grey.shade400,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
         if (_errorText != null) ...[
           SizedBox(height: 4.h),
@@ -145,53 +176,6 @@ class _LockedCountryPhoneInputState extends State<LockedCountryPhoneInput> {
           ),
         ],
       ],
-    );
-  }
-
-  /// Build the locked country section
-  Widget _buildLockedCountrySection() {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade100,
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(24.r),
-          bottomLeft: Radius.circular(24.r),
-        ),
-        border: Border(
-          right: BorderSide(
-            color: Colors.grey.shade300,
-            width: 1,
-          ),
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Flag
-          Text(
-            _countryConfig.flag,
-            style: TextStyle(fontSize: 20.sp),
-          ),
-          SizedBox(width: 8.w),
-          // Dialing code
-          Text(
-            _countryConfig.dialingCode,
-            style: TextStyle(
-              fontSize: 14.sp,
-              fontWeight: FontWeight.w600,
-              color: Colors.grey.shade700,
-            ),
-          ),
-          // Lock icon to indicate non-editable
-          SizedBox(width: 4.w),
-          Icon(
-            Icons.lock,
-            size: 10.sp,
-            color: Colors.grey.shade500,
-          ),
-        ],
-      ),
     );
   }
 
@@ -306,48 +290,46 @@ class _CompactLockedCountryPhoneInputState
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 50.h,
-      decoration: BoxDecoration(
-        color: widget.enabled ? Colors.white : Colors.grey.shade100,
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(
-          color: Colors.grey.shade300,
-        ),
-      ),
-      child: Row(
-        children: [
-          // Country indicator
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 12.w),
-            decoration: BoxDecoration(
-              color: Colors.grey.shade100,
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(12.r),
-                bottomLeft: Radius.circular(12.r),
-              ),
-              border: Border(
-                right: BorderSide(color: Colors.grey.shade300),
-              ),
-            ),
-            child: Row(
-              children: [
-                Text(_countryConfig.flag, style: TextStyle(fontSize: 18.sp)),
-                SizedBox(width: 6.w),
-                Text(
-                  _countryConfig.dialingCode,
-                  style: TextStyle(
-                    fontSize: 13.sp,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.grey.shade700,
-                  ),
-                ),
-              ],
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        // Country indicator (matches BuildFormField leading)
+        Container(
+          height: 48.h,
+          padding: EdgeInsets.symmetric(horizontal: 12.w),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF0F0F0),
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(12.r),
+              bottomLeft: Radius.circular(12.r),
             ),
           ),
-
-          // Input
-          Expanded(
+          child: Row(
+            children: [
+              Text(_countryConfig.flag, style: TextStyle(fontSize: 18.sp)),
+              SizedBox(width: 6.w),
+              Text(
+                _countryConfig.dialingCode,
+                style: TextStyle(
+                  fontSize: 13.sp,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey.shade700,
+                ),
+              ),
+            ],
+          ),
+        ),
+        // Input (matches BuildFormField)
+        Expanded(
+          child: Container(
+            height: 48.h,
+            decoration: BoxDecoration(
+              color: const Color(0xFFF0F0F0),
+              borderRadius: BorderRadius.only(
+                topRight: Radius.circular(12.r),
+                bottomRight: Radius.circular(12.r),
+              ),
+            ),
             child: TextField(
               controller: _controller,
               enabled: widget.enabled,
@@ -357,7 +339,7 @@ class _CompactLockedCountryPhoneInputState
               ],
               decoration: InputDecoration(
                 hintText: widget.hintText ?? 'Phone number',
-                hintStyle: TextStyle(fontSize: 14.sp),
+                hintStyle: TextStyle(fontSize: 14.sp, color: Colors.grey.shade600),
                 border: InputBorder.none,
                 contentPadding: EdgeInsets.symmetric(horizontal: 12.w),
               ),
@@ -368,8 +350,8 @@ class _CompactLockedCountryPhoneInputState
               },
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
