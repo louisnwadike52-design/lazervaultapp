@@ -979,29 +979,30 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
             SizedBox(height: 8.h),
 
             // Info text about the selected identity type
-            Container(
-              padding: EdgeInsets.all(12.w),
-              decoration: BoxDecoration(
-                color: Colors.blue.shade50,
-                borderRadius: BorderRadius.circular(8.r),
-              ),
-              child: Row(
-                children: [
-                  Icon(Icons.info_outline, color: Colors.blue.shade400, size: 20.sp),
-                  SizedBox(width: 8.w),
-                  Expanded(
-                    child: Text(
-                      identityType.description,
-                      style: TextStyle(
-                        fontSize: 12.sp,
-                        color: Colors.blue.shade800,
+            if (identityType.description.isNotEmpty)
+              Container(
+                padding: EdgeInsets.all(12.w),
+                decoration: BoxDecoration(
+                  color: Colors.blue.shade50,
+                  borderRadius: BorderRadius.circular(8.r),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.info_outline, color: Colors.blue.shade400, size: 20.sp),
+                    SizedBox(width: 8.w),
+                    Expanded(
+                      child: Text(
+                        identityType.description,
+                        style: TextStyle(
+                          fontSize: 12.sp,
+                          color: Colors.blue.shade800,
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            SizedBox(height: 20.h),
+            if (identityType.description.isNotEmpty) SizedBox(height: 20.h),
 
             // Verification Status
             if (bvnVerified)
@@ -1140,7 +1141,7 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
                   'You can complete verification anytime from Settings',
                   style: TextStyle(
                     fontSize: 11.sp,
-                    color: const Color.fromARGB(255, 246, 239, 239)
+                    color: Colors.grey.shade600,
                   ),
                 ),
               ),

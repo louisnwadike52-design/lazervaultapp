@@ -210,14 +210,23 @@ class _DashboardCardSummaryViewState extends State<_DashboardCardSummaryView> {
                   // }
                 },
                 builder: (context, state) {
-                  // Get country code from profile for empty state handling
-                  // Default to 'NG' (Nigeria) since signup is now Nigeria-only
-                  String countryCode = 'NG';
+                  // Get country code from user profile for empty state handling
+                  // Priority: ProfileCubit preferences > User profile country > Default 'NG'
+                  String countryCode = 'NG'; // Default fallback
+
+                  // First try to get from ProfileCubit preferences
                   final profileState = context.read<ProfileCubit>().state;
-                  if (profileState is ProfileLoaded) {
-                    countryCode = profileState.preferences.activeCountry.isNotEmpty
-                        ? profileState.preferences.activeCountry
-                        : 'NG'; // Default to Nigeria
+                  if (profileState is ProfileLoaded &&
+                      profileState.preferences.activeCountry.isNotEmpty) {
+                    countryCode = profileState.preferences.activeCountry;
+                  } else {
+                    // Fallback to user's profile country from AuthenticationCubit
+                    final authState = context.read<AuthenticationCubit>().state;
+                    if (authState is AuthenticationSuccess &&
+                        authState.profile.user.country != null &&
+                        authState.profile.user.country!.isNotEmpty) {
+                      countryCode = authState.profile.user.country!;
+                    }
                   }
 
                   if (state is AccountCardsSummaryLoading ||

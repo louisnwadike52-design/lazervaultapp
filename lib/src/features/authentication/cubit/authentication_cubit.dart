@@ -8,6 +8,7 @@ import 'package:lazervault/core/services/currency_sync_service.dart';
 import 'package:lazervault/core/services/signup_state_service.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
+import 'package:lazervault/core/config/country_config.dart';
 import '../domain/usecases/login_usecase.dart';
 import '../domain/usecases/login_with_passcode_usecase.dart';
 import '../domain/usecases/register_passcode_usecase.dart';
@@ -662,7 +663,11 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     final draft = await _signupStateService?.loadDraft();
 
     if (draft != null && draft.hasData && !draft.isExpired) {
-      // Restore from draft
+      // Restore from draft, deriving country fields from locale
+      final countryCode = draft.countryCode ?? 'NG';
+      final countryName = draft.countryName ?? 'Nigeria';
+      final currencyCode = draft.currencyCode ?? 'NGN';
+
       emit(SignUpInProgress(
         email: draft.email ?? '',
         firstName: draft.firstName ?? '',
@@ -673,6 +678,9 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
         phoneNumber: draft.phone ?? '',
         currentPage: draft.currentPage,
         primaryContactType: _stringToPrimaryContactType(draft.primaryContactType),
+        countryCode: countryCode,
+        countryName: countryName,
+        currencyCode: currencyCode,
       ));
     } else {
       emit(const SignUpInProgress());
@@ -709,6 +717,11 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
 
     final currentState = state;
     if (currentState is SignUpInProgress) {
+      // Build locale from country code (e.g., 'en-NG')
+      final locale = currentState.countryCode.isNotEmpty
+          ? 'en-${currentState.countryCode.toUpperCase()}'
+          : null;
+
       final draft = SignupDraft(
         email: currentState.email.isNotEmpty ? currentState.email : null,
         phone: currentState.phoneNumber.isNotEmpty ? currentState.phoneNumber : null,
@@ -722,6 +735,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
         currentStep: currentState.currentPage == 0
             ? SignupDraft.stepFormPage0
             : SignupDraft.stepFormPage1,
+        locale: locale,
       );
       await _signupStateService!.saveDraft(draft);
     }
@@ -825,7 +839,36 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
 
   // ========== COUNTRY & IDENTITY VERIFICATION METHODS ==========
 
+  /// Change selected locale (e.g., 'en-NG', 'en-GH', 'en-KE')
+  /// Derives countryCode, countryName, and currencyCode from the locale string
+  void signUpLocaleChanged(String? locale) {
+    if (state is SignUpInProgress) {
+      final currentState = state as SignUpInProgress;
+
+      // Extract country code from locale
+      final countryCode = CountryConfigs.getCountryCodeFromLocale(locale) ?? 'NG';
+      final countryConfig = CountryConfigs.getByCode(countryCode);
+
+      final countryName = countryConfig?.name ?? 'Nigeria';
+      final currencyCode = countryConfig?.currency ?? 'NGN';
+
+      // Also update identity type to match country
+      final identityType = _getDefaultIdentityTypeForCountry(countryCode);
+
+      emit(currentState.copyWith(
+        countryCode: countryCode,
+        countryName: countryName,
+        currencyCode: currencyCode,
+        identityType: identityType,
+        clearErrorMessage: true,
+        isLoading: false,
+      ));
+      _scheduleDraftSave();
+    }
+  }
+
   /// Change selected country (Nigeria only for now)
+  /// @deprecated Use signUpLocaleChanged instead
   void signUpCountryChanged(String countryCode, String countryName, String currencyCode) {
     if (state is SignUpInProgress) {
       final currentState = state as SignUpInProgress;
@@ -1088,6 +1131,9 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
               'Identity Verified!',
               'Your ${currentState.identityType.displayName} has been verified successfully.',
             );
+
+            // Resend verification email so the code is fresh
+            _resendVerificationEmailAfterIdVerification();
           } else {
             _showErrorSnackbar('Verification Failed', 'Identity could not be verified');
             emit(currentState.copyWith(
@@ -1110,6 +1156,33 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     }
   }
 
+  /// Resend verification email after ID verification so code is fresh
+  Future<void> _resendVerificationEmailAfterIdVerification() async {
+    // Get email from current state
+    if (state is! SignUpInProgress) return;
+    final currentState = state as SignUpInProgress;
+    final email = currentState.email;
+
+    if (email.isEmpty) return;
+
+    try {
+      final result = await _resendVerificationUseCase(email: email);
+
+      if (isClosed) return;
+      result.fold(
+        (failure) {
+          print('Failed to resend verification email: ${failure.message}');
+          // Don't block flow if resend fails, user can use "Resend Code" button
+        },
+        (cooldownSeconds) {
+          print('Verification email resent successfully after ID verification');
+        },
+      );
+    } catch (e) {
+      print('Error resending verification email: $e');
+    }
+  }
+
   /// Skip identity verification for progressive KYC onboarding
   /// Allows users to complete signup as Tier 1 and verify later
   void skipIdentityVerification() {
@@ -1117,13 +1190,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
 
     final currentState = state as SignUpInProgress;
 
-    // Show info that user will have limited access
-    _showInfoSnackbar(
-      'Account Created with Tier 1',
-      'You can verify your identity anytime from Settings to unlock higher limits.',
-    );
-
-    // Mark as skipped and proceed with signup
+    // Mark as skipped
     if (isClosed) return;
     emit(currentState.copyWith(
       kycSkipped: true,
@@ -1131,8 +1198,17 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       clearErrorMessage: true,
     ));
 
-    // Proceed directly to signup submission
-    signUpSubmitted();
+    // Show info and resend email with fresh code
+    _showInfoSnackbar(
+      'Account Created with Tier 1',
+      'You can verify your identity anytime from Settings to unlock higher limits.',
+    );
+
+    // Resend verification email so code is fresh, then proceed
+    _resendVerificationEmailAfterIdVerification().then((_) {
+      if (isClosed) return;
+      emit(UserCreated());
+    });
   }
 
   /// Unified method to handle email or phone number input
@@ -1539,7 +1615,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     if (state is SignUpInProgress) {
       final currentState = state as SignUpInProgress;
 
-      // If account was already created when navigating to page 3, skip to completion
+      // If account was already created during ID verification, just proceed
       if (currentState.accountCreated) {
         // Account already exists, tokens are saved, just emit UserCreated
         emit(UserCreated());
@@ -1630,79 +1706,22 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
         }
       }
 
-      // BVN/NIN verification is required for Nigerian users UNLESS user explicitly skips (progressive KYC)
-      // With progressive KYC, users can skip and get Tier 1 limits
-      if (currentState.countryCode == 'NG' && !currentState.bvnVerified && !currentState.kycSkipped) {
-        final errorMsg = 'Please verify your BVN/NIN before completing signup, or skip to continue with Tier 1 limits';
-        _showInfoSnackbar('Verification Optional', errorMsg);
+      // Mark KYC as skipped if proceeding without verification
+      if (!currentState.bvnVerified && !currentState.kycSkipped) {
         if (isClosed) return;
-        // Don't return - allow user to see the error on the page
-        // The actual blocking happens on page 3 navigation
-        emit(currentState.copyWith(errorMessage: errorMsg, isLoading: false));
-        // If we're here from skipIdentityVerification, proceed anyway
-        if (!currentState.kycSkipped) {
-          return;
-        }
+        emit(currentState.copyWith(kycSkipped: true));
       }
 
       if (currentState.isLoading) return;
       if (isClosed) return;
       emit(currentState.copyWith(isLoading: true, clearErrorMessage: true));
 
-      // Determine primary contact for backend
-      final primaryContact = currentState.primaryContactType == PrimaryContactType.phone
-          ? SignupPrimaryContact.phone
-          : SignupPrimaryContact.email;
+      // Resend verification email so code is fresh
+      await _resendVerificationEmailAfterIdVerification();
 
-      // Call the sign up use case with country and BVN info
-      final result = await _signUpUseCase(
-        firstName: currentState.firstName,
-        lastName: currentState.lastName,
-        email: currentState.email,
-        password: currentState.password,
-        primaryContact: primaryContact,
-        phoneNumber: currentState.phoneNumber.isEmpty ? null : currentState.phoneNumber,
-        username: currentState.username.isEmpty ? null : currentState.username,
-        referralCode: currentState.referralCode.isEmpty ? null : currentState.referralCode,
-        countryCode: currentState.countryCode,
-        currencyCode: currentState.currencyCode,
-        bvn: currentState.bvn.isEmpty ? null : currentState.bvn,
-        nin: currentState.nin.isEmpty ? null : currentState.nin,
-      );
-
+      // Emit UserCreated to proceed to email verification
       if (isClosed) return;
-      result.fold(
-        (failure) {
-          print('Error signing up: ${failure.message}');
-          _showErrorSnackbar('Sign Up Failed', failure.message);
-          emit(currentState.copyWith(
-            isLoading: false,
-            errorMessage: failure.message,
-          ));
-        },
-        (profile) async {
-          await _saveSession(profile);
-
-          // Note: _saveSession now syncs country and currency to LocaleManager
-          // from the user profile returned by the backend
-
-          if (!profile.user.isEmailVerified) {
-            _showInfoSnackbar(
-              'Account Created!',
-              'Please check your email to verify your account.',
-            );
-          } else {
-            _showSuccessSnackbar(
-              'Welcome!',
-              'Your account has been created successfully.',
-            );
-          }
-
-          // Emit UserCreated state instead of AuthenticationSuccess
-          // to prevent conflict with login flow
-          emit(UserCreated());
-        },
-      );
+      emit(UserCreated());
     } else {
       print('Cannot submit sign up from current state: $state');
       if (isClosed) return;
@@ -1829,6 +1848,26 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     }
 
     return null; // Date of birth is valid
+  }
+
+  /// Get the default identity type for a country
+  IdentityType _getDefaultIdentityTypeForCountry(String countryCode) {
+    switch (countryCode) {
+      case 'NG':
+        return IdentityType.bvn;
+      case 'GB':
+        return IdentityType.passport;
+      case 'US':
+        return IdentityType.ssn;
+      case 'GH':
+        return IdentityType.ghanaCard;
+      case 'KE':
+        return IdentityType.kenyaNationalId;
+      case 'ZA':
+        return IdentityType.saId;
+      default:
+        return IdentityType.bvn;
+    }
   }
 
   void _showSuccessSnackbar(String title, String message) {

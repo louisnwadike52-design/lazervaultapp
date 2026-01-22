@@ -66,6 +66,32 @@ class _SelectCountryState extends State<SelectCountry> {
       ),
       child: Column(
         children: [
+          // Done button - always visible at the top
+          Padding(
+            padding: EdgeInsets.only(top: 16.0.h, left: 16.0.w, right: 16.0.w),
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.black12,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                shape: const StadiumBorder(),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 10.0,
+                  horizontal: 32.0,
+                ),
+                minimumSize: Size(double.infinity, 36.h),
+              ),
+              onPressed: () {
+                _updateSelectedCountries();
+                Navigator.pop(context);
+              },
+              child: Text(
+                "Done",
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16.sp),
+              ),
+            ),
+          ),
+          // Search field
           Padding(
             padding: EdgeInsets.all(16.0.w),
             child: Row(
@@ -100,6 +126,7 @@ class _SelectCountryState extends State<SelectCountry> {
               ],
             ),
           ),
+          // Scrollable country list
           Expanded(
             child: ListView.builder(
               itemCount: filteredCountries.length,
@@ -137,31 +164,6 @@ class _SelectCountryState extends State<SelectCountry> {
                   },
                 );
               },
-            ),
-          ),
-          Padding(
-            padding:
-                EdgeInsets.only(bottom: 40.0.h, left: 16.0.w, right: 16.0.w),
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.black12,
-                foregroundColor: Colors.white,
-                elevation: 0,
-                shape: const StadiumBorder(),
-                padding: const EdgeInsets.symmetric(
-                  vertical: 10.0,
-                  horizontal: 32.0,
-                ),
-                minimumSize: Size(double.infinity, 36.h),
-              ),
-              onPressed: () {
-                _updateSelectedCountries();
-                Navigator.pop(context);
-              },
-              child: Text(
-                "Done",
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16.sp),
-              ),
             ),
           ),
         ],

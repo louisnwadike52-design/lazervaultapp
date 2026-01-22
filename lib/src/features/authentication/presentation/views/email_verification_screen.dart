@@ -180,9 +180,7 @@ class _EmailOtpVerificationViewState extends State<_EmailOtpVerificationView> {
           listener: (context, state) {
             if (state is EmailVerificationSuccess) {
               // Navigate to next screen on successful verification
-              Future.delayed(const Duration(milliseconds: 300), () {
-                _navigateToNextScreen();
-              });
+              _navigateToNextScreen();
             } else if (state is EmailVerificationInProgress) {
               // Handle resend success - show feedback and restart cooldown
               if (state.successMessage.isNotEmpty) {
