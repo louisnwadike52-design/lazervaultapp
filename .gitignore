@@ -49,3 +49,5 @@ app.*.map.json
 .env.*
 .env.local
 *.env
+# Generated proto files
+**/pb/
