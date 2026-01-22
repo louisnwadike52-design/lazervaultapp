@@ -4,6 +4,7 @@ import 'package:lazervault/src/features/kyc/domain/entities/kyc_tier_entity.dart
 import 'package:lazervault/src/features/kyc/presentation/cubits/kyc_cubit.dart';
 import 'package:lazervault/src/features/kyc/presentation/widgets/verification_badge.dart';
 import 'package:lazervault/core/shared_widgets/app_loading_button.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 
 /// Progressive KYC onboarding screen
 /// Allows users to complete verification at their own pace
@@ -522,7 +523,15 @@ class _ProgressiveKYCScreenState extends State<ProgressiveKYCScreen> {
   }
 
   void _startVerification(BuildContext context) {
-    Navigator.of(context).pushNamed('/kyc/verify-id');
+    // Get the user's country code from the auth state
+    final authCubit = context.read<AuthenticationCubit>();
+    final countryCode = authCubit.currentProfile?.user.country ?? 'NG';
+
+    // Pass the country code to the ID verification screen
+    Navigator.of(context).pushNamed(
+      '/kyc/verify-id',
+      arguments: {'countryCode': countryCode},
+    );
   }
 
   void _skipForNow(BuildContext context) {

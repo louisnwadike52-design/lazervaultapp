@@ -2100,6 +2100,7 @@ class AppRouter {
           child: IdVerificationScreen(
             targetTier: args['targetTier'] as KYCTier? ?? KYCTier.tier2,
             preferredIdType: args['preferredIdType'] as IDType?,
+            countryCode: args['countryCode'] as String?,
           ),
         );
       },

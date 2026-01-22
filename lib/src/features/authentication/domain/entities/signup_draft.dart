@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:lazervault/core/config/country_config.dart' show CountryConfigs, CountryConfig;
 
 /// Represents a saved signup draft for resumption
 /// This is stored locally (not synced to backend) for pre-account creation state
@@ -15,6 +16,7 @@ class SignupDraft {
   final String currentStep; // 'form_page_0', 'form_page_1', 'email_verify', etc.
   final DateTime savedAt;
   final String? deviceId;
+  final String? locale; // Locale string (e.g., 'en-NG', 'en-GH', 'en-KE')
 
   // Note: Passwords are NEVER persisted for security reasons
 
@@ -31,6 +33,7 @@ class SignupDraft {
     this.currentStep = 'form_page_0',
     DateTime? savedAt,
     this.deviceId,
+    this.locale,
   }) : savedAt = savedAt ?? DateTime.now();
 
   /// Draft expiry duration (7 days as per plan)
@@ -93,6 +96,7 @@ class SignupDraft {
     String? currentStep,
     DateTime? savedAt,
     String? deviceId,
+    String? locale,
   }) {
     return SignupDraft(
       email: email ?? this.email,
@@ -107,7 +111,44 @@ class SignupDraft {
       currentStep: currentStep ?? this.currentStep,
       savedAt: savedAt ?? this.savedAt,
       deviceId: deviceId ?? this.deviceId,
+      locale: locale ?? this.locale,
     );
+  }
+
+  /// Get the country code from locale (e.g., 'en-NG' -> 'NG')
+  String? get countryCode {
+    final localeValue = locale;
+    if (localeValue == null || localeValue.isEmpty) return null;
+    final parts = localeValue.split('-');
+    if (parts.length >= 2) {
+      return parts.last.toUpperCase();
+    }
+    return null;
+  }
+
+  /// Get the country name from locale
+  String? get countryName {
+    final config = _countryConfig;
+    return config?.name;
+  }
+
+  /// Get the currency code from locale
+  String? get currencyCode {
+    final config = _countryConfig;
+    return config?.currency;
+  }
+
+  /// Get the CountryConfig from locale
+  CountryConfig? get _countryConfig {
+    final code = countryCode;
+    if (code == null) return null;
+    // Import CountryConfigs to use getByCode
+    return _getCountryConfigByCode(code);
+  }
+
+  /// External getter for country config (uses CountryConfigs)
+  CountryConfig? get countryConfig {
+    return _getCountryConfigByCode(countryCode ?? '');
   }
 
   /// Convert to JSON for storage
@@ -125,6 +166,7 @@ class SignupDraft {
       'currentStep': currentStep,
       'savedAt': savedAt.toIso8601String(),
       'deviceId': deviceId,
+      'locale': locale,
     };
   }
 
@@ -147,6 +189,7 @@ class SignupDraft {
           ? DateTime.tryParse(json['savedAt'] as String) ?? DateTime.now()
           : DateTime.now(),
       deviceId: json['deviceId'] as String?,
+      locale: json['locale'] as String?,
     );
   }
 
@@ -168,7 +211,12 @@ class SignupDraft {
   String toString() {
     return 'SignupDraft(email: $email, phone: $phone, firstName: $firstName, '
         'lastName: $lastName, currentPage: $currentPage, currentStep: $currentStep, '
-        'savedAt: $savedAt, isExpired: $isExpired)';
+        'locale: $locale, savedAt: $savedAt, isExpired: $isExpired)';
+  }
+
+  /// Helper to get country config by code (uses CountryConfigs)
+  static CountryConfig? _getCountryConfigByCode(String countryCode) {
+    return CountryConfigs.getByCode(countryCode);
   }
 }
 

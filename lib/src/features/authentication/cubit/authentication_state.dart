@@ -265,9 +265,9 @@ extension IdentityTypeExtension on IdentityType {
   String get description {
     switch (this) {
       case IdentityType.bvn:
-        return 'Your BVN is an 11-digit number linked to your bank accounts.';
+        return '';
       case IdentityType.nin:
-        return 'Your NIN is an 11-digit number from your National ID card.';
+        return '';
       case IdentityType.passport:
         return 'Your UK passport number is 9 characters.';
       case IdentityType.drivingLicence:

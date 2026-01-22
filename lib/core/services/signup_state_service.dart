@@ -151,6 +151,16 @@ class SignupStateService {
     }
   }
 
+  /// Update draft with locale
+  Future<void> updateDraftLocale(String? locale) async {
+    final draft = await loadDraft();
+    if (draft != null) {
+      await saveDraft(draft.copyWith(locale: locale));
+    } else {
+      await saveDraft(SignupDraft(locale: locale));
+    }
+  }
+
   // ==================== Post-Account Creation State ====================
 
   /// Mark that account has been created (move from draft to backend tracking)

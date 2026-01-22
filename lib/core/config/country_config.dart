@@ -508,6 +508,78 @@ class CountryConfigs {
     final config = getByCode(countryCode);
     return config?.currencySymbol;
   }
+
+  // ==================== Locale Utilities ====================
+
+  /// Extract country code from a locale string (e.g., "en-NG" -> "NG")
+  static String? getCountryCodeFromLocale(String? locale) {
+    if (locale == null || locale.isEmpty) return null;
+    final parts = locale.split('-');
+    if (parts.length >= 2) {
+      return parts.last.toUpperCase();
+    }
+    // If no country code in locale, check if it's a direct country code
+    final upperLocale = locale.toUpperCase();
+    if (supportedCountryCodes.contains(upperLocale)) {
+      return upperLocale;
+    }
+    return null;
+  }
+
+  /// Get the full locale for a country (language + country code)
+  /// Defaults to "en" for language prefix
+  static String getLocaleForCountry(String countryCode, {String language = 'en'}) {
+    final config = getByCode(countryCode);
+    if (config == null) return 'en-$countryCode';
+    return '$language-${config.code}';
+  }
+
+  /// Get CountryConfig from a locale string
+  static CountryConfig? fromLocale(String? locale) {
+    final countryCode = getCountryCodeFromLocale(locale);
+    if (countryCode != null) {
+      return getByCode(countryCode);
+    }
+    return null;
+  }
+
+  /// Get default locale (Nigeria/English)
+  static const String defaultLocale = 'en-NG';
+
+  /// Get list of all supported locales
+  static List<String> get supportedLocales {
+    return all
+        .map((config) => 'en-${config.code}')
+        .toList();
+  }
+
+  /// Check if a locale is supported
+  static bool isLocaleSupported(String? locale) {
+    return fromLocale(locale) != null;
+  }
+
+  /// Format a phone number with country dialing code from locale
+  static String? formatPhoneFromLocale(String? locale, String phoneNumber) {
+    final config = fromLocale(locale);
+    if (config == null) return null;
+
+    // Remove existing country code if present
+    final cleanedNumber = phoneNumber.replaceAll(RegExp(r'^\+\d+'), '');
+
+    return '${config.dialingCode}$cleanedNumber';
+  }
+
+  /// Get currency code from locale
+  static String? getCurrencyFromLocale(String? locale) {
+    final config = fromLocale(locale);
+    return config?.currency;
+  }
+
+  /// Get currency symbol from locale
+  static String? getCurrencySymbolFromLocale(String? locale) {
+    final config = fromLocale(locale);
+    return config?.currencySymbol;
+  }
 }
 
 /// Helper class for document-specific operations
