@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:dartz/dartz.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:lazervault/core/errors/exceptions.dart';
 import 'package:lazervault/src/features/kyc/domain/entities/kyc_tier_entity.dart';
@@ -8,11 +10,13 @@ import 'package:lazervault/src/features/kyc/domain/repositories/kyc_repository.d
 class KYCRemoteDataSource {
   final http.Client client;
   final String baseUrl;
+  final FlutterSecureStorage storage;
 
   KYCRemoteDataSource({
     required this.client,
     required this.baseUrl,
-  });
+    FlutterSecureStorage? storage,
+  }) : storage = storage ?? const FlutterSecureStorage();
 
   /// Get KYC status from API
   Future<Map<String, dynamic>> getKYCStatus(String userId) async {
@@ -96,33 +100,51 @@ class KYCRemoteDataSource {
   }
 
   /// Verify ID (BVN, NIN, etc.)
+  /// Uses the auth-service /api/v1/auth/verify-identity endpoint
   Future<Map<String, dynamic>> verifyID(IDVerificationRequest request) async {
+    // Get auth token from secure storage
+    final token = await storage.read(key: 'auth_token');
+    if (token == null || token.isEmpty) {
+      throw APIException(
+        message: 'Authentication token not found. Please log in again.',
+        statusCode: 401,
+      );
+    }
+
+    // Map IDType enum to proto IdentityType
+    final identityType = request.idType == IDType.bvn ? 'IDENTITY_TYPE_BVN' : 'IDENTITY_TYPE_NIN';
+
     final response = await client.post(
-      Uri.parse('$baseUrl/api/v1/kyc/verify-id'),
+      Uri.parse('$baseUrl/api/v1/auth/verify-identity'),
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
       },
-      body: '''{
-        "user_id": "${request.userId}",
-        "id_type": "${request.idType.name}",
-        "id_number": "${request.idNumber}",
-        "first_name": "${request.firstName}",
-        "last_name": "${request.lastName}",
-        "date_of_birth": "${request.dateOfBirth}",
-        "phone_number": "${request.phoneNumber}"
-      }''',
+      body: jsonEncode({
+        'identity_type': identityType,
+        'identity_number': request.idNumber,
+        'date_of_birth': request.dateOfBirth,
+      }),
     );
 
     if (response.statusCode == 200) {
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
       return {
-        'success': true,
-        'status': KYCStatus.inProgress,
-        'current_tier': KYCTier.tier1,
-        'message': 'Verification submitted successfully',
+        'success': data['success'] ?? true,
+        'status': data['verified'] == true ? KYCStatus.approved : KYCStatus.inProgress,
+        'current_tier': KYCTier.tier2,
+        'message': data['error_message'] ?? 'Verification submitted successfully',
+        'reference': data['virtual_account']?['account_number'],
       };
-    } else if (response.statusCode == 422) {
+    } else if (response.statusCode == 401) {
       throw APIException(
-        message: 'ID verification failed. Please check your details.',
+        message: 'Session expired. Please log in again.',
+        statusCode: response.statusCode,
+      );
+    } else if (response.statusCode == 422) {
+      final data = jsonDecode(response.body) as Map<String, dynamic>? ?? {};
+      throw APIException(
+        message: data['error_message'] ?? 'ID verification failed. Please check your details.',
         statusCode: response.statusCode,
       );
     } else {

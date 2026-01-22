@@ -6,6 +6,8 @@ import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:lazervault/core/services/currency_sync_service.dart';
 import 'package:lazervault/core/services/signup_state_service.dart';
+import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/services/locale_manager.dart';
 import '../domain/usecases/login_usecase.dart';
 import '../domain/usecases/login_with_passcode_usecase.dart';
 import '../domain/usecases/register_passcode_usecase.dart';
@@ -169,6 +171,24 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
           value: profile.user.profilePicture!,
         );
       }
+
+      // Sync country and currency to LocaleManager from user profile
+      final localeManager = serviceLocator<LocaleManager>();
+      final country = profile.user.country;
+      final currency = profile.user.currency;
+      final language = profile.user.language ?? 'en';
+
+      if (country != null && country.isNotEmpty) {
+        // Update locale with country from profile
+        await localeManager.updateLocale(
+          locale: '$language-${country.toUpperCase()}',
+          country: country.toUpperCase(),
+        );
+      }
+      if (currency != null && currency.isNotEmpty) {
+        await localeManager.setCurrency(currency);
+      }
+
       _currentProfile = profile;
     } catch (e) {
       print('Error saving session: $e');
@@ -1421,9 +1441,58 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
           }
         }
 
-        // Proceed to BVN/NIN verification page
+        // Create account now to get auth token for BVN verification on page 3
+        // This allows BVN verification to work since it requires an auth token
         if (isClosed) return;
-        emit(currentState.copyWith(currentPage: 3, clearErrorMessage: true));
+        emit(currentState.copyWith(isLoading: true, clearErrorMessage: true));
+
+        // Determine primary contact for backend
+        final primaryContact = currentState.primaryContactType == PrimaryContactType.phone
+            ? SignupPrimaryContact.phone
+            : SignupPrimaryContact.email;
+
+        // Call signup to create account and get tokens
+        final signupResult = await _signUpUseCase(
+          firstName: currentState.firstName,
+          lastName: currentState.lastName,
+          email: currentState.email,
+          password: currentState.password,
+          primaryContact: primaryContact,
+          phoneNumber: currentState.phoneNumber.isEmpty ? null : currentState.phoneNumber,
+          username: currentState.username.isEmpty ? null : currentState.username,
+          referralCode: currentState.referralCode.isEmpty ? null : currentState.referralCode,
+          countryCode: currentState.countryCode,
+          currencyCode: currentState.currencyCode,
+          bvn: null, // BVN will be verified on next page
+          nin: null, // NIN will be verified on next page
+        );
+
+        if (isClosed) return;
+
+        signupResult.fold(
+          (failure) {
+            print('Error during pre-signup: ${failure.message}');
+            _showErrorSnackbar('Sign Up Failed', failure.message);
+            emit(currentState.copyWith(
+              isLoading: false,
+              errorMessage: failure.message,
+            ));
+          },
+          (profile) async {
+            // Save session (tokens) so BVN verification can use them
+            await _saveSession(profile);
+            _currentProfile = profile;
+
+            // Now proceed to BVN/NIN verification page with auth token available
+            if (isClosed) return;
+            emit(currentState.copyWith(
+              currentPage: 3,
+              clearErrorMessage: true,
+              isLoading: false,
+              accountCreated: true, // Mark that account is created
+            ));
+          },
+        );
         return;
       } else if (currentState.currentPage == 3) {
         // ========== PAGE 3: BVN/NIN Verification ==========
@@ -1469,6 +1538,13 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
   Future<void> signUpSubmitted() async {
     if (state is SignUpInProgress) {
       final currentState = state as SignUpInProgress;
+
+      // If account was already created when navigating to page 3, skip to completion
+      if (currentState.accountCreated) {
+        // Account already exists, tokens are saved, just emit UserCreated
+        emit(UserCreated());
+        return;
+      }
 
       // Comprehensive validation before submission
       // Email validation - required only if email is primary contact
@@ -1606,6 +1682,9 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
         },
         (profile) async {
           await _saveSession(profile);
+
+          // Note: _saveSession now syncs country and currency to LocaleManager
+          // from the user profile returned by the backend
 
           if (!profile.user.isEmailVerified) {
             _showInfoSnackbar(

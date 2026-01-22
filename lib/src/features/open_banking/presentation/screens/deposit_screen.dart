@@ -194,7 +194,7 @@ class _DepositScreenState extends State<DepositScreen> {
                     LinkedAccountSelector(
                       accounts: accounts,
                       selectedAccount: _selectedAccount,
-                      onSelected: (account) {
+                      onChanged: (account) {
                         setState(() => _selectedAccount = account);
                       },
                     ),

@@ -5,13 +5,14 @@
 // @dart = 2.12
 // ignore_for_file: annotate_overrides,camel_case_types,constant_identifier_names,directives_ordering,library_prefixes,non_constant_identifier_names,prefer_final_fields,return_of_invalid_type,unnecessary_const,unnecessary_import,unnecessary_this,unused_import,unused_shown_name
 
+import 'dart:async' as $async;
 import 'dart:core' as $core;
 
 import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'common.pb.dart' as $37;
-import 'google/protobuf/timestamp.pb.dart' as $36;
+import 'common.pb.dart' as $0;
+import 'google/protobuf/timestamp.pb.dart' as $1;
 
 import 'user.pbenum.dart';
 
@@ -180,7 +181,7 @@ class CreateUserResponse extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CreateUserResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
     ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
     ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
-    ..aOM<$37.Data>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'data', subBuilder: $37.Data.create)
+    ..aOM<$0.Data>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'data', subBuilder: $0.Data.create)
     ..hasRequiredFields = false
   ;
 
@@ -188,7 +189,7 @@ class CreateUserResponse extends $pb.GeneratedMessage {
   factory CreateUserResponse({
     $core.bool? success,
     $core.String? message,
-    $37.Data? data,
+    $0.Data? data,
   }) {
     final _result = create();
     if (success != null) {
@@ -242,15 +243,15 @@ class CreateUserResponse extends $pb.GeneratedMessage {
   void clearMessage() => clearField(2);
 
   @$pb.TagNumber(3)
-  $37.Data get data => $_getN(2);
+  $0.Data get data => $_getN(2);
   @$pb.TagNumber(3)
-  set data($37.Data v) { setField(3, v); }
+  set data($0.Data v) { setField(3, v); }
   @$pb.TagNumber(3)
   $core.bool hasData() => $_has(2);
   @$pb.TagNumber(3)
   void clearData() => clearField(3);
   @$pb.TagNumber(3)
-  $37.Data ensureData() => $_ensure(2);
+  $0.Data ensureData() => $_ensure(2);
 }
 
 class GetUserProfileRequest extends $pb.GeneratedMessage {
@@ -286,7 +287,7 @@ class GetUserProfileResponse extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetUserProfileResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
     ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
     ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
-    ..aOM<$37.User>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'user', subBuilder: $37.User.create)
+    ..aOM<$0.User>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'user', subBuilder: $0.User.create)
     ..aOM<UserPreferences>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'preferences', subBuilder: UserPreferences.create)
     ..hasRequiredFields = false
   ;
@@ -295,7 +296,7 @@ class GetUserProfileResponse extends $pb.GeneratedMessage {
   factory GetUserProfileResponse({
     $core.bool? success,
     $core.String? message,
-    $37.User? user,
+    $0.User? user,
     UserPreferences? preferences,
   }) {
     final _result = create();
@@ -353,15 +354,15 @@ class GetUserProfileResponse extends $pb.GeneratedMessage {
   void clearMessage() => clearField(2);
 
   @$pb.TagNumber(3)
-  $37.User get user => $_getN(2);
+  $0.User get user => $_getN(2);
   @$pb.TagNumber(3)
-  set user($37.User v) { setField(3, v); }
+  set user($0.User v) { setField(3, v); }
   @$pb.TagNumber(3)
   $core.bool hasUser() => $_has(2);
   @$pb.TagNumber(3)
   void clearUser() => clearField(3);
   @$pb.TagNumber(3)
-  $37.User ensureUser() => $_ensure(2);
+  $0.User ensureUser() => $_ensure(2);
 
   @$pb.TagNumber(4)
   UserPreferences get preferences => $_getN(3);
@@ -524,7 +525,7 @@ class UpdateUserProfileResponse extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UpdateUserProfileResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
     ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
     ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
-    ..aOM<$37.User>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'user', subBuilder: $37.User.create)
+    ..aOM<$0.User>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'user', subBuilder: $0.User.create)
     ..hasRequiredFields = false
   ;
 
@@ -532,7 +533,7 @@ class UpdateUserProfileResponse extends $pb.GeneratedMessage {
   factory UpdateUserProfileResponse({
     $core.bool? success,
     $core.String? message,
-    $37.User? user,
+    $0.User? user,
   }) {
     final _result = create();
     if (success != null) {
@@ -586,15 +587,15 @@ class UpdateUserProfileResponse extends $pb.GeneratedMessage {
   void clearMessage() => clearField(2);
 
   @$pb.TagNumber(3)
-  $37.User get user => $_getN(2);
+  $0.User get user => $_getN(2);
   @$pb.TagNumber(3)
-  set user($37.User v) { setField(3, v); }
+  set user($0.User v) { setField(3, v); }
   @$pb.TagNumber(3)
   $core.bool hasUser() => $_has(2);
   @$pb.TagNumber(3)
   void clearUser() => clearField(3);
   @$pb.TagNumber(3)
-  $37.User ensureUser() => $_ensure(2);
+  $0.User ensureUser() => $_ensure(2);
 }
 
 class UpdatePasswordRequest extends $pb.GeneratedMessage {
@@ -1117,8 +1118,8 @@ class IDDocument extends $pb.GeneratedMessage {
     ..aOS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'documentBackUrl')
     ..e<VerificationStatus>(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'verificationStatus', $pb.PbFieldType.OE, defaultOrMaker: VerificationStatus.VERIFICATION_STATUS_PENDING, valueOf: VerificationStatus.valueOf, enumValues: VerificationStatus.values)
     ..aOS(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'rejectionReason')
-    ..aOM<$36.Timestamp>(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $36.Timestamp.create)
-    ..aOM<$36.Timestamp>(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'verifiedAt', subBuilder: $36.Timestamp.create)
+    ..aOM<$1.Timestamp>(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'verifiedAt', subBuilder: $1.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -1137,8 +1138,8 @@ class IDDocument extends $pb.GeneratedMessage {
     $core.String? documentBackUrl,
     VerificationStatus? verificationStatus,
     $core.String? rejectionReason,
-    $36.Timestamp? createdAt,
-    $36.Timestamp? verifiedAt,
+    $1.Timestamp? createdAt,
+    $1.Timestamp? verifiedAt,
   }) {
     final _result = create();
     if (id != null) {
@@ -1327,26 +1328,26 @@ class IDDocument extends $pb.GeneratedMessage {
   void clearRejectionReason() => clearField(13);
 
   @$pb.TagNumber(14)
-  $36.Timestamp get createdAt => $_getN(13);
+  $1.Timestamp get createdAt => $_getN(13);
   @$pb.TagNumber(14)
-  set createdAt($36.Timestamp v) { setField(14, v); }
+  set createdAt($1.Timestamp v) { setField(14, v); }
   @$pb.TagNumber(14)
   $core.bool hasCreatedAt() => $_has(13);
   @$pb.TagNumber(14)
   void clearCreatedAt() => clearField(14);
   @$pb.TagNumber(14)
-  $36.Timestamp ensureCreatedAt() => $_ensure(13);
+  $1.Timestamp ensureCreatedAt() => $_ensure(13);
 
   @$pb.TagNumber(15)
-  $36.Timestamp get verifiedAt => $_getN(14);
+  $1.Timestamp get verifiedAt => $_getN(14);
   @$pb.TagNumber(15)
-  set verifiedAt($36.Timestamp v) { setField(15, v); }
+  set verifiedAt($1.Timestamp v) { setField(15, v); }
   @$pb.TagNumber(15)
   $core.bool hasVerifiedAt() => $_has(14);
   @$pb.TagNumber(15)
   void clearVerifiedAt() => clearField(15);
   @$pb.TagNumber(15)
-  $36.Timestamp ensureVerifiedAt() => $_ensure(14);
+  $1.Timestamp ensureVerifiedAt() => $_ensure(14);
 }
 
 class UploadIDDocumentRequest extends $pb.GeneratedMessage {
@@ -1731,8 +1732,8 @@ class FacialData extends $pb.GeneratedMessage {
     ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'faceEncoding')
     ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'imageUrl')
     ..aOB(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isVerified')
-    ..aOM<$36.Timestamp>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $36.Timestamp.create)
-    ..aOM<$36.Timestamp>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastVerifiedAt', subBuilder: $36.Timestamp.create)
+    ..aOM<$1.Timestamp>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastVerifiedAt', subBuilder: $1.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -1744,8 +1745,8 @@ class FacialData extends $pb.GeneratedMessage {
     $core.String? faceEncoding,
     $core.String? imageUrl,
     $core.bool? isVerified,
-    $36.Timestamp? createdAt,
-    $36.Timestamp? lastVerifiedAt,
+    $1.Timestamp? createdAt,
+    $1.Timestamp? lastVerifiedAt,
   }) {
     final _result = create();
     if (id != null) {
@@ -1850,26 +1851,26 @@ class FacialData extends $pb.GeneratedMessage {
   void clearIsVerified() => clearField(6);
 
   @$pb.TagNumber(7)
-  $36.Timestamp get createdAt => $_getN(6);
+  $1.Timestamp get createdAt => $_getN(6);
   @$pb.TagNumber(7)
-  set createdAt($36.Timestamp v) { setField(7, v); }
+  set createdAt($1.Timestamp v) { setField(7, v); }
   @$pb.TagNumber(7)
   $core.bool hasCreatedAt() => $_has(6);
   @$pb.TagNumber(7)
   void clearCreatedAt() => clearField(7);
   @$pb.TagNumber(7)
-  $36.Timestamp ensureCreatedAt() => $_ensure(6);
+  $1.Timestamp ensureCreatedAt() => $_ensure(6);
 
   @$pb.TagNumber(8)
-  $36.Timestamp get lastVerifiedAt => $_getN(7);
+  $1.Timestamp get lastVerifiedAt => $_getN(7);
   @$pb.TagNumber(8)
-  set lastVerifiedAt($36.Timestamp v) { setField(8, v); }
+  set lastVerifiedAt($1.Timestamp v) { setField(8, v); }
   @$pb.TagNumber(8)
   $core.bool hasLastVerifiedAt() => $_has(7);
   @$pb.TagNumber(8)
   void clearLastVerifiedAt() => clearField(8);
   @$pb.TagNumber(8)
-  $36.Timestamp ensureLastVerifiedAt() => $_ensure(7);
+  $1.Timestamp ensureLastVerifiedAt() => $_ensure(7);
 }
 
 class UserRegisterFaceRequest extends $pb.GeneratedMessage {
@@ -2684,7 +2685,7 @@ class DevicePermission extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'DevicePermission', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
     ..e<PermissionType>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'permissionType', $pb.PbFieldType.OE, defaultOrMaker: PermissionType.PERMISSION_TYPE_CAMERA, valueOf: PermissionType.valueOf, enumValues: PermissionType.values)
     ..aOB(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isGranted')
-    ..aOM<$36.Timestamp>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'grantedAt', subBuilder: $36.Timestamp.create)
+    ..aOM<$1.Timestamp>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'grantedAt', subBuilder: $1.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -2692,7 +2693,7 @@ class DevicePermission extends $pb.GeneratedMessage {
   factory DevicePermission({
     PermissionType? permissionType,
     $core.bool? isGranted,
-    $36.Timestamp? grantedAt,
+    $1.Timestamp? grantedAt,
   }) {
     final _result = create();
     if (permissionType != null) {
@@ -2746,15 +2747,15 @@ class DevicePermission extends $pb.GeneratedMessage {
   void clearIsGranted() => clearField(2);
 
   @$pb.TagNumber(3)
-  $36.Timestamp get grantedAt => $_getN(2);
+  $1.Timestamp get grantedAt => $_getN(2);
   @$pb.TagNumber(3)
-  set grantedAt($36.Timestamp v) { setField(3, v); }
+  set grantedAt($1.Timestamp v) { setField(3, v); }
   @$pb.TagNumber(3)
   $core.bool hasGrantedAt() => $_has(2);
   @$pb.TagNumber(3)
   void clearGrantedAt() => clearField(3);
   @$pb.TagNumber(3)
-  $36.Timestamp ensureGrantedAt() => $_ensure(2);
+  $1.Timestamp ensureGrantedAt() => $_ensure(2);
 }
 
 class UpdateDevicePermissionsRequest extends $pb.GeneratedMessage {
@@ -2955,5 +2956,79 @@ class GetDevicePermissionsResponse extends $pb.GeneratedMessage {
 
   @$pb.TagNumber(3)
   $core.List<DevicePermission> get permissions => $_getList(2);
+}
+
+class UserServiceApi {
+  $pb.RpcClient _client;
+  UserServiceApi(this._client);
+
+  $async.Future<CreateUserResponse> createUser($pb.ClientContext? ctx, CreateUserRequest request) {
+    var emptyResponse = CreateUserResponse();
+    return _client.invoke<CreateUserResponse>(ctx, 'UserService', 'CreateUser', request, emptyResponse);
+  }
+  $async.Future<GetUserProfileResponse> getUserProfile($pb.ClientContext? ctx, GetUserProfileRequest request) {
+    var emptyResponse = GetUserProfileResponse();
+    return _client.invoke<GetUserProfileResponse>(ctx, 'UserService', 'GetUserProfile', request, emptyResponse);
+  }
+  $async.Future<UpdateUserProfileResponse> updateUserProfile($pb.ClientContext? ctx, UpdateUserProfileRequest request) {
+    var emptyResponse = UpdateUserProfileResponse();
+    return _client.invoke<UpdateUserProfileResponse>(ctx, 'UserService', 'UpdateUserProfile', request, emptyResponse);
+  }
+  $async.Future<UpdatePasswordResponse> updatePassword($pb.ClientContext? ctx, UpdatePasswordRequest request) {
+    var emptyResponse = UpdatePasswordResponse();
+    return _client.invoke<UpdatePasswordResponse>(ctx, 'UserService', 'UpdatePassword', request, emptyResponse);
+  }
+  $async.Future<UpdatePreferencesResponse> updatePreferences($pb.ClientContext? ctx, UpdatePreferencesRequest request) {
+    var emptyResponse = UpdatePreferencesResponse();
+    return _client.invoke<UpdatePreferencesResponse>(ctx, 'UserService', 'UpdatePreferences', request, emptyResponse);
+  }
+  $async.Future<UploadIDDocumentResponse> uploadIDDocument($pb.ClientContext? ctx, UploadIDDocumentRequest request) {
+    var emptyResponse = UploadIDDocumentResponse();
+    return _client.invoke<UploadIDDocumentResponse>(ctx, 'UserService', 'UploadIDDocument', request, emptyResponse);
+  }
+  $async.Future<GetIDDocumentsResponse> getIDDocuments($pb.ClientContext? ctx, GetIDDocumentsRequest request) {
+    var emptyResponse = GetIDDocumentsResponse();
+    return _client.invoke<GetIDDocumentsResponse>(ctx, 'UserService', 'GetIDDocuments', request, emptyResponse);
+  }
+  $async.Future<VerifyIDDocumentResponse> verifyIDDocument($pb.ClientContext? ctx, VerifyIDDocumentRequest request) {
+    var emptyResponse = VerifyIDDocumentResponse();
+    return _client.invoke<VerifyIDDocumentResponse>(ctx, 'UserService', 'VerifyIDDocument', request, emptyResponse);
+  }
+  $async.Future<UserRegisterFaceResponse> registerFace($pb.ClientContext? ctx, UserRegisterFaceRequest request) {
+    var emptyResponse = UserRegisterFaceResponse();
+    return _client.invoke<UserRegisterFaceResponse>(ctx, 'UserService', 'RegisterFace', request, emptyResponse);
+  }
+  $async.Future<UserVerifyFaceResponse> verifyFace($pb.ClientContext? ctx, UserVerifyFaceRequest request) {
+    var emptyResponse = UserVerifyFaceResponse();
+    return _client.invoke<UserVerifyFaceResponse>(ctx, 'UserService', 'VerifyFace', request, emptyResponse);
+  }
+  $async.Future<GetFacialDataResponse> getFacialData($pb.ClientContext? ctx, GetFacialDataRequest request) {
+    var emptyResponse = GetFacialDataResponse();
+    return _client.invoke<GetFacialDataResponse>(ctx, 'UserService', 'GetFacialData', request, emptyResponse);
+  }
+  $async.Future<SetPasscodeResponse> setPasscode($pb.ClientContext? ctx, SetPasscodeRequest request) {
+    var emptyResponse = SetPasscodeResponse();
+    return _client.invoke<SetPasscodeResponse>(ctx, 'UserService', 'SetPasscode', request, emptyResponse);
+  }
+  $async.Future<VerifyPasscodeResponse> verifyPasscode($pb.ClientContext? ctx, VerifyPasscodeRequest request) {
+    var emptyResponse = VerifyPasscodeResponse();
+    return _client.invoke<VerifyPasscodeResponse>(ctx, 'UserService', 'VerifyPasscode', request, emptyResponse);
+  }
+  $async.Future<RemovePasscodeResponse> removePasscode($pb.ClientContext? ctx, RemovePasscodeRequest request) {
+    var emptyResponse = RemovePasscodeResponse();
+    return _client.invoke<RemovePasscodeResponse>(ctx, 'UserService', 'RemovePasscode', request, emptyResponse);
+  }
+  $async.Future<CheckPasscodeExistsResponse> checkPasscodeExists($pb.ClientContext? ctx, CheckPasscodeExistsRequest request) {
+    var emptyResponse = CheckPasscodeExistsResponse();
+    return _client.invoke<CheckPasscodeExistsResponse>(ctx, 'UserService', 'CheckPasscodeExists', request, emptyResponse);
+  }
+  $async.Future<UpdateDevicePermissionsResponse> updateDevicePermissions($pb.ClientContext? ctx, UpdateDevicePermissionsRequest request) {
+    var emptyResponse = UpdateDevicePermissionsResponse();
+    return _client.invoke<UpdateDevicePermissionsResponse>(ctx, 'UserService', 'UpdateDevicePermissions', request, emptyResponse);
+  }
+  $async.Future<GetDevicePermissionsResponse> getDevicePermissions($pb.ClientContext? ctx, GetDevicePermissionsRequest request) {
+    var emptyResponse = GetDevicePermissionsResponse();
+    return _client.invoke<GetDevicePermissionsResponse>(ctx, 'UserService', 'GetDevicePermissions', request, emptyResponse);
+  }
 }
 

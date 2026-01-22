@@ -14,12 +14,36 @@ class DocumentType extends $pb.ProtobufEnum {
   static const DocumentType DOCUMENT_TYPE_DRIVERS_LICENSE = DocumentType._(1, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'DOCUMENT_TYPE_DRIVERS_LICENSE');
   static const DocumentType DOCUMENT_TYPE_NATIONAL_ID = DocumentType._(2, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'DOCUMENT_TYPE_NATIONAL_ID');
   static const DocumentType DOCUMENT_TYPE_RESIDENCE_PERMIT = DocumentType._(3, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'DOCUMENT_TYPE_RESIDENCE_PERMIT');
+  static const DocumentType DOCUMENT_TYPE_BVN = DocumentType._(4, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'DOCUMENT_TYPE_BVN');
+  static const DocumentType DOCUMENT_TYPE_NIN = DocumentType._(5, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'DOCUMENT_TYPE_NIN');
+  static const DocumentType DOCUMENT_TYPE_NIN_NUMBER = DocumentType._(6, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'DOCUMENT_TYPE_NIN_NUMBER');
+  static const DocumentType DOCUMENT_TYPE_SSN = DocumentType._(7, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'DOCUMENT_TYPE_SSN');
+  static const DocumentType DOCUMENT_TYPE_SSN_LAST4 = DocumentType._(8, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'DOCUMENT_TYPE_SSN_LAST4');
+  static const DocumentType DOCUMENT_TYPE_STATE_ID = DocumentType._(9, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'DOCUMENT_TYPE_STATE_ID');
+  static const DocumentType DOCUMENT_TYPE_ITIN = DocumentType._(10, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'DOCUMENT_TYPE_ITIN');
+  static const DocumentType DOCUMENT_TYPE_GHANA_CARD = DocumentType._(11, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'DOCUMENT_TYPE_GHANA_CARD');
+  static const DocumentType DOCUMENT_TYPE_VOTER_CARD = DocumentType._(12, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'DOCUMENT_TYPE_VOTER_CARD');
+  static const DocumentType DOCUMENT_TYPE_SSNIT = DocumentType._(13, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'DOCUMENT_TYPE_SSNIT');
+  static const DocumentType DOCUMENT_TYPE_KRA_PIN = DocumentType._(14, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'DOCUMENT_TYPE_KRA_PIN');
+  static const DocumentType DOCUMENT_TYPE_ALIEN_ID = DocumentType._(15, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'DOCUMENT_TYPE_ALIEN_ID');
 
   static const $core.List<DocumentType> values = <DocumentType> [
     DOCUMENT_TYPE_PASSPORT,
     DOCUMENT_TYPE_DRIVERS_LICENSE,
     DOCUMENT_TYPE_NATIONAL_ID,
     DOCUMENT_TYPE_RESIDENCE_PERMIT,
+    DOCUMENT_TYPE_BVN,
+    DOCUMENT_TYPE_NIN,
+    DOCUMENT_TYPE_NIN_NUMBER,
+    DOCUMENT_TYPE_SSN,
+    DOCUMENT_TYPE_SSN_LAST4,
+    DOCUMENT_TYPE_STATE_ID,
+    DOCUMENT_TYPE_ITIN,
+    DOCUMENT_TYPE_GHANA_CARD,
+    DOCUMENT_TYPE_VOTER_CARD,
+    DOCUMENT_TYPE_SSNIT,
+    DOCUMENT_TYPE_KRA_PIN,
+    DOCUMENT_TYPE_ALIEN_ID,
   ];
 
   static final $core.Map<$core.int, DocumentType> _byValue = $pb.ProtobufEnum.initByValue(values);

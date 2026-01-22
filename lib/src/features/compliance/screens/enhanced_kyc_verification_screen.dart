@@ -1798,7 +1798,7 @@ class _EnhancedKYCVerificationScreenState
       final request = user_pb.UploadIDDocumentRequest(
         documentType: documentType,
         frontImage: frontImageBytes,
-        if (backImageBytes != null) backImage: backImageBytes,
+        backImage: backImageBytes,
       );
 
       // Call the upload API

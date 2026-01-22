@@ -386,6 +386,8 @@ class SignUpInProgress extends AuthenticationState {
     this.verifiedDateOfBirth,
     // Progressive KYC
     this.kycSkipped = false,
+    // Account creation status
+    this.accountCreated = false,
   });
 
   final int currentPage;
@@ -420,6 +422,9 @@ class SignUpInProgress extends AuthenticationState {
   // Progressive KYC
   final bool kycSkipped;
 
+  // Account creation status
+  final bool accountCreated;
+
   SignUpInProgress copyWith({
     int? currentPage,
     String? email,
@@ -447,6 +452,7 @@ class SignUpInProgress extends AuthenticationState {
     String? verifiedLastName,
     String? verifiedDateOfBirth,
     bool? kycSkipped,
+    bool? accountCreated,
   }) {
     return SignUpInProgress(
       currentPage: currentPage ?? this.currentPage,
@@ -474,6 +480,7 @@ class SignUpInProgress extends AuthenticationState {
       verifiedLastName: verifiedLastName ?? this.verifiedLastName,
       verifiedDateOfBirth: verifiedDateOfBirth ?? this.verifiedDateOfBirth,
       kycSkipped: kycSkipped ?? this.kycSkipped,
+      accountCreated: accountCreated ?? this.accountCreated,
     );
   }
 
@@ -504,6 +511,7 @@ class SignUpInProgress extends AuthenticationState {
         verifiedLastName,
         verifiedDateOfBirth,
         kycSkipped,
+        accountCreated,
       ];
 }
 
