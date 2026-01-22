@@ -33,6 +33,10 @@ class Account extends $pb.GeneratedMessage {
     ..a<$core.double>(19, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'monthlyLimit', $pb.PbFieldType.OD)
     ..aOS(20, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt')
     ..aOS(21, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt')
+    ..aOB(22, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isVirtual')
+    ..aOS(23, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'provider')
+    ..aOS(24, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'providerRef')
+    ..aOS(25, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'bankName')
     ..hasRequiredFields = false
   ;
 
@@ -59,6 +63,10 @@ class Account extends $pb.GeneratedMessage {
     $core.double? monthlyLimit,
     $core.String? createdAt,
     $core.String? updatedAt,
+    $core.bool? isVirtual,
+    $core.String? provider,
+    $core.String? providerRef,
+    $core.String? bankName,
   }) {
     final _result = create();
     if (id != null) {
@@ -123,6 +131,18 @@ class Account extends $pb.GeneratedMessage {
     }
     if (updatedAt != null) {
       _result.updatedAt = updatedAt;
+    }
+    if (isVirtual != null) {
+      _result.isVirtual = isVirtual;
+    }
+    if (provider != null) {
+      _result.provider = provider;
+    }
+    if (providerRef != null) {
+      _result.providerRef = providerRef;
+    }
+    if (bankName != null) {
+      _result.bankName = bankName;
     }
     return _result;
   }
@@ -335,6 +355,42 @@ class Account extends $pb.GeneratedMessage {
   $core.bool hasUpdatedAt() => $_has(20);
   @$pb.TagNumber(21)
   void clearUpdatedAt() => clearField(21);
+
+  @$pb.TagNumber(22)
+  $core.bool get isVirtual => $_getBF(21);
+  @$pb.TagNumber(22)
+  set isVirtual($core.bool v) { $_setBool(21, v); }
+  @$pb.TagNumber(22)
+  $core.bool hasIsVirtual() => $_has(21);
+  @$pb.TagNumber(22)
+  void clearIsVirtual() => clearField(22);
+
+  @$pb.TagNumber(23)
+  $core.String get provider => $_getSZ(22);
+  @$pb.TagNumber(23)
+  set provider($core.String v) { $_setString(22, v); }
+  @$pb.TagNumber(23)
+  $core.bool hasProvider() => $_has(22);
+  @$pb.TagNumber(23)
+  void clearProvider() => clearField(23);
+
+  @$pb.TagNumber(24)
+  $core.String get providerRef => $_getSZ(23);
+  @$pb.TagNumber(24)
+  set providerRef($core.String v) { $_setString(23, v); }
+  @$pb.TagNumber(24)
+  $core.bool hasProviderRef() => $_has(23);
+  @$pb.TagNumber(24)
+  void clearProviderRef() => clearField(24);
+
+  @$pb.TagNumber(25)
+  $core.String get bankName => $_getSZ(24);
+  @$pb.TagNumber(25)
+  set bankName($core.String v) { $_setString(24, v); }
+  @$pb.TagNumber(25)
+  $core.bool hasBankName() => $_has(24);
+  @$pb.TagNumber(25)
+  void clearBankName() => clearField(25);
 }
 
 class AccountSummary extends $pb.GeneratedMessage {
@@ -4569,5 +4625,844 @@ class GetTransactionStatisticsResponse extends $pb.GeneratedMessage {
 
   @$pb.TagNumber(6)
   $core.Map<$core.String, $core.double> get amountByService => $_getMap(5);
+}
+
+class Transfer extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'Transfer', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'accounts'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transferId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'fromAccountId')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'toAccountId')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'fromAccountNumber')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'toAccountNumber')
+    ..a<$core.double>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
+    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
+    ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'reference')
+    ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status')
+    ..aOS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'category')
+    ..a<$core.double>(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'fee', $pb.PbFieldType.OD)
+    ..a<$core.double>(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalAmount', $pb.PbFieldType.OD)
+    ..aOS(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt')
+    ..aOS(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'completedAt')
+    ..aOS(16, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'failureReason')
+    ..hasRequiredFields = false
+  ;
+
+  Transfer._() : super();
+  factory Transfer({
+    $core.String? transferId,
+    $core.String? fromAccountId,
+    $core.String? toAccountId,
+    $core.String? fromAccountNumber,
+    $core.String? toAccountNumber,
+    $core.double? amount,
+    $core.String? currency,
+    $core.String? description,
+    $core.String? reference,
+    $core.String? status,
+    $core.String? category,
+    $core.double? fee,
+    $core.double? totalAmount,
+    $core.String? createdAt,
+    $core.String? completedAt,
+    $core.String? failureReason,
+  }) {
+    final _result = create();
+    if (transferId != null) {
+      _result.transferId = transferId;
+    }
+    if (fromAccountId != null) {
+      _result.fromAccountId = fromAccountId;
+    }
+    if (toAccountId != null) {
+      _result.toAccountId = toAccountId;
+    }
+    if (fromAccountNumber != null) {
+      _result.fromAccountNumber = fromAccountNumber;
+    }
+    if (toAccountNumber != null) {
+      _result.toAccountNumber = toAccountNumber;
+    }
+    if (amount != null) {
+      _result.amount = amount;
+    }
+    if (currency != null) {
+      _result.currency = currency;
+    }
+    if (description != null) {
+      _result.description = description;
+    }
+    if (reference != null) {
+      _result.reference = reference;
+    }
+    if (status != null) {
+      _result.status = status;
+    }
+    if (category != null) {
+      _result.category = category;
+    }
+    if (fee != null) {
+      _result.fee = fee;
+    }
+    if (totalAmount != null) {
+      _result.totalAmount = totalAmount;
+    }
+    if (createdAt != null) {
+      _result.createdAt = createdAt;
+    }
+    if (completedAt != null) {
+      _result.completedAt = completedAt;
+    }
+    if (failureReason != null) {
+      _result.failureReason = failureReason;
+    }
+    return _result;
+  }
+  factory Transfer.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory Transfer.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  Transfer clone() => Transfer()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  Transfer copyWith(void Function(Transfer) updates) => super.copyWith((message) => updates(message as Transfer)) as Transfer; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static Transfer create() => Transfer._();
+  Transfer createEmptyInstance() => create();
+  static $pb.PbList<Transfer> createRepeated() => $pb.PbList<Transfer>();
+  @$core.pragma('dart2js:noInline')
+  static Transfer getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Transfer>(create);
+  static Transfer? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get transferId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set transferId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasTransferId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearTransferId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get fromAccountId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set fromAccountId($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasFromAccountId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearFromAccountId() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get toAccountId => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set toAccountId($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasToAccountId() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearToAccountId() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get fromAccountNumber => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set fromAccountNumber($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasFromAccountNumber() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearFromAccountNumber() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get toAccountNumber => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set toAccountNumber($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasToAccountNumber() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearToAccountNumber() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.double get amount => $_getN(5);
+  @$pb.TagNumber(6)
+  set amount($core.double v) { $_setDouble(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasAmount() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearAmount() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.String get currency => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set currency($core.String v) { $_setString(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasCurrency() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearCurrency() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.String get description => $_getSZ(7);
+  @$pb.TagNumber(8)
+  set description($core.String v) { $_setString(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasDescription() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearDescription() => clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.String get reference => $_getSZ(8);
+  @$pb.TagNumber(9)
+  set reference($core.String v) { $_setString(8, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasReference() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearReference() => clearField(9);
+
+  @$pb.TagNumber(10)
+  $core.String get status => $_getSZ(9);
+  @$pb.TagNumber(10)
+  set status($core.String v) { $_setString(9, v); }
+  @$pb.TagNumber(10)
+  $core.bool hasStatus() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearStatus() => clearField(10);
+
+  @$pb.TagNumber(11)
+  $core.String get category => $_getSZ(10);
+  @$pb.TagNumber(11)
+  set category($core.String v) { $_setString(10, v); }
+  @$pb.TagNumber(11)
+  $core.bool hasCategory() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearCategory() => clearField(11);
+
+  @$pb.TagNumber(12)
+  $core.double get fee => $_getN(11);
+  @$pb.TagNumber(12)
+  set fee($core.double v) { $_setDouble(11, v); }
+  @$pb.TagNumber(12)
+  $core.bool hasFee() => $_has(11);
+  @$pb.TagNumber(12)
+  void clearFee() => clearField(12);
+
+  @$pb.TagNumber(13)
+  $core.double get totalAmount => $_getN(12);
+  @$pb.TagNumber(13)
+  set totalAmount($core.double v) { $_setDouble(12, v); }
+  @$pb.TagNumber(13)
+  $core.bool hasTotalAmount() => $_has(12);
+  @$pb.TagNumber(13)
+  void clearTotalAmount() => clearField(13);
+
+  @$pb.TagNumber(14)
+  $core.String get createdAt => $_getSZ(13);
+  @$pb.TagNumber(14)
+  set createdAt($core.String v) { $_setString(13, v); }
+  @$pb.TagNumber(14)
+  $core.bool hasCreatedAt() => $_has(13);
+  @$pb.TagNumber(14)
+  void clearCreatedAt() => clearField(14);
+
+  @$pb.TagNumber(15)
+  $core.String get completedAt => $_getSZ(14);
+  @$pb.TagNumber(15)
+  set completedAt($core.String v) { $_setString(14, v); }
+  @$pb.TagNumber(15)
+  $core.bool hasCompletedAt() => $_has(14);
+  @$pb.TagNumber(15)
+  void clearCompletedAt() => clearField(15);
+
+  @$pb.TagNumber(16)
+  $core.String get failureReason => $_getSZ(15);
+  @$pb.TagNumber(16)
+  set failureReason($core.String v) { $_setString(15, v); }
+  @$pb.TagNumber(16)
+  $core.bool hasFailureReason() => $_has(15);
+  @$pb.TagNumber(16)
+  void clearFailureReason() => clearField(16);
+}
+
+class CreateTransferRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CreateTransferRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'accounts'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'fromAccount')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'toAccount')
+    ..a<$core.double>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pin')
+    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'reference')
+    ..hasRequiredFields = false
+  ;
+
+  CreateTransferRequest._() : super();
+  factory CreateTransferRequest({
+    $core.String? userId,
+    $core.String? fromAccount,
+    $core.String? toAccount,
+    $core.double? amount,
+    $core.String? currency,
+    $core.String? description,
+    $core.String? pin,
+    $core.String? reference,
+  }) {
+    final _result = create();
+    if (userId != null) {
+      _result.userId = userId;
+    }
+    if (fromAccount != null) {
+      _result.fromAccount = fromAccount;
+    }
+    if (toAccount != null) {
+      _result.toAccount = toAccount;
+    }
+    if (amount != null) {
+      _result.amount = amount;
+    }
+    if (currency != null) {
+      _result.currency = currency;
+    }
+    if (description != null) {
+      _result.description = description;
+    }
+    if (pin != null) {
+      _result.pin = pin;
+    }
+    if (reference != null) {
+      _result.reference = reference;
+    }
+    return _result;
+  }
+  factory CreateTransferRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory CreateTransferRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  CreateTransferRequest clone() => CreateTransferRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  CreateTransferRequest copyWith(void Function(CreateTransferRequest) updates) => super.copyWith((message) => updates(message as CreateTransferRequest)) as CreateTransferRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static CreateTransferRequest create() => CreateTransferRequest._();
+  CreateTransferRequest createEmptyInstance() => create();
+  static $pb.PbList<CreateTransferRequest> createRepeated() => $pb.PbList<CreateTransferRequest>();
+  @$core.pragma('dart2js:noInline')
+  static CreateTransferRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<CreateTransferRequest>(create);
+  static CreateTransferRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get userId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set userId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasUserId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearUserId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get fromAccount => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set fromAccount($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasFromAccount() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearFromAccount() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get toAccount => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set toAccount($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasToAccount() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearToAccount() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.double get amount => $_getN(3);
+  @$pb.TagNumber(4)
+  set amount($core.double v) { $_setDouble(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasAmount() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearAmount() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get currency => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set currency($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasCurrency() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearCurrency() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get description => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set description($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasDescription() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearDescription() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.String get pin => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set pin($core.String v) { $_setString(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasPin() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearPin() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.String get reference => $_getSZ(7);
+  @$pb.TagNumber(8)
+  set reference($core.String v) { $_setString(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasReference() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearReference() => clearField(8);
+}
+
+class CreateTransferResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CreateTransferResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'accounts'), createEmptyInstance: create)
+    ..aOM<Transfer>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transfer', subBuilder: Transfer.create)
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
+  CreateTransferResponse._() : super();
+  factory CreateTransferResponse({
+    Transfer? transfer,
+    $core.String? message,
+  }) {
+    final _result = create();
+    if (transfer != null) {
+      _result.transfer = transfer;
+    }
+    if (message != null) {
+      _result.message = message;
+    }
+    return _result;
+  }
+  factory CreateTransferResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory CreateTransferResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  CreateTransferResponse clone() => CreateTransferResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  CreateTransferResponse copyWith(void Function(CreateTransferResponse) updates) => super.copyWith((message) => updates(message as CreateTransferResponse)) as CreateTransferResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static CreateTransferResponse create() => CreateTransferResponse._();
+  CreateTransferResponse createEmptyInstance() => create();
+  static $pb.PbList<CreateTransferResponse> createRepeated() => $pb.PbList<CreateTransferResponse>();
+  @$core.pragma('dart2js:noInline')
+  static CreateTransferResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<CreateTransferResponse>(create);
+  static CreateTransferResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  Transfer get transfer => $_getN(0);
+  @$pb.TagNumber(1)
+  set transfer(Transfer v) { setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasTransfer() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearTransfer() => clearField(1);
+  @$pb.TagNumber(1)
+  Transfer ensureTransfer() => $_ensure(0);
+
+  @$pb.TagNumber(2)
+  $core.String get message => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set message($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasMessage() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMessage() => clearField(2);
+}
+
+class GetTransferRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetTransferRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'accounts'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transferId')
+    ..hasRequiredFields = false
+  ;
+
+  GetTransferRequest._() : super();
+  factory GetTransferRequest({
+    $core.String? transferId,
+  }) {
+    final _result = create();
+    if (transferId != null) {
+      _result.transferId = transferId;
+    }
+    return _result;
+  }
+  factory GetTransferRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetTransferRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetTransferRequest clone() => GetTransferRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetTransferRequest copyWith(void Function(GetTransferRequest) updates) => super.copyWith((message) => updates(message as GetTransferRequest)) as GetTransferRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GetTransferRequest create() => GetTransferRequest._();
+  GetTransferRequest createEmptyInstance() => create();
+  static $pb.PbList<GetTransferRequest> createRepeated() => $pb.PbList<GetTransferRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetTransferRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetTransferRequest>(create);
+  static GetTransferRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get transferId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set transferId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasTransferId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearTransferId() => clearField(1);
+}
+
+class GetTransferResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetTransferResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'accounts'), createEmptyInstance: create)
+    ..aOM<Transfer>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transfer', subBuilder: Transfer.create)
+    ..hasRequiredFields = false
+  ;
+
+  GetTransferResponse._() : super();
+  factory GetTransferResponse({
+    Transfer? transfer,
+  }) {
+    final _result = create();
+    if (transfer != null) {
+      _result.transfer = transfer;
+    }
+    return _result;
+  }
+  factory GetTransferResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetTransferResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetTransferResponse clone() => GetTransferResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetTransferResponse copyWith(void Function(GetTransferResponse) updates) => super.copyWith((message) => updates(message as GetTransferResponse)) as GetTransferResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GetTransferResponse create() => GetTransferResponse._();
+  GetTransferResponse createEmptyInstance() => create();
+  static $pb.PbList<GetTransferResponse> createRepeated() => $pb.PbList<GetTransferResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetTransferResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetTransferResponse>(create);
+  static GetTransferResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  Transfer get transfer => $_getN(0);
+  @$pb.TagNumber(1)
+  set transfer(Transfer v) { setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasTransfer() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearTransfer() => clearField(1);
+  @$pb.TagNumber(1)
+  Transfer ensureTransfer() => $_ensure(0);
+}
+
+class CreateVirtualAccountRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CreateVirtualAccountRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'accounts'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accountName')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accountType')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'locale')
+    ..aOB(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isPrimary')
+    ..a<$core.double>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'dailyLimit', $pb.PbFieldType.OD)
+    ..a<$core.double>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'monthlyLimit', $pb.PbFieldType.OD)
+    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'email')
+    ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'firstName')
+    ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastName')
+    ..aOS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'phoneNumber')
+    ..aOS(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'bvn')
+    ..hasRequiredFields = false
+  ;
+
+  CreateVirtualAccountRequest._() : super();
+  factory CreateVirtualAccountRequest({
+    $core.String? accountName,
+    $core.String? accountType,
+    $core.String? currency,
+    $core.String? locale,
+    $core.bool? isPrimary,
+    $core.double? dailyLimit,
+    $core.double? monthlyLimit,
+    $core.String? email,
+    $core.String? firstName,
+    $core.String? lastName,
+    $core.String? phoneNumber,
+    $core.String? bvn,
+  }) {
+    final _result = create();
+    if (accountName != null) {
+      _result.accountName = accountName;
+    }
+    if (accountType != null) {
+      _result.accountType = accountType;
+    }
+    if (currency != null) {
+      _result.currency = currency;
+    }
+    if (locale != null) {
+      _result.locale = locale;
+    }
+    if (isPrimary != null) {
+      _result.isPrimary = isPrimary;
+    }
+    if (dailyLimit != null) {
+      _result.dailyLimit = dailyLimit;
+    }
+    if (monthlyLimit != null) {
+      _result.monthlyLimit = monthlyLimit;
+    }
+    if (email != null) {
+      _result.email = email;
+    }
+    if (firstName != null) {
+      _result.firstName = firstName;
+    }
+    if (lastName != null) {
+      _result.lastName = lastName;
+    }
+    if (phoneNumber != null) {
+      _result.phoneNumber = phoneNumber;
+    }
+    if (bvn != null) {
+      _result.bvn = bvn;
+    }
+    return _result;
+  }
+  factory CreateVirtualAccountRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory CreateVirtualAccountRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  CreateVirtualAccountRequest clone() => CreateVirtualAccountRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  CreateVirtualAccountRequest copyWith(void Function(CreateVirtualAccountRequest) updates) => super.copyWith((message) => updates(message as CreateVirtualAccountRequest)) as CreateVirtualAccountRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static CreateVirtualAccountRequest create() => CreateVirtualAccountRequest._();
+  CreateVirtualAccountRequest createEmptyInstance() => create();
+  static $pb.PbList<CreateVirtualAccountRequest> createRepeated() => $pb.PbList<CreateVirtualAccountRequest>();
+  @$core.pragma('dart2js:noInline')
+  static CreateVirtualAccountRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<CreateVirtualAccountRequest>(create);
+  static CreateVirtualAccountRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get accountName => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set accountName($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasAccountName() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearAccountName() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get accountType => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set accountType($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasAccountType() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearAccountType() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get currency => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set currency($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasCurrency() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearCurrency() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get locale => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set locale($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasLocale() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearLocale() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.bool get isPrimary => $_getBF(4);
+  @$pb.TagNumber(5)
+  set isPrimary($core.bool v) { $_setBool(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasIsPrimary() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearIsPrimary() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.double get dailyLimit => $_getN(5);
+  @$pb.TagNumber(6)
+  set dailyLimit($core.double v) { $_setDouble(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasDailyLimit() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearDailyLimit() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.double get monthlyLimit => $_getN(6);
+  @$pb.TagNumber(7)
+  set monthlyLimit($core.double v) { $_setDouble(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasMonthlyLimit() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearMonthlyLimit() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.String get email => $_getSZ(7);
+  @$pb.TagNumber(8)
+  set email($core.String v) { $_setString(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasEmail() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearEmail() => clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.String get firstName => $_getSZ(8);
+  @$pb.TagNumber(9)
+  set firstName($core.String v) { $_setString(8, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasFirstName() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearFirstName() => clearField(9);
+
+  @$pb.TagNumber(10)
+  $core.String get lastName => $_getSZ(9);
+  @$pb.TagNumber(10)
+  set lastName($core.String v) { $_setString(9, v); }
+  @$pb.TagNumber(10)
+  $core.bool hasLastName() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearLastName() => clearField(10);
+
+  @$pb.TagNumber(11)
+  $core.String get phoneNumber => $_getSZ(10);
+  @$pb.TagNumber(11)
+  set phoneNumber($core.String v) { $_setString(10, v); }
+  @$pb.TagNumber(11)
+  $core.bool hasPhoneNumber() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearPhoneNumber() => clearField(11);
+
+  @$pb.TagNumber(12)
+  $core.String get bvn => $_getSZ(11);
+  @$pb.TagNumber(12)
+  set bvn($core.String v) { $_setString(11, v); }
+  @$pb.TagNumber(12)
+  $core.bool hasBvn() => $_has(11);
+  @$pb.TagNumber(12)
+  void clearBvn() => clearField(12);
+}
+
+class CreateVirtualAccountResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CreateVirtualAccountResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'accounts'), createEmptyInstance: create)
+    ..aOM<Account>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'account', subBuilder: Account.create)
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'provider')
+    ..hasRequiredFields = false
+  ;
+
+  CreateVirtualAccountResponse._() : super();
+  factory CreateVirtualAccountResponse({
+    Account? account,
+    $core.String? message,
+    $core.String? provider,
+  }) {
+    final _result = create();
+    if (account != null) {
+      _result.account = account;
+    }
+    if (message != null) {
+      _result.message = message;
+    }
+    if (provider != null) {
+      _result.provider = provider;
+    }
+    return _result;
+  }
+  factory CreateVirtualAccountResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory CreateVirtualAccountResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  CreateVirtualAccountResponse clone() => CreateVirtualAccountResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  CreateVirtualAccountResponse copyWith(void Function(CreateVirtualAccountResponse) updates) => super.copyWith((message) => updates(message as CreateVirtualAccountResponse)) as CreateVirtualAccountResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static CreateVirtualAccountResponse create() => CreateVirtualAccountResponse._();
+  CreateVirtualAccountResponse createEmptyInstance() => create();
+  static $pb.PbList<CreateVirtualAccountResponse> createRepeated() => $pb.PbList<CreateVirtualAccountResponse>();
+  @$core.pragma('dart2js:noInline')
+  static CreateVirtualAccountResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<CreateVirtualAccountResponse>(create);
+  static CreateVirtualAccountResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  Account get account => $_getN(0);
+  @$pb.TagNumber(1)
+  set account(Account v) { setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasAccount() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearAccount() => clearField(1);
+  @$pb.TagNumber(1)
+  Account ensureAccount() => $_ensure(0);
+
+  @$pb.TagNumber(2)
+  $core.String get message => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set message($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasMessage() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMessage() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get provider => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set provider($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasProvider() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearProvider() => clearField(3);
 }
 

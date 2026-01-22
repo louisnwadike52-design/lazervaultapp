@@ -1,20 +1,21 @@
 import 'package:dartz/dartz.dart';
 import 'package:lazervault/core/errors/exceptions.dart';
 import 'package:lazervault/core/errors/failure.dart';
-import 'package:lazervault/src/features/kyc/data/datasources/kyc_remote_datasource.dart';
+import 'package:lazervault/src/features/kyc/data/datasources/kyc_grpc_datasource.dart';
 import 'package:lazervault/src/features/kyc/domain/entities/kyc_tier_entity.dart';
 import 'package:lazervault/src/features/kyc/domain/repositories/kyc_repository.dart';
 
-/// KYC Repository Implementation
+/// KYC Repository Implementation (gRPC-based)
+/// Uses AuthService gRPC client instead of HTTP
 class KYCRepositoryImpl implements KYCRepository {
-  final KYCRemoteDataSource remoteDataSource;
+  final KYCGrpcDataSource grpcDataSource;
 
-  KYCRepositoryImpl({required this.remoteDataSource});
+  KYCRepositoryImpl({required this.grpcDataSource});
 
   @override
   Future<Either<Failure, UserKYCProfile>> getKYCStatus(String userId) async {
     try {
-      final data = await remoteDataSource.getKYCStatus(userId);
+      final data = await grpcDataSource.getKYCStatus(userId);
       return Right(_parseKYCProfile(data));
     } on APIException catch (e) {
       return Left(APIFailure(message: e.message, statusCode: e.statusCode));
@@ -31,7 +32,7 @@ class KYCRepositoryImpl implements KYCRepository {
     String countryCode,
   ) async {
     try {
-      final data = await remoteDataSource.getCountryRequirements(countryCode);
+      final data = await grpcDataSource.getCountryRequirements(countryCode);
       return Right(_parseCountryRequirements(data));
     } on APIException catch (e) {
       return Left(APIFailure(message: e.message, statusCode: e.statusCode));
@@ -49,7 +50,7 @@ class KYCRepositoryImpl implements KYCRepository {
     required KYCTier targetTier,
   }) async {
     try {
-      final data = await remoteDataSource.initiateKYC(
+      final data = await grpcDataSource.initiateKYC(
         userId: userId,
         targetTier: targetTier,
       );
@@ -77,7 +78,7 @@ class KYCRepositoryImpl implements KYCRepository {
     IDVerificationRequest request,
   ) async {
     try {
-      final data = await remoteDataSource.verifyID(request);
+      final data = await grpcDataSource.verifyID(request);
       return Right(VerifyIDResponse(
         success: data['success'] as bool,
         message: data['message'] as String?,
@@ -104,7 +105,7 @@ class KYCRepositoryImpl implements KYCRepository {
     DocumentUploadRequest request,
   ) async {
     try {
-      final data = await remoteDataSource.uploadDocument(request);
+      final data = await grpcDataSource.uploadDocument(request);
       return Right(VerifyIDResponse(
         success: data['success'] as bool,
         message: data['message'] as String?,
@@ -127,8 +128,12 @@ class KYCRepositoryImpl implements KYCRepository {
     String userId,
   ) async {
     try {
-      // In real implementation, fetch from API
-      return Right(const <VerificationDocument>[]);
+      final data = await grpcDataSource.getUserDocuments(userId);
+      final docs = (data['documents'] as List<dynamic>?)
+              ?.map((e) => _parseDocument(e as Map<String, dynamic>))
+              .toList() ??
+          <VerificationDocument>[];
+      return Right(docs);
     } on APIException catch (e) {
       return Left(APIFailure(message: e.message, statusCode: e.statusCode));
     } catch (e) {
@@ -145,7 +150,7 @@ class KYCRepositoryImpl implements KYCRepository {
     bool skipTier2 = true,
   }) async {
     try {
-      final data = await remoteDataSource.skipKYCUpgrade(
+      final data = await grpcDataSource.skipKYCUpgrade(
         userId: userId,
         skipTier2: skipTier2,
       );

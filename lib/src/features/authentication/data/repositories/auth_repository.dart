@@ -15,8 +15,9 @@ import 'package:lazervault/src/features/authentication/domain/repositories/i_aut
 import 'package:lazervault/src/features/authentication/domain/usecases/sign_up_usecase.dart';
 import 'package:lazervault/src/generated/auth.pbgrpc.dart' hide VirtualAccountInfo;
 import 'package:lazervault/src/generated/auth.pbenum.dart' as auth_enum;
-import 'package:lazervault/src/generated/user.pbgrpc.dart';
 import 'package:lazervault/src/generated/auth.pb.dart' as auth_req_resp;
+import 'package:lazervault/src/generated/user.pbgrpc.dart';
+import 'package:fixnum/fixnum.dart';
 // Import google_sign_in and sign_in_with_apple if implementing those methods
 // import 'package:google_sign_in/google_sign_in.dart';
 // import 'package:sign_in_with_apple/sign_in_with_apple.dart';
@@ -396,14 +397,69 @@ class AuthRepositoryImpl implements IAuthRepository {
       final response = await _authServiceClient.verifyEmail(request, options: callOptions);
 
       if (response.success) {
-        print('Email verified successfully');
-        // After successful verification, need to get updated user profile
-        // For now, return a success with message
-        // TODO: Implement getting updated profile or modify backend to return profile
-        return Left(ServerFailure(
-          message: 'Email verified! Please log in again.',
-          statusCode: 200,
-        ));
+        print('Email verified successfully on backend');
+
+        // Backend has verified the email - no need to call getMe again.
+        // Just update the frontend state with isEmailVerified=true using stored user data.
+        // On next login, the backend will return the updated state.
+
+        // Get current tokens from storage
+        final accessToken = await _callOptionsHelper.storage.read(key: 'access_token');
+        final refreshToken = await _callOptionsHelper.storage.read(key: 'refresh_token');
+
+        if (accessToken == null || refreshToken == null) {
+          print('Tokens not found in storage after email verification');
+          return Left(ServerFailure(
+            message: 'Session expired. Please log in again.',
+            statusCode: 401,
+          ));
+        }
+
+        // Read user data from storage (saved during signup)
+        final userId = await _callOptionsHelper.storage.read(key: 'user_id');
+        final userEmail = await _callOptionsHelper.storage.read(key: 'user_email');
+        final userFirstName = await _callOptionsHelper.storage.read(key: 'user_first_name');
+        final userLastName = await _callOptionsHelper.storage.read(key: 'user_last_name');
+        final userAvatarUrl = await _callOptionsHelper.storage.read(key: 'user_avatar_url');
+
+        if (userId != null && userId.isNotEmpty) {
+          // Construct profile with isEmailVerified=true - backend already confirmed it
+          final now = DateTime.now();
+          final user = UserModel(
+            id: userId,
+            firstName: userFirstName ?? '',
+            lastName: userLastName ?? '',
+            email: userEmail ?? '',
+            phoneNumber: null,
+            username: null,
+            role: null,
+            verified: false,
+            isEmailVerified: true, // Backend verified it, update frontend state
+            createdAt: now,
+            updatedAt: now,
+            profilePicture: userAvatarUrl?.isNotEmpty == true ? userAvatarUrl : null,
+          );
+
+          final sessionModel = SessionModel(
+            id: userId,
+            userId: userId,
+            accessToken: accessToken,
+            refreshToken: refreshToken,
+            accessTokenExpiresAt: now.add(const Duration(hours: 1)),
+            refreshTokenExpiresAt: now.add(const Duration(days: 7)),
+          );
+
+          final profileModel = ProfileModel(user: user, session: sessionModel);
+          print('Email verified - returning updated profile with isEmailVerified=true (no getMe call needed)');
+          return Right(profileModel);
+        } else {
+          // No stored user data - session lost
+          print('No user data in storage after email verification');
+          return Left(ServerFailure(
+            message: 'Session expired. Please log in again.',
+            statusCode: 401,
+          ));
+        }
       } else {
         print('Email verification failed: ${response.msg}');
         return Left(ServerFailure(

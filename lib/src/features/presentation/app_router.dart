@@ -269,10 +269,7 @@ import 'package:lazervault/src/features/referral/presentation/cubit/referral_cub
 import 'package:lazervault/src/features/kyc/presentation/views/progressive_kyc_screen.dart';
 import 'package:lazervault/src/features/kyc/presentation/views/id_verification_screen.dart';
 import 'package:lazervault/src/features/kyc/presentation/cubits/kyc_cubit.dart';
-import 'package:lazervault/src/features/kyc/data/repositories/kyc_repository_impl.dart';
-import 'package:lazervault/src/features/kyc/data/datasources/kyc_remote_datasource.dart';
 import 'package:lazervault/src/features/kyc/domain/entities/kyc_tier_entity.dart';
-import 'package:http/http.dart' as http;
 import 'package:lazervault/src/features/presentation/views/debug_settings_screen.dart';
 
 // Lock Funds imports
@@ -2068,18 +2065,11 @@ class AppRouter {
       transition: Transition.rightToLeft,
     ),
 
-    // KYC Routes - Progressive Onboarding
+    // KYC Routes - Progressive Onboarding (gRPC-based)
     GetPage(
       name: AppRoutes.kycProgressive,
       page: () => BlocProvider(
-        create: (_) => KYCCubit(
-          repository: KYCRepositoryImpl(
-            remoteDataSource: KYCRemoteDataSource(
-              client: http.Client(),
-              baseUrl: 'https://api.lazervault.com', // Configure as needed
-            ),
-          ),
-        ),
+        create: (_) => serviceLocator<KYCCubit>(),
         child: const ProgressiveKYCScreen(),
       ),
       transition: Transition.rightToLeft,
@@ -2089,14 +2079,7 @@ class AppRouter {
       page: () {
         final args = Get.arguments as Map<String, dynamic>? ?? {};
         return BlocProvider(
-          create: (_) => KYCCubit(
-            repository: KYCRepositoryImpl(
-              remoteDataSource: KYCRemoteDataSource(
-                client: http.Client(),
-                baseUrl: 'https://api.lazervault.com',
-              ),
-            ),
-          ),
+          create: (_) => serviceLocator<KYCCubit>(),
           child: IdVerificationScreen(
             targetTier: args['targetTier'] as KYCTier? ?? KYCTier.tier2,
             preferredIdType: args['preferredIdType'] as IDType?,

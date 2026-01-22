@@ -9,7 +9,7 @@ import 'dart:core' as $core;
 
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'google/protobuf/timestamp.pb.dart' as $36;
+import 'google/protobuf/timestamp.pb.dart' as $2;
 
 class CreateTransactionPinRequest extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CreateTransactionPinRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'auth'), createEmptyInstance: create)
@@ -327,7 +327,7 @@ class VerifyTransactionPinResponse extends $pb.GeneratedMessage {
     ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
     ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
     ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'verificationToken')
-    ..aOM<$36.Timestamp>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'expiresAt', subBuilder: $36.Timestamp.create)
+    ..aOM<$2.Timestamp>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'expiresAt', subBuilder: $2.Timestamp.create)
     ..a<$core.int>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'remainingAttempts', $pb.PbFieldType.O3)
     ..aOB(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isLocked')
     ..hasRequiredFields = false
@@ -338,7 +338,7 @@ class VerifyTransactionPinResponse extends $pb.GeneratedMessage {
     $core.bool? success,
     $core.String? message,
     $core.String? verificationToken,
-    $36.Timestamp? expiresAt,
+    $2.Timestamp? expiresAt,
     $core.int? remainingAttempts,
     $core.bool? isLocked,
   }) {
@@ -412,15 +412,15 @@ class VerifyTransactionPinResponse extends $pb.GeneratedMessage {
   void clearVerificationToken() => clearField(3);
 
   @$pb.TagNumber(4)
-  $36.Timestamp get expiresAt => $_getN(3);
+  $2.Timestamp get expiresAt => $_getN(3);
   @$pb.TagNumber(4)
-  set expiresAt($36.Timestamp v) { setField(4, v); }
+  set expiresAt($2.Timestamp v) { setField(4, v); }
   @$pb.TagNumber(4)
   $core.bool hasExpiresAt() => $_has(3);
   @$pb.TagNumber(4)
   void clearExpiresAt() => clearField(4);
   @$pb.TagNumber(4)
-  $36.Timestamp ensureExpiresAt() => $_ensure(3);
+  $2.Timestamp ensureExpiresAt() => $_ensure(3);
 
   @$pb.TagNumber(5)
   $core.int get remainingAttempts => $_getIZ(4);
@@ -806,8 +806,8 @@ class CheckUserHasPinResponse extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CheckUserHasPinResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'auth'), createEmptyInstance: create)
     ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'hasPin')
     ..aOB(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isActive')
-    ..aOM<$36.Timestamp>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $36.Timestamp.create)
-    ..aOM<$36.Timestamp>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastChangedAt', subBuilder: $36.Timestamp.create)
+    ..aOM<$2.Timestamp>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $2.Timestamp.create)
+    ..aOM<$2.Timestamp>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastChangedAt', subBuilder: $2.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -815,8 +815,8 @@ class CheckUserHasPinResponse extends $pb.GeneratedMessage {
   factory CheckUserHasPinResponse({
     $core.bool? hasPin,
     $core.bool? isActive,
-    $36.Timestamp? createdAt,
-    $36.Timestamp? lastChangedAt,
+    $2.Timestamp? createdAt,
+    $2.Timestamp? lastChangedAt,
   }) {
     final _result = create();
     if (hasPin != null) {
@@ -873,26 +873,26 @@ class CheckUserHasPinResponse extends $pb.GeneratedMessage {
   void clearIsActive() => clearField(2);
 
   @$pb.TagNumber(3)
-  $36.Timestamp get createdAt => $_getN(2);
+  $2.Timestamp get createdAt => $_getN(2);
   @$pb.TagNumber(3)
-  set createdAt($36.Timestamp v) { setField(3, v); }
+  set createdAt($2.Timestamp v) { setField(3, v); }
   @$pb.TagNumber(3)
   $core.bool hasCreatedAt() => $_has(2);
   @$pb.TagNumber(3)
   void clearCreatedAt() => clearField(3);
   @$pb.TagNumber(3)
-  $36.Timestamp ensureCreatedAt() => $_ensure(2);
+  $2.Timestamp ensureCreatedAt() => $_ensure(2);
 
   @$pb.TagNumber(4)
-  $36.Timestamp get lastChangedAt => $_getN(3);
+  $2.Timestamp get lastChangedAt => $_getN(3);
   @$pb.TagNumber(4)
-  set lastChangedAt($36.Timestamp v) { setField(4, v); }
+  set lastChangedAt($2.Timestamp v) { setField(4, v); }
   @$pb.TagNumber(4)
   $core.bool hasLastChangedAt() => $_has(3);
   @$pb.TagNumber(4)
   void clearLastChangedAt() => clearField(4);
   @$pb.TagNumber(4)
-  $36.Timestamp ensureLastChangedAt() => $_ensure(3);
+  $2.Timestamp ensureLastChangedAt() => $_ensure(3);
 }
 
 class ValidateTransactionPinTokenRequest extends $pb.GeneratedMessage {
@@ -975,7 +975,7 @@ class ValidateTransactionPinTokenResponse extends $pb.GeneratedMessage {
     ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'valid')
     ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
     ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactionId')
-    ..aOM<$36.Timestamp>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'expiresAt', subBuilder: $36.Timestamp.create)
+    ..aOM<$2.Timestamp>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'expiresAt', subBuilder: $2.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -984,7 +984,7 @@ class ValidateTransactionPinTokenResponse extends $pb.GeneratedMessage {
     $core.bool? valid,
     $core.String? userId,
     $core.String? transactionId,
-    $36.Timestamp? expiresAt,
+    $2.Timestamp? expiresAt,
   }) {
     final _result = create();
     if (valid != null) {
@@ -1050,15 +1050,15 @@ class ValidateTransactionPinTokenResponse extends $pb.GeneratedMessage {
   void clearTransactionId() => clearField(3);
 
   @$pb.TagNumber(4)
-  $36.Timestamp get expiresAt => $_getN(3);
+  $2.Timestamp get expiresAt => $_getN(3);
   @$pb.TagNumber(4)
-  set expiresAt($36.Timestamp v) { setField(4, v); }
+  set expiresAt($2.Timestamp v) { setField(4, v); }
   @$pb.TagNumber(4)
   $core.bool hasExpiresAt() => $_has(3);
   @$pb.TagNumber(4)
   void clearExpiresAt() => clearField(4);
   @$pb.TagNumber(4)
-  $36.Timestamp ensureExpiresAt() => $_ensure(3);
+  $2.Timestamp ensureExpiresAt() => $_ensure(3);
 }
 
 class TransactionPinDetails extends $pb.GeneratedMessage {
@@ -1066,12 +1066,12 @@ class TransactionPinDetails extends $pb.GeneratedMessage {
     ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
     ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
     ..aOB(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isActive')
-    ..aOM<$36.Timestamp>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $36.Timestamp.create)
-    ..aOM<$36.Timestamp>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $36.Timestamp.create)
-    ..aOM<$36.Timestamp>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastUsedAt', subBuilder: $36.Timestamp.create)
+    ..aOM<$2.Timestamp>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $2.Timestamp.create)
+    ..aOM<$2.Timestamp>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $2.Timestamp.create)
+    ..aOM<$2.Timestamp>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastUsedAt', subBuilder: $2.Timestamp.create)
     ..a<$core.int>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'failedAttempts', $pb.PbFieldType.O3)
     ..aOB(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isLocked')
-    ..aOM<$36.Timestamp>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lockedUntil', subBuilder: $36.Timestamp.create)
+    ..aOM<$2.Timestamp>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lockedUntil', subBuilder: $2.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -1080,12 +1080,12 @@ class TransactionPinDetails extends $pb.GeneratedMessage {
     $core.String? id,
     $core.String? userId,
     $core.bool? isActive,
-    $36.Timestamp? createdAt,
-    $36.Timestamp? updatedAt,
-    $36.Timestamp? lastUsedAt,
+    $2.Timestamp? createdAt,
+    $2.Timestamp? updatedAt,
+    $2.Timestamp? lastUsedAt,
     $core.int? failedAttempts,
     $core.bool? isLocked,
-    $36.Timestamp? lockedUntil,
+    $2.Timestamp? lockedUntil,
   }) {
     final _result = create();
     if (id != null) {
@@ -1166,37 +1166,37 @@ class TransactionPinDetails extends $pb.GeneratedMessage {
   void clearIsActive() => clearField(3);
 
   @$pb.TagNumber(4)
-  $36.Timestamp get createdAt => $_getN(3);
+  $2.Timestamp get createdAt => $_getN(3);
   @$pb.TagNumber(4)
-  set createdAt($36.Timestamp v) { setField(4, v); }
+  set createdAt($2.Timestamp v) { setField(4, v); }
   @$pb.TagNumber(4)
   $core.bool hasCreatedAt() => $_has(3);
   @$pb.TagNumber(4)
   void clearCreatedAt() => clearField(4);
   @$pb.TagNumber(4)
-  $36.Timestamp ensureCreatedAt() => $_ensure(3);
+  $2.Timestamp ensureCreatedAt() => $_ensure(3);
 
   @$pb.TagNumber(5)
-  $36.Timestamp get updatedAt => $_getN(4);
+  $2.Timestamp get updatedAt => $_getN(4);
   @$pb.TagNumber(5)
-  set updatedAt($36.Timestamp v) { setField(5, v); }
+  set updatedAt($2.Timestamp v) { setField(5, v); }
   @$pb.TagNumber(5)
   $core.bool hasUpdatedAt() => $_has(4);
   @$pb.TagNumber(5)
   void clearUpdatedAt() => clearField(5);
   @$pb.TagNumber(5)
-  $36.Timestamp ensureUpdatedAt() => $_ensure(4);
+  $2.Timestamp ensureUpdatedAt() => $_ensure(4);
 
   @$pb.TagNumber(6)
-  $36.Timestamp get lastUsedAt => $_getN(5);
+  $2.Timestamp get lastUsedAt => $_getN(5);
   @$pb.TagNumber(6)
-  set lastUsedAt($36.Timestamp v) { setField(6, v); }
+  set lastUsedAt($2.Timestamp v) { setField(6, v); }
   @$pb.TagNumber(6)
   $core.bool hasLastUsedAt() => $_has(5);
   @$pb.TagNumber(6)
   void clearLastUsedAt() => clearField(6);
   @$pb.TagNumber(6)
-  $36.Timestamp ensureLastUsedAt() => $_ensure(5);
+  $2.Timestamp ensureLastUsedAt() => $_ensure(5);
 
   @$pb.TagNumber(7)
   $core.int get failedAttempts => $_getIZ(6);
@@ -1217,15 +1217,15 @@ class TransactionPinDetails extends $pb.GeneratedMessage {
   void clearIsLocked() => clearField(8);
 
   @$pb.TagNumber(9)
-  $36.Timestamp get lockedUntil => $_getN(8);
+  $2.Timestamp get lockedUntil => $_getN(8);
   @$pb.TagNumber(9)
-  set lockedUntil($36.Timestamp v) { setField(9, v); }
+  set lockedUntil($2.Timestamp v) { setField(9, v); }
   @$pb.TagNumber(9)
   $core.bool hasLockedUntil() => $_has(8);
   @$pb.TagNumber(9)
   void clearLockedUntil() => clearField(9);
   @$pb.TagNumber(9)
-  $36.Timestamp ensureLockedUntil() => $_ensure(8);
+  $2.Timestamp ensureLockedUntil() => $_ensure(8);
 }
 
 class PinConfig extends $pb.GeneratedMessage {

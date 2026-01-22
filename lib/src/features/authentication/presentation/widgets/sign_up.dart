@@ -183,17 +183,9 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
             final hasSecondaryPhone = phoneNumber != null && phoneNumber.isNotEmpty;
             final hasSecondaryEmail = email != null && email.isNotEmpty;
 
-            // Navigate based on PRIMARY contact type (show single snackbar)
+            // Navigate based on PRIMARY contact type
+            // Note: No "Account Created" snackbar here since email is sent after ID verification
             if (primaryType == PrimaryContactType.phone) {
-              Get.snackbar(
-                'Account Created!',
-                'Please verify your phone number to continue.',
-                snackPosition: SnackPosition.TOP,
-                backgroundColor: Colors.green,
-                colorText: Colors.white,
-                margin: EdgeInsets.all(15.w),
-                borderRadius: 10.r,
-              );
               // Navigate to phone OTP (required) - pass secondary email info
               Get.offAllNamed(AppRoutes.phoneVerification, arguments: {
                 'phoneNumber': phoneNumber,
@@ -204,15 +196,6 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
               });
             } else {
               // Default to email verification (email is primary)
-              Get.snackbar(
-                'Account Created!',
-                'Please verify your email to continue.',
-                snackPosition: SnackPosition.TOP,
-                backgroundColor: Colors.green,
-                colorText: Colors.white,
-                margin: EdgeInsets.all(15.w),
-                borderRadius: 10.r,
-              );
               // Navigate to email OTP (required) - pass secondary phone info
               Get.offAllNamed(AppRoutes.emailVerification, arguments: {
                 'email': email,

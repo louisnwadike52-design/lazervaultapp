@@ -147,6 +147,24 @@ class AccountsServiceClient extends $grpc.Client {
           ($0.UnlockFundsRequest value) => value.writeToBuffer(),
           ($core.List<$core.int> value) =>
               $0.UnlockFundsResponse.fromBuffer(value));
+  static final _$createTransfer =
+      $grpc.ClientMethod<$0.CreateTransferRequest, $0.CreateTransferResponse>(
+          '/accounts.AccountsService/CreateTransfer',
+          ($0.CreateTransferRequest value) => value.writeToBuffer(),
+          ($core.List<$core.int> value) =>
+              $0.CreateTransferResponse.fromBuffer(value));
+  static final _$createVirtualAccount = $grpc.ClientMethod<
+          $0.CreateVirtualAccountRequest, $0.CreateVirtualAccountResponse>(
+      '/accounts.AccountsService/CreateVirtualAccount',
+      ($0.CreateVirtualAccountRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $0.CreateVirtualAccountResponse.fromBuffer(value));
+  static final _$getTransfer =
+      $grpc.ClientMethod<$0.GetTransferRequest, $0.GetTransferResponse>(
+          '/accounts.AccountsService/GetTransfer',
+          ($0.GetTransferRequest value) => value.writeToBuffer(),
+          ($core.List<$core.int> value) =>
+              $0.GetTransferResponse.fromBuffer(value));
 
   AccountsServiceClient($grpc.ClientChannel channel,
       {$grpc.CallOptions? options,
@@ -284,6 +302,24 @@ class AccountsServiceClient extends $grpc.Client {
       $0.UnlockFundsRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$unlockFunds, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.CreateTransferResponse> createTransfer(
+      $0.CreateTransferRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$createTransfer, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.CreateVirtualAccountResponse> createVirtualAccount(
+      $0.CreateVirtualAccountRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$createVirtualAccount, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetTransferResponse> getTransfer(
+      $0.GetTransferRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getTransfer, request, options: options);
   }
 }
 
@@ -485,6 +521,33 @@ abstract class AccountsServiceBase extends $grpc.Service {
             ($core.List<$core.int> value) =>
                 $0.UnlockFundsRequest.fromBuffer(value),
             ($0.UnlockFundsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.CreateTransferRequest,
+            $0.CreateTransferResponse>(
+        'CreateTransfer',
+        createTransfer_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.CreateTransferRequest.fromBuffer(value),
+        ($0.CreateTransferResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.CreateVirtualAccountRequest,
+            $0.CreateVirtualAccountResponse>(
+        'CreateVirtualAccount',
+        createVirtualAccount_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.CreateVirtualAccountRequest.fromBuffer(value),
+        ($0.CreateVirtualAccountResponse value) => value.writeToBuffer()));
+    $addMethod(
+        $grpc.ServiceMethod<$0.GetTransferRequest, $0.GetTransferResponse>(
+            'GetTransfer',
+            getTransfer_Pre,
+            false,
+            false,
+            ($core.List<$core.int> value) =>
+                $0.GetTransferRequest.fromBuffer(value),
+            ($0.GetTransferResponse value) => value.writeToBuffer()));
   }
 
   $async.Future<$0.CreateAccountResponse> createAccount_Pre(
@@ -615,6 +678,23 @@ abstract class AccountsServiceBase extends $grpc.Service {
     return unlockFunds(call, await request);
   }
 
+  $async.Future<$0.CreateTransferResponse> createTransfer_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$0.CreateTransferRequest> request) async {
+    return createTransfer(call, await request);
+  }
+
+  $async.Future<$0.CreateVirtualAccountResponse> createVirtualAccount_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$0.CreateVirtualAccountRequest> request) async {
+    return createVirtualAccount(call, await request);
+  }
+
+  $async.Future<$0.GetTransferResponse> getTransfer_Pre($grpc.ServiceCall call,
+      $async.Future<$0.GetTransferRequest> request) async {
+    return getTransfer(call, await request);
+  }
+
   $async.Future<$0.CreateAccountResponse> createAccount(
       $grpc.ServiceCall call, $0.CreateAccountRequest request);
   $async.Future<$0.GetAccountsResponse> getAccounts(
@@ -659,4 +739,10 @@ abstract class AccountsServiceBase extends $grpc.Service {
       $grpc.ServiceCall call, $0.GetLockFundsRequest request);
   $async.Future<$0.UnlockFundsResponse> unlockFunds(
       $grpc.ServiceCall call, $0.UnlockFundsRequest request);
+  $async.Future<$0.CreateTransferResponse> createTransfer(
+      $grpc.ServiceCall call, $0.CreateTransferRequest request);
+  $async.Future<$0.CreateVirtualAccountResponse> createVirtualAccount(
+      $grpc.ServiceCall call, $0.CreateVirtualAccountRequest request);
+  $async.Future<$0.GetTransferResponse> getTransfer(
+      $grpc.ServiceCall call, $0.GetTransferRequest request);
 }

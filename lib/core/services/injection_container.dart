@@ -78,12 +78,17 @@ import 'package:lazervault/src/features/voice_session/cubit/voice_session_cubit.
 import 'package:lazervault/src/features/voice_enrollment/cubit/voice_enrollment_cubit.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 import 'package:lazervault/src/features/transaction_pin/cubit/transaction_pin_cubit.dart';
-// KYC Imports
-import 'package:lazervault/src/features/kyc/data/datasources/kyc_remote_datasource.dart';
+// KYC Imports (gRPC-based - NO HTTP)
+import 'package:lazervault/src/features/kyc/data/datasources/kyc_grpc_datasource.dart';
 import 'package:lazervault/src/features/kyc/data/repositories/kyc_repository_impl.dart';
 import 'package:lazervault/src/features/kyc/domain/repositories/kyc_repository.dart';
 import 'package:lazervault/src/features/kyc/presentation/cubits/kyc_cubit.dart';
 // End KYC Imports
+// Virtual Account Imports
+import 'package:lazervault/src/features/virtual_account/domain/repositories/i_virtual_account_repository.dart';
+import 'package:lazervault/src/features/virtual_account/data/repositories/virtual_account_repository_impl.dart';
+import 'package:lazervault/src/features/virtual_account/domain/usecases/create_virtual_account_usecase.dart';
+// End Virtual Account Imports
 import 'package:lazervault/src/features/voice_enrollment/domain/repositories/voice_enrollment_repository.dart';
 import 'package:lazervault/src/generated/recipient.pbgrpc.dart';
 import 'package:lazervault/src/generated/transfer.pbgrpc.dart' hide TransferTransaction;
@@ -691,6 +696,7 @@ Future<void> init() async {
         checkEmailAvailability: serviceLocator<CheckEmailAvailabilityUseCase>(),
         verifyIdentity: serviceLocator<VerifyIdentityUseCase>(),
         validateToken: serviceLocator<ValidateTokenUseCase>(),
+        createVirtualAccount: serviceLocator<CreateVirtualAccountUseCase>(),
         storage: serviceLocator<FlutterSecureStorage>(),
         currencySyncService: serviceLocator<CurrencySyncService>(),
         signupStateService: serviceLocator<SignupStateService>(),
@@ -743,18 +749,17 @@ Future<void> init() async {
 
   // ================== Feature: KYC ==================
 
-  // Data Sources
-  serviceLocator.registerLazySingleton<KYCRemoteDataSource>(
-      () => KYCRemoteDataSource(
-          client: serviceLocator<http.Client>(),
-          baseUrl: dotenv.env['CORE_API_URL'] ?? 'http://localhost:7878',
-          storage: serviceLocator<FlutterSecureStorage>(),
-        ));
+  // gRPC Data Source (Uses AuthServiceClient via gRPC - NO HTTP)
+  serviceLocator.registerLazySingleton<KYCGrpcDataSource>(
+      () => KYCGrpcDataSource(
+          authClient: serviceLocator<auth_proto.AuthServiceClient>(),
+        ),
+      );
 
-  // Repositories
+  // Repositories (Now using gRPC instead of HTTP)
   serviceLocator.registerLazySingleton<KYCRepository>(
       () => KYCRepositoryImpl(
-          remoteDataSource: serviceLocator<KYCRemoteDataSource>(),
+          grpcDataSource: serviceLocator<KYCGrpcDataSource>(),
         ));
 
   // Blocs/Cubits
@@ -1834,6 +1839,17 @@ Future<void> init() async {
       client: serviceLocator<accounts_grpc.AccountsServiceClient>(),
       callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
     ),
+  );
+
+  // Virtual Account Repository and Use Case
+  serviceLocator.registerLazySingleton<IVirtualAccountRepository>(
+    () => VirtualAccountRepositoryImpl(
+      grpcClient: serviceLocator<AccountsGrpcClient>(),
+      callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
+    ),
+  );
+  serviceLocator.registerLazySingleton<CreateVirtualAccountUseCase>(
+    () => CreateVirtualAccountUseCase(serviceLocator<IVirtualAccountRepository>()),
   );
 
   // Cache Data Source - SQLite for offline support

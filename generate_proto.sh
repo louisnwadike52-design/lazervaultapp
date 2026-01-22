@@ -71,6 +71,13 @@ protoc --dart_out=grpc:lib/src/generated \
   -Iproto \
   ../microservices/accounts-service/accounts-microservice/proto/accounts.proto
 
+# Generate auth.proto from auth-service
+echo "Generating Dart code from auth.proto..."
+protoc --dart_out=grpc:lib/src/generated \
+  -I../microservices/auth-service/auth-microservice/proto \
+  -Iproto \
+  ../microservices/auth-service/auth-microservice/proto/auth.proto
+
 if [ $? -eq 0 ]; then
     echo "Dart code generation successful."
 else
