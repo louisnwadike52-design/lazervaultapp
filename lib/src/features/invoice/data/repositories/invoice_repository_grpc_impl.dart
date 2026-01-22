@@ -1,9 +1,6 @@
 import '../../../../core/network/grpc_client.dart';
 import '../../../../core/network/retry_helper.dart';
 import '../../../../generated/invoice.pb.dart' as pb;
-import '../../../../generated/invoice_payment.pb.dart' as payment_pb;
-import '../../../../generated/common.pbenum.dart' as common_pb;
-import '../../../../generated/google/protobuf/timestamp.pb.dart' as timestamp_pb;
 
 import '../../domain/entities/invoice_entity.dart';
 import '../../domain/repositories/invoice_repository.dart';
@@ -25,8 +22,9 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
     return retryWithBackoff(
       operation: () async {
         final request = pb.GetInvoicesRequest()
-          ..page = 1
-          ..limit = 100;
+          ..accountId = currentUserId
+          ..limit = 100
+          ..offset = 0;
         final options = await grpcClient.callOptions;
 
         final response = await grpcClient.invoiceClient.getInvoices(
@@ -43,10 +41,10 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
   Future<Invoice?> getInvoiceById(String id) async {
     return retryWithBackoff(
       operation: () async {
-        final request = pb.GetInvoiceByIdRequest()..invoiceId = id;
+        final request = pb.GetInvoiceRequest()..invoiceId = id;
         final options = await grpcClient.callOptions;
 
-        final response = await grpcClient.invoiceClient.getInvoiceById(
+        final response = await grpcClient.invoiceClient.getInvoice(
           request,
           options: options,
         );
@@ -61,39 +59,23 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
     return retryWithBackoff(
       operation: () async {
         final request = pb.CreateInvoiceRequest()
-          ..recipientId = invoice.toUserId ?? ''
-          ..title = invoice.title
-          ..description = invoice.description ?? ''
+          ..accountId = currentUserId
+          ..recipientEmail = invoice.toEmail ?? ''
+          ..recipientName = invoice.toName ?? ''
+          ..description = invoice.description ?? invoice.title
           ..amount = invoice.amount
-          ..currency = invoice.currency
           ..dueDate = invoice.dueDate?.toUtc().toIso8601String() ?? DateTime.now().add(Duration(days: 30)).toUtc().toIso8601String()
-          ..toEmail = invoice.toEmail ?? ''
-          ..toName = invoice.toName ?? ''
-          ..notes = invoice.notes ?? ''
-          ..taxAmount = invoice.taxAmount ?? 0.0
-          ..discountAmount = invoice.discountAmount ?? 0.0
-          ..totalAmount = invoice.totalAmount;
+          ..tax = invoice.taxAmount ?? 0.0
+          ..discount = invoice.discountAmount ?? 0.0
+          ..notes = invoice.notes ?? '';
 
         // Add invoice items
         if (invoice.items.isNotEmpty) {
           request.items.addAll(invoice.items.map((item) => pb.InvoiceItem()
-            ..id = item.id
-            ..name = item.name
-            ..description = item.description ?? ''
-            ..quantity = item.quantity
+            ..description = '${item.name}: ${item.description ?? ''}'
+            ..quantity = item.quantity.toInt()
             ..unitPrice = item.unitPrice
-            ..totalPrice = item.totalPrice
-            ..category = item.category ?? ''));
-        }
-
-        // Add recipient details if available
-        if (invoice.recipientDetails != null && !invoice.recipientDetails!.isEmpty) {
-          request.recipientDetails = _addressDetailsToProto(invoice.recipientDetails!);
-        }
-
-        // Add payer details if available
-        if (invoice.payerDetails != null && !invoice.payerDetails!.isEmpty) {
-          request.payerDetails = _addressDetailsToProto(invoice.payerDetails!);
+            ..total = item.totalPrice));
         }
 
         final options = await grpcClient.callOptions;
@@ -109,49 +91,20 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
 
   @override
   Future<Invoice> sendInvoice(String invoiceId) async {
-    return retryWithBackoff(
-      operation: () async {
-        final request = pb.SendInvoiceRequest()..invoiceId = invoiceId;
-        final options = await grpcClient.callOptions;
-
-        final response = await grpcClient.invoiceClient.sendInvoice(
-          request,
-          options: options,
-        );
-
-        if (response.success) {
-          // Fetch and return the updated invoice
-          final updatedInvoice = await getInvoiceById(invoiceId);
-          if (updatedInvoice == null) {
-            throw Exception('Failed to fetch updated invoice');
-          }
-          return updatedInvoice;
-        } else {
-          throw Exception('Failed to send invoice');
-        }
-      },
-    );
+    throw UnimplementedError('sendInvoice not yet available in backend API');
   }
 
   @override
   Future<List<Invoice>> getInvoicesByUserId(String userId) async {
-    // Filter on client side for now
-    final allInvoices = await getAllInvoices();
-    return allInvoices.where((inv) => inv.fromUserId == userId).toList();
-  }
-
-  @override
-  Future<List<Invoice>> getInvoicesByStatus(InvoiceStatus status) async {
     return retryWithBackoff(
       operation: () async {
-        final isPaid = status == InvoiceStatus.paid;
-        final request = pb.GetInvoicesByStatusRequest()
-          ..isPaid = isPaid
-          ..page = 1
-          ..limit = 100;
-
+        final request = pb.GetInvoicesRequest()
+          ..accountId = userId
+          ..limit = 100
+          ..offset = 0;
         final options = await grpcClient.callOptions;
-        final response = await grpcClient.invoiceClient.getInvoicesByStatus(
+
+        final response = await grpcClient.invoiceClient.getInvoices(
           request,
           options: options,
         );
@@ -161,78 +114,41 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
     );
   }
 
-  // Methods not yet supported by backend - throwing UnimplementedError
-  // These can be implemented as the backend APIs are added
-
   @override
-  Future<Invoice> updateInvoice(Invoice invoice) async {
+  Future<List<Invoice>> getInvoicesByStatus(InvoiceStatus status) async {
     return retryWithBackoff(
       operation: () async {
-        final request = pb.UpdateInvoiceRequest()
-          ..invoiceId = invoice.id
-          ..recipientId = invoice.toUserId ?? ''
-          ..title = invoice.title
-          ..description = invoice.description ?? ''
-          ..amount = invoice.amount
-          ..currency = invoice.currency
-          ..dueDate = invoice.dueDate?.toUtc().toIso8601String() ?? ''
-          ..toEmail = invoice.toEmail ?? ''
-          ..toName = invoice.toName ?? ''
-          ..notes = invoice.notes ?? ''
-          ..taxAmount = invoice.taxAmount ?? 0.0
-          ..discountAmount = invoice.discountAmount ?? 0.0
-          ..totalAmount = invoice.totalAmount;
+        // Get invoices and filter by status (using status string field)
+        final request = pb.GetInvoicesRequest()
+          ..accountId = currentUserId
+          ..limit = 100
+          ..offset = 0;
 
-        // Add invoice items
-        if (invoice.items.isNotEmpty) {
-          request.items.addAll(invoice.items.map((item) => pb.InvoiceItem()
-            ..id = item.id
-            ..name = item.name
-            ..description = item.description ?? ''
-            ..quantity = item.quantity
-            ..unitPrice = item.unitPrice
-            ..totalPrice = item.totalPrice
-            ..category = item.category ?? ''));
-        }
-
-        // Add recipient details if available
-        if (invoice.recipientDetails != null && !invoice.recipientDetails!.isEmpty) {
-          request.recipientDetails = _addressDetailsToProto(invoice.recipientDetails!);
-        }
-
-        // Add payer details if available
-        if (invoice.payerDetails != null && !invoice.payerDetails!.isEmpty) {
-          request.payerDetails = _addressDetailsToProto(invoice.payerDetails!);
+        if (status == InvoiceStatus.paid) {
+          request.status = 'paid';
+        } else if (status == InvoiceStatus.pending) {
+          request.status = 'pending';
         }
 
         final options = await grpcClient.callOptions;
-        final response = await grpcClient.invoiceClient.updateInvoice(
+        final response = await grpcClient.invoiceClient.getInvoices(
           request,
           options: options,
         );
 
-        return _fromProto(response.invoice);
+        return response.invoices.map((inv) => _fromProto(inv)).toList();
       },
     );
   }
 
   @override
+  Future<Invoice> updateInvoice(Invoice invoice) async {
+    throw UnimplementedError('updateInvoice not yet available in backend API');
+  }
+
+  @override
   Future<void> deleteInvoice(String id) async {
-    return retryWithBackoff(
-      operation: () async {
-        final request = pb.DeleteInvoiceRequest()..invoiceId = id;
-        final options = await grpcClient.callOptions;
-
-        final response = await grpcClient.invoiceClient.deleteInvoice(
-          request,
-          options: options,
-        );
-
-        if (!response.success) {
-          throw Exception('Failed to delete invoice');
-        }
-      },
-    );
+    throw UnimplementedError('deleteInvoice not yet available in backend API');
   }
 
   @override
@@ -246,13 +162,14 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
   Future<Invoice> markInvoiceAsPaid(String invoiceId, PaymentMethod paymentMethod, String? paymentReference) async {
     return retryWithBackoff(
       operation: () async {
-        final request = pb.MarkInvoiceAsPaidRequest()
+        // Use payInvoice RPC which takes invoiceId, accountId, and pin
+        final request = pb.PayInvoiceRequest()
           ..invoiceId = invoiceId
-          ..paymentMethod = _paymentMethodToProto(paymentMethod)
-          ..paymentReference = paymentReference ?? '';
+          ..accountId = currentUserId
+          ..pin = ''; // PIN would come from user input
 
         final options = await grpcClient.callOptions;
-        final response = await grpcClient.invoiceClient.markInvoiceAsPaid(
+        final response = await grpcClient.invoiceClient.payInvoice(
           request,
           options: options,
         );
@@ -264,7 +181,21 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
 
   @override
   Future<Invoice> cancelInvoice(String invoiceId) async {
-    throw UnimplementedError('CancelInvoice not yet available in backend API');
+    return retryWithBackoff(
+      operation: () async {
+        final request = pb.CancelInvoiceRequest()
+          ..invoiceId = invoiceId
+          ..reason = 'User requested cancellation';
+        final options = await grpcClient.callOptions;
+
+        final response = await grpcClient.invoiceClient.cancelInvoice(
+          request,
+          options: options,
+        );
+
+        return _fromProto(response.invoice);
+      },
+    );
   }
 
   @override
@@ -279,7 +210,7 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
     final lowerQuery = query.toLowerCase();
     return allInvoices.where((inv) {
       return inv.title.toLowerCase().contains(lowerQuery) ||
-             (inv.description.toLowerCase().contains(lowerQuery) ?? false) ||
+             (inv.description?.toLowerCase().contains(lowerQuery) ?? false) ||
              inv.toEmail?.toLowerCase().contains(lowerQuery) == true;
     }).toList();
   }
@@ -348,55 +279,12 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
 
   @override
   Future<TagUsersResponse> tagUsersToInvoice(String invoiceId, List<String> userIds, List<String> emails, List<String> phoneNumbers) async {
-    return retryWithBackoff(
-      operation: () async {
-        final request = pb.TagUsersToInvoiceRequest()
-          ..invoiceId = invoiceId
-          ..userIds.addAll(userIds)
-          ..emails.addAll(emails)
-          ..phoneNumbers.addAll(phoneNumbers);
-
-        final options = await grpcClient.callOptions;
-        final response = await grpcClient.invoiceClient.tagUsersToInvoice(
-          request,
-          options: options,
-        );
-
-        return TagUsersResponse(
-          success: response.success,
-          taggedUserIds: response.taggedUserIds,
-          invitedEmails: response.invitedEmails,
-          invitedPhones: response.invitedPhones,
-          message: response.message,
-        );
-      },
-    );
+    throw UnimplementedError('tagUsersToInvoice not yet available in backend API');
   }
 
   @override
   Future<List<InvoiceUser>> searchUsers(String query, {int limit = 20}) async {
-    return retryWithBackoff(
-      operation: () async {
-        final request = pb.SearchInvoiceUsersRequest()
-          ..query = query
-          ..limit = limit;
-
-        final options = await grpcClient.callOptions;
-        final response = await grpcClient.invoiceClient.searchInvoiceUsers(
-          request,
-          options: options,
-        );
-
-        return response.users.map((user) => InvoiceUser(
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          username: user.username,
-          phone: user.phone,
-          isOnline: user.isOnline,
-        )).toList();
-      },
-    );
+    throw UnimplementedError('searchUsers not yet available in backend API');
   }
 
   // Helper: Convert protobuf to entity
@@ -405,19 +293,19 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
     List<InvoiceItem> items;
     if (proto.items.isNotEmpty) {
       items = proto.items.map((item) => InvoiceItem(
-        id: item.id,
-        name: item.name,
+        id: 'item_${DateTime.now().millisecondsSinceEpoch}',
+        name: _extractNameFromDescription(item.description),
         description: item.description.isNotEmpty ? item.description : null,
-        quantity: item.quantity,
+        quantity: item.quantity.toDouble(),
         unitPrice: item.unitPrice,
-        totalPrice: item.totalPrice,
-        category: item.category.isNotEmpty ? item.category : null,
+        totalPrice: item.total,
+        category: null,
       )).toList();
     } else {
       // Create a default invoice item from the invoice amount
       items = [InvoiceItem(
         id: 'item_default',
-        name: proto.title,
+        name: 'Invoice Item',
         description: proto.description.isNotEmpty ? proto.description : 'Invoice item',
         quantity: 1,
         unitPrice: proto.amount,
@@ -425,120 +313,49 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
       )];
     }
 
+    // Parse status from string
+    final statusStr = proto.status.toLowerCase();
+    final status = statusStr == 'paid' || statusStr == 'completed'
+        ? InvoiceStatus.paid
+        : InvoiceStatus.pending;
+
+    // Calculate total amount from proto fields
+    final totalAmount = proto.totalAmount > 0 ? proto.totalAmount : proto.amount;
+
     return Invoice(
       id: proto.id,
-      title: proto.title,
-      description: proto.description,
+      title: proto.description.isNotEmpty ? proto.description : 'Invoice',
+      description: proto.description.isNotEmpty ? proto.description : '',
       amount: proto.amount,
-      currency: proto.currency,
-      status: proto.isPaid ? InvoiceStatus.paid : InvoiceStatus.pending,
+      currency: proto.currency.isNotEmpty ? proto.currency : 'USD',
+      status: status,
       type: InvoiceType.invoice,
-      createdAt: _fromProtoTimestamp(proto.createdAt),
+      createdAt: proto.createdAt.isNotEmpty ? DateTime.parse(proto.createdAt) : DateTime.now(),
       dueDate: proto.dueDate.isNotEmpty ? DateTime.parse(proto.dueDate) : null,
       fromUserId: proto.userId,
-      toUserId: proto.recipientId.isNotEmpty ? proto.recipientId : null,
-      toEmail: proto.toEmail.isNotEmpty ? proto.toEmail : null,
-      toName: proto.toName.isNotEmpty ? proto.toName : null,
+      toUserId: proto.accountId.isNotEmpty ? proto.accountId : null,
+      toEmail: proto.recipientEmail.isNotEmpty ? proto.recipientEmail : null,
+      toName: proto.recipientName.isNotEmpty ? proto.recipientName : null,
       paymentReference: proto.paymentReference.isNotEmpty ? proto.paymentReference : null,
       items: items,
       notes: proto.notes.isNotEmpty ? proto.notes : null,
-      taxAmount: proto.taxAmount > 0 ? proto.taxAmount : null,
-      discountAmount: proto.discountAmount > 0 ? proto.discountAmount : null,
-      totalAmount: proto.totalAmount > 0 ? proto.totalAmount : proto.amount,
-      paymentMethod: proto.paymentMethodId.isNotEmpty ? PaymentMethod.bank_transfer : null,
-      recipientDetails: proto.hasRecipientDetails() ? _addressDetailsFromProto(proto.recipientDetails) : null,
-      payerDetails: proto.hasPayerDetails() ? _addressDetailsFromProto(proto.payerDetails) : null,
+      taxAmount: proto.tax > 0 ? proto.tax : null,
+      discountAmount: proto.discount > 0 ? proto.discount : null,
+      totalAmount: totalAmount,
+      paymentMethod: null, // Not available in current proto
+      recipientDetails: null, // Not available in current proto
+      payerDetails: null, // Not available in current proto
     );
   }
 
-  // Helper: Convert protobuf timestamp to DateTime
-  DateTime _fromProtoTimestamp(timestamp_pb.Timestamp timestamp) {
-    final milliseconds = timestamp.seconds.toInt() * 1000 +
-                        (timestamp.nanos ~/ 1000000);
-    return DateTime.fromMillisecondsSinceEpoch(milliseconds);
-  }
-
-  // Helper: Convert domain PaymentMethod enum to proto PaymentMethod message
-  payment_pb.PaymentMethod _paymentMethodToProto(PaymentMethod method) {
-    // Map domain enum to proto PaymentMethodType
-    common_pb.PaymentMethodType protoType;
-    switch (method) {
-      case PaymentMethod.bank_transfer:
-        protoType = common_pb.PaymentMethodType.PAYMENT_METHOD_TYPE_BANK_TRANSFER;
-        break;
-      case PaymentMethod.crypto:
-        // Default to Bitcoin for crypto - could be enhanced to support specific crypto types
-        protoType = common_pb.PaymentMethodType.PAYMENT_METHOD_TYPE_BITCOIN;
-        break;
-      case PaymentMethod.paypal:
-        protoType = common_pb.PaymentMethodType.PAYMENT_METHOD_TYPE_PAYPAL;
-        break;
-      case PaymentMethod.card:
-        // Default to credit card - could be enhanced to differentiate credit/debit
-        protoType = common_pb.PaymentMethodType.PAYMENT_METHOD_TYPE_CREDIT_CARD;
-        break;
-      case PaymentMethod.cash:
-        // Map cash to account balance (closest proto equivalent)
-        protoType = common_pb.PaymentMethodType.PAYMENT_METHOD_TYPE_ACCOUNT_BALANCE;
-        break;
+  // Helper: Extract name from description
+  String _extractNameFromDescription(String description) {
+    if (description.contains(':')) {
+      return description.split(':').first.trim();
     }
-
-    // Create and return PaymentMethod message with the appropriate type
-    return payment_pb.PaymentMethod(type: protoType);
-  }
-
-  // Helper: Convert domain AddressDetails to proto AddressDetails
-  pb.AddressDetails _addressDetailsToProto(AddressDetails details) {
-    final proto = pb.AddressDetails();
-
-    // Only set fields that have non-empty values
-    if (details.companyName?.isNotEmpty == true) {
-      proto.companyName = details.companyName!;
+    if (description.length > 30) {
+      return description.substring(0, 30) + '...';
     }
-    if (details.contactName?.isNotEmpty == true) {
-      proto.contactName = details.contactName!;
-    }
-    if (details.email?.isNotEmpty == true) {
-      proto.email = details.email!;
-    }
-    if (details.phone?.isNotEmpty == true) {
-      proto.phone = details.phone!;
-    }
-    if (details.addressLine1?.isNotEmpty == true) {
-      proto.addressLine1 = details.addressLine1!;
-    }
-    if (details.addressLine2?.isNotEmpty == true) {
-      proto.addressLine2 = details.addressLine2!;
-    }
-    if (details.city?.isNotEmpty == true) {
-      proto.city = details.city!;
-    }
-    if (details.state?.isNotEmpty == true) {
-      proto.state = details.state!;
-    }
-    if (details.postcode?.isNotEmpty == true) {
-      proto.postcode = details.postcode!;
-    }
-    if (details.country?.isNotEmpty == true) {
-      proto.country = details.country!;
-    }
-
-    return proto;
-  }
-
-  // Helper: Convert proto AddressDetails to domain AddressDetails
-  AddressDetails _addressDetailsFromProto(pb.AddressDetails proto) {
-    return AddressDetails(
-      companyName: proto.companyName.isNotEmpty ? proto.companyName : null,
-      contactName: proto.contactName.isNotEmpty ? proto.contactName : null,
-      email: proto.email.isNotEmpty ? proto.email : null,
-      phone: proto.phone.isNotEmpty ? proto.phone : null,
-      addressLine1: proto.addressLine1.isNotEmpty ? proto.addressLine1 : null,
-      addressLine2: proto.addressLine2.isNotEmpty ? proto.addressLine2 : null,
-      city: proto.city.isNotEmpty ? proto.city : null,
-      state: proto.state.isNotEmpty ? proto.state : null,
-      postcode: proto.postcode.isNotEmpty ? proto.postcode : null,
-      country: proto.country.isNotEmpty ? proto.country : null,
-    );
+    return description.isNotEmpty ? description : 'Item';
   }
 }

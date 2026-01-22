@@ -6,6 +6,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/email_verification_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/email_verification_state.dart';
 import 'package:lazervault/src/features/widgets/verification_code_input.dart';
@@ -94,6 +95,20 @@ class _EmailOtpVerificationViewState extends State<_EmailOtpVerificationView> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<EmailVerificationCubit>().initialize(widget.email);
       context.read<EmailVerificationCubit>().updateVerificationCode('');
+
+      // Show snackbar that email was sent
+      if (widget.codeSent) {
+        Get.snackbar(
+          'Email Sent',
+          'A 6-digit verification code has been sent to your email.',
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+          margin: EdgeInsets.all(16.w),
+          borderRadius: 12.r,
+          duration: const Duration(seconds: 4),
+        );
+      }
     });
 
     // Start with a cooldown if code was just sent
@@ -176,56 +191,65 @@ class _EmailOtpVerificationViewState extends State<_EmailOtpVerificationView> {
       canPop: !widget.isRequired || kDebugMode, // Allow back if not required OR in dev mode
       child: Scaffold(
         backgroundColor: Colors.white,
-        body: BlocListener<EmailVerificationCubit, EmailVerificationState>(
-          listener: (context, state) {
-            if (state is EmailVerificationSuccess) {
-              // Navigate to next screen on successful verification
-              _navigateToNextScreen();
-            } else if (state is EmailVerificationInProgress) {
-              // Handle resend success - show feedback and restart cooldown
-              if (state.successMessage.isNotEmpty) {
-                Get.snackbar(
-                  'Code Sent',
-                  state.successMessage,
-                  snackPosition: SnackPosition.TOP,
-                  backgroundColor: Colors.green,
-                  colorText: Colors.white,
-                  margin: EdgeInsets.all(16.w),
-                  borderRadius: 12.r,
-                  duration: const Duration(seconds: 2),
-                );
-                // Start cooldown from backend response (default 60s if not provided)
-                _startResendCooldown(state.cooldownSeconds ?? 60);
-              }
-              // Handle resend error with cooldown (rate limit scenario)
-              else if (state.errorMessage.isNotEmpty && state.cooldownSeconds != null && state.cooldownSeconds! > 0) {
-                Get.snackbar(
-                  'Please Wait',
-                  state.errorMessage,
-                  snackPosition: SnackPosition.TOP,
-                  backgroundColor: Colors.orange,
-                  colorText: Colors.white,
-                  margin: EdgeInsets.all(16.w),
-                  borderRadius: 12.r,
-                  duration: const Duration(seconds: 2),
-                );
-                _startResendCooldown(state.cooldownSeconds!);
-              }
-              // Handle verification error (wrong code)
-              else if (state.errorMessage.isNotEmpty) {
-                Get.snackbar(
-                  'Error',
-                  state.errorMessage,
-                  snackPosition: SnackPosition.TOP,
-                  backgroundColor: Colors.redAccent,
-                  colorText: Colors.white,
-                  margin: EdgeInsets.all(16.w),
-                  borderRadius: 12.r,
-                  duration: const Duration(seconds: 3),
-                );
-              }
-            }
-          },
+        body: MultiBlocListener(
+          listeners: [
+            // Email verification listener
+            BlocListener<EmailVerificationCubit, EmailVerificationState>(
+              listener: (context, state) {
+                if (state is EmailVerificationSuccess) {
+                  // Update AuthenticationCubit with the verified profile
+                  // This ensures the user remains logged in after email verification
+                  context.read<AuthenticationCubit>().updateProfileAfterVerification(state.profile);
+
+                  // Navigate to next screen on successful verification
+                  _navigateToNextScreen();
+                } else if (state is EmailVerificationInProgress) {
+                  // Handle resend success - show feedback and restart cooldown
+                  if (state.successMessage.isNotEmpty) {
+                    Get.snackbar(
+                      'Code Sent',
+                      state.successMessage,
+                      snackPosition: SnackPosition.TOP,
+                      backgroundColor: Colors.green,
+                      colorText: Colors.white,
+                      margin: EdgeInsets.all(16.w),
+                      borderRadius: 12.r,
+                      duration: const Duration(seconds: 2),
+                    );
+                    // Start cooldown from backend response (default 60s if not provided)
+                    _startResendCooldown(state.cooldownSeconds ?? 60);
+                  }
+                  // Handle resend error with cooldown (rate limit scenario)
+                  else if (state.errorMessage.isNotEmpty && state.cooldownSeconds != null && state.cooldownSeconds! > 0) {
+                    Get.snackbar(
+                      'Please Wait',
+                      state.errorMessage,
+                      snackPosition: SnackPosition.TOP,
+                      backgroundColor: Colors.orange,
+                      colorText: Colors.white,
+                      margin: EdgeInsets.all(16.w),
+                      borderRadius: 12.r,
+                      duration: const Duration(seconds: 2),
+                    );
+                    _startResendCooldown(state.cooldownSeconds!);
+                  }
+                  // Handle verification error (wrong code)
+                  else if (state.errorMessage.isNotEmpty) {
+                    Get.snackbar(
+                      'Error',
+                      state.errorMessage,
+                      snackPosition: SnackPosition.TOP,
+                      backgroundColor: Colors.redAccent,
+                      colorText: Colors.white,
+                      margin: EdgeInsets.all(16.w),
+                      borderRadius: 12.r,
+                      duration: const Duration(seconds: 3),
+                    );
+                  }
+                }
+              },
+            ),
+          ],
           child: BlocBuilder<EmailVerificationCubit, EmailVerificationState>(
             builder: (context, state) {
               final isVerifying = state is EmailVerificationInProgress && state.isLoading;

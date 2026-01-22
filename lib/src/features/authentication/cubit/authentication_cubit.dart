@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:lazervault/core/services/currency_sync_service.dart';
 import 'package:lazervault/core/services/signup_state_service.dart';
+import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/core/config/country_config.dart';
@@ -22,6 +23,7 @@ import '../domain/usecases/resend_verification_usecase.dart';
 import '../domain/usecases/check_email_availability_usecase.dart';
 import '../domain/usecases/verify_identity_usecase.dart';
 import '../domain/usecases/validate_token_usecase.dart';
+import '../../virtual_account/domain/usecases/create_virtual_account_usecase.dart';
 import '../domain/entities/profile_entity.dart';
 import '../domain/entities/user.dart';
 import '../domain/entities/signup_draft.dart';
@@ -43,6 +45,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
   final CheckEmailAvailabilityUseCase _checkEmailAvailabilityUseCase;
   final VerifyIdentityUseCase _verifyIdentityUseCase;
   final ValidateTokenUseCase _validateTokenUseCase;
+  final CreateVirtualAccountUseCase? _createVirtualAccountUseCase;
   final FlutterSecureStorage _storage;
   final CurrencySyncService _currencySyncService;
   final SignupStateService? _signupStateService;
@@ -64,6 +67,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     required CheckEmailAvailabilityUseCase checkEmailAvailability,
     required VerifyIdentityUseCase verifyIdentity,
     required ValidateTokenUseCase validateToken,
+    CreateVirtualAccountUseCase? createVirtualAccount,
     FlutterSecureStorage? storage,
     required CurrencySyncService currencySyncService,
     SignupStateService? signupStateService,
@@ -80,6 +84,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
         _checkEmailAvailabilityUseCase = checkEmailAvailability,
         _verifyIdentityUseCase = verifyIdentity,
         _validateTokenUseCase = validateToken,
+        _createVirtualAccountUseCase = createVirtualAccount,
         _storage = storage ?? const FlutterSecureStorage(),
         _currencySyncService = currencySyncService,
         _signupStateService = signupStateService,
@@ -343,20 +348,11 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
         await clearSignupDraft();
         await _signupStateService?.markAccountCreated();
 
-        if (!profile.user.isEmailVerified) {
-          _showInfoSnackbar(
-            'Account Created!',
-            'Please check your email to verify your account.',
-          );
-        } else {
-          _showSuccessSnackbar(
-            'Welcome!',
-            'Your account has been created successfully.',
-          );
-        }
+        // No "Account Created" snackbar here since email is not sent yet
+        // Email will be sent after ID verification/skip
+        // The "Email Sent" snackbar is shown when email verification screen loads
 
-        // Emit UserCreated state instead of AuthenticationSuccess
-        // to prevent conflict with login flow
+        // Emit UserCreated state to proceed to next step
         emit(UserCreated());
       },
     );
@@ -1059,6 +1055,26 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     }
   }
 
+  /// Map country code to locale string
+  String _getLocaleForCountry(String countryCode) {
+    switch (countryCode) {
+      case 'NG':
+        return 'en-NG';
+      case 'GH':
+        return 'en-GH';
+      case 'KE':
+        return 'en-KE';
+      case 'ZA':
+        return 'en-ZA';
+      case 'GB':
+        return 'en-GB';
+      case 'US':
+        return 'en-US';
+      default:
+        return 'en-NG'; // Default to Nigeria
+    }
+  }
+
   /// Verify identity with backend - supports multi-country verification
   /// This calls the auth service which connects to banking service to verify identity
   Future<void> verifyIdentity() async {
@@ -1132,8 +1148,29 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
               'Your ${currentState.identityType.displayName} has been verified successfully.',
             );
 
-            // Resend verification email so the code is fresh
-            _resendVerificationEmailAfterIdVerification();
+            // Create virtual account after successful identity verification
+            // This is done in the background and won't block the signup flow
+            _createVirtualAccountAfterVerification();
+
+            // Resend verification email and navigate directly to email verification
+            _resendVerificationEmailAfterIdVerification().then((_) {
+              if (isClosed) return;
+
+              // Navigate directly to email verification
+              final email = currentState.email;
+              final phoneNumber = currentState.phoneNumber;
+
+              // Determine if secondary verification is needed
+              final hasSecondaryPhone = phoneNumber != null && phoneNumber.isNotEmpty;
+
+              // Navigate to email verification
+              Get.offAllNamed(AppRoutes.emailVerification, arguments: {
+                'email': email,
+                'codeSent': true,
+                'isRequired': true,
+                'secondaryPhone': hasSecondaryPhone ? phoneNumber : null,
+              });
+            });
           } else {
             _showErrorSnackbar('Verification Failed', 'Identity could not be verified');
             emit(currentState.copyWith(
@@ -1183,6 +1220,76 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     }
   }
 
+  /// Create virtual account after successful identity verification
+  /// This creates a real virtual NUBAN account via Flutterwave/VFD provider
+  Future<void> _createVirtualAccountAfterVerification() async {
+    if (_createVirtualAccountUseCase == null) {
+      print('Virtual account use case not available - skipping');
+      return;
+    }
+
+    if (state is! SignUpInProgress) return;
+    final currentState = state as SignUpInProgress;
+
+    // Only create for Nigerian users with verified BVN
+    if (currentState.countryCode != 'NG') {
+      print('Virtual accounts only supported for Nigeria (current: ${currentState.countryCode})');
+      return;
+    }
+
+    // Get BVN from state - use identityValue which holds the verified ID number
+    final bvn = currentState.bvn.isNotEmpty
+        ? currentState.bvn
+        : currentState.identityValue;
+
+    if (bvn.isEmpty || bvn.length < 10) {
+      print('BVN not available or invalid - skipping virtual account creation');
+      return;
+    }
+
+    // Derive locale from country code
+    final locale = _getLocaleForCountry(currentState.countryCode);
+
+    try {
+      print('Creating virtual account for ${currentState.email}...');
+
+      final result = await _createVirtualAccountUseCase!(
+        accountName: '${currentState.firstName} ${currentState.lastName}',
+        accountType: 'personal',
+        currency: currentState.currencyCode,
+        locale: locale,
+        email: currentState.email,
+        firstName: currentState.firstName,
+        lastName: currentState.lastName,
+        phoneNumber: currentState.phoneNumber,
+        bvn: bvn,
+        isPrimary: true,
+      );
+
+      result.fold(
+        (failure) {
+          print('Failed to create virtual account: ${failure.message}');
+          // Don't block the signup flow if virtual account creation fails
+          // The user can still use the app with a basic account
+          _showErrorSnackbar(
+            'Account Created',
+            'Your account has been created. Virtual account setup will complete shortly.',
+          );
+        },
+        (virtualAccount) {
+          print('Virtual account created successfully: ${virtualAccount.accountNumber} via ${virtualAccount.provider}');
+          _showSuccessSnackbar(
+            'Account Created',
+            'Your virtual NUBAN account (${virtualAccount.accountNumber}) is ready to receive payments.',
+          );
+        },
+      );
+    } catch (e) {
+      print('Error creating virtual account: $e');
+      // Don't block signup flow
+    }
+  }
+
   /// Skip identity verification for progressive KYC onboarding
   /// Allows users to complete signup as Tier 1 and verify later
   void skipIdentityVerification() {
@@ -1198,16 +1305,27 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       clearErrorMessage: true,
     ));
 
-    // Show info and resend email with fresh code
-    _showInfoSnackbar(
-      'Account Created with Tier 1',
-      'You can verify your identity anytime from Settings to unlock higher limits.',
-    );
+    // No snackbar here - the email verification screen will show "Email Sent" snackbar
+    // The "Tier 1" info can be shown in a different way if needed
 
-    // Resend verification email so code is fresh, then proceed
+    // Resend verification email so code is fresh, then navigate directly
     _resendVerificationEmailAfterIdVerification().then((_) {
       if (isClosed) return;
-      emit(UserCreated());
+
+      // Navigate directly to email verification without showing "Account Created" snackbar
+      final email = currentState.email;
+      final phoneNumber = currentState.phoneNumber;
+
+      // Determine if secondary verification is needed
+      final hasSecondaryPhone = phoneNumber != null && phoneNumber.isNotEmpty;
+
+      // Navigate to email verification
+      Get.offAllNamed(AppRoutes.emailVerification, arguments: {
+        'email': email,
+        'codeSent': true,
+        'isRequired': true,
+        'secondaryPhone': hasSecondaryPhone ? phoneNumber : null,
+      });
     });
   }
 
@@ -1719,9 +1837,22 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       // Resend verification email so code is fresh
       await _resendVerificationEmailAfterIdVerification();
 
-      // Emit UserCreated to proceed to email verification
-      if (isClosed) return;
-      emit(UserCreated());
+      // Navigate directly to email verification without showing "Account Created" snackbar again
+      // The account was already created, we just need to proceed to verification
+      final email = currentState.email;
+      final phoneNumber = currentState.phoneNumber;
+      final primaryType = currentState.primaryContactType;
+
+      // Determine if secondary verification is needed
+      final hasSecondaryPhone = phoneNumber != null && phoneNumber.isNotEmpty;
+
+      // Navigate to email verification (email is primary)
+      Get.offAllNamed(AppRoutes.emailVerification, arguments: {
+        'email': email,
+        'codeSent': true,
+        'isRequired': true,
+        'secondaryPhone': hasSecondaryPhone ? phoneNumber : null,
+      });
     } else {
       print('Cannot submit sign up from current state: $state');
       if (isClosed) return;
@@ -2231,5 +2362,13 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       'A new verification code has been sent.',
     );
     return true;
+  }
+
+  /// Update profile after email/phone verification in signup flow
+  /// This ensures the user remains authenticated after verification
+  void updateProfileAfterVerification(ProfileEntity profile) {
+    if (isClosed) return;
+    _currentProfile = profile;
+    emit(AuthenticationAuthenticated(profile));
   }
 }

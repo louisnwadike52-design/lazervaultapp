@@ -1,305 +1,198 @@
 syntax = "proto3";
 
-package pb;
+package invoice;
 
 import "google/api/annotations.proto";
-import "google/protobuf/timestamp.proto";
-import "invoice_payment.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
 
-option go_package = "lazervaultGo/pb";
+option go_package = "invoice-service/proto";
 
-// AddressDetails represents address information for invoice participants
-message AddressDetails {
-	string company_name = 1;
-	string contact_name = 2;
-	string email = 3;
-	string phone = 4;
-	string address_line1 = 5;
-	string address_line2 = 6;
-	string city = 7;
-	string state = 8;
-	string postcode = 9;
-	string country = 10;
-	string bank_account = 11;
-	string bic_number = 12;
-	string iban = 13;
-	string routing_number = 14;
-	string tax_id = 15;
-	// Additional bank details for comprehensive payment support
-	string bank_name = 16;
-	string account_type = 17; // e.g., "checking", "savings"
-	string swift_code = 18; // SWIFT/BIC code for international transfers
-	string sort_code = 19; // For UK payments
-	string bank_address = 20; // Bank's physical address
-	string intermediary_bank_name = 21; // For international transfers
-	string intermediary_bank_swift = 22; // Intermediary bank's SWIFT code
-	string account_holder_name = 23; // Name on the bank account
-}
-
-// InvoiceItem represents a line item in an invoice
-message InvoiceItem {
-	string id = 1;
-	string name = 2;
-	string description = 3;
-	double quantity = 4;
-	double unit_price = 5;
-	double total_price = 6;
-	string category = 7;
-}
-
-// Invoice represents an invoice in the system
-message Invoice {
-	string id = 1;
-	string user_id = 2;
-	string recipient_id = 3;
-	string title = 4;
-	string description = 5;
-	double amount = 6;
-	string currency = 7;
-	string due_date = 8;
-	bool is_paid = 9;
-	string payment_method_id = 10;
-	string payment_reference = 11;
-	google.protobuf.Timestamp created_at = 12;
-	google.protobuf.Timestamp updated_at = 13;
-	repeated InvoiceItem items = 14;
-	string notes = 15;
-	double tax_amount = 16;
-	double discount_amount = 17;
-	double total_amount = 18;
-	AddressDetails recipient_details = 19;
-	AddressDetails payer_details = 20;
-	string to_email = 21;
-	string to_name = 22;
-}
-
-// GetInvoicesRequest represents a request to get all invoices for a user
-message GetInvoicesRequest {
-	int32 page = 1;
-	int32 limit = 2;
-}
-
-// GetInvoicesResponse represents a response containing a list of invoices
-message GetInvoicesResponse {
-	repeated Invoice invoices = 1;
-	int64 total = 2;
-}
-
-// GetInvoiceByIdRequest represents a request to get a specific invoice
-message GetInvoiceByIdRequest {
-	string invoice_id = 1;
-}
-
-// GetInvoiceByIdResponse represents a response containing a single invoice
-message GetInvoiceByIdResponse {
-	Invoice invoice = 1;
-}
-
-// CreateInvoiceRequest represents a request to create a new invoice
-message CreateInvoiceRequest {
-	string recipient_id = 1;
-	string title = 2;
-	string description = 3;
-	double amount = 4;
-	string currency = 5;
-	string due_date = 6;
-	repeated InvoiceItem items = 7;
-	string notes = 8;
-	double tax_amount = 9;
-	double discount_amount = 10;
-	double total_amount = 11;
-	AddressDetails recipient_details = 12;
-	AddressDetails payer_details = 13;
-	string to_email = 14;
-	string to_name = 15;
-}
-
-// CreateInvoiceResponse represents a response containing the created invoice
-message CreateInvoiceResponse {
-	Invoice invoice = 1;
-}
-
-// UpdateInvoiceRequest represents a request to update an existing invoice
-message UpdateInvoiceRequest {
-	string invoice_id = 1;
-	string recipient_id = 2;
-	string title = 3;
-	string description = 4;
-	double amount = 5;
-	string currency = 6;
-	string due_date = 7;
-	repeated InvoiceItem items = 8;
-	string notes = 9;
-	double tax_amount = 10;
-	double discount_amount = 11;
-	double total_amount = 12;
-	AddressDetails recipient_details = 13;
-	AddressDetails payer_details = 14;
-	string to_email = 15;
-	string to_name = 16;
-}
-
-// UpdateInvoiceResponse represents a response containing the updated invoice
-message UpdateInvoiceResponse {
-	Invoice invoice = 1;
-}
-
-// DeleteInvoiceRequest represents a request to delete an invoice
-message DeleteInvoiceRequest {
-	string invoice_id = 1;
-}
-
-// DeleteInvoiceResponse represents a response after deleting an invoice
-message DeleteInvoiceResponse {
-	bool success = 1;
-}
-
-// GetInvoicesByStatusRequest represents a request to get invoices by payment status
-message GetInvoicesByStatusRequest {
-	bool is_paid = 1;
-	int32 page = 2;
-	int32 limit = 3;
-}
-
-// GetInvoicesByStatusResponse represents a response containing a list of invoices filtered by status
-message GetInvoicesByStatusResponse {
-	repeated Invoice invoices = 1;
-	int64 total = 2;
-}
-
-// MarkInvoiceAsPaidRequest represents a request to mark an invoice as paid
-message MarkInvoiceAsPaidRequest {
-	string invoice_id = 1;
-	PaymentMethod payment_method = 2;
-	string payment_reference = 3;
-}
-
-// MarkInvoiceAsPaidResponse represents a response containing the updated invoice
-message MarkInvoiceAsPaidResponse {
-	Invoice invoice = 1;
-}
-
-// SendInvoiceRequest represents a request to send an invoice to the recipient
-message SendInvoiceRequest {
-	string invoice_id = 1;
-}
-
-// SendInvoiceResponse represents a response after sending an invoice
-message SendInvoiceResponse {
-	bool success = 1;
-}
-
-// TagUsersToInvoiceRequest represents a request to tag multiple users to an invoice
-message TagUsersToInvoiceRequest {
-	string invoice_id = 1;
-	repeated string user_ids = 2;
-	repeated string emails = 3; // For non-platform users
-	repeated string phone_numbers = 4; // For non-platform users
-}
-
-// TagUsersToInvoiceResponse represents a response after tagging users
-message TagUsersToInvoiceResponse {
-	bool success = 1;
-	repeated string tagged_user_ids = 2;
-	repeated string invited_emails = 3;
-	repeated string invited_phones = 4;
-	string message = 5;
-}
-
-// SearchInvoiceUsersRequest represents a request to search for users for invoice tagging
-message SearchInvoiceUsersRequest {
-	string query = 1;
-	int32 limit = 2;
-}
-
-// InvoiceUserResult represents a user in search results
-message InvoiceUserResult {
-	string id = 1;
-	string name = 2;
-	string email = 3;
-	string username = 4;
-	string phone = 5;
-	bool is_online = 6;
-}
-
-// SearchInvoiceUsersResponse represents a response containing search results
-message SearchInvoiceUsersResponse {
-	repeated InvoiceUserResult users = 1;
-}
-
-// InvoiceService provides methods for managing invoices
+// Invoice Service - Invoice creation and payment management
 service InvoiceService {
-	// Get all invoices for a user
-	rpc GetInvoices(GetInvoicesRequest) returns (GetInvoicesResponse) {
-		option (google.api.http) = {
-			get: "/v1/invoices"
-		};
-	}
-	
-	// Get a specific invoice by ID
-	rpc GetInvoiceById(GetInvoiceByIdRequest) returns (GetInvoiceByIdResponse) {
-		option (google.api.http) = {
-			get: "/v1/invoices/{invoice_id}"
-		};
-	}
-	
-	// Create a new invoice
-	rpc CreateInvoice(CreateInvoiceRequest) returns (CreateInvoiceResponse) {
-		option (google.api.http) = {
-			post: "/v1/invoices"
-			body: "*"
-		};
-	}
-	
-	// Update an existing invoice
-	rpc UpdateInvoice(UpdateInvoiceRequest) returns (UpdateInvoiceResponse) {
-		option (google.api.http) = {
-			put: "/v1/invoices/{invoice_id}"
-			body: "*"
-		};
-	}
-	
-	// Delete an invoice
-	rpc DeleteInvoice(DeleteInvoiceRequest) returns (DeleteInvoiceResponse) {
-		option (google.api.http) = {
-			delete: "/v1/invoices/{invoice_id}"
-		};
-	}
-	
-	// Get invoices by status
-	rpc GetInvoicesByStatus(GetInvoicesByStatusRequest) returns (GetInvoicesByStatusResponse) {
-		option (google.api.http) = {
-			get: "/v1/invoices/status"
-		};
-	}
-	
-	// Mark invoice as paid
-	rpc MarkInvoiceAsPaid(MarkInvoiceAsPaidRequest) returns (MarkInvoiceAsPaidResponse) {
-		option (google.api.http) = {
-			post: "/v1/invoices/{invoice_id}/mark-paid"
-			body: "*"
-		};
-	}
-	
-	// Send invoice to recipient
-	rpc SendInvoice(SendInvoiceRequest) returns (SendInvoiceResponse) {
-		option (google.api.http) = {
-			post: "/v1/invoices/{invoice_id}/send"
-		};
-	}
+  // === INVOICE OPERATIONS ===
 
-	// Tag multiple users to an invoice
-	rpc TagUsersToInvoice(TagUsersToInvoiceRequest) returns (TagUsersToInvoiceResponse) {
-		option (google.api.http) = {
-			post: "/v1/invoices/{invoice_id}/tag-users"
-			body: "*"
-		};
-	}
+  // Create a new invoice (invoice from AppServiceName)
+  rpc CreateInvoice(CreateInvoiceRequest) returns (CreateInvoiceResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/invoices/createinvoice"
+      body: "*"
+    };
+  }
 
-	// Search for users to tag in invoice
-	rpc SearchInvoiceUsers(SearchInvoiceUsersRequest) returns (SearchInvoiceUsersResponse) {
-		option (google.api.http) = {
-			get: "/v1/invoices/search-users"
-		};
-	}
-} 
+  // Get all invoices for a user
+  rpc GetInvoices(GetInvoicesRequest) returns (GetInvoicesResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/invoices/invoices"
+    };
+  }
+
+  // Get a specific invoice
+  rpc GetInvoice(GetInvoiceRequest) returns (GetInvoiceResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/invoices/invoice"
+    };
+  }
+
+  // Pay an invoice (payInvoice from AppServiceName)
+  rpc PayInvoice(PayInvoiceRequest) returns (PayInvoiceResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/invoices/payinvoice"
+      body: "*"
+    };
+  }
+
+  // Cancel an invoice
+  rpc CancelInvoice(CancelInvoiceRequest) returns (CancelInvoiceResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/invoices/cancelinvoice"
+      body: "*"
+    };
+  }
+
+  // Send invoice reminder
+  rpc SendInvoiceReminder(SendInvoiceReminderRequest) returns (SendInvoiceReminderResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/invoices/sendinvoicereminder"
+      body: "*"
+    };
+  }
+
+  // Update invoice status
+  rpc UpdateInvoiceStatus(UpdateInvoiceStatusRequest) returns (UpdateInvoiceStatusResponse) {
+    option (google.api.http) = {
+      put: "/api/v1/invoices/invoicestatus"
+      body: "*"
+    };
+  }
+}
+
+// ===== MODELS =====
+
+message Invoice {
+  string id = 1;
+  string user_id = 2;                   // Invoice creator
+  string account_id = 3;                // Account to receive payment
+  string invoice_number = 4;            // Unique invoice number
+  string recipient_email = 5;           // Who to send invoice to
+  string recipient_name = 6;
+  double amount = 7;
+  string currency = 8;
+  string status = 9;                    // "pending", "paid", "cancelled", "overdue"
+  string description = 10;
+  string due_date = 11;
+  repeated InvoiceItem items = 12;
+  double tax = 13;
+  double discount = 14;
+  double total_amount = 15;
+  string payment_reference = 16;        // Reference after payment
+  string paid_at = 17;
+  string notes = 18;
+  string metadata = 19;                 // JSON metadata
+  string created_at = 20;
+  string updated_at = 21;
+}
+
+message InvoiceItem {
+  string description = 1;
+  int32 quantity = 2;
+  double unit_price = 3;
+  double total = 4;
+}
+
+// ===== CREATE INVOICE =====
+// NOTE: user_id extracted from JWT token, not from request
+message CreateInvoiceRequest {
+  string account_id = 1;                // Account to receive payment
+  string recipient_email = 2;
+  string recipient_name = 3;
+  double amount = 4;
+  string description = 5;
+  string due_date = 6;
+  repeated InvoiceItem items = 7;
+  double tax = 8;
+  double discount = 9;
+  string notes = 10;
+}
+
+message CreateInvoiceResponse {
+  Invoice invoice = 1;
+  string message = 2;
+}
+
+// ===== GET INVOICES =====
+// NOTE: user_id extracted from JWT token, not from request
+message GetInvoicesRequest {
+  string account_id = 1;                // Optional filter
+  string status = 2;                    // Optional filter
+  string start_date = 3;
+  string end_date = 4;
+  int32 limit = 5;
+  int32 offset = 6;
+}
+
+message GetInvoicesResponse {
+  repeated Invoice invoices = 1;
+  int32 total = 2;
+  double total_amount_pending = 3;
+  double total_amount_paid = 4;
+}
+
+// ===== GET INVOICE =====
+// NOTE: user_id extracted from JWT token, not from request
+message GetInvoiceRequest {
+  string invoice_id = 1;
+}
+
+message GetInvoiceResponse {
+  Invoice invoice = 1;
+}
+
+// ===== PAY INVOICE =====
+// NOTE: user_id extracted from JWT token, not from request
+message PayInvoiceRequest {
+  string invoice_id = 1;
+  string account_id = 2;                // Account to debit from
+  string pin = 3;                       // Security PIN
+}
+
+message PayInvoiceResponse {
+  Invoice invoice = 1;
+  double new_balance = 2;
+  string payment_reference = 3;
+  string message = 4;
+}
+
+// ===== CANCEL INVOICE =====
+// NOTE: user_id extracted from JWT token, not from request
+message CancelInvoiceRequest {
+  string invoice_id = 1;
+  string reason = 2;
+}
+
+message CancelInvoiceResponse {
+  Invoice invoice = 1;
+  string message = 2;
+}
+
+// ===== SEND INVOICE REMINDER =====
+// NOTE: user_id extracted from JWT token, not from request
+message SendInvoiceReminderRequest {
+  string invoice_id = 1;
+}
+
+message SendInvoiceReminderResponse {
+  bool sent = 1;
+  string message = 2;
+}
+
+// ===== UPDATE INVOICE STATUS =====
+// NOTE: user_id extracted from JWT token, not from request
+message UpdateInvoiceStatusRequest {
+  string invoice_id = 1;
+  string status = 2;                    // "pending", "paid", "cancelled", "overdue"
+}
+
+message UpdateInvoiceStatusResponse {
+  Invoice invoice = 1;
+  string message = 2;
+}

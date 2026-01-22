@@ -201,6 +201,59 @@ class AccountsGrpcClient {
     }
   }
 
+  /// Create a virtual account via Flutterwave/VFD provider
+  ///
+  /// Creates a real virtual NUBAN account for receiving payments.
+  /// The provider (Flutterwave or VFD) is determined by the backend configuration.
+  ///
+  /// Parameters:
+  /// - [accountName]: Account holder name
+  /// - [accountType]: Type of account (personal, savings, etc.)
+  /// - [currency]: Currency code (e.g., "NGN")
+  /// - [locale]: BCP 47 locale (e.g., "en-NG")
+  /// - [email]: User's email address
+  /// - [firstName]: User's first name
+  /// - [lastName]: User's last name
+  /// - [phoneNumber]: User's phone number
+  /// - [bvn]: Bank Verification Number (required for Nigeria)
+  /// - [isPrimary]: Whether this is the primary account
+  Future<CreateVirtualAccountResponse> createVirtualAccount({
+    required String accountName,
+    required String accountType,
+    required String currency,
+    required String locale,
+    required String email,
+    required String firstName,
+    required String lastName,
+    required String phoneNumber,
+    required String bvn,
+    bool isPrimary = false,
+  }) async {
+    final request = CreateVirtualAccountRequest()
+      ..accountName = accountName
+      ..accountType = accountType
+      ..currency = currency
+      ..locale = locale
+      ..email = email
+      ..firstName = firstName
+      ..lastName = lastName
+      ..phoneNumber = phoneNumber
+      ..bvn = bvn
+      ..isPrimary = isPrimary;
+
+    final options = await _callOptionsHelper.withAuth();
+
+    try {
+      final response = await _client.createVirtualAccount(
+        request,
+        options: options,
+      );
+      return response;
+    } catch (e) {
+      throw Exception('Failed to create virtual account: $e');
+    }
+  }
+
   /// Helper: Convert DateTime to ISO8601 string
   String _dateTimeToString(DateTime dateTime) {
     return dateTime.toIso8601String();

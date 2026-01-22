@@ -86,6 +86,42 @@ class AuthServiceClient extends $grpc.Client {
           ($0.VerifyTwoFactorRequest value) => value.writeToBuffer(),
           ($core.List<$core.int> value) =>
               $0.VerifyTwoFactorResponse.fromBuffer(value));
+  static final _$completeTwoFactorSetup = $grpc.ClientMethod<
+          $0.CompleteTwoFactorSetupRequest, $0.CompleteTwoFactorSetupResponse>(
+      '/auth.AuthService/CompleteTwoFactorSetup',
+      ($0.CompleteTwoFactorSetupRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $0.CompleteTwoFactorSetupResponse.fromBuffer(value));
+  static final _$disableTwoFactor = $grpc.ClientMethod<
+          $0.DisableTwoFactorRequest, $0.DisableTwoFactorResponse>(
+      '/auth.AuthService/DisableTwoFactor',
+      ($0.DisableTwoFactorRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $0.DisableTwoFactorResponse.fromBuffer(value));
+  static final _$getTwoFactorStatus = $grpc.ClientMethod<
+          $0.GetTwoFactorStatusRequest, $0.GetTwoFactorStatusResponse>(
+      '/auth.AuthService/GetTwoFactorStatus',
+      ($0.GetTwoFactorStatusRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $0.GetTwoFactorStatusResponse.fromBuffer(value));
+  static final _$regenerateBackupCodes = $grpc.ClientMethod<
+          $0.RegenerateBackupCodesRequest, $0.RegenerateBackupCodesResponse>(
+      '/auth.AuthService/RegenerateBackupCodes',
+      ($0.RegenerateBackupCodesRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $0.RegenerateBackupCodesResponse.fromBuffer(value));
+  static final _$sendTwoFactorCode = $grpc.ClientMethod<
+          $0.SendTwoFactorCodeRequest, $0.SendTwoFactorCodeResponse>(
+      '/auth.AuthService/SendTwoFactorCode',
+      ($0.SendTwoFactorCodeRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $0.SendTwoFactorCodeResponse.fromBuffer(value));
+  static final _$getAvailable2FAMethods = $grpc.ClientMethod<
+          $0.GetAvailable2FAMethodsRequest, $0.GetAvailable2FAMethodsResponse>(
+      '/auth.AuthService/GetAvailable2FAMethods',
+      ($0.GetAvailable2FAMethodsRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $0.GetAvailable2FAMethodsResponse.fromBuffer(value));
   static final _$validateToken =
       $grpc.ClientMethod<$0.ValidateTokenRequest, $0.ValidateTokenResponse>(
           '/auth.AuthService/ValidateToken',
@@ -185,6 +221,49 @@ class AuthServiceClient extends $grpc.Client {
           ($0.VerifyIdentityRequest value) => value.writeToBuffer(),
           ($core.List<$core.int> value) =>
               $0.VerifyIdentityResponse.fromBuffer(value));
+  static final _$getIdentityVerificationStatus = $grpc.ClientMethod<
+          $0.GetIdentityVerificationStatusRequest,
+          $0.GetIdentityVerificationStatusResponse>(
+      '/auth.AuthService/GetIdentityVerificationStatus',
+      ($0.GetIdentityVerificationStatusRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $0.GetIdentityVerificationStatusResponse.fromBuffer(value));
+  static final _$initiateKYC =
+      $grpc.ClientMethod<$0.InitiateKYCRequest, $0.InitiateKYCResponse>(
+          '/auth.AuthService/InitiateKYC',
+          ($0.InitiateKYCRequest value) => value.writeToBuffer(),
+          ($core.List<$core.int> value) =>
+              $0.InitiateKYCResponse.fromBuffer(value));
+  static final _$uploadDocument =
+      $grpc.ClientMethod<$0.UploadDocumentRequest, $0.UploadDocumentResponse>(
+          '/auth.AuthService/UploadDocument',
+          ($0.UploadDocumentRequest value) => value.writeToBuffer(),
+          ($core.List<$core.int> value) =>
+              $0.UploadDocumentResponse.fromBuffer(value));
+  static final _$skipKYCUpgrade =
+      $grpc.ClientMethod<$0.SkipKYCUpgradeRequest, $0.SkipKYCUpgradeResponse>(
+          '/auth.AuthService/SkipKYCUpgrade',
+          ($0.SkipKYCUpgradeRequest value) => value.writeToBuffer(),
+          ($core.List<$core.int> value) =>
+              $0.SkipKYCUpgradeResponse.fromBuffer(value));
+  static final _$getUserDocuments = $grpc.ClientMethod<
+          $0.GetUserDocumentsRequest, $0.GetUserDocumentsResponse>(
+      '/auth.AuthService/GetUserDocuments',
+      ($0.GetUserDocumentsRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $0.GetUserDocumentsResponse.fromBuffer(value));
+  static final _$lookupUserByUsername =
+      $grpc.ClientMethod<$0.LookupUserByUsernameRequest, $0.UserLookupResponse>(
+          '/auth.AuthService/LookupUserByUsername',
+          ($0.LookupUserByUsernameRequest value) => value.writeToBuffer(),
+          ($core.List<$core.int> value) =>
+              $0.UserLookupResponse.fromBuffer(value));
+  static final _$lookupUserByPhone =
+      $grpc.ClientMethod<$0.LookupUserByPhoneRequest, $0.UserLookupResponse>(
+          '/auth.AuthService/LookupUserByPhone',
+          ($0.LookupUserByPhoneRequest value) => value.writeToBuffer(),
+          ($core.List<$core.int> value) =>
+              $0.UserLookupResponse.fromBuffer(value));
 
   AuthServiceClient($grpc.ClientChannel channel,
       {$grpc.CallOptions? options,
@@ -263,6 +342,44 @@ class AuthServiceClient extends $grpc.Client {
       $0.VerifyTwoFactorRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$verifyTwoFactor, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.CompleteTwoFactorSetupResponse>
+      completeTwoFactorSetup($0.CompleteTwoFactorSetupRequest request,
+          {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$completeTwoFactorSetup, request,
+        options: options);
+  }
+
+  $grpc.ResponseFuture<$0.DisableTwoFactorResponse> disableTwoFactor(
+      $0.DisableTwoFactorRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$disableTwoFactor, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetTwoFactorStatusResponse> getTwoFactorStatus(
+      $0.GetTwoFactorStatusRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getTwoFactorStatus, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.RegenerateBackupCodesResponse> regenerateBackupCodes(
+      $0.RegenerateBackupCodesRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$regenerateBackupCodes, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.SendTwoFactorCodeResponse> sendTwoFactorCode(
+      $0.SendTwoFactorCodeRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$sendTwoFactorCode, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetAvailable2FAMethodsResponse>
+      getAvailable2FAMethods($0.GetAvailable2FAMethodsRequest request,
+          {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getAvailable2FAMethods, request,
+        options: options);
   }
 
   $grpc.ResponseFuture<$0.ValidateTokenResponse> validateToken(
@@ -364,6 +481,50 @@ class AuthServiceClient extends $grpc.Client {
       $0.VerifyIdentityRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$verifyIdentity, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetIdentityVerificationStatusResponse>
+      getIdentityVerificationStatus(
+          $0.GetIdentityVerificationStatusRequest request,
+          {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getIdentityVerificationStatus, request,
+        options: options);
+  }
+
+  $grpc.ResponseFuture<$0.InitiateKYCResponse> initiateKYC(
+      $0.InitiateKYCRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$initiateKYC, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.UploadDocumentResponse> uploadDocument(
+      $0.UploadDocumentRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$uploadDocument, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.SkipKYCUpgradeResponse> skipKYCUpgrade(
+      $0.SkipKYCUpgradeRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$skipKYCUpgrade, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetUserDocumentsResponse> getUserDocuments(
+      $0.GetUserDocumentsRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getUserDocuments, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.UserLookupResponse> lookupUserByUsername(
+      $0.LookupUserByUsernameRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$lookupUserByUsername, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.UserLookupResponse> lookupUserByPhone(
+      $0.LookupUserByPhoneRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$lookupUserByPhone, request, options: options);
   }
 }
 
@@ -480,6 +641,60 @@ abstract class AuthServiceBase extends $grpc.Service {
         ($core.List<$core.int> value) =>
             $0.VerifyTwoFactorRequest.fromBuffer(value),
         ($0.VerifyTwoFactorResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.CompleteTwoFactorSetupRequest,
+            $0.CompleteTwoFactorSetupResponse>(
+        'CompleteTwoFactorSetup',
+        completeTwoFactorSetup_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.CompleteTwoFactorSetupRequest.fromBuffer(value),
+        ($0.CompleteTwoFactorSetupResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.DisableTwoFactorRequest,
+            $0.DisableTwoFactorResponse>(
+        'DisableTwoFactor',
+        disableTwoFactor_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.DisableTwoFactorRequest.fromBuffer(value),
+        ($0.DisableTwoFactorResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetTwoFactorStatusRequest,
+            $0.GetTwoFactorStatusResponse>(
+        'GetTwoFactorStatus',
+        getTwoFactorStatus_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.GetTwoFactorStatusRequest.fromBuffer(value),
+        ($0.GetTwoFactorStatusResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.RegenerateBackupCodesRequest,
+            $0.RegenerateBackupCodesResponse>(
+        'RegenerateBackupCodes',
+        regenerateBackupCodes_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.RegenerateBackupCodesRequest.fromBuffer(value),
+        ($0.RegenerateBackupCodesResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.SendTwoFactorCodeRequest,
+            $0.SendTwoFactorCodeResponse>(
+        'SendTwoFactorCode',
+        sendTwoFactorCode_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.SendTwoFactorCodeRequest.fromBuffer(value),
+        ($0.SendTwoFactorCodeResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetAvailable2FAMethodsRequest,
+            $0.GetAvailable2FAMethodsResponse>(
+        'GetAvailable2FAMethods',
+        getAvailable2FAMethods_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.GetAvailable2FAMethodsRequest.fromBuffer(value),
+        ($0.GetAvailable2FAMethodsResponse value) => value.writeToBuffer()));
     $addMethod(
         $grpc.ServiceMethod<$0.ValidateTokenRequest, $0.ValidateTokenResponse>(
             'ValidateToken',
@@ -624,6 +839,70 @@ abstract class AuthServiceBase extends $grpc.Service {
         ($core.List<$core.int> value) =>
             $0.VerifyIdentityRequest.fromBuffer(value),
         ($0.VerifyIdentityResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetIdentityVerificationStatusRequest,
+            $0.GetIdentityVerificationStatusResponse>(
+        'GetIdentityVerificationStatus',
+        getIdentityVerificationStatus_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.GetIdentityVerificationStatusRequest.fromBuffer(value),
+        ($0.GetIdentityVerificationStatusResponse value) =>
+            value.writeToBuffer()));
+    $addMethod(
+        $grpc.ServiceMethod<$0.InitiateKYCRequest, $0.InitiateKYCResponse>(
+            'InitiateKYC',
+            initiateKYC_Pre,
+            false,
+            false,
+            ($core.List<$core.int> value) =>
+                $0.InitiateKYCRequest.fromBuffer(value),
+            ($0.InitiateKYCResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.UploadDocumentRequest,
+            $0.UploadDocumentResponse>(
+        'UploadDocument',
+        uploadDocument_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.UploadDocumentRequest.fromBuffer(value),
+        ($0.UploadDocumentResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.SkipKYCUpgradeRequest,
+            $0.SkipKYCUpgradeResponse>(
+        'SkipKYCUpgrade',
+        skipKYCUpgrade_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.SkipKYCUpgradeRequest.fromBuffer(value),
+        ($0.SkipKYCUpgradeResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetUserDocumentsRequest,
+            $0.GetUserDocumentsResponse>(
+        'GetUserDocuments',
+        getUserDocuments_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.GetUserDocumentsRequest.fromBuffer(value),
+        ($0.GetUserDocumentsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.LookupUserByUsernameRequest,
+            $0.UserLookupResponse>(
+        'LookupUserByUsername',
+        lookupUserByUsername_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.LookupUserByUsernameRequest.fromBuffer(value),
+        ($0.UserLookupResponse value) => value.writeToBuffer()));
+    $addMethod(
+        $grpc.ServiceMethod<$0.LookupUserByPhoneRequest, $0.UserLookupResponse>(
+            'LookupUserByPhone',
+            lookupUserByPhone_Pre,
+            false,
+            false,
+            ($core.List<$core.int> value) =>
+                $0.LookupUserByPhoneRequest.fromBuffer(value),
+            ($0.UserLookupResponse value) => value.writeToBuffer()));
   }
 
   $async.Future<$0.SignupResponse> signup_Pre(
@@ -694,6 +973,42 @@ abstract class AuthServiceBase extends $grpc.Service {
       $grpc.ServiceCall call,
       $async.Future<$0.VerifyTwoFactorRequest> request) async {
     return verifyTwoFactor(call, await request);
+  }
+
+  $async.Future<$0.CompleteTwoFactorSetupResponse> completeTwoFactorSetup_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$0.CompleteTwoFactorSetupRequest> request) async {
+    return completeTwoFactorSetup(call, await request);
+  }
+
+  $async.Future<$0.DisableTwoFactorResponse> disableTwoFactor_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$0.DisableTwoFactorRequest> request) async {
+    return disableTwoFactor(call, await request);
+  }
+
+  $async.Future<$0.GetTwoFactorStatusResponse> getTwoFactorStatus_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$0.GetTwoFactorStatusRequest> request) async {
+    return getTwoFactorStatus(call, await request);
+  }
+
+  $async.Future<$0.RegenerateBackupCodesResponse> regenerateBackupCodes_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$0.RegenerateBackupCodesRequest> request) async {
+    return regenerateBackupCodes(call, await request);
+  }
+
+  $async.Future<$0.SendTwoFactorCodeResponse> sendTwoFactorCode_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$0.SendTwoFactorCodeRequest> request) async {
+    return sendTwoFactorCode(call, await request);
+  }
+
+  $async.Future<$0.GetAvailable2FAMethodsResponse> getAvailable2FAMethods_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$0.GetAvailable2FAMethodsRequest> request) async {
+    return getAvailable2FAMethods(call, await request);
   }
 
   $async.Future<$0.ValidateTokenResponse> validateToken_Pre(
@@ -791,6 +1106,49 @@ abstract class AuthServiceBase extends $grpc.Service {
     return verifyIdentity(call, await request);
   }
 
+  $async.Future<$0.GetIdentityVerificationStatusResponse>
+      getIdentityVerificationStatus_Pre(
+          $grpc.ServiceCall call,
+          $async.Future<$0.GetIdentityVerificationStatusRequest>
+              request) async {
+    return getIdentityVerificationStatus(call, await request);
+  }
+
+  $async.Future<$0.InitiateKYCResponse> initiateKYC_Pre($grpc.ServiceCall call,
+      $async.Future<$0.InitiateKYCRequest> request) async {
+    return initiateKYC(call, await request);
+  }
+
+  $async.Future<$0.UploadDocumentResponse> uploadDocument_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$0.UploadDocumentRequest> request) async {
+    return uploadDocument(call, await request);
+  }
+
+  $async.Future<$0.SkipKYCUpgradeResponse> skipKYCUpgrade_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$0.SkipKYCUpgradeRequest> request) async {
+    return skipKYCUpgrade(call, await request);
+  }
+
+  $async.Future<$0.GetUserDocumentsResponse> getUserDocuments_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$0.GetUserDocumentsRequest> request) async {
+    return getUserDocuments(call, await request);
+  }
+
+  $async.Future<$0.UserLookupResponse> lookupUserByUsername_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$0.LookupUserByUsernameRequest> request) async {
+    return lookupUserByUsername(call, await request);
+  }
+
+  $async.Future<$0.UserLookupResponse> lookupUserByPhone_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$0.LookupUserByPhoneRequest> request) async {
+    return lookupUserByPhone(call, await request);
+  }
+
   $async.Future<$0.SignupResponse> signup(
       $grpc.ServiceCall call, $0.SignupRequest request);
   $async.Future<$0.LoginResponse> login(
@@ -817,6 +1175,18 @@ abstract class AuthServiceBase extends $grpc.Service {
       $grpc.ServiceCall call, $0.EnableTwoFactorRequest request);
   $async.Future<$0.VerifyTwoFactorResponse> verifyTwoFactor(
       $grpc.ServiceCall call, $0.VerifyTwoFactorRequest request);
+  $async.Future<$0.CompleteTwoFactorSetupResponse> completeTwoFactorSetup(
+      $grpc.ServiceCall call, $0.CompleteTwoFactorSetupRequest request);
+  $async.Future<$0.DisableTwoFactorResponse> disableTwoFactor(
+      $grpc.ServiceCall call, $0.DisableTwoFactorRequest request);
+  $async.Future<$0.GetTwoFactorStatusResponse> getTwoFactorStatus(
+      $grpc.ServiceCall call, $0.GetTwoFactorStatusRequest request);
+  $async.Future<$0.RegenerateBackupCodesResponse> regenerateBackupCodes(
+      $grpc.ServiceCall call, $0.RegenerateBackupCodesRequest request);
+  $async.Future<$0.SendTwoFactorCodeResponse> sendTwoFactorCode(
+      $grpc.ServiceCall call, $0.SendTwoFactorCodeRequest request);
+  $async.Future<$0.GetAvailable2FAMethodsResponse> getAvailable2FAMethods(
+      $grpc.ServiceCall call, $0.GetAvailable2FAMethodsRequest request);
   $async.Future<$0.ValidateTokenResponse> validateToken(
       $grpc.ServiceCall call, $0.ValidateTokenRequest request);
   $async.Future<$0.ResendVerificationEmailResponse> resendVerificationEmail(
@@ -849,4 +1219,19 @@ abstract class AuthServiceBase extends $grpc.Service {
       $grpc.ServiceCall call, $0.CompleteSignupRequest request);
   $async.Future<$0.VerifyIdentityResponse> verifyIdentity(
       $grpc.ServiceCall call, $0.VerifyIdentityRequest request);
+  $async.Future<$0.GetIdentityVerificationStatusResponse>
+      getIdentityVerificationStatus($grpc.ServiceCall call,
+          $0.GetIdentityVerificationStatusRequest request);
+  $async.Future<$0.InitiateKYCResponse> initiateKYC(
+      $grpc.ServiceCall call, $0.InitiateKYCRequest request);
+  $async.Future<$0.UploadDocumentResponse> uploadDocument(
+      $grpc.ServiceCall call, $0.UploadDocumentRequest request);
+  $async.Future<$0.SkipKYCUpgradeResponse> skipKYCUpgrade(
+      $grpc.ServiceCall call, $0.SkipKYCUpgradeRequest request);
+  $async.Future<$0.GetUserDocumentsResponse> getUserDocuments(
+      $grpc.ServiceCall call, $0.GetUserDocumentsRequest request);
+  $async.Future<$0.UserLookupResponse> lookupUserByUsername(
+      $grpc.ServiceCall call, $0.LookupUserByUsernameRequest request);
+  $async.Future<$0.UserLookupResponse> lookupUserByPhone(
+      $grpc.ServiceCall call, $0.LookupUserByPhoneRequest request);
 }
