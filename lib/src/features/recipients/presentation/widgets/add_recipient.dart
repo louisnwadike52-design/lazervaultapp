@@ -83,37 +83,21 @@ class _AddRecipientState extends State<AddRecipient> {
     } catch (e) {
       _currentCountry = 'NG'; // Default to Nigeria
     }
-    await _loadBanks();
+    _loadBanks();
   }
 
-  Future<void> _loadBanks() async {
+  void _loadBanks() {
     setState(() {
       _isLoadingBanks = true;
       _banksError = null;
     });
 
-    try {
-      // Try to fetch from backend first
-      final cubit = context.read<AccountVerificationCubit>();
-      final banks = await cubit.getSupportedBanks(country: _currentCountry);
-      if (mounted && banks.isNotEmpty) {
-        setState(() {
-          _banksList = banks;
-          _isLoadingBanks = false;
-        });
-        return;
-      }
-    } catch (e) {
-      // Backend fetch failed, fall back to local data
-      debugPrint('Backend bank fetch failed: $e, using local data');
-    }
-
-    // Use local banks data as fallback
+    // Use local banks data only - no API calls
     if (mounted) {
       setState(() {
         _banksList = BanksData.getBanksForCountry(_currentCountry);
         _isLoadingBanks = false;
-        _banksError = null; // Clear error since we have local data
+        _banksError = null;
       });
     }
   }

@@ -372,6 +372,31 @@ class _SelectRecipientsState extends State<SelectRecipients> {
                     color: Colors.grey[600],
                   ),
                 ),
+                SizedBox(height: 32.h),
+                // Add User button below no recipients section
+                SizedBox(
+                  width: 200.w,
+                  height: 48.h,
+                  child: ElevatedButton.icon(
+                    onPressed: () => Get.toNamed(AppRoutes.addRecipient),
+                    icon: Icon(Icons.person_add, size: 20.sp),
+                    label: Text(
+                      'Add User',
+                      style: TextStyle(
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Color.fromARGB(255, 78, 3, 208),
+                      foregroundColor: Colors.white,
+                      padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
@@ -444,7 +469,7 @@ class _SelectRecipientsState extends State<SelectRecipients> {
     );
   }
 
-  Future<void> _loadBanksIfNeeded() async {
+  void _loadBanksIfNeeded() {
     if (_banksList.isNotEmpty || _isLoadingBanks) return;
 
     // Get country from LocaleManager
@@ -460,28 +485,12 @@ class _SelectRecipientsState extends State<SelectRecipients> {
       _banksError = null;
     });
 
-    try {
-      // Try to fetch from backend first
-      final cubit = context.read<AccountVerificationCubit>();
-      final banks = await cubit.getSupportedBanks(country: _currentCountry);
-      if (mounted && banks.isNotEmpty) {
-        setState(() {
-          _banksList = banks;
-          _isLoadingBanks = false;
-        });
-        return;
-      }
-    } catch (e) {
-      // Backend fetch failed, fall back to local data
-      debugPrint('Backend bank fetch failed: $e, using local data');
-    }
-
-    // Use local banks data as fallback
+    // Use local banks data only - no API calls
     if (mounted) {
       setState(() {
         _banksList = BanksData.getBanksForCountry(_currentCountry);
         _isLoadingBanks = false;
-        _banksError = null; // Clear error since we have local data
+        _banksError = null;
       });
     }
   }

@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:lazervault/core/utilities/banks_data.dart';
 
 /// A widget that displays a bank logo with fallback to gradient initials.
 ///
-/// Attempts to load the bank logo from the network (using nigerianbanks.xyz CDN
-/// for Nigerian banks). If loading fails, displays a gradient container with
-/// the bank's initials.
+/// Displays a gradient container with the bank's initials.
+/// All bank data comes from local configuration - no remote calls.
 class BankLogo extends StatelessWidget {
   final String bankName;
   final String? bankCode;
@@ -26,9 +24,6 @@ class BankLogo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final code = bankCode ?? BanksData.getBankCodeByName(bankName, country: country);
-    final logoUrl = code != null ? BanksData.getBankLogoUrl(code, country: country) : null;
-
     return Container(
       width: size.w,
       height: size.h,
@@ -44,14 +39,7 @@ class BankLogo extends StatelessWidget {
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(borderRadius.r),
-        child: logoUrl != null
-            ? CachedNetworkImage(
-                imageUrl: logoUrl,
-                fit: BoxFit.contain,
-                placeholder: (context, url) => _buildFallback(),
-                errorWidget: (context, url, error) => _buildFallback(),
-              )
-            : _buildFallback(),
+        child: _buildFallback(),
       ),
     );
   }

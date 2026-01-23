@@ -14,6 +14,7 @@ import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_
 import 'package:lazervault/src/features/recipients/presentation/cubit/account_verification_cubit.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/account_verification_state.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/utilities/banks_data.dart';
 
 /// Withdrawal Flow Screen - Standard fintech withdrawal flow
 /// Flow: Recipient Selection → Amount Entry → Review → PIN Auth → Processing → Success/Failure
@@ -68,9 +69,9 @@ class _WithdrawalFlowScreenState extends State<WithdrawalFlowScreen> {
       _banksError = null;
     });
 
+    // Use local banks data only - no API calls
     try {
-      final cubit = context.read<AccountVerificationCubit>();
-      final banks = await cubit.getSupportedBanks(country: 'NG');
+      final banks = BanksData.getBanksForCountry('NG');
       if (mounted) {
         setState(() {
           _banksList = banks.map((bank) => {

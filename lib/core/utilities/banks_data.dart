@@ -87,26 +87,17 @@ class BanksData {
     ).toList();
   }
 
-  /// Get bank logo URL by bank code (Nigerian banks use nigerianbanks.xyz CDN)
+  /// Get bank logo URL by bank code - DISABLED (using local fallback only)
+  /// Bank logos are displayed using gradient initials instead of remote URLs
   static String? getBankLogoUrl(String bankCode, {String country = 'NG'}) {
-    if (country.toUpperCase() == 'NG') {
-      // Nigerian banks logo CDN (Paystack/Mono compatible)
-      return 'https://nigerianbanks.xyz/logo/$bankCode.png';
-    }
-    // For other countries, return null to use fallback
+    // Return null to always use local gradient fallback
     return null;
   }
 
-  /// Get bank logo URL by bank name (searches for code first)
+  /// Get bank logo URL by bank name - DISABLED (using local fallback only)
+  /// Bank logos are displayed using gradient initials instead of remote URLs
   static String? getBankLogoUrlByName(String bankName, {String country = 'NG'}) {
-    final banks = getBanksForCountry(country);
-    final bank = banks.firstWhere(
-      (b) => b['name']!.toLowerCase() == bankName.toLowerCase(),
-      orElse: () => {},
-    );
-    if (bank.isNotEmpty && bank['code'] != null) {
-      return getBankLogoUrl(bank['code']!, country: country);
-    }
+    // Return null to always use local gradient fallback
     return null;
   }
 
