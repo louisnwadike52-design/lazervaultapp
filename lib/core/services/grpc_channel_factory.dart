@@ -50,6 +50,16 @@ class GrpcChannelFactory {
     return _createChannel(host, port, 'Financial Gateway');
   }
 
+  /// Creates Banking Service gRPC channel (Transfers, Virtual Accounts, Bank Verification)
+  /// gRPC Port: 50073
+  static ClientChannel createBankingChannel() {
+    final host = dotenv.env['BANKING_GRPC_HOST'] ?? '10.0.2.2';
+    final port = int.parse(dotenv.env['BANKING_GRPC_PORT'] ?? '50073');
+
+    print("🏦 Creating Banking Service Channel → $host:$port");
+    return _createChannel(host, port, 'Banking Service');
+  }
+
   /// Internal method to create channel with standard production-grade options
   static ClientChannel _createChannel(String host, int port, String name) {
     return ClientChannel(
@@ -72,14 +82,19 @@ class GrpcChannelFactory {
   static Future<void> closeAllChannels(
     ClientChannel coreChannel,
     ClientChannel investmentChannel,
-    ClientChannel financialChannel,
-  ) async {
+    ClientChannel financialChannel, {
+    ClientChannel? bankingChannel,
+  }) async {
     print("🔌 Closing all gRPC channels...");
-    await Future.wait([
+    final futures = [
       coreChannel.shutdown(),
       investmentChannel.shutdown(),
       financialChannel.shutdown(),
-    ]);
+    ];
+    if (bankingChannel != null) {
+      futures.add(bankingChannel.shutdown());
+    }
+    await Future.wait(futures);
     print("✅ All gRPC channels closed");
   }
 }

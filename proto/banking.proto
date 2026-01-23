@@ -1,0 +1,1246 @@
+syntax = "proto3";
+
+package banking;
+
+option go_package = "github.com/lazervault/banking-service/proto";
+
+import "google/protobuf/timestamp.proto";
+import "google/api/annotations.proto";
+
+// =====================================================
+// BANKING SERVICE
+// =====================================================
+
+service BankingService {
+    // Virtual Accounts
+    rpc CreateVirtualAccount(CreateVirtualAccountRequest) returns (VirtualAccountResponse) {
+        option (google.api.http) = {
+            post: "/api/v1/accounts"
+            body: "*"
+        };
+    }
+    rpc GetVirtualAccount(GetVirtualAccountRequest) returns (VirtualAccountResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/accounts/{account_number}"
+        };
+    }
+    rpc GetUserVirtualAccounts(GetUserVirtualAccountsRequest) returns (VirtualAccountsResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/users/{user_id}/accounts"
+        };
+    }
+
+    // Domestic Transfers
+    rpc InitiateDomesticTransfer(DomesticTransferRequest) returns (TransferResponse) {
+        option (google.api.http) = {
+            post: "/api/v1/transfers/domestic"
+            body: "*"
+        };
+    }
+    rpc GetTransferStatus(GetTransferStatusRequest) returns (TransferResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/transfers/{reference}"
+        };
+    }
+    rpc GetUserTransfers(GetUserTransfersRequest) returns (TransfersResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/users/{user_id}/transfers"
+        };
+    }
+
+    // Internal C2C Transfers
+    rpc InitiateInternalTransfer(InternalTransferRequest) returns (TransferResponse) {
+        option (google.api.http) = {
+            post: "/api/v1/transfers/internal"
+            body: "*"
+        };
+    }
+
+    // International Transfers
+    rpc InitiateInternationalTransfer(InternationalTransferRequest) returns (TransferResponse) {
+        option (google.api.http) = {
+            post: "/api/v1/transfers/international"
+            body: "*"
+        };
+    }
+    rpc GetExchangeRate(GetExchangeRateRequest) returns (ExchangeRateResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/exchange-rate"
+        };
+    }
+    rpc GetSupportedCountries(GetSupportedCountriesRequest) returns (SupportedCountriesResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/transfers/countries"
+        };
+    }
+
+    // Account Verification
+    rpc VerifyBankAccount(VerifyBankAccountRequest) returns (VerifyBankAccountResponse) {
+        option (google.api.http) = {
+            post: "/api/v1/verify/account"
+            body: "*"
+        };
+    }
+    rpc GetBanks(GetBanksRequest) returns (BanksResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/banks"
+        };
+    }
+
+    // Identity Verification
+    rpc VerifyBVN(VerifyBVNRequest) returns (IdentityVerificationResponse) {
+        option (google.api.http) = {
+            post: "/api/v1/verify/bvn"
+            body: "*"
+        };
+    }
+    rpc GetVerificationStatus(GetVerificationStatusRequest) returns (IdentityVerificationResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/users/{user_id}/verification"
+        };
+    }
+
+    // Identity Verification for Signup (called by Auth Service via internal gRPC)
+    rpc VerifyBVNForSignup(VerifyBVNForSignupRequest) returns (SignupIdentityVerificationResponse) {
+        option (google.api.http) = {
+            post: "/api/v1/internal/verify/bvn"
+            body: "*"
+        };
+    }
+    rpc VerifyNINForSignup(VerifyNINForSignupRequest) returns (SignupIdentityVerificationResponse) {
+        option (google.api.http) = {
+            post: "/api/v1/internal/verify/nin"
+            body: "*"
+        };
+    }
+    rpc CreateVirtualAccountForUser(CreateVirtualAccountForUserRequest) returns (VirtualAccountResponse) {
+        option (google.api.http) = {
+            post: "/api/v1/internal/accounts/create"
+            body: "*"
+        };
+    }
+
+    // Enhanced Transfers (Username/Phone)
+    rpc InitiateUsernameTransfer(UsernameTransferRequest) returns (TransferResponse) {
+        option (google.api.http) = {
+            post: "/api/v1/transfers/username"
+            body: "*"
+        };
+    }
+    rpc InitiatePhoneTransfer(PhoneTransferRequest) returns (TransferResponse) {
+        option (google.api.http) = {
+            post: "/api/v1/transfers/phone"
+            body: "*"
+        };
+    }
+    rpc SearchRecipients(SearchRecipientsRequest) returns (RecipientsResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/transfers/recipients/search"
+        };
+    }
+    rpc GetRecentRecipients(GetRecentRecipientsRequest) returns (RecipientsResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/transfers/recipients/recent"
+        };
+    }
+
+    // Provider Status
+    rpc GetProviderStatus(GetProviderStatusRequest) returns (ProviderStatusResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/providers/status"
+        };
+    }
+    rpc GetActiveProviders(GetActiveProvidersRequest) returns (ActiveProvidersResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/providers/active"
+        };
+    }
+
+    // ===== POOLED ARCHITECTURE METHODS =====
+
+    // Account Management
+    rpc GetAccountBalance(GetAccountBalanceRequest) returns (AccountBalanceResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/accounts/{account_id}/balance"
+        };
+    }
+    rpc GetAccountTransactions(GetAccountTransactionsRequest) returns (TransactionsResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/accounts/{account_id}/transactions"
+        };
+    }
+    rpc GetPrimaryAccount(GetPrimaryAccountRequest) returns (VirtualAccountResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/users/{user_id}/primary-account"
+        };
+    }
+
+    // Account Freeze/Unfreeze (Admin)
+    rpc FreezeAccount(FreezeAccountRequest) returns (FreezeAccountResponse) {
+        option (google.api.http) = {
+            post: "/api/v1/admin/accounts/{account_id}/freeze"
+            body: "*"
+        };
+    }
+    rpc UnfreezeAccount(UnfreezeAccountRequest) returns (UnfreezeAccountResponse) {
+        option (google.api.http) = {
+            post: "/api/v1/admin/accounts/{account_id}/unfreeze"
+            body: "*"
+        };
+    }
+
+    // Daily Usage & Limits
+    rpc GetDailyUsage(GetDailyUsageRequest) returns (DailyUsageResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/users/{user_id}/daily-usage"
+        };
+    }
+
+    // Reconciliation (Admin)
+    rpc RunReconciliation(RunReconciliationRequest) returns (ReconciliationResponse) {
+        option (google.api.http) = {
+            post: "/api/v1/admin/reconciliation/run"
+            body: "*"
+        };
+    }
+    rpc GetReconciliationHistory(GetReconciliationHistoryRequest) returns (ReconciliationHistoryResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/admin/reconciliation/history"
+        };
+    }
+    rpc GetDailyReport(GetDailyReportRequest) returns (DailyReportResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/admin/reports/daily"
+        };
+    }
+
+    // ===== OPEN BANKING - LINKED ACCOUNTS =====
+
+    // Get Mono Connect widget configuration
+    rpc GetConnectWidgetConfig(GetConnectWidgetConfigRequest) returns (ConnectWidgetConfigResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/open-banking/connect-config"
+        };
+    }
+
+    // Link a bank account using Mono Connect authorization code
+    rpc LinkBankAccount(LinkBankAccountRequest) returns (LinkBankAccountResponse) {
+        option (google.api.http) = {
+            post: "/api/v1/open-banking/link"
+            body: "*"
+        };
+    }
+
+    // Get all linked bank accounts for a user
+    rpc GetLinkedAccounts(GetLinkedAccountsRequest) returns (LinkedAccountsResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/users/{user_id}/linked-accounts"
+        };
+    }
+
+    // Get a specific linked bank account
+    rpc GetLinkedAccount(GetLinkedAccountRequest) returns (LinkedAccountResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/linked-accounts/{account_id}"
+        };
+    }
+
+    // Unlink a bank account
+    rpc UnlinkBankAccount(UnlinkBankAccountRequest) returns (UnlinkBankAccountResponse) {
+        option (google.api.http) = {
+            delete: "/api/v1/linked-accounts/{account_id}"
+        };
+    }
+
+    // Set a linked account as default
+    rpc SetDefaultLinkedAccount(SetDefaultLinkedAccountRequest) returns (SetDefaultLinkedAccountResponse) {
+        option (google.api.http) = {
+            post: "/api/v1/linked-accounts/{account_id}/set-default"
+            body: "*"
+        };
+    }
+
+    // Refresh balance for a linked account
+    rpc RefreshLinkedAccountBalance(RefreshLinkedAccountBalanceRequest) returns (RefreshLinkedAccountBalanceResponse) {
+        option (google.api.http) = {
+            post: "/api/v1/linked-accounts/{account_id}/refresh-balance"
+            body: "*"
+        };
+    }
+
+    // Get reauthorization token for an account that needs re-linking
+    rpc GetReauthorizationToken(GetReauthorizationTokenRequest) returns (GetReauthorizationTokenResponse) {
+        option (google.api.http) = {
+            post: "/api/v1/linked-accounts/{account_id}/reauthorize"
+            body: "*"
+        };
+    }
+
+    // ===== OPEN BANKING - DEPOSITS (Direct Debit) =====
+
+    // Initiate a deposit via direct debit from linked account
+    rpc InitiateDeposit(InitiateDepositRequest) returns (DepositResponse) {
+        option (google.api.http) = {
+            post: "/api/v1/deposits"
+            body: "*"
+        };
+    }
+
+    // Get deposit status
+    rpc GetDepositStatus(GetDepositStatusRequest) returns (DepositResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/deposits/{deposit_id}"
+        };
+    }
+
+    // Get user's deposit history
+    rpc GetUserDeposits(GetUserDepositsRequest) returns (DepositsResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/users/{user_id}/deposits"
+        };
+    }
+
+    // Cancel a pending deposit
+    rpc CancelDeposit(CancelDepositRequest) returns (CancelDepositResponse) {
+        option (google.api.http) = {
+            post: "/api/v1/deposits/{deposit_id}/cancel"
+            body: "*"
+        };
+    }
+
+    // Calculate deposit fee
+    rpc CalculateDepositFee(CalculateDepositFeeRequest) returns (CalculateDepositFeeResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/deposits/calculate-fee"
+        };
+    }
+
+    // ===== WITHDRAWALS =====
+
+    // Initiate a withdrawal to an external bank
+    rpc InitiateWithdrawal(InitiateWithdrawalRequest) returns (WithdrawalResponse) {
+        option (google.api.http) = {
+            post: "/api/v1/withdrawals"
+            body: "*"
+        };
+    }
+
+    // Get withdrawal status
+    rpc GetWithdrawalStatus(GetWithdrawalStatusRequest) returns (WithdrawalResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/withdrawals/{withdrawal_id}"
+        };
+    }
+
+    // Get user's withdrawal history
+    rpc GetUserWithdrawals(GetUserWithdrawalsRequest) returns (WithdrawalsResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/users/{user_id}/withdrawals"
+        };
+    }
+
+    // Calculate withdrawal fee
+    rpc CalculateWithdrawalFee(CalculateWithdrawalFeeRequest) returns (CalculateWithdrawalFeeResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/withdrawals/calculate-fee"
+        };
+    }
+}
+
+// =====================================================
+// VIRTUAL ACCOUNT MESSAGES
+// =====================================================
+
+message CreateVirtualAccountRequest {
+    string user_id = 1;
+    string email = 2;
+    string first_name = 3;
+    string last_name = 4;
+    string phone_number = 5;
+    string bvn = 6;
+    string currency = 7; // Default: NGN
+}
+
+message GetVirtualAccountRequest {
+    string account_number = 1;
+}
+
+message GetUserVirtualAccountsRequest {
+    string user_id = 1;
+}
+
+message VirtualAccountResponse {
+    bool success = 1;
+    string error_code = 2;
+    string error_message = 3;
+    VirtualAccount account = 4;
+}
+
+message VirtualAccountsResponse {
+    bool success = 1;
+    string error_code = 2;
+    string error_message = 3;
+    repeated VirtualAccount accounts = 4;
+}
+
+message VirtualAccount {
+    string id = 1;
+    string user_id = 2;
+    string account_number = 3;
+    string account_name = 4;
+    string bank_code = 5;
+    string bank_name = 6;
+    string currency = 7;
+    string provider = 8;
+    string status = 9;
+    int64 balance = 10;           // Ledger balance - source of truth (kobo)
+    int64 available_balance = 11; // Balance after holds
+    google.protobuf.Timestamp created_at = 12;
+    // Pooled architecture fields
+    int64 pending_credits = 13;   // Incoming but not settled
+    int64 pending_debits = 14;    // Outgoing but not settled
+    string account_type = 15;     // main, savings, business, usd, etc.
+    bool is_primary = 16;         // Primary account for user
+    int32 kyc_tier = 17;          // KYC verification level (1-3)
+}
+
+// =====================================================
+// TRANSFER MESSAGES
+// =====================================================
+
+message DomesticTransferRequest {
+    string user_id = 1;
+    string source_account_id = 2;
+    int64 amount = 3; // In kobo
+    string currency = 4;
+    string destination_account = 5;
+    string destination_bank_code = 6;
+    string destination_name = 7;
+    string narration = 8;
+    string reference = 9; // Optional, will be generated if not provided
+    string idempotency_key = 10;
+}
+
+message InternalTransferRequest {
+    string from_user_id = 1;
+    string to_user_id = 2;
+    int64 amount = 3;
+    string currency = 4;
+    string narration = 5;
+    string reference = 6;
+    string idempotency_key = 7;
+}
+
+message InternationalTransferRequest {
+    string user_id = 1;
+    string source_account_id = 2;
+    int64 amount = 3;
+    string source_currency = 4;
+    string destination_currency = 5;
+    string destination_country = 6;
+    string recipient_type = 7; // "bank" or "mobile_money"
+    map<string, string> recipient_details = 8;
+    string narration = 9;
+    string reference = 10;
+    string idempotency_key = 11;
+}
+
+message GetTransferStatusRequest {
+    string reference = 1;
+}
+
+message GetUserTransfersRequest {
+    string user_id = 1;
+    int32 limit = 2;
+    int32 offset = 3;
+}
+
+message TransferResponse {
+    bool success = 1;
+    string error_code = 2;
+    string error_message = 3;
+    Transfer transfer = 4;
+}
+
+message TransfersResponse {
+    bool success = 1;
+    string error_code = 2;
+    string error_message = 3;
+    repeated Transfer transfers = 4;
+    int32 total = 5;
+}
+
+message Transfer {
+    string id = 1;
+    string user_id = 2;
+    string type = 3; // internal, domestic, international
+    string status = 4; // pending, processing, completed, failed, reversed
+    int64 amount = 5;
+    string currency = 6;
+    int64 fee = 7;
+    string source_account_id = 8;
+    string destination_account = 9;
+    string destination_bank_code = 10;
+    string destination_bank_name = 11;
+    string destination_name = 12;
+    string destination_country = 13;
+    string reference = 14;
+    string provider_ref = 15;
+    string provider = 16;
+    string narration = 17;
+    string failure_reason = 18;
+    google.protobuf.Timestamp created_at = 19;
+    google.protobuf.Timestamp completed_at = 20;
+}
+
+// =====================================================
+// EXCHANGE RATE MESSAGES
+// =====================================================
+
+message GetExchangeRateRequest {
+    string source_currency = 1;
+    string destination_currency = 2;
+    int64 amount = 3; // In smallest unit
+}
+
+message ExchangeRateResponse {
+    bool success = 1;
+    string error_code = 2;
+    string error_message = 3;
+    string source_currency = 4;
+    string destination_currency = 5;
+    double rate = 6;
+    int64 fee = 7;
+    int64 destination_amount = 8;
+}
+
+message GetSupportedCountriesRequest {}
+
+message SupportedCountriesResponse {
+    bool success = 1;
+    repeated string countries = 2;
+}
+
+// =====================================================
+// ACCOUNT VERIFICATION MESSAGES
+// =====================================================
+
+message VerifyBankAccountRequest {
+    string account_number = 1;
+    string bank_code = 2;
+}
+
+message VerifyBankAccountResponse {
+    bool success = 1;
+    string error_code = 2;
+    string error_message = 3;
+    string account_number = 4;
+    string account_name = 5;
+    string bank_code = 6;
+    string bank_name = 7;
+    bool is_valid = 8;
+}
+
+message GetBanksRequest {
+    string country = 1; // Default: NG
+}
+
+message BanksResponse {
+    bool success = 1;
+    string error_code = 2;
+    string error_message = 3;
+    repeated Bank banks = 4;
+}
+
+message Bank {
+    string code = 1;
+    string name = 2;
+    string country = 3;
+    string nip_code = 4;
+    bool is_active = 5;
+}
+
+// =====================================================
+// IDENTITY VERIFICATION MESSAGES
+// =====================================================
+
+message VerifyBVNRequest {
+    string user_id = 1;
+    string bvn = 2;
+    string first_name = 3;
+    string last_name = 4;
+    string date_of_birth = 5; // YYYY-MM-DD
+    string phone_number = 6;
+}
+
+message GetVerificationStatusRequest {
+    string user_id = 1;
+}
+
+message IdentityVerificationResponse {
+    bool success = 1;
+    string error_code = 2;
+    string error_message = 3;
+    IdentityVerification verification = 4;
+}
+
+message IdentityVerification {
+    string user_id = 1;
+    string bvn = 2;
+    string first_name = 3;
+    string last_name = 4;
+    string middle_name = 5;
+    string date_of_birth = 6;
+    string phone_number = 7;
+    string gender = 8;
+    string status = 9; // pending, verified, failed
+    string provider = 10;
+    google.protobuf.Timestamp verified_at = 11;
+}
+
+// =====================================================
+// PROVIDER STATUS MESSAGES
+// =====================================================
+
+message GetProviderStatusRequest {}
+
+message ProviderStatusResponse {
+    bool success = 1;
+    map<string, ProviderHealth> providers = 2;
+}
+
+message ProviderHealth {
+    string provider = 1;
+    bool is_healthy = 2;
+    bool is_enabled = 3;
+    double success_rate = 4;
+    int32 avg_latency_ms = 5;
+    google.protobuf.Timestamp last_check = 6;
+}
+
+message GetActiveProvidersRequest {}
+
+message ActiveProvidersResponse {
+    bool success = 1;
+    string virtual_accounts = 2;
+    string domestic_transfers = 3;
+    string international_transfers = 4;
+    string account_verification = 5;
+    string identity_verification = 6;
+}
+
+// =====================================================
+// WEBHOOK MESSAGES (Internal use)
+// =====================================================
+
+message WebhookEvent {
+    string provider = 1;
+    string event_type = 2;
+    string event_id = 3;
+    bytes payload = 4;
+    google.protobuf.Timestamp timestamp = 5;
+}
+
+message ProcessWebhookRequest {
+    string provider = 1;
+    bytes payload = 2;
+    string signature = 3;
+}
+
+message ProcessWebhookResponse {
+    bool success = 1;
+    string message = 2;
+}
+
+// =====================================================
+// SIGNUP IDENTITY VERIFICATION MESSAGES (Internal - called by Auth Service)
+// =====================================================
+
+message VerifyBVNForSignupRequest {
+    string user_id = 1;
+    string bvn = 2;
+    string first_name = 3;
+    string last_name = 4;
+    string date_of_birth = 5;    // YYYY-MM-DD format
+    string phone_number = 6;
+}
+
+message VerifyNINForSignupRequest {
+    string user_id = 1;
+    string nin = 2;
+    string first_name = 3;
+    string last_name = 4;
+    string date_of_birth = 5;    // YYYY-MM-DD format
+    string phone_number = 6;
+}
+
+message SignupIdentityVerificationResponse {
+    bool success = 1;
+    bool verified = 2;
+    string error_code = 3;
+    string error_message = 4;
+    VerifiedIdentityDetails identity = 5;
+}
+
+message VerifiedIdentityDetails {
+    string first_name = 1;
+    string last_name = 2;
+    string middle_name = 3;
+    string phone_number = 4;
+    string date_of_birth = 5;
+    string gender = 6;
+    string photo_url = 7;         // Base64 encoded photo if available
+    string address = 8;
+    string state_of_origin = 9;
+    string lga_of_origin = 10;
+}
+
+message CreateVirtualAccountForUserRequest {
+    string user_id = 1;
+    string first_name = 2;
+    string last_name = 3;
+    string email = 4;
+    string phone_number = 5;
+    string bvn = 6;               // BVN or NIN used for verification
+    string identity_type = 7;     // "bvn" or "nin"
+}
+
+// =====================================================
+// ENHANCED TRANSFER MESSAGES (Username/Phone)
+// =====================================================
+
+message UsernameTransferRequest {
+    string user_id = 1;           // Sender user ID
+    string to_username = 2;       // Recipient's LazerTag username (without @)
+    int64 amount = 3;             // Amount in kobo
+    string currency = 4;          // Default: NGN
+    string narration = 5;
+    string idempotency_key = 6;
+}
+
+message PhoneTransferRequest {
+    string user_id = 1;           // Sender user ID
+    string to_phone = 2;          // Recipient's phone number (E.164)
+    int64 amount = 3;             // Amount in kobo
+    string currency = 4;          // Default: NGN
+    string narration = 5;
+    string idempotency_key = 6;
+}
+
+message SearchRecipientsRequest {
+    string user_id = 1;           // Current user ID
+    string query = 2;             // Search query (username, phone, or name)
+    int32 limit = 3;              // Max results (default: 10)
+}
+
+message GetRecentRecipientsRequest {
+    string user_id = 1;
+    int32 limit = 2;              // Max results (default: 10)
+}
+
+message RecipientsResponse {
+    bool success = 1;
+    string error_code = 2;
+    string error_message = 3;
+    repeated TransferRecipient recipients = 4;
+}
+
+message TransferRecipient {
+    string id = 1;
+    string user_id = 2;           // Recipient's user ID (if LazerVault user)
+    string recipient_type = 3;    // "internal" or "external"
+    string identifier = 4;        // Username, phone, or account number
+    string name = 5;              // Full name
+    string profile_picture = 6;   // Profile picture URL (internal users only)
+    string bank_code = 7;         // Bank code (external only)
+    string bank_name = 8;         // Bank name (external only)
+    string account_number = 9;    // Account number (external only)
+    bool is_lazervault_user = 10; // True if recipient is on LazerVault
+    google.protobuf.Timestamp last_transfer_at = 11;
+    int32 transfer_count = 12;
+}
+
+// =====================================================
+// POOLED ARCHITECTURE MESSAGES
+// =====================================================
+
+// Account Balance
+message GetAccountBalanceRequest {
+    string account_id = 1;
+}
+
+message AccountBalanceResponse {
+    bool success = 1;
+    string error_code = 2;
+    string error_message = 3;
+    string account_id = 4;
+    int64 ledger_balance = 5;     // Total balance (source of truth)
+    int64 available_balance = 6;  // Balance after holds
+    int64 pending_credits = 7;    // Incoming but not settled
+    int64 pending_debits = 8;     // Outgoing but not settled
+    string currency = 9;
+}
+
+// Account Transactions
+message GetAccountTransactionsRequest {
+    string account_id = 1;
+    int32 limit = 2;
+    int32 offset = 3;
+}
+
+message TransactionsResponse {
+    bool success = 1;
+    string error_code = 2;
+    string error_message = 3;
+    repeated Transaction transactions = 4;
+}
+
+message Transaction {
+    string id = 1;
+    string account_id = 2;
+    string user_id = 3;
+    string transfer_id = 4;
+    string type = 5;              // credit, debit, transfer_in, transfer_out, etc.
+    string category = 6;          // transfer, deposit, withdrawal, fee, adjustment
+    int64 amount = 7;
+    string currency = 8;
+    int64 ledger_balance_before = 9;
+    int64 ledger_balance_after = 10;
+    int64 available_balance_before = 11;
+    int64 available_balance_after = 12;
+    string reference = 13;
+    string description = 14;
+    string narration = 15;
+    string counterparty_account_id = 16;
+    string counterparty_name = 17;
+    string counterparty_bank = 18;
+    string counterparty_account = 19;
+    string status = 20;
+    google.protobuf.Timestamp created_at = 21;
+    google.protobuf.Timestamp settled_at = 22;
+}
+
+// Primary Account
+message GetPrimaryAccountRequest {
+    string user_id = 1;
+}
+
+// Account Freeze/Unfreeze
+message FreezeAccountRequest {
+    string account_id = 1;
+    string reason = 2;            // suspicious_activity, fraud_detected, aml_compliance, etc.
+    string description = 3;
+    string frozen_by = 4;         // Admin user ID
+}
+
+message FreezeAccountResponse {
+    bool success = 1;
+    string error_code = 2;
+    string error_message = 3;
+}
+
+message UnfreezeAccountRequest {
+    string account_id = 1;
+    string unfrozen_by = 2;       // Admin user ID
+    string note = 3;              // Unfreeze note
+}
+
+message UnfreezeAccountResponse {
+    bool success = 1;
+    string error_code = 2;
+    string error_message = 3;
+}
+
+// Daily Usage
+message GetDailyUsageRequest {
+    string user_id = 1;
+}
+
+message DailyUsageResponse {
+    bool success = 1;
+    string error_code = 2;
+    string error_message = 3;
+    int64 total_transferred = 4;
+    int32 transfer_count = 5;
+    int64 daily_limit = 6;
+    int64 remaining_limit = 7;
+}
+
+// Reconciliation
+message RunReconciliationRequest {}
+
+message ReconciliationResponse {
+    bool success = 1;
+    string error_code = 2;
+    string error_message = 3;
+    string reconciliation_id = 4;
+    int64 total_ledger_balance = 5;
+    int64 pooled_account_balance = 6;
+    int64 discrepancy = 7;
+    string status = 8;            // pending, matched, discrepancy, failed
+    int32 expired_holds_released = 9;
+    int32 stuck_transfers_fixed = 10;
+}
+
+message GetReconciliationHistoryRequest {
+    int32 days = 1;               // Number of days to retrieve (default: 30)
+}
+
+message ReconciliationHistoryResponse {
+    bool success = 1;
+    string error_code = 2;
+    string error_message = 3;
+    repeated ReconciliationLog logs = 4;
+}
+
+message ReconciliationLog {
+    string id = 1;
+    google.protobuf.Timestamp reconciliation_date = 2;
+    int64 total_ledger_balance = 3;
+    int64 pooled_account_balance = 4;
+    int64 discrepancy = 5;
+    string status = 6;
+    string notes = 7;
+    google.protobuf.Timestamp created_at = 8;
+    google.protobuf.Timestamp resolved_at = 9;
+}
+
+// Daily Report
+message GetDailyReportRequest {
+    google.protobuf.Timestamp date = 1;
+}
+
+message DailyReportResponse {
+    bool success = 1;
+    string error_code = 2;
+    string error_message = 3;
+    google.protobuf.Timestamp date = 4;
+    int64 total_credits = 5;
+    int64 total_debits = 6;
+    int32 credit_count = 7;
+    int32 debit_count = 8;
+    int64 net_change = 9;
+    int64 internal_transfer_volume = 10;
+    int32 internal_transfer_count = 11;
+    int64 external_transfer_volume = 12;
+    int32 external_transfer_count = 13;
+    int32 failed_transfer_count = 14;
+    int32 new_accounts_created = 15;
+    int64 total_ledger_balance = 16;
+}
+
+// =====================================================
+// OPEN BANKING - LINKED ACCOUNTS MESSAGES
+// =====================================================
+
+// Connect Widget Config
+message GetConnectWidgetConfigRequest {}
+
+message ConnectWidgetConfigResponse {
+    bool success = 1;
+    string error_code = 2;
+    string error_message = 3;
+    string public_key = 4;      // Mono public key for widget
+    string app_id = 5;          // Mono app ID
+}
+
+// Link Bank Account
+message LinkBankAccountRequest {
+    string user_id = 1;
+    string code = 2;            // Authorization code from Mono Connect widget
+    bool set_as_default = 3;    // Set this as the default linked account
+}
+
+message LinkBankAccountResponse {
+    bool success = 1;
+    string error_code = 2;
+    string error_message = 3;
+    LinkedBankAccount account = 4;
+    bool is_new_account = 5;    // True if newly linked, false if reactivated
+}
+
+// Get Linked Accounts
+message GetLinkedAccountsRequest {
+    string user_id = 1;
+}
+
+message LinkedAccountsResponse {
+    bool success = 1;
+    string error_code = 2;
+    string error_message = 3;
+    repeated LinkedBankAccount accounts = 4;
+    LinkedBankAccount default_account = 5;
+}
+
+// Get Single Linked Account
+message GetLinkedAccountRequest {
+    string account_id = 1;
+}
+
+message LinkedAccountResponse {
+    bool success = 1;
+    string error_code = 2;
+    string error_message = 3;
+    LinkedBankAccount account = 4;
+}
+
+// Linked Bank Account Message
+message LinkedBankAccount {
+    string id = 1;
+    string user_id = 2;
+    string provider = 3;              // "mono"
+    string bank_name = 4;
+    string bank_code = 5;
+    string account_number = 6;        // Masked: ****1234
+    string account_name = 7;          // Account holder name
+    string account_type = 8;          // savings, current
+    string currency = 9;
+    int64 last_known_balance = 10;    // Cached balance
+    string status = 11;               // active, inactive, reauthorize, unlinked
+    bool is_default = 12;             // Default for deposits
+    bool is_verified = 13;            // BVN verified
+    google.protobuf.Timestamp linked_at = 14;
+    google.protobuf.Timestamp balance_updated_at = 15;
+    google.protobuf.Timestamp last_used_at = 16;
+    bool needs_reauthorize = 17;      // True if status is 'reauthorize'
+}
+
+// Unlink Bank Account
+message UnlinkBankAccountRequest {
+    string account_id = 1;
+    string user_id = 2;
+}
+
+message UnlinkBankAccountResponse {
+    bool success = 1;
+    string error_code = 2;
+    string error_message = 3;
+}
+
+// Set Default Linked Account
+message SetDefaultLinkedAccountRequest {
+    string account_id = 1;
+    string user_id = 2;
+}
+
+message SetDefaultLinkedAccountResponse {
+    bool success = 1;
+    string error_code = 2;
+    string error_message = 3;
+}
+
+// Refresh Linked Account Balance
+message RefreshLinkedAccountBalanceRequest {
+    string account_id = 1;
+    string user_id = 2;
+}
+
+message RefreshLinkedAccountBalanceResponse {
+    bool success = 1;
+    string error_code = 2;
+    string error_message = 3;
+    int64 new_balance = 4;            // Updated balance in minor units
+    string currency = 5;
+}
+
+// Reauthorization Token
+message GetReauthorizationTokenRequest {
+    string account_id = 1;
+    string user_id = 2;
+}
+
+message GetReauthorizationTokenResponse {
+    bool success = 1;
+    string error_code = 2;
+    string error_message = 3;
+    string token = 4;                 // Reauthorization token for widget
+}
+
+// =====================================================
+// OPEN BANKING - DEPOSITS (DIRECT DEBIT) MESSAGES
+// =====================================================
+
+// Initiate Deposit
+message InitiateDepositRequest {
+    string user_id = 1;
+    string linked_account_id = 2;     // Source: user's external bank account
+    string destination_account_id = 3; // Destination: user's LazerVault virtual account
+    int64 amount = 4;                 // Amount in minor units (kobo)
+    string narration = 5;
+    string idempotency_key = 6;
+}
+
+message DepositResponse {
+    bool success = 1;
+    string error_code = 2;
+    string error_message = 3;
+    Deposit deposit = 4;
+    string message = 5;
+}
+
+// Deposit Message
+message Deposit {
+    string id = 1;
+    string user_id = 2;
+    string linked_account_id = 3;
+    string destination_account_id = 4;
+    string source_bank_name = 5;
+    string source_account_number = 6; // Masked
+    int64 amount = 7;
+    int64 fee = 8;
+    string currency = 9;
+    string status = 10;               // pending, processing, successful, failed, cancelled
+    string reference = 11;
+    string narration = 12;
+    string failure_code = 13;
+    string failure_reason = 14;
+    google.protobuf.Timestamp created_at = 15;
+    google.protobuf.Timestamp completed_at = 16;
+}
+
+// Get Deposit Status
+message GetDepositStatusRequest {
+    string deposit_id = 1;
+    string user_id = 2;
+}
+
+// Get User Deposits
+message GetUserDepositsRequest {
+    string user_id = 1;
+    int32 limit = 2;
+    int32 offset = 3;
+}
+
+message DepositsResponse {
+    bool success = 1;
+    string error_code = 2;
+    string error_message = 3;
+    repeated Deposit deposits = 4;
+    int32 total = 5;
+}
+
+// Cancel Deposit
+message CancelDepositRequest {
+    string deposit_id = 1;
+    string user_id = 2;
+}
+
+message CancelDepositResponse {
+    bool success = 1;
+    string error_code = 2;
+    string error_message = 3;
+}
+
+// Calculate Deposit Fee
+message CalculateDepositFeeRequest {
+    int64 amount = 1;                 // Amount in minor units (kobo)
+}
+
+message CalculateDepositFeeResponse {
+    bool success = 1;
+    string error_code = 2;
+    string error_message = 3;
+    int64 amount = 4;                 // Original amount
+    int64 fee = 5;                    // Fee in minor units
+    int64 net_amount = 6;             // Amount after fee deduction
+    string currency = 7;
+}
+
+// =====================================================
+// WITHDRAWALS MESSAGES
+// =====================================================
+
+// Initiate Withdrawal
+message InitiateWithdrawalRequest {
+    string user_id = 1;
+    string source_account_id = 2;     // LazerVault virtual account
+    string bank_code = 3;             // Destination bank code
+    string account_number = 4;        // Destination account number
+    string account_name = 5;          // Destination account name
+    int64 amount = 6;                 // Amount in minor units (kobo)
+    string narration = 7;
+    string idempotency_key = 8;
+}
+
+message WithdrawalResponse {
+    bool success = 1;
+    string error_code = 2;
+    string error_message = 3;
+    Withdrawal withdrawal = 4;
+    string message = 5;
+}
+
+message Withdrawal {
+    string id = 1;
+    string user_id = 2;
+    string source_account_id = 3;
+    string destination_bank_code = 4;
+    string destination_bank_name = 5;
+    string destination_account = 6;
+    string destination_name = 7;
+    int64 amount = 8;
+    int64 fee = 9;
+    int64 total_amount = 10;
+    string currency = 11;
+    string status = 12;               // pending, processing, successful, failed
+    string reference = 13;
+    string narration = 14;
+    string failure_code = 15;
+    string failure_reason = 16;
+    google.protobuf.Timestamp created_at = 17;
+    google.protobuf.Timestamp completed_at = 18;
+}
+
+// Get Withdrawal Status
+message GetWithdrawalStatusRequest {
+    string withdrawal_id = 1;
+    string user_id = 2;
+}
+
+// Get User Withdrawals
+message GetUserWithdrawalsRequest {
+    string user_id = 1;
+    int32 limit = 2;
+    int32 offset = 3;
+}
+
+message WithdrawalsResponse {
+    bool success = 1;
+    string error_code = 2;
+    string error_message = 3;
+    repeated Withdrawal withdrawals = 4;
+    int32 total = 5;
+}
+
+// Calculate Withdrawal Fee
+message CalculateWithdrawalFeeRequest {
+    int64 amount = 1;
+}
+
+message CalculateWithdrawalFeeResponse {
+    bool success = 1;
+    string error_code = 2;
+    string error_message = 3;
+    int64 amount = 4;
+    int64 fee = 5;
+    int64 total_debit = 6;
+    int64 min_amount = 7;
+    int64 max_amount = 8;
+    string currency = 9;
+}
+
+// Resolve Account Name
+message ResolveAccountNameRequest {
+    string account_number = 1;
+    string bank_code = 2;
+}
+
+message ResolveAccountNameResponse {
+    bool success = 1;
+    string error_code = 2;
+    string error_message = 3;
+    string account_number = 4;
+    string account_name = 5;
+    string bank_code = 6;
+    string bank_name = 7;
+}
