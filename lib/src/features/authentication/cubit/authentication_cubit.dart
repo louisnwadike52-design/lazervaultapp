@@ -320,6 +320,10 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     if (isClosed) return;
     emit(AuthenticationLoading());
 
+    // Get locale from LocaleManager (defaults to en-NG for Nigeria)
+    final localeManager = serviceLocator<LocaleManager>();
+    final locale = localeManager.currentLocale;
+
     final result = await _signUpUseCase(
       firstName: firstName,
       lastName: lastName,
@@ -327,6 +331,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       password: password,
       primaryContact: SignupPrimaryContact.email,
       phoneNumber: phoneNumber,
+      locale: locale, // Pass locale instead of countryCode/currencyCode
     );
 
     if (isClosed) return;
@@ -1646,6 +1651,11 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
             : SignupPrimaryContact.email;
 
         // Call signup to create account and get tokens
+        // Construct locale from countryCode (e.g., "NG" -> "en-NG")
+        final locale = currentState.countryCode.isNotEmpty
+            ? 'en-${currentState.countryCode.toUpperCase()}'
+            : null;
+
         final signupResult = await _signUpUseCase(
           firstName: currentState.firstName,
           lastName: currentState.lastName,
@@ -1655,8 +1665,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
           phoneNumber: currentState.phoneNumber.isEmpty ? null : currentState.phoneNumber,
           username: currentState.username.isEmpty ? null : currentState.username,
           referralCode: currentState.referralCode.isEmpty ? null : currentState.referralCode,
-          countryCode: currentState.countryCode,
-          currencyCode: currentState.currencyCode,
+          locale: locale, // Pass locale instead of countryCode/currencyCode
           bvn: null, // BVN will be verified on next page
           nin: null, // NIN will be verified on next page
         );

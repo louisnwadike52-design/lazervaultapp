@@ -21,16 +21,17 @@ class SignupRequest extends $pb.GeneratedMessage {
     ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'firstName')
     ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastName')
     ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'phone')
-    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'countryCode')
-    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'deviceId')
-    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'deviceName')
-    ..e<PrimaryContactType>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'primaryContactType', $pb.PbFieldType.OE, defaultOrMaker: PrimaryContactType.EMAIL, valueOf: PrimaryContactType.valueOf, enumValues: PrimaryContactType.values)
-    ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'username')
-    ..aOS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'referralCode')
-    ..aOS(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'dateOfBirth')
-    ..aOS(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currencyCode')
-    ..aOS(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'bvn')
-    ..aOS(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'nin')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'deviceId')
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'deviceName')
+    ..e<PrimaryContactType>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'primaryContactType', $pb.PbFieldType.OE, defaultOrMaker: PrimaryContactType.EMAIL, valueOf: PrimaryContactType.valueOf, enumValues: PrimaryContactType.values)
+    ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'username')
+    ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'referralCode')
+    ..aOS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'dateOfBirth')
+    ..aOS(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'locale')
+    ..aOS(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'bvn')
+    ..aOS(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'nin')
+    ..aOS(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'countryCode')
+    ..aOS(16, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currencyCode')
     ..hasRequiredFields = false
   ;
 
@@ -41,16 +42,19 @@ class SignupRequest extends $pb.GeneratedMessage {
     $core.String? firstName,
     $core.String? lastName,
     $core.String? phone,
-    $core.String? countryCode,
     $core.String? deviceId,
     $core.String? deviceName,
     PrimaryContactType? primaryContactType,
     $core.String? username,
     $core.String? referralCode,
     $core.String? dateOfBirth,
-    $core.String? currencyCode,
+    $core.String? locale,
     $core.String? bvn,
     $core.String? nin,
+  @$core.Deprecated('This field is deprecated.')
+    $core.String? countryCode,
+  @$core.Deprecated('This field is deprecated.')
+    $core.String? currencyCode,
   }) {
     final _result = create();
     if (email != null) {
@@ -67,9 +71,6 @@ class SignupRequest extends $pb.GeneratedMessage {
     }
     if (phone != null) {
       _result.phone = phone;
-    }
-    if (countryCode != null) {
-      _result.countryCode = countryCode;
     }
     if (deviceId != null) {
       _result.deviceId = deviceId;
@@ -89,14 +90,22 @@ class SignupRequest extends $pb.GeneratedMessage {
     if (dateOfBirth != null) {
       _result.dateOfBirth = dateOfBirth;
     }
-    if (currencyCode != null) {
-      _result.currencyCode = currencyCode;
+    if (locale != null) {
+      _result.locale = locale;
     }
     if (bvn != null) {
       _result.bvn = bvn;
     }
     if (nin != null) {
       _result.nin = nin;
+    }
+    if (countryCode != null) {
+      // ignore: deprecated_member_use_from_same_package
+      _result.countryCode = countryCode;
+    }
+    if (currencyCode != null) {
+      // ignore: deprecated_member_use_from_same_package
+      _result.currencyCode = currencyCode;
     }
     return _result;
   }
@@ -167,94 +176,111 @@ class SignupRequest extends $pb.GeneratedMessage {
   void clearPhone() => clearField(5);
 
   @$pb.TagNumber(6)
-  $core.String get countryCode => $_getSZ(5);
+  $core.String get deviceId => $_getSZ(5);
   @$pb.TagNumber(6)
-  set countryCode($core.String v) { $_setString(5, v); }
+  set deviceId($core.String v) { $_setString(5, v); }
   @$pb.TagNumber(6)
-  $core.bool hasCountryCode() => $_has(5);
+  $core.bool hasDeviceId() => $_has(5);
   @$pb.TagNumber(6)
-  void clearCountryCode() => clearField(6);
+  void clearDeviceId() => clearField(6);
 
   @$pb.TagNumber(7)
-  $core.String get deviceId => $_getSZ(6);
+  $core.String get deviceName => $_getSZ(6);
   @$pb.TagNumber(7)
-  set deviceId($core.String v) { $_setString(6, v); }
+  set deviceName($core.String v) { $_setString(6, v); }
   @$pb.TagNumber(7)
-  $core.bool hasDeviceId() => $_has(6);
+  $core.bool hasDeviceName() => $_has(6);
   @$pb.TagNumber(7)
-  void clearDeviceId() => clearField(7);
+  void clearDeviceName() => clearField(7);
 
   @$pb.TagNumber(8)
-  $core.String get deviceName => $_getSZ(7);
+  PrimaryContactType get primaryContactType => $_getN(7);
   @$pb.TagNumber(8)
-  set deviceName($core.String v) { $_setString(7, v); }
+  set primaryContactType(PrimaryContactType v) { setField(8, v); }
   @$pb.TagNumber(8)
-  $core.bool hasDeviceName() => $_has(7);
+  $core.bool hasPrimaryContactType() => $_has(7);
   @$pb.TagNumber(8)
-  void clearDeviceName() => clearField(8);
+  void clearPrimaryContactType() => clearField(8);
 
   @$pb.TagNumber(9)
-  PrimaryContactType get primaryContactType => $_getN(8);
+  $core.String get username => $_getSZ(8);
   @$pb.TagNumber(9)
-  set primaryContactType(PrimaryContactType v) { setField(9, v); }
+  set username($core.String v) { $_setString(8, v); }
   @$pb.TagNumber(9)
-  $core.bool hasPrimaryContactType() => $_has(8);
+  $core.bool hasUsername() => $_has(8);
   @$pb.TagNumber(9)
-  void clearPrimaryContactType() => clearField(9);
+  void clearUsername() => clearField(9);
 
   @$pb.TagNumber(10)
-  $core.String get username => $_getSZ(9);
+  $core.String get referralCode => $_getSZ(9);
   @$pb.TagNumber(10)
-  set username($core.String v) { $_setString(9, v); }
+  set referralCode($core.String v) { $_setString(9, v); }
   @$pb.TagNumber(10)
-  $core.bool hasUsername() => $_has(9);
+  $core.bool hasReferralCode() => $_has(9);
   @$pb.TagNumber(10)
-  void clearUsername() => clearField(10);
+  void clearReferralCode() => clearField(10);
 
   @$pb.TagNumber(11)
-  $core.String get referralCode => $_getSZ(10);
+  $core.String get dateOfBirth => $_getSZ(10);
   @$pb.TagNumber(11)
-  set referralCode($core.String v) { $_setString(10, v); }
+  set dateOfBirth($core.String v) { $_setString(10, v); }
   @$pb.TagNumber(11)
-  $core.bool hasReferralCode() => $_has(10);
+  $core.bool hasDateOfBirth() => $_has(10);
   @$pb.TagNumber(11)
-  void clearReferralCode() => clearField(11);
+  void clearDateOfBirth() => clearField(11);
 
   @$pb.TagNumber(12)
-  $core.String get dateOfBirth => $_getSZ(11);
+  $core.String get locale => $_getSZ(11);
   @$pb.TagNumber(12)
-  set dateOfBirth($core.String v) { $_setString(11, v); }
+  set locale($core.String v) { $_setString(11, v); }
   @$pb.TagNumber(12)
-  $core.bool hasDateOfBirth() => $_has(11);
+  $core.bool hasLocale() => $_has(11);
   @$pb.TagNumber(12)
-  void clearDateOfBirth() => clearField(12);
+  void clearLocale() => clearField(12);
 
   @$pb.TagNumber(13)
-  $core.String get currencyCode => $_getSZ(12);
+  $core.String get bvn => $_getSZ(12);
   @$pb.TagNumber(13)
-  set currencyCode($core.String v) { $_setString(12, v); }
+  set bvn($core.String v) { $_setString(12, v); }
   @$pb.TagNumber(13)
-  $core.bool hasCurrencyCode() => $_has(12);
+  $core.bool hasBvn() => $_has(12);
   @$pb.TagNumber(13)
-  void clearCurrencyCode() => clearField(13);
+  void clearBvn() => clearField(13);
 
   @$pb.TagNumber(14)
-  $core.String get bvn => $_getSZ(13);
+  $core.String get nin => $_getSZ(13);
   @$pb.TagNumber(14)
-  set bvn($core.String v) { $_setString(13, v); }
+  set nin($core.String v) { $_setString(13, v); }
   @$pb.TagNumber(14)
-  $core.bool hasBvn() => $_has(13);
+  $core.bool hasNin() => $_has(13);
   @$pb.TagNumber(14)
-  void clearBvn() => clearField(14);
+  void clearNin() => clearField(14);
 
+  @$core.Deprecated('This field is deprecated.')
   @$pb.TagNumber(15)
-  $core.String get nin => $_getSZ(14);
+  $core.String get countryCode => $_getSZ(14);
+  @$core.Deprecated('This field is deprecated.')
   @$pb.TagNumber(15)
-  set nin($core.String v) { $_setString(14, v); }
+  set countryCode($core.String v) { $_setString(14, v); }
+  @$core.Deprecated('This field is deprecated.')
   @$pb.TagNumber(15)
-  $core.bool hasNin() => $_has(14);
+  $core.bool hasCountryCode() => $_has(14);
+  @$core.Deprecated('This field is deprecated.')
   @$pb.TagNumber(15)
-  void clearNin() => clearField(15);
+  void clearCountryCode() => clearField(15);
+
+  @$core.Deprecated('This field is deprecated.')
+  @$pb.TagNumber(16)
+  $core.String get currencyCode => $_getSZ(15);
+  @$core.Deprecated('This field is deprecated.')
+  @$pb.TagNumber(16)
+  set currencyCode($core.String v) { $_setString(15, v); }
+  @$core.Deprecated('This field is deprecated.')
+  @$pb.TagNumber(16)
+  $core.bool hasCurrencyCode() => $_has(15);
+  @$core.Deprecated('This field is deprecated.')
+  @$pb.TagNumber(16)
+  void clearCurrencyCode() => clearField(16);
 }
 
 class SignupResponse extends $pb.GeneratedMessage {

@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:grpc/grpc.dart';
 import 'package:dartz/dartz.dart';
 import 'package:lazervault/core/error/failure.dart';
+import 'package:lazervault/core/config/country_config.dart';
 import 'package:lazervault/core/services/grpc_call_options_helper.dart';
 import 'package:lazervault/src/features/authentication/data/models/profile_model.dart';
 import 'package:lazervault/src/features/authentication/data/models/session_model.dart';
@@ -211,8 +212,7 @@ class AuthRepositoryImpl implements IAuthRepository {
     String? phoneNumber,
     String? username,
     String? referralCode,
-    String? countryCode,
-    String? currencyCode,
+    String? locale, // Locale format: "en-NG", "en-US", etc. - we derive country/currency from this
     String? bvn,
     String? nin,
   }) async {
@@ -222,22 +222,28 @@ class AuthRepositoryImpl implements IAuthRepository {
           ? auth_enum.PrimaryContactType.PHONE
           : auth_enum.PrimaryContactType.EMAIL;
 
+      // Derive countryCode and currencyCode from locale
+      // If locale is not provided, default to Nigeria
+      final derivedCountryCode = _getCountryCodeFromLocale(locale);
+      final derivedCurrencyCode = _getCurrencyCodeFromLocale(locale);
+
+      print('Signup with locale: $locale -> countryCode: $derivedCountryCode, currencyCode: $derivedCurrencyCode');
+
       // Use new AuthService.Signup endpoint that returns tokens directly
-      // Note: currencyCode, bvn, nin are not part of SignupRequest proto - they're handled separately via VerifyIdentity
       final signupRequest = auth_req_resp.SignupRequest(
         firstName: firstName,
         lastName: lastName,
         email: email,
         password: password,
         phone: phoneNumber ?? '',
-        countryCode: countryCode ?? 'NG', // Default to Nigeria
+        countryCode: derivedCountryCode, // Derived from locale
         deviceId: 'flutter-app', // TODO: Get actual device ID
         deviceName: 'Flutter App', // TODO: Get actual device name
         primaryContactType: protoPrimaryContact,
         username: username ?? '', // Pass empty string if not provided - backend handles as optional
         referralCode: referralCode ?? '',
       );
-      print('Sending gRPC Signup request...');
+      print('Sending gRPC Signup request with countryCode: $derivedCountryCode...');
       final signupResponse = await _authServiceClient.signup(signupRequest);
 
       // Check if signup returned tokens
@@ -898,5 +904,29 @@ class AuthRepositoryImpl implements IAuthRepository {
         statusCode: 500,
       ));
     }
+  }
+
+  /// Extract country code from locale (e.g., "en-NG" -> "NG")
+  /// Defaults to "NG" (Nigeria) if locale is null or invalid
+  String _getCountryCodeFromLocale(String? locale) {
+    if (locale == null || locale.isEmpty) return 'NG';
+
+    final parts = locale.split('-');
+    if (parts.length >= 2) {
+      final countryCode = parts.last.toUpperCase();
+      // Validate that this is a supported country code
+      if (CountryConfigs.isCountrySupported(countryCode)) {
+        return countryCode;
+      }
+    }
+    return 'NG'; // Default to Nigeria
+  }
+
+  /// Extract currency code from locale (e.g., "en-NG" -> "NGN")
+  /// Defaults to "NGN" (Naira) if locale is null or invalid
+  String _getCurrencyCodeFromLocale(String? locale) {
+    final countryCode = _getCountryCodeFromLocale(locale);
+    final config = CountryConfigs.getByCode(countryCode);
+    return config?.currency ?? 'NGN';
   }
 }

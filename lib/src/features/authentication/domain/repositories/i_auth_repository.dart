@@ -34,8 +34,7 @@ abstract class IAuthRepository {
     String? phoneNumber,
     String? username,
     String? referralCode,
-    String? countryCode,
-    String? currencyCode,
+    String? locale, // Locale format: "en-NG", "en-US", etc. Backend will derive country/currency
     String? bvn,
     String? nin,
   });

@@ -115,21 +115,36 @@ const SignupRequest$json = const {
     const {'1': 'first_name', '3': 3, '4': 1, '5': 9, '10': 'firstName'},
     const {'1': 'last_name', '3': 4, '4': 1, '5': 9, '10': 'lastName'},
     const {'1': 'phone', '3': 5, '4': 1, '5': 9, '10': 'phone'},
-    const {'1': 'country_code', '3': 6, '4': 1, '5': 9, '10': 'countryCode'},
-    const {'1': 'device_id', '3': 7, '4': 1, '5': 9, '10': 'deviceId'},
-    const {'1': 'device_name', '3': 8, '4': 1, '5': 9, '10': 'deviceName'},
-    const {'1': 'primary_contact_type', '3': 9, '4': 1, '5': 14, '6': '.auth.PrimaryContactType', '10': 'primaryContactType'},
-    const {'1': 'username', '3': 10, '4': 1, '5': 9, '10': 'username'},
-    const {'1': 'referral_code', '3': 11, '4': 1, '5': 9, '10': 'referralCode'},
-    const {'1': 'date_of_birth', '3': 12, '4': 1, '5': 9, '10': 'dateOfBirth'},
-    const {'1': 'currency_code', '3': 13, '4': 1, '5': 9, '10': 'currencyCode'},
-    const {'1': 'bvn', '3': 14, '4': 1, '5': 9, '10': 'bvn'},
-    const {'1': 'nin', '3': 15, '4': 1, '5': 9, '10': 'nin'},
+    const {'1': 'device_id', '3': 6, '4': 1, '5': 9, '10': 'deviceId'},
+    const {'1': 'device_name', '3': 7, '4': 1, '5': 9, '10': 'deviceName'},
+    const {'1': 'primary_contact_type', '3': 8, '4': 1, '5': 14, '6': '.auth.PrimaryContactType', '10': 'primaryContactType'},
+    const {'1': 'username', '3': 9, '4': 1, '5': 9, '10': 'username'},
+    const {'1': 'referral_code', '3': 10, '4': 1, '5': 9, '10': 'referralCode'},
+    const {'1': 'date_of_birth', '3': 11, '4': 1, '5': 9, '10': 'dateOfBirth'},
+    const {'1': 'locale', '3': 12, '4': 1, '5': 9, '10': 'locale'},
+    const {'1': 'bvn', '3': 13, '4': 1, '5': 9, '10': 'bvn'},
+    const {'1': 'nin', '3': 14, '4': 1, '5': 9, '10': 'nin'},
+    const {
+      '1': 'country_code',
+      '3': 15,
+      '4': 1,
+      '5': 9,
+      '8': const {'3': true},
+      '10': 'countryCode',
+    },
+    const {
+      '1': 'currency_code',
+      '3': 16,
+      '4': 1,
+      '5': 9,
+      '8': const {'3': true},
+      '10': 'currencyCode',
+    },
   ],
 };
 
 /// Descriptor for `SignupRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List signupRequestDescriptor = $convert.base64Decode('Cg1TaWdudXBSZXF1ZXN0EhQKBWVtYWlsGAEgASgJUgVlbWFpbBIaCghwYXNzd29yZBgCIAEoCVIIcGFzc3dvcmQSHQoKZmlyc3RfbmFtZRgDIAEoCVIJZmlyc3ROYW1lEhsKCWxhc3RfbmFtZRgEIAEoCVIIbGFzdE5hbWUSFAoFcGhvbmUYBSABKAlSBXBob25lEiEKDGNvdW50cnlfY29kZRgGIAEoCVILY291bnRyeUNvZGUSGwoJZGV2aWNlX2lkGAcgASgJUghkZXZpY2VJZBIfCgtkZXZpY2VfbmFtZRgIIAEoCVIKZGV2aWNlTmFtZRJKChRwcmltYXJ5X2NvbnRhY3RfdHlwZRgJIAEoDjIYLmF1dGguUHJpbWFyeUNvbnRhY3RUeXBlUhJwcmltYXJ5Q29udGFjdFR5cGUSGgoIdXNlcm5hbWUYCiABKAlSCHVzZXJuYW1lEiMKDXJlZmVycmFsX2NvZGUYCyABKAlSDHJlZmVycmFsQ29kZRIiCg1kYXRlX29mX2JpcnRoGAwgASgJUgtkYXRlT2ZCaXJ0aBIjCg1jdXJyZW5jeV9jb2RlGA0gASgJUgxjdXJyZW5jeUNvZGUSEAoDYnZuGA4gASgJUgNidm4SEAoDbmluGA8gASgJUgNuaW4=');
+final $typed_data.Uint8List signupRequestDescriptor = $convert.base64Decode('Cg1TaWdudXBSZXF1ZXN0EhQKBWVtYWlsGAEgASgJUgVlbWFpbBIaCghwYXNzd29yZBgCIAEoCVIIcGFzc3dvcmQSHQoKZmlyc3RfbmFtZRgDIAEoCVIJZmlyc3ROYW1lEhsKCWxhc3RfbmFtZRgEIAEoCVIIbGFzdE5hbWUSFAoFcGhvbmUYBSABKAlSBXBob25lEhsKCWRldmljZV9pZBgGIAEoCVIIZGV2aWNlSWQSHwoLZGV2aWNlX25hbWUYByABKAlSCmRldmljZU5hbWUSSgoUcHJpbWFyeV9jb250YWN0X3R5cGUYCCABKA4yGC5hdXRoLlByaW1hcnlDb250YWN0VHlwZVIScHJpbWFyeUNvbnRhY3RUeXBlEhoKCHVzZXJuYW1lGAkgASgJUgh1c2VybmFtZRIjCg1yZWZlcnJhbF9jb2RlGAogASgJUgxyZWZlcnJhbENvZGUSIgoNZGF0ZV9vZl9iaXJ0aBgLIAEoCVILZGF0ZU9mQmlydGgSFgoGbG9jYWxlGAwgASgJUgZsb2NhbGUSEAoDYnZuGA0gASgJUgNidm4SEAoDbmluGA4gASgJUgNuaW4SJQoMY291bnRyeV9jb2RlGA8gASgJQgIYAVILY291bnRyeUNvZGUSJwoNY3VycmVuY3lfY29kZRgQIAEoCUICGAFSDGN1cnJlbmN5Q29kZQ==');
 @$core.Deprecated('Use signupResponseDescriptor instead')
 const SignupResponse$json = const {
   '1': 'SignupResponse',

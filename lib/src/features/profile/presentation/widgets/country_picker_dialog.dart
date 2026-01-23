@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
+import 'package:lazervault/core/services/locale_manager.dart';
 
 class CountryPickerDialog extends StatefulWidget {
   final String currentCountry;
@@ -23,46 +24,6 @@ class _CountryPickerDialogState extends State<CountryPickerDialog> {
   late String _selectedCurrency;
   String _searchQuery = '';
 
-  final Map<String, String> _countryCurrencyMap = {
-    'United Kingdom': 'GBP',
-    'United States': 'USD',
-    'Canada': 'CAD',
-    'Australia': 'AUD',
-    'Germany': 'EUR',
-    'France': 'EUR',
-    'Spain': 'EUR',
-    'Italy': 'EUR',
-    'Netherlands': 'EUR',
-    'Belgium': 'EUR',
-    'Switzerland': 'CHF',
-    'Austria': 'EUR',
-    'Sweden': 'SEK',
-    'Norway': 'NOK',
-    'Denmark': 'DKK',
-    'Finland': 'EUR',
-    'Ireland': 'EUR',
-    'Portugal': 'EUR',
-    'Poland': 'PLN',
-    'Czech Republic': 'CZK',
-    'Japan': 'JPY',
-    'South Korea': 'KRW',
-    'Singapore': 'SGD',
-    'Hong Kong': 'HKD',
-    'China': 'CNY',
-    'India': 'INR',
-    'United Arab Emirates': 'AED',
-    'Saudi Arabia': 'SAR',
-    'South Africa': 'ZAR',
-    'Nigeria': 'NGN',
-    'Kenya': 'KES',
-    'Brazil': 'BRL',
-    'Mexico': 'MXN',
-    'Argentina': 'ARS',
-    'Chile': 'CLP',
-  };
-
-  List<String> get _countries => _countryCurrencyMap.keys.toList();
-
   @override
   void initState() {
     super.initState();
@@ -70,14 +31,16 @@ class _CountryPickerDialogState extends State<CountryPickerDialog> {
     _selectedCurrency = widget.currentCurrency;
   }
 
-  List<String> get _filteredCountries {
+  List<CountryLocale> get _filteredCountries {
     if (_searchQuery.isEmpty) {
-      return _countries;
+      return CountryLocales.all;
     }
-    return _countries
-        .where((country) =>
-            country.toLowerCase().contains(_searchQuery.toLowerCase()))
-        .toList();
+    final lowerQuery = _searchQuery.toLowerCase();
+    return CountryLocales.all.where((country) {
+      return country.countryName.toLowerCase().contains(lowerQuery) ||
+             country.countryCode.toLowerCase().contains(lowerQuery) ||
+             country.currency.toLowerCase().contains(lowerQuery);
+    }).toList();
   }
 
   void _handleSave() {
@@ -169,15 +132,13 @@ class _CountryPickerDialogState extends State<CountryPickerDialog> {
                 itemCount: _filteredCountries.length,
                 itemBuilder: (context, index) {
                   final country = _filteredCountries[index];
-                  final isSelected = _selectedCountry == country;
-
-                  final currency = _countryCurrencyMap[country] ?? '';
+                  final isSelected = _selectedCountry == country.countryName;
 
                   return InkWell(
                     onTap: () {
                       setState(() {
-                        _selectedCountry = country;
-                        _selectedCurrency = _countryCurrencyMap[country] ?? 'USD';
+                        _selectedCountry = country.countryName;
+                        _selectedCurrency = country.currency;
                       });
                     },
                     child: Container(
@@ -197,12 +158,18 @@ class _CountryPickerDialogState extends State<CountryPickerDialog> {
                       ),
                       child: Row(
                         children: [
+                          // Flag emoji
+                          Text(
+                            country.flag,
+                            style: TextStyle(fontSize: 24.sp),
+                          ),
+                          SizedBox(width: 12.w),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  country,
+                                  country.countryName,
                                   style: GoogleFonts.inter(
                                     fontSize: 16.sp,
                                     fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
@@ -212,15 +179,28 @@ class _CountryPickerDialogState extends State<CountryPickerDialog> {
                                   ),
                                 ),
                                 SizedBox(height: 2.h),
-                                Text(
-                                  currency,
-                                  style: GoogleFonts.inter(
-                                    fontSize: 13.sp,
-                                    fontWeight: FontWeight.w400,
-                                    color: isSelected
-                                        ? const Color(0xFF4E03D0).withOpacity(0.7)
-                                        : const Color(0xFF6B7280),
-                                  ),
+                                Row(
+                                  children: [
+                                    Text(
+                                      country.currency,
+                                      style: GoogleFonts.inter(
+                                        fontSize: 13.sp,
+                                        fontWeight: FontWeight.w400,
+                                        color: isSelected
+                                            ? const Color(0xFF4E03D0).withOpacity(0.7)
+                                            : const Color(0xFF6B7280),
+                                      ),
+                                    ),
+                                    SizedBox(width: 8.w),
+                                    Text(
+                                      '• ${country.countryCode}',
+                                      style: GoogleFonts.inter(
+                                        fontSize: 12.sp,
+                                        fontWeight: FontWeight.w400,
+                                        color: Colors.grey.shade500,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),

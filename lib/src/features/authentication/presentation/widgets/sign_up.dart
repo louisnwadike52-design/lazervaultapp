@@ -1227,35 +1227,251 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
   void _showSkipDialog(BuildContext context, String countryCode) {
     final tier1Limit = countryCode == 'NG' ? '₦50,000' : 'limited amount';
 
-    Get.defaultDialog(
-      title: 'Skip Identity Verification?',
-      titleStyle: TextStyle(
-        fontSize: 18.sp,
-        fontWeight: FontWeight.bold,
-        color: Colors.black87,
-      ),
-      middleText: 'You\'ll have a Tier 1 account with a daily limit of $tier1Limit. You can complete verification later from Settings to unlock higher limits.',
-      middleTextStyle: TextStyle(
-        fontSize: 14.sp,
-        color: Colors.black54,
-        height: 1.5,
-      ),
-      textConfirm: 'Skip & Continue',
-      textCancel: 'Verify Now',
-      confirmTextColor: Colors.white,
-      buttonColor: Colors.grey.shade600,
-      cancelTextColor: Colors.blue,
-      radius: 16.r,
-      onConfirm: () {
-        Get.back(); // Close dialog
-        // Skip verification and proceed with signup as Tier 1
-        context.read<AuthenticationCubit>().skipIdentityVerification();
-      },
-      onCancel: () {
-        Get.back(); // Close dialog
-        // User stays on verification page
-      },
+    showDialog(
+      context: context,
       barrierDismissible: true,
+      barrierColor: Colors.black.withOpacity(0.6),
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24.r),
+        ),
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+        child: Container(
+          margin: EdgeInsets.symmetric(horizontal: 20.w),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24.r),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.15),
+                blurRadius: 24,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Header with icon
+              Container(
+                width: double.infinity,
+                padding: EdgeInsets.only(
+                  top: 24.h,
+                  left: 24.w,
+                  right: 24.w,
+                  bottom: 16.h,
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFF4E5), // Light orange warning color
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(24.r),
+                    topRight: Radius.circular(24.r),
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    // Warning icon
+                    Container(
+                      width: 56.w,
+                      height: 56.h,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFF9800).withOpacity(0.2),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.warning_amber_rounded,
+                        size: 28.sp,
+                        color: const Color(0xFFFF9800),
+                      ),
+                    ),
+                    SizedBox(height: 16.h),
+                    // Title
+                    Text(
+                      'Skip Identity Verification?',
+                      style: TextStyle(
+                        fontSize: 20.sp,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF2D3436),
+                        height: 1.2,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+
+              // Content
+              Padding(
+                padding: EdgeInsets.fromLTRB(24.w, 24.h, 24.w, 8.h),
+                child: Column(
+                  children: [
+                    // Description text
+                    Text(
+                      'You\'ll have a limited Tier 1 account. Some features will be restricted until you complete verification.',
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        color: const Color(0xFF636E72),
+                        height: 1.5,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    SizedBox(height: 20.h),
+
+                    // Limit info card
+                    Container(
+                      padding: EdgeInsets.all(16.w),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF5F7FA),
+                        borderRadius: BorderRadius.circular(16.r),
+                        border: Border.all(
+                          color: const Color(0xFF6C63FF).withOpacity(0.2),
+                          width: 1,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 40.w,
+                            height: 40.h,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF6C63FF).withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(10.r),
+                            ),
+                            child: Icon(
+                              Icons.account_balance_wallet_outlined,
+                              size: 20.sp,
+                              color: const Color(0xFF6C63FF),
+                            ),
+                          ),
+                          SizedBox(width: 12.w),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Daily Limit',
+                                  style: TextStyle(
+                                    fontSize: 12.sp,
+                                    color: const Color(0xFF636E72),
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                SizedBox(height: 2.h),
+                                Text(
+                                  tier1Limit,
+                                  style: TextStyle(
+                                    fontSize: 16.sp,
+                                    color: const Color(0xFF2D3436),
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: 16.h),
+
+                    // Restricted features info
+                    Container(
+                      padding: EdgeInsets.all(16.w),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFF4E5).withOpacity(0.5),
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.info_outline,
+                            size: 16.sp,
+                            color: const Color(0xFFFF9800),
+                          ),
+                          SizedBox(width: 8.w),
+                          Expanded(
+                            child: Text(
+                              'Complete verification anytime from Settings',
+                              style: TextStyle(
+                                fontSize: 12.sp,
+                                color: const Color(0xFF636E72),
+                                height: 1.4,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Buttons
+              Padding(
+                padding: EdgeInsets.fromLTRB(24.w, 16.h, 24.w, 24.h),
+                child: Column(
+                  children: [
+                    // Skip button
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50.h,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                          context.read<AuthenticationCubit>().skipIdentityVerification();
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF6C63FF),
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14.r),
+                          ),
+                        ),
+                        child: Text(
+                          'Skip & Continue',
+                          style: TextStyle(
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 12.h),
+
+                    // Verify now button
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50.h,
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: const Color(0xFF6C63FF),
+                          side: BorderSide(
+                            color: const Color(0xFF6C63FF).withOpacity(0.3),
+                            width: 1.5,
+                          ),
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14.r),
+                          ),
+                        ),
+                        child: Text(
+                          'Verify Now',
+                          style: TextStyle(
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
