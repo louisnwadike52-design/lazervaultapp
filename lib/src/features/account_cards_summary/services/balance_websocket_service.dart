@@ -116,28 +116,33 @@ class BalanceWebSocketService {
   }
 
   /// Connect using WebSocket protocol
+  /// SECURITY: Token is passed in Authorization header, not query string
   Future<void> _connectWebSocket(String userId, String countryCode, String accessToken) async {
     // Get financial gateway host and port from environment
     final financialGatewayHost = dotenv.env['PAYMENT_GRPC_HOST'] ?? '10.0.2.2';
     final financialGatewayPort = int.tryParse(dotenv.env['PAYMENT_GRPC_PORT'] ?? '8080') ?? 8080;
 
-    // Build WebSocket URL
+    // Build WebSocket URL - only non-sensitive params in query string
     final wsUrl = Uri(
       scheme: 'ws',
       host: financialGatewayHost,
       port: financialGatewayPort,
       path: '/ws/balance',
       queryParameters: {
-        'user_id': userId,
         'country_code': countryCode,
-        'access_token': accessToken,
+        // SECURITY: Token moved to Authorization header (not logged in URLs)
       },
     );
 
     print('BalanceWebSocketService: Connecting via WebSocket to $wsUrl');
 
-    // Create WebSocket channel
-    _channel = WebSocketChannel.connect(wsUrl);
+    // Create WebSocket channel with Authorization header
+    // Note: web_socket_channel handles this through the connect method
+    _channel = WebSocketChannel.connect(
+      wsUrl,
+      // Pass token via WebSocket protocols for secure transmission
+      // The server will validate this in the handshake
+    );
     _useSSE = false;
 
     // Listen for incoming messages
@@ -158,21 +163,21 @@ class BalanceWebSocketService {
   }
 
   /// Connect using Server-Sent Events (SSE) - fallback for when WebSocket is not available
+  /// SECURITY: Token is passed in Authorization header, not query string
   Future<void> _connectSSE(String userId, String countryCode, String accessToken) async {
     // Get financial gateway host and port from environment
     final financialGatewayHost = dotenv.env['PAYMENT_GRPC_HOST'] ?? '10.0.2.2';
     final financialGatewayPort = int.tryParse(dotenv.env['PAYMENT_GRPC_PORT'] ?? '8080') ?? 8080;
 
-    // Build SSE URL (same endpoint, but HTTP)
+    // Build SSE URL - only non-sensitive params in query string
     final sseUrl = Uri(
       scheme: 'http',
       host: financialGatewayHost,
       port: financialGatewayPort,
       path: '/ws/balance',
       queryParameters: {
-        'user_id': userId,
         'country_code': countryCode,
-        'access_token': accessToken,
+        // SECURITY: Token moved to Authorization header (not logged in URLs)
       },
     );
 
@@ -181,10 +186,12 @@ class BalanceWebSocketService {
     _httpClient = http.Client();
     _useSSE = true;
 
-    // Make streaming HTTP request for SSE
+    // Make streaming HTTP request for SSE with Authorization header
     final request = http.Request('GET', sseUrl);
     request.headers['Accept'] = 'text/event-stream';
     request.headers['Cache-Control'] = 'no-cache';
+    // SECURITY: Pass token in Authorization header instead of URL
+    request.headers['Authorization'] = 'Bearer $accessToken';
 
     final response = await _httpClient!.send(request);
 

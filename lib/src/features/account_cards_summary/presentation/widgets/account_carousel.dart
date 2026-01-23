@@ -8,6 +8,9 @@ import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/account_cards_summary/domain/entities/account_summary_entity.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
+import 'package:lazervault/src/features/account_cards_summary/cubit/balance_websocket_cubit.dart';
+import 'package:lazervault/src/features/account_cards_summary/services/balance_websocket_service.dart';
+import 'package:lazervault/src/features/account_cards_summary/presentation/widgets/animated_balance_counter.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
@@ -35,6 +38,9 @@ class AccountCarousel extends StatefulWidget {
 class _AccountCarouselState extends State<AccountCarousel> {
   int _currentIndex = 0;
   final AccountManager _accountManager = serviceLocator<AccountManager>();
+
+  // Track real-time balance updates per account
+  final Map<String, double> _realtimeBalances = {};
 
   // Helper to convert currency code to symbol
   String _getCurrencySymbol(String currency) {
@@ -109,29 +115,64 @@ class _AccountCarouselState extends State<AccountCarousel> {
         );
      }
 
-    return Column(
-      children: [
-        CarouselSlider.builder(
-          itemCount: _totalItemCount,
-          options: CarouselOptions(
-            height: 200.h,
-            viewportFraction: 0.95, // Wider cards
-            enlargeCenterPage: true,
-            onPageChanged: _onPageChanged, // Automatically sets active account on swipe
+    // Wrap with BlocListener to handle real-time balance updates
+    return BlocListener<BalanceWebSocketCubit, BalanceWebSocketState>(
+      listener: (context, state) {
+        if (state.lastUpdate != null) {
+          _handleBalanceUpdate(state.lastUpdate!);
+        }
+      },
+      child: Column(
+        children: [
+          CarouselSlider.builder(
+            itemCount: _totalItemCount,
+            options: CarouselOptions(
+              height: 200.h,
+              viewportFraction: 0.95, // Wider cards
+              enlargeCenterPage: true,
+              onPageChanged: _onPageChanged, // Automatically sets active account on swipe
+            ),
+            itemBuilder: (context, index, realIndex) {
+              // If showing family setup card and this is the last index
+              if (widget.showFamilySetupCard && index == widget.accountSummaries.length) {
+                return _buildFamilySetupCard(context);
+              }
+              final account = widget.accountSummaries[index];
+              return _buildAccountCard(context, account);
+            },
           ),
-          itemBuilder: (context, index, realIndex) {
-            // If showing family setup card and this is the last index
-            if (widget.showFamilySetupCard && index == widget.accountSummaries.length) {
-              return _buildFamilySetupCard(context);
-            }
-            final account = widget.accountSummaries[index];
-            return _buildAccountCard(context, account);
-          },
-        ),
-        SizedBox(height: 20.h),
-        _buildCarouselIndicators(_totalItemCount),
-      ],
+          SizedBox(height: 20.h),
+          _buildCarouselIndicators(_totalItemCount),
+        ],
+      ),
     );
+  }
+
+  /// Handle real-time balance updates from WebSocket
+  void _handleBalanceUpdate(BalanceUpdateEvent event) {
+    // Find the account that matches this update
+    final accountId = event.accountId;
+    final newBalance = event.newBalance;
+
+    // Update the real-time balance for this account
+    if (mounted) {
+      setState(() {
+        _realtimeBalances[accountId] = newBalance;
+      });
+
+      // Log the update for debugging
+      debugPrint('AccountCarousel: Real-time balance update for account $accountId: $newBalance (${event.eventType})');
+    }
+  }
+
+  /// Get the current balance for an account (real-time if available, otherwise from entity)
+  double _getAccountBalance(AccountSummaryEntity account) {
+    // Check if we have a real-time balance update for this account
+    if (_realtimeBalances.containsKey(account.id)) {
+      return _realtimeBalances[account.id]!;
+    }
+    // Fall back to the balance from the account entity
+    return account.balance;
   }
 
   Widget _buildAccountCard(BuildContext context, AccountSummaryEntity account) {
@@ -145,11 +186,14 @@ class _AccountCarouselState extends State<AccountCarousel> {
 
     // Standard account card
     final bool isUp = account.isUp;
+    // Use real-time balance if available
+    final currentBalance = _getAccountBalance(account);
+
     final cardArguments = {
       'id': account.id,
       'accountType': account.accountType,
       'currency': account.currency,
-      'balance': account.balance,
+      'balance': currentBalance,
       'accountNumber': '•••• ${account.accountNumberLast4}',
       'trend': '${account.trendPercentage > 0 ? '+' : ''}${account.trendPercentage.toStringAsFixed(1)}%',
       'isUp': isUp,
@@ -272,14 +316,13 @@ class _AccountCarouselState extends State<AccountCarousel> {
                       ],
                     ),
                     SizedBox(height: 12.h),
-                    Text(
-                      "$currencySymbol${account.balance.toStringAsFixed(2)}",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 28.sp,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 0.5,
-                      ),
+                    // Animated balance counter for smooth transitions
+                    CompactAnimatedBalance(
+                      balance: _getAccountBalance(account),
+                      currencySymbol: currencySymbol,
+                      fontSize: 28,
+                      color: Colors.white,
+                      duration: const Duration(milliseconds: 800),
                     ),
                     const Spacer(),
                     Row(
@@ -685,14 +728,13 @@ class _AccountCarouselState extends State<AccountCarousel> {
                       ],
                     ),
                     SizedBox(height: 12.h),
-                    Text(
-                      '$currencySymbol${account.familyTotalBalance?.toStringAsFixed(2) ?? account.balance.toStringAsFixed(2)}',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 26.sp,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 0.5,
-                      ),
+                    // Animated balance counter for family accounts
+                    CompactAnimatedBalance(
+                      balance: account.familyTotalBalance ?? _getAccountBalance(account),
+                      currencySymbol: currencySymbol,
+                      fontSize: 26,
+                      color: Colors.white,
+                      duration: const Duration(milliseconds: 800),
                     ),
                     SizedBox(height: 2.h),
                     Text(
