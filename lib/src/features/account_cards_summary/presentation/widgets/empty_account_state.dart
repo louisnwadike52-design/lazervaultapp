@@ -50,6 +50,7 @@ class EmptyAccountState extends StatelessWidget {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(20.r),
         child: Stack(
+          alignment: Alignment.center,
           children: [
             // Background decorative pattern
             Positioned(
@@ -82,6 +83,7 @@ class EmptyAccountState extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   // Icon
                   Container(

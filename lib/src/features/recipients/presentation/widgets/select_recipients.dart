@@ -1,13 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/models/device_contact.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/core/utilities/banks_data.dart';
+import 'package:lazervault/core/widgets/bank_logo.dart';
+import 'package:lazervault/core/services/locale_manager.dart';
+import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_cubit.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_state.dart';
+import 'package:lazervault/src/features/recipients/presentation/cubit/account_verification_cubit.dart';
+import 'package:lazervault/src/features/recipients/presentation/cubit/account_verification_state.dart';
+import 'package:lazervault/src/features/recipients/domain/entities/account_verification_result.dart';
 import 'package:lazervault/src/features/widgets/common/back_navigator.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/recipient_chips_builder.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/recipients.dart';
@@ -23,6 +31,17 @@ class SelectRecipients extends StatefulWidget {
 }
 
 class _SelectRecipientsState extends State<SelectRecipients> {
+  // Contact bank verification state
+  List<Map<String, String>> _banksList = [];
+  bool _isLoadingBanks = false;
+  String? _banksError;
+  String? _contactSelectedBankCode;
+  String? _contactSelectedBankName;
+  AccountVerificationResult? _contactVerificationResult;
+
+  // Current country for bank selection (from locale)
+  String _currentCountry = 'NG';
+
   String? _getAccessTokenFromState(AuthenticationState authState) {
     if (authState is AuthenticationSuccess) {
       return authState.profile.session.accessToken;
@@ -425,87 +444,931 @@ class _SelectRecipientsState extends State<SelectRecipients> {
     );
   }
 
-  void _showAddContactAsRecipientDialog(DeviceContact contact) {
-    final nameController = TextEditingController(text: contact.name);
-    final accountController = TextEditingController();
-    final bankController = TextEditingController();
-    final sortCodeController = TextEditingController();
+  Future<void> _loadBanksIfNeeded() async {
+    if (_banksList.isNotEmpty || _isLoadingBanks) return;
 
-    showDialog(
+    // Get country from LocaleManager
+    try {
+      final localeManager = serviceLocator<LocaleManager>();
+      _currentCountry = localeManager.currentCountry;
+    } catch (e) {
+      _currentCountry = 'NG'; // Default to Nigeria
+    }
+
+    setState(() {
+      _isLoadingBanks = true;
+      _banksError = null;
+    });
+
+    try {
+      // Try to fetch from backend first
+      final cubit = context.read<AccountVerificationCubit>();
+      final banks = await cubit.getSupportedBanks(country: _currentCountry);
+      if (mounted && banks.isNotEmpty) {
+        setState(() {
+          _banksList = banks;
+          _isLoadingBanks = false;
+        });
+        return;
+      }
+    } catch (e) {
+      // Backend fetch failed, fall back to local data
+      debugPrint('Backend bank fetch failed: $e, using local data');
+    }
+
+    // Use local banks data as fallback
+    if (mounted) {
+      setState(() {
+        _banksList = BanksData.getBanksForCountry(_currentCountry);
+        _isLoadingBanks = false;
+        _banksError = null; // Clear error since we have local data
+      });
+    }
+  }
+
+  void _showAddContactAsRecipientDialog(DeviceContact contact) {
+    // Reset contact verification state
+    _contactSelectedBankCode = null;
+    _contactSelectedBankName = null;
+    _contactVerificationResult = null;
+
+    // Load banks first
+    _loadBanksIfNeeded();
+    _showContactBankSelectionSheet(contact);
+  }
+
+  /// Step 1: Show bank selection for contact
+  void _showContactBankSelectionSheet(DeviceContact contact) {
+    showModalBottomSheet(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        backgroundColor: Colors.white,
-        title: Text(
-          'Add Contact as Recipient',
-          style: TextStyle(
-            color: Colors.black87,
-            fontSize: 18.sp,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: nameController,
-              decoration: InputDecoration(
-                labelText: 'Name',
-                border: OutlineInputBorder(),
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (bottomSheetContext) {
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            final searchController = TextEditingController();
+            String searchQuery = '';
+
+            return Container(
+              height: MediaQuery.of(context).size.height * 0.80,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(32.r)),
               ),
-            ),
-            SizedBox(height: 12.h),
-            TextField(
-              controller: accountController,
-              decoration: InputDecoration(
-                labelText: 'Account Number',
-                border: OutlineInputBorder(),
+              child: Column(
+                children: [
+                  // Handle Bar
+                  Container(
+                    margin: EdgeInsets.only(top: 12.h),
+                    width: 40.w,
+                    height: 4.h,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[300],
+                      borderRadius: BorderRadius.circular(2.r),
+                    ),
+                  ),
+
+                  // Header Section
+                  Container(
+                    padding: EdgeInsets.all(24.w),
+                    child: Row(
+                      children: [
+                        // Contact Avatar
+                        Container(
+                          width: 48.w,
+                          height: 48.h,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                Color.fromARGB(255, 78, 3, 208),
+                                Color.fromARGB(255, 95, 20, 225),
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(12.r),
+                          ),
+                          child: Center(
+                            child: Text(
+                              contact.name.isNotEmpty
+                                  ? contact.name.substring(0, 1).toUpperCase()
+                                  : '?',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 20.sp,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: 16.w),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                contact.name,
+                                style: TextStyle(
+                                  color: Colors.black87,
+                                  fontSize: 18.sp,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              Text(
+                                'Select their bank',
+                                style: TextStyle(
+                                  color: Colors.grey[600],
+                                  fontSize: 14.sp,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: () => Navigator.pop(context),
+                          child: Container(
+                            padding: EdgeInsets.all(8.w),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[100],
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              Icons.close,
+                              color: Colors.grey[600],
+                              size: 20.sp,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Search Bar
+                  Container(
+                    margin: EdgeInsets.symmetric(horizontal: 24.w),
+                    padding: EdgeInsets.symmetric(horizontal: 16.w),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[50],
+                      borderRadius: BorderRadius.circular(16.r),
+                      border: Border.all(color: Colors.grey[200]!),
+                    ),
+                    child: TextField(
+                      controller: searchController,
+                      onChanged: (value) {
+                        setSheetState(() {
+                          searchQuery = value.toLowerCase();
+                        });
+                      },
+                      decoration: InputDecoration(
+                        hintText: 'Search banks...',
+                        hintStyle: TextStyle(
+                          color: Colors.grey[500],
+                          fontSize: 14.sp,
+                        ),
+                        prefixIcon: Icon(
+                          Icons.search,
+                          color: Colors.grey[500],
+                          size: 20.sp,
+                        ),
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.symmetric(vertical: 12.h),
+                      ),
+                      style: TextStyle(
+                        color: Colors.black87,
+                        fontSize: 14.sp,
+                      ),
+                    ),
+                  ),
+
+                  SizedBox(height: 16.h),
+
+                  // Banks List
+                  Expanded(
+                    child: Builder(
+                      builder: (context) {
+                        if (_isLoadingBanks) {
+                          return Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                CircularProgressIndicator(
+                                  color: Color.fromARGB(255, 78, 3, 208),
+                                ),
+                                SizedBox(height: 16.h),
+                                Text(
+                                  'Loading banks...',
+                                  style: TextStyle(
+                                    color: Colors.grey[600],
+                                    fontSize: 16.sp,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }
+
+                        if (_banksError != null) {
+                          return Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.error_outline,
+                                  size: 48.sp,
+                                  color: Colors.red[400],
+                                ),
+                                SizedBox(height: 16.h),
+                                Text(
+                                  'Failed to load banks',
+                                  style: TextStyle(
+                                    color: Colors.grey[600],
+                                    fontSize: 16.sp,
+                                  ),
+                                ),
+                                SizedBox(height: 8.h),
+                                TextButton(
+                                  onPressed: () {
+                                    _loadBanksIfNeeded();
+                                    setSheetState(() {});
+                                  },
+                                  child: Text('Retry'),
+                                ),
+                              ],
+                            ),
+                          );
+                        }
+
+                        final filteredBanks = searchQuery.isEmpty
+                            ? _banksList
+                            : _banksList
+                                .where((bank) => bank["name"]!
+                                    .toLowerCase()
+                                    .contains(searchQuery))
+                                .toList();
+
+                        if (filteredBanks.isEmpty) {
+                          return Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.search_off,
+                                  size: 48.sp,
+                                  color: Colors.grey[400],
+                                ),
+                                SizedBox(height: 16.h),
+                                Text(
+                                  'No banks found',
+                                  style: TextStyle(
+                                    color: Colors.grey[600],
+                                    fontSize: 16.sp,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }
+
+                        return ListView.builder(
+                          padding: EdgeInsets.symmetric(horizontal: 24.w),
+                          itemCount: filteredBanks.length,
+                          itemBuilder: (context, index) {
+                            final bank = filteredBanks[index];
+                            return Container(
+                              margin: EdgeInsets.only(bottom: 8.h),
+                              child: Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  onTap: () {
+                                    Navigator.pop(bottomSheetContext);
+                                    _contactSelectedBankCode = bank["code"];
+                                    _contactSelectedBankName = bank["name"];
+                                    _showContactAccountNumberSheet(contact);
+                                  },
+                                  borderRadius: BorderRadius.circular(12.r),
+                                  child: Container(
+                                    padding: EdgeInsets.all(16.w),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(12.r),
+                                      border:
+                                          Border.all(color: Colors.grey[200]!),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        BankLogo(
+                                          bankName: bank["name"]!,
+                                          bankCode: bank["code"],
+                                          country: _currentCountry,
+                                          size: 40,
+                                          borderRadius: 10,
+                                        ),
+                                        SizedBox(width: 12.w),
+                                        Expanded(
+                                          child: Text(
+                                            bank["name"]!,
+                                            style: TextStyle(
+                                              color: Colors.black87,
+                                              fontSize: 16.sp,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                        ),
+                                        Icon(
+                                          Icons.arrow_forward_ios,
+                                          color: Colors.grey[400],
+                                          size: 16.sp,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                ],
               ),
-            ),
-            SizedBox(height: 12.h),
-            TextField(
-              controller: sortCodeController,
-              decoration: InputDecoration(
-                labelText: 'Sort Code',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            SizedBox(height: 12.h),
-            TextField(
-              controller: bankController,
-              decoration: InputDecoration(
-                labelText: 'Bank Name',
-                border: OutlineInputBorder(),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              if (accountController.text.isNotEmpty && 
-                  sortCodeController.text.isNotEmpty &&
-                  bankController.text.isNotEmpty) {
-                final recipient = RecipientModel(
-                  id: contact.id,
-                  name: nameController.text,
-                  accountNumber: accountController.text,
-                  bankName: bankController.text,
-                  sortCode: sortCodeController.text,
-                  isFavorite: false,
-                );
-                Navigator.pop(dialogContext);
-                Get.toNamed(AppRoutes.initiateSendFunds, arguments: recipient);
-              }
-            },
-            child: Text('Add & Send'),
-          ),
-        ],
-      ),
+            );
+          },
+        );
+      },
     );
+  }
+
+  /// Step 2: Show account number entry for contact
+  void _showContactAccountNumberSheet(DeviceContact contact) {
+    final accountController = TextEditingController();
+    bool isVerifying = false;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (bottomSheetContext) {
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            return BlocListener<AccountVerificationCubit,
+                AccountVerificationState>(
+              listener: (context, verificationState) {
+                if (verificationState is AccountVerificationLoading) {
+                  setSheetState(() {
+                    isVerifying = true;
+                  });
+                } else if (verificationState is AccountVerificationSuccess) {
+                  setSheetState(() {
+                    isVerifying = false;
+                  });
+                  _contactVerificationResult = AccountVerificationResult(
+                    accountNumber: verificationState.accountNumber,
+                    accountName: verificationState.accountName,
+                    bankName: verificationState.bankName,
+                    bankCode: verificationState.bankCode,
+                    verificationStatus: verificationState.verificationStatus,
+                  );
+                  Navigator.pop(bottomSheetContext);
+                  _showContactConfirmationSheet(contact);
+                } else if (verificationState is AccountVerificationFailure) {
+                  setSheetState(() {
+                    isVerifying = false;
+                  });
+                  Get.snackbar(
+                    'Verification Failed',
+                    verificationState.userMessage,
+                    snackPosition: SnackPosition.BOTTOM,
+                    backgroundColor: Colors.red.withValues(alpha: 0.8),
+                    colorText: Colors.white,
+                  );
+                }
+              },
+              child: Container(
+                height: MediaQuery.of(context).size.height * 0.55,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(32.r)),
+                ),
+                child: Padding(
+                  padding: EdgeInsets.all(24.w),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Handle Bar
+                      Center(
+                        child: Container(
+                          width: 40.w,
+                          height: 4.h,
+                          decoration: BoxDecoration(
+                            color: Colors.grey[300],
+                            borderRadius: BorderRadius.circular(2.r),
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 24.h),
+
+                      // Header
+                      Row(
+                        children: [
+                          BankLogo(
+                            bankName: _contactSelectedBankName ?? '',
+                            bankCode: _contactSelectedBankCode,
+                            country: _currentCountry,
+                            size: 48,
+                            borderRadius: 12,
+                          ),
+                          SizedBox(width: 16.w),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  contact.name,
+                                  style: TextStyle(
+                                    color: Colors.black87,
+                                    fontSize: 18.sp,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                Text(
+                                  _contactSelectedBankName ?? '',
+                                  style: TextStyle(
+                                    color: Colors.grey[600],
+                                    fontSize: 14.sp,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: () => Navigator.pop(context),
+                            child: Container(
+                              padding: EdgeInsets.all(8.w),
+                              decoration: BoxDecoration(
+                                color: Colors.grey[100],
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                Icons.close,
+                                color: Colors.grey[600],
+                                size: 20.sp,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 32.h),
+
+                      // Account Number Label
+                      Text(
+                        'Account Number',
+                        style: TextStyle(
+                          color: Colors.black87,
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      SizedBox(height: 8.h),
+
+                      // Account Number Field
+                      TextField(
+                        controller: accountController,
+                        keyboardType: TextInputType.number,
+                        maxLength: 10,
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: Colors.grey[50],
+                          hintText: 'Enter 10-digit account number',
+                          hintStyle: TextStyle(color: Colors.grey[500]),
+                          prefixIcon: Icon(Icons.numbers_outlined,
+                              color: Colors.grey[600]),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12.r),
+                            borderSide: BorderSide(color: Colors.grey[200]!),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12.r),
+                            borderSide: BorderSide(color: Colors.grey[200]!),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12.r),
+                            borderSide: BorderSide(
+                              color: Color.fromARGB(255, 78, 3, 208),
+                              width: 2,
+                            ),
+                          ),
+                          counterText: '',
+                        ),
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly
+                        ],
+                        onChanged: (value) {
+                          setSheetState(() {});
+                        },
+                      ),
+                      SizedBox(height: 8.h),
+                      Text(
+                        'Enter the 10-digit account number for ${contact.name}',
+                        style: TextStyle(
+                          color: Colors.grey[500],
+                          fontSize: 12.sp,
+                        ),
+                      ),
+
+                      Spacer(),
+
+                      // Verify Button
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: isVerifying ||
+                                  accountController.text.length != 10
+                              ? null
+                              : () {
+                                  this
+                                      .context
+                                      .read<AccountVerificationCubit>()
+                                      .verifyAccount(
+                                        bankCode: _contactSelectedBankCode!,
+                                        accountNumber: accountController.text,
+                                        bankName: _contactSelectedBankName!,
+                                      );
+                                },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Color.fromARGB(255, 78, 3, 208),
+                            foregroundColor: Colors.white,
+                            padding: EdgeInsets.symmetric(vertical: 16.h),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12.r),
+                            ),
+                            disabledBackgroundColor: Colors.grey[300],
+                          ),
+                          child: isVerifying
+                              ? Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    SizedBox(
+                                      width: 20.w,
+                                      height: 20.h,
+                                      child: CircularProgressIndicator(
+                                        color: Colors.white,
+                                        strokeWidth: 2,
+                                      ),
+                                    ),
+                                    SizedBox(width: 12.w),
+                                    Text(
+                                      'Verifying...',
+                                      style: TextStyle(
+                                        fontSize: 16.sp,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                )
+                              : Text(
+                                  'Verify Account',
+                                  style: TextStyle(
+                                    fontSize: 16.sp,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                        ),
+                      ),
+                      SizedBox(
+                          height: MediaQuery.of(context).padding.bottom + 16.h),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  /// Step 3: Show confirmation with verified account name
+  void _showContactConfirmationSheet(DeviceContact contact) {
+    bool isFavorite = false;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      isDismissible: false,
+      builder: (bottomSheetContext) {
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            return Container(
+              height: MediaQuery.of(context).size.height * 0.60,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(32.r)),
+              ),
+              child: Padding(
+                padding: EdgeInsets.all(24.w),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Handle Bar
+                    Center(
+                      child: Container(
+                        width: 40.w,
+                        height: 4.h,
+                        decoration: BoxDecoration(
+                          color: Colors.grey[300],
+                          borderRadius: BorderRadius.circular(2.r),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 24.h),
+
+                    // Success Icon
+                    Center(
+                      child: Container(
+                        padding: EdgeInsets.all(16.w),
+                        decoration: BoxDecoration(
+                          color: Colors.green.withValues(alpha: 0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.check_circle,
+                          color: Colors.green,
+                          size: 48.sp,
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 16.h),
+
+                    Center(
+                      child: Text(
+                        'Account Verified!',
+                        style: TextStyle(
+                          color: Colors.black87,
+                          fontSize: 20.sp,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 24.h),
+
+                    // Account Details Card
+                    Container(
+                      padding: EdgeInsets.all(16.w),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[50],
+                        borderRadius: BorderRadius.circular(16.r),
+                        border: Border.all(color: Colors.grey[200]!),
+                      ),
+                      child: Column(
+                        children: [
+                          _buildDetailRow(
+                            'Account Name',
+                            _contactVerificationResult?.accountName ?? '',
+                            isHighlighted: true,
+                          ),
+                          Divider(height: 24.h, color: Colors.grey[200]),
+                          _buildDetailRow(
+                            'Account Number',
+                            _contactVerificationResult?.accountNumber ?? '',
+                          ),
+                          Divider(height: 24.h, color: Colors.grey[200]),
+                          _buildDetailRow(
+                            'Bank',
+                            _contactVerificationResult?.bankName ?? '',
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: 16.h),
+
+                    // Save as Favorite Toggle
+                    Container(
+                      padding: EdgeInsets.all(12.w),
+                      decoration: BoxDecoration(
+                        color: Colors.amber.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            isFavorite ? Icons.star : Icons.star_border,
+                            color: Colors.amber[700],
+                            size: 24.sp,
+                          ),
+                          SizedBox(width: 12.w),
+                          Expanded(
+                            child: Text(
+                              'Save to favorites',
+                              style: TextStyle(
+                                color: Colors.black87,
+                                fontSize: 14.sp,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                          Switch(
+                            value: isFavorite,
+                            onChanged: (value) {
+                              setSheetState(() {
+                                isFavorite = value;
+                              });
+                            },
+                            activeColor: Color.fromARGB(255, 78, 3, 208),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    Spacer(),
+
+                    // Action Buttons
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () {
+                              Navigator.pop(bottomSheetContext);
+                              _contactVerificationResult = null;
+                            },
+                            style: OutlinedButton.styleFrom(
+                              padding: EdgeInsets.symmetric(vertical: 16.h),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12.r),
+                              ),
+                              side: BorderSide(color: Colors.grey[300]!),
+                            ),
+                            child: Text(
+                              'Cancel',
+                              style: TextStyle(
+                                color: Colors.grey[600],
+                                fontSize: 16.sp,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: 16.w),
+                        Expanded(
+                          flex: 2,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              Navigator.pop(bottomSheetContext);
+                              _proceedToPaymentWithContact(contact, isFavorite);
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Color.fromARGB(255, 78, 3, 208),
+                              foregroundColor: Colors.white,
+                              padding: EdgeInsets.symmetric(vertical: 16.h),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12.r),
+                              ),
+                            ),
+                            child: Text(
+                              'Proceed to Payment',
+                              style: TextStyle(
+                                fontSize: 16.sp,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(
+                        height: MediaQuery.of(context).padding.bottom + 16.h),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildDetailRow(String label, String value,
+      {bool isHighlighted = false}) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            color: Colors.grey[600],
+            fontSize: 14.sp,
+          ),
+        ),
+        Flexible(
+          child: Text(
+            value,
+            style: TextStyle(
+              color: isHighlighted ? Colors.green[700] : Colors.black87,
+              fontSize: isHighlighted ? 16.sp : 14.sp,
+              fontWeight: isHighlighted ? FontWeight.w700 : FontWeight.w600,
+            ),
+            textAlign: TextAlign.end,
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _proceedToPaymentWithContact(DeviceContact contact, bool isFavorite) {
+    if (_contactVerificationResult == null) return;
+
+    final temporaryRecipient = RecipientModel(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      name: _contactVerificationResult!.accountName,
+      accountNumber: _contactVerificationResult!.accountNumber,
+      bankName: _contactVerificationResult!.bankName,
+      sortCode: _contactVerificationResult!.bankCode,
+      isFavorite: isFavorite,
+      countryCode: 'NG',
+      currency: 'NGN',
+    );
+
+    Get.toNamed(AppRoutes.initiateSendFunds, arguments: temporaryRecipient);
+  }
+
+  List<Color> _getBankGradientColors(String bankName) {
+    final lowerName = bankName.toLowerCase();
+
+    // Nigerian Banks
+    if (lowerName.contains('access')) return [Color(0xFFFF6600), Color(0xFFCC5200)];
+    if (lowerName.contains('gtbank') || lowerName.contains('guaranty trust')) return [Color(0xFFFF6600), Color(0xFFCC4400)];
+    if (lowerName.contains('first bank')) return [Color(0xFF003366), Color(0xFF002244)];
+    if (lowerName.contains('uba') || lowerName.contains('united bank for africa')) return [Color(0xFFCC0000), Color(0xFF990000)];
+    if (lowerName.contains('zenith')) return [Color(0xFFCC0000), Color(0xFF990000)];
+    if (lowerName.contains('kuda')) return [Color(0xFF6B47ED), Color(0xFF5533CC)];
+    if (lowerName.contains('opay')) return [Color(0xFF00C853), Color(0xFF009624)];
+    if (lowerName.contains('palmpay')) return [Color(0xFF6C63FF), Color(0xFF5046E5)];
+    if (lowerName.contains('fidelity')) return [Color(0xFF006B3F), Color(0xFF004D2D)];
+    if (lowerName.contains('fcmb') || lowerName.contains('first city monument')) return [Color(0xFF6B2D7B), Color(0xFF4A1F55)];
+    if (lowerName.contains('sterling')) return [Color(0xFFCC0000), Color(0xFF990000)];
+    if (lowerName.contains('stanbic')) return [Color(0xFF0033A1), Color(0xFF002277)];
+    if (lowerName.contains('ecobank')) return [Color(0xFF004C91), Color(0xFF003366)];
+    if (lowerName.contains('union bank')) return [Color(0xFF003087), Color(0xFF002266)];
+    if (lowerName.contains('wema') || lowerName.contains('alat')) return [Color(0xFF6B2D7B), Color(0xFF4A1F55)];
+    if (lowerName.contains('polaris')) return [Color(0xFF003399), Color(0xFF002266)];
+    if (lowerName.contains('keystone')) return [Color(0xFF0066CC), Color(0xFF004488)];
+    if (lowerName.contains('heritage')) return [Color(0xFF006633), Color(0xFF004422)];
+    if (lowerName.contains('moniepoint')) return [Color(0xFF0066FF), Color(0xFF0044CC)];
+    if (lowerName.contains('carbon')) return [Color(0xFF00C9A7), Color(0xFF00A386)];
+
+    // UK Banks
+    if (lowerName.contains('barclays')) return [Color(0xFF0071CE), Color(0xFF004A8F)];
+    if (lowerName.contains('hsbc')) return [Color(0xFFDB0011), Color(0xFFB8000E)];
+    if (lowerName.contains('lloyds')) return [Color(0xFF006A4E), Color(0xFF004D3A)];
+    if (lowerName.contains('natwest')) return [Color(0xFF5D2A8F), Color(0xFF4A1F75)];
+    if (lowerName.contains('santander')) return [Color(0xFFEC0000), Color(0xFFD10000)];
+    if (lowerName.contains('monzo')) return [Color(0xFFFF5A5F), Color(0xFFE64850)];
+    if (lowerName.contains('starling')) return [Color(0xFF6935D3), Color(0xFF5229A8)];
+    if (lowerName.contains('revolut')) return [Color(0xFF0073E6), Color(0xFF005BB5)];
+
+    // Default gradient
+    return [Color(0xFF78039C), Color(0xFF5F14E1)];
+  }
+
+  String _getBankInitials(String bankName) {
+    if (bankName.isEmpty) return '??';
+    final lowerName = bankName.toLowerCase();
+
+    // Nigerian Banks
+    if (lowerName.contains('access')) return 'AB';
+    if (lowerName.contains('gtbank') || lowerName.contains('guaranty trust')) return 'GT';
+    if (lowerName.contains('first bank')) return 'FB';
+    if (lowerName.contains('uba') || lowerName.contains('united bank for africa')) return 'UBA';
+    if (lowerName.contains('zenith')) return 'ZB';
+    if (lowerName.contains('kuda')) return 'KD';
+    if (lowerName.contains('opay')) return 'OP';
+    if (lowerName.contains('palmpay')) return 'PP';
+    if (lowerName.contains('fidelity')) return 'FD';
+    if (lowerName.contains('fcmb') || lowerName.contains('first city monument')) return 'FC';
+    if (lowerName.contains('sterling')) return 'SB';
+    if (lowerName.contains('stanbic')) return 'SI';
+    if (lowerName.contains('ecobank')) return 'EB';
+    if (lowerName.contains('union bank')) return 'UB';
+    if (lowerName.contains('wema')) return 'WB';
+    if (lowerName.contains('alat')) return 'AL';
+    if (lowerName.contains('moniepoint')) return 'MP';
+    if (lowerName.contains('carbon')) return 'CB';
+
+    // UK Banks
+    if (lowerName.contains('barclays')) return 'BC';
+    if (lowerName.contains('hsbc')) return 'HS';
+    if (lowerName.contains('lloyds')) return 'LB';
+    if (lowerName.contains('natwest')) return 'NW';
+    if (lowerName.contains('santander')) return 'SU';
+    if (lowerName.contains('monzo')) return 'MZ';
+    if (lowerName.contains('starling')) return 'SL';
+    if (lowerName.contains('revolut')) return 'RV';
+
+    // Default: first letters of first two words
+    final words = bankName.split(' ');
+    if (words.length >= 2) {
+      return '${words[0][0]}${words[1][0]}'.toUpperCase();
+    }
+    return bankName.substring(0, 2).toUpperCase();
   }
 
   Widget _buildQuickAction({

@@ -4,9 +4,12 @@ import 'package:get/get.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/core/data/app_data.dart';
 import 'package:lazervault/src/features/widgets/themed_app_bar.dart';
+import 'package:lazervault/src/features/widgets/universal_image_loader.dart';
 import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
 import 'package:lazervault/src/features/profile/cubit/profile_state.dart';
+import 'package:lazervault/src/features/profile/presentation/widgets/edit_profile_dialog.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/currency_sync_service.dart';
 import 'package:lazervault/src/features/profile/presentation/widgets/change_password_dialog.dart';
@@ -102,6 +105,11 @@ class _SettingsViewState extends State<_SettingsView> {
                       children: [
                         SizedBox(height: 16.h),
 
+                        // Profile Section
+                        _buildProfileSection(state),
+
+                        SizedBox(height: 16.h),
+
                         // Security Section
                         _buildSecuritySection(),
 
@@ -131,6 +139,268 @@ class _SettingsViewState extends State<_SettingsView> {
         ),
       ),
     );
+  }
+
+  Widget _buildProfileSection(ProfileState state) {
+    final user = state is ProfileLoaded ? state.user : null;
+    final fullName = user != null
+        ? '${user.firstName} ${user.lastName}'
+        : 'Loading...';
+    final email = user?.email ?? '';
+    final username = user?.username;
+    final profilePicture = user?.profilePicture ?? AppData.dp;
+
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 16.w),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16.r),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          // Profile Header
+          Padding(
+            padding: EdgeInsets.all(20.w),
+            child: Row(
+              children: [
+                // Profile Picture
+                Container(
+                  width: 70.w,
+                  height: 70.h,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: const Color(0xFF4E03D0).withOpacity(0.2),
+                      width: 3,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF4E03D0).withOpacity(0.1),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(35.r),
+                    child: UniversalImageLoader(
+                      imagePath: profilePicture,
+                      width: 70.w,
+                      height: 70.h,
+                    ),
+                  ),
+                ),
+                SizedBox(width: 16.w),
+                // Profile Info
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        fullName,
+                        style: GoogleFonts.inter(
+                          fontSize: 18.sp,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF1F2937),
+                        ),
+                      ),
+                      SizedBox(height: 4.h),
+                      // Username display with @ prefix
+                      if (username != null && username.isNotEmpty) ...[
+                        Row(
+                          children: [
+                            Container(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 8.w,
+                                vertical: 2.h,
+                              ),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF4E03D0).withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(8.r),
+                              ),
+                              child: Text(
+                                '@$username',
+                                style: GoogleFonts.inter(
+                                  fontSize: 13.sp,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFF4E03D0),
+                                ),
+                              ),
+                            ),
+                            SizedBox(width: 8.w),
+                            Icon(
+                              Icons.verified,
+                              size: 16.sp,
+                              color: Colors.green,
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 4.h),
+                      ] else ...[
+                        // No username set - show prompt
+                        GestureDetector(
+                          onTap: () {
+                            _showEditProfileDialog(user);
+                          },
+                          child: Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 8.w,
+                              vertical: 2.h,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.amber.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8.r),
+                              border: Border.all(
+                                color: Colors.amber.withOpacity(0.3),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.add_circle_outline,
+                                  size: 14.sp,
+                                  color: Colors.amber[700],
+                                ),
+                                SizedBox(width: 4.w),
+                                Text(
+                                  'Add username',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 12.sp,
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.amber[700],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: 4.h),
+                      ],
+                      Text(
+                        email,
+                        style: GoogleFonts.inter(
+                          fontSize: 13.sp,
+                          fontWeight: FontWeight.w400,
+                          color: const Color(0xFF6B7280),
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+                // Edit button
+                IconButton(
+                  onPressed: () {
+                    _showEditProfileDialog(user);
+                  },
+                  icon: Container(
+                    padding: EdgeInsets.all(8.w),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF4E03D0).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(10.r),
+                    ),
+                    child: Icon(
+                      Icons.edit_outlined,
+                      size: 18.sp,
+                      color: const Color(0xFF4E03D0),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Username info card (if username exists)
+          if (username != null && username.isNotEmpty)
+            Container(
+              margin: EdgeInsets.fromLTRB(16.w, 0, 16.w, 16.h),
+              padding: EdgeInsets.all(12.w),
+              decoration: BoxDecoration(
+                color: const Color(0xFF4E03D0).withOpacity(0.05),
+                borderRadius: BorderRadius.circular(12.r),
+                border: Border.all(
+                  color: const Color(0xFF4E03D0).withOpacity(0.1),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.info_outline,
+                    size: 18.sp,
+                    color: const Color(0xFF4E03D0),
+                  ),
+                  SizedBox(width: 10.w),
+                  Expanded(
+                    child: Text(
+                      'Your username @$username can be used by others to send you money instantly.',
+                      style: GoogleFonts.inter(
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w400,
+                        color: const Color(0xFF4E03D0),
+                        height: 1.4,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            )
+          else
+            Container(
+              margin: EdgeInsets.fromLTRB(16.w, 0, 16.w, 16.h),
+              padding: EdgeInsets.all(12.w),
+              decoration: BoxDecoration(
+                color: Colors.amber.withOpacity(0.05),
+                borderRadius: BorderRadius.circular(12.r),
+                border: Border.all(
+                  color: Colors.amber.withOpacity(0.2),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.lightbulb_outline,
+                    size: 18.sp,
+                    color: Colors.amber[700],
+                  ),
+                  SizedBox(width: 10.w),
+                  Expanded(
+                    child: Text(
+                      'Set a username to let others send you money easily using @username.',
+                      style: GoogleFonts.inter(
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w400,
+                        color: Colors.amber[800],
+                        height: 1.4,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  void _showEditProfileDialog(user) {
+    if (user == null) return;
+    showDialog(
+      context: context,
+      builder: (dialogContext) => BlocProvider.value(
+        value: context.read<ProfileCubit>(),
+        child: EditProfileDialog(user: user),
+      ),
+    ).then((_) {
+      // Refresh profile after editing
+      context.read<ProfileCubit>().getUserProfile();
+    });
   }
 
   Widget _buildSecuritySection() {

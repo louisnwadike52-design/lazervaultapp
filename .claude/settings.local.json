@@ -1,7 +1,22 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git diff-index:*)"
+      "Bash(git diff-index:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(flutter analyze:*)",
+      "Bash(go build:*)",
+      "Bash(python3:*)",
+      "Bash(ls:*)",
+      "Bash(./stop_all_services.sh:*)",
+      "Bash(# Check for supabase configuration or service ls -la /Users/louislawrence/Music/apps/stack/lazervault-app-platform/supabase* || echo \"\"No supabase folder\"\" # Check for any service that provides JWKS grep -r \"\"\\\\.well-known/jwks\"\" /Users/louislawrence/Music/apps/stack/lazervault-app-platform --include=\"\"*.go\"\" --include=\"\"*.py\"\")",
+      "Bash(./start_all_local_no_docker.sh)",
+      "Bash(lsof:*)",
+      "Bash(curl:*)",
+      "Bash(flutter pub get:*)",
+      "Bash(flutter attach:*)",
+      "Bash(pgrep:*)",
+      "Bash(flutter devices:*)"
     ],
     "deny": [],
     "ask": []

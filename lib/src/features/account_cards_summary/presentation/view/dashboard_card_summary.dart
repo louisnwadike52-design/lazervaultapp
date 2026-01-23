@@ -160,13 +160,26 @@ class _DashboardCardSummaryViewState extends State<_DashboardCardSummaryView> {
 
     return MultiBlocListener(
       listeners: [
-        // Listen for WebSocket balance updates and refresh account summaries
+        // Listen for WebSocket balance updates
+        // Note: The AccountCarousel now handles real-time balance updates directly
+        // via animated counters - no need to refresh all data on every update
         BlocListener<BalanceWebSocketCubit, BalanceWebSocketState>(
           listener: (context, wsState) {
             if (wsState.lastUpdate != null) {
-              print('_DashboardCardSummaryView: Received balance update via WebSocket - ${wsState.lastUpdate}');
-              // Refresh account summaries when balance changes
-              _fetchData();
+              final event = wsState.lastUpdate!;
+              debugPrint('_DashboardCardSummaryView: WebSocket balance update - ${event.eventType}: ${event.newBalance} ${event.currency}');
+
+              // Only do a full refresh for completed transactions to sync other data
+              // The animated counter handles immediate visual updates
+              if (event.status.toLowerCase() == 'completed') {
+                // Debounce: only refresh if it's been more than 2 seconds since last update
+                // This prevents multiple rapid refreshes
+                Future.delayed(const Duration(seconds: 2), () {
+                  if (mounted) {
+                    _fetchData();
+                  }
+                });
+              }
             }
           },
         ),
