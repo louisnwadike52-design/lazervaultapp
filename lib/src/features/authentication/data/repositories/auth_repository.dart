@@ -56,6 +56,7 @@ class AuthRepositoryImpl implements IAuthRepository {
           firstName: user.firstName,
           lastName: user.lastName,
           phoneNumber: user.hasPhone() ? user.phone : null,
+          username: user.username.isNotEmpty ? user.username : null,
           verified: user.phoneVerified,
           isEmailVerified: user.emailVerified,
           profilePicture: user.profilePicture.isEmpty ? null : user.profilePicture,
@@ -273,6 +274,7 @@ class AuthRepositoryImpl implements IAuthRepository {
         firstName: signupResponse.user.firstName,
         lastName: signupResponse.user.lastName,
         phoneNumber: signupResponse.user.phone,
+        username: signupResponse.user.username.isNotEmpty ? signupResponse.user.username : null,
         verified: signupResponse.user.phoneVerified, // Use phoneVerified for overall verified status
         isEmailVerified: signupResponse.user.emailVerified,
         profilePicture: signupResponse.user.profilePicture.isEmpty ? null : signupResponse.user.profilePicture,
@@ -548,6 +550,7 @@ class AuthRepositoryImpl implements IAuthRepository {
             firstName: response.user.firstName,
             lastName: response.user.lastName,
             phoneNumber: response.user.phone,
+            username: response.user.username.isNotEmpty ? response.user.username : null,
             verified: response.user.phoneVerified, // Use phoneVerified for overall verified status
             isEmailVerified: response.user.emailVerified,
             profilePicture: response.user.profilePicture.isEmpty ? null : response.user.profilePicture,

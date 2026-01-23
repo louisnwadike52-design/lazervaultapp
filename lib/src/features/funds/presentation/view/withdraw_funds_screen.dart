@@ -5,12 +5,12 @@ import 'package:get/get.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/utilities/banks_data.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/features/funds/cubit/withdrawal_cubit.dart';
 import 'package:lazervault/src/features/funds/cubit/withdrawal_state.dart';
-import 'package:lazervault/src/features/recipients/presentation/cubit/account_verification_cubit.dart';
 
 class WithdrawFundsScreen extends StatefulWidget {
   final Map<String, dynamic> selectedCard;
@@ -56,14 +56,14 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen> {
     _loadBanks();
   }
 
-  /// Load supported banks from the API
+  /// Load supported banks from local configuration
   Future<void> _loadBanks() async {
     setState(() => _isLoadingBanks = true);
     try {
-      final cubit = context.read<AccountVerificationCubit>();
       // Get country from selected card or default to NG
       final String country = _getCountryFromCard();
-      final banks = await cubit.getSupportedBanks(country: country);
+      // Use local banks data only - no API calls
+      final banks = BanksData.getBanksForCountry(country);
 
       if (mounted) {
         setState(() {

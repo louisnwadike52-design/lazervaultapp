@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../data/datasources/recipient_verification_remote_datasource.dart';
 import '../../domain/entities/account_verification_result.dart';
 import 'account_verification_state.dart';
+import '../../../../../core/utilities/banks_data.dart';
 
 /// Cubit for managing account verification state.
 ///
@@ -150,12 +151,12 @@ class AccountVerificationCubit extends Cubit<AccountVerificationState> {
 
   /// Get list of supported banks for a country.
   ///
-  /// Returns list of banks with their codes and names.
-  /// Throws exception on error.
-  Future<List<Map<String, String>>> getSupportedBanks({
+  /// Returns list of banks with their codes and names from local configuration.
+  /// No API calls - all data comes from local BanksData config.
+  List<Map<String, String>> getSupportedBanks({
     String country = 'NG',
-  }) async {
-    return await _dataSource.getSupportedBanks(country: country);
+  }) {
+    return BanksData.getBanksForCountry(country);
   }
 
   @override

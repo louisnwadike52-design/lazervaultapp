@@ -16,7 +16,9 @@
       "Bash(flutter pub get:*)",
       "Bash(flutter attach:*)",
       "Bash(pgrep:*)",
-      "Bash(flutter devices:*)"
+      "Bash(flutter devices:*)",
+      "Bash(chmod:*)",
+      "Bash(./start_webhooks.sh)"
     ],
     "deny": [],
     "ask": []
