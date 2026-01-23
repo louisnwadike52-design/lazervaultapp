@@ -249,22 +249,26 @@ class _DashboardCardSummaryViewState extends State<_DashboardCardSummaryView> {
                     // Check if user has no accounts (non-Nigeria or accounts not yet created)
                     if (state.accountSummaries.isEmpty) {
                       final isNigeriaUser = EmptyAccountState.isCountrySupported(countryCode);
-                      return SizedBox(
-                        height: 228.h,
-                        child: EmptyAccountState(
-                          countryCode: countryCode,
-                          isVirtualAccountSupported: isNigeriaUser,
-                          onNotifyMe: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text(
-                                  'We\'ll notify you when virtual accounts become available in your region!',
+                      return Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 4.w),
+                        child: SizedBox(
+                          width: MediaQuery.of(context).size.width * 0.95,
+                          height: 200.h,
+                          child: EmptyAccountState(
+                            countryCode: countryCode,
+                            isVirtualAccountSupported: isNigeriaUser,
+                            onNotifyMe: () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    'We\'ll notify you when virtual accounts become available in your region!',
+                                  ),
+                                  duration: Duration(seconds: 3),
+                                  backgroundColor: Color(0xFF6C5CE7),
                                 ),
-                                duration: Duration(seconds: 3),
-                                backgroundColor: Color(0xFF6C5CE7),
-                              ),
-                            );
-                          },
+                              );
+                            },
+                          ),
                         ),
                       );
                     }

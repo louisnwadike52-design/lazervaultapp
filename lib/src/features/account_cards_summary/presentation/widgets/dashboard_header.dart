@@ -76,7 +76,7 @@ class DashboardHeader extends StatelessWidget {
       stream: localeManager.countryStream,
       initialData: localeManager.currentCountry,
       builder: (context, snapshot) {
-        final currentCountry = snapshot.data ?? 'US';
+        final currentCountry = snapshot.data ?? 'NG';
         final countryLocale = CountryLocales.findByCountryCode(currentCountry);
 
         return InkWell(

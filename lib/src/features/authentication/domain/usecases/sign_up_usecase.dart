@@ -23,8 +23,7 @@ class SignUpUseCase {
     String? phoneNumber,
     String? username,
     String? referralCode,
-    String? countryCode,
-    String? currencyCode,
+    String? locale, // Locale format: "en-NG", "en-US", etc. Backend will derive country/currency
     String? bvn,
     String? nin,
   }) async {
@@ -38,8 +37,7 @@ class SignUpUseCase {
       phoneNumber: phoneNumber,
       username: username,
       referralCode: referralCode,
-      countryCode: countryCode,
-      currencyCode: currencyCode,
+      locale: locale,
       bvn: bvn,
       nin: nin,
     );

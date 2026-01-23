@@ -57,7 +57,10 @@ class AccountSummaryRepositoryImpl implements IAccountSummaryRepository {
           .map((proto) => AccountSummaryModel.fromProto(proto))
           .toList();
 
-      return Right(accountSummaries);
+      // Sort accounts in the desired order: Personal > Investment > Savings > Family & Friends > Others
+      final sortedSummaries = _sortAccountSummaries(accountSummaries);
+
+      return Right(sortedSummaries);
     } on GrpcError catch (e) {
       print('gRPC Error during GetUserAccounts: ${e.codeName} - ${e.message}');
       return Left(ServerFailure(
@@ -71,5 +74,55 @@ class AccountSummaryRepositoryImpl implements IAccountSummaryRepository {
         statusCode: 500,
       ));
     }
+  }
+
+  /// Sort account summaries in the desired order:
+  /// 1. Personal
+  /// 2. Investment
+  /// 3. Savings
+  /// 4. Family & Friends
+  /// 5. Others (main, business, usd, gbp, eur) in their original order
+  List<AccountSummaryEntity> _sortAccountSummaries(List<AccountSummaryEntity> summaries) {
+    // Define the priority order for account types
+    const priorityOrder = {
+      'Personal': 0,
+      'Investment': 1,
+      'Savings': 2,
+      'Family & Friends': 3,
+      'Family': 3, // Handle alternative naming
+    };
+
+    final sortedList = List<AccountSummaryEntity>.from(summaries);
+    sortedList.sort((a, b) {
+      final aTypeLower = a.accountType.toLowerCase();
+      final bTypeLower = b.accountType.toLowerCase();
+
+      // Check if account types are in our priority list
+      int? aPriority;
+      int? bPriority;
+
+      for (final entry in priorityOrder.entries) {
+        if (aTypeLower.contains(entry.key.toLowerCase())) {
+          aPriority = entry.value;
+        }
+        if (bTypeLower.contains(entry.key.toLowerCase())) {
+          bPriority = entry.value;
+        }
+      }
+
+      // If both have priorities, sort by priority
+      if (aPriority != null && bPriority != null) {
+        return aPriority.compareTo(bPriority);
+      }
+      // If only a has priority, it comes first
+      if (aPriority != null) return -1;
+      // If only b has priority, it comes first
+      if (bPriority != null) return 1;
+
+      // Neither has priority, maintain original order (stable sort)
+      return 0;
+    });
+
+    return sortedList;
   }
 } 

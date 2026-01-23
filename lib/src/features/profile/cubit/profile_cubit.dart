@@ -1,5 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lazervault/core/services/currency_sync_service.dart';
+import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/src/features/profile/cubit/profile_state.dart';
 import 'package:lazervault/src/features/profile/domain/repositories/i_profile_repository.dart';
 
@@ -22,9 +24,27 @@ class ProfileCubit extends Cubit<ProfileState> {
     if (isClosed) return;
     result.fold(
       (failure) => emit(ProfileError(failure.message)),
-      (data) {
+      (data) async {
         final user = data['user'];
         final preferences = data['preferences'];
+
+        // Sync activeCountry from LocaleManager if not already set
+        // This ensures the country selected during signup is persisted to preferences
+        if (preferences.activeCountry.isEmpty) {
+          try {
+            final localeManager = serviceLocator<LocaleManager>();
+            final countryFromLocale = localeManager.currentCountry;
+            if (countryFromLocale.isNotEmpty) {
+              // Update preferences with the country from LocaleManager
+              await updatePreferences(activeCountry: countryFromLocale);
+              return; // updatePreferences will emit the new state
+            }
+          } catch (e) {
+            // Silently fail - locale sync is best effort
+            print('Error syncing country from LocaleManager: $e');
+          }
+        }
+
         emit(ProfileLoaded(user: user, preferences: preferences));
       },
     );

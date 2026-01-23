@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/services/locale_manager.dart';
+import 'package:lazervault/core/services/signup_state_service.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/utilities/responsive_controller.dart';
 import 'package:lazervault/src/features/widgets/build_form_field.dart';
@@ -18,17 +21,19 @@ class _SelectCountryState extends State<SelectCountry> {
   final TextEditingController _selectedCountryController =
       TextEditingController();
 
+  // Country data with dialing codes and ISO country codes for locale mapping
+  // Nigeria is first as it's the default and primary supported country
   List<Map<String, String>> countries = [
-    {"name": "United States", "code": "+1", "flag": "🇺🇸"},
-    {"name": "United Kingdom", "code": "+44", "flag": "🇬🇧"},
-    {"name": "Canada", "code": "+1", "flag": "🇨🇦"},
-    {"name": "India", "code": "+91", "flag": "🇮🇳"},
-    {"name": "Germany", "code": "+49", "flag": "🇩🇪"},
-    {"name": "France", "code": "+33", "flag": "🇫🇷"},
-    {"name": "Nigeria", "code": "+234", "flag": "🇳🇬"},
-    {"name": "South Africa", "code": "+27", "flag": "🇿🇦"},
-    {"name": "Australia", "code": "+61", "flag": "🇦🇺"},
-    {"name": "Japan", "code": "+81", "flag": "🇯🇵"},
+    {"name": "Nigeria", "code": "+234", "flag": "🇳🇬", "countryCode": "NG"},
+    {"name": "United States", "code": "+1", "flag": "🇺🇸", "countryCode": "US"},
+    {"name": "United Kingdom", "code": "+44", "flag": "🇬🇧", "countryCode": "GB"},
+    {"name": "Canada", "code": "+1", "flag": "🇨🇦", "countryCode": "CA"},
+    {"name": "India", "code": "+91", "flag": "🇮🇳", "countryCode": "IN"},
+    {"name": "Germany", "code": "+49", "flag": "🇩🇪", "countryCode": "DE"},
+    {"name": "France", "code": "+33", "flag": "🇫🇷", "countryCode": "FR"},
+    {"name": "South Africa", "code": "+27", "flag": "🇿🇦", "countryCode": "ZA"},
+    {"name": "Australia", "code": "+61", "flag": "🇦🇺", "countryCode": "AU"},
+    {"name": "Japan", "code": "+81", "flag": "🇯🇵", "countryCode": "JP"},
   ];
 
   List<Map<String, String>> filteredCountries = [];
@@ -38,6 +43,22 @@ class _SelectCountryState extends State<SelectCountry> {
   void initState() {
     super.initState();
     filteredCountries = List.from(countries);
+    // Preselect Nigeria by default and save to services
+    _preselectDefaultCountry();
+    // Save the default locale immediately
+    _saveSelectedCountry();
+  }
+
+  /// Preselect Nigeria as the default country
+  void _preselectDefaultCountry() {
+    final nigeria = countries.firstWhere(
+      (c) => c["countryCode"] == "NG",
+      orElse: () => countries.first,
+    );
+    if (!selectedCountries.contains(nigeria)) {
+      selectedCountries.add(nigeria);
+      _updateSelectedCountries();
+    }
   }
 
   void _openBottomSheet(BuildContext context) {
@@ -179,6 +200,52 @@ class _SelectCountryState extends State<SelectCountry> {
     });
   }
 
+  /// Get locale string from country name (e.g., "Nigeria" -> "en-NG")
+  String? _getLocaleFromCountryName(String countryName) {
+    final country = countries.firstWhere(
+      (c) => c["name"] == countryName,
+      orElse: () => {},
+    );
+    final countryCode = country["countryCode"];
+    if (countryCode == null || countryCode.isEmpty) return null;
+    return 'en-$countryCode';
+  }
+
+  /// Get ISO country code from country name (e.g., "Nigeria" -> "NG")
+  String? _getCountryCodeFromName(String countryName) {
+    final country = countries.firstWhere(
+      (c) => c["name"] == countryName,
+      orElse: () => {},
+    );
+    return country["countryCode"];
+  }
+
+  /// Save selected country to SignupStateService and LocaleManager
+  Future<void> _saveSelectedCountry() async {
+    if (selectedCountries.isEmpty) return;
+
+    try {
+      final signupStateService = serviceLocator<SignupStateService>();
+      final localeManager = serviceLocator<LocaleManager>();
+
+      // Get the first selected country (primary country)
+      final primaryCountry = selectedCountries.first;
+      final countryName = primaryCountry["name"];
+      final countryCode = _getCountryCodeFromName(countryName ?? '');
+      final locale = _getLocaleFromCountryName(countryName ?? '');
+
+      if (countryCode != null && locale != null) {
+        // Save to signup draft
+        await signupStateService.updateDraftLocale(locale);
+        // Also persist to LocaleManager for immediate access
+        await localeManager.setCountry(countryCode);
+      }
+    } catch (e) {
+      // Silently fail - country selection is best effort
+      print('Error saving country selection: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final responsiveController = ResponsiveController(context);
@@ -273,8 +340,10 @@ class _SelectCountryState extends State<SelectCountry> {
               ),
               minimumSize: Size(double.infinity, 36.h),
             ),
-            onPressed: () {
+            onPressed: () async {
               if (_selectedCountryController.text.isNotEmpty) {
+                // Save selected country to SignupStateService and LocaleManager
+                await _saveSelectedCountry();
                 Get.toNamed(AppRoutes.enableBiometricAccess);
               } else {
                 ScaffoldMessenger.of(context).showSnackBar(

@@ -31,7 +31,7 @@ class EmptyAccountState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 4.w),
+      margin: EdgeInsets.symmetric(horizontal: 0.w),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -78,14 +78,15 @@ class EmptyAccountState extends StatelessWidget {
             ),
             // Main content
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 18.h),
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
               child: Column(
+                mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   // Icon
                   Container(
-                    width: 56.w,
-                    height: 56.w,
+                    width: 48.w,
+                    height: 48.w,
                     decoration: BoxDecoration(
                       color: Colors.white.withOpacity(0.15),
                       shape: BoxShape.circle,
@@ -95,38 +96,43 @@ class EmptyAccountState extends StatelessWidget {
                           ? Icons.account_balance_wallet_outlined
                           : Icons.hourglass_empty_rounded,
                       color: Colors.white,
-                      size: 28.sp,
+                      size: 24.sp,
                     ),
                   ),
-                  SizedBox(height: 16.h),
+                  SizedBox(height: 18.h),
 
                   // Title
                   Text(
                     isVirtualAccountSupported
                         ? 'Setting Up Your Accounts'
-                        : 'Coming Soon to Your Region',
+                        : 'Coming Soon',
                     textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 18.sp,
+                      fontSize: 16.sp,
                       fontWeight: FontWeight.bold,
+                      height: 1.2,
                     ),
                   ),
-                  SizedBox(height: 8.h),
+                  SizedBox(height: 10.h),
 
                   // Description
                   Text(
                     isVirtualAccountSupported
-                        ? 'Your virtual accounts are being created. This usually takes a few moments.'
-                        : 'Virtual bank accounts are not yet available in your region. We\'re working hard to bring this feature to you!',
+                        ? 'Your virtual accounts are being created.'
+                        : 'Virtual accounts will be available in your region soon.',
                     textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.8),
-                      fontSize: 13.sp,
-                      height: 1.4,
+                      color: Colors.white.withOpacity(0.85),
+                      fontSize: 12.sp,
+                      height: 1.3,
                     ),
                   ),
-                  SizedBox(height: 16.h),
+                  SizedBox(height: 18.h),
 
                   // Action button
                   if (isVirtualAccountSupported)
@@ -154,10 +160,10 @@ class EmptyAccountState extends StatelessWidget {
         );
       },
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(12.r),
+          borderRadius: BorderRadius.circular(10.r),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -165,14 +171,14 @@ class EmptyAccountState extends StatelessWidget {
             Icon(
               Icons.refresh_rounded,
               color: const Color(0xFF6C5CE7),
-              size: 18.sp,
+              size: 16.sp,
             ),
-            SizedBox(width: 8.w),
+            SizedBox(width: 6.w),
             Text(
               'Check Status',
               style: TextStyle(
                 color: const Color(0xFF6C5CE7),
-                fontSize: 14.sp,
+                fontSize: 13.sp,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -198,10 +204,10 @@ class EmptyAccountState extends StatelessWidget {
             );
           },
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(12.r),
+          borderRadius: BorderRadius.circular(10.r),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -209,14 +215,14 @@ class EmptyAccountState extends StatelessWidget {
             Icon(
               Icons.notifications_active_outlined,
               color: const Color(0xFF6C5CE7),
-              size: 18.sp,
+              size: 16.sp,
             ),
-            SizedBox(width: 8.w),
+            SizedBox(width: 6.w),
             Text(
               'Notify Me',
               style: TextStyle(
                 color: const Color(0xFF6C5CE7),
-                fontSize: 14.sp,
+                fontSize: 13.sp,
                 fontWeight: FontWeight.w600,
               ),
             ),

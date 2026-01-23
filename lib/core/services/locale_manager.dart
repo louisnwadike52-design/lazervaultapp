@@ -5,16 +5,17 @@ import 'package:rxdart/rxdart.dart';
 /// Centralized locale manager that maintains app-wide locale state
 /// and notifies all listeners when locale changes.
 ///
-/// Locale format: BCP 47 standard (e.g., "en-US", "en-GB", "fr-FR", "en-ZA")
+/// Locale format: BCP 47 standard (e.g., "en-NG", "en-US", "en-GB", "en-ZA")
 ///
 /// Now includes currency management with local storage and server sync support.
+/// Default is Nigeria (NG) as it's the primary supported country.
 class LocaleManager {
   static const String _localeKey = 'app_locale';
   static const String _countryKey = 'app_country';
   static const String _currencyKey = 'app_currency';
-  static const String _defaultLocale = 'en-US';
-  static const String _defaultCountry = 'US';
-  static const String _defaultCurrency = 'USD';
+  static const String _defaultLocale = 'en-NG';
+  static const String _defaultCountry = 'NG';
+  static const String _defaultCurrency = 'NGN';
 
   final FlutterSecureStorage _storage;
 
@@ -240,36 +241,14 @@ class CountryLocale {
   String get currencyDisplay => '$currency ($countryCode)';
 }
 
-/// Pre-defined country locales for common countries
+/// Pre-defined country locales - only includes countries available during signup
+///
+/// IMPORTANT: This list must match the countries in SelectCountry widget exactly.
+/// When adding/removing countries here, update SelectCountry too.
 class CountryLocales {
+  /// Supported countries - matches the signup flow country selection
   static const List<CountryLocale> all = [
-    CountryLocale(
-      countryCode: 'US',
-      countryName: 'United States',
-      languageCode: 'en',
-      locale: 'en-US',
-      flag: '🇺🇸',
-      dialCode: '+1',
-      currency: 'USD',
-    ),
-    CountryLocale(
-      countryCode: 'GB',
-      countryName: 'United Kingdom',
-      languageCode: 'en',
-      locale: 'en-GB',
-      flag: '🇬🇧',
-      dialCode: '+44',
-      currency: 'GBP',
-    ),
-    CountryLocale(
-      countryCode: 'ZA',
-      countryName: 'South Africa',
-      languageCode: 'en',
-      locale: 'en-ZA',
-      flag: '🇿🇦',
-      dialCode: '+27',
-      currency: 'ZAR',
-    ),
+    // Nigeria (Primary supported country - first in signup list)
     CountryLocale(
       countryCode: 'NG',
       countryName: 'Nigeria',
@@ -279,6 +258,27 @@ class CountryLocales {
       dialCode: '+234',
       currency: 'NGN',
     ),
+    // United States
+    CountryLocale(
+      countryCode: 'US',
+      countryName: 'United States',
+      languageCode: 'en',
+      locale: 'en-US',
+      flag: '🇺🇸',
+      dialCode: '+1',
+      currency: 'USD',
+    ),
+    // United Kingdom
+    CountryLocale(
+      countryCode: 'GB',
+      countryName: 'United Kingdom',
+      languageCode: 'en',
+      locale: 'en-GB',
+      flag: '🇬🇧',
+      dialCode: '+44',
+      currency: 'GBP',
+    ),
+    // Canada
     CountryLocale(
       countryCode: 'CA',
       countryName: 'Canada',
@@ -288,69 +288,7 @@ class CountryLocales {
       dialCode: '+1',
       currency: 'CAD',
     ),
-    CountryLocale(
-      countryCode: 'AU',
-      countryName: 'Australia',
-      languageCode: 'en',
-      locale: 'en-AU',
-      flag: '🇦🇺',
-      dialCode: '+61',
-      currency: 'AUD',
-    ),
-    CountryLocale(
-      countryCode: 'FR',
-      countryName: 'France',
-      languageCode: 'fr',
-      locale: 'fr-FR',
-      flag: '🇫🇷',
-      dialCode: '+33',
-      currency: 'EUR',
-    ),
-    CountryLocale(
-      countryCode: 'DE',
-      countryName: 'Germany',
-      languageCode: 'de',
-      locale: 'de-DE',
-      flag: '🇩🇪',
-      dialCode: '+49',
-      currency: 'EUR',
-    ),
-    CountryLocale(
-      countryCode: 'ES',
-      countryName: 'Spain',
-      languageCode: 'es',
-      locale: 'es-ES',
-      flag: '🇪🇸',
-      dialCode: '+34',
-      currency: 'EUR',
-    ),
-    CountryLocale(
-      countryCode: 'IT',
-      countryName: 'Italy',
-      languageCode: 'it',
-      locale: 'it-IT',
-      flag: '🇮🇹',
-      dialCode: '+39',
-      currency: 'EUR',
-    ),
-    CountryLocale(
-      countryCode: 'BR',
-      countryName: 'Brazil',
-      languageCode: 'pt',
-      locale: 'pt-BR',
-      flag: '🇧🇷',
-      dialCode: '+55',
-      currency: 'BRL',
-    ),
-    CountryLocale(
-      countryCode: 'MX',
-      countryName: 'Mexico',
-      languageCode: 'es',
-      locale: 'es-MX',
-      flag: '🇲🇽',
-      dialCode: '+52',
-      currency: 'MXN',
-    ),
+    // India
     CountryLocale(
       countryCode: 'IN',
       countryName: 'India',
@@ -360,15 +298,47 @@ class CountryLocales {
       dialCode: '+91',
       currency: 'INR',
     ),
+    // Germany
     CountryLocale(
-      countryCode: 'CN',
-      countryName: 'China',
-      languageCode: 'zh',
-      locale: 'zh-CN',
-      flag: '🇨🇳',
-      dialCode: '+86',
-      currency: 'CNY',
+      countryCode: 'DE',
+      countryName: 'Germany',
+      languageCode: 'de',
+      locale: 'de-DE',
+      flag: '🇩🇪',
+      dialCode: '+49',
+      currency: 'EUR',
     ),
+    // France
+    CountryLocale(
+      countryCode: 'FR',
+      countryName: 'France',
+      languageCode: 'fr',
+      locale: 'fr-FR',
+      flag: '🇫🇷',
+      dialCode: '+33',
+      currency: 'EUR',
+    ),
+    // South Africa
+    CountryLocale(
+      countryCode: 'ZA',
+      countryName: 'South Africa',
+      languageCode: 'en',
+      locale: 'en-ZA',
+      flag: '🇿🇦',
+      dialCode: '+27',
+      currency: 'ZAR',
+    ),
+    // Australia
+    CountryLocale(
+      countryCode: 'AU',
+      countryName: 'Australia',
+      languageCode: 'en',
+      locale: 'en-AU',
+      flag: '🇦🇺',
+      dialCode: '+61',
+      currency: 'AUD',
+    ),
+    // Japan
     CountryLocale(
       countryCode: 'JP',
       countryName: 'Japan',
@@ -377,96 +347,6 @@ class CountryLocales {
       flag: '🇯🇵',
       dialCode: '+81',
       currency: 'JPY',
-    ),
-    CountryLocale(
-      countryCode: 'KR',
-      countryName: 'South Korea',
-      languageCode: 'ko',
-      locale: 'ko-KR',
-      flag: '🇰🇷',
-      dialCode: '+82',
-      currency: 'KRW',
-    ),
-    CountryLocale(
-      countryCode: 'RU',
-      countryName: 'Russia',
-      languageCode: 'ru',
-      locale: 'ru-RU',
-      flag: '🇷🇺',
-      dialCode: '+7',
-      currency: 'RUB',
-    ),
-    CountryLocale(
-      countryCode: 'AE',
-      countryName: 'United Arab Emirates',
-      languageCode: 'ar',
-      locale: 'ar-AE',
-      flag: '🇦🇪',
-      dialCode: '+971',
-      currency: 'AED',
-    ),
-    CountryLocale(
-      countryCode: 'SA',
-      countryName: 'Saudi Arabia',
-      languageCode: 'ar',
-      locale: 'ar-SA',
-      flag: '🇸🇦',
-      dialCode: '+966',
-      currency: 'SAR',
-    ),
-    CountryLocale(
-      countryCode: 'EG',
-      countryName: 'Egypt',
-      languageCode: 'ar',
-      locale: 'ar-EG',
-      flag: '🇪🇬',
-      dialCode: '+20',
-      currency: 'EGP',
-    ),
-    CountryLocale(
-      countryCode: 'KE',
-      countryName: 'Kenya',
-      languageCode: 'en',
-      locale: 'en-KE',
-      flag: '🇰🇪',
-      dialCode: '+254',
-      currency: 'KES',
-    ),
-    CountryLocale(
-      countryCode: 'GH',
-      countryName: 'Ghana',
-      languageCode: 'en',
-      locale: 'en-GH',
-      flag: '🇬🇭',
-      dialCode: '+233',
-      currency: 'GHS',
-    ),
-    CountryLocale(
-      countryCode: 'SG',
-      countryName: 'Singapore',
-      languageCode: 'en',
-      locale: 'en-SG',
-      flag: '🇸🇬',
-      dialCode: '+65',
-      currency: 'SGD',
-    ),
-    CountryLocale(
-      countryCode: 'PH',
-      countryName: 'Philippines',
-      languageCode: 'en',
-      locale: 'en-PH',
-      flag: '🇵🇭',
-      dialCode: '+63',
-      currency: 'PHP',
-    ),
-    CountryLocale(
-      countryCode: 'NL',
-      countryName: 'Netherlands',
-      languageCode: 'nl',
-      locale: 'nl-NL',
-      flag: '🇳🇱',
-      dialCode: '+31',
-      currency: 'EUR',
     ),
   ];
 
