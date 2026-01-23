@@ -1,0 +1,179 @@
+syntax = "proto3";
+
+package contactless_payment;
+option go_package = "lazervaultGo/pb";
+
+import "google/protobuf/timestamp.proto";
+
+// ContactlessPaymentService handles NFC-based peer-to-peer payments
+// Similar to SumUp/Apple Pay tap-to-pay functionality
+service ContactlessPaymentService {
+  // Receiver creates a payment session that can be broadcast via NFC
+  rpc CreatePaymentSession(CreatePaymentSessionRequest) returns (CreatePaymentSessionResponse);
+
+  // Get session details by session ID (used when payer taps NFC)
+  rpc GetPaymentSession(GetPaymentSessionRequest) returns (GetPaymentSessionResponse);
+
+  // Process payment after payer confirms (with PIN verification)
+  rpc ProcessContactlessPayment(ProcessContactlessPaymentRequest) returns (ProcessContactlessPaymentResponse);
+
+  // Cancel a pending payment session
+  rpc CancelPaymentSession(CancelPaymentSessionRequest) returns (CancelPaymentSessionResponse);
+
+  // Get receiver's created payment sessions
+  rpc GetMyPaymentSessions(GetMyPaymentSessionsRequest) returns (GetMyPaymentSessionsResponse);
+
+  // Get payer's contactless payment history
+  rpc GetMyContactlessPayments(GetMyContactlessPaymentsRequest) returns (GetMyContactlessPaymentsResponse);
+
+  // Check session status (for polling during NFC exchange)
+  rpc CheckSessionStatus(CheckSessionStatusRequest) returns (CheckSessionStatusResponse);
+
+  // Acknowledge session read (payer confirms they read the NFC data)
+  rpc AcknowledgeSessionRead(AcknowledgeSessionReadRequest) returns (AcknowledgeSessionReadResponse);
+}
+
+// ========== REQUEST/RESPONSE MESSAGES ==========
+
+message CreatePaymentSessionRequest {
+  double amount = 1;
+  string currency = 2;
+  string category = 3;          // Optional: food, transport, shopping, services, other
+  string description = 4;       // Optional: description for the payment
+  int32 validity_seconds = 5;   // Session validity (default 120 seconds / 2 minutes)
+}
+
+message CreatePaymentSessionResponse {
+  PaymentSession session = 1;
+  string nfc_payload = 2;       // Encoded payload to broadcast via NFC NDEF
+  string message = 3;
+}
+
+message GetPaymentSessionRequest {
+  string session_id = 1;
+}
+
+message GetPaymentSessionResponse {
+  PaymentSession session = 1;
+}
+
+message ProcessContactlessPaymentRequest {
+  string session_id = 1;
+  string source_account_id = 2;     // Payer's account
+  string transaction_id = 3;        // For idempotency
+  string verification_token = 4;    // PIN verification token
+}
+
+message ProcessContactlessPaymentResponse {
+  ContactlessTransaction transaction = 1;
+  double new_balance = 2;
+  string message = 3;
+}
+
+message CancelPaymentSessionRequest {
+  string session_id = 1;
+}
+
+message CancelPaymentSessionResponse {
+  string message = 1;
+}
+
+message GetMyPaymentSessionsRequest {
+  int32 limit = 1;
+  int32 offset = 2;
+  string status_filter = 3;     // Optional: pending, completed, cancelled, expired
+}
+
+message GetMyPaymentSessionsResponse {
+  repeated PaymentSession sessions = 1;
+  int32 total = 2;
+}
+
+message GetMyContactlessPaymentsRequest {
+  int32 limit = 1;
+  int32 offset = 2;
+  string role_filter = 3;       // Optional: payer, receiver, all
+}
+
+message GetMyContactlessPaymentsResponse {
+  repeated ContactlessTransaction transactions = 1;
+  int32 total = 2;
+}
+
+message CheckSessionStatusRequest {
+  string session_id = 1;
+}
+
+message CheckSessionStatusResponse {
+  string status = 1;            // pending, read, processing, completed, cancelled, expired
+  string payer_name = 2;        // Populated when status is "read" or later
+  google.protobuf.Timestamp updated_at = 3;
+}
+
+message AcknowledgeSessionReadRequest {
+  string session_id = 1;
+}
+
+message AcknowledgeSessionReadResponse {
+  PaymentSession session = 1;
+  string message = 2;
+}
+
+// ========== DATA MODELS ==========
+
+// PaymentSession represents a pending NFC payment request created by receiver
+message PaymentSession {
+  string id = 1;
+  string receiver_id = 2;
+  string receiver_username = 3;
+  string receiver_name = 4;
+  string receiver_account_id = 5;
+  double amount = 6;
+  string currency = 7;
+  string category = 8;
+  string description = 9;
+  string status = 10;                       // pending, read, processing, completed, cancelled, expired
+  string payer_id = 11;                     // Populated after payer reads NFC
+  string payer_name = 12;                   // Populated after payer reads NFC
+  google.protobuf.Timestamp created_at = 13;
+  google.protobuf.Timestamp expires_at = 14;
+  google.protobuf.Timestamp read_at = 15;   // When payer read the NFC
+  google.protobuf.Timestamp completed_at = 16;
+}
+
+// ContactlessTransaction represents a completed NFC payment
+message ContactlessTransaction {
+  string id = 1;
+  string session_id = 2;
+  string payer_id = 3;
+  string payer_username = 4;
+  string payer_name = 5;
+  string payer_account_id = 6;
+  string receiver_id = 7;
+  string receiver_username = 8;
+  string receiver_name = 9;
+  string receiver_account_id = 10;
+  double amount = 11;
+  string currency = 12;
+  string category = 13;
+  string description = 14;
+  string reference_number = 15;
+  string status = 16;                       // completed, failed, reversed
+  google.protobuf.Timestamp created_at = 17;
+}
+
+// NfcPayloadData is the structure encoded in NFC NDEF message
+// This is what gets transmitted between devices
+message NfcPayloadData {
+  string type = 1;              // "lazervault_contactless_payment"
+  string session_id = 2;
+  string receiver_id = 3;
+  string receiver_username = 4;
+  string receiver_name = 5;
+  double amount = 6;
+  string currency = 7;
+  string category = 8;
+  string description = 9;
+  int64 expires_at = 10;        // Unix timestamp
+  string signature = 11;        // HMAC signature for payload integrity
+}

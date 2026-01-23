@@ -15,6 +15,7 @@ import '../../generated/electricity_bill.pbgrpc.dart';
 import '../../generated/giftcard.pbgrpc.dart';
 import '../../generated/lock_funds.pbgrpc.dart';
 import '../../generated/insurance.pbgrpc.dart';
+import '../../generated/contactless_payment.pbgrpc.dart';
 
 class GrpcClient {
   final ClientChannel _channel;
@@ -32,6 +33,7 @@ class GrpcClient {
   late GiftCardServiceClient _giftCardClient;
   late LockFundsServiceClient _lockFundsClient;
   late InsuranceServiceClient _insuranceClient;
+  late ContactlessPaymentServiceClient _contactlessPaymentClient;
 
   final FlutterSecureStorage _secureStorage;
   final GrpcCallOptionsHelper? _callOptionsHelper;
@@ -62,6 +64,7 @@ class GrpcClient {
     _giftCardClient = GiftCardServiceClient(_channel);
     _lockFundsClient = LockFundsServiceClient(_channel);
     _insuranceClient = InsuranceServiceClient(_channel);
+    _contactlessPaymentClient = ContactlessPaymentServiceClient(_channel);
   }
 
   InvoiceServiceClient get invoiceClient => _invoiceClient;
@@ -79,6 +82,7 @@ class GrpcClient {
   GiftCardServiceClient get giftCardClient => _giftCardClient;
   LockFundsServiceClient get lockFundsClient => _lockFundsClient;
   InsuranceServiceClient get insuranceClient => _insuranceClient;
+  ContactlessPaymentServiceClient get contactlessPaymentClient => _contactlessPaymentClient;
 
   /// Get call options with authentication token
   /// If callOptionsHelper is available, use it for automatic token rotation

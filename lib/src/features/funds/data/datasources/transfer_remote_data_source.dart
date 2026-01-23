@@ -52,6 +52,14 @@ class TransferRemoteDataSourceImpl implements ITransferRemoteDataSource {
           scheduledAtStr = scheduledAt.toUtc().toIso8601String();
         }
 
+        // Validate required PIN verification fields
+        if (transactionId == null || transactionId.isEmpty) {
+          throw ServerException(message: 'Transaction ID is required for PIN verification');
+        }
+        if (verificationToken == null || verificationToken.isEmpty) {
+          throw ServerException(message: 'Verification token is required for PIN verification');
+        }
+
         final request = InitiateTransferRequest(
           fromAccountId: fromAccountId,
           amount: amount,
@@ -60,6 +68,8 @@ class TransferRemoteDataSourceImpl implements ITransferRemoteDataSource {
           category: category ?? '',
           reference: reference ?? '',
           scheduledAt: scheduledAtStr,
+          transactionId: transactionId,
+          verificationToken: verificationToken,
         );
 
         try {

@@ -66,6 +66,7 @@ dependencies:
   barcode: ^2.2.9
   barcode_widget: ^2.0.4
   mobile_scanner: ^7.1.4
+  nfc_manager: ^4.1.1
   local_auth: ^2.3.0
   lottie: ^3.3.1
   get: ^4.7.2

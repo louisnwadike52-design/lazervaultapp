@@ -64,6 +64,8 @@ const InitiateTransferRequest$json = const {
     const {'1': 'category', '3': 3, '4': 1, '5': 9, '10': 'category'},
     const {'1': 'reference', '3': 4, '4': 1, '5': 9, '10': 'reference'},
     const {'1': 'scheduled_at', '3': 5, '4': 1, '5': 9, '9': 0, '10': 'scheduledAt', '17': true},
+    const {'1': 'transaction_id', '3': 6, '4': 1, '5': 9, '10': 'transaction_id'},
+    const {'1': 'verification_token', '3': 7, '4': 1, '5': 9, '10': 'verification_token'},
     const {'1': 'to_account_id', '3': 10, '4': 1, '5': 4, '10': 'to_account_id'},
     const {'1': 'recipient_id', '3': 11, '4': 1, '5': 4, '10': 'recipient_id'},
   ],
@@ -74,7 +76,7 @@ const InitiateTransferRequest$json = const {
 };
 
 /// Descriptor for `InitiateTransferRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List initiateTransferRequestDescriptor = $convert.base64Decode('ChdJbml0aWF0ZVRyYW5zZmVyUmVxdWVzdBIoCg9mcm9tX2FjY291bnRfaWQYASABKARSD2Zyb21fYWNjb3VudF9pZBIWCgZhbW91bnQYAiABKARSBmFtb3VudBIaCghjYXRlZ29yeRgDIAEoCVIIY2F0ZWdvcnkSHAoJcmVmZXJlbmNlGAQgASgJUglyZWZlcmVuY2USJgoMc2NoZWR1bGVkX2F0GAUgASgJSABSC3NjaGVkdWxlZEF0iAEBEiQKDXRvX2FjY291bnRfaWQYCiABKARSDXRvX2FjY291bnRfaWQSIgoMcmVjaXBpZW50X2lkGAsgASgEUgxyZWNpcGllbnRfaWQ6IJJBHQob0gEPZnJvbV9hY2NvdW50X2lk0gEGYW1vdW50Qg8KDV9zY2hlZHVsZWRfYXQ=');
+final $typed_data.Uint8List initiateTransferRequestDescriptor = $convert.base64Decode('ChdJbml0aWF0ZVRyYW5zZmVyUmVxdWVzdBIoCg9mcm9tX2FjY291bnRfaWQYASABKARSD2Zyb21fYWNjb3VudF9pZBIWCgZhbW91bnQYAiABKARSBmFtb3VudBIaCghjYXRlZ29yeRgDIAEoCVIIY2F0ZWdvcnkSHAoJcmVmZXJlbmNlGAQgASgJUglyZWZlcmVuY2USJgoMc2NoZWR1bGVkX2F0GAUgASgJSABSC3NjaGVkdWxlZEF0iAEBEiYKDnRyYW5zYWN0aW9uX2lkGAYgASgJUg50cmFuc2FjdGlvbl9pZBIuChJ2ZXJpZmljYXRpb25fdG9rZW4YByABKAlSEnZlcmlmaWNhdGlvbl90b2tlbhIkCg10b19hY2NvdW50X2lkGAogASgEUg10b19hY2NvdW50X2lkEiIKDHJlY2lwaWVudF9pZBgLIAEoBFIMcmVjaXBpZW50X2lkOkaSQUMKQdIBD2Zyb21fYWNjb3VudF9pZNIBBmFtb3VudNIBDnRyYW5zYWN0aW9uX2lk0gESdmVyaWZpY2F0aW9uX3Rva2VuQg8KDV9zY2hlZHVsZWRfYXQ=');
 @$core.Deprecated('Use initiateTransferResponseDescriptor instead')
 const InitiateTransferResponse$json = const {
   '1': 'InitiateTransferResponse',

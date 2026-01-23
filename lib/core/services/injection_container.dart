@@ -92,6 +92,7 @@ import 'package:lazervault/src/features/virtual_account/domain/usecases/create_v
 import 'package:lazervault/src/features/voice_enrollment/domain/repositories/voice_enrollment_repository.dart';
 import 'package:lazervault/src/generated/recipient.pbgrpc.dart';
 import 'package:lazervault/src/generated/transfer.pbgrpc.dart' hide TransferTransaction;
+import 'package:lazervault/src/generated/banking.pbgrpc.dart' as banking_grpc;
 import 'package:lazervault/src/generated/user.pbgrpc.dart' as user_grpc;
 import 'package:lazervault/src/generated/transaction_pin.pbgrpc.dart';
 import 'package:lazervault/src/generated/deposit.pbgrpc.dart';
@@ -142,6 +143,7 @@ import 'package:lazervault/src/features/presentation/views/upload_image_scren.da
 import 'package:lazervault/src/generated/withdraw.pbgrpc.dart';
 
 import 'package:lazervault/src/features/funds/data/datasources/transfer_remote_data_source.dart';
+import 'package:lazervault/src/features/funds/data/datasources/banking_transfer_data_source.dart';
 import 'package:lazervault/src/features/funds/data/repositories/transfer_repository_impl.dart';
 import 'package:lazervault/src/features/funds/domain/repositories/i_transfer_repository.dart';
 import 'package:lazervault/src/features/funds/domain/usecases/initiate_transfer_usecase.dart';
@@ -310,6 +312,12 @@ import 'package:lazervault/src/features/barcode_payment/data/repositories/barcod
 import 'package:lazervault/src/features/barcode_payment/domain/repositories/barcode_payment_repository.dart';
 import 'package:lazervault/src/features/barcode_payment/presentation/cubit/barcode_payment_cubit.dart';
 // End Barcode Payment Imports
+
+// Contactless Payment (NFC) Imports
+import 'package:lazervault/src/features/contactless_payment/data/repositories/contactless_payment_repository_impl.dart';
+import 'package:lazervault/src/features/contactless_payment/domain/repositories/contactless_payment_repository.dart';
+import 'package:lazervault/src/features/contactless_payment/presentation/cubit/contactless_payment_cubit.dart';
+// End Contactless Payment Imports
 
 // Electricity Bill Imports
 import 'package:lazervault/src/features/electricity_bill/data/datasources/electricity_bill_remote_datasource.dart';
@@ -549,6 +557,12 @@ Future<void> init() async {
     instanceName: 'financialChannel',
   );
 
+  // Banking Service Channel - For transfers, virtual accounts, bank verification
+  serviceLocator.registerLazySingleton<ClientChannel>(
+    () => GrpcChannelFactory.createBankingChannel(),
+    instanceName: 'bankingChannel',
+  );
+
   // Default channel for backward compatibility (points to Core Gateway)
   serviceLocator.registerLazySingleton<ClientChannel>(
     () => serviceLocator<ClientChannel>(instanceName: 'coreChannel'),
@@ -582,8 +596,16 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton<WithdrawServiceClient>(
     () => WithdrawServiceClient(serviceLocator<ClientChannel>()),
   );
+  // Legacy transfer client (points to Core Gateway for backward compatibility)
   serviceLocator.registerLazySingleton<TransferServiceClient>(
     () => TransferServiceClient(serviceLocator<ClientChannel>()),
+  );
+
+  // Banking Service Client - For production-grade transfers via banking-service
+  serviceLocator.registerLazySingleton<banking_grpc.BankingServiceClient>(
+    () => banking_grpc.BankingServiceClient(
+      serviceLocator<ClientChannel>(instanceName: 'bankingChannel'),
+    ),
   );
   serviceLocator.registerLazySingleton<AIChatServiceClient>(
     () => AIChatServiceClient(serviceLocator<ClientChannel>()),
@@ -930,10 +952,18 @@ Future<void> init() async {
 
   // ================== Feature: Funds (Transfer) ==================
 
-  // Data Sources
+  // Data Sources - Legacy (uses old monolithic gateway)
   serviceLocator.registerLazySingleton<ITransferRemoteDataSource>(
     () => TransferRemoteDataSourceImpl(
       serviceLocator<TransferServiceClient>(),
+      serviceLocator<GrpcCallOptionsHelper>(),
+    ),
+  );
+
+  // Data Sources - Banking Service (production-grade with Flutterwave/VFD)
+  serviceLocator.registerLazySingleton<IBankingTransferDataSource>(
+    () => BankingTransferDataSourceImpl(
+      serviceLocator<banking_grpc.BankingServiceClient>(),
       serviceLocator<GrpcCallOptionsHelper>(),
     ),
   );
@@ -1255,6 +1285,20 @@ Future<void> init() async {
   // Blocs/Cubits
   serviceLocator.registerFactory(() => BarcodePaymentCubit(
     repository: serviceLocator<BarcodePaymentRepository>(),
+  ));
+
+  // ================== Feature: Contactless Payment (NFC) ==================
+
+  // Repositories
+  serviceLocator.registerLazySingleton<ContactlessPaymentRepository>(
+    () => ContactlessPaymentRepositoryImpl(
+      grpcClient: serviceLocator<GrpcClient>(),
+    ),
+  );
+
+  // Blocs/Cubits
+  serviceLocator.registerFactory(() => ContactlessPaymentCubit(
+    repository: serviceLocator<ContactlessPaymentRepository>(),
   ));
 
   // ================== Feature: Airtime ==================
