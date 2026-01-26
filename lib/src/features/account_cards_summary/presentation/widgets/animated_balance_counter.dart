@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:animated_flip_counter/animated_flip_counter.dart';
 
-/// Animated balance counter widget that smoothly transitions between values
-/// Similar to Revolut's balance animation
+/// Animated balance counter widget with Revolut-style rolling digits
+/// Digits fall/roll from top to bottom as the value changes
 class AnimatedBalanceCounter extends StatefulWidget {
   final double balance;
   final String currencySymbol;
   final TextStyle? style;
   final Duration duration;
+  final Duration startDelay;
   final Curve curve;
 
   const AnimatedBalanceCounter({
@@ -15,7 +17,8 @@ class AnimatedBalanceCounter extends StatefulWidget {
     required this.balance,
     required this.currencySymbol,
     this.style,
-    this.duration = const Duration(milliseconds: 800),
+    this.duration = const Duration(seconds: 10), // 10 seconds for visible animation
+    this.startDelay = const Duration(milliseconds: 500), // Small delay so user sees dashboard first
     this.curve = Curves.easeOutCubic,
   });
 
@@ -23,32 +26,17 @@ class AnimatedBalanceCounter extends StatefulWidget {
   State<AnimatedBalanceCounter> createState() => _AnimatedBalanceCounterState();
 }
 
-class _AnimatedBalanceCounterState extends State<AnimatedBalanceCounter>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _animation;
+class _AnimatedBalanceCounterState extends State<AnimatedBalanceCounter> {
+  double _displayBalance = 0;
   double _previousBalance = 0;
-  double _currentBalance = 0;
   bool _isIncreasing = true;
+  bool _isAnimating = false;
 
   @override
   void initState() {
     super.initState();
-    _currentBalance = widget.balance;
+    _displayBalance = widget.balance;
     _previousBalance = widget.balance;
-
-    _controller = AnimationController(
-      duration: widget.duration,
-      vsync: this,
-    );
-
-    _animation = Tween<double>(
-      begin: _previousBalance,
-      end: _currentBalance,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: widget.curve,
-    ));
   }
 
   @override
@@ -56,48 +44,28 @@ class _AnimatedBalanceCounterState extends State<AnimatedBalanceCounter>
     super.didUpdateWidget(oldWidget);
 
     if (oldWidget.balance != widget.balance) {
-      _previousBalance = _currentBalance;
-      _currentBalance = widget.balance;
-      _isIncreasing = _currentBalance > _previousBalance;
+      _previousBalance = _displayBalance;
+      _isIncreasing = widget.balance > _previousBalance;
 
-      _animation = Tween<double>(
-        begin: _previousBalance,
-        end: _currentBalance,
-      ).animate(CurvedAnimation(
-        parent: _controller,
-        curve: widget.curve,
-      ));
+      // Delay the animation start so user sees the dashboard first
+      Future.delayed(widget.startDelay, () {
+        if (mounted) {
+          setState(() {
+            _isAnimating = true;
+            _displayBalance = widget.balance;
+          });
 
-      _controller.reset();
-      _controller.forward();
+          // Reset animating flag after animation completes
+          Future.delayed(widget.duration, () {
+            if (mounted) {
+              setState(() {
+                _isAnimating = false;
+              });
+            }
+          });
+        }
+      });
     }
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  String _formatBalance(double value) {
-    // Format with thousands separator and 2 decimal places
-    final parts = value.toStringAsFixed(2).split('.');
-    final intPart = parts[0];
-    final decPart = parts[1];
-
-    // Add thousands separators
-    final buffer = StringBuffer();
-    final digits = intPart.replaceAll('-', '');
-    final isNegative = intPart.startsWith('-');
-
-    for (int i = 0; i < digits.length; i++) {
-      if (i > 0 && (digits.length - i) % 3 == 0) {
-        buffer.write(',');
-      }
-      buffer.write(digits[i]);
-    }
-
-    return '${isNegative ? '-' : ''}${buffer.toString()}.$decPart';
   }
 
   @override
@@ -109,72 +77,67 @@ class _AnimatedBalanceCounterState extends State<AnimatedBalanceCounter>
       letterSpacing: 0.5,
     );
 
-    return AnimatedBuilder(
-      animation: _animation,
-      builder: (context, child) {
-        final currentValue = _animation.value;
-        final isAnimating = _controller.isAnimating;
+    final textStyle = widget.style ?? defaultStyle;
 
-        return Row(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.baseline,
-          textBaseline: TextBaseline.alphabetic,
-          children: [
-            // Currency symbol
-            Text(
-              widget.currencySymbol,
-              style: widget.style ?? defaultStyle,
-            ),
-            // Animated balance value
-            AnimatedSwitcher(
-              duration: const Duration(milliseconds: 150),
-              child: Text(
-                _formatBalance(currentValue),
-                key: ValueKey<String>(_formatBalance(currentValue)),
-                style: (widget.style ?? defaultStyle).copyWith(
-                  // Add subtle color tint during animation
-                  color: isAnimating
-                      ? (_isIncreasing
-                          ? Colors.greenAccent.withValues(alpha: 0.9)
-                          : Colors.redAccent.withValues(alpha: 0.9))
-                      : (widget.style?.color ?? Colors.white),
+    // Determine color based on animation state
+    Color displayColor = textStyle.color ?? Colors.white;
+    if (_isAnimating) {
+      displayColor = _isIncreasing
+          ? Colors.greenAccent.withValues(alpha: 0.9)
+          : Colors.redAccent.withValues(alpha: 0.9);
+    }
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        // Currency symbol
+        Text(
+          widget.currencySymbol,
+          style: textStyle.copyWith(color: displayColor),
+        ),
+        // Animated flip counter - Revolut style rolling digits
+        AnimatedFlipCounter(
+          value: _displayBalance,
+          duration: widget.duration,
+          curve: widget.curve,
+          fractionDigits: 2,
+          thousandSeparator: ',',
+          textStyle: textStyle.copyWith(color: displayColor),
+        ),
+        // Show direction indicator during animation
+        if (_isAnimating) ...[
+          SizedBox(width: 8.w),
+          TweenAnimationBuilder<double>(
+            tween: Tween(begin: 0.0, end: 1.0),
+            duration: const Duration(milliseconds: 300),
+            builder: (context, value, child) {
+              return Opacity(
+                opacity: value,
+                child: Icon(
+                  _isIncreasing
+                      ? Icons.arrow_upward_rounded
+                      : Icons.arrow_downward_rounded,
+                  color: _isIncreasing ? Colors.greenAccent : Colors.redAccent,
+                  size: 20.sp,
                 ),
-              ),
-            ),
-            // Show direction indicator during animation
-            if (isAnimating) ...[
-              SizedBox(width: 8.w),
-              TweenAnimationBuilder<double>(
-                tween: Tween(begin: 0.0, end: 1.0),
-                duration: const Duration(milliseconds: 300),
-                builder: (context, value, child) {
-                  return Opacity(
-                    opacity: value,
-                    child: Icon(
-                      _isIncreasing
-                          ? Icons.arrow_upward_rounded
-                          : Icons.arrow_downward_rounded,
-                      color: _isIncreasing ? Colors.greenAccent : Colors.redAccent,
-                      size: 20.sp,
-                    ),
-                  );
-                },
-              ),
-            ],
-          ],
-        );
-      },
+              );
+            },
+          ),
+        ],
+      ],
     );
   }
 }
 
-/// A more compact version for smaller displays
+/// A more compact version for smaller displays with Revolut-style animation
 class CompactAnimatedBalance extends StatefulWidget {
   final double balance;
   final String currencySymbol;
   final double fontSize;
   final Color? color;
   final Duration duration;
+  final Duration startDelay;
 
   const CompactAnimatedBalance({
     super.key,
@@ -182,7 +145,8 @@ class CompactAnimatedBalance extends StatefulWidget {
     required this.currencySymbol,
     this.fontSize = 28,
     this.color,
-    this.duration = const Duration(milliseconds: 600),
+    this.duration = const Duration(seconds: 10), // 10 seconds for visible animation
+    this.startDelay = const Duration(milliseconds: 500), // Small delay so user sees dashboard first
   });
 
   @override
@@ -191,39 +155,29 @@ class CompactAnimatedBalance extends StatefulWidget {
 
 class _CompactAnimatedBalanceState extends State<CompactAnimatedBalance>
     with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _balanceAnimation;
+  late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
+  double _displayBalance = 0;
   double _previousBalance = 0;
   bool _isIncreasing = true;
+  bool _isAnimating = false;
 
   @override
   void initState() {
     super.initState();
+    _displayBalance = widget.balance;
     _previousBalance = widget.balance;
 
-    _controller = AnimationController(
-      duration: widget.duration,
+    _pulseController = AnimationController(
+      duration: const Duration(milliseconds: 800),
       vsync: this,
     );
 
-    _setupAnimations();
-  }
-
-  void _setupAnimations() {
-    _balanceAnimation = Tween<double>(
-      begin: _previousBalance,
-      end: widget.balance,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeOutCubic,
-    ));
-
     _pulseAnimation = TweenSequence<double>([
-      TweenSequenceItem(tween: Tween(begin: 1.0, end: 1.05), weight: 30),
-      TweenSequenceItem(tween: Tween(begin: 1.05, end: 1.0), weight: 70),
+      TweenSequenceItem(tween: Tween(begin: 1.0, end: 1.08), weight: 30),
+      TweenSequenceItem(tween: Tween(begin: 1.08, end: 1.0), weight: 70),
     ]).animate(CurvedAnimation(
-      parent: _controller,
+      parent: _pulseController,
       curve: Curves.easeInOut,
     ));
   }
@@ -233,64 +187,80 @@ class _CompactAnimatedBalanceState extends State<CompactAnimatedBalance>
     super.didUpdateWidget(oldWidget);
 
     if (oldWidget.balance != widget.balance) {
-      _previousBalance = oldWidget.balance;
+      _previousBalance = _displayBalance;
       _isIncreasing = widget.balance > _previousBalance;
-      _setupAnimations();
-      _controller.reset();
-      _controller.forward();
+
+      // Delay the animation start so user sees the dashboard first
+      Future.delayed(widget.startDelay, () {
+        if (mounted) {
+          setState(() {
+            _isAnimating = true;
+            _displayBalance = widget.balance;
+          });
+
+          // Pulse animation at the start
+          _pulseController.forward(from: 0);
+
+          // Reset animating flag after animation completes
+          Future.delayed(widget.duration, () {
+            if (mounted) {
+              setState(() {
+                _isAnimating = false;
+              });
+            }
+          });
+        }
+      });
     }
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _pulseController.dispose();
     super.dispose();
-  }
-
-  String _formatBalance(double value) {
-    final parts = value.toStringAsFixed(2).split('.');
-    final intPart = parts[0];
-    final decPart = parts[1];
-
-    final buffer = StringBuffer();
-    final digits = intPart.replaceAll('-', '');
-    final isNegative = intPart.startsWith('-');
-
-    for (int i = 0; i < digits.length; i++) {
-      if (i > 0 && (digits.length - i) % 3 == 0) {
-        buffer.write(',');
-      }
-      buffer.write(digits[i]);
-    }
-
-    return '${isNegative ? '-' : ''}${buffer.toString()}.$decPart';
   }
 
   @override
   Widget build(BuildContext context) {
+    // Determine color based on animation state
+    Color textColor = widget.color ?? Colors.white;
+    if (_isAnimating) {
+      textColor = _isIncreasing
+          ? Color.lerp(textColor, Colors.greenAccent, 0.5)!
+          : Color.lerp(textColor, Colors.redAccent, 0.5)!;
+    }
+
     return AnimatedBuilder(
-      animation: _controller,
+      animation: _pulseAnimation,
       builder: (context, child) {
-        final isAnimating = _controller.isAnimating;
-
-        // Determine color based on animation state
-        Color textColor = widget.color ?? Colors.white;
-        if (isAnimating) {
-          textColor = _isIncreasing
-              ? Color.lerp(textColor, Colors.greenAccent, _controller.value * 0.5)!
-              : Color.lerp(textColor, Colors.redAccent, _controller.value * 0.5)!;
-        }
-
         return Transform.scale(
-          scale: _pulseAnimation.value,
-          child: Text(
-            '${widget.currencySymbol}${_formatBalance(_balanceAnimation.value)}',
-            style: TextStyle(
-              color: textColor,
-              fontSize: widget.fontSize.sp,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 0.5,
-            ),
+          scale: _isAnimating ? _pulseAnimation.value : 1.0,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                widget.currencySymbol,
+                style: TextStyle(
+                  color: textColor,
+                  fontSize: widget.fontSize.sp,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 0.5,
+                ),
+              ),
+              AnimatedFlipCounter(
+                value: _displayBalance,
+                duration: widget.duration,
+                curve: Curves.easeOutCubic,
+                fractionDigits: 2,
+                thousandSeparator: ',',
+                textStyle: TextStyle(
+                  color: textColor,
+                  fontSize: widget.fontSize.sp,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 0.5,
+                ),
+              ),
+            ],
           ),
         );
       },

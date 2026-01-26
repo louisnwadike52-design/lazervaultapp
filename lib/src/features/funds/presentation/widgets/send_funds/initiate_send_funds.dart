@@ -1247,20 +1247,10 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
           // --- End Save Recipient ---
 
           // --- Refresh Account Summaries ---
-          print(
-              "Listener: Refreshing account summaries after successful transfer...");
-          final authStateForRefresh = context.read<AuthenticationCubit>().state;
-          if (authStateForRefresh is AuthenticationSuccess) {
-            final userId = authStateForRefresh.profile.user.id;
-            final accessToken = authStateForRefresh.profile.session.accessToken;
-            context.read<AccountCardsSummaryCubit>().fetchAccountSummaries(
-                  userId: userId,
-                  accessToken: accessToken,
-                );
-          } else {
-            print(
-                "Warning: Could not refresh accounts as user is not authenticated.");
-          }
+          // DISABLED: WebSocket handles real-time balance updates
+          // The dashboard receives balance updates via BalanceWebSocketCubit
+          // and shows the 5-second animated counter automatically
+          print("Manual refresh skipped - WebSocket will handle balance update");
           // --- End Refresh ---
 
           try {
