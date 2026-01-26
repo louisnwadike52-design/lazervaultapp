@@ -2,16 +2,24 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 /// Mono Connect Configuration
 ///
-/// Configuration for Mono bank account linking integration.
+/// Configuration for Mono bank account linking and DirectPay integration.
 /// Uses flutter_dotenv for runtime configuration from .env files.
 ///
+/// Environment Modes:
+/// - Sandbox (test_pk_xxx keys): Free API calls, test credentials
+/// - Live (live_pk_xxx keys): Real transactions, real accounts
+///
 /// CI/CD Configuration:
-/// - Development: Uses test keys from .env (test_pk_xxx)
-/// - Production: Uses live keys from .env.prod (live_pk_xxx)
+/// - Development/Staging: Uses test keys from .env (test_pk_xxx) → Sandbox mode
+/// - Production: Uses live keys from .env.prod (live_pk_xxx) → Live mode
 ///
 /// The app automatically loads the correct .env file based on device type:
-/// - Emulator → .env (test keys)
-/// - Physical device → .env.prod (live keys)
+/// - Emulator → .env (test keys, sandbox mode)
+/// - Physical device → .env.prod (live keys, live mode)
+///
+/// IMPORTANT: For DirectPay testing in sandbox:
+/// - Use test credentials: user_good/123456, PIN: 1234, OTP: 123456
+/// - Test BVN: 12345678901, Test Account: 1234567890 with NIP code 000000
 class MonoConfig {
   MonoConfig._();
 
@@ -25,8 +33,8 @@ class MonoConfig {
   /// Mono secret key (for backend API calls only)
   ///
   /// Format:
-  /// - Test: test_sk_xxx
-  /// - Live: live_sk_xxx
+  /// - Test/Sandbox: test_sk_xxx
+  /// - Live/Production: live_sk_xxx
   static String get secretKey => dotenv.env['MONO_SECRET_KEY'] ?? '';
 
   /// Current environment from .env
@@ -43,24 +51,87 @@ class MonoConfig {
   /// Whether using test/sandbox mode
   ///
   /// Detected from public key format:
-  /// - Starts with "test_pk_" → test mode (Mono format)
-  /// - Starts with "pk_test_" → test mode (legacy format)
-  /// - Contains "test" → test mode (fallback)
+  /// - Starts with "test_pk_" → sandbox mode (Mono format)
+  /// - Starts with "pk_test_" → sandbox mode (legacy format)
+  /// - Contains "test" → sandbox mode (fallback)
+  ///
+  /// In sandbox mode:
+  /// - API calls are free
+  /// - Use test credentials for DirectPay
+  /// - Customers appear as "Sandbox" in Mono dashboard
   static bool get isTestMode =>
       publicKey.startsWith('test_pk_') ||
       publicKey.startsWith('pk_test_') ||
       publicKey.contains('test');
 
+  /// Alias for isTestMode for clarity
+  static bool get isSandboxMode => isTestMode;
+
   /// Whether using live/production mode
   /// Mono live keys start with "live_pk_" or "pk_live_"
+  /// In live mode:
+  /// - API calls cost money
+  /// - Real bank credentials required
+  /// - Business approval required for Direct Debit
   static bool get isLiveMode =>
       publicKey.startsWith('live_pk_') || publicKey.startsWith('pk_live_');
 
-  /// Whether we're in production environment
+  /// Whether we're in production environment (from ENVIRONMENT variable)
   static bool get isProduction => environment == 'production';
 
-  /// Get Mono Connect base URL
+  /// Get Mono Connect base URL (same for sandbox and live)
   static String get connectUrl => 'https://connect.mono.co';
+
+  // ========== SANDBOX TEST CREDENTIALS ==========
+  // Use these for testing in sandbox mode
+
+  /// Test username for Mono Connect widget (sandbox)
+  static const String sandboxTestUsername = 'user_good';
+
+  /// Test password for Mono Connect widget (sandbox)
+  static const String sandboxTestPassword = '123456';
+
+  /// Test PIN for banking operations (sandbox)
+  static const String sandboxTestPin = '1234';
+
+  /// Test OTP for 2FA (sandbox)
+  static const String sandboxTestOtp = '123456';
+
+  /// Test security answer (sandbox)
+  static const String sandboxSecurityAnswer = 'lagos';
+
+  /// Test BVN for identity verification (sandbox)
+  static const String sandboxTestBvn = '12345678901';
+
+  /// Test NIN for identity verification (sandbox)
+  static const String sandboxTestNin = '12345678901';
+
+  /// Test account number for DirectPay (sandbox)
+  static const String sandboxTestAccountNumber = '1234567890';
+
+  /// Test NIP code for DirectPay (sandbox)
+  static const String sandboxTestNipCode = '000000';
+
+  // ========== SCOPE CONSTANTS ==========
+  // Different scopes for different Mono operations
+
+  /// Scope for account linking only (read-only access)
+  static const String scopeAuth = 'auth';
+
+  /// Scope for payments (DirectPay, one-time debits)
+  static const String scopePayments = 'payments';
+
+  /// Get the appropriate scope based on operation type
+  static String getScopeForOperation(MonoOperation operation) {
+    switch (operation) {
+      case MonoOperation.accountLinking:
+        return scopeAuth;
+      case MonoOperation.directPay:
+      case MonoOperation.directDebit:
+      case MonoOperation.mandate:
+        return scopePayments;
+    }
+  }
 
   /// Mono Institution IDs for Nigerian Banks
   /// These are Mono's internal institution identifiers used for pre-selection
@@ -420,4 +491,19 @@ class MonoConnectResult {
 
   @override
   String toString() => 'MonoConnectResult(code: ${code.substring(0, code.length > 10 ? 10 : code.length)}..., bank: $bankDisplayName)';
+}
+
+/// Mono operation types for determining the correct scope
+enum MonoOperation {
+  /// Account linking - read-only access to account data
+  accountLinking,
+
+  /// DirectPay - one-time payment authorization
+  directPay,
+
+  /// Direct Debit - pull funds from linked account
+  directDebit,
+
+  /// Mandate - recurring access for future debits
+  mandate,
 }
