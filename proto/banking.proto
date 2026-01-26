@@ -1083,6 +1083,11 @@ message DepositResponse {
     string error_message = 3;
     Deposit deposit = 4;
     string message = 5;
+
+    // Mandate-related fields (for production direct debit flow)
+    bool needs_mandate = 6;           // True if user needs to create/authorize a mandate first
+    string mandate_id = 7;            // Associated mandate ID (if exists)
+    string authorization_url = 8;     // URL for mandate authorization (if needs_mandate=true)
 }
 
 // Deposit Message

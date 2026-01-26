@@ -23,6 +23,7 @@ class BankingErrorCode {
   static const String unauthorized = 'UNAUTHORIZED';
   static const String networkError = 'NETWORK_ERROR';
   static const String timeout = 'TIMEOUT';
+  static const String needsMandate = 'NEEDS_MANDATE';
   static const String unknown = 'UNKNOWN_ERROR';
 }
 
@@ -265,6 +266,26 @@ class UnauthorizedException extends BankingException {
       'Your session has expired. Please log in again.';
 }
 
+/// Needs mandate error - user needs to set up direct debit mandate
+class NeedsMandateException extends BankingException {
+  final String? mandateId;
+  final String? authorizationUrl;
+
+  const NeedsMandateException({
+    required super.message,
+    this.mandateId,
+    this.authorizationUrl,
+    super.details,
+  }) : super(
+          code: BankingErrorCode.needsMandate,
+          isRetryable: false,
+        );
+
+  @override
+  String get userMessage =>
+      'Please set up a direct debit mandate for this bank account to enable deposits.';
+}
+
 /// Provider mismatch error (account created with different provider)
 class ProviderMismatchException extends BankingException {
   final String? originalProvider;
@@ -295,7 +316,9 @@ class GenericBankingException extends BankingException {
   });
 
   @override
-  String get userMessage => 'An unexpected error occurred. Please try again later.';
+  String get userMessage => message.isNotEmpty
+      ? message
+      : 'An unexpected error occurred. Please try again later.';
 }
 
 /// Error parser utility

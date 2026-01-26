@@ -1242,11 +1242,14 @@ const DepositResponse$json = const {
     const {'1': 'error_message', '3': 3, '4': 1, '5': 9, '10': 'errorMessage'},
     const {'1': 'deposit', '3': 4, '4': 1, '5': 11, '6': '.banking.Deposit', '10': 'deposit'},
     const {'1': 'message', '3': 5, '4': 1, '5': 9, '10': 'message'},
+    const {'1': 'needs_mandate', '3': 6, '4': 1, '5': 8, '10': 'needsMandate'},
+    const {'1': 'mandate_id', '3': 7, '4': 1, '5': 9, '10': 'mandateId'},
+    const {'1': 'authorization_url', '3': 8, '4': 1, '5': 9, '10': 'authorizationUrl'},
   ],
 };
 
 /// Descriptor for `DepositResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List depositResponseDescriptor = $convert.base64Decode('Cg9EZXBvc2l0UmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2VzcxIdCgplcnJvcl9jb2RlGAIgASgJUgllcnJvckNvZGUSIwoNZXJyb3JfbWVzc2FnZRgDIAEoCVIMZXJyb3JNZXNzYWdlEioKB2RlcG9zaXQYBCABKAsyEC5iYW5raW5nLkRlcG9zaXRSB2RlcG9zaXQSGAoHbWVzc2FnZRgFIAEoCVIHbWVzc2FnZQ==');
+final $typed_data.Uint8List depositResponseDescriptor = $convert.base64Decode('Cg9EZXBvc2l0UmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2VzcxIdCgplcnJvcl9jb2RlGAIgASgJUgllcnJvckNvZGUSIwoNZXJyb3JfbWVzc2FnZRgDIAEoCVIMZXJyb3JNZXNzYWdlEioKB2RlcG9zaXQYBCABKAsyEC5iYW5raW5nLkRlcG9zaXRSB2RlcG9zaXQSGAoHbWVzc2FnZRgFIAEoCVIHbWVzc2FnZRIjCg1uZWVkc19tYW5kYXRlGAYgASgIUgxuZWVkc01hbmRhdGUSHQoKbWFuZGF0ZV9pZBgHIAEoCVIJbWFuZGF0ZUlkEisKEWF1dGhvcml6YXRpb25fdXJsGAggASgJUhBhdXRob3JpemF0aW9uVXJs');
 @$core.Deprecated('Use depositDescriptor instead')
 const Deposit$json = const {
   '1': 'Deposit',
@@ -1508,3 +1511,210 @@ const ResolveAccountNameResponse$json = const {
 
 /// Descriptor for `ResolveAccountNameResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List resolveAccountNameResponseDescriptor = $convert.base64Decode('ChpSZXNvbHZlQWNjb3VudE5hbWVSZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZXNzEh0KCmVycm9yX2NvZGUYAiABKAlSCWVycm9yQ29kZRIjCg1lcnJvcl9tZXNzYWdlGAMgASgJUgxlcnJvck1lc3NhZ2USJQoOYWNjb3VudF9udW1iZXIYBCABKAlSDWFjY291bnROdW1iZXISIQoMYWNjb3VudF9uYW1lGAUgASgJUgthY2NvdW50TmFtZRIbCgliYW5rX2NvZGUYBiABKAlSCGJhbmtDb2RlEhsKCWJhbmtfbmFtZRgHIAEoCVIIYmFua05hbWU=');
+@$core.Deprecated('Use createMandateRequestDescriptor instead')
+const CreateMandateRequest$json = const {
+  '1': 'CreateMandateRequest',
+  '2': const [
+    const {'1': 'user_id', '3': 1, '4': 1, '5': 9, '10': 'userId'},
+    const {'1': 'linked_account_id', '3': 2, '4': 1, '5': 9, '10': 'linkedAccountId'},
+    const {'1': 'mandate_type', '3': 3, '4': 1, '5': 9, '10': 'mandateType'},
+    const {'1': 'amount_limit', '3': 4, '4': 1, '5': 3, '10': 'amountLimit'},
+    const {'1': 'debit_limit', '3': 5, '4': 1, '5': 5, '10': 'debitLimit'},
+    const {'1': 'start_date', '3': 6, '4': 1, '5': 9, '10': 'startDate'},
+    const {'1': 'end_date', '3': 7, '4': 1, '5': 9, '10': 'endDate'},
+    const {'1': 'description', '3': 8, '4': 1, '5': 9, '10': 'description'},
+  ],
+};
+
+/// Descriptor for `CreateMandateRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List createMandateRequestDescriptor = $convert.base64Decode('ChRDcmVhdGVNYW5kYXRlUmVxdWVzdBIXCgd1c2VyX2lkGAEgASgJUgZ1c2VySWQSKgoRbGlua2VkX2FjY291bnRfaWQYAiABKAlSD2xpbmtlZEFjY291bnRJZBIhCgxtYW5kYXRlX3R5cGUYAyABKAlSC21hbmRhdGVUeXBlEiEKDGFtb3VudF9saW1pdBgEIAEoA1ILYW1vdW50TGltaXQSHwoLZGViaXRfbGltaXQYBSABKAVSCmRlYml0TGltaXQSHQoKc3RhcnRfZGF0ZRgGIAEoCVIJc3RhcnREYXRlEhkKCGVuZF9kYXRlGAcgASgJUgdlbmREYXRlEiAKC2Rlc2NyaXB0aW9uGAggASgJUgtkZXNjcmlwdGlvbg==');
+@$core.Deprecated('Use mandateResponseDescriptor instead')
+const MandateResponse$json = const {
+  '1': 'MandateResponse',
+  '2': const [
+    const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    const {'1': 'error_code', '3': 2, '4': 1, '5': 9, '10': 'errorCode'},
+    const {'1': 'error_message', '3': 3, '4': 1, '5': 9, '10': 'errorMessage'},
+    const {'1': 'mandate', '3': 4, '4': 1, '5': 11, '6': '.banking.DirectDebitMandate', '10': 'mandate'},
+    const {'1': 'needs_authorization', '3': 5, '4': 1, '5': 8, '10': 'needsAuthorization'},
+    const {'1': 'authorization_url', '3': 6, '4': 1, '5': 9, '10': 'authorizationUrl'},
+  ],
+};
+
+/// Descriptor for `MandateResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List mandateResponseDescriptor = $convert.base64Decode('Cg9NYW5kYXRlUmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2VzcxIdCgplcnJvcl9jb2RlGAIgASgJUgllcnJvckNvZGUSIwoNZXJyb3JfbWVzc2FnZRgDIAEoCVIMZXJyb3JNZXNzYWdlEjUKB21hbmRhdGUYBCABKAsyGy5iYW5raW5nLkRpcmVjdERlYml0TWFuZGF0ZVIHbWFuZGF0ZRIvChNuZWVkc19hdXRob3JpemF0aW9uGAUgASgIUhJuZWVkc0F1dGhvcml6YXRpb24SKwoRYXV0aG9yaXphdGlvbl91cmwYBiABKAlSEGF1dGhvcml6YXRpb25Vcmw=');
+@$core.Deprecated('Use mandatesResponseDescriptor instead')
+const MandatesResponse$json = const {
+  '1': 'MandatesResponse',
+  '2': const [
+    const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    const {'1': 'error_code', '3': 2, '4': 1, '5': 9, '10': 'errorCode'},
+    const {'1': 'error_message', '3': 3, '4': 1, '5': 9, '10': 'errorMessage'},
+    const {'1': 'mandates', '3': 4, '4': 3, '5': 11, '6': '.banking.DirectDebitMandate', '10': 'mandates'},
+    const {'1': 'total', '3': 5, '4': 1, '5': 5, '10': 'total'},
+  ],
+};
+
+/// Descriptor for `MandatesResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List mandatesResponseDescriptor = $convert.base64Decode('ChBNYW5kYXRlc1Jlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3MSHQoKZXJyb3JfY29kZRgCIAEoCVIJZXJyb3JDb2RlEiMKDWVycm9yX21lc3NhZ2UYAyABKAlSDGVycm9yTWVzc2FnZRI3CghtYW5kYXRlcxgEIAMoCzIbLmJhbmtpbmcuRGlyZWN0RGViaXRNYW5kYXRlUghtYW5kYXRlcxIUCgV0b3RhbBgFIAEoBVIFdG90YWw=');
+@$core.Deprecated('Use directDebitMandateDescriptor instead')
+const DirectDebitMandate$json = const {
+  '1': 'DirectDebitMandate',
+  '2': const [
+    const {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
+    const {'1': 'mono_mandate_id', '3': 2, '4': 1, '5': 9, '10': 'monoMandateId'},
+    const {'1': 'user_id', '3': 3, '4': 1, '5': 9, '10': 'userId'},
+    const {'1': 'linked_account_id', '3': 4, '4': 1, '5': 9, '10': 'linkedAccountId'},
+    const {'1': 'mono_customer_id', '3': 5, '4': 1, '5': 9, '10': 'monoCustomerId'},
+    const {'1': 'bank_name', '3': 6, '4': 1, '5': 9, '10': 'bankName'},
+    const {'1': 'bank_code', '3': 7, '4': 1, '5': 9, '10': 'bankCode'},
+    const {'1': 'account_number', '3': 8, '4': 1, '5': 9, '10': 'accountNumber'},
+    const {'1': 'account_name', '3': 9, '4': 1, '5': 9, '10': 'accountName'},
+    const {'1': 'mandate_type', '3': 10, '4': 1, '5': 9, '10': 'mandateType'},
+    const {'1': 'status', '3': 11, '4': 1, '5': 9, '10': 'status'},
+    const {'1': 'amount_limit', '3': 12, '4': 1, '5': 3, '10': 'amountLimit'},
+    const {'1': 'debit_limit', '3': 13, '4': 1, '5': 5, '10': 'debitLimit'},
+    const {'1': 'debit_count', '3': 14, '4': 1, '5': 5, '10': 'debitCount'},
+    const {'1': 'total_debited', '3': 15, '4': 1, '5': 3, '10': 'totalDebited'},
+    const {'1': 'start_date', '3': 16, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'startDate'},
+    const {'1': 'end_date', '3': 17, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'endDate'},
+    const {'1': 'created_at', '3': 18, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
+    const {'1': 'authorized_at', '3': 19, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'authorizedAt'},
+    const {'1': 'ready_at', '3': 20, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'readyAt'},
+    const {'1': 'last_debit_at', '3': 21, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'lastDebitAt'},
+    const {'1': 'cancelled_at', '3': 22, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'cancelledAt'},
+    const {'1': 'reference', '3': 23, '4': 1, '5': 9, '10': 'reference'},
+    const {'1': 'description', '3': 24, '4': 1, '5': 9, '10': 'description'},
+    const {'1': 'can_debit', '3': 25, '4': 1, '5': 8, '10': 'canDebit'},
+    const {'1': 'is_expired', '3': 26, '4': 1, '5': 8, '10': 'isExpired'},
+    const {'1': 'remaining_limit', '3': 27, '4': 1, '5': 3, '10': 'remainingLimit'},
+  ],
+};
+
+/// Descriptor for `DirectDebitMandate`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List directDebitMandateDescriptor = $convert.base64Decode('ChJEaXJlY3REZWJpdE1hbmRhdGUSDgoCaWQYASABKAlSAmlkEiYKD21vbm9fbWFuZGF0ZV9pZBgCIAEoCVINbW9ub01hbmRhdGVJZBIXCgd1c2VyX2lkGAMgASgJUgZ1c2VySWQSKgoRbGlua2VkX2FjY291bnRfaWQYBCABKAlSD2xpbmtlZEFjY291bnRJZBIoChBtb25vX2N1c3RvbWVyX2lkGAUgASgJUg5tb25vQ3VzdG9tZXJJZBIbCgliYW5rX25hbWUYBiABKAlSCGJhbmtOYW1lEhsKCWJhbmtfY29kZRgHIAEoCVIIYmFua0NvZGUSJQoOYWNjb3VudF9udW1iZXIYCCABKAlSDWFjY291bnROdW1iZXISIQoMYWNjb3VudF9uYW1lGAkgASgJUgthY2NvdW50TmFtZRIhCgxtYW5kYXRlX3R5cGUYCiABKAlSC21hbmRhdGVUeXBlEhYKBnN0YXR1cxgLIAEoCVIGc3RhdHVzEiEKDGFtb3VudF9saW1pdBgMIAEoA1ILYW1vdW50TGltaXQSHwoLZGViaXRfbGltaXQYDSABKAVSCmRlYml0TGltaXQSHwoLZGViaXRfY291bnQYDiABKAVSCmRlYml0Q291bnQSIwoNdG90YWxfZGViaXRlZBgPIAEoA1IMdG90YWxEZWJpdGVkEjkKCnN0YXJ0X2RhdGUYECABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUglzdGFydERhdGUSNQoIZW5kX2RhdGUYESABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUgdlbmREYXRlEjkKCmNyZWF0ZWRfYXQYEiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUgljcmVhdGVkQXQSPwoNYXV0aG9yaXplZF9hdBgTIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXBSDGF1dGhvcml6ZWRBdBI1CghyZWFkeV9hdBgUIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXBSB3JlYWR5QXQSPgoNbGFzdF9kZWJpdF9hdBgVIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXBSC2xhc3REZWJpdEF0Ej0KDGNhbmNlbGxlZF9hdBgWIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXBSC2NhbmNlbGxlZEF0EhwKCXJlZmVyZW5jZRgXIAEoCVIJcmVmZXJlbmNlEiAKC2Rlc2NyaXB0aW9uGBggASgJUgtkZXNjcmlwdGlvbhIbCgljYW5fZGViaXQYGSABKAhSCGNhbkRlYml0Eh0KCmlzX2V4cGlyZWQYGiABKAhSCWlzRXhwaXJlZBInCg9yZW1haW5pbmdfbGltaXQYGyABKANSDnJlbWFpbmluZ0xpbWl0');
+@$core.Deprecated('Use getMandateRequestDescriptor instead')
+const GetMandateRequest$json = const {
+  '1': 'GetMandateRequest',
+  '2': const [
+    const {'1': 'mandate_id', '3': 1, '4': 1, '5': 9, '10': 'mandateId'},
+    const {'1': 'user_id', '3': 2, '4': 1, '5': 9, '10': 'userId'},
+  ],
+};
+
+/// Descriptor for `GetMandateRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getMandateRequestDescriptor = $convert.base64Decode('ChFHZXRNYW5kYXRlUmVxdWVzdBIdCgptYW5kYXRlX2lkGAEgASgJUgltYW5kYXRlSWQSFwoHdXNlcl9pZBgCIAEoCVIGdXNlcklk');
+@$core.Deprecated('Use getUserMandatesRequestDescriptor instead')
+const GetUserMandatesRequest$json = const {
+  '1': 'GetUserMandatesRequest',
+  '2': const [
+    const {'1': 'user_id', '3': 1, '4': 1, '5': 9, '10': 'userId'},
+    const {'1': 'active_only', '3': 2, '4': 1, '5': 8, '10': 'activeOnly'},
+    const {'1': 'limit', '3': 3, '4': 1, '5': 5, '10': 'limit'},
+    const {'1': 'offset', '3': 4, '4': 1, '5': 5, '10': 'offset'},
+  ],
+};
+
+/// Descriptor for `GetUserMandatesRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getUserMandatesRequestDescriptor = $convert.base64Decode('ChZHZXRVc2VyTWFuZGF0ZXNSZXF1ZXN0EhcKB3VzZXJfaWQYASABKAlSBnVzZXJJZBIfCgthY3RpdmVfb25seRgCIAEoCFIKYWN0aXZlT25seRIUCgVsaW1pdBgDIAEoBVIFbGltaXQSFgoGb2Zmc2V0GAQgASgFUgZvZmZzZXQ=');
+@$core.Deprecated('Use pauseMandateRequestDescriptor instead')
+const PauseMandateRequest$json = const {
+  '1': 'PauseMandateRequest',
+  '2': const [
+    const {'1': 'mandate_id', '3': 1, '4': 1, '5': 9, '10': 'mandateId'},
+    const {'1': 'user_id', '3': 2, '4': 1, '5': 9, '10': 'userId'},
+    const {'1': 'reason', '3': 3, '4': 1, '5': 9, '10': 'reason'},
+  ],
+};
+
+/// Descriptor for `PauseMandateRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List pauseMandateRequestDescriptor = $convert.base64Decode('ChNQYXVzZU1hbmRhdGVSZXF1ZXN0Eh0KCm1hbmRhdGVfaWQYASABKAlSCW1hbmRhdGVJZBIXCgd1c2VyX2lkGAIgASgJUgZ1c2VySWQSFgoGcmVhc29uGAMgASgJUgZyZWFzb24=');
+@$core.Deprecated('Use pauseMandateResponseDescriptor instead')
+const PauseMandateResponse$json = const {
+  '1': 'PauseMandateResponse',
+  '2': const [
+    const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    const {'1': 'error_code', '3': 2, '4': 1, '5': 9, '10': 'errorCode'},
+    const {'1': 'error_message', '3': 3, '4': 1, '5': 9, '10': 'errorMessage'},
+    const {'1': 'mandate', '3': 4, '4': 1, '5': 11, '6': '.banking.DirectDebitMandate', '10': 'mandate'},
+  ],
+};
+
+/// Descriptor for `PauseMandateResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List pauseMandateResponseDescriptor = $convert.base64Decode('ChRQYXVzZU1hbmRhdGVSZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZXNzEh0KCmVycm9yX2NvZGUYAiABKAlSCWVycm9yQ29kZRIjCg1lcnJvcl9tZXNzYWdlGAMgASgJUgxlcnJvck1lc3NhZ2USNQoHbWFuZGF0ZRgEIAEoCzIbLmJhbmtpbmcuRGlyZWN0RGViaXRNYW5kYXRlUgdtYW5kYXRl');
+@$core.Deprecated('Use reinstateMandateRequestDescriptor instead')
+const ReinstateMandateRequest$json = const {
+  '1': 'ReinstateMandateRequest',
+  '2': const [
+    const {'1': 'mandate_id', '3': 1, '4': 1, '5': 9, '10': 'mandateId'},
+    const {'1': 'user_id', '3': 2, '4': 1, '5': 9, '10': 'userId'},
+  ],
+};
+
+/// Descriptor for `ReinstateMandateRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List reinstateMandateRequestDescriptor = $convert.base64Decode('ChdSZWluc3RhdGVNYW5kYXRlUmVxdWVzdBIdCgptYW5kYXRlX2lkGAEgASgJUgltYW5kYXRlSWQSFwoHdXNlcl9pZBgCIAEoCVIGdXNlcklk');
+@$core.Deprecated('Use reinstateMandateResponseDescriptor instead')
+const ReinstateMandateResponse$json = const {
+  '1': 'ReinstateMandateResponse',
+  '2': const [
+    const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    const {'1': 'error_code', '3': 2, '4': 1, '5': 9, '10': 'errorCode'},
+    const {'1': 'error_message', '3': 3, '4': 1, '5': 9, '10': 'errorMessage'},
+    const {'1': 'mandate', '3': 4, '4': 1, '5': 11, '6': '.banking.DirectDebitMandate', '10': 'mandate'},
+  ],
+};
+
+/// Descriptor for `ReinstateMandateResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List reinstateMandateResponseDescriptor = $convert.base64Decode('ChhSZWluc3RhdGVNYW5kYXRlUmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2VzcxIdCgplcnJvcl9jb2RlGAIgASgJUgllcnJvckNvZGUSIwoNZXJyb3JfbWVzc2FnZRgDIAEoCVIMZXJyb3JNZXNzYWdlEjUKB21hbmRhdGUYBCABKAsyGy5iYW5raW5nLkRpcmVjdERlYml0TWFuZGF0ZVIHbWFuZGF0ZQ==');
+@$core.Deprecated('Use cancelMandateRequestDescriptor instead')
+const CancelMandateRequest$json = const {
+  '1': 'CancelMandateRequest',
+  '2': const [
+    const {'1': 'mandate_id', '3': 1, '4': 1, '5': 9, '10': 'mandateId'},
+    const {'1': 'user_id', '3': 2, '4': 1, '5': 9, '10': 'userId'},
+    const {'1': 'reason', '3': 3, '4': 1, '5': 9, '10': 'reason'},
+  ],
+};
+
+/// Descriptor for `CancelMandateRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List cancelMandateRequestDescriptor = $convert.base64Decode('ChRDYW5jZWxNYW5kYXRlUmVxdWVzdBIdCgptYW5kYXRlX2lkGAEgASgJUgltYW5kYXRlSWQSFwoHdXNlcl9pZBgCIAEoCVIGdXNlcklkEhYKBnJlYXNvbhgDIAEoCVIGcmVhc29u');
+@$core.Deprecated('Use cancelMandateResponseDescriptor instead')
+const CancelMandateResponse$json = const {
+  '1': 'CancelMandateResponse',
+  '2': const [
+    const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    const {'1': 'error_code', '3': 2, '4': 1, '5': 9, '10': 'errorCode'},
+    const {'1': 'error_message', '3': 3, '4': 1, '5': 9, '10': 'errorMessage'},
+  ],
+};
+
+/// Descriptor for `CancelMandateResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List cancelMandateResponseDescriptor = $convert.base64Decode('ChVDYW5jZWxNYW5kYXRlUmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2VzcxIdCgplcnJvcl9jb2RlGAIgASgJUgllcnJvckNvZGUSIwoNZXJyb3JfbWVzc2FnZRgDIAEoCVIMZXJyb3JNZXNzYWdl');
+@$core.Deprecated('Use checkMandateBalanceRequestDescriptor instead')
+const CheckMandateBalanceRequest$json = const {
+  '1': 'CheckMandateBalanceRequest',
+  '2': const [
+    const {'1': 'mandate_id', '3': 1, '4': 1, '5': 9, '10': 'mandateId'},
+    const {'1': 'user_id', '3': 2, '4': 1, '5': 9, '10': 'userId'},
+    const {'1': 'amount', '3': 3, '4': 1, '5': 3, '10': 'amount'},
+  ],
+};
+
+/// Descriptor for `CheckMandateBalanceRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List checkMandateBalanceRequestDescriptor = $convert.base64Decode('ChpDaGVja01hbmRhdGVCYWxhbmNlUmVxdWVzdBIdCgptYW5kYXRlX2lkGAEgASgJUgltYW5kYXRlSWQSFwoHdXNlcl9pZBgCIAEoCVIGdXNlcklkEhYKBmFtb3VudBgDIAEoA1IGYW1vdW50');
+@$core.Deprecated('Use checkMandateBalanceResponseDescriptor instead')
+const CheckMandateBalanceResponse$json = const {
+  '1': 'CheckMandateBalanceResponse',
+  '2': const [
+    const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    const {'1': 'error_code', '3': 2, '4': 1, '5': 9, '10': 'errorCode'},
+    const {'1': 'error_message', '3': 3, '4': 1, '5': 9, '10': 'errorMessage'},
+    const {'1': 'available_balance', '3': 4, '4': 1, '5': 3, '10': 'availableBalance'},
+    const {'1': 'sufficient_funds', '3': 5, '4': 1, '5': 8, '10': 'sufficientFunds'},
+    const {'1': 'currency', '3': 6, '4': 1, '5': 9, '10': 'currency'},
+    const {'1': 'checked_at', '3': 7, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'checkedAt'},
+  ],
+};
+
+/// Descriptor for `CheckMandateBalanceResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List checkMandateBalanceResponseDescriptor = $convert.base64Decode('ChtDaGVja01hbmRhdGVCYWxhbmNlUmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2VzcxIdCgplcnJvcl9jb2RlGAIgASgJUgllcnJvckNvZGUSIwoNZXJyb3JfbWVzc2FnZRgDIAEoCVIMZXJyb3JNZXNzYWdlEisKEWF2YWlsYWJsZV9iYWxhbmNlGAQgASgDUhBhdmFpbGFibGVCYWxhbmNlEikKEHN1ZmZpY2llbnRfZnVuZHMYBSABKAhSD3N1ZmZpY2llbnRGdW5kcxIaCghjdXJyZW5jeRgGIAEoCVIIY3VycmVuY3kSOQoKY2hlY2tlZF9hdBgHIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXBSCWNoZWNrZWRBdA==');
