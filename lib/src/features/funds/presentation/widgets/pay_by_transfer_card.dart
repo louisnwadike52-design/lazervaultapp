@@ -49,7 +49,7 @@ class _PayByTransferCardState extends State<PayByTransferCard> {
   }
 
   Future<void> _showSimulationBottomSheet(BuildContext context) async {
-    final selectedAmount = useState<double?>(null);
+    double? selectedAmount;
 
     await showModalBottomSheet(
       context: context,
@@ -187,11 +187,11 @@ class _PayByTransferCardState extends State<PayByTransferCard> {
                   spacing: 8.w,
                   runSpacing: 8.h,
                   children: DepositSimulationService.testAmounts.map((amount) {
-                    final isSelected = selectedAmount.value == amount;
+                    final isSelected = selectedAmount == amount;
                     return InkWell(
                       onTap: () {
                         setSheetState(() {
-                          selectedAmount.value = amount;
+                          selectedAmount = amount;
                         });
                       },
                       borderRadius: BorderRadius.circular(8.r),
@@ -227,7 +227,7 @@ class _PayByTransferCardState extends State<PayByTransferCard> {
                 child: SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: selectedAmount.value == null || _isSimulating
+                    onPressed: selectedAmount == null || _isSimulating
                         ? null
                         : () async {
                             setSheetState(() {
@@ -238,7 +238,7 @@ class _PayByTransferCardState extends State<PayByTransferCard> {
                             final result = await DepositSimulationService.simulateDeposit(
                               accountNumber: widget.accountNumber,
                               accountName: widget.accountName,
-                              amount: selectedAmount.value!,
+                              amount: selectedAmount!,
                             );
 
                             setState(() {
@@ -269,7 +269,7 @@ class _PayByTransferCardState extends State<PayByTransferCard> {
                             }
                           },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: selectedAmount.value == null
+                      backgroundColor: selectedAmount == null
                           ? Colors.grey.shade700
                           : const Color(0xFF00D09C),
                       foregroundColor: Colors.white,

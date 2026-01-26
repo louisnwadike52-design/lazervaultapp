@@ -9,7 +9,7 @@ class DepositCubit extends Cubit<DepositState> {
   DepositCubit(this._initiateDepositUseCase) : super(DepositInitial());
 
   Future<void> initiateDeposit({
-    required int targetAccountId,
+    required String targetAccountId, // UUID string
     required double amount,
     required String currency,
     required String sourceBankName,

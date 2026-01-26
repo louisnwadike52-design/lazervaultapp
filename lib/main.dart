@@ -88,18 +88,18 @@ void main() async {
   
   print("Attempting to load environment file: $envFileName");
 
-  // Initialize dependency injection
-  await init();
-
   try {
-    // Load environment variables
-    await dotenv.load(fileName: envFileName); // Use the determined filename
+    // Load environment variables FIRST (before dependency injection)
+    await dotenv.load(fileName: envFileName);
     print("$envFileName file loaded successfully.");
   } catch (e) {
     print("Error loading $envFileName file: $e");
     // Consider how to handle errors - maybe default values are okay,
     // or maybe the app shouldn't start without certain variables.
   }
+
+  // Initialize dependency injection (after env vars are loaded)
+  await init();
 
   // Initialize the database
   final dbHelper = DatabaseHelper();

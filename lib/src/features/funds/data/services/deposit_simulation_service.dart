@@ -15,10 +15,18 @@ class DepositSimulationService {
       kDebugMode &&
       dotenv.env[_devModeFlag] == 'true';
 
-  /// Get the banking service webhook URL from config
+  /// Get the webhook URL from config
+  /// Uses ngrok URL for external webhook delivery (production-grade simulation)
   static String get _bankingWebhookUrl {
-    final baseUrl = dotenv.env['GRPC_API_HOST'] ?? 'http://localhost:8080';
-    return '$baseUrl/webhooks/flutterwave';
+    // Use ngrok URL for proper webhook simulation
+    // This allows testing the full webhook flow through the webhook gateway
+    final ngrokUrl = dotenv.env['WEBHOOK_GATEWAY_NGROK_URL'];
+    if (ngrokUrl != null && ngrokUrl.isNotEmpty) {
+      return '$ngrokUrl/webhooks/flutterwave';
+    }
+    // Fallback to local webhook gateway
+    final grpcHost = dotenv.env['GRPC_API_HOST'] ?? '10.0.2.2';
+    return 'http://$grpcHost:8090/webhooks/flutterwave';
   }
 
   /// Simulate a successful Flutterwave deposit webhook
@@ -42,25 +50,42 @@ class DepositSimulationService {
       // Generate unique transaction reference
       final txRef = 'SIM_${DateTime.now().millisecondsSinceEpoch}';
 
-      // Create mock Flutterwave webhook payload
+      // Create production-grade Flutterwave webhook payload
+      // Matches actual Flutterwave bank_transfer webhook format
       final webhookPayload = {
         'event': 'charge.completed',
         'data': {
+          'id': DateTime.now().millisecondsSinceEpoch,
           'tx_ref': txRef,
           'flw_ref': 'FLW-MOCK-$txRef',
+          'device_fingerprint': 'SIMULATION',
           'amount': amount,
+          'charged_amount': amount,
+          'app_fee': 0,
+          'merchant_fee': 0,
           'currency': currency,
           'customer': {
+            'id': DateTime.now().millisecondsSinceEpoch,
             'name': accountName,
+            'phone_number': null,
+            'email': 'simulation@lazervault.app',
+            'created_at': DateTime.now().toIso8601String(),
           },
           'meta': {
             'account_number': accountNumber,
-            'simulation': true,
+            'simulation': 'true',
+            '__CheckoutInitAddress': 'https://lazervault.app',
           },
           'status': 'successful',
           'payment_type': 'bank_transfer',
+          'processor_response': 'Approved',
+          'narration': 'LazerVault Test Deposit',
           'created_at': DateTime.now().toIso8601String(),
+          // Virtual account details matching Flutterwave response
+          'account_id': accountNumber,
         },
+        // Include event_type for newer webhook formats
+        'event.type': 'BANK_TRANSFER_TRANSACTION',
       };
 
       // Send webhook to banking service

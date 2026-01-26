@@ -13,8 +13,7 @@ import './copyable_detail_row.dart';
 import './switch_detail_row.dart';
 import './card_blocking_row.dart';
 
-// Import deposit and withdrawal flows
-import 'package:lazervault/src/features/funds/presentation/view/deposit/deposit_flow_screen.dart';
+// Import withdrawal flow only - deposits happen via dashboard card buttons
 import 'package:lazervault/src/features/funds/presentation/view/withdrawal/withdrawal_flow_screen.dart';
 // Keep imports for dialogs/logic methods if they need specific types
 
@@ -548,39 +547,21 @@ class _CardDetailsBottomSheetState extends State<CardDetailsBottomSheet> {
   Widget _buildActionButtons(Map<String, dynamic> accountArgs) {
     return Column(
       children: [
-        // Primary actions: Deposit & Withdraw
-        Row(
-          children: [
-            Expanded(
-              child: _buildPrimaryActionButton(
-                'Deposit',
-                Icons.add_rounded,
-                Colors.green,
-                () {
-                  Get.back(); // Close bottom sheet
-                  Get.to(
-                    () => _DepositFlowNavigator(selectedAccount: accountArgs),
-                    transition: Transition.rightToLeft,
-                  );
-                },
-              ),
-            ),
-            SizedBox(width: 12.w),
-            Expanded(
-              child: _buildPrimaryActionButton(
-                'Withdraw',
-                Icons.arrow_upward_rounded,
-                Colors.orange,
-                () {
-                  Get.back(); // Close bottom sheet
-                  Get.to(
-                    () => _WithdrawalFlowNavigator(selectedAccount: accountArgs),
-                    transition: Transition.rightToLeft,
-                  );
-                },
-              ),
-            ),
-          ],
+        // Primary action: Withdraw (Deposit is done via dashboard card buttons)
+        SizedBox(
+          width: double.infinity,
+          child: _buildPrimaryActionButton(
+            'Withdraw',
+            Icons.arrow_upward_rounded,
+            Colors.orange,
+            () {
+              Get.back(); // Close bottom sheet
+              Get.to(
+                () => _WithdrawalFlowNavigator(selectedAccount: accountArgs),
+                transition: Transition.rightToLeft,
+              );
+            },
+          ),
         ),
         SizedBox(height: 12.h),
         // Secondary actions: Copy & Share
@@ -1452,18 +1433,6 @@ class _CardDetailsBottomSheetState extends State<CardDetailsBottomSheet> {
         ),
       ),
     );
-  }
-}
-
-/// Navigator widget for Deposit Flow
-class _DepositFlowNavigator extends StatelessWidget {
-  final Map<String, dynamic> selectedAccount;
-
-  const _DepositFlowNavigator({required this.selectedAccount});
-
-  @override
-  Widget build(BuildContext context) {
-    return DepositFlowScreen(selectedAccount: selectedAccount);
   }
 }
 
