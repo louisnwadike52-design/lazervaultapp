@@ -91,6 +91,23 @@ class _DepositScreenState extends State<DepositScreen> {
     });
   }
 
+  /// Check if deposit can be initiated
+  /// Returns true only when: bank is selected AND amount is valid AND not loading
+  bool _canDeposit(List<LinkedBankAccount> accounts) {
+    if (_isInitiatingDeposit) return false;
+    if (accounts.isEmpty) return false;
+    if (_selectedAccount == null) return false;
+
+    // Check if amount is entered and valid (minimum 100 Naira)
+    final amountText = _amountController.text.replaceAll(',', '');
+    if (amountText.isEmpty) return false;
+
+    final amount = double.tryParse(amountText);
+    if (amount == null || amount < 100) return false;
+
+    return true;
+  }
+
   void _navigateToLinkBank() async {
     final result = await Get.to<bool>(
       () => LinkedAccountsScreen(
@@ -300,16 +317,12 @@ class _DepositScreenState extends State<DepositScreen> {
                   ),
                   SizedBox(height: 32.h),
 
-                  // Deposit button
+                  // Deposit button - always visible, disabled until bank and amount are entered
                   SizedBox(
                     width: double.infinity,
                     height: 56.h,
                     child: ElevatedButton(
-                      onPressed: _isInitiatingDeposit ||
-                              accounts.isEmpty ||
-                              _selectedAccount == null
-                          ? null
-                          : _initiateDeposit,
+                      onPressed: _canDeposit(accounts) ? _initiateDeposit : null,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF6C5CE7),
                         disabledBackgroundColor: Colors.grey[300],
@@ -326,7 +339,9 @@ class _DepositScreenState extends State<DepositScreen> {
                               style: TextStyle(
                                 fontSize: 16.sp,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                                color: _canDeposit(accounts)
+                                    ? Colors.white
+                                    : Colors.grey[500],
                               ),
                             ),
                     ),

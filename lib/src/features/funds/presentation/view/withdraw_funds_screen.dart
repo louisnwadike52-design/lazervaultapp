@@ -42,7 +42,7 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen> {
     if (_banks.isEmpty) return [];
     if (_selectedBank.isEmpty) return _banks.take(4).toList();
     final selectedBank =
-        _banks.firstWhere((bank) => bank['name'] == _selectedBank, orElse: () => {});
+        _banks.firstWhere((bank) => bank['name'] == _selectedBank, orElse: () => <String, dynamic>{});
     if (selectedBank.isEmpty) return _banks.take(4).toList();
     final List<Map<String, dynamic>> reorderedBanks = [selectedBank];
     reorderedBanks.addAll(_banks.where((bank) => bank['name'] != _selectedBank).take(3));

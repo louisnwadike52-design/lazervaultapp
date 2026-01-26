@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Network Security Configuration for LazerVault
+
+    This configuration ensures secure connections for:
+    - Mono Connect (Open Banking)
+    - Backend services
+    - Development/Debug environments
+
+    Production: Only HTTPS connections are allowed to trusted domains
+    Debug: Cleartext traffic allowed for local development (10.0.2.2, localhost)
+-->
+<network-security-config>
+    <!-- Base configuration for release builds -->
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+
+    <!-- Mono Connect - Always use HTTPS -->
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">mono.co</domain>
+        <domain includeSubdomains="true">withmono.com</domain>
+        <domain includeSubdomains="true">connect.mono.co</domain>
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </domain-config>
+
+    <!-- LazerVault Production API - Always use HTTPS -->
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">lazervault.app</domain>
+        <domain includeSubdomains="true">lazervault.com</domain>
+        <domain includeSubdomains="true">api.lazervault.app</domain>
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </domain-config>
+
+    <!-- Google Cloud Run services - Always use HTTPS -->
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">run.app</domain>
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </domain-config>
+
+    <!-- LiveKit - Always use secure WebSocket -->
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">livekit.cloud</domain>
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </domain-config>
+
+    <!-- Debug/Development only - Allow cleartext for local services -->
+    <domain-config cleartextTrafficPermitted="true">
+        <!-- Android emulator host -->
+        <domain includeSubdomains="false">10.0.2.2</domain>
+        <!-- Local development -->
+        <domain includeSubdomains="false">localhost</domain>
+        <domain includeSubdomains="false">127.0.0.1</domain>
+    </domain-config>
+</network-security-config>

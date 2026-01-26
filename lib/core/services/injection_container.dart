@@ -172,6 +172,11 @@ import 'package:lazervault/src/generated/account.pbgrpc.dart' as account_grpc;
 import 'package:lazervault/src/generated/accounts.pbgrpc.dart' as accounts_grpc;
 import 'package:lazervault/src/features/funds/domain/usecases/initiate_withdrawal_usecase.dart';
 
+// Open Banking (Mono) Imports
+import 'package:lazervault/src/features/open_banking/cubit/open_banking_cubit.dart';
+import 'package:lazervault/src/features/open_banking/data/datasources/open_banking_remote_datasource.dart';
+import 'package:lazervault/src/features/open_banking/data/datasources/open_banking_grpc_datasource.dart';
+
 // Card Settings Imports
 import 'package:lazervault/src/features/card_settings/data/repositories/card_settings_repository_impl.dart';
 import 'package:lazervault/src/features/card_settings/domain/repositories/i_card_settings_repository.dart';
@@ -932,6 +937,24 @@ Future<void> init() async {
 
   // Blocs/Cubits
   serviceLocator.registerFactory(() => DepositCubit(serviceLocator<InitiateDepositUseCase>()));
+
+  // ================== Feature: Open Banking (Mono) ==================
+
+  // Data Sources - REST (legacy, kept for fallback)
+  serviceLocator.registerLazySingleton<OpenBankingRemoteDataSource>(
+    () => OpenBankingRemoteDataSource(),
+  );
+
+  // Data Sources - gRPC (preferred for deposits)
+  serviceLocator.registerLazySingleton<OpenBankingGrpcDataSource>(
+    () => OpenBankingGrpcDataSource(
+      serviceLocator<banking_grpc.BankingServiceClient>(),
+      serviceLocator<GrpcCallOptionsHelper>(),
+    ),
+  );
+
+  // Blocs/Cubits - Using gRPC for better performance
+  serviceLocator.registerFactory(() => OpenBankingCubit.withGrpc(serviceLocator<OpenBankingGrpcDataSource>()));
 
 
   // ================== Feature: Funds (Withdrawal) ==================

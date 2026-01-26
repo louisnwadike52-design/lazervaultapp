@@ -23,13 +23,17 @@ class AccountSummaryModel extends AccountSummaryEntity {
       return '????'; // Return placeholder if empty
     }
 
+    // Use UUID for cross-service communication (banking-service expects UUID)
+    // Fall back to numeric ID if UUID is not available (backward compatibility)
+    final accountId = proto.uuid.isNotEmpty ? proto.uuid : proto.id.toString();
+
     return AccountSummaryModel(
-      id: proto.id.toString(), 
+      id: accountId,
       accountType: proto.accountType,
       currency: proto.currency,
       // Convert Int64 balance (assuming minor units) to double (major units)
       // Adjust the division factor (e.g., 100) based on your currency setup
-      balance: proto.balance.toDouble() / 100.0, 
+      balance: proto.balance.toDouble() / 100.0,
       accountNumberLast4: extractLast4(proto.maskedAccountNumber), // Use maskedAccountNumber
       // trendPercentage: proto.trendPercentage, // Field missing in proto
     );

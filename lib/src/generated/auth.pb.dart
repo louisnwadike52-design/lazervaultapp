@@ -2058,6 +2058,200 @@ class GetMeResponse extends $pb.GeneratedMessage {
   User ensureUser() => $_ensure(0);
 }
 
+class UpdateProfileRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UpdateProfileRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'auth'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'firstName')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastName')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'username')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'phone')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'profilePicture')
+    ..hasRequiredFields = false
+  ;
+
+  UpdateProfileRequest._() : super();
+  factory UpdateProfileRequest({
+    $core.String? userId,
+    $core.String? firstName,
+    $core.String? lastName,
+    $core.String? username,
+    $core.String? phone,
+    $core.String? profilePicture,
+  }) {
+    final _result = create();
+    if (userId != null) {
+      _result.userId = userId;
+    }
+    if (firstName != null) {
+      _result.firstName = firstName;
+    }
+    if (lastName != null) {
+      _result.lastName = lastName;
+    }
+    if (username != null) {
+      _result.username = username;
+    }
+    if (phone != null) {
+      _result.phone = phone;
+    }
+    if (profilePicture != null) {
+      _result.profilePicture = profilePicture;
+    }
+    return _result;
+  }
+  factory UpdateProfileRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory UpdateProfileRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  UpdateProfileRequest clone() => UpdateProfileRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  UpdateProfileRequest copyWith(void Function(UpdateProfileRequest) updates) => super.copyWith((message) => updates(message as UpdateProfileRequest)) as UpdateProfileRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static UpdateProfileRequest create() => UpdateProfileRequest._();
+  UpdateProfileRequest createEmptyInstance() => create();
+  static $pb.PbList<UpdateProfileRequest> createRepeated() => $pb.PbList<UpdateProfileRequest>();
+  @$core.pragma('dart2js:noInline')
+  static UpdateProfileRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<UpdateProfileRequest>(create);
+  static UpdateProfileRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get userId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set userId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasUserId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearUserId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get firstName => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set firstName($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasFirstName() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearFirstName() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get lastName => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set lastName($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasLastName() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearLastName() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get username => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set username($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasUsername() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearUsername() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get phone => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set phone($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasPhone() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearPhone() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get profilePicture => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set profilePicture($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasProfilePicture() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearProfilePicture() => clearField(6);
+}
+
+class UpdateProfileResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UpdateProfileResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'auth'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'msg')
+    ..aOM<User>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'user', subBuilder: User.create)
+    ..hasRequiredFields = false
+  ;
+
+  UpdateProfileResponse._() : super();
+  factory UpdateProfileResponse({
+    $core.bool? success,
+    $core.String? msg,
+    User? user,
+  }) {
+    final _result = create();
+    if (success != null) {
+      _result.success = success;
+    }
+    if (msg != null) {
+      _result.msg = msg;
+    }
+    if (user != null) {
+      _result.user = user;
+    }
+    return _result;
+  }
+  factory UpdateProfileResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory UpdateProfileResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  UpdateProfileResponse clone() => UpdateProfileResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  UpdateProfileResponse copyWith(void Function(UpdateProfileResponse) updates) => super.copyWith((message) => updates(message as UpdateProfileResponse)) as UpdateProfileResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static UpdateProfileResponse create() => UpdateProfileResponse._();
+  UpdateProfileResponse createEmptyInstance() => create();
+  static $pb.PbList<UpdateProfileResponse> createRepeated() => $pb.PbList<UpdateProfileResponse>();
+  @$core.pragma('dart2js:noInline')
+  static UpdateProfileResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<UpdateProfileResponse>(create);
+  static UpdateProfileResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool v) { $_setBool(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get msg => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set msg($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasMsg() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMsg() => clearField(2);
+
+  @$pb.TagNumber(3)
+  User get user => $_getN(2);
+  @$pb.TagNumber(3)
+  set user(User v) { setField(3, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasUser() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearUser() => clearField(3);
+  @$pb.TagNumber(3)
+  User ensureUser() => $_ensure(2);
+}
+
 class FacialLoginRequest extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'FacialLoginRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'auth'), createEmptyInstance: create)
     ..a<$core.List<$core.int>>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'facialData', $pb.PbFieldType.OY)
@@ -6511,6 +6705,136 @@ class UserLookupResult extends $pb.GeneratedMessage {
   $core.bool hasIsLazervaultUser() => $_has(5);
   @$pb.TagNumber(6)
   void clearIsLazervaultUser() => clearField(6);
+}
+
+class SearchUsersByUsernameRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'SearchUsersByUsernameRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'auth'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'query')
+    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'limit', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  SearchUsersByUsernameRequest._() : super();
+  factory SearchUsersByUsernameRequest({
+    $core.String? query,
+    $core.int? limit,
+  }) {
+    final _result = create();
+    if (query != null) {
+      _result.query = query;
+    }
+    if (limit != null) {
+      _result.limit = limit;
+    }
+    return _result;
+  }
+  factory SearchUsersByUsernameRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory SearchUsersByUsernameRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  SearchUsersByUsernameRequest clone() => SearchUsersByUsernameRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  SearchUsersByUsernameRequest copyWith(void Function(SearchUsersByUsernameRequest) updates) => super.copyWith((message) => updates(message as SearchUsersByUsernameRequest)) as SearchUsersByUsernameRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static SearchUsersByUsernameRequest create() => SearchUsersByUsernameRequest._();
+  SearchUsersByUsernameRequest createEmptyInstance() => create();
+  static $pb.PbList<SearchUsersByUsernameRequest> createRepeated() => $pb.PbList<SearchUsersByUsernameRequest>();
+  @$core.pragma('dart2js:noInline')
+  static SearchUsersByUsernameRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<SearchUsersByUsernameRequest>(create);
+  static SearchUsersByUsernameRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get query => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set query($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasQuery() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearQuery() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.int get limit => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set limit($core.int v) { $_setSignedInt32(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasLimit() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearLimit() => clearField(2);
+}
+
+class SearchUsersByUsernameResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'SearchUsersByUsernameResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'auth'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'msg')
+    ..pc<UserLookupResult>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'users', $pb.PbFieldType.PM, subBuilder: UserLookupResult.create)
+    ..hasRequiredFields = false
+  ;
+
+  SearchUsersByUsernameResponse._() : super();
+  factory SearchUsersByUsernameResponse({
+    $core.bool? success,
+    $core.String? msg,
+    $core.Iterable<UserLookupResult>? users,
+  }) {
+    final _result = create();
+    if (success != null) {
+      _result.success = success;
+    }
+    if (msg != null) {
+      _result.msg = msg;
+    }
+    if (users != null) {
+      _result.users.addAll(users);
+    }
+    return _result;
+  }
+  factory SearchUsersByUsernameResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory SearchUsersByUsernameResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  SearchUsersByUsernameResponse clone() => SearchUsersByUsernameResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  SearchUsersByUsernameResponse copyWith(void Function(SearchUsersByUsernameResponse) updates) => super.copyWith((message) => updates(message as SearchUsersByUsernameResponse)) as SearchUsersByUsernameResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static SearchUsersByUsernameResponse create() => SearchUsersByUsernameResponse._();
+  SearchUsersByUsernameResponse createEmptyInstance() => create();
+  static $pb.PbList<SearchUsersByUsernameResponse> createRepeated() => $pb.PbList<SearchUsersByUsernameResponse>();
+  @$core.pragma('dart2js:noInline')
+  static SearchUsersByUsernameResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<SearchUsersByUsernameResponse>(create);
+  static SearchUsersByUsernameResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool v) { $_setBool(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get msg => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set msg($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasMsg() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMsg() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.List<UserLookupResult> get users => $_getList(2);
 }
 
 class InitiateKYCRequest extends $pb.GeneratedMessage {

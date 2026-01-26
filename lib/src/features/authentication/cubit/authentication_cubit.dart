@@ -1157,24 +1157,19 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
             // This is done in the background and won't block the signup flow
             _createVirtualAccountAfterVerification();
 
-            // Resend verification email and navigate directly to email verification
-            _resendVerificationEmailAfterIdVerification().then((_) {
-              if (isClosed) return;
+            // Navigate directly to email verification - email will be sent when page loads
+            final email = currentState.email;
+            final phoneNumber = currentState.phoneNumber;
 
-              // Navigate directly to email verification
-              final email = currentState.email;
-              final phoneNumber = currentState.phoneNumber;
+            // Determine if secondary verification is needed
+            final hasSecondaryPhone = phoneNumber != null && phoneNumber.isNotEmpty;
 
-              // Determine if secondary verification is needed
-              final hasSecondaryPhone = phoneNumber != null && phoneNumber.isNotEmpty;
-
-              // Navigate to email verification
-              Get.offAllNamed(AppRoutes.emailVerification, arguments: {
-                'email': email,
-                'codeSent': true,
-                'isRequired': true,
-                'secondaryPhone': hasSecondaryPhone ? phoneNumber : null,
-              });
+            // Navigate to email verification (codeSent: false - page will send email on load)
+            Get.offAllNamed(AppRoutes.emailVerification, arguments: {
+              'email': email,
+              'codeSent': false,
+              'isRequired': true,
+              'secondaryPhone': hasSecondaryPhone ? phoneNumber : null,
             });
           } else {
             _showErrorSnackbar('Verification Failed', 'Identity could not be verified');
@@ -1195,33 +1190,6 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
         bvnVerified: false,
         errorMessage: errorMsg,
       ));
-    }
-  }
-
-  /// Resend verification email after ID verification so code is fresh
-  Future<void> _resendVerificationEmailAfterIdVerification() async {
-    // Get email from current state
-    if (state is! SignUpInProgress) return;
-    final currentState = state as SignUpInProgress;
-    final email = currentState.email;
-
-    if (email.isEmpty) return;
-
-    try {
-      final result = await _resendVerificationUseCase(email: email);
-
-      if (isClosed) return;
-      result.fold(
-        (failure) {
-          print('Failed to resend verification email: ${failure.message}');
-          // Don't block flow if resend fails, user can use "Resend Code" button
-        },
-        (cooldownSeconds) {
-          print('Verification email resent successfully after ID verification');
-        },
-      );
-    } catch (e) {
-      print('Error resending verification email: $e');
     }
   }
 
@@ -1310,27 +1278,19 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       clearErrorMessage: true,
     ));
 
-    // No snackbar here - the email verification screen will show "Email Sent" snackbar
-    // The "Tier 1" info can be shown in a different way if needed
+    // Navigate directly to email verification - email will be sent when page loads
+    final email = currentState.email;
+    final phoneNumber = currentState.phoneNumber;
 
-    // Resend verification email so code is fresh, then navigate directly
-    _resendVerificationEmailAfterIdVerification().then((_) {
-      if (isClosed) return;
+    // Determine if secondary verification is needed
+    final hasSecondaryPhone = phoneNumber != null && phoneNumber.isNotEmpty;
 
-      // Navigate directly to email verification without showing "Account Created" snackbar
-      final email = currentState.email;
-      final phoneNumber = currentState.phoneNumber;
-
-      // Determine if secondary verification is needed
-      final hasSecondaryPhone = phoneNumber != null && phoneNumber.isNotEmpty;
-
-      // Navigate to email verification
-      Get.offAllNamed(AppRoutes.emailVerification, arguments: {
-        'email': email,
-        'codeSent': true,
-        'isRequired': true,
-        'secondaryPhone': hasSecondaryPhone ? phoneNumber : null,
-      });
+    // Navigate to email verification (codeSent: false - page will send email on load)
+    Get.offAllNamed(AppRoutes.emailVerification, arguments: {
+      'email': email,
+      'codeSent': false,
+      'isRequired': true,
+      'secondaryPhone': hasSecondaryPhone ? phoneNumber : null,
     });
   }
 
@@ -1843,22 +1803,17 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       if (isClosed) return;
       emit(currentState.copyWith(isLoading: true, clearErrorMessage: true));
 
-      // Resend verification email so code is fresh
-      await _resendVerificationEmailAfterIdVerification();
-
-      // Navigate directly to email verification without showing "Account Created" snackbar again
-      // The account was already created, we just need to proceed to verification
+      // Navigate directly to email verification - email will be sent when page loads
       final email = currentState.email;
       final phoneNumber = currentState.phoneNumber;
-      final primaryType = currentState.primaryContactType;
 
       // Determine if secondary verification is needed
       final hasSecondaryPhone = phoneNumber != null && phoneNumber.isNotEmpty;
 
-      // Navigate to email verification (email is primary)
+      // Navigate to email verification (codeSent: false - page will send email on load)
       Get.offAllNamed(AppRoutes.emailVerification, arguments: {
         'email': email,
-        'codeSent': true,
+        'codeSent': false,
         'isRequired': true,
         'secondaryPhone': hasSecondaryPhone ? phoneNumber : null,
       });

@@ -62,6 +62,12 @@ class AuthServiceClient extends $grpc.Client {
       '/auth.AuthService/GetMe',
       ($0.GetMeRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) => $0.GetMeResponse.fromBuffer(value));
+  static final _$updateProfile =
+      $grpc.ClientMethod<$0.UpdateProfileRequest, $0.UpdateProfileResponse>(
+          '/auth.AuthService/UpdateProfile',
+          ($0.UpdateProfileRequest value) => value.writeToBuffer(),
+          ($core.List<$core.int> value) =>
+              $0.UpdateProfileResponse.fromBuffer(value));
   static final _$facialLogin =
       $grpc.ClientMethod<$0.FacialLoginRequest, $0.FacialLoginResponse>(
           '/auth.AuthService/FacialLogin',
@@ -264,6 +270,12 @@ class AuthServiceClient extends $grpc.Client {
           ($0.LookupUserByPhoneRequest value) => value.writeToBuffer(),
           ($core.List<$core.int> value) =>
               $0.UserLookupResponse.fromBuffer(value));
+  static final _$searchUsersByUsername = $grpc.ClientMethod<
+          $0.SearchUsersByUsernameRequest, $0.SearchUsersByUsernameResponse>(
+      '/auth.AuthService/SearchUsersByUsername',
+      ($0.SearchUsersByUsernameRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $0.SearchUsersByUsernameResponse.fromBuffer(value));
 
   AuthServiceClient($grpc.ClientChannel channel,
       {$grpc.CallOptions? options,
@@ -318,6 +330,12 @@ class AuthServiceClient extends $grpc.Client {
   $grpc.ResponseFuture<$0.GetMeResponse> getMe($0.GetMeRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getMe, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.UpdateProfileResponse> updateProfile(
+      $0.UpdateProfileRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$updateProfile, request, options: options);
   }
 
   $grpc.ResponseFuture<$0.FacialLoginResponse> facialLogin(
@@ -526,6 +544,12 @@ class AuthServiceClient extends $grpc.Client {
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$lookupUserByPhone, request, options: options);
   }
+
+  $grpc.ResponseFuture<$0.SearchUsersByUsernameResponse> searchUsersByUsername(
+      $0.SearchUsersByUsernameRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$searchUsersByUsername, request, options: options);
+  }
 }
 
 abstract class AuthServiceBase extends $grpc.Service {
@@ -605,6 +629,15 @@ abstract class AuthServiceBase extends $grpc.Service {
         false,
         ($core.List<$core.int> value) => $0.GetMeRequest.fromBuffer(value),
         ($0.GetMeResponse value) => value.writeToBuffer()));
+    $addMethod(
+        $grpc.ServiceMethod<$0.UpdateProfileRequest, $0.UpdateProfileResponse>(
+            'UpdateProfile',
+            updateProfile_Pre,
+            false,
+            false,
+            ($core.List<$core.int> value) =>
+                $0.UpdateProfileRequest.fromBuffer(value),
+            ($0.UpdateProfileResponse value) => value.writeToBuffer()));
     $addMethod(
         $grpc.ServiceMethod<$0.FacialLoginRequest, $0.FacialLoginResponse>(
             'FacialLogin',
@@ -903,6 +936,15 @@ abstract class AuthServiceBase extends $grpc.Service {
             ($core.List<$core.int> value) =>
                 $0.LookupUserByPhoneRequest.fromBuffer(value),
             ($0.UserLookupResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.SearchUsersByUsernameRequest,
+            $0.SearchUsersByUsernameResponse>(
+        'SearchUsersByUsername',
+        searchUsersByUsername_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.SearchUsersByUsernameRequest.fromBuffer(value),
+        ($0.SearchUsersByUsernameResponse value) => value.writeToBuffer()));
   }
 
   $async.Future<$0.SignupResponse> signup_Pre(
@@ -951,6 +993,12 @@ abstract class AuthServiceBase extends $grpc.Service {
   $async.Future<$0.GetMeResponse> getMe_Pre(
       $grpc.ServiceCall call, $async.Future<$0.GetMeRequest> request) async {
     return getMe(call, await request);
+  }
+
+  $async.Future<$0.UpdateProfileResponse> updateProfile_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$0.UpdateProfileRequest> request) async {
+    return updateProfile(call, await request);
   }
 
   $async.Future<$0.FacialLoginResponse> facialLogin_Pre($grpc.ServiceCall call,
@@ -1149,6 +1197,12 @@ abstract class AuthServiceBase extends $grpc.Service {
     return lookupUserByPhone(call, await request);
   }
 
+  $async.Future<$0.SearchUsersByUsernameResponse> searchUsersByUsername_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$0.SearchUsersByUsernameRequest> request) async {
+    return searchUsersByUsername(call, await request);
+  }
+
   $async.Future<$0.SignupResponse> signup(
       $grpc.ServiceCall call, $0.SignupRequest request);
   $async.Future<$0.LoginResponse> login(
@@ -1167,6 +1221,8 @@ abstract class AuthServiceBase extends $grpc.Service {
       $grpc.ServiceCall call, $0.ResetPasswordRequest request);
   $async.Future<$0.GetMeResponse> getMe(
       $grpc.ServiceCall call, $0.GetMeRequest request);
+  $async.Future<$0.UpdateProfileResponse> updateProfile(
+      $grpc.ServiceCall call, $0.UpdateProfileRequest request);
   $async.Future<$0.FacialLoginResponse> facialLogin(
       $grpc.ServiceCall call, $0.FacialLoginRequest request);
   $async.Future<$0.SocialLoginResponse> socialLogin(
@@ -1234,4 +1290,6 @@ abstract class AuthServiceBase extends $grpc.Service {
       $grpc.ServiceCall call, $0.LookupUserByUsernameRequest request);
   $async.Future<$0.UserLookupResponse> lookupUserByPhone(
       $grpc.ServiceCall call, $0.LookupUserByPhoneRequest request);
+  $async.Future<$0.SearchUsersByUsernameResponse> searchUsersByUsername(
+      $grpc.ServiceCall call, $0.SearchUsersByUsernameRequest request);
 }

@@ -1,8 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:web_socket_channel/web_socket_channel.dart';
+import 'package:web_socket_channel/io.dart';
 
 /// Balance update event received from WebSocket
 class BalanceUpdateEvent {
@@ -116,33 +119,43 @@ class BalanceWebSocketService {
   }
 
   /// Connect using WebSocket protocol
-  /// SECURITY: Token is passed in Authorization header, not query string
+  /// Token is passed via Authorization header on mobile/desktop, query param on web
   Future<void> _connectWebSocket(String userId, String countryCode, String accessToken) async {
-    // Get financial gateway host and port from environment
-    final financialGatewayHost = dotenv.env['PAYMENT_GRPC_HOST'] ?? '10.0.2.2';
-    final financialGatewayPort = int.tryParse(dotenv.env['PAYMENT_GRPC_PORT'] ?? '8080') ?? 8080;
+    // Get WebSocket balance service host and port from environment
+    // Falls back to financial gateway if WS_BALANCE_HOST is not set
+    final wsBalanceHost = dotenv.env['WS_BALANCE_HOST'] ?? dotenv.env['PAYMENT_GRPC_HOST'] ?? '10.0.2.2';
+    final wsBalancePort = int.tryParse(dotenv.env['WS_BALANCE_PORT'] ?? '8095') ?? 8095;
 
-    // Build WebSocket URL - only non-sensitive params in query string
+    // Build WebSocket URL - only include country_code in query string
     final wsUrl = Uri(
       scheme: 'ws',
-      host: financialGatewayHost,
-      port: financialGatewayPort,
+      host: wsBalanceHost,
+      port: wsBalancePort,
       path: '/ws/balance',
       queryParameters: {
         'country_code': countryCode,
-        // SECURITY: Token moved to Authorization header (not logged in URLs)
       },
     );
 
     print('BalanceWebSocketService: Connecting via WebSocket to $wsUrl');
 
-    // Create WebSocket channel with Authorization header
-    // Note: web_socket_channel handles this through the connect method
-    _channel = WebSocketChannel.connect(
-      wsUrl,
-      // Pass token via WebSocket protocols for secure transmission
-      // The server will validate this in the handshake
-    );
+    // Create WebSocket channel with proper auth
+    if (kIsWeb) {
+      // Web: Use Sec-WebSocket-Protocol to pass token (browsers don't allow custom headers)
+      // Format: "token, <actual-token>" - server parses this
+      _channel = WebSocketChannel.connect(
+        wsUrl,
+        protocols: ['token', accessToken],
+      );
+    } else {
+      // Mobile/Desktop: Use IOWebSocketChannel with Authorization header (secure)
+      _channel = IOWebSocketChannel.connect(
+        wsUrl,
+        headers: {
+          'Authorization': 'Bearer $accessToken',
+        },
+      );
+    }
     _useSSE = false;
 
     // Listen for incoming messages
@@ -165,15 +178,15 @@ class BalanceWebSocketService {
   /// Connect using Server-Sent Events (SSE) - fallback for when WebSocket is not available
   /// SECURITY: Token is passed in Authorization header, not query string
   Future<void> _connectSSE(String userId, String countryCode, String accessToken) async {
-    // Get financial gateway host and port from environment
-    final financialGatewayHost = dotenv.env['PAYMENT_GRPC_HOST'] ?? '10.0.2.2';
-    final financialGatewayPort = int.tryParse(dotenv.env['PAYMENT_GRPC_PORT'] ?? '8080') ?? 8080;
+    // Get WebSocket balance service host and port from environment
+    final wsBalanceHost = dotenv.env['WS_BALANCE_HOST'] ?? dotenv.env['PAYMENT_GRPC_HOST'] ?? '10.0.2.2';
+    final wsBalancePort = int.tryParse(dotenv.env['WS_BALANCE_PORT'] ?? '8095') ?? 8095;
 
     // Build SSE URL - only non-sensitive params in query string
     final sseUrl = Uri(
       scheme: 'http',
-      host: financialGatewayHost,
-      port: financialGatewayPort,
+      host: wsBalanceHost,
+      port: wsBalancePort,
       path: '/ws/balance',
       queryParameters: {
         'country_code': countryCode,
@@ -279,21 +292,57 @@ class BalanceWebSocketService {
       final data = jsonDecode(message as String) as Map<String, dynamic>;
 
       // Handle different message types
-      final eventType = data['event_type'] as String?;
+      final messageType = data['type'] as String?;
 
-      if (eventType == 'connected') {
+      // Handle connection confirmation
+      if (messageType == 'connected') {
         print('BalanceWebSocketService: Connection confirmed by server');
         return;
       }
 
-      // Handle balance update events (including transfer_in, transfer_out)
+      // Handle pong response
+      if (messageType == 'pong') {
+        print('BalanceWebSocketService: Pong received');
+        return;
+      }
+
+      // Handle shutdown notification
+      if (messageType == 'shutdown') {
+        print('BalanceWebSocketService: Server shutting down');
+        disconnect();
+        return;
+      }
+
+      // Handle balance update events
+      if (messageType == 'balance_update') {
+        final payload = data['payload'] as Map<String, dynamic>?;
+        if (payload != null) {
+          final event = BalanceUpdateEvent.fromJson(payload);
+          print('BalanceWebSocketService: Received balance update - $event');
+          _eventController.add(event);
+        }
+        return;
+      }
+
+      // Handle transaction status updates
+      if (messageType == 'transaction_status') {
+        final payload = data['payload'] as Map<String, dynamic>?;
+        if (payload != null) {
+          print('BalanceWebSocketService: Transaction status update - ${payload['transaction_id']}: ${payload['new_status']}');
+          // Could add a separate stream for transaction status updates if needed
+        }
+        return;
+      }
+
+      // Legacy format support: direct event_type in message
+      final eventType = data['event_type'] as String?;
       if (eventType == 'transfer' ||
           eventType == 'transfer_in' ||
           eventType == 'transfer_out' ||
           eventType == 'deposit' ||
           eventType == 'withdrawal') {
         final event = BalanceUpdateEvent.fromJson(data);
-        print('BalanceWebSocketService: Received balance update - $event');
+        print('BalanceWebSocketService: Received balance update (legacy) - $event');
         _eventController.add(event);
       }
     } catch (e) {

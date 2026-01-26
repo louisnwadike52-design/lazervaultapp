@@ -4,7 +4,7 @@ import 'package:lazervault/src/features/funds/domain/entities/deposit_entity.dar
 
 abstract class IDepositRepository {
   Future<Either<Failure, DepositDetails>> initiateDeposit({
-    required int targetAccountId,
+    required String targetAccountId, // UUID string
     required double amount,
     required String currency,
     required String sourceBankName,

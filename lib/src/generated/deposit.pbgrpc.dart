@@ -10,36 +10,36 @@ import 'dart:async' as $async;
 import 'dart:core' as $core;
 
 import 'package:grpc/service_api.dart' as $grpc;
-import 'deposit.pb.dart' as $11;
+import 'deposit.pb.dart' as $1;
 export 'deposit.pb.dart';
 
 class DepositServiceClient extends $grpc.Client {
-  static final _$initiateDeposit = $grpc.ClientMethod<
-          $11.InitiateDepositRequest, $11.InitiateDepositResponse>(
-      '/pb.DepositService/InitiateDeposit',
-      ($11.InitiateDepositRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $11.InitiateDepositResponse.fromBuffer(value));
+  static final _$initiateDeposit =
+      $grpc.ClientMethod<$1.InitiateDepositRequest, $1.InitiateDepositResponse>(
+          '/pb.DepositService/InitiateDeposit',
+          ($1.InitiateDepositRequest value) => value.writeToBuffer(),
+          ($core.List<$core.int> value) =>
+              $1.InitiateDepositResponse.fromBuffer(value));
   static final _$getDepositDetails = $grpc.ClientMethod<
-          $11.GetDepositDetailsRequest, $11.GetDepositDetailsResponse>(
+          $1.GetDepositDetailsRequest, $1.GetDepositDetailsResponse>(
       '/pb.DepositService/GetDepositDetails',
-      ($11.GetDepositDetailsRequest value) => value.writeToBuffer(),
+      ($1.GetDepositDetailsRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $11.GetDepositDetailsResponse.fromBuffer(value));
+          $1.GetDepositDetailsResponse.fromBuffer(value));
 
   DepositServiceClient($grpc.ClientChannel channel,
       {$grpc.CallOptions? options,
       $core.Iterable<$grpc.ClientInterceptor>? interceptors})
       : super(channel, options: options, interceptors: interceptors);
 
-  $grpc.ResponseFuture<$11.InitiateDepositResponse> initiateDeposit(
-      $11.InitiateDepositRequest request,
+  $grpc.ResponseFuture<$1.InitiateDepositResponse> initiateDeposit(
+      $1.InitiateDepositRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$initiateDeposit, request, options: options);
   }
 
-  $grpc.ResponseFuture<$11.GetDepositDetailsResponse> getDepositDetails(
-      $11.GetDepositDetailsRequest request,
+  $grpc.ResponseFuture<$1.GetDepositDetailsResponse> getDepositDetails(
+      $1.GetDepositDetailsRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getDepositDetails, request, options: options);
   }
@@ -49,40 +49,40 @@ abstract class DepositServiceBase extends $grpc.Service {
   $core.String get $name => 'pb.DepositService';
 
   DepositServiceBase() {
-    $addMethod($grpc.ServiceMethod<$11.InitiateDepositRequest,
-            $11.InitiateDepositResponse>(
+    $addMethod($grpc.ServiceMethod<$1.InitiateDepositRequest,
+            $1.InitiateDepositResponse>(
         'InitiateDeposit',
         initiateDeposit_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $11.InitiateDepositRequest.fromBuffer(value),
-        ($11.InitiateDepositResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$11.GetDepositDetailsRequest,
-            $11.GetDepositDetailsResponse>(
+            $1.InitiateDepositRequest.fromBuffer(value),
+        ($1.InitiateDepositResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$1.GetDepositDetailsRequest,
+            $1.GetDepositDetailsResponse>(
         'GetDepositDetails',
         getDepositDetails_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $11.GetDepositDetailsRequest.fromBuffer(value),
-        ($11.GetDepositDetailsResponse value) => value.writeToBuffer()));
+            $1.GetDepositDetailsRequest.fromBuffer(value),
+        ($1.GetDepositDetailsResponse value) => value.writeToBuffer()));
   }
 
-  $async.Future<$11.InitiateDepositResponse> initiateDeposit_Pre(
+  $async.Future<$1.InitiateDepositResponse> initiateDeposit_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$11.InitiateDepositRequest> request) async {
+      $async.Future<$1.InitiateDepositRequest> request) async {
     return initiateDeposit(call, await request);
   }
 
-  $async.Future<$11.GetDepositDetailsResponse> getDepositDetails_Pre(
+  $async.Future<$1.GetDepositDetailsResponse> getDepositDetails_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$11.GetDepositDetailsRequest> request) async {
+      $async.Future<$1.GetDepositDetailsRequest> request) async {
     return getDepositDetails(call, await request);
   }
 
-  $async.Future<$11.InitiateDepositResponse> initiateDeposit(
-      $grpc.ServiceCall call, $11.InitiateDepositRequest request);
-  $async.Future<$11.GetDepositDetailsResponse> getDepositDetails(
-      $grpc.ServiceCall call, $11.GetDepositDetailsRequest request);
+  $async.Future<$1.InitiateDepositResponse> initiateDeposit(
+      $grpc.ServiceCall call, $1.InitiateDepositRequest request);
+  $async.Future<$1.GetDepositDetailsResponse> getDepositDetails(
+      $grpc.ServiceCall call, $1.GetDepositDetailsRequest request);
 }

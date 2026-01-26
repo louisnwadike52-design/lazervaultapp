@@ -52,11 +52,13 @@ const AccountSummary$json = const {
     const {'1': 'balance', '3': 4, '4': 1, '5': 4, '10': 'balance'},
     const {'1': 'masked_account_number', '3': 5, '4': 1, '5': 9, '10': 'maskedAccountNumber'},
     const {'1': 'status', '3': 6, '4': 1, '5': 9, '10': 'status'},
+    const {'1': 'uuid', '3': 7, '4': 1, '5': 9, '10': 'uuid'},
+    const {'1': 'account_number', '3': 8, '4': 1, '5': 9, '10': 'accountNumber'},
   ],
 };
 
 /// Descriptor for `AccountSummary`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List accountSummaryDescriptor = $convert.base64Decode('Cg5BY2NvdW50U3VtbWFyeRIOCgJpZBgBIAEoBFICaWQSIQoMYWNjb3VudF90eXBlGAIgASgJUgthY2NvdW50VHlwZRIaCghjdXJyZW5jeRgDIAEoCVIIY3VycmVuY3kSGAoHYmFsYW5jZRgEIAEoBFIHYmFsYW5jZRIyChVtYXNrZWRfYWNjb3VudF9udW1iZXIYBSABKAlSE21hc2tlZEFjY291bnROdW1iZXISFgoGc3RhdHVzGAYgASgJUgZzdGF0dXM=');
+final $typed_data.Uint8List accountSummaryDescriptor = $convert.base64Decode('Cg5BY2NvdW50U3VtbWFyeRIOCgJpZBgBIAEoBFICaWQSIQoMYWNjb3VudF90eXBlGAIgASgJUgthY2NvdW50VHlwZRIaCghjdXJyZW5jeRgDIAEoCVIIY3VycmVuY3kSGAoHYmFsYW5jZRgEIAEoBFIHYmFsYW5jZRIyChVtYXNrZWRfYWNjb3VudF9udW1iZXIYBSABKAlSE21hc2tlZEFjY291bnROdW1iZXISFgoGc3RhdHVzGAYgASgJUgZzdGF0dXMSEgoEdXVpZBgHIAEoCVIEdXVpZBIlCg5hY2NvdW50X251bWJlchgIIAEoCVINYWNjb3VudE51bWJlcg==');
 @$core.Deprecated('Use getUserAccountsRequestDescriptor instead')
 const GetUserAccountsRequest$json = const {
   '1': 'GetUserAccountsRequest',
@@ -790,3 +792,194 @@ const CreateVirtualAccountResponse$json = const {
 
 /// Descriptor for `CreateVirtualAccountResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List createVirtualAccountResponseDescriptor = $convert.base64Decode('ChxDcmVhdGVWaXJ0dWFsQWNjb3VudFJlc3BvbnNlEisKB2FjY291bnQYASABKAsyES5hY2NvdW50cy5BY2NvdW50UgdhY2NvdW50EhgKB21lc3NhZ2UYAiABKAlSB21lc3NhZ2USGgoIcHJvdmlkZXIYAyABKAlSCHByb3ZpZGVy');
+@$core.Deprecated('Use creditBalanceRequestDescriptor instead')
+const CreditBalanceRequest$json = const {
+  '1': 'CreditBalanceRequest',
+  '2': const [
+    const {'1': 'account_id', '3': 1, '4': 1, '5': 9, '10': 'accountId'},
+    const {'1': 'user_id', '3': 2, '4': 1, '5': 9, '10': 'userId'},
+    const {'1': 'amount', '3': 3, '4': 1, '5': 3, '10': 'amount'},
+    const {'1': 'currency', '3': 4, '4': 1, '5': 9, '10': 'currency'},
+    const {'1': 'reference', '3': 5, '4': 1, '5': 9, '10': 'reference'},
+    const {'1': 'type', '3': 6, '4': 1, '5': 9, '10': 'type'},
+    const {'1': 'description', '3': 7, '4': 1, '5': 9, '10': 'description'},
+    const {'1': 'metadata', '3': 8, '4': 1, '5': 9, '10': 'metadata'},
+    const {'1': 'service_name', '3': 9, '4': 1, '5': 9, '10': 'serviceName'},
+    const {'1': 'idempotency_key', '3': 10, '4': 1, '5': 9, '10': 'idempotencyKey'},
+  ],
+};
+
+/// Descriptor for `CreditBalanceRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List creditBalanceRequestDescriptor = $convert.base64Decode('ChRDcmVkaXRCYWxhbmNlUmVxdWVzdBIdCgphY2NvdW50X2lkGAEgASgJUglhY2NvdW50SWQSFwoHdXNlcl9pZBgCIAEoCVIGdXNlcklkEhYKBmFtb3VudBgDIAEoA1IGYW1vdW50EhoKCGN1cnJlbmN5GAQgASgJUghjdXJyZW5jeRIcCglyZWZlcmVuY2UYBSABKAlSCXJlZmVyZW5jZRISCgR0eXBlGAYgASgJUgR0eXBlEiAKC2Rlc2NyaXB0aW9uGAcgASgJUgtkZXNjcmlwdGlvbhIaCghtZXRhZGF0YRgIIAEoCVIIbWV0YWRhdGESIQoMc2VydmljZV9uYW1lGAkgASgJUgtzZXJ2aWNlTmFtZRInCg9pZGVtcG90ZW5jeV9rZXkYCiABKAlSDmlkZW1wb3RlbmN5S2V5');
+@$core.Deprecated('Use creditBalanceResponseDescriptor instead')
+const CreditBalanceResponse$json = const {
+  '1': 'CreditBalanceResponse',
+  '2': const [
+    const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    const {'1': 'error_code', '3': 2, '4': 1, '5': 9, '10': 'errorCode'},
+    const {'1': 'error_message', '3': 3, '4': 1, '5': 9, '10': 'errorMessage'},
+    const {'1': 'transaction_id', '3': 4, '4': 1, '5': 9, '10': 'transactionId'},
+    const {'1': 'new_balance', '3': 5, '4': 1, '5': 3, '10': 'newBalance'},
+    const {'1': 'new_available_balance', '3': 6, '4': 1, '5': 3, '10': 'newAvailableBalance'},
+  ],
+};
+
+/// Descriptor for `CreditBalanceResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List creditBalanceResponseDescriptor = $convert.base64Decode('ChVDcmVkaXRCYWxhbmNlUmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2VzcxIdCgplcnJvcl9jb2RlGAIgASgJUgllcnJvckNvZGUSIwoNZXJyb3JfbWVzc2FnZRgDIAEoCVIMZXJyb3JNZXNzYWdlEiUKDnRyYW5zYWN0aW9uX2lkGAQgASgJUg10cmFuc2FjdGlvbklkEh8KC25ld19iYWxhbmNlGAUgASgDUgpuZXdCYWxhbmNlEjIKFW5ld19hdmFpbGFibGVfYmFsYW5jZRgGIAEoA1ITbmV3QXZhaWxhYmxlQmFsYW5jZQ==');
+@$core.Deprecated('Use debitBalanceRequestDescriptor instead')
+const DebitBalanceRequest$json = const {
+  '1': 'DebitBalanceRequest',
+  '2': const [
+    const {'1': 'account_id', '3': 1, '4': 1, '5': 9, '10': 'accountId'},
+    const {'1': 'user_id', '3': 2, '4': 1, '5': 9, '10': 'userId'},
+    const {'1': 'amount', '3': 3, '4': 1, '5': 3, '10': 'amount'},
+    const {'1': 'currency', '3': 4, '4': 1, '5': 9, '10': 'currency'},
+    const {'1': 'reference', '3': 5, '4': 1, '5': 9, '10': 'reference'},
+    const {'1': 'type', '3': 6, '4': 1, '5': 9, '10': 'type'},
+    const {'1': 'description', '3': 7, '4': 1, '5': 9, '10': 'description'},
+    const {'1': 'metadata', '3': 8, '4': 1, '5': 9, '10': 'metadata'},
+    const {'1': 'service_name', '3': 9, '4': 1, '5': 9, '10': 'serviceName'},
+    const {'1': 'idempotency_key', '3': 10, '4': 1, '5': 9, '10': 'idempotencyKey'},
+    const {'1': 'require_hold', '3': 11, '4': 1, '5': 8, '10': 'requireHold'},
+    const {'1': 'hold_id', '3': 12, '4': 1, '5': 9, '10': 'holdId'},
+  ],
+};
+
+/// Descriptor for `DebitBalanceRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List debitBalanceRequestDescriptor = $convert.base64Decode('ChNEZWJpdEJhbGFuY2VSZXF1ZXN0Eh0KCmFjY291bnRfaWQYASABKAlSCWFjY291bnRJZBIXCgd1c2VyX2lkGAIgASgJUgZ1c2VySWQSFgoGYW1vdW50GAMgASgDUgZhbW91bnQSGgoIY3VycmVuY3kYBCABKAlSCGN1cnJlbmN5EhwKCXJlZmVyZW5jZRgFIAEoCVIJcmVmZXJlbmNlEhIKBHR5cGUYBiABKAlSBHR5cGUSIAoLZGVzY3JpcHRpb24YByABKAlSC2Rlc2NyaXB0aW9uEhoKCG1ldGFkYXRhGAggASgJUghtZXRhZGF0YRIhCgxzZXJ2aWNlX25hbWUYCSABKAlSC3NlcnZpY2VOYW1lEicKD2lkZW1wb3RlbmN5X2tleRgKIAEoCVIOaWRlbXBvdGVuY3lLZXkSIQoMcmVxdWlyZV9ob2xkGAsgASgIUgtyZXF1aXJlSG9sZBIXCgdob2xkX2lkGAwgASgJUgZob2xkSWQ=');
+@$core.Deprecated('Use debitBalanceResponseDescriptor instead')
+const DebitBalanceResponse$json = const {
+  '1': 'DebitBalanceResponse',
+  '2': const [
+    const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    const {'1': 'error_code', '3': 2, '4': 1, '5': 9, '10': 'errorCode'},
+    const {'1': 'error_message', '3': 3, '4': 1, '5': 9, '10': 'errorMessage'},
+    const {'1': 'transaction_id', '3': 4, '4': 1, '5': 9, '10': 'transactionId'},
+    const {'1': 'new_balance', '3': 5, '4': 1, '5': 3, '10': 'newBalance'},
+    const {'1': 'new_available_balance', '3': 6, '4': 1, '5': 3, '10': 'newAvailableBalance'},
+  ],
+};
+
+/// Descriptor for `DebitBalanceResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List debitBalanceResponseDescriptor = $convert.base64Decode('ChREZWJpdEJhbGFuY2VSZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZXNzEh0KCmVycm9yX2NvZGUYAiABKAlSCWVycm9yQ29kZRIjCg1lcnJvcl9tZXNzYWdlGAMgASgJUgxlcnJvck1lc3NhZ2USJQoOdHJhbnNhY3Rpb25faWQYBCABKAlSDXRyYW5zYWN0aW9uSWQSHwoLbmV3X2JhbGFuY2UYBSABKANSCm5ld0JhbGFuY2USMgoVbmV3X2F2YWlsYWJsZV9iYWxhbmNlGAYgASgDUhNuZXdBdmFpbGFibGVCYWxhbmNl');
+@$core.Deprecated('Use transferBalanceRequestDescriptor instead')
+const TransferBalanceRequest$json = const {
+  '1': 'TransferBalanceRequest',
+  '2': const [
+    const {'1': 'from_account_id', '3': 1, '4': 1, '5': 9, '10': 'fromAccountId'},
+    const {'1': 'to_account_id', '3': 2, '4': 1, '5': 9, '10': 'toAccountId'},
+    const {'1': 'from_user_id', '3': 3, '4': 1, '5': 9, '10': 'fromUserId'},
+    const {'1': 'to_user_id', '3': 4, '4': 1, '5': 9, '10': 'toUserId'},
+    const {'1': 'amount', '3': 5, '4': 1, '5': 3, '10': 'amount'},
+    const {'1': 'currency', '3': 6, '4': 1, '5': 9, '10': 'currency'},
+    const {'1': 'reference', '3': 7, '4': 1, '5': 9, '10': 'reference'},
+    const {'1': 'description', '3': 8, '4': 1, '5': 9, '10': 'description'},
+    const {'1': 'metadata', '3': 9, '4': 1, '5': 9, '10': 'metadata'},
+    const {'1': 'service_name', '3': 10, '4': 1, '5': 9, '10': 'serviceName'},
+    const {'1': 'idempotency_key', '3': 11, '4': 1, '5': 9, '10': 'idempotencyKey'},
+  ],
+};
+
+/// Descriptor for `TransferBalanceRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List transferBalanceRequestDescriptor = $convert.base64Decode('ChZUcmFuc2ZlckJhbGFuY2VSZXF1ZXN0EiYKD2Zyb21fYWNjb3VudF9pZBgBIAEoCVINZnJvbUFjY291bnRJZBIiCg10b19hY2NvdW50X2lkGAIgASgJUgt0b0FjY291bnRJZBIgCgxmcm9tX3VzZXJfaWQYAyABKAlSCmZyb21Vc2VySWQSHAoKdG9fdXNlcl9pZBgEIAEoCVIIdG9Vc2VySWQSFgoGYW1vdW50GAUgASgDUgZhbW91bnQSGgoIY3VycmVuY3kYBiABKAlSCGN1cnJlbmN5EhwKCXJlZmVyZW5jZRgHIAEoCVIJcmVmZXJlbmNlEiAKC2Rlc2NyaXB0aW9uGAggASgJUgtkZXNjcmlwdGlvbhIaCghtZXRhZGF0YRgJIAEoCVIIbWV0YWRhdGESIQoMc2VydmljZV9uYW1lGAogASgJUgtzZXJ2aWNlTmFtZRInCg9pZGVtcG90ZW5jeV9rZXkYCyABKAlSDmlkZW1wb3RlbmN5S2V5');
+@$core.Deprecated('Use transferBalanceResponseDescriptor instead')
+const TransferBalanceResponse$json = const {
+  '1': 'TransferBalanceResponse',
+  '2': const [
+    const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    const {'1': 'error_code', '3': 2, '4': 1, '5': 9, '10': 'errorCode'},
+    const {'1': 'error_message', '3': 3, '4': 1, '5': 9, '10': 'errorMessage'},
+    const {'1': 'debit_transaction_id', '3': 4, '4': 1, '5': 9, '10': 'debitTransactionId'},
+    const {'1': 'credit_transaction_id', '3': 5, '4': 1, '5': 9, '10': 'creditTransactionId'},
+    const {'1': 'from_new_balance', '3': 6, '4': 1, '5': 3, '10': 'fromNewBalance'},
+    const {'1': 'to_new_balance', '3': 7, '4': 1, '5': 3, '10': 'toNewBalance'},
+  ],
+};
+
+/// Descriptor for `TransferBalanceResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List transferBalanceResponseDescriptor = $convert.base64Decode('ChdUcmFuc2ZlckJhbGFuY2VSZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZXNzEh0KCmVycm9yX2NvZGUYAiABKAlSCWVycm9yQ29kZRIjCg1lcnJvcl9tZXNzYWdlGAMgASgJUgxlcnJvck1lc3NhZ2USMAoUZGViaXRfdHJhbnNhY3Rpb25faWQYBCABKAlSEmRlYml0VHJhbnNhY3Rpb25JZBIyChVjcmVkaXRfdHJhbnNhY3Rpb25faWQYBSABKAlSE2NyZWRpdFRyYW5zYWN0aW9uSWQSKAoQZnJvbV9uZXdfYmFsYW5jZRgGIAEoA1IOZnJvbU5ld0JhbGFuY2USJAoOdG9fbmV3X2JhbGFuY2UYByABKANSDHRvTmV3QmFsYW5jZQ==');
+@$core.Deprecated('Use holdFundsRequestDescriptor instead')
+const HoldFundsRequest$json = const {
+  '1': 'HoldFundsRequest',
+  '2': const [
+    const {'1': 'account_id', '3': 1, '4': 1, '5': 9, '10': 'accountId'},
+    const {'1': 'user_id', '3': 2, '4': 1, '5': 9, '10': 'userId'},
+    const {'1': 'amount', '3': 3, '4': 1, '5': 3, '10': 'amount'},
+    const {'1': 'currency', '3': 4, '4': 1, '5': 9, '10': 'currency'},
+    const {'1': 'reference', '3': 5, '4': 1, '5': 9, '10': 'reference'},
+    const {'1': 'reason', '3': 6, '4': 1, '5': 9, '10': 'reason'},
+    const {'1': 'expires_in_seconds', '3': 7, '4': 1, '5': 5, '10': 'expiresInSeconds'},
+    const {'1': 'service_name', '3': 8, '4': 1, '5': 9, '10': 'serviceName'},
+    const {'1': 'idempotency_key', '3': 9, '4': 1, '5': 9, '10': 'idempotencyKey'},
+  ],
+};
+
+/// Descriptor for `HoldFundsRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List holdFundsRequestDescriptor = $convert.base64Decode('ChBIb2xkRnVuZHNSZXF1ZXN0Eh0KCmFjY291bnRfaWQYASABKAlSCWFjY291bnRJZBIXCgd1c2VyX2lkGAIgASgJUgZ1c2VySWQSFgoGYW1vdW50GAMgASgDUgZhbW91bnQSGgoIY3VycmVuY3kYBCABKAlSCGN1cnJlbmN5EhwKCXJlZmVyZW5jZRgFIAEoCVIJcmVmZXJlbmNlEhYKBnJlYXNvbhgGIAEoCVIGcmVhc29uEiwKEmV4cGlyZXNfaW5fc2Vjb25kcxgHIAEoBVIQZXhwaXJlc0luU2Vjb25kcxIhCgxzZXJ2aWNlX25hbWUYCCABKAlSC3NlcnZpY2VOYW1lEicKD2lkZW1wb3RlbmN5X2tleRgJIAEoCVIOaWRlbXBvdGVuY3lLZXk=');
+@$core.Deprecated('Use holdFundsResponseDescriptor instead')
+const HoldFundsResponse$json = const {
+  '1': 'HoldFundsResponse',
+  '2': const [
+    const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    const {'1': 'error_code', '3': 2, '4': 1, '5': 9, '10': 'errorCode'},
+    const {'1': 'error_message', '3': 3, '4': 1, '5': 9, '10': 'errorMessage'},
+    const {'1': 'hold_id', '3': 4, '4': 1, '5': 9, '10': 'holdId'},
+    const {'1': 'new_available_balance', '3': 5, '4': 1, '5': 3, '10': 'newAvailableBalance'},
+    const {'1': 'expires_at', '3': 6, '4': 1, '5': 9, '10': 'expiresAt'},
+  ],
+};
+
+/// Descriptor for `HoldFundsResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List holdFundsResponseDescriptor = $convert.base64Decode('ChFIb2xkRnVuZHNSZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZXNzEh0KCmVycm9yX2NvZGUYAiABKAlSCWVycm9yQ29kZRIjCg1lcnJvcl9tZXNzYWdlGAMgASgJUgxlcnJvck1lc3NhZ2USFwoHaG9sZF9pZBgEIAEoCVIGaG9sZElkEjIKFW5ld19hdmFpbGFibGVfYmFsYW5jZRgFIAEoA1ITbmV3QXZhaWxhYmxlQmFsYW5jZRIdCgpleHBpcmVzX2F0GAYgASgJUglleHBpcmVzQXQ=');
+@$core.Deprecated('Use captureHoldRequestDescriptor instead')
+const CaptureHoldRequest$json = const {
+  '1': 'CaptureHoldRequest',
+  '2': const [
+    const {'1': 'hold_id', '3': 1, '4': 1, '5': 9, '10': 'holdId'},
+    const {'1': 'service_name', '3': 2, '4': 1, '5': 9, '10': 'serviceName'},
+    const {'1': 'description', '3': 3, '4': 1, '5': 9, '10': 'description'},
+    const {'1': 'metadata', '3': 4, '4': 1, '5': 9, '10': 'metadata'},
+  ],
+};
+
+/// Descriptor for `CaptureHoldRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List captureHoldRequestDescriptor = $convert.base64Decode('ChJDYXB0dXJlSG9sZFJlcXVlc3QSFwoHaG9sZF9pZBgBIAEoCVIGaG9sZElkEiEKDHNlcnZpY2VfbmFtZRgCIAEoCVILc2VydmljZU5hbWUSIAoLZGVzY3JpcHRpb24YAyABKAlSC2Rlc2NyaXB0aW9uEhoKCG1ldGFkYXRhGAQgASgJUghtZXRhZGF0YQ==');
+@$core.Deprecated('Use captureHoldResponseDescriptor instead')
+const CaptureHoldResponse$json = const {
+  '1': 'CaptureHoldResponse',
+  '2': const [
+    const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    const {'1': 'error_code', '3': 2, '4': 1, '5': 9, '10': 'errorCode'},
+    const {'1': 'error_message', '3': 3, '4': 1, '5': 9, '10': 'errorMessage'},
+    const {'1': 'transaction_id', '3': 4, '4': 1, '5': 9, '10': 'transactionId'},
+    const {'1': 'new_balance', '3': 5, '4': 1, '5': 3, '10': 'newBalance'},
+  ],
+};
+
+/// Descriptor for `CaptureHoldResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List captureHoldResponseDescriptor = $convert.base64Decode('ChNDYXB0dXJlSG9sZFJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3MSHQoKZXJyb3JfY29kZRgCIAEoCVIJZXJyb3JDb2RlEiMKDWVycm9yX21lc3NhZ2UYAyABKAlSDGVycm9yTWVzc2FnZRIlCg50cmFuc2FjdGlvbl9pZBgEIAEoCVINdHJhbnNhY3Rpb25JZBIfCgtuZXdfYmFsYW5jZRgFIAEoA1IKbmV3QmFsYW5jZQ==');
+@$core.Deprecated('Use releaseHoldRequestDescriptor instead')
+const ReleaseHoldRequest$json = const {
+  '1': 'ReleaseHoldRequest',
+  '2': const [
+    const {'1': 'hold_id', '3': 1, '4': 1, '5': 9, '10': 'holdId'},
+    const {'1': 'service_name', '3': 2, '4': 1, '5': 9, '10': 'serviceName'},
+    const {'1': 'reason', '3': 3, '4': 1, '5': 9, '10': 'reason'},
+  ],
+};
+
+/// Descriptor for `ReleaseHoldRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List releaseHoldRequestDescriptor = $convert.base64Decode('ChJSZWxlYXNlSG9sZFJlcXVlc3QSFwoHaG9sZF9pZBgBIAEoCVIGaG9sZElkEiEKDHNlcnZpY2VfbmFtZRgCIAEoCVILc2VydmljZU5hbWUSFgoGcmVhc29uGAMgASgJUgZyZWFzb24=');
+@$core.Deprecated('Use releaseHoldResponseDescriptor instead')
+const ReleaseHoldResponse$json = const {
+  '1': 'ReleaseHoldResponse',
+  '2': const [
+    const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    const {'1': 'error_code', '3': 2, '4': 1, '5': 9, '10': 'errorCode'},
+    const {'1': 'error_message', '3': 3, '4': 1, '5': 9, '10': 'errorMessage'},
+    const {'1': 'new_available_balance', '3': 4, '4': 1, '5': 3, '10': 'newAvailableBalance'},
+  ],
+};
+
+/// Descriptor for `ReleaseHoldResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List releaseHoldResponseDescriptor = $convert.base64Decode('ChNSZWxlYXNlSG9sZFJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3MSHQoKZXJyb3JfY29kZRgCIAEoCVIJZXJyb3JDb2RlEiMKDWVycm9yX21lc3NhZ2UYAyABKAlSDGVycm9yTWVzc2FnZRIyChVuZXdfYXZhaWxhYmxlX2JhbGFuY2UYBCABKANSE25ld0F2YWlsYWJsZUJhbGFuY2U=');

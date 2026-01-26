@@ -437,6 +437,33 @@ const GetMeResponse$json = const {
 
 /// Descriptor for `GetMeResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List getMeResponseDescriptor = $convert.base64Decode('Cg1HZXRNZVJlc3BvbnNlEh4KBHVzZXIYASABKAsyCi5hdXRoLlVzZXJSBHVzZXI=');
+@$core.Deprecated('Use updateProfileRequestDescriptor instead')
+const UpdateProfileRequest$json = const {
+  '1': 'UpdateProfileRequest',
+  '2': const [
+    const {'1': 'user_id', '3': 1, '4': 1, '5': 9, '10': 'userId'},
+    const {'1': 'first_name', '3': 2, '4': 1, '5': 9, '10': 'firstName'},
+    const {'1': 'last_name', '3': 3, '4': 1, '5': 9, '10': 'lastName'},
+    const {'1': 'username', '3': 4, '4': 1, '5': 9, '10': 'username'},
+    const {'1': 'phone', '3': 5, '4': 1, '5': 9, '10': 'phone'},
+    const {'1': 'profile_picture', '3': 6, '4': 1, '5': 9, '10': 'profilePicture'},
+  ],
+};
+
+/// Descriptor for `UpdateProfileRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List updateProfileRequestDescriptor = $convert.base64Decode('ChRVcGRhdGVQcm9maWxlUmVxdWVzdBIXCgd1c2VyX2lkGAEgASgJUgZ1c2VySWQSHQoKZmlyc3RfbmFtZRgCIAEoCVIJZmlyc3ROYW1lEhsKCWxhc3RfbmFtZRgDIAEoCVIIbGFzdE5hbWUSGgoIdXNlcm5hbWUYBCABKAlSCHVzZXJuYW1lEhQKBXBob25lGAUgASgJUgVwaG9uZRInCg9wcm9maWxlX3BpY3R1cmUYBiABKAlSDnByb2ZpbGVQaWN0dXJl');
+@$core.Deprecated('Use updateProfileResponseDescriptor instead')
+const UpdateProfileResponse$json = const {
+  '1': 'UpdateProfileResponse',
+  '2': const [
+    const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    const {'1': 'msg', '3': 2, '4': 1, '5': 9, '10': 'msg'},
+    const {'1': 'user', '3': 3, '4': 1, '5': 11, '6': '.auth.User', '10': 'user'},
+  ],
+};
+
+/// Descriptor for `UpdateProfileResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List updateProfileResponseDescriptor = $convert.base64Decode('ChVVcGRhdGVQcm9maWxlUmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2VzcxIQCgNtc2cYAiABKAlSA21zZxIeCgR1c2VyGAMgASgLMgouYXV0aC5Vc2VyUgR1c2Vy');
 @$core.Deprecated('Use facialLoginRequestDescriptor instead')
 const FacialLoginRequest$json = const {
   '1': 'FacialLoginRequest',
@@ -1124,6 +1151,29 @@ const UserLookupResult$json = const {
 
 /// Descriptor for `UserLookupResult`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List userLookupResultDescriptor = $convert.base64Decode('ChBVc2VyTG9va3VwUmVzdWx0EhcKB3VzZXJfaWQYASABKAlSBnVzZXJJZBIaCgh1c2VybmFtZRgCIAEoCVIIdXNlcm5hbWUSHQoKZmlyc3RfbmFtZRgDIAEoCVIJZmlyc3ROYW1lEhsKCWxhc3RfbmFtZRgEIAEoCVIIbGFzdE5hbWUSJwoPcHJvZmlsZV9waWN0dXJlGAUgASgJUg5wcm9maWxlUGljdHVyZRIsChJpc19sYXplcnZhdWx0X3VzZXIYBiABKAhSEGlzTGF6ZXJ2YXVsdFVzZXI=');
+@$core.Deprecated('Use searchUsersByUsernameRequestDescriptor instead')
+const SearchUsersByUsernameRequest$json = const {
+  '1': 'SearchUsersByUsernameRequest',
+  '2': const [
+    const {'1': 'query', '3': 1, '4': 1, '5': 9, '10': 'query'},
+    const {'1': 'limit', '3': 2, '4': 1, '5': 5, '10': 'limit'},
+  ],
+};
+
+/// Descriptor for `SearchUsersByUsernameRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List searchUsersByUsernameRequestDescriptor = $convert.base64Decode('ChxTZWFyY2hVc2Vyc0J5VXNlcm5hbWVSZXF1ZXN0EhQKBXF1ZXJ5GAEgASgJUgVxdWVyeRIUCgVsaW1pdBgCIAEoBVIFbGltaXQ=');
+@$core.Deprecated('Use searchUsersByUsernameResponseDescriptor instead')
+const SearchUsersByUsernameResponse$json = const {
+  '1': 'SearchUsersByUsernameResponse',
+  '2': const [
+    const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    const {'1': 'msg', '3': 2, '4': 1, '5': 9, '10': 'msg'},
+    const {'1': 'users', '3': 3, '4': 3, '5': 11, '6': '.auth.UserLookupResult', '10': 'users'},
+  ],
+};
+
+/// Descriptor for `SearchUsersByUsernameResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List searchUsersByUsernameResponseDescriptor = $convert.base64Decode('Ch1TZWFyY2hVc2Vyc0J5VXNlcm5hbWVSZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZXNzEhAKA21zZxgCIAEoCVIDbXNnEiwKBXVzZXJzGAMgAygLMhYuYXV0aC5Vc2VyTG9va3VwUmVzdWx0UgV1c2Vycw==');
 @$core.Deprecated('Use initiateKYCRequestDescriptor instead')
 const InitiateKYCRequest$json = const {
   '1': 'InitiateKYCRequest',

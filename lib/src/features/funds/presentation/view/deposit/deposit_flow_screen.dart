@@ -8,6 +8,8 @@ import 'package:lazervault/src/features/authentication/cubit/authentication_cubi
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/features/funds/cubit/deposit_cubit.dart';
 import 'package:lazervault/src/features/funds/cubit/deposit_state.dart';
+import 'package:lazervault/src/features/funds/presentation/widgets/mono_direct_debit_bottomsheet.dart';
+import 'package:lazervault/src/features/open_banking/cubit/open_banking_cubit.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 
 /// Deposit Flow Screen - Standard fintech deposit flow
@@ -95,8 +97,14 @@ class _DepositFlowScreenState extends State<DepositFlowScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => serviceLocator<DepositCubit>(),
+    final currency = widget.selectedAccount['currency'] ?? 'NGN';
+    final isNGN = currency.toString().toUpperCase() == 'NGN';
+
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (_) => serviceLocator<DepositCubit>()),
+        BlocProvider(create: (_) => serviceLocator<OpenBankingCubit>()),
+      ],
       child: Scaffold(
         backgroundColor: const Color(0xFF1A1A1A),
         appBar: AppBar(
@@ -104,10 +112,10 @@ class _DepositFlowScreenState extends State<DepositFlowScreen> {
           elevation: 0,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
-            onPressed: _previousStep,
+            onPressed: isNGN && _currentStep == 0 ? () => Navigator.pop(context) : _previousStep,
           ),
           title: Text(
-            _getStepTitle(),
+            isNGN ? _getNGNStepTitle() : _getStepTitle(),
             style: TextStyle(
               color: Colors.white,
               fontSize: 18.sp,
@@ -121,23 +129,43 @@ class _DepositFlowScreenState extends State<DepositFlowScreen> {
             // Progress indicator
             _buildProgressIndicator(),
 
-            // Page content
+            // Page content - Different flow for NGN (Mono DirectPay)
             Expanded(
-              child: PageView(
-                controller: _pageController,
-                physics: const NeverScrollableScrollPhysics(),
-                children: [
-                  _buildMethodSelectionStep(),
-                  _buildAmountEntryStep(),
-                  _buildReviewStep(),
-                  _buildProcessingStep(),
-                ],
-              ),
+              child: isNGN
+                  ? PageView(
+                      controller: _pageController,
+                      physics: const NeverScrollableScrollPhysics(),
+                      children: [
+                        _buildNGNDirectDebitInfoStep(),
+                        _buildProcessingStep(),
+                      ],
+                    )
+                  : PageView(
+                      controller: _pageController,
+                      physics: const NeverScrollableScrollPhysics(),
+                      children: [
+                        _buildMethodSelectionStep(),
+                        _buildAmountEntryStep(),
+                        _buildReviewStep(),
+                        _buildProcessingStep(),
+                      ],
+                    ),
             ),
           ],
         ),
       ),
     );
+  }
+
+  String _getNGNStepTitle() {
+    switch (_currentStep) {
+      case 0:
+        return 'Fund Account';
+      case 1:
+        return 'Processing';
+      default:
+        return 'Deposit';
+    }
   }
 
   String _getStepTitle() {
@@ -186,7 +214,283 @@ class _DepositFlowScreenState extends State<DepositFlowScreen> {
   }
 
   // =====================================================
-  // STEP 1: Method Selection
+  // NGN FLOW: Direct Debit Info Step (Mono)
+  // =====================================================
+  Widget _buildNGNDirectDebitInfoStep() {
+    return SingleChildScrollView(
+      padding: EdgeInsets.all(24.w),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Account info header
+          _buildAccountHeader(),
+          SizedBox(height: 32.h),
+
+          // Direct Debit Info Card
+          Container(
+            width: double.infinity,
+            padding: EdgeInsets.all(24.w),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  const Color(0xFF6C5CE7).withOpacity(0.2),
+                  const Color(0xFF6C5CE7).withOpacity(0.05),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(20.r),
+              border: Border.all(
+                color: const Color(0xFF6C5CE7).withOpacity(0.3),
+              ),
+            ),
+            child: Column(
+              children: [
+                // Icon
+                Container(
+                  width: 80.w,
+                  height: 80.w,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF6C5CE7), Color(0xFF8E7CF3)],
+                    ),
+                    borderRadius: BorderRadius.circular(20.r),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF6C5CE7).withOpacity(0.3),
+                        blurRadius: 16,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
+                  ),
+                  child: Icon(
+                    Icons.account_balance,
+                    color: Colors.white,
+                    size: 40.sp,
+                  ),
+                ),
+                SizedBox(height: 20.h),
+
+                // Title
+                Text(
+                  'Direct Bank Debit',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 22.sp,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                SizedBox(height: 8.h),
+
+                // Subtitle
+                Text(
+                  'Fund your account instantly from your bank',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.7),
+                    fontSize: 14.sp,
+                  ),
+                ),
+                SizedBox(height: 24.h),
+
+                // Features
+                _buildFeatureRow(Icons.flash_on, 'Instant deposit to your account'),
+                SizedBox(height: 12.h),
+                _buildFeatureRow(Icons.lock, 'Bank-grade security with Mono'),
+                SizedBox(height: 12.h),
+                _buildFeatureRow(Icons.check_circle, 'No manual transfers needed'),
+                SizedBox(height: 12.h),
+                _buildFeatureRow(Icons.money_off, 'Fee: 1.5% (capped at ₦2,000)'),
+              ],
+            ),
+          ),
+          SizedBox(height: 24.h),
+
+          // How it works
+          Text(
+            'How it works',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 16.sp,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          SizedBox(height: 16.h),
+
+          _buildStepItem(1, 'Link your bank account', 'Securely connect via Mono'),
+          _buildStepItem(2, 'Select amount', 'Choose how much to deposit'),
+          _buildStepItem(3, 'Authorize payment', 'Confirm with your bank'),
+          _buildStepItem(4, 'Funds arrive instantly', 'See your balance update in real-time'),
+
+          SizedBox(height: 32.h),
+
+          // Continue Button
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: _launchMonoDirectDebit,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF6C5CE7),
+                foregroundColor: Colors.white,
+                padding: EdgeInsets.symmetric(vertical: 18.h),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16.r),
+                ),
+                elevation: 0,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.account_balance, size: 20.sp),
+                  SizedBox(width: 8.w),
+                  Text(
+                    'Link Bank & Deposit',
+                    style: TextStyle(
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          SizedBox(height: 16.h),
+
+          // Alternative method
+          Center(
+            child: TextButton(
+              onPressed: () {
+                // Show alternative methods
+                Get.snackbar(
+                  'Coming Soon',
+                  'Card and USSD payments coming soon',
+                  backgroundColor: Colors.blue.withOpacity(0.9),
+                  colorText: Colors.white,
+                  snackPosition: SnackPosition.BOTTOM,
+                );
+              },
+              child: Text(
+                'Use a different method',
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.6),
+                  fontSize: 14.sp,
+                ),
+              ),
+            ),
+          ),
+          SizedBox(height: 24.h),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFeatureRow(IconData icon, String text) {
+    return Row(
+      children: [
+        Icon(
+          icon,
+          color: const Color(0xFF6C5CE7),
+          size: 20.sp,
+        ),
+        SizedBox(width: 12.w),
+        Expanded(
+          child: Text(
+            text,
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.9),
+              fontSize: 14.sp,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStepItem(int number, String title, String subtitle) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: 12.h),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 28.w,
+            height: 28.w,
+            decoration: BoxDecoration(
+              color: const Color(0xFF6C5CE7).withOpacity(0.2),
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: const Color(0xFF6C5CE7).withOpacity(0.5),
+              ),
+            ),
+            child: Center(
+              child: Text(
+                number.toString(),
+                style: TextStyle(
+                  color: const Color(0xFF6C5CE7),
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                Text(
+                  subtitle,
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.5),
+                    fontSize: 12.sp,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _launchMonoDirectDebit() {
+    showMonoDirectDebitBottomsheet(
+      context: context,
+      selectedAccount: widget.selectedAccount,
+      openBankingCubit: context.read<OpenBankingCubit>(),
+      onSuccess: () {
+        // Move to processing step
+        _nextStep();
+        Get.snackbar(
+          'Bank Linked Successfully',
+          'Your deposit is being processed',
+          backgroundColor: Colors.green.withOpacity(0.9),
+          colorText: Colors.white,
+          snackPosition: SnackPosition.BOTTOM,
+        );
+      },
+      onError: (message) {
+        Get.snackbar(
+          'Error',
+          message,
+          backgroundColor: Colors.red.withOpacity(0.9),
+          colorText: Colors.white,
+          snackPosition: SnackPosition.BOTTOM,
+        );
+      },
+    );
+  }
+
+  // =====================================================
+  // STEP 1: Method Selection (Non-NGN currencies)
   // =====================================================
   Widget _buildMethodSelectionStep() {
     return SingleChildScrollView(
@@ -828,11 +1132,11 @@ class _DepositFlowScreenState extends State<DepositFlowScreen> {
     }
 
     final accessToken = authState.profile.session.accessToken;
-    final accountId = widget.selectedAccount['id'];
+    final accountId = widget.selectedAccount['id'] as String; // UUID string
     final currency = widget.selectedAccount['currency'] ?? 'NGN';
 
     context.read<DepositCubit>().initiateDeposit(
-      targetAccountId: accountId is int ? accountId : int.parse(accountId.toString()),
+      targetAccountId: accountId, // Pass UUID string directly
       amount: _amount,
       currency: currency,
       sourceBankName: _getMethodName(_selectedMethod),

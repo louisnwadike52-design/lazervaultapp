@@ -115,23 +115,25 @@ class _DashboardCardSummaryViewState extends State<_DashboardCardSummaryView> {
       final userId = authState.profile.user.id;
       final accessToken = authState.profile.session.accessToken;
 
-      // Get active country from ProfileCubit
+      // Get active country from ProfileCubit, fallback to user's country or default
       final profileState = context.read<ProfileCubit>().state;
-      String? activeCountry;
+      String activeCountry = 'NG'; // Default fallback
       if (profileState is ProfileLoaded) {
         activeCountry = profileState.preferences.activeCountry.isNotEmpty
             ? profileState.preferences.activeCountry
-            : null;
+            : (authState.profile.user.country?.isNotEmpty == true
+                ? authState.profile.user.country!
+                : 'NG');
       }
 
-      if (activeCountry != null) {
-        // Connect to WebSocket for real-time balance updates
-        context.read<BalanceWebSocketCubit>().connect(
-              userId: userId,
-              countryCode: activeCountry,
-              accessToken: accessToken,
-            );
-      }
+      debugPrint('_setupWebSocketConnection: Connecting with userId=$userId, country=$activeCountry');
+
+      // Connect to WebSocket for real-time balance updates
+      context.read<BalanceWebSocketCubit>().connect(
+            userId: userId,
+            countryCode: activeCountry,
+            accessToken: accessToken,
+          );
     }
   }
 

@@ -15,7 +15,7 @@ class InitiateDepositUseCase {
   InitiateDepositUseCase(this._repository);
 
   Future<Either<Failure, DepositDetails>> call({
-    required int targetAccountId,
+    required String targetAccountId, // UUID string
     required double amount,
     required String currency,
     required String sourceBankName,
@@ -32,7 +32,7 @@ class InitiateDepositUseCase {
 }
 
 class DepositParams extends Equatable {
-  final int targetAccountId;
+  final String targetAccountId; // UUID string
   final double amount;
   final String currency;
   final String sourceBankName;
