@@ -53,6 +53,9 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
         serviceName: AppServiceName.barcodeQuickPay,
         serviceImg: AppServiceImg.barcodeQuickPay),
     const AppService(
+        serviceName: AppServiceName.contactlessPay,
+        serviceImg: AppServiceImg.contactlessPay),
+    const AppService(
         serviceName: AppServiceName.groupAccount,
         serviceImg: AppServiceImg.groupAccount),
     const AppService(

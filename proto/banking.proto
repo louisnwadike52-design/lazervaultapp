@@ -1075,6 +1075,8 @@ message InitiateDepositRequest {
     int64 amount = 4;                 // Amount in minor units (kobo)
     string narration = 5;
     string idempotency_key = 6;
+    // Access type control for DirectPay vs Mandate
+    bool use_recurring_access = 7;    // If true, create mandate; if false, use DirectPay (one-time)
 }
 
 message DepositResponse {
@@ -1088,6 +1090,11 @@ message DepositResponse {
     bool needs_mandate = 6;           // True if user needs to create/authorize a mandate first
     string mandate_id = 7;            // Associated mandate ID (if exists)
     string authorization_url = 8;     // URL for mandate authorization (if needs_mandate=true)
+
+    // DirectPay fields (for one-time payments)
+    bool requires_authorization = 9;  // True if user needs to authorize payment (DirectPay)
+    string payment_url = 10;          // URL for DirectPay authorization
+    string payment_id = 11;           // DirectPay payment ID for tracking
 }
 
 // Deposit Message

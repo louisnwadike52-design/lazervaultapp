@@ -48,6 +48,9 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
       case AppServiceName.barcodeQuickPay:
         Get.toNamed(AppRoutes.barcodeQuickPayHome);
         break;
+      case AppServiceName.contactlessPay:
+        Get.toNamed(AppRoutes.contactlessPay);
+        break;
       case AppServiceName.groupAccount:
         Get.toNamed(AppRoutes.groupAccount);
         break;
@@ -201,6 +204,9 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
         break;
       case AppServiceName.barcodeQuickPay:
         iconData = Icons.qr_code_2;
+        break;
+      case AppServiceName.contactlessPay:
+        iconData = Icons.contactless;
         break;
       case AppServiceName.groupAccount:
         iconData = Icons.groups;

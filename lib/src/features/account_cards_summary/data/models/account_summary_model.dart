@@ -8,8 +8,11 @@ class AccountSummaryModel extends AccountSummaryEntity {
     required super.currency,
     required super.balance,
     required super.accountNumberLast4, // Keep entity field name
+    super.accountNumber, // Full account number for deposits
+    super.bankName, // Bank name for deposits
+    super.accountName, // Account holder name for deposits
     // Trend percentage is missing in proto, set default or remove from entity
-    super.trendPercentage = 0.0, 
+    super.trendPercentage = 0.0,
   });
 
   factory AccountSummaryModel.fromProto(pb.AccountSummary proto) {
@@ -35,6 +38,9 @@ class AccountSummaryModel extends AccountSummaryEntity {
       // Adjust the division factor (e.g., 100) based on your currency setup
       balance: proto.balance.toDouble() / 100.0,
       accountNumberLast4: extractLast4(proto.maskedAccountNumber), // Use maskedAccountNumber
+      // Full virtual account details for deposits (Pay by Transfer)
+      // Note: bankName and accountName not in AccountSummary proto - will use defaults
+      accountNumber: proto.accountNumber.isNotEmpty ? proto.accountNumber : null,
       // trendPercentage: proto.trendPercentage, // Field missing in proto
     );
   }

@@ -12,6 +12,7 @@ enum AppServiceName {
   giftCards,
   aiScanToPay,
   barcodeQuickPay,
+  contactlessPay,
   groupAccount,
   insurance,
   airtime,
@@ -50,6 +51,8 @@ extension AppServiceNameExtension on AppServiceName {
         return 'AI Scan to Pay';
       case AppServiceName.barcodeQuickPay:
         return 'Barcode QuickPay';
+      case AppServiceName.contactlessPay:
+        return 'Contactless Pay';
       case AppServiceName.groupAccount:
         return 'Joint Funds';
       case AppServiceName.insurance:
@@ -97,6 +100,8 @@ extension AppServiceNameExtension on AppServiceName {
         return 'core-payments-service';
       case AppServiceName.barcodeQuickPay:
         return 'core-payments-service';
+      case AppServiceName.contactlessPay:
+        return 'contactless-payment-service';
       case AppServiceName.groupAccount:
         return 'accounts-service';
       case AppServiceName.insurance:
@@ -136,6 +141,7 @@ enum AppServiceImg {
   giftCards,
   aiScanToPay,
   barcodeQuickPay,
+  contactlessPay,
   groupAccount,
   insurance,
   airtime,
@@ -174,6 +180,8 @@ extension AppServiceImgExtension on AppServiceImg {
         return 'assets/images/ai-scan.png';
       case AppServiceImg.barcodeQuickPay:
         return 'assets/images/barcode.png';
+      case AppServiceImg.contactlessPay:
+        return 'assets/images/contactless.png';
       case AppServiceImg.groupAccount:
         return 'assets/images/group-account.png';
       case AppServiceImg.insurance:

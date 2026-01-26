@@ -1228,11 +1228,12 @@ const InitiateDepositRequest$json = const {
     const {'1': 'amount', '3': 4, '4': 1, '5': 3, '10': 'amount'},
     const {'1': 'narration', '3': 5, '4': 1, '5': 9, '10': 'narration'},
     const {'1': 'idempotency_key', '3': 6, '4': 1, '5': 9, '10': 'idempotencyKey'},
+    const {'1': 'use_recurring_access', '3': 7, '4': 1, '5': 8, '10': 'useRecurringAccess'},
   ],
 };
 
 /// Descriptor for `InitiateDepositRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List initiateDepositRequestDescriptor = $convert.base64Decode('ChZJbml0aWF0ZURlcG9zaXRSZXF1ZXN0EhcKB3VzZXJfaWQYASABKAlSBnVzZXJJZBIqChFsaW5rZWRfYWNjb3VudF9pZBgCIAEoCVIPbGlua2VkQWNjb3VudElkEjQKFmRlc3RpbmF0aW9uX2FjY291bnRfaWQYAyABKAlSFGRlc3RpbmF0aW9uQWNjb3VudElkEhYKBmFtb3VudBgEIAEoA1IGYW1vdW50EhwKCW5hcnJhdGlvbhgFIAEoCVIJbmFycmF0aW9uEicKD2lkZW1wb3RlbmN5X2tleRgGIAEoCVIOaWRlbXBvdGVuY3lLZXk=');
+final $typed_data.Uint8List initiateDepositRequestDescriptor = $convert.base64Decode('ChZJbml0aWF0ZURlcG9zaXRSZXF1ZXN0EhcKB3VzZXJfaWQYASABKAlSBnVzZXJJZBIqChFsaW5rZWRfYWNjb3VudF9pZBgCIAEoCVIPbGlua2VkQWNjb3VudElkEjQKFmRlc3RpbmF0aW9uX2FjY291bnRfaWQYAyABKAlSFGRlc3RpbmF0aW9uQWNjb3VudElkEhYKBmFtb3VudBgEIAEoA1IGYW1vdW50EhwKCW5hcnJhdGlvbhgFIAEoCVIJbmFycmF0aW9uEicKD2lkZW1wb3RlbmN5X2tleRgGIAEoCVIOaWRlbXBvdGVuY3lLZXkSMAoUdXNlX3JlY3VycmluZ19hY2Nlc3MYByABKAhSEnVzZVJlY3VycmluZ0FjY2Vzcw==');
 @$core.Deprecated('Use depositResponseDescriptor instead')
 const DepositResponse$json = const {
   '1': 'DepositResponse',
@@ -1245,11 +1246,14 @@ const DepositResponse$json = const {
     const {'1': 'needs_mandate', '3': 6, '4': 1, '5': 8, '10': 'needsMandate'},
     const {'1': 'mandate_id', '3': 7, '4': 1, '5': 9, '10': 'mandateId'},
     const {'1': 'authorization_url', '3': 8, '4': 1, '5': 9, '10': 'authorizationUrl'},
+    const {'1': 'requires_authorization', '3': 9, '4': 1, '5': 8, '10': 'requiresAuthorization'},
+    const {'1': 'payment_url', '3': 10, '4': 1, '5': 9, '10': 'paymentUrl'},
+    const {'1': 'payment_id', '3': 11, '4': 1, '5': 9, '10': 'paymentId'},
   ],
 };
 
 /// Descriptor for `DepositResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List depositResponseDescriptor = $convert.base64Decode('Cg9EZXBvc2l0UmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2VzcxIdCgplcnJvcl9jb2RlGAIgASgJUgllcnJvckNvZGUSIwoNZXJyb3JfbWVzc2FnZRgDIAEoCVIMZXJyb3JNZXNzYWdlEioKB2RlcG9zaXQYBCABKAsyEC5iYW5raW5nLkRlcG9zaXRSB2RlcG9zaXQSGAoHbWVzc2FnZRgFIAEoCVIHbWVzc2FnZRIjCg1uZWVkc19tYW5kYXRlGAYgASgIUgxuZWVkc01hbmRhdGUSHQoKbWFuZGF0ZV9pZBgHIAEoCVIJbWFuZGF0ZUlkEisKEWF1dGhvcml6YXRpb25fdXJsGAggASgJUhBhdXRob3JpemF0aW9uVXJs');
+final $typed_data.Uint8List depositResponseDescriptor = $convert.base64Decode('Cg9EZXBvc2l0UmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2VzcxIdCgplcnJvcl9jb2RlGAIgASgJUgllcnJvckNvZGUSIwoNZXJyb3JfbWVzc2FnZRgDIAEoCVIMZXJyb3JNZXNzYWdlEioKB2RlcG9zaXQYBCABKAsyEC5iYW5raW5nLkRlcG9zaXRSB2RlcG9zaXQSGAoHbWVzc2FnZRgFIAEoCVIHbWVzc2FnZRIjCg1uZWVkc19tYW5kYXRlGAYgASgIUgxuZWVkc01hbmRhdGUSHQoKbWFuZGF0ZV9pZBgHIAEoCVIJbWFuZGF0ZUlkEisKEWF1dGhvcml6YXRpb25fdXJsGAggASgJUhBhdXRob3JpemF0aW9uVXJsEjUKFnJlcXVpcmVzX2F1dGhvcml6YXRpb24YCSABKAhSFXJlcXVpcmVzQXV0aG9yaXphdGlvbhIfCgtwYXltZW50X3VybBgKIAEoCVIKcGF5bWVudFVybBIdCgpwYXltZW50X2lkGAsgASgJUglwYXltZW50SWQ=');
 @$core.Deprecated('Use depositDescriptor instead')
 const Deposit$json = const {
   '1': 'Deposit',

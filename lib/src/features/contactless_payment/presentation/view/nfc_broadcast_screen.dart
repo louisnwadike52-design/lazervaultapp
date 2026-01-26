@@ -1,8 +1,12 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:nfc_manager/nfc_manager.dart';
+import 'package:nfc_manager/ndef_record.dart';
+import 'package:nfc_manager_ndef/nfc_manager_ndef.dart';
 import '../../domain/entities/contactless_payment_entity.dart';
 import '../../domain/repositories/contactless_payment_repository.dart';
 import '../cubit/contactless_payment_cubit.dart';
@@ -57,6 +61,9 @@ class _NfcBroadcastViewState extends State<_NfcBroadcastView>
   bool _isNfcSessionStarted = false;
   String _currentStatus = 'pending';
   String? _payerName;
+  bool _showExpiryWarning = false;
+  bool _isExpired = false;
+  static const int _expiryWarningSeconds = 30;
 
   @override
   void initState() {
@@ -87,9 +94,23 @@ class _NfcBroadcastViewState extends State<_NfcBroadcastView>
 
   void _startExpiryTimer() {
     _expiryTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+
       setState(() {
         _remainingTime = widget.session.expiresAt.difference(DateTime.now());
-        if (_remainingTime.isNegative) {
+
+        // Show warning at 30 seconds remaining
+        if (_remainingTime.inSeconds <= _expiryWarningSeconds && !_showExpiryWarning) {
+          _showExpiryWarning = true;
+          // Vibrate to alert user
+          HapticFeedback.heavyImpact();
+        }
+
+        if (_remainingTime.isNegative && !_isExpired) {
+          _isExpired = true;
           timer.cancel();
           _handleExpired();
         }
@@ -104,7 +125,8 @@ class _NfcBroadcastViewState extends State<_NfcBroadcastView>
   }
 
   Future<void> _checkNfcAvailability() async {
-    final isAvailable = await NfcManager.instance.isAvailable();
+    final availability = await NfcManager.instance.checkAvailability();
+    final isAvailable = availability == NfcAvailability.enabled;
     setState(() => _isNfcAvailable = isAvailable);
 
     if (isAvailable) {
@@ -117,29 +139,49 @@ class _NfcBroadcastViewState extends State<_NfcBroadcastView>
 
     setState(() => _isNfcSessionStarted = true);
 
-    await NfcManager.instance.startSession(
-      onDiscovered: (NfcTag tag) async {
-        // When another device taps, write our payment data
-        final ndef = Ndef.from(tag);
-        if (ndef == null || !ndef.isWritable) {
-          return;
-        }
+    try {
+      await NfcManager.instance.startSession(
+        pollingOptions: {
+          NfcPollingOption.iso14443,
+          NfcPollingOption.iso15693,
+        },
+        onDiscovered: (NfcTag tag) async {
+          try {
+            // When another device taps, write our payment data
+            final ndef = Ndef.from(tag);
+            if (ndef == null || !ndef.isWritable) {
+              return;
+            }
 
-        // Create NDEF message with our payment payload
-        final ndefMessage = NdefMessage([
-          NdefRecord.createText(widget.nfcPayload),
-        ]);
+            // Create NDEF text record with our payment payload
+            // Text record format: [language code length][language code][text]
+            final languageCode = 'en';
+            final textBytes = utf8.encode(widget.nfcPayload);
+            final payload = Uint8List(1 + languageCode.length + textBytes.length);
+            payload[0] = languageCode.length;
+            payload.setRange(1, 1 + languageCode.length, utf8.encode(languageCode));
+            payload.setRange(1 + languageCode.length, payload.length, textBytes);
 
-        try {
-          await ndef.write(ndefMessage);
-        } catch (e) {
-          debugPrint('Error writing NFC: $e');
-        }
-      },
-      onError: (error) async {
-        debugPrint('NFC Error: $error');
-      },
-    );
+            final ndefMessage = NdefMessage(
+              records: [
+                NdefRecord(
+                  typeNameFormat: TypeNameFormat.wellKnown,
+                  type: Uint8List.fromList([0x54]), // 'T' for text record
+                  identifier: Uint8List(0),
+                  payload: payload,
+                ),
+              ],
+            );
+
+            await ndef.write(message: ndefMessage);
+          } catch (e) {
+            debugPrint('Error writing NFC: $e');
+          }
+        },
+      );
+    } catch (e) {
+      debugPrint('NFC Session Error: $e');
+    }
   }
 
   void _stopNfcSession() {
@@ -150,10 +192,42 @@ class _NfcBroadcastViewState extends State<_NfcBroadcastView>
   }
 
   void _handleExpired() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Payment session expired')),
-    );
-    Navigator.of(context).pop();
+    // Stop all timers and NFC session
+    _expiryTimer?.cancel();
+    _statusPollingTimer?.cancel();
+    _stopNfcSession();
+
+    // Vibrate to alert user
+    HapticFeedback.heavyImpact();
+
+    // Show dialog with expired message
+    if (mounted) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => AlertDialog(
+          title: const Row(
+            children: [
+              Icon(Icons.timer_off, color: Colors.orange),
+              SizedBox(width: 12),
+              Text('Session Expired'),
+            ],
+          ),
+          content: const Text(
+            'Your payment request has expired. Please create a new request to receive payment.',
+          ),
+          actions: [
+            FilledButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close dialog
+                Navigator.of(context).pop(); // Go back to home
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+    }
   }
 
   void _cancelSession() {
@@ -175,6 +249,12 @@ class _NfcBroadcastViewState extends State<_NfcBroadcastView>
       listener: (context, state) {
         if (state is SessionCancelled) {
           Navigator.of(context).pop();
+        } else if (state is SessionExpired) {
+          // Handle session expired from server
+          if (!_isExpired) {
+            _isExpired = true;
+            _handleExpired();
+          }
         } else if (state is SessionStatusChecked) {
           setState(() {
             _currentStatus = state.status;
@@ -184,6 +264,8 @@ class _NfcBroadcastViewState extends State<_NfcBroadcastView>
           // If completed, navigate to success
           if (state.status == 'completed') {
             _statusPollingTimer?.cancel();
+            _expiryTimer?.cancel();
+            _stopNfcSession();
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(
@@ -195,6 +277,22 @@ class _NfcBroadcastViewState extends State<_NfcBroadcastView>
                 ),
               ),
             );
+          } else if (state.status == 'expired' || state.status == 'cancelled') {
+            // Session was expired or cancelled
+            if (!_isExpired) {
+              _isExpired = true;
+              _expiryTimer?.cancel();
+              _statusPollingTimer?.cancel();
+              _stopNfcSession();
+
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Payment session ${state.status}'),
+                  backgroundColor: Colors.orange,
+                ),
+              );
+              Navigator.of(context).pop();
+            }
           }
         }
       },
@@ -209,26 +307,56 @@ class _NfcBroadcastViewState extends State<_NfcBroadcastView>
             padding: const EdgeInsets.all(24),
             child: Column(
               children: [
-                // Timer
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
+                // Timer with expiry warning
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: _showExpiryWarning ? 20 : 16,
+                    vertical: _showExpiryWarning ? 12 : 8,
                   ),
                   decoration: BoxDecoration(
-                    color: _remainingTime.inSeconds < 30
+                    color: _showExpiryWarning
                         ? colorScheme.errorContainer
                         : colorScheme.primaryContainer,
                     borderRadius: BorderRadius.circular(20),
+                    border: _showExpiryWarning
+                        ? Border.all(color: colorScheme.error, width: 2)
+                        : null,
                   ),
-                  child: Text(
-                    'Expires in ${_formatDuration(_remainingTime)}',
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: _remainingTime.inSeconds < 30
-                          ? colorScheme.onErrorContainer
-                          : colorScheme.onPrimaryContainer,
-                    ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (_showExpiryWarning) ...[
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.warning_amber_rounded,
+                              color: colorScheme.error,
+                              size: 18,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Expiring Soon!',
+                              style: theme.textTheme.labelSmall?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: colorScheme.error,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                      ],
+                      Text(
+                        'Expires in ${_formatDuration(_remainingTime)}',
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: _showExpiryWarning
+                              ? colorScheme.error
+                              : colorScheme.onPrimaryContainer,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 const SizedBox(height: 32),

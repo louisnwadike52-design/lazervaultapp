@@ -57,5 +57,23 @@
 		<array>
 			<string>audio</string>
 		</array>
+		<!-- Deep link URL scheme for lazervault:// -->
+		<!-- Used for DirectPay authorization callbacks and other in-app redirects -->
+		<key>CFBundleURLTypes</key>
+		<array>
+			<dict>
+				<key>CFBundleTypeRole</key>
+				<string>Editor</string>
+				<key>CFBundleURLName</key>
+				<string>app.lazervault</string>
+				<key>CFBundleURLSchemes</key>
+				<array>
+					<string>lazervault</string>
+				</array>
+			</dict>
+		</array>
+		<!-- Universal Links - Associated Domains configured in Xcode -->
+		<key>FlutterDeepLinkingEnabled</key>
+		<true/>
 	</dict>
 </plist>

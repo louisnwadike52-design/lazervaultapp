@@ -167,6 +167,8 @@ class _NotificationsBuilderState extends State<NotificationsBuilder> {
         return const Color(0xFF10B981);
       case AppServiceName.whatsappIntegration:
         return Colors.green;
+      case AppServiceName.contactlessPay:
+        return const Color(0xFF3B82F6);
     }
   }
 

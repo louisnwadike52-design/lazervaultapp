@@ -67,6 +67,7 @@ dependencies:
   barcode_widget: ^2.0.4
   mobile_scanner: ^7.1.4
   nfc_manager: ^4.1.1
+  nfc_manager_ndef: ^1.1.0
   local_auth: ^2.3.0
   lottie: ^3.3.1
   get: ^4.7.2
@@ -116,6 +117,7 @@ dependencies:
   webview_flutter_wkwebview: ^3.13.0
   rxdart: ^0.28.0
   mono_connect: ^2.1.0  # Mono Connect native SDK for bank account linking
+  app_links: ^6.3.3  # Deep link handling for payment callbacks
   # webview_cookie_manager: ^2.0.6  # Removed - incompatible with current Flutter version and not used
 
 dev_dependencies:

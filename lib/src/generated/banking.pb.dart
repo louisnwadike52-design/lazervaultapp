@@ -8750,6 +8750,7 @@ class InitiateDepositRequest extends $pb.GeneratedMessage {
     ..aInt64(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount')
     ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'narration')
     ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'idempotencyKey')
+    ..aOB(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'useRecurringAccess')
     ..hasRequiredFields = false
   ;
 
@@ -8761,6 +8762,7 @@ class InitiateDepositRequest extends $pb.GeneratedMessage {
     $fixnum.Int64? amount,
     $core.String? narration,
     $core.String? idempotencyKey,
+    $core.bool? useRecurringAccess,
   }) {
     final _result = create();
     if (userId != null) {
@@ -8780,6 +8782,9 @@ class InitiateDepositRequest extends $pb.GeneratedMessage {
     }
     if (idempotencyKey != null) {
       _result.idempotencyKey = idempotencyKey;
+    }
+    if (useRecurringAccess != null) {
+      _result.useRecurringAccess = useRecurringAccess;
     }
     return _result;
   }
@@ -8857,6 +8862,15 @@ class InitiateDepositRequest extends $pb.GeneratedMessage {
   $core.bool hasIdempotencyKey() => $_has(5);
   @$pb.TagNumber(6)
   void clearIdempotencyKey() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.bool get useRecurringAccess => $_getBF(6);
+  @$pb.TagNumber(7)
+  set useRecurringAccess($core.bool v) { $_setBool(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasUseRecurringAccess() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearUseRecurringAccess() => clearField(7);
 }
 
 class DepositResponse extends $pb.GeneratedMessage {
@@ -8869,6 +8883,9 @@ class DepositResponse extends $pb.GeneratedMessage {
     ..aOB(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'needsMandate')
     ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'mandateId')
     ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'authorizationUrl')
+    ..aOB(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'requiresAuthorization')
+    ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'paymentUrl')
+    ..aOS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'paymentId')
     ..hasRequiredFields = false
   ;
 
@@ -8882,6 +8899,9 @@ class DepositResponse extends $pb.GeneratedMessage {
     $core.bool? needsMandate,
     $core.String? mandateId,
     $core.String? authorizationUrl,
+    $core.bool? requiresAuthorization,
+    $core.String? paymentUrl,
+    $core.String? paymentId,
   }) {
     final _result = create();
     if (success != null) {
@@ -8907,6 +8927,15 @@ class DepositResponse extends $pb.GeneratedMessage {
     }
     if (authorizationUrl != null) {
       _result.authorizationUrl = authorizationUrl;
+    }
+    if (requiresAuthorization != null) {
+      _result.requiresAuthorization = requiresAuthorization;
+    }
+    if (paymentUrl != null) {
+      _result.paymentUrl = paymentUrl;
+    }
+    if (paymentId != null) {
+      _result.paymentId = paymentId;
     }
     return _result;
   }
@@ -9004,6 +9033,33 @@ class DepositResponse extends $pb.GeneratedMessage {
   $core.bool hasAuthorizationUrl() => $_has(7);
   @$pb.TagNumber(8)
   void clearAuthorizationUrl() => clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.bool get requiresAuthorization => $_getBF(8);
+  @$pb.TagNumber(9)
+  set requiresAuthorization($core.bool v) { $_setBool(8, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasRequiresAuthorization() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearRequiresAuthorization() => clearField(9);
+
+  @$pb.TagNumber(10)
+  $core.String get paymentUrl => $_getSZ(9);
+  @$pb.TagNumber(10)
+  set paymentUrl($core.String v) { $_setString(9, v); }
+  @$pb.TagNumber(10)
+  $core.bool hasPaymentUrl() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearPaymentUrl() => clearField(10);
+
+  @$pb.TagNumber(11)
+  $core.String get paymentId => $_getSZ(10);
+  @$pb.TagNumber(11)
+  set paymentId($core.String v) { $_setString(10, v); }
+  @$pb.TagNumber(11)
+  $core.bool hasPaymentId() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearPaymentId() => clearField(11);
 }
 
 class Deposit extends $pb.GeneratedMessage {

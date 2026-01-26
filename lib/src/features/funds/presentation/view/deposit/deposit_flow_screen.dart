@@ -9,7 +9,11 @@ import 'package:lazervault/src/features/authentication/cubit/authentication_stat
 import 'package:lazervault/src/features/funds/cubit/deposit_cubit.dart';
 import 'package:lazervault/src/features/funds/cubit/deposit_state.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/mono_direct_debit_bottomsheet.dart';
+import 'package:lazervault/src/features/funds/presentation/widgets/pay_by_transfer_card.dart';
+import 'package:lazervault/src/features/funds/presentation/widgets/recurring_access_toggle.dart';
+import 'package:lazervault/src/features/funds/presentation/widgets/directpay_authorization_sheet.dart';
 import 'package:lazervault/src/features/open_banking/cubit/open_banking_cubit.dart';
+import 'package:lazervault/src/features/open_banking/cubit/open_banking_state.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 
 /// Deposit Flow Screen - Standard fintech deposit flow
@@ -35,6 +39,9 @@ class _DepositFlowScreenState extends State<DepositFlowScreen> {
   String _selectedMethod = '';
   double _amount = 0;
   String _narration = '';
+
+  // DirectPay vs Mandate toggle
+  bool _useRecurringAccess = false; // false = DirectPay (one-time), true = Mandate (recurring)
 
   // Payment methods for NGN (bank transfer is primary for Nigerian users)
   final List<Map<String, dynamic>> _paymentMethods = [
@@ -217,6 +224,20 @@ class _DepositFlowScreenState extends State<DepositFlowScreen> {
   // NGN FLOW: Direct Debit Info Step (Mono)
   // =====================================================
   Widget _buildNGNDirectDebitInfoStep() {
+    // Extract account details for Pay by Transfer card
+    final accountNumber = widget.selectedAccount['accountNumber'] ??
+                          widget.selectedAccount['account_number'] ?? '';
+    final accountName = widget.selectedAccount['accountName'] ??
+                        widget.selectedAccount['account_name'] ?? 'LazerVault Account';
+    final bankName = widget.selectedAccount['bankName'] ??
+                     widget.selectedAccount['bank_name'] ?? 'Wema Bank';
+
+    // Debug: Print account details for Pay by Transfer
+    debugPrint('[PayByTransfer] Account Number: $accountNumber');
+    debugPrint('[PayByTransfer] Account Name: $accountName');
+    debugPrint('[PayByTransfer] Bank Name: $bankName');
+    debugPrint('[PayByTransfer] Selected Account Keys: ${widget.selectedAccount.keys.toList()}');
+
     return SingleChildScrollView(
       padding: EdgeInsets.all(24.w),
       child: Column(
@@ -224,12 +245,12 @@ class _DepositFlowScreenState extends State<DepositFlowScreen> {
         children: [
           // Account info header
           _buildAccountHeader(),
-          SizedBox(height: 32.h),
+          SizedBox(height: 24.h),
 
-          // Direct Debit Info Card
+          // ==== LINK BANK & DEPOSIT SECTION (Primary Action) ====
           Container(
             width: double.infinity,
-            padding: EdgeInsets.all(24.w),
+            padding: EdgeInsets.all(20.w),
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
@@ -239,148 +260,204 @@ class _DepositFlowScreenState extends State<DepositFlowScreen> {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
-              borderRadius: BorderRadius.circular(20.r),
+              borderRadius: BorderRadius.circular(16.r),
               border: Border.all(
                 color: const Color(0xFF6C5CE7).withOpacity(0.3),
               ),
             ),
             child: Column(
               children: [
-                // Icon
-                Container(
-                  width: 80.w,
-                  height: 80.w,
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF6C5CE7), Color(0xFF8E7CF3)],
-                    ),
-                    borderRadius: BorderRadius.circular(20.r),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFF6C5CE7).withOpacity(0.3),
-                        blurRadius: 16,
-                        offset: const Offset(0, 8),
+                // Header with icon and title
+                Row(
+                  children: [
+                    Container(
+                      width: 48.w,
+                      height: 48.w,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF6C5CE7), Color(0xFF8E7CF3)],
+                        ),
+                        borderRadius: BorderRadius.circular(12.r),
                       ),
-                    ],
-                  ),
-                  child: Icon(
-                    Icons.account_balance,
-                    color: Colors.white,
-                    size: 40.sp,
+                      child: Icon(
+                        Icons.account_balance,
+                        color: Colors.white,
+                        size: 24.sp,
+                      ),
+                    ),
+                    SizedBox(width: 12.w),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Link Bank & Deposit',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18.sp,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          Text(
+                            'Securely deposit from your bank via Mono',
+                            style: TextStyle(
+                              color: Colors.white.withOpacity(0.6),
+                              fontSize: 12.sp,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 16.h),
+
+                // Recurring Access Toggle
+                RecurringAccessToggle(
+                  isRecurringEnabled: _useRecurringAccess,
+                  onToggle: (value) {
+                    setState(() => _useRecurringAccess = value);
+                  },
+                ),
+                SizedBox(height: 16.h),
+
+                // Link & Deposit Button
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _launchMonoDirectDebit,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF6C5CE7),
+                      foregroundColor: Colors.white,
+                      padding: EdgeInsets.symmetric(vertical: 16.h),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                      elevation: 0,
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.link, size: 20.sp),
+                        SizedBox(width: 8.w),
+                        Text(
+                          'Link & Deposit',
+                          style: TextStyle(
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-                SizedBox(height: 20.h),
-
-                // Title
-                Text(
-                  'Direct Bank Debit',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 22.sp,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                SizedBox(height: 8.h),
-
-                // Subtitle
-                Text(
-                  'Fund your account instantly from your bank',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.7),
-                    fontSize: 14.sp,
-                  ),
-                ),
-                SizedBox(height: 24.h),
-
-                // Features
-                _buildFeatureRow(Icons.flash_on, 'Instant deposit to your account'),
-                SizedBox(height: 12.h),
-                _buildFeatureRow(Icons.lock, 'Bank-grade security with Mono'),
-                SizedBox(height: 12.h),
-                _buildFeatureRow(Icons.check_circle, 'No manual transfers needed'),
-                SizedBox(height: 12.h),
-                _buildFeatureRow(Icons.money_off, 'Fee: 1.5% (capped at ₦2,000)'),
               ],
             ),
           ),
           SizedBox(height: 24.h),
 
-          // How it works
-          Text(
-            'How it works',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 16.sp,
-              fontWeight: FontWeight.w600,
-            ),
+          // ==== OR DIVIDER ====
+          Row(
+            children: [
+              Expanded(
+                child: Container(
+                  height: 1,
+                  color: Colors.white.withOpacity(0.2),
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16.w),
+                child: Text(
+                  'OR',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.5),
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              Expanded(
+                child: Container(
+                  height: 1,
+                  color: Colors.white.withOpacity(0.2),
+                ),
+              ),
+            ],
           ),
-          SizedBox(height: 16.h),
+          SizedBox(height: 24.h),
 
-          _buildStepItem(1, 'Link your bank account', 'Securely connect via Mono'),
-          _buildStepItem(2, 'Select amount', 'Choose how much to deposit'),
-          _buildStepItem(3, 'Authorize payment', 'Confirm with your bank'),
-          _buildStepItem(4, 'Funds arrive instantly', 'See your balance update in real-time'),
-
+          // ==== PAY BY TRANSFER CARD ====
+          PayByTransferCard(
+            accountNumber: accountNumber,
+            accountName: accountName,
+            bankName: bankName,
+          ),
           SizedBox(height: 32.h),
 
-          // Continue Button
-          SizedBox(
+          // ==== HOW MONO DIRECT DEBIT WORKS (Info Section) ====
+          Container(
             width: double.infinity,
-            child: ElevatedButton(
-              onPressed: _launchMonoDirectDebit,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF6C5CE7),
-                foregroundColor: Colors.white,
-                padding: EdgeInsets.symmetric(vertical: 18.h),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16.r),
-                ),
-                elevation: 0,
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.account_balance, size: 20.sp),
-                  SizedBox(width: 8.w),
-                  Text(
-                    'Link Bank & Deposit',
-                    style: TextStyle(
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
+            padding: EdgeInsets.all(16.w),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.05),
+              borderRadius: BorderRadius.circular(12.r),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.1),
               ),
             ),
-          ),
-          SizedBox(height: 16.h),
-
-          // Alternative method
-          Center(
-            child: TextButton(
-              onPressed: () {
-                // Show alternative methods
-                Get.snackbar(
-                  'Coming Soon',
-                  'Card and USSD payments coming soon',
-                  backgroundColor: Colors.blue.withOpacity(0.9),
-                  colorText: Colors.white,
-                  snackPosition: SnackPosition.BOTTOM,
-                );
-              },
-              child: Text(
-                'Use a different method',
-                style: TextStyle(
-                  color: Colors.white.withOpacity(0.6),
-                  fontSize: 14.sp,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      Icons.info_outline,
+                      color: Colors.white.withOpacity(0.7),
+                      size: 18.sp,
+                    ),
+                    SizedBox(width: 8.w),
+                    Text(
+                      'How Mono Direct Debit Works',
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.9),
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
                 ),
-              ),
+                SizedBox(height: 12.h),
+                _buildInfoItem(Icons.lock_outline, 'Bank-grade security'),
+                SizedBox(height: 8.h),
+                _buildInfoItem(Icons.flash_on, 'Instant deposits'),
+                SizedBox(height: 8.h),
+                _buildInfoItem(Icons.credit_card_off, 'No card details needed'),
+              ],
             ),
           ),
           SizedBox(height: 24.h),
         ],
       ),
+    );
+  }
+
+  Widget _buildInfoItem(IconData icon, String text) {
+    return Row(
+      children: [
+        Icon(
+          icon,
+          color: const Color(0xFF6C5CE7),
+          size: 16.sp,
+        ),
+        SizedBox(width: 8.w),
+        Text(
+          text,
+          style: TextStyle(
+            color: Colors.white.withOpacity(0.7),
+            fontSize: 12.sp,
+          ),
+        ),
+      ],
     );
   }
 
@@ -466,6 +543,7 @@ class _DepositFlowScreenState extends State<DepositFlowScreen> {
       context: context,
       selectedAccount: widget.selectedAccount,
       openBankingCubit: context.read<OpenBankingCubit>(),
+      useRecurringAccess: _useRecurringAccess,
       onSuccess: () {
         // Move to processing step
         _nextStep();
@@ -476,6 +554,36 @@ class _DepositFlowScreenState extends State<DepositFlowScreen> {
           colorText: Colors.white,
           snackPosition: SnackPosition.BOTTOM,
         );
+      },
+      onDirectPayAuth: (String paymentUrl, String paymentId) async {
+        // Handle DirectPay authorization in-app
+        final result = await showDirectPayAuthorizationSheet(
+          context: context,
+          paymentUrl: paymentUrl,
+          paymentId: paymentId,
+          redirectScheme: 'lazervault',
+          redirectPath: '/deposit/callback',
+        );
+
+        if (result.success) {
+          // Move to processing step - payment authorized
+          _nextStep();
+          Get.snackbar(
+            'Payment Authorized',
+            'Your deposit is being processed',
+            backgroundColor: Colors.green.withOpacity(0.9),
+            colorText: Colors.white,
+            snackPosition: SnackPosition.BOTTOM,
+          );
+        } else {
+          Get.snackbar(
+            'Authorization Failed',
+            result.errorMessage ?? 'Payment authorization was cancelled',
+            backgroundColor: Colors.red.withOpacity(0.9),
+            colorText: Colors.white,
+            snackPosition: SnackPosition.BOTTOM,
+          );
+        }
       },
       onError: (message) {
         Get.snackbar(

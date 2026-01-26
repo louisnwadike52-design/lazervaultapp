@@ -46,12 +46,35 @@ class _PaymentConfirmationViewState extends State<_PaymentConfirmationView> {
   final _pinController = TextEditingController();
   String? _selectedAccountId;
   bool _isProcessing = false;
+  bool _hasPreSelectedAccount = false;
   final _uuid = const Uuid();
 
   @override
   void dispose() {
     _pinController.dispose();
     super.dispose();
+  }
+
+  /// Pre-select the first account with sufficient balance
+  void _preSelectAccountIfNeeded(List<dynamic> accounts) {
+    if (_hasPreSelectedAccount || _selectedAccountId != null) return;
+
+    // Find first account with sufficient balance
+    for (final account in accounts) {
+      if (account.balance >= widget.session.amount) {
+        _selectedAccountId = account.id;
+        _hasPreSelectedAccount = true;
+        break;
+      }
+    }
+
+    // If no account has sufficient balance, select the one with highest balance
+    if (_selectedAccountId == null && accounts.isNotEmpty) {
+      final sortedAccounts = List.from(accounts)
+        ..sort((a, b) => b.balance.compareTo(a.balance));
+      _selectedAccountId = sortedAccounts.first.id;
+      _hasPreSelectedAccount = true;
+    }
   }
 
   String _getCategoryIcon(String? category) {
@@ -92,6 +115,19 @@ class _PaymentConfirmationViewState extends State<_PaymentConfirmationView> {
       return;
     }
 
+    // Check if session is still valid
+    if (widget.session.expiresAt.isBefore(DateTime.now())) {
+      Get.snackbar(
+        'Session Expired',
+        'This payment request has expired. Please scan again.',
+        backgroundColor: const Color(0xFFEF4444),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+      );
+      Navigator.of(context).pop();
+      return;
+    }
+
     setState(() {
       _isProcessing = true;
     });
@@ -103,6 +139,29 @@ class _PaymentConfirmationViewState extends State<_PaymentConfirmationView> {
           transactionId: _uuid.v4(),
           verificationToken: _pinController.text,
         );
+  }
+
+  void _handlePinError(String message, int attemptsRemaining, bool accountLocked) {
+    _pinController.clear();
+
+    if (accountLocked) {
+      Get.snackbar(
+        'Account Locked',
+        'Too many failed PIN attempts. Please contact support.',
+        backgroundColor: const Color(0xFFEF4444),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+        duration: const Duration(seconds: 5),
+      );
+    } else {
+      Get.snackbar(
+        'Invalid PIN',
+        '$message ($attemptsRemaining attempts remaining)',
+        backgroundColor: const Color(0xFFEF4444),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+      );
+    }
   }
 
   @override
@@ -126,6 +185,41 @@ class _PaymentConfirmationViewState extends State<_PaymentConfirmationView> {
                   isReceiver: false,
                 ),
               ),
+            );
+          } else if (state is PinValidationFailed) {
+            setState(() {
+              _isProcessing = false;
+            });
+            _handlePinError(
+              state.message,
+              state.attemptsRemaining,
+              state.accountLocked,
+            );
+          } else if (state is SessionExpired) {
+            setState(() {
+              _isProcessing = false;
+            });
+            Get.snackbar(
+              'Session Expired',
+              state.message,
+              backgroundColor: const Color(0xFFEF4444),
+              colorText: Colors.white,
+              snackPosition: SnackPosition.TOP,
+              duration: const Duration(seconds: 4),
+            );
+            // Navigate back to NFC reader
+            Navigator.of(context).pop();
+          } else if (state is InsufficientBalance) {
+            setState(() {
+              _isProcessing = false;
+            });
+            Get.snackbar(
+              'Insufficient Balance',
+              'Your ${state.currency} account has ${state.available.toStringAsFixed(2)} but ${state.required.toStringAsFixed(2)} is required.',
+              backgroundColor: const Color(0xFFEF4444),
+              colorText: Colors.white,
+              snackPosition: SnackPosition.TOP,
+              duration: const Duration(seconds: 4),
             );
           } else if (state is ContactlessPaymentError) {
             setState(() {
@@ -330,6 +424,14 @@ class _PaymentConfirmationViewState extends State<_PaymentConfirmationView> {
               .where((a) => a.currency == widget.session.currency)
               .toList();
 
+          // Pre-select account with sufficient balance
+          _preSelectAccountIfNeeded(matchingAccounts);
+
+          // Check if any account has sufficient balance
+          final hasValidAccount = matchingAccounts.any(
+            (a) => a.balance >= widget.session.amount,
+          );
+
           if (matchingAccounts.isEmpty) {
             return Container(
               padding: EdgeInsets.all(20.w),
@@ -361,6 +463,40 @@ class _PaymentConfirmationViewState extends State<_PaymentConfirmationView> {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Warning banner if no account has sufficient balance
+              if (!hasValidAccount) ...[
+                Container(
+                  padding: EdgeInsets.all(12.w),
+                  margin: EdgeInsets.only(bottom: 16.h),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEF4444).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12.r),
+                    border: Border.all(
+                      color: const Color(0xFFEF4444).withValues(alpha: 0.3),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.warning_amber_rounded,
+                        color: const Color(0xFFEF4444),
+                        size: 24.sp,
+                      ),
+                      SizedBox(width: 12.w),
+                      Expanded(
+                        child: Text(
+                          'None of your accounts have sufficient balance for this payment.',
+                          style: GoogleFonts.inter(
+                            color: const Color(0xFFEF4444),
+                            fontSize: 12.sp,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
               Text(
                 'Pay From',
                 style: GoogleFonts.inter(

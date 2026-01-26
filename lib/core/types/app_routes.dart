@@ -270,6 +270,13 @@ abstract class AppRoutes {
   static const String generatedBarcodesHistory = '/barcode/generated-history';
   static const String scannedBarcodesHistory = '/barcode/scanned-history';
 
+  // Contactless Payment Routes
+  static const String contactlessPay = '/contactless-pay';
+  static const String contactlessPayCreate = '/contactless-pay/create';
+  static const String contactlessPayReader = '/contactless-pay/reader';
+  static const String contactlessPayConfirmation = '/contactless-pay/confirmation';
+  static const String contactlessPayHistory = '/contactless-pay/history';
+
   // Card Management Routes
   static const String cardCreationForm = '/cards/create';
   static const String cardCreationReceipt = '/cards/receipt';
