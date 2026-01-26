@@ -167,27 +167,13 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen> {
     await _flutterTts.speak(text);
   }
 
+  /// Refreshes the account balances - DISABLED: WebSocket handles real-time updates
+  /// The ws-balance-service pushes balance updates to the Flutter app via WebSocket,
+  /// which triggers the balance animation on the dashboard automatically.
   void _refreshAccountBalances(BuildContext context) {
-    try {
-      // Get the current authentication state to retrieve user info
-      final authState = context.read<AuthenticationCubit>().state;
-      if (authState is AuthenticationSuccess) {
-        final userId = authState.profile.user.id;
-        final accessToken = authState.profile.session.accessToken;
-        
-        print('Refreshing account summaries after successful withdrawal');
-        
-        // Refresh the globally provided AccountCardsSummaryCubit
-        // This is the same instance used by the dashboard, so it will update reactively
-        context.read<AccountCardsSummaryCubit>().fetchAccountSummaries(
-          userId: userId,
-          accessToken: accessToken,
-        );
-        print('Successfully refreshed global AccountCardsSummaryCubit instance');
-      }
-    } catch (e) {
-      print('Error during account refresh: $e');
-    }
+    // REMOVED: Manual refresh is no longer needed - WebSocket handles balance updates
+    // The dashboard will receive the update via BalanceWebSocketCubit and show animation
+    print('Manual refresh skipped - WebSocket will handle balance update');
   }
 
   void _showAllBanksBottomSheet() {

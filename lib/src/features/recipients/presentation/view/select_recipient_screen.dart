@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
+import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/select_recipients.dart';
-// Import for SystemUiOverlayStyle
-
 
 class SelectRecipientScreen extends StatefulWidget {
   const SelectRecipientScreen({super.key});
@@ -11,8 +12,6 @@ class SelectRecipientScreen extends StatefulWidget {
 }
 
 class _SelectRecipientScreenState extends State<SelectRecipientScreen> {
-
-
   @override
   void initState() {
     super.initState();
@@ -26,47 +25,16 @@ class _SelectRecipientScreenState extends State<SelectRecipientScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // appBar: AppBar(
-      //   systemOverlayStyle: SystemUiOverlayStyle(
-      //     statusBarColor: Colors.transparent, // Make status bar transparent
-      //     statusBarIconBrightness:
-      //         Brightness.light, // Light icons in status bar
-      //   ),
-      //   backgroundColor: Colors.blue, // Set your desired app bar color
-      //   elevation: 0, // Remove shadow
-      //   leading: IconButton(
-      //     icon: const Icon(Icons.arrow_back),
-      //     onPressed: () {
-      //       if (Navigator.canPop(context)) {
-      //         Get.back();
-      //       } else {
-      //         ScaffoldMessenger.of(context).showSnackBar(
-      //           const SnackBar(content: Text("No route to go back.")),
-      //         );
-      //       }
-      //     },
-      //     color: Colors.white, // Set back arrow color to white
-      //   ),
-      //   title: Text(
-      //     ScreenName.selectRecipient.displayName,
-      //     style: TextStyle(color: Colors.white), // Set title color to white
-      //   ),
-      //   centerTitle: true,
-      //   actions: [
-      //     IconButton(
-      //       icon: Icon(
-      //         Icons.add,
-      //         color: Colors.white, // Set add icon color to white
-      //       ),
-      //       onPressed: () => Get.toNamed(AppRoutes.addRecipient),
-      //     ),
-      //     SizedBox(width: 12.w),
-      //     ServiceVoiceButton(
-      //       serviceName: 'recipients',
-      //     ),
-      //   ],
-      // ),
       body: SelectRecipients(),
+      // Floating Action Button for adding recipients - always visible
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => Get.toNamed(AppRoutes.addRecipient),
+        backgroundColor: const Color.fromARGB(255, 78, 3, 208),
+        foregroundColor: Colors.white,
+        elevation: 4,
+        child: Icon(Icons.add, size: 28.sp),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
 }

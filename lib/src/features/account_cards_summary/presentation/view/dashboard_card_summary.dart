@@ -81,6 +81,13 @@ class _DashboardCardSummaryViewState extends State<_DashboardCardSummaryView> {
   }
 
   void _fetchData() {
+    // Check if data is already loaded - skip fetch if so (WebSocket handles updates)
+    final currentState = context.read<AccountCardsSummaryCubit>().state;
+    if (currentState is AccountCardsSummaryLoaded) {
+      debugPrint('_DashboardCardSummaryView: Accounts already loaded, skipping fetch (WebSocket handles updates)');
+      return;
+    }
+
     final authState = context.read<AuthenticationCubit>().state;
     if (authState is AuthenticationSuccess) {
       final userId = authState.profile.user.id;
@@ -163,25 +170,16 @@ class _DashboardCardSummaryViewState extends State<_DashboardCardSummaryView> {
     return MultiBlocListener(
       listeners: [
         // Listen for WebSocket balance updates
-        // Note: The AccountCarousel now handles real-time balance updates directly
-        // via animated counters - no need to refresh all data on every update
+        // Note: The AccountCarousel handles real-time balance updates directly
+        // via animated counters - NO server refresh needed, WebSocket is the source of truth
         BlocListener<BalanceWebSocketCubit, BalanceWebSocketState>(
           listener: (context, wsState) {
             if (wsState.lastUpdate != null) {
               final event = wsState.lastUpdate!;
               debugPrint('_DashboardCardSummaryView: WebSocket balance update - ${event.eventType}: ${event.newBalance} ${event.currency}');
-
-              // Only do a full refresh for completed transactions to sync other data
-              // The animated counter handles immediate visual updates
-              if (event.status.toLowerCase() == 'completed') {
-                // Debounce: only refresh if it's been more than 2 seconds since last update
-                // This prevents multiple rapid refreshes
-                Future.delayed(const Duration(seconds: 2), () {
-                  if (mounted) {
-                    _fetchData();
-                  }
-                });
-              }
+              // REMOVED: No server refresh after WebSocket update
+              // The animated counter in AccountCarousel handles visual updates
+              // WebSocket is the authoritative source for balance changes
             }
           },
         ),
