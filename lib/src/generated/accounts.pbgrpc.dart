@@ -80,6 +80,42 @@ class AccountsServiceClient extends $grpc.Client {
           ($0.UpdateBalanceRequest value) => value.writeToBuffer(),
           ($core.List<$core.int> value) =>
               $0.UpdateBalanceResponse.fromBuffer(value));
+  static final _$creditBalance =
+      $grpc.ClientMethod<$0.CreditBalanceRequest, $0.CreditBalanceResponse>(
+          '/accounts.AccountsService/CreditBalance',
+          ($0.CreditBalanceRequest value) => value.writeToBuffer(),
+          ($core.List<$core.int> value) =>
+              $0.CreditBalanceResponse.fromBuffer(value));
+  static final _$debitBalance =
+      $grpc.ClientMethod<$0.DebitBalanceRequest, $0.DebitBalanceResponse>(
+          '/accounts.AccountsService/DebitBalance',
+          ($0.DebitBalanceRequest value) => value.writeToBuffer(),
+          ($core.List<$core.int> value) =>
+              $0.DebitBalanceResponse.fromBuffer(value));
+  static final _$transferBalance =
+      $grpc.ClientMethod<$0.TransferBalanceRequest, $0.TransferBalanceResponse>(
+          '/accounts.AccountsService/TransferBalance',
+          ($0.TransferBalanceRequest value) => value.writeToBuffer(),
+          ($core.List<$core.int> value) =>
+              $0.TransferBalanceResponse.fromBuffer(value));
+  static final _$holdFunds =
+      $grpc.ClientMethod<$0.HoldFundsRequest, $0.HoldFundsResponse>(
+          '/accounts.AccountsService/HoldFunds',
+          ($0.HoldFundsRequest value) => value.writeToBuffer(),
+          ($core.List<$core.int> value) =>
+              $0.HoldFundsResponse.fromBuffer(value));
+  static final _$captureHold =
+      $grpc.ClientMethod<$0.CaptureHoldRequest, $0.CaptureHoldResponse>(
+          '/accounts.AccountsService/CaptureHold',
+          ($0.CaptureHoldRequest value) => value.writeToBuffer(),
+          ($core.List<$core.int> value) =>
+              $0.CaptureHoldResponse.fromBuffer(value));
+  static final _$releaseHold =
+      $grpc.ClientMethod<$0.ReleaseHoldRequest, $0.ReleaseHoldResponse>(
+          '/accounts.AccountsService/ReleaseHold',
+          ($0.ReleaseHoldRequest value) => value.writeToBuffer(),
+          ($core.List<$core.int> value) =>
+              $0.ReleaseHoldResponse.fromBuffer(value));
   static final _$getAccountByNumber = $grpc.ClientMethod<
           $0.GetAccountByNumberRequest, $0.GetAccountByNumberResponse>(
       '/accounts.AccountsService/GetAccountByNumber',
@@ -235,6 +271,42 @@ class AccountsServiceClient extends $grpc.Client {
       $0.UpdateBalanceRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$updateBalance, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.CreditBalanceResponse> creditBalance(
+      $0.CreditBalanceRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$creditBalance, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.DebitBalanceResponse> debitBalance(
+      $0.DebitBalanceRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$debitBalance, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.TransferBalanceResponse> transferBalance(
+      $0.TransferBalanceRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$transferBalance, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.HoldFundsResponse> holdFunds(
+      $0.HoldFundsRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$holdFunds, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.CaptureHoldResponse> captureHold(
+      $0.CaptureHoldRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$captureHold, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.ReleaseHoldResponse> releaseHold(
+      $0.ReleaseHoldRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$releaseHold, request, options: options);
   }
 
   $grpc.ResponseFuture<$0.GetAccountByNumberResponse> getAccountByNumber(
@@ -422,6 +494,58 @@ abstract class AccountsServiceBase extends $grpc.Service {
             ($core.List<$core.int> value) =>
                 $0.UpdateBalanceRequest.fromBuffer(value),
             ($0.UpdateBalanceResponse value) => value.writeToBuffer()));
+    $addMethod(
+        $grpc.ServiceMethod<$0.CreditBalanceRequest, $0.CreditBalanceResponse>(
+            'CreditBalance',
+            creditBalance_Pre,
+            false,
+            false,
+            ($core.List<$core.int> value) =>
+                $0.CreditBalanceRequest.fromBuffer(value),
+            ($0.CreditBalanceResponse value) => value.writeToBuffer()));
+    $addMethod(
+        $grpc.ServiceMethod<$0.DebitBalanceRequest, $0.DebitBalanceResponse>(
+            'DebitBalance',
+            debitBalance_Pre,
+            false,
+            false,
+            ($core.List<$core.int> value) =>
+                $0.DebitBalanceRequest.fromBuffer(value),
+            ($0.DebitBalanceResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.TransferBalanceRequest,
+            $0.TransferBalanceResponse>(
+        'TransferBalance',
+        transferBalance_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.TransferBalanceRequest.fromBuffer(value),
+        ($0.TransferBalanceResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.HoldFundsRequest, $0.HoldFundsResponse>(
+        'HoldFunds',
+        holdFunds_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.HoldFundsRequest.fromBuffer(value),
+        ($0.HoldFundsResponse value) => value.writeToBuffer()));
+    $addMethod(
+        $grpc.ServiceMethod<$0.CaptureHoldRequest, $0.CaptureHoldResponse>(
+            'CaptureHold',
+            captureHold_Pre,
+            false,
+            false,
+            ($core.List<$core.int> value) =>
+                $0.CaptureHoldRequest.fromBuffer(value),
+            ($0.CaptureHoldResponse value) => value.writeToBuffer()));
+    $addMethod(
+        $grpc.ServiceMethod<$0.ReleaseHoldRequest, $0.ReleaseHoldResponse>(
+            'ReleaseHold',
+            releaseHold_Pre,
+            false,
+            false,
+            ($core.List<$core.int> value) =>
+                $0.ReleaseHoldRequest.fromBuffer(value),
+            ($0.ReleaseHoldResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.GetAccountByNumberRequest,
             $0.GetAccountByNumberResponse>(
         'GetAccountByNumber',
@@ -613,6 +737,39 @@ abstract class AccountsServiceBase extends $grpc.Service {
     return updateBalance(call, await request);
   }
 
+  $async.Future<$0.CreditBalanceResponse> creditBalance_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$0.CreditBalanceRequest> request) async {
+    return creditBalance(call, await request);
+  }
+
+  $async.Future<$0.DebitBalanceResponse> debitBalance_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$0.DebitBalanceRequest> request) async {
+    return debitBalance(call, await request);
+  }
+
+  $async.Future<$0.TransferBalanceResponse> transferBalance_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$0.TransferBalanceRequest> request) async {
+    return transferBalance(call, await request);
+  }
+
+  $async.Future<$0.HoldFundsResponse> holdFunds_Pre($grpc.ServiceCall call,
+      $async.Future<$0.HoldFundsRequest> request) async {
+    return holdFunds(call, await request);
+  }
+
+  $async.Future<$0.CaptureHoldResponse> captureHold_Pre($grpc.ServiceCall call,
+      $async.Future<$0.CaptureHoldRequest> request) async {
+    return captureHold(call, await request);
+  }
+
+  $async.Future<$0.ReleaseHoldResponse> releaseHold_Pre($grpc.ServiceCall call,
+      $async.Future<$0.ReleaseHoldRequest> request) async {
+    return releaseHold(call, await request);
+  }
+
   $async.Future<$0.GetAccountByNumberResponse> getAccountByNumber_Pre(
       $grpc.ServiceCall call,
       $async.Future<$0.GetAccountByNumberRequest> request) async {
@@ -717,6 +874,18 @@ abstract class AccountsServiceBase extends $grpc.Service {
       $grpc.ServiceCall call, $0.UnfreezeAccountRequest request);
   $async.Future<$0.UpdateBalanceResponse> updateBalance(
       $grpc.ServiceCall call, $0.UpdateBalanceRequest request);
+  $async.Future<$0.CreditBalanceResponse> creditBalance(
+      $grpc.ServiceCall call, $0.CreditBalanceRequest request);
+  $async.Future<$0.DebitBalanceResponse> debitBalance(
+      $grpc.ServiceCall call, $0.DebitBalanceRequest request);
+  $async.Future<$0.TransferBalanceResponse> transferBalance(
+      $grpc.ServiceCall call, $0.TransferBalanceRequest request);
+  $async.Future<$0.HoldFundsResponse> holdFunds(
+      $grpc.ServiceCall call, $0.HoldFundsRequest request);
+  $async.Future<$0.CaptureHoldResponse> captureHold(
+      $grpc.ServiceCall call, $0.CaptureHoldRequest request);
+  $async.Future<$0.ReleaseHoldResponse> releaseHold(
+      $grpc.ServiceCall call, $0.ReleaseHoldRequest request);
   $async.Future<$0.GetAccountByNumberResponse> getAccountByNumber(
       $grpc.ServiceCall call, $0.GetAccountByNumberRequest request);
   $async.Future<$0.CreateTransactionResponse> createTransaction(

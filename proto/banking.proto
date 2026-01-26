@@ -276,6 +276,13 @@ service BankingService {
         };
     }
 
+    // Get list of Mono-supported financial institutions
+    rpc GetMonoInstitutions(GetMonoInstitutionsRequest) returns (MonoInstitutionsResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/open-banking/institutions"
+        };
+    }
+
     // ===== OPEN BANKING - DEPOSITS (Direct Debit) =====
 
     // Initiate a deposit via direct debit from linked account
@@ -1243,4 +1250,34 @@ message ResolveAccountNameResponse {
     string account_name = 5;
     string bank_code = 6;
     string bank_name = 7;
+}
+
+// =====================================================
+// MONO INSTITUTIONS MESSAGES
+// =====================================================
+
+message GetMonoInstitutionsRequest {}
+
+message MonoInstitutionsResponse {
+    bool success = 1;
+    string error_code = 2;
+    string error_message = 3;
+    repeated MonoInstitution institutions = 4;
+}
+
+message MonoInstitution {
+    string id = 1;
+    string name = 2;
+    string bank_code = 3;
+    string icon = 4;
+    string type = 5;
+    string country = 6;
+    repeated MonoAuthMethod auth_methods = 7;
+    bool supports_mobile_banking = 8;
+    bool supports_internet_banking = 9;
+}
+
+message MonoAuthMethod {
+    string type = 1;
+    string name = 2;
 }

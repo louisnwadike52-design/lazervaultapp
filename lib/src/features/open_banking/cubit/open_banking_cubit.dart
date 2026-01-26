@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
 import '../data/datasources/open_banking_remote_datasource.dart';
+import '../data/datasources/open_banking_grpc_datasource.dart';
 import '../data/errors/banking_errors.dart';
 import '../domain/entities/linked_bank_account.dart';
 import '../domain/entities/deposit.dart';
@@ -8,14 +9,29 @@ import '../domain/entities/withdrawal.dart';
 import 'open_banking_state.dart';
 
 /// Cubit for managing open banking operations
+/// Supports both REST and gRPC backends
 class OpenBankingCubit extends Cubit<OpenBankingState> {
-  final OpenBankingRemoteDataSource _dataSource;
+  final OpenBankingRemoteDataSource? _restDataSource;
+  final OpenBankingGrpcDataSource? _grpcDataSource;
+  final bool useGrpc;
 
   // Cached data
   List<LinkedBankAccount> _linkedAccounts = [];
   LinkedBankAccount? _defaultAccount;
 
-  OpenBankingCubit(this._dataSource) : super(OpenBankingInitial());
+  /// Create cubit with REST data source (legacy)
+  OpenBankingCubit(OpenBankingRemoteDataSource dataSource)
+      : _restDataSource = dataSource,
+        _grpcDataSource = null,
+        useGrpc = false,
+        super(OpenBankingInitial());
+
+  /// Create cubit with gRPC data source (preferred)
+  OpenBankingCubit.withGrpc(OpenBankingGrpcDataSource dataSource)
+      : _restDataSource = null,
+        _grpcDataSource = dataSource,
+        useGrpc = true,
+        super(OpenBankingInitial());
 
   /// Get cached linked accounts
   List<LinkedBankAccount> get linkedAccounts => _linkedAccounts;
@@ -29,7 +45,12 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
     emit(OpenBankingLoading());
 
     try {
-      final config = await _dataSource.getConnectWidgetConfig(accessToken);
+      final Map<String, String> config;
+      if (useGrpc && _grpcDataSource != null) {
+        config = await _grpcDataSource!.getConnectWidgetConfig();
+      } else {
+        config = await _restDataSource!.getConnectWidgetConfig(accessToken);
+      }
       if (isClosed) return;
       emit(ConnectConfigLoaded(
         publicKey: config['public_key']!,
@@ -52,12 +73,21 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
     emit(AccountLinkingInProgress());
 
     try {
-      final account = await _dataSource.linkBankAccount(
-        userId: userId,
-        code: code,
-        accessToken: accessToken,
-        setAsDefault: setAsDefault,
-      );
+      final LinkedBankAccount account;
+      if (useGrpc && _grpcDataSource != null) {
+        account = await _grpcDataSource!.linkBankAccount(
+          userId: userId,
+          code: code,
+          setAsDefault: setAsDefault,
+        );
+      } else {
+        account = await _restDataSource!.linkBankAccount(
+          userId: userId,
+          code: code,
+          accessToken: accessToken,
+          setAsDefault: setAsDefault,
+        );
+      }
 
       // Update local cache
       final existingIndex = _linkedAccounts.indexWhere((a) => a.id == account.id);
@@ -88,10 +118,16 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
     emit(OpenBankingLoading());
 
     try {
-      _linkedAccounts = await _dataSource.getLinkedAccounts(
-        userId: userId,
-        accessToken: accessToken,
-      );
+      if (useGrpc && _grpcDataSource != null) {
+        _linkedAccounts = await _grpcDataSource!.getLinkedAccounts(
+          userId: userId,
+        );
+      } else {
+        _linkedAccounts = await _restDataSource!.getLinkedAccounts(
+          userId: userId,
+          accessToken: accessToken,
+        );
+      }
 
       // Find default account
       _defaultAccount = _linkedAccounts.firstWhere(
@@ -120,11 +156,18 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
     emit(OpenBankingLoading());
 
     try {
-      await _dataSource.unlinkBankAccount(
-        accountId: accountId,
-        userId: userId,
-        accessToken: accessToken,
-      );
+      if (useGrpc && _grpcDataSource != null) {
+        await _grpcDataSource!.unlinkBankAccount(
+          accountId: accountId,
+          userId: userId,
+        );
+      } else {
+        await _restDataSource!.unlinkBankAccount(
+          accountId: accountId,
+          userId: userId,
+          accessToken: accessToken,
+        );
+      }
 
       // Update local cache
       _linkedAccounts.removeWhere((a) => a.id == accountId);
@@ -150,11 +193,18 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
     emit(OpenBankingLoading());
 
     try {
-      await _dataSource.setDefaultLinkedAccount(
-        accountId: accountId,
-        userId: userId,
-        accessToken: accessToken,
-      );
+      if (useGrpc && _grpcDataSource != null) {
+        await _grpcDataSource!.setDefaultLinkedAccount(
+          accountId: accountId,
+          userId: userId,
+        );
+      } else {
+        await _restDataSource!.setDefaultLinkedAccount(
+          accountId: accountId,
+          userId: userId,
+          accessToken: accessToken,
+        );
+      }
 
       // Update local cache
       _linkedAccounts = _linkedAccounts.map((a) {
@@ -184,11 +234,19 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
     required String accessToken,
   }) async {
     try {
-      final newBalance = await _dataSource.refreshLinkedAccountBalance(
-        accountId: accountId,
-        userId: userId,
-        accessToken: accessToken,
-      );
+      final double newBalance;
+      if (useGrpc && _grpcDataSource != null) {
+        newBalance = await _grpcDataSource!.refreshLinkedAccountBalance(
+          accountId: accountId,
+          userId: userId,
+        );
+      } else {
+        newBalance = await _restDataSource!.refreshLinkedAccountBalance(
+          accountId: accountId,
+          userId: userId,
+          accessToken: accessToken,
+        );
+      }
 
       // Update local cache
       final index = _linkedAccounts.indexWhere((a) => a.id == accountId);
@@ -221,7 +279,7 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
     emit(OpenBankingLoading());
 
     try {
-      final token = await _dataSource.getReauthorizationToken(
+      final token = await _restDataSource!.getReauthorizationToken(
         accountId: accountId,
         userId: userId,
         accessToken: accessToken,
@@ -236,6 +294,7 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
   }
 
   /// Initiate a deposit from linked account
+  /// Uses gRPC when available for better performance
   Future<void> initiateDeposit({
     required String userId,
     required String linkedAccountId,
@@ -251,15 +310,29 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
       final idempotencyKey = const Uuid().v4();
       final amountInKobo = (amount * 100).toInt();
 
-      final deposit = await _dataSource.initiateDeposit(
-        userId: userId,
-        linkedAccountId: linkedAccountId,
-        destinationAccountId: destinationAccountId,
-        amountInKobo: amountInKobo,
-        narration: narration,
-        idempotencyKey: idempotencyKey,
-        accessToken: accessToken,
-      );
+      final Deposit deposit;
+      if (useGrpc && _grpcDataSource != null) {
+        // Use gRPC for better performance and type safety
+        deposit = await _grpcDataSource!.initiateDeposit(
+          userId: userId,
+          linkedAccountId: linkedAccountId,
+          destinationAccountId: destinationAccountId,
+          amountInKobo: amountInKobo,
+          narration: narration,
+          idempotencyKey: idempotencyKey,
+        );
+      } else {
+        // Fallback to REST
+        deposit = await _restDataSource!.initiateDeposit(
+          userId: userId,
+          linkedAccountId: linkedAccountId,
+          destinationAccountId: destinationAccountId,
+          amountInKobo: amountInKobo,
+          narration: narration,
+          idempotencyKey: idempotencyKey,
+          accessToken: accessToken,
+        );
+      }
 
       if (isClosed) return;
       emit(DepositInitiated(deposit: deposit));
@@ -276,11 +349,19 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
     required String accessToken,
   }) async {
     try {
-      final deposit = await _dataSource.getDepositStatus(
-        depositId: depositId,
-        userId: userId,
-        accessToken: accessToken,
-      );
+      final Deposit deposit;
+      if (useGrpc && _grpcDataSource != null) {
+        deposit = await _grpcDataSource!.getDepositStatus(
+          depositId: depositId,
+          userId: userId,
+        );
+      } else {
+        deposit = await _restDataSource!.getDepositStatus(
+          depositId: depositId,
+          userId: userId,
+          accessToken: accessToken,
+        );
+      }
 
       if (isClosed) return;
       emit(DepositStatusUpdated(deposit: deposit));
@@ -301,12 +382,26 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
     emit(OpenBankingLoading());
 
     try {
-      final (deposits, total) = await _dataSource.getUserDeposits(
-        userId: userId,
-        accessToken: accessToken,
-        limit: limit,
-        offset: offset,
-      );
+      List<Deposit> deposits;
+      int total;
+      if (useGrpc && _grpcDataSource != null) {
+        final result = await _grpcDataSource!.getUserDeposits(
+          userId: userId,
+          limit: limit,
+          offset: offset,
+        );
+        deposits = result.$1;
+        total = result.$2;
+      } else {
+        final result = await _restDataSource!.getUserDeposits(
+          userId: userId,
+          accessToken: accessToken,
+          limit: limit,
+          offset: offset,
+        );
+        deposits = result.$1;
+        total = result.$2;
+      }
 
       if (isClosed) return;
       emit(DepositsLoaded(deposits: deposits, total: total));
@@ -326,11 +421,18 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
     emit(OpenBankingLoading());
 
     try {
-      await _dataSource.cancelDeposit(
-        depositId: depositId,
-        userId: userId,
-        accessToken: accessToken,
-      );
+      if (useGrpc && _grpcDataSource != null) {
+        await _grpcDataSource!.cancelDeposit(
+          depositId: depositId,
+          userId: userId,
+        );
+      } else {
+        await _restDataSource!.cancelDeposit(
+          depositId: depositId,
+          userId: userId,
+          accessToken: accessToken,
+        );
+      }
 
       // Refresh the deposit to get updated status
       await checkDepositStatus(
@@ -351,10 +453,17 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
   }) async {
     try {
       final amountInKobo = (amount * 100).toInt();
-      final calculation = await _dataSource.calculateDepositFee(
-        amountInKobo: amountInKobo,
-        accessToken: accessToken,
-      );
+      final DepositFeeCalculation calculation;
+      if (useGrpc && _grpcDataSource != null) {
+        calculation = await _grpcDataSource!.calculateDepositFee(
+          amountInKobo: amountInKobo,
+        );
+      } else {
+        calculation = await _restDataSource!.calculateDepositFee(
+          amountInKobo: amountInKobo,
+          accessToken: accessToken,
+        );
+      }
 
       if (isClosed) return;
       emit(DepositFeeCalculated(calculation: calculation));
@@ -380,7 +489,7 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
     emit(OpenBankingLoading());
 
     try {
-      _banks = await _dataSource.getBanks(accessToken: accessToken);
+      _banks = await _restDataSource!.getBanks(accessToken: accessToken);
 
       if (isClosed) return;
       emit(BanksLoaded(banks: _banks));
@@ -400,7 +509,7 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
     emit(OpenBankingLoading());
 
     try {
-      final inquiry = await _dataSource.resolveAccountName(
+      final inquiry = await _restDataSource!.resolveAccountName(
         accountNumber: accountNumber,
         bankCode: bankCode,
         accessToken: accessToken,
@@ -432,7 +541,7 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
       final idempotencyKey = const Uuid().v4();
       final amountInKobo = (amount * 100).toInt();
 
-      final withdrawal = await _dataSource.initiateWithdrawal(
+      final withdrawal = await _restDataSource!.initiateWithdrawal(
         userId: userId,
         sourceAccountId: sourceAccountId,
         bankCode: bankCode,
@@ -459,7 +568,7 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
     required String accessToken,
   }) async {
     try {
-      final withdrawal = await _dataSource.getWithdrawalStatus(
+      final withdrawal = await _restDataSource!.getWithdrawalStatus(
         withdrawalId: withdrawalId,
         userId: userId,
         accessToken: accessToken,
@@ -484,7 +593,7 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
     emit(OpenBankingLoading());
 
     try {
-      final (withdrawals, total) = await _dataSource.getUserWithdrawals(
+      final (withdrawals, total) = await _restDataSource!.getUserWithdrawals(
         userId: userId,
         accessToken: accessToken,
         limit: limit,
@@ -506,7 +615,7 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
   }) async {
     try {
       final amountInKobo = (amount * 100).toInt();
-      final calculation = await _dataSource.calculateWithdrawalFee(
+      final calculation = await _restDataSource!.calculateWithdrawalFee(
         amountInKobo: amountInKobo,
         accessToken: accessToken,
       );
@@ -524,13 +633,13 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
   // =====================================================
 
   /// Check if the service is available (circuit breaker not open)
-  bool get isServiceAvailable => _dataSource.isServiceAvailable;
+  bool get isServiceAvailable => _restDataSource!.isServiceAvailable;
 
   /// Check network connectivity
-  Future<bool> hasConnectivity() => _dataSource.hasConnectivity();
+  Future<bool> hasConnectivity() => _restDataSource!.hasConnectivity();
 
   /// Reset circuit breaker manually (e.g., user requested retry)
-  void resetCircuitBreaker() => _dataSource.resetCircuitBreaker();
+  void resetCircuitBreaker() => _restDataSource!.resetCircuitBreaker();
 
   /// Emit appropriate error state based on exception type
   void _emitError(Object error, {String? operation}) {
@@ -545,7 +654,7 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
         emit(ServiceUnavailable(
           message: error.userMessage,
           retryAfter: error.retryAfter,
-          circuitBreakerOpen: !_dataSource.isServiceAvailable,
+          circuitBreakerOpen: !_restDataSource!.isServiceAvailable,
         ));
         return;
       }

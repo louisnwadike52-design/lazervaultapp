@@ -950,6 +950,59 @@ const DailyReportResponse$json = const {
 
 /// Descriptor for `DailyReportResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List dailyReportResponseDescriptor = $convert.base64Decode('ChNEYWlseVJlcG9ydFJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3MSHQoKZXJyb3JfY29kZRgCIAEoCVIJZXJyb3JDb2RlEiMKDWVycm9yX21lc3NhZ2UYAyABKAlSDGVycm9yTWVzc2FnZRIuCgRkYXRlGAQgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcFIEZGF0ZRIjCg10b3RhbF9jcmVkaXRzGAUgASgDUgx0b3RhbENyZWRpdHMSIQoMdG90YWxfZGViaXRzGAYgASgDUgt0b3RhbERlYml0cxIhCgxjcmVkaXRfY291bnQYByABKAVSC2NyZWRpdENvdW50Eh8KC2RlYml0X2NvdW50GAggASgFUgpkZWJpdENvdW50Eh0KCm5ldF9jaGFuZ2UYCSABKANSCW5ldENoYW5nZRI4ChhpbnRlcm5hbF90cmFuc2Zlcl92b2x1bWUYCiABKANSFmludGVybmFsVHJhbnNmZXJWb2x1bWUSNgoXaW50ZXJuYWxfdHJhbnNmZXJfY291bnQYCyABKAVSFWludGVybmFsVHJhbnNmZXJDb3VudBI4ChhleHRlcm5hbF90cmFuc2Zlcl92b2x1bWUYDCABKANSFmV4dGVybmFsVHJhbnNmZXJWb2x1bWUSNgoXZXh0ZXJuYWxfdHJhbnNmZXJfY291bnQYDSABKAVSFWV4dGVybmFsVHJhbnNmZXJDb3VudBIyChVmYWlsZWRfdHJhbnNmZXJfY291bnQYDiABKAVSE2ZhaWxlZFRyYW5zZmVyQ291bnQSMAoUbmV3X2FjY291bnRzX2NyZWF0ZWQYDyABKAVSEm5ld0FjY291bnRzQ3JlYXRlZBIwChR0b3RhbF9sZWRnZXJfYmFsYW5jZRgQIAEoA1ISdG90YWxMZWRnZXJCYWxhbmNl');
+@$core.Deprecated('Use getMonoInstitutionsRequestDescriptor instead')
+const GetMonoInstitutionsRequest$json = const {
+  '1': 'GetMonoInstitutionsRequest',
+  '2': const [
+    const {'1': 'scope', '3': 1, '4': 1, '5': 9, '10': 'scope'},
+    const {'1': 'country', '3': 2, '4': 1, '5': 9, '10': 'country'},
+  ],
+};
+
+/// Descriptor for `GetMonoInstitutionsRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getMonoInstitutionsRequestDescriptor = $convert.base64Decode('ChpHZXRNb25vSW5zdGl0dXRpb25zUmVxdWVzdBIUCgVzY29wZRgBIAEoCVIFc2NvcGUSGAoHY291bnRyeRgCIAEoCVIHY291bnRyeQ==');
+@$core.Deprecated('Use monoInstitutionsResponseDescriptor instead')
+const MonoInstitutionsResponse$json = const {
+  '1': 'MonoInstitutionsResponse',
+  '2': const [
+    const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    const {'1': 'error_code', '3': 2, '4': 1, '5': 9, '10': 'errorCode'},
+    const {'1': 'error_message', '3': 3, '4': 1, '5': 9, '10': 'errorMessage'},
+    const {'1': 'institutions', '3': 4, '4': 3, '5': 11, '6': '.banking.MonoInstitution', '10': 'institutions'},
+  ],
+};
+
+/// Descriptor for `MonoInstitutionsResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List monoInstitutionsResponseDescriptor = $convert.base64Decode('ChhNb25vSW5zdGl0dXRpb25zUmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2VzcxIdCgplcnJvcl9jb2RlGAIgASgJUgllcnJvckNvZGUSIwoNZXJyb3JfbWVzc2FnZRgDIAEoCVIMZXJyb3JNZXNzYWdlEjwKDGluc3RpdHV0aW9ucxgEIAMoCzIYLmJhbmtpbmcuTW9ub0luc3RpdHV0aW9uUgxpbnN0aXR1dGlvbnM=');
+@$core.Deprecated('Use monoInstitutionDescriptor instead')
+const MonoInstitution$json = const {
+  '1': 'MonoInstitution',
+  '2': const [
+    const {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
+    const {'1': 'name', '3': 2, '4': 1, '5': 9, '10': 'name'},
+    const {'1': 'bank_code', '3': 3, '4': 1, '5': 9, '10': 'bankCode'},
+    const {'1': 'icon', '3': 4, '4': 1, '5': 9, '10': 'icon'},
+    const {'1': 'type', '3': 5, '4': 1, '5': 9, '10': 'type'},
+    const {'1': 'country', '3': 6, '4': 1, '5': 9, '10': 'country'},
+    const {'1': 'auth_methods', '3': 7, '4': 3, '5': 11, '6': '.banking.MonoAuthMethod', '10': 'authMethods'},
+    const {'1': 'supports_mobile_banking', '3': 8, '4': 1, '5': 8, '10': 'supportsMobileBanking'},
+    const {'1': 'supports_internet_banking', '3': 9, '4': 1, '5': 8, '10': 'supportsInternetBanking'},
+  ],
+};
+
+/// Descriptor for `MonoInstitution`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List monoInstitutionDescriptor = $convert.base64Decode('Cg9Nb25vSW5zdGl0dXRpb24SDgoCaWQYASABKAlSAmlkEhIKBG5hbWUYAiABKAlSBG5hbWUSGwoJYmFua19jb2RlGAMgASgJUghiYW5rQ29kZRISCgRpY29uGAQgASgJUgRpY29uEhIKBHR5cGUYBSABKAlSBHR5cGUSGAoHY291bnRyeRgGIAEoCVIHY291bnRyeRI6CgxhdXRoX21ldGhvZHMYByADKAsyFy5iYW5raW5nLk1vbm9BdXRoTWV0aG9kUgthdXRoTWV0aG9kcxI2ChdzdXBwb3J0c19tb2JpbGVfYmFua2luZxgIIAEoCFIVc3VwcG9ydHNNb2JpbGVCYW5raW5nEjoKGXN1cHBvcnRzX2ludGVybmV0X2JhbmtpbmcYCSABKAhSF3N1cHBvcnRzSW50ZXJuZXRCYW5raW5n');
+@$core.Deprecated('Use monoAuthMethodDescriptor instead')
+const MonoAuthMethod$json = const {
+  '1': 'MonoAuthMethod',
+  '2': const [
+    const {'1': 'type', '3': 1, '4': 1, '5': 9, '10': 'type'},
+    const {'1': 'name', '3': 2, '4': 1, '5': 9, '10': 'name'},
+  ],
+};
+
+/// Descriptor for `MonoAuthMethod`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List monoAuthMethodDescriptor = $convert.base64Decode('Cg5Nb25vQXV0aE1ldGhvZBISCgR0eXBlGAEgASgJUgR0eXBlEhIKBG5hbWUYAiABKAlSBG5hbWU=');
 @$core.Deprecated('Use getConnectWidgetConfigRequestDescriptor instead')
 const GetConnectWidgetConfigRequest$json = const {
   '1': 'GetConnectWidgetConfigRequest',

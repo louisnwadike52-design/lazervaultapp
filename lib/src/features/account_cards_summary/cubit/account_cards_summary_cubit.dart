@@ -1,13 +1,83 @@
+import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../domain/entities/account_summary_entity.dart';
 import '../domain/usecases/get_account_summaries_usecase.dart';
+import '../services/balance_websocket_service.dart';
 import 'account_cards_summary_state.dart';
 
 
 class AccountCardsSummaryCubit extends Cubit<AccountCardsSummaryState> {
   final GetAccountSummariesUseCase _getAccountSummariesUseCase;
+  final BalanceWebSocketService? _wsService;
+  StreamSubscription<BalanceUpdateEvent>? _wsSubscription;
 
-  AccountCardsSummaryCubit(this._getAccountSummariesUseCase)
-      : super(AccountCardsSummaryInitial());
+  // Keep track of current summaries for WebSocket updates
+  List<AccountSummaryEntity> _currentSummaries = [];
+
+  AccountCardsSummaryCubit(
+    this._getAccountSummariesUseCase, {
+    BalanceWebSocketService? wsService,
+  })  : _wsService = wsService,
+        super(AccountCardsSummaryInitial()) {
+    // Listen to WebSocket balance updates if service provided
+    if (_wsService != null) {
+      _wsSubscription = _wsService!.balanceUpdates.listen(_handleBalanceUpdate);
+    }
+  }
+
+  /// Handle incoming WebSocket balance update
+  void _handleBalanceUpdate(BalanceUpdateEvent event) {
+    if (isClosed) return;
+
+    // Find the account that was updated
+    final accountIndex = _currentSummaries.indexWhere(
+      (summary) => summary.id == event.accountId,
+    );
+
+    if (accountIndex == -1) {
+      // Account not found in current list, just refresh
+      print('AccountCardsSummaryCubit: Account ${event.accountId} not found, skipping update');
+      return;
+    }
+
+    // Get previous balance for animation
+    final previousAccount = _currentSummaries[accountIndex];
+    final previousBalance = previousAccount.balance;
+
+    // Calculate trend percentage
+    final trendPercentage = _calculateTrendPercentage(previousBalance, event.newBalance);
+
+    // Create updated account using copyWith
+    final updatedAccount = previousAccount.copyWith(
+      balance: event.newBalance,
+      trendPercentage: trendPercentage,
+      currency: event.currency,
+    );
+
+    // Update the summaries list
+    _currentSummaries = List.from(_currentSummaries);
+    _currentSummaries[accountIndex] = updatedAccount;
+
+    // Emit animated update state
+    emit(AccountBalanceUpdated(
+      accountSummaries: _currentSummaries,
+      updatedAccountId: event.accountId,
+      previousBalance: previousBalance,
+      newBalance: event.newBalance,
+      amount: event.amount ?? (event.newBalance - previousBalance).abs(),
+      eventType: event.eventType,
+      status: event.status,
+      reference: event.reference,
+    ));
+
+    print('AccountCardsSummaryCubit: Balance updated for account ${event.accountId} - ${event.eventType}: $previousBalance -> ${event.newBalance}');
+  }
+
+  /// Calculate trend percentage
+  double _calculateTrendPercentage(double previousBalance, double newBalance) {
+    if (previousBalance == 0) return 0.0;
+    return ((newBalance - previousBalance) / previousBalance) * 100;
+  }
 
   Future<void> fetchAccountSummaries({
     required String userId,
@@ -27,7 +97,44 @@ class AccountCardsSummaryCubit extends Cubit<AccountCardsSummaryState> {
         failure.message,
         statusCode: failure.statusCode,
       )),
-      (summaries) => emit(AccountCardsSummaryLoaded(summaries)),
+      (summaries) {
+        _currentSummaries = summaries;
+        emit(AccountCardsSummaryLoaded(summaries));
+      },
     );
+  }
+
+  /// Connect WebSocket for real-time updates
+  Future<void> connectWebSocket({
+    required String userId,
+    required String countryCode,
+    required String accessToken,
+  }) async {
+    if (_wsService != null && !_wsService!.isConnected) {
+      try {
+        await _wsService!.connect(
+          userId: userId,
+          countryCode: countryCode,
+          accessToken: accessToken,
+        );
+        print('AccountCardsSummaryCubit: WebSocket connected for real-time updates');
+      } catch (e) {
+        print('AccountCardsSummaryCubit: Failed to connect WebSocket - $e');
+      }
+    }
+  }
+
+  /// Disconnect WebSocket
+  void disconnectWebSocket() {
+    _wsService?.disconnect();
+  }
+
+  /// Get current summaries
+  List<AccountSummaryEntity> get currentSummaries => _currentSummaries;
+
+  @override
+  Future<void> close() {
+    _wsSubscription?.cancel();
+    return super.close();
   }
 } 

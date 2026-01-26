@@ -20,7 +20,7 @@ class DepositRepositoryImpl implements IDepositRepository {
 
   @override
   Future<Either<Failure, DepositDetails>> initiateDeposit({
-    required int targetAccountId,
+    required String targetAccountId, // UUID string
     required double amount,
     required String currency,
     required String sourceBankName,
@@ -34,7 +34,7 @@ class DepositRepositoryImpl implements IDepositRepository {
         print('DepositRepository: Preparing request with targetAccountId: $targetAccountId, amount: $amount, currency: $currency, sourceBankName: $sourceBankName');
 
         final request = req_resp.InitiateDepositRequest(
-          targetAccountId: Int64(targetAccountId),
+          targetAccountId: targetAccountId, // UUID string directly
           amount: amountMinorUnits,
           currency: currency,
           sourceBankName: sourceBankName,

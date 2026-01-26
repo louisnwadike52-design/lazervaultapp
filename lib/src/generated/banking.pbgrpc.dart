@@ -205,6 +205,12 @@ class BankingServiceClient extends $grpc.Client {
           ($0.GetDailyReportRequest value) => value.writeToBuffer(),
           ($core.List<$core.int> value) =>
               $0.DailyReportResponse.fromBuffer(value));
+  static final _$getMonoInstitutions = $grpc.ClientMethod<
+          $0.GetMonoInstitutionsRequest, $0.MonoInstitutionsResponse>(
+      '/banking.BankingService/GetMonoInstitutions',
+      ($0.GetMonoInstitutionsRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $0.MonoInstitutionsResponse.fromBuffer(value));
   static final _$getConnectWidgetConfig = $grpc.ClientMethod<
           $0.GetConnectWidgetConfigRequest, $0.ConnectWidgetConfigResponse>(
       '/banking.BankingService/GetConnectWidgetConfig',
@@ -513,6 +519,12 @@ class BankingServiceClient extends $grpc.Client {
       $0.GetDailyReportRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getDailyReport, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.MonoInstitutionsResponse> getMonoInstitutions(
+      $0.GetMonoInstitutionsRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getMonoInstitutions, request, options: options);
   }
 
   $grpc.ResponseFuture<$0.ConnectWidgetConfigResponse> getConnectWidgetConfig(
@@ -914,6 +926,15 @@ abstract class BankingServiceBase extends $grpc.Service {
             ($core.List<$core.int> value) =>
                 $0.GetDailyReportRequest.fromBuffer(value),
             ($0.DailyReportResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetMonoInstitutionsRequest,
+            $0.MonoInstitutionsResponse>(
+        'GetMonoInstitutions',
+        getMonoInstitutions_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.GetMonoInstitutionsRequest.fromBuffer(value),
+        ($0.MonoInstitutionsResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.GetConnectWidgetConfigRequest,
             $0.ConnectWidgetConfigResponse>(
         'GetConnectWidgetConfig',
@@ -1260,6 +1281,12 @@ abstract class BankingServiceBase extends $grpc.Service {
     return getDailyReport(call, await request);
   }
 
+  $async.Future<$0.MonoInstitutionsResponse> getMonoInstitutions_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$0.GetMonoInstitutionsRequest> request) async {
+    return getMonoInstitutions(call, await request);
+  }
+
   $async.Future<$0.ConnectWidgetConfigResponse> getConnectWidgetConfig_Pre(
       $grpc.ServiceCall call,
       $async.Future<$0.GetConnectWidgetConfigRequest> request) async {
@@ -1423,6 +1450,8 @@ abstract class BankingServiceBase extends $grpc.Service {
       $grpc.ServiceCall call, $0.GetReconciliationHistoryRequest request);
   $async.Future<$0.DailyReportResponse> getDailyReport(
       $grpc.ServiceCall call, $0.GetDailyReportRequest request);
+  $async.Future<$0.MonoInstitutionsResponse> getMonoInstitutions(
+      $grpc.ServiceCall call, $0.GetMonoInstitutionsRequest request);
   $async.Future<$0.ConnectWidgetConfigResponse> getConnectWidgetConfig(
       $grpc.ServiceCall call, $0.GetConnectWidgetConfigRequest request);
   $async.Future<$0.LinkBankAccountResponse> linkBankAccount(

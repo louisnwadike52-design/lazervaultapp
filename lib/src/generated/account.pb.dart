@@ -10,7 +10,9 @@ import 'dart:core' as $core;
 import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'google/protobuf/timestamp.pb.dart' as $1;
+import 'google/protobuf/timestamp.pb.dart' as $2;
+
+export 'account.pbenum.dart';
 
 class Account extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'Account', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
@@ -20,8 +22,12 @@ class Account extends $pb.GeneratedMessage {
     ..a<$core.double>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'balance', $pb.PbFieldType.OD)
     ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accountNumber')
     ..aOB(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isActive')
-    ..aOM<$1.Timestamp>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
-    ..aOM<$1.Timestamp>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$2.Timestamp>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $2.Timestamp.create)
+    ..aOM<$2.Timestamp>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $2.Timestamp.create)
+    ..aOB(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isPrimary')
+    ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accountLabel')
+    ..aOS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'bankName')
+    ..aOS(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'bankCode')
     ..hasRequiredFields = false
   ;
 
@@ -33,8 +39,12 @@ class Account extends $pb.GeneratedMessage {
     $core.double? balance,
     $core.String? accountNumber,
     $core.bool? isActive,
-    $1.Timestamp? createdAt,
-    $1.Timestamp? updatedAt,
+    $2.Timestamp? createdAt,
+    $2.Timestamp? updatedAt,
+    $core.bool? isPrimary,
+    $core.String? accountLabel,
+    $core.String? bankName,
+    $core.String? bankCode,
   }) {
     final _result = create();
     if (id != null) {
@@ -60,6 +70,18 @@ class Account extends $pb.GeneratedMessage {
     }
     if (updatedAt != null) {
       _result.updatedAt = updatedAt;
+    }
+    if (isPrimary != null) {
+      _result.isPrimary = isPrimary;
+    }
+    if (accountLabel != null) {
+      _result.accountLabel = accountLabel;
+    }
+    if (bankName != null) {
+      _result.bankName = bankName;
+    }
+    if (bankCode != null) {
+      _result.bankCode = bankCode;
     }
     return _result;
   }
@@ -139,26 +161,62 @@ class Account extends $pb.GeneratedMessage {
   void clearIsActive() => clearField(6);
 
   @$pb.TagNumber(7)
-  $1.Timestamp get createdAt => $_getN(6);
+  $2.Timestamp get createdAt => $_getN(6);
   @$pb.TagNumber(7)
-  set createdAt($1.Timestamp v) { setField(7, v); }
+  set createdAt($2.Timestamp v) { setField(7, v); }
   @$pb.TagNumber(7)
   $core.bool hasCreatedAt() => $_has(6);
   @$pb.TagNumber(7)
   void clearCreatedAt() => clearField(7);
   @$pb.TagNumber(7)
-  $1.Timestamp ensureCreatedAt() => $_ensure(6);
+  $2.Timestamp ensureCreatedAt() => $_ensure(6);
 
   @$pb.TagNumber(8)
-  $1.Timestamp get updatedAt => $_getN(7);
+  $2.Timestamp get updatedAt => $_getN(7);
   @$pb.TagNumber(8)
-  set updatedAt($1.Timestamp v) { setField(8, v); }
+  set updatedAt($2.Timestamp v) { setField(8, v); }
   @$pb.TagNumber(8)
   $core.bool hasUpdatedAt() => $_has(7);
   @$pb.TagNumber(8)
   void clearUpdatedAt() => clearField(8);
   @$pb.TagNumber(8)
-  $1.Timestamp ensureUpdatedAt() => $_ensure(7);
+  $2.Timestamp ensureUpdatedAt() => $_ensure(7);
+
+  @$pb.TagNumber(9)
+  $core.bool get isPrimary => $_getBF(8);
+  @$pb.TagNumber(9)
+  set isPrimary($core.bool v) { $_setBool(8, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasIsPrimary() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearIsPrimary() => clearField(9);
+
+  @$pb.TagNumber(10)
+  $core.String get accountLabel => $_getSZ(9);
+  @$pb.TagNumber(10)
+  set accountLabel($core.String v) { $_setString(9, v); }
+  @$pb.TagNumber(10)
+  $core.bool hasAccountLabel() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearAccountLabel() => clearField(10);
+
+  @$pb.TagNumber(11)
+  $core.String get bankName => $_getSZ(10);
+  @$pb.TagNumber(11)
+  set bankName($core.String v) { $_setString(10, v); }
+  @$pb.TagNumber(11)
+  $core.bool hasBankName() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearBankName() => clearField(11);
+
+  @$pb.TagNumber(12)
+  $core.String get bankCode => $_getSZ(11);
+  @$pb.TagNumber(12)
+  set bankCode($core.String v) { $_setString(11, v); }
+  @$pb.TagNumber(12)
+  $core.bool hasBankCode() => $_has(11);
+  @$pb.TagNumber(12)
+  void clearBankCode() => clearField(12);
 }
 
 class CreateAccountRequest extends $pb.GeneratedMessage {
@@ -363,6 +421,14 @@ class AccountSummary extends $pb.GeneratedMessage {
     ..a<$fixnum.Int64>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'balance', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'maskedAccountNumber')
     ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status')
+    ..aOB(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isPrimary')
+    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accountLabel')
+    ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'bankName')
+    ..a<$core.double>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'trendPercentage', $pb.PbFieldType.OD)
+    ..aOB(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isFamilyAccount')
+    ..a<$fixnum.Int64>(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'familyTotalBalance', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'memberAllocatedBalance', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$core.int>(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'memberCount', $pb.PbFieldType.O3)
     ..hasRequiredFields = false
   ;
 
@@ -374,6 +440,14 @@ class AccountSummary extends $pb.GeneratedMessage {
     $fixnum.Int64? balance,
     $core.String? maskedAccountNumber,
     $core.String? status,
+    $core.bool? isPrimary,
+    $core.String? accountLabel,
+    $core.String? bankName,
+    $core.double? trendPercentage,
+    $core.bool? isFamilyAccount,
+    $fixnum.Int64? familyTotalBalance,
+    $fixnum.Int64? memberAllocatedBalance,
+    $core.int? memberCount,
   }) {
     final _result = create();
     if (id != null) {
@@ -393,6 +467,30 @@ class AccountSummary extends $pb.GeneratedMessage {
     }
     if (status != null) {
       _result.status = status;
+    }
+    if (isPrimary != null) {
+      _result.isPrimary = isPrimary;
+    }
+    if (accountLabel != null) {
+      _result.accountLabel = accountLabel;
+    }
+    if (bankName != null) {
+      _result.bankName = bankName;
+    }
+    if (trendPercentage != null) {
+      _result.trendPercentage = trendPercentage;
+    }
+    if (isFamilyAccount != null) {
+      _result.isFamilyAccount = isFamilyAccount;
+    }
+    if (familyTotalBalance != null) {
+      _result.familyTotalBalance = familyTotalBalance;
+    }
+    if (memberAllocatedBalance != null) {
+      _result.memberAllocatedBalance = memberAllocatedBalance;
+    }
+    if (memberCount != null) {
+      _result.memberCount = memberCount;
     }
     return _result;
   }
@@ -470,6 +568,78 @@ class AccountSummary extends $pb.GeneratedMessage {
   $core.bool hasStatus() => $_has(5);
   @$pb.TagNumber(6)
   void clearStatus() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.bool get isPrimary => $_getBF(6);
+  @$pb.TagNumber(7)
+  set isPrimary($core.bool v) { $_setBool(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasIsPrimary() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearIsPrimary() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.String get accountLabel => $_getSZ(7);
+  @$pb.TagNumber(8)
+  set accountLabel($core.String v) { $_setString(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasAccountLabel() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearAccountLabel() => clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.String get bankName => $_getSZ(8);
+  @$pb.TagNumber(9)
+  set bankName($core.String v) { $_setString(8, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasBankName() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearBankName() => clearField(9);
+
+  @$pb.TagNumber(10)
+  $core.double get trendPercentage => $_getN(9);
+  @$pb.TagNumber(10)
+  set trendPercentage($core.double v) { $_setDouble(9, v); }
+  @$pb.TagNumber(10)
+  $core.bool hasTrendPercentage() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearTrendPercentage() => clearField(10);
+
+  @$pb.TagNumber(11)
+  $core.bool get isFamilyAccount => $_getBF(10);
+  @$pb.TagNumber(11)
+  set isFamilyAccount($core.bool v) { $_setBool(10, v); }
+  @$pb.TagNumber(11)
+  $core.bool hasIsFamilyAccount() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearIsFamilyAccount() => clearField(11);
+
+  @$pb.TagNumber(12)
+  $fixnum.Int64 get familyTotalBalance => $_getI64(11);
+  @$pb.TagNumber(12)
+  set familyTotalBalance($fixnum.Int64 v) { $_setInt64(11, v); }
+  @$pb.TagNumber(12)
+  $core.bool hasFamilyTotalBalance() => $_has(11);
+  @$pb.TagNumber(12)
+  void clearFamilyTotalBalance() => clearField(12);
+
+  @$pb.TagNumber(13)
+  $fixnum.Int64 get memberAllocatedBalance => $_getI64(12);
+  @$pb.TagNumber(13)
+  set memberAllocatedBalance($fixnum.Int64 v) { $_setInt64(12, v); }
+  @$pb.TagNumber(13)
+  $core.bool hasMemberAllocatedBalance() => $_has(12);
+  @$pb.TagNumber(13)
+  void clearMemberAllocatedBalance() => clearField(13);
+
+  @$pb.TagNumber(14)
+  $core.int get memberCount => $_getIZ(13);
+  @$pb.TagNumber(14)
+  set memberCount($core.int v) { $_setSignedInt32(13, v); }
+  @$pb.TagNumber(14)
+  $core.bool hasMemberCount() => $_has(13);
+  @$pb.TagNumber(14)
+  void clearMemberCount() => clearField(14);
 }
 
 class AccountDetails extends $pb.GeneratedMessage {
@@ -490,8 +660,8 @@ class AccountDetails extends $pb.GeneratedMessage {
     ..aOS(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accountNumber')
     ..aOS(16, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'iban')
     ..aOS(17, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'bicSwift')
-    ..aOM<$1.Timestamp>(18, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
-    ..aOM<$1.Timestamp>(19, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$2.Timestamp>(18, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $2.Timestamp.create)
+    ..aOM<$2.Timestamp>(19, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $2.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -513,8 +683,8 @@ class AccountDetails extends $pb.GeneratedMessage {
     $core.String? accountNumber,
     $core.String? iban,
     $core.String? bicSwift,
-    $1.Timestamp? createdAt,
-    $1.Timestamp? updatedAt,
+    $2.Timestamp? createdAt,
+    $2.Timestamp? updatedAt,
   }) {
     final _result = create();
     if (id != null) {
@@ -739,26 +909,26 @@ class AccountDetails extends $pb.GeneratedMessage {
   void clearBicSwift() => clearField(17);
 
   @$pb.TagNumber(18)
-  $1.Timestamp get createdAt => $_getN(16);
+  $2.Timestamp get createdAt => $_getN(16);
   @$pb.TagNumber(18)
-  set createdAt($1.Timestamp v) { setField(18, v); }
+  set createdAt($2.Timestamp v) { setField(18, v); }
   @$pb.TagNumber(18)
   $core.bool hasCreatedAt() => $_has(16);
   @$pb.TagNumber(18)
   void clearCreatedAt() => clearField(18);
   @$pb.TagNumber(18)
-  $1.Timestamp ensureCreatedAt() => $_ensure(16);
+  $2.Timestamp ensureCreatedAt() => $_ensure(16);
 
   @$pb.TagNumber(19)
-  $1.Timestamp get updatedAt => $_getN(17);
+  $2.Timestamp get updatedAt => $_getN(17);
   @$pb.TagNumber(19)
-  set updatedAt($1.Timestamp v) { setField(19, v); }
+  set updatedAt($2.Timestamp v) { setField(19, v); }
   @$pb.TagNumber(19)
   $core.bool hasUpdatedAt() => $_has(17);
   @$pb.TagNumber(19)
   void clearUpdatedAt() => clearField(19);
   @$pb.TagNumber(19)
-  $1.Timestamp ensureUpdatedAt() => $_ensure(17);
+  $2.Timestamp ensureUpdatedAt() => $_ensure(17);
 }
 
 class SecuritySettings extends $pb.GeneratedMessage {
@@ -1330,5 +1500,378 @@ class RevealPINResponse extends $pb.GeneratedMessage {
   $core.bool hasPin() => $_has(0);
   @$pb.TagNumber(1)
   void clearPin() => clearField(1);
+}
+
+class CreateSignupAccountsRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CreateSignupAccountsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'firstName')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastName')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'email')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'phoneNumber')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'countryCode')
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'bvn')
+    ..hasRequiredFields = false
+  ;
+
+  CreateSignupAccountsRequest._() : super();
+  factory CreateSignupAccountsRequest({
+    $core.String? userId,
+    $core.String? firstName,
+    $core.String? lastName,
+    $core.String? email,
+    $core.String? phoneNumber,
+    $core.String? countryCode,
+    $core.String? bvn,
+  }) {
+    final _result = create();
+    if (userId != null) {
+      _result.userId = userId;
+    }
+    if (firstName != null) {
+      _result.firstName = firstName;
+    }
+    if (lastName != null) {
+      _result.lastName = lastName;
+    }
+    if (email != null) {
+      _result.email = email;
+    }
+    if (phoneNumber != null) {
+      _result.phoneNumber = phoneNumber;
+    }
+    if (countryCode != null) {
+      _result.countryCode = countryCode;
+    }
+    if (bvn != null) {
+      _result.bvn = bvn;
+    }
+    return _result;
+  }
+  factory CreateSignupAccountsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory CreateSignupAccountsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  CreateSignupAccountsRequest clone() => CreateSignupAccountsRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  CreateSignupAccountsRequest copyWith(void Function(CreateSignupAccountsRequest) updates) => super.copyWith((message) => updates(message as CreateSignupAccountsRequest)) as CreateSignupAccountsRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static CreateSignupAccountsRequest create() => CreateSignupAccountsRequest._();
+  CreateSignupAccountsRequest createEmptyInstance() => create();
+  static $pb.PbList<CreateSignupAccountsRequest> createRepeated() => $pb.PbList<CreateSignupAccountsRequest>();
+  @$core.pragma('dart2js:noInline')
+  static CreateSignupAccountsRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<CreateSignupAccountsRequest>(create);
+  static CreateSignupAccountsRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get userId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set userId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasUserId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearUserId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get firstName => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set firstName($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasFirstName() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearFirstName() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get lastName => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set lastName($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasLastName() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearLastName() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get email => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set email($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasEmail() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearEmail() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get phoneNumber => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set phoneNumber($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasPhoneNumber() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearPhoneNumber() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get countryCode => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set countryCode($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasCountryCode() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearCountryCode() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.String get bvn => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set bvn($core.String v) { $_setString(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasBvn() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearBvn() => clearField(7);
+}
+
+class SignupAccountInfo extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'SignupAccountInfo', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accountId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accountNumber')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accountName')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accountType')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accountLabel')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'bankName')
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'bankCode')
+    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
+    ..aOB(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isPrimary')
+    ..hasRequiredFields = false
+  ;
+
+  SignupAccountInfo._() : super();
+  factory SignupAccountInfo({
+    $core.String? accountId,
+    $core.String? accountNumber,
+    $core.String? accountName,
+    $core.String? accountType,
+    $core.String? accountLabel,
+    $core.String? bankName,
+    $core.String? bankCode,
+    $core.String? currency,
+    $core.bool? isPrimary,
+  }) {
+    final _result = create();
+    if (accountId != null) {
+      _result.accountId = accountId;
+    }
+    if (accountNumber != null) {
+      _result.accountNumber = accountNumber;
+    }
+    if (accountName != null) {
+      _result.accountName = accountName;
+    }
+    if (accountType != null) {
+      _result.accountType = accountType;
+    }
+    if (accountLabel != null) {
+      _result.accountLabel = accountLabel;
+    }
+    if (bankName != null) {
+      _result.bankName = bankName;
+    }
+    if (bankCode != null) {
+      _result.bankCode = bankCode;
+    }
+    if (currency != null) {
+      _result.currency = currency;
+    }
+    if (isPrimary != null) {
+      _result.isPrimary = isPrimary;
+    }
+    return _result;
+  }
+  factory SignupAccountInfo.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory SignupAccountInfo.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  SignupAccountInfo clone() => SignupAccountInfo()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  SignupAccountInfo copyWith(void Function(SignupAccountInfo) updates) => super.copyWith((message) => updates(message as SignupAccountInfo)) as SignupAccountInfo; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static SignupAccountInfo create() => SignupAccountInfo._();
+  SignupAccountInfo createEmptyInstance() => create();
+  static $pb.PbList<SignupAccountInfo> createRepeated() => $pb.PbList<SignupAccountInfo>();
+  @$core.pragma('dart2js:noInline')
+  static SignupAccountInfo getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<SignupAccountInfo>(create);
+  static SignupAccountInfo? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get accountId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set accountId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasAccountId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearAccountId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get accountNumber => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set accountNumber($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasAccountNumber() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearAccountNumber() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get accountName => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set accountName($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasAccountName() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearAccountName() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get accountType => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set accountType($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasAccountType() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearAccountType() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get accountLabel => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set accountLabel($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasAccountLabel() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearAccountLabel() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get bankName => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set bankName($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasBankName() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearBankName() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.String get bankCode => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set bankCode($core.String v) { $_setString(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasBankCode() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearBankCode() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.String get currency => $_getSZ(7);
+  @$pb.TagNumber(8)
+  set currency($core.String v) { $_setString(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasCurrency() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearCurrency() => clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.bool get isPrimary => $_getBF(8);
+  @$pb.TagNumber(9)
+  set isPrimary($core.bool v) { $_setBool(8, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasIsPrimary() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearIsPrimary() => clearField(9);
+}
+
+class CreateSignupAccountsResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CreateSignupAccountsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'errorCode')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'errorMessage')
+    ..pc<SignupAccountInfo>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accounts', $pb.PbFieldType.PM, subBuilder: SignupAccountInfo.create)
+    ..hasRequiredFields = false
+  ;
+
+  CreateSignupAccountsResponse._() : super();
+  factory CreateSignupAccountsResponse({
+    $core.bool? success,
+    $core.String? errorCode,
+    $core.String? errorMessage,
+    $core.Iterable<SignupAccountInfo>? accounts,
+  }) {
+    final _result = create();
+    if (success != null) {
+      _result.success = success;
+    }
+    if (errorCode != null) {
+      _result.errorCode = errorCode;
+    }
+    if (errorMessage != null) {
+      _result.errorMessage = errorMessage;
+    }
+    if (accounts != null) {
+      _result.accounts.addAll(accounts);
+    }
+    return _result;
+  }
+  factory CreateSignupAccountsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory CreateSignupAccountsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  CreateSignupAccountsResponse clone() => CreateSignupAccountsResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  CreateSignupAccountsResponse copyWith(void Function(CreateSignupAccountsResponse) updates) => super.copyWith((message) => updates(message as CreateSignupAccountsResponse)) as CreateSignupAccountsResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static CreateSignupAccountsResponse create() => CreateSignupAccountsResponse._();
+  CreateSignupAccountsResponse createEmptyInstance() => create();
+  static $pb.PbList<CreateSignupAccountsResponse> createRepeated() => $pb.PbList<CreateSignupAccountsResponse>();
+  @$core.pragma('dart2js:noInline')
+  static CreateSignupAccountsResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<CreateSignupAccountsResponse>(create);
+  static CreateSignupAccountsResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool v) { $_setBool(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get errorCode => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set errorCode($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasErrorCode() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearErrorCode() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get errorMessage => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set errorMessage($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasErrorMessage() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearErrorMessage() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.List<SignupAccountInfo> get accounts => $_getList(3);
 }
 

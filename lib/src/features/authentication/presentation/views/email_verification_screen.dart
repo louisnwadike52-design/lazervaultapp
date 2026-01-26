@@ -96,8 +96,36 @@ class _EmailOtpVerificationViewState extends State<_EmailOtpVerificationView> {
       context.read<EmailVerificationCubit>().initialize(widget.email);
       context.read<EmailVerificationCubit>().updateVerificationCode('');
 
-      // Show snackbar that email was sent
       if (widget.codeSent) {
+        // Code was already sent before navigation - just show snackbar
+        Get.snackbar(
+          'Email Sent',
+          'A 6-digit verification code has been sent to your email.',
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+          margin: EdgeInsets.all(16.w),
+          borderRadius: 12.r,
+          duration: const Duration(seconds: 4),
+        );
+        _startResendCooldown(60);
+      } else {
+        // Code was NOT sent before navigation - send it in the background (non-blocking)
+        _sendVerificationEmailOnLoad();
+        // Start cooldown immediately while email is being sent
+        _startResendCooldown(60);
+      }
+    });
+  }
+
+  /// Send verification email when the page loads (if not already sent)
+  /// This runs in the background and doesn't block the UI
+  void _sendVerificationEmailOnLoad() {
+    if (widget.email.isEmpty) return;
+
+    // Fire and forget - send email in background without blocking
+    context.read<EmailVerificationCubit>().resendVerificationEmail().then((_) {
+      if (mounted) {
         Get.snackbar(
           'Email Sent',
           'A 6-digit verification code has been sent to your email.',
@@ -109,12 +137,20 @@ class _EmailOtpVerificationViewState extends State<_EmailOtpVerificationView> {
           duration: const Duration(seconds: 4),
         );
       }
+    }).catchError((e) {
+      if (mounted) {
+        Get.snackbar(
+          'Error',
+          'Failed to send verification email. Tap "Resend Code" to try again.',
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+          margin: EdgeInsets.all(16.w),
+          borderRadius: 12.r,
+          duration: const Duration(seconds: 4),
+        );
+      }
     });
-
-    // Start with a cooldown if code was just sent
-    if (widget.codeSent) {
-      _startResendCooldown(60);
-    }
   }
 
   @override

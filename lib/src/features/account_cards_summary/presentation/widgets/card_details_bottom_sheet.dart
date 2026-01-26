@@ -49,6 +49,22 @@ class _CardDetailsBottomSheetState extends State<CardDetailsBottomSheet> {
     super.dispose();
   }
 
+  String _getCurrencySymbol() {
+    final currency = widget.accountArgs['currency'] as String? ?? 'NGN';
+    switch (currency.toUpperCase()) {
+      case 'NGN':
+        return '₦';
+      case 'GBP':
+        return '£';
+      case 'USD':
+        return '\$';
+      case 'EUR':
+        return '€';
+      default:
+        return '₦';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     void setSheetState(VoidCallback fn) {
@@ -154,10 +170,10 @@ class _CardDetailsBottomSheetState extends State<CardDetailsBottomSheet> {
                         DetailSection(
                           title: 'Spending Limits',
                           details: [
-                            DetailRow(label: 'Daily Limit', value: '£5,000'),
-                            DetailRow(label: 'Monthly Limit', value: '£50,000'),
+                            DetailRow(label: 'Daily Limit', value: '${_getCurrencySymbol()}5,000'),
+                            DetailRow(label: 'Monthly Limit', value: '${_getCurrencySymbol()}50,000'),
                             DetailRow(label: 'Available Balance',
-                                value: "£${(widget.accountArgs["balance"] as double).toStringAsFixed(2)}"),
+                                value: "${_getCurrencySymbol()}${(widget.accountArgs["balance"] as double).toStringAsFixed(2)}"),
                           ],
                         ),
                         SizedBox(height: 16.h),
@@ -251,7 +267,7 @@ class _CardDetailsBottomSheetState extends State<CardDetailsBottomSheet> {
                                   borderRadius: BorderRadius.circular(8.r),
                                 ),
                                 child: Text(
-                                  '£',
+                                  _getCurrencySymbol(),
                                   style: TextStyle(
                                     color: Colors.white,
                                     fontSize: 20.sp,
@@ -296,10 +312,10 @@ class _CardDetailsBottomSheetState extends State<CardDetailsBottomSheet> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            _buildQuickAmountButton('£100'),
-                            _buildQuickAmountButton('£500'),
-                            _buildQuickAmountButton('£1000'),
-                            _buildQuickAmountButton('£2000'),
+                            _buildQuickAmountButton('${_getCurrencySymbol()}1,000'),
+                            _buildQuickAmountButton('${_getCurrencySymbol()}5,000'),
+                            _buildQuickAmountButton('${_getCurrencySymbol()}10,000'),
+                            _buildQuickAmountButton('${_getCurrencySymbol()}50,000'),
                           ],
                         ),
                         SizedBox(height: 32.h),

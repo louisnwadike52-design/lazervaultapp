@@ -3,12 +3,18 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/services/injection_container.dart';
-import 'package:lazervault/core/utilities/banks_data.dart';
+import 'package:lazervault/src/core/config/mono_config.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/features/funds/cubit/deposit_cubit.dart';
 import 'package:lazervault/src/features/funds/cubit/deposit_state.dart';
+import 'package:lazervault/src/features/open_banking/cubit/open_banking_cubit.dart';
+import 'package:lazervault/src/features/open_banking/cubit/open_banking_state.dart';
+import 'package:lazervault/src/features/ai_scan_to_pay/presentation/widgets/mono_connect_widget.dart';
+import 'package:lazervault/src/features/open_banking/domain/entities/deposit.dart';
+import 'package:lazervault/src/features/funds/data/services/mono_institutions_service.dart';
+import 'package:lazervault/src/features/ai_scan_to_pay/presentation/widgets/mono_connect_widget.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
@@ -34,9 +40,13 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
   bool _isVoiceEnabled = false;
   bool _wasSelectedFromBottomSheet = false;
   bool _isLoadingBanks = false;
+  bool _isMonoLoading = false; // Loading state for Mono Connect
 
-  // Dynamic bank list loaded from API
+  // Dynamic bank list loaded from Mono supported banks
   List<Map<String, dynamic>> _banks = [];
+
+  // Linked bank account ID (if user has linked an account)
+  String? _linkedAccountId;
 
   List<Map<String, dynamic>> get _displayedBanks {
     if (_banks.isEmpty) return [];
@@ -44,7 +54,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
     if (!_wasSelectedFromBottomSheet) {
       return _banks.take(4).toList();
     }
-    final selectedBankData = _banks.firstWhere((bank) => bank['name'] == _selectedBank, orElse: () => {});
+    final selectedBankData = _banks.firstWhere((bank) => bank['name'] == _selectedBank, orElse: () => <String, dynamic>{});
     if (selectedBankData.isEmpty) return _banks.take(4).toList();
 
     final List<Map<String, dynamic>> reorderedBanks = [selectedBankData];
@@ -52,57 +62,107 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
     return reorderedBanks;
   }
 
+  /// Check if deposit can proceed
+  bool get _isDepositValid {
+    final amount = double.tryParse(_amountController.text) ?? 0;
+    return _selectedBank.isNotEmpty && amount > 0;
+  }
+
+  /// Get currency from selected card
+  String get _currency {
+    final currency = widget.selectedCard['currency'] as String? ?? 'GBP';
+    return currency.toUpperCase();
+  }
+
+  /// Check if NGN account (uses Mono direct debit flow)
+  bool get _isNGN => _currency == 'NGN';
+
+  /// Get currency symbol for display
+  String get _currencySymbol {
+    switch (_currency) {
+      case 'NGN':
+        return '₦';
+      case 'GBP':
+        return '£';
+      case 'USD':
+        return '\$';
+      case 'EUR':
+        return '€';
+      default:
+        return '₦';
+    }
+  }
+
   @override
   void initState() {
     super.initState();
     _initializeSpeech();
     _loadBanks();
+    // Listen to amount changes to update button state
+    _amountController.addListener(_onAmountChanged);
   }
 
-  /// Load supported banks from local configuration
+  /// Called when amount text changes
+  void _onAmountChanged() {
+    // Trigger rebuild to update button state
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  /// Load supported banks from Mono API
+  ///
+  /// Fetches the list of banks/institutions that Mono actually supports.
+  /// This ensures users only see banks that will work with the deposit flow.
   Future<void> _loadBanks() async {
     setState(() => _isLoadingBanks = true);
     try {
-      // Get country from selected card or default to NG
-      final String country = _getCountryFromCard();
-      // Use local banks data only - no API calls
-      final banks = BanksData.getBanksForCountry(country);
+      // Fetch banks from Mono API (cached)
+      final monoInstitutions = await MonoInstitutionsService.instance.getInstitutions();
 
       if (mounted) {
         setState(() {
-          // Convert bank data to display format
-          _banks = banks.map((bank) => {
-            'name': bank['name'] ?? bank['bankName'] ?? 'Unknown Bank',
-            'code': bank['code'] ?? bank['bankCode'] ?? '',
-            'icon': Icons.account_balance,
-            'color': _getBankColor(bank['name'] ?? bank['bankName'] ?? ''),
-          }).toList();
+          if (monoInstitutions.isNotEmpty) {
+            // Convert Mono institution data to display format
+            _banks = monoInstitutions.map((inst) => <String, dynamic>{
+              'name': inst.name,
+              'code': inst.bankCode ?? '',
+              'monoId': inst.id, // Store Mono institution ID for later use
+              'icon': Icons.account_balance,
+              'color': _getBankColor(inst.name),
+              'monoSupported': true,
+              'supportsMobileBanking': inst.supportsMobileBanking,
+              'supportsInternetBanking': inst.supportsInternetBanking,
+            }).toList();
+
+            // Sort alphabetically
+            _banks.sort((a, b) =>
+                (a['name'] as String).compareTo(b['name'] as String));
+          } else {
+            // Fallback to config banks if API returns empty
+            final monoBanks = MonoConfig.supportedBanks;
+            _banks = monoBanks.entries.map((entry) => <String, dynamic>{
+              'name': entry.key,
+              'code': entry.value,
+              'monoId': MonoConfig.getMonoInstitutionId(entry.key), // May be null
+              'icon': Icons.account_balance,
+              'color': _getBankColor(entry.key),
+              'monoSupported': true,
+            }).toList();
+          }
           _isLoadingBanks = false;
         });
       }
     } catch (e) {
-      print('Error loading banks: $e');
+      debugPrint('Error loading banks: $e');
       if (mounted) {
-        setState(() => _isLoadingBanks = false);
+        // Fallback to letting Mono show its own bank selector
+        setState(() {
+          _banks = [];
+          _isLoadingBanks = false;
+        });
       }
     }
-  }
-
-  /// Get country code from selected card or auth state
-  String _getCountryFromCard() {
-    // Try to get country from selected card
-    if (widget.selectedCard.containsKey('countryCode')) {
-      return widget.selectedCard['countryCode'] as String;
-    }
-    // Fall back to auth state
-    final authState = context.read<AuthenticationCubit>().state;
-    if (authState is AuthenticationAuthenticated) {
-      // Could add country to profile, for now default to NG
-      return 'NG';
-    } else if (authState is AuthenticationSuccess) {
-      return 'NG';
-    }
-    return 'NG';
   }
 
   /// Get a consistent color for a bank based on its name
@@ -160,7 +220,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
     if (amountMatch != null) {
       final amount = amountMatch.group(0);
       setState(() => _amountController.text = amount!);
-      _speakResponse('Amount set to £$amount');
+      _speakResponse('Amount set to $_currencySymbol$amount');
     }
   }
 
@@ -176,121 +236,28 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
       ),
-      builder: (context) => Container(
-        height: MediaQuery.of(context).size.height * 0.8,
-        padding: EdgeInsets.all(24.w),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'All UK Banks',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 20.sp,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.close, color: Colors.white),
-                  onPressed: () => Navigator.pop(context),
-                ),
-              ],
-            ),
-            SizedBox(height: 16.h),
-            Expanded(
-              child: ListView.builder(
-                itemCount: _banks.length,
-                itemBuilder: (context, index) {
-                  final bank = _banks[index];
-                  final isSelected = _selectedBank == bank['name'];
-                  return Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: () {
-                        _selectBank(bank['name'], fromBottomSheet: true);
-                        Navigator.pop(context);
-                      },
-                      borderRadius: BorderRadius.circular(16.r),
-                      child: Container(
-                        margin: EdgeInsets.only(bottom: 12.h),
-                        padding: EdgeInsets.all(16.w),
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? bank['color'].withOpacity(0.1)
-                              : Colors.white.withOpacity(0.05),
-                          borderRadius: BorderRadius.circular(16.r),
-                          border: Border.all(
-                            color: isSelected
-                                ? bank['color']
-                                : Colors.white.withOpacity(0.1),
-                            width: isSelected ? 2 : 1,
-                          ),
-                        ),
-                        child: Row(
-                          children: [
-                            Container(
-                              padding: EdgeInsets.all(8.w),
-                              decoration: BoxDecoration(
-                                color: bank['color'].withOpacity(0.1),
-                                shape: BoxShape.circle,
-                              ),
-                              child: Icon(
-                                bank['icon'],
-                                color: bank['color'],
-                                size: 24.sp,
-                              ),
-                            ),
-                            SizedBox(width: 16.w),
-                            Expanded(
-                              child: Text(
-                                bank['name'],
-                                style: TextStyle(
-                                  color:
-                                      isSelected ? bank['color'] : Colors.white,
-                                  fontSize: 16.sp,
-                                  fontWeight: FontWeight.w700,
-                                  letterSpacing: 0.2,
-                                ),
-                              ),
-                            ),
-                            if (isSelected)
-                              Container(
-                                padding: EdgeInsets.all(4.w),
-                                decoration: BoxDecoration(
-                                  color: bank['color'],
-                                  shape: BoxShape.circle,
-                                ),
-                                child: Icon(
-                                  Icons.check,
-                                  color: Colors.white,
-                                  size: 16.sp,
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
+      builder: (context) => _BankSearchBottomSheet(
+        banks: _banks,
+        selectedBank: _selectedBank,
+        onBankSelected: (bankName) {
+          _selectBank(bankName, fromBottomSheet: true);
+          Navigator.pop(context);
+        },
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => serviceLocator<DepositCubit>(),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (_) => serviceLocator<DepositCubit>()),
+        BlocProvider(create: (_) => serviceLocator<OpenBankingCubit>()),
+      ],
       child: BlocConsumer<AuthenticationCubit, AuthenticationState>(
         listener: (context, authState) {
           if (authState is! AuthenticationSuccess) {
-            Get.snackbar('Authentication Error', 'You need to be logged in to make a deposit.', 
+            Get.snackbar('Authentication Error', 'You need to be logged in to make a deposit.',
               snackPosition: SnackPosition.BOTTOM,
               backgroundColor: Colors.red.withOpacity(0.7),
               colorText: Colors.white
@@ -301,39 +268,594 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
           return Scaffold(
             backgroundColor: const Color(0xFF1A1A1A),
             appBar: _buildAppBar(),
-            body: BlocConsumer<DepositCubit, DepositState>(
-              listener: _blocListener,
-              builder: (context, state) {
-                final isLoading = state is DepositLoading;
-                return SingleChildScrollView(
-                  child: Padding(
-                    padding: EdgeInsets.all(24.w),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildSelectedCardSummary(),
-                        SizedBox(height: 24.h),
-                        if (_isVoiceEnabled) _buildVoiceCommandStatus(),
-                        if (_isVoiceEnabled) SizedBox(height: 24.h),
-                        _buildBankSelectionHeader(),
-                        SizedBox(height: 16.h),
-                        _buildBankSelectionGrid(isLoading),
-                        SizedBox(height: 24.h),
-                        _buildAmountInput(isLoading),
-                        SizedBox(height: 24.h),
-                        _buildQuickAmounts(isLoading),
-                        SizedBox(height: 32.h),
-                        _buildDepositButton(context, isLoading),
-                      ],
+            body: BlocListener<OpenBankingCubit, OpenBankingState>(
+              listener: _openBankingListener,
+              child: BlocConsumer<DepositCubit, DepositState>(
+                listener: _blocListener,
+                builder: (context, state) {
+                  final isLoading = state is DepositLoading;
+                  final openBankingState = context.watch<OpenBankingCubit>().state;
+                  final isOpenBankingLoading = openBankingState is OpenBankingLoading ||
+                                               openBankingState is AccountLinkingInProgress;
+                  return SingleChildScrollView(
+                    child: Padding(
+                      padding: EdgeInsets.all(24.w),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildSelectedCardSummary(),
+                          SizedBox(height: 24.h),
+                          // NGN accounts use Mono direct debit flow
+                          if (_isNGN) ...[
+                            _buildNGNMonoDirectDebitView(context, isLoading || isOpenBankingLoading),
+                          ] else ...[
+                            // Other currencies (GBP, USD, EUR) use standard flow
+                            _buildMonoInfoBanner(),
+                            SizedBox(height: 16.h),
+                            if (_isVoiceEnabled) _buildVoiceCommandStatus(),
+                            if (_isVoiceEnabled) SizedBox(height: 24.h),
+                            _buildBankSelectionHeader(),
+                            SizedBox(height: 16.h),
+                            _buildBankSelectionGrid(isLoading || isOpenBankingLoading),
+                            SizedBox(height: 24.h),
+                            _buildAmountInput(isLoading || isOpenBankingLoading),
+                            SizedBox(height: 24.h),
+                            _buildQuickAmounts(isLoading || isOpenBankingLoading),
+                            SizedBox(height: 32.h),
+                            _buildDepositButton(context, isLoading || isOpenBankingLoading),
+                          ],
+                        ],
+                      ),
                     ),
-                  ),
-                );
-              },
+                  );
+                },
+              ),
             ),
           );
         },
       ),
     );
+  }
+
+  /// Mono info banner showing open banking message
+  Widget _buildMonoInfoBanner() {
+    return Container(
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            const Color(0xFF4E03D0).withOpacity(0.1),
+            const Color(0xFF5F14E1).withOpacity(0.1),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(
+          color: const Color(0xFF4E03D0).withOpacity(0.3),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: EdgeInsets.all(10.w),
+            decoration: BoxDecoration(
+              color: const Color(0xFF4E03D0).withOpacity(0.2),
+              borderRadius: BorderRadius.circular(12.r),
+            ),
+            child: Icon(
+              Icons.security,
+              color: const Color(0xFF4E03D0),
+              size: 24.sp,
+            ),
+          ),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Secure Open Banking',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                SizedBox(height: 4.h),
+                Text(
+                  'Powered by Mono. Your bank credentials are never stored.',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.7),
+                    fontSize: 12.sp,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// NGN Mono Direct Debit View - Shows amount input, Mono open banking info and button to link bank
+  /// User enters amount first, then links their bank via Mono
+  /// After linking, the deposit is initiated via Mono DirectPay API
+  Widget _buildNGNMonoDirectDebitView(BuildContext context, bool isLoading) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Amount Input Section for NGN
+        Container(
+          padding: EdgeInsets.all(20.w),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.05),
+            borderRadius: BorderRadius.circular(16.r),
+            border: Border.all(
+              color: Colors.white.withOpacity(0.1),
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Deposit Amount',
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.7),
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              SizedBox(height: 12.h),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    '₦',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 32.sp,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  SizedBox(width: 8.w),
+                  Expanded(
+                    child: TextField(
+                      controller: _amountController,
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 32.sp,
+                        fontWeight: FontWeight.w700,
+                      ),
+                      decoration: InputDecoration(
+                        hintText: '0.00',
+                        hintStyle: TextStyle(
+                          color: Colors.white.withOpacity(0.3),
+                          fontSize: 32.sp,
+                          fontWeight: FontWeight.w700,
+                        ),
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 8.h),
+              Text(
+                'Min: ₦100 • Max: ₦1,000,000',
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.5),
+                  fontSize: 12.sp,
+                ),
+              ),
+            ],
+          ),
+        ),
+        SizedBox(height: 20.h),
+
+        // Mono Open Banking Info Card
+        Container(
+          padding: EdgeInsets.all(24.w),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                const Color(0xFF182CD1).withOpacity(0.15),
+                const Color(0xFF6C5CE7).withOpacity(0.1),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(20.r),
+            border: Border.all(
+              color: const Color(0xFF182CD1).withOpacity(0.3),
+              width: 1,
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // Secure badge
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF4CAF50).withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(20.r),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.verified_user,
+                      color: const Color(0xFF4CAF50),
+                      size: 16.sp,
+                    ),
+                    SizedBox(width: 6.w),
+                    Text(
+                      'Bank-Grade Security',
+                      style: TextStyle(
+                        color: const Color(0xFF4CAF50),
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 20.h),
+
+              // Mono logo and title
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'ꟿ',
+                    style: TextStyle(
+                      color: const Color(0xFF182CD1),
+                      fontSize: 28.sp,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  SizedBox(width: 4.w),
+                  Text(
+                    'mono',
+                    style: TextStyle(
+                      color: const Color(0xFF182CD1),
+                      fontSize: 28.sp,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 8.h),
+
+              Text(
+                'Open Banking',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 20.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              SizedBox(height: 12.h),
+
+              Text(
+                'Securely link your Nigerian bank account\nto make instant deposits',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.7),
+                  fontSize: 14.sp,
+                  height: 1.5,
+                ),
+              ),
+              SizedBox(height: 24.h),
+
+              // Features list
+              _buildNGNFeatureItem(
+                Icons.speed,
+                'Instant Deposits',
+                'Funds reflect immediately in your account',
+              ),
+              SizedBox(height: 12.h),
+              _buildNGNFeatureItem(
+                Icons.lock_outline,
+                'Secure Connection',
+                'AES-256 encryption protects your data',
+              ),
+              SizedBox(height: 12.h),
+              _buildNGNFeatureItem(
+                Icons.visibility_off_outlined,
+                'Private',
+                'Your credentials are never stored',
+              ),
+            ],
+          ),
+        ),
+        SizedBox(height: 24.h),
+
+        // Link Bank Button
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            onPressed: isLoading ? null : () => _launchNGNMonoBottomsheet(context),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF182CD1),
+              foregroundColor: Colors.white,
+              padding: EdgeInsets.symmetric(vertical: 16.h),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12.r),
+              ),
+              elevation: 0,
+            ),
+            child: isLoading
+                ? SizedBox(
+                    height: 22.h,
+                    width: 22.w,
+                    child: const CircularProgressIndicator(
+                      strokeWidth: 2.5,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    ),
+                  )
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'ꟿ',
+                        style: TextStyle(
+                          fontSize: 18.sp,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                      SizedBox(width: 8.w),
+                      Text(
+                        'Link Bank & Deposit',
+                        style: TextStyle(
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+          ),
+        ),
+        SizedBox(height: 16.h),
+
+        // Terms text
+        Text(
+          'By continuing, you agree to Mono\'s End-user Policy. Mono will have read-only access to your account.',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: Colors.white.withOpacity(0.5),
+            fontSize: 11.sp,
+            height: 1.4,
+          ),
+        ),
+        SizedBox(height: 24.h),
+      ],
+    );
+  }
+
+  /// Build feature item for NGN Mono view
+  Widget _buildNGNFeatureItem(IconData icon, String title, String description) {
+    return Row(
+      children: [
+        Container(
+          padding: EdgeInsets.all(8.w),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(8.r),
+          ),
+          child: Icon(
+            icon,
+            color: const Color(0xFF182CD1),
+            size: 18.sp,
+          ),
+        ),
+        SizedBox(width: 12.w),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 13.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              SizedBox(height: 2.h),
+              Text(
+                description,
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.6),
+                  fontSize: 11.sp,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Launch the NGN Mono Connect SDK directly
+  void _launchNGNMonoBottomsheet(BuildContext context) async {
+    // Validate amount first
+    final amountText = _amountController.text.trim();
+    final amount = double.tryParse(amountText) ?? 0;
+
+    if (amount < 100) {
+      Get.snackbar(
+        'Invalid Amount',
+        'Minimum deposit amount is ₦100',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.withOpacity(0.9),
+        colorText: Colors.white,
+      );
+      return;
+    }
+
+    if (amount > 1000000) {
+      Get.snackbar(
+        'Invalid Amount',
+        'Maximum deposit amount is ₦1,000,000',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.withOpacity(0.9),
+        colorText: Colors.white,
+      );
+      return;
+    }
+
+    final authState = context.read<AuthenticationCubit>().state;
+    if (authState is! AuthenticationSuccess) {
+      Get.snackbar(
+        'Authentication Error',
+        'You need to be logged in to make a deposit.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.withOpacity(0.7),
+        colorText: Colors.white,
+      );
+      return;
+    }
+
+    if (!MonoConfig.isEnabled) {
+      Get.snackbar(
+        'Configuration Error',
+        'Open banking is not configured. Please contact support.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.withOpacity(0.9),
+        colorText: Colors.white,
+      );
+      return;
+    }
+
+    debugPrint('[MonoConnect] Amount validated: ₦$amount');
+
+    final user = authState.profile.user;
+    final userId = user?.id ?? '';
+    final accessToken = authState.profile.session.accessToken;
+    final customerName = '${user?.firstName ?? ''} ${user?.lastName ?? ''}'.trim();
+    final customerEmail = user?.email ?? '';
+
+    debugPrint('[MonoConnect] Launching Mono Connect SDK');
+    debugPrint('[MonoConnect] Customer: $customerName ($customerEmail)');
+    debugPrint('[MonoConnect] User ID: $userId');
+
+    // Launch Mono Connect SDK directly (no intermediate bottomsheet)
+    final result = await showMonoConnectBottomSheet(
+      context: context,
+      publicKey: MonoConfig.publicKey,
+      customerName: customerName.isNotEmpty ? customerName : null,
+      customerEmail: customerEmail.isNotEmpty ? customerEmail : null,
+      reference: 'lzv_deposit_${DateTime.now().millisecondsSinceEpoch}',
+    );
+
+    if (result != null) {
+      debugPrint('[MonoConnect] Success - Code: ${result.code.substring(0, result.code.length > 10 ? 10 : result.code.length)}...');
+      debugPrint('[MonoConnect] Institution: ${result.institutionName ?? result.institutionId ?? 'unknown'}');
+
+      // Link the account using the OpenBankingCubit
+      context.read<OpenBankingCubit>().linkAccount(
+        userId: userId,
+        code: result.code,
+        accessToken: accessToken,
+      );
+
+      Get.snackbar(
+        'Account Linked',
+        'Your ${result.institutionName ?? 'bank'} account has been linked successfully.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.green.withOpacity(0.9),
+        colorText: Colors.white,
+        duration: const Duration(seconds: 3),
+      );
+
+      // Refresh account balances
+      _refreshAccountBalances(context);
+    } else {
+      debugPrint('[MonoConnect] User cancelled or closed');
+    }
+  }
+
+  /// Handle open banking state changes
+  void _openBankingListener(BuildContext context, OpenBankingState state) {
+    debugPrint('[Deposit] OpenBankingListener received state: ${state.runtimeType}');
+
+    if (state is AccountLinked) {
+      // Account successfully linked
+      debugPrint('[Deposit] Account linked: ${state.account.id}, bankName: ${state.account.bankName}');
+      setState(() {
+        _linkedAccountId = state.account.id;
+      });
+      Get.snackbar(
+        'Account Linked',
+        'Your ${state.account.bankName} account has been linked successfully.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.green.withOpacity(0.9),
+        colorText: Colors.white,
+        duration: const Duration(seconds: 3),
+      );
+
+      // For all currencies (including NGN), initiate the deposit after linking
+      // The Mono Connect SDK only LINKS the account - we must call InitiateDeposit
+      // to trigger the Mono DirectPay API which debits the user's bank
+      debugPrint('[Deposit] Calling _proceedWithMonoDeposit with linkedAccountId: $_linkedAccountId');
+      _proceedWithMonoDeposit(context);
+    } else if (state is DepositInitiated) {
+      // Deposit initiated - show processing message
+      Get.snackbar(
+        'Processing Deposit',
+        'Your deposit is being processed. Please wait...',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.blue.withOpacity(0.9),
+        colorText: Colors.white,
+        duration: const Duration(seconds: 5),
+      );
+    } else if (state is DepositStatusUpdated) {
+      // Check deposit status
+      final deposit = state.deposit;
+      if (deposit.status == DepositStatus.successful) {
+        // Deposit completed - refresh balances
+        _refreshAccountBalances(context);
+        Get.snackbar(
+          'Deposit Successful',
+          'Your deposit has been completed successfully.',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.green.withOpacity(0.9),
+          colorText: Colors.white,
+          duration: const Duration(seconds: 3),
+        );
+
+        // Navigate back after success
+        Future.delayed(const Duration(seconds: 2), () {
+          if (Navigator.canPop(context)) {
+            Navigator.of(context).pop();
+          }
+        });
+      } else if (deposit.status == DepositStatus.failed) {
+        Get.snackbar(
+          'Deposit Failed',
+          deposit.failureReason ?? 'The deposit could not be completed.',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red.withOpacity(0.9),
+          colorText: Colors.white,
+          duration: const Duration(seconds: 5),
+        );
+      }
+    } else if (state is OpenBankingError) {
+      debugPrint('[Deposit] OpenBankingError: ${state.message}, operation: ${state.operation}');
+      Get.snackbar(
+        'Error',
+        state.message,
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.withOpacity(0.9),
+        colorText: Colors.white,
+        duration: const Duration(seconds: 5),
+      );
+    }
   }
   
   void _blocListener(BuildContext context, DepositState state) {
@@ -360,7 +882,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
       Get.closeAllSnackbars();
       Get.snackbar(
         'Deposit Successful',
-        'Your deposit of £${_amountController.text} from $_selectedBank has been received successfully.',
+        'Your deposit of $_currencySymbol${_amountController.text} from $_selectedBank has been received successfully.',
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.green.withOpacity(0.9),
         colorText: Colors.white,
@@ -515,7 +1037,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
           ),
           SizedBox(height: 20.h),
           Text(
-            "£${widget.selectedCard['balance'].toStringAsFixed(2)}",
+            "$_currencySymbol${widget.selectedCard['balance'].toStringAsFixed(2)}",
             style: TextStyle(
               color: Colors.white,
               fontSize: 32.sp,
@@ -600,7 +1122,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
-          'Select UK Bank',
+          'Select Your Bank',
           style: TextStyle(
             color: Colors.white,
             fontSize: 16.sp,
@@ -751,7 +1273,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
                   borderRadius: BorderRadius.circular(8.r),
                 ),
                 child: Text(
-                  '£',
+                  _currencySymbol,
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 16.sp,
@@ -803,10 +1325,10 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            _buildQuickAmountButton('£100', isLoading),
-            _buildQuickAmountButton('£500', isLoading),
-            _buildQuickAmountButton('£1000', isLoading),
-            _buildQuickAmountButton('£2000', isLoading),
+            _buildQuickAmountButton('${_currencySymbol}100', isLoading),
+            _buildQuickAmountButton('${_currencySymbol}500', isLoading),
+            _buildQuickAmountButton('${_currencySymbol}1000', isLoading),
+            _buildQuickAmountButton('${_currencySymbol}2000', isLoading),
           ],
         ),
       ],
@@ -818,7 +1340,9 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
       color: Colors.transparent,
       child: InkWell(
         onTap: isLoading ? null : () {
-          setState(() => _amountController.text = amount.replaceAll('£', ''));
+          // Remove any currency symbol to get the numeric value
+          final numericAmount = amount.replaceAll(RegExp(r'[₦£\$€]'), '');
+          setState(() => _amountController.text = numericAmount);
         },
         borderRadius: BorderRadius.circular(12.r),
         child: Container(
@@ -851,13 +1375,15 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
   Widget _buildDepositButton(BuildContext buildContext, bool isLoading) {
     final amount = double.tryParse(_amountController.text) ?? 0;
     final isValid = _selectedBank.isNotEmpty && amount > 0;
+    // Combined loading state: Mono Connect opening OR deposit processing
+    final isAnyLoading = isLoading || _isMonoLoading;
 
     return Container(
       width: double.infinity,
       margin: EdgeInsets.only(bottom: 16.h),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16.r),
-        boxShadow: isValid && !isLoading
+        boxShadow: isValid && !isAnyLoading
             ? [
                 BoxShadow(
                   color: const Color(0xFF10B981).withOpacity(0.3),
@@ -868,9 +1394,9 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
             : [],
       ),
       child: ElevatedButton(
-        onPressed: !isValid || isLoading ? null : () => _handleDeposit(buildContext),
+        onPressed: !isValid || isAnyLoading ? null : () => _handleDeposit(buildContext),
         style: ElevatedButton.styleFrom(
-          backgroundColor: isValid && !isLoading
+          backgroundColor: isValid && !isAnyLoading
               ? const Color(0xFF10B981)
               : Colors.grey.shade700,
           foregroundColor: Colors.white,
@@ -881,51 +1407,86 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
           elevation: 0,
           minimumSize: Size(double.infinity, 56.h),
         ),
-        child: isLoading
-            ? Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SizedBox(
-                    height: 20.h,
-                    width: 20.w,
-                    child: const CircularProgressIndicator(
-                      strokeWidth: 2.5,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                    ),
-                  ),
-                  SizedBox(width: 12.w),
-                  Text(
-                    'Processing Deposit...',
-                    style: TextStyle(
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                ],
-              )
-            : Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Transform.rotate(
-                    angle: -0.785398, // -45 degrees in radians (up-right arrow)
-                    child: Icon(
-                      Icons.arrow_upward_rounded,
-                      size: 22.sp,
-                    ),
-                  ),
-                  SizedBox(width: 12.w),
-                  Text(
-                    amount > 0 ? 'Deposit £${amount.toStringAsFixed(2)}' : 'Deposit Funds',
-                    style: TextStyle(
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                ],
-              ),
+        child: _buildDepositButtonContent(isLoading, amount),
       ),
+    );
+  }
+
+  /// Build the deposit button content based on loading states
+  Widget _buildDepositButtonContent(bool isProcessingDeposit, double amount) {
+    // Show Mono Connect loading state
+    if (_isMonoLoading) {
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          SizedBox(
+            height: 20.h,
+            width: 20.w,
+            child: const CircularProgressIndicator(
+              strokeWidth: 2.5,
+              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+            ),
+          ),
+          SizedBox(width: 12.w),
+          Text(
+            'Connecting to bank...',
+            style: TextStyle(
+              fontSize: 16.sp,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.5,
+            ),
+          ),
+        ],
+      );
+    }
+
+    // Show deposit processing state
+    if (isProcessingDeposit) {
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          SizedBox(
+            height: 20.h,
+            width: 20.w,
+            child: const CircularProgressIndicator(
+              strokeWidth: 2.5,
+              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+            ),
+          ),
+          SizedBox(width: 12.w),
+          Text(
+            'Processing Deposit...',
+            style: TextStyle(
+              fontSize: 16.sp,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.5,
+            ),
+          ),
+        ],
+      );
+    }
+
+    // Default state - show deposit button text
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Transform.rotate(
+          angle: -0.785398, // -45 degrees in radians (up-right arrow)
+          child: Icon(
+            Icons.arrow_upward_rounded,
+            size: 22.sp,
+          ),
+        ),
+        SizedBox(width: 12.w),
+        Text(
+          amount > 0 ? 'Deposit $_currencySymbol${amount.toStringAsFixed(2)}' : 'Deposit Funds',
+          style: TextStyle(
+            fontSize: 16.sp,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 0.5,
+          ),
+        ),
+      ],
     );
   }
 
@@ -942,31 +1503,49 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
       return;
     }
 
-    int? targetAccountId;
-    try {
-      if (widget.selectedCard['id'] is int) {
-        targetAccountId = widget.selectedCard['id'];
-      } else if (widget.selectedCard['id'] is String) {
-        targetAccountId = int.tryParse(widget.selectedCard['id'] as String);
-      }
-    } catch (e) {
-      print('Error parsing account ID: $e');
-    }
-
-    if (targetAccountId == null) {
-      Get.snackbar('Error', 'Invalid account information. Please try again.', snackPosition: SnackPosition.BOTTOM);
+    // Check if Mono is enabled
+    if (!MonoConfig.isEnabled) {
+      Get.snackbar(
+        'Configuration Error',
+        'Open banking is not configured. Please contact support.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.withOpacity(0.9),
+        colorText: Colors.white,
+      );
       return;
     }
 
-    final currency = widget.selectedCard['currency'] as String? ?? 'GBP';
+    // Get the Mono institution ID from the bank data (fetched from Mono API)
+    String? institutionId;
+    try {
+      final selectedBankData = _banks.firstWhere(
+        (bank) => bank['name'] == _selectedBank,
+        orElse: () => <String, dynamic>{},
+      );
+      institutionId = selectedBankData['monoId'] as String?;
+    } catch (_) {
+      institutionId = null;
+    }
 
-    final authState = context.read<AuthenticationCubit>().state;
-    String? accessToken;
-    
-    if (authState is AuthenticationSuccess) {
-      accessToken = authState.profile.session.accessToken;
-    } else {
-      Get.snackbar('Authentication Error', 'You need to be logged in to make a deposit.', 
+    debugPrint('[Deposit] Selected bank: $_selectedBank, institutionId: $institutionId');
+
+    // If we don't have a valid institution ID, let Mono show its bank selector
+    // This is better than using an incorrect ID that causes errors
+    if (institutionId == null || institutionId.isEmpty) {
+      debugPrint('[Deposit] No institution ID found - Mono will show bank selector');
+    }
+
+    // Launch Mono Connect to link bank account and authorize deposit
+    _launchMonoConnect(buildContext, institutionId);
+  }
+
+  /// Launch Mono Connect widget to link bank and authorize deposit
+  Future<void> _launchMonoConnect(BuildContext buildContext, String? institutionId) async {
+    final authState = buildContext.read<AuthenticationCubit>().state;
+    if (authState is! AuthenticationSuccess) {
+      Get.snackbar(
+        'Authentication Error',
+        'You need to be logged in to make a deposit.',
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.red.withOpacity(0.7),
         colorText: Colors.white
@@ -974,11 +1553,186 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
       return;
     }
 
-    buildContext.read<DepositCubit>().initiateDeposit(
-      targetAccountId: targetAccountId,
+    // Set loading state while Mono Connect opens
+    setState(() {
+      _isMonoLoading = true;
+    });
+
+    final userId = authState.profile.user.id;
+    final user = authState.profile.user;
+    final reference = 'deposit_${userId}_${DateTime.now().millisecondsSinceEpoch}';
+
+    // Get customer info for Mono
+    final customerName = '${user.firstName ?? ''} ${user.lastName ?? ''}'.trim();
+    final customerEmail = user.email;
+
+    MonoConnectResult? result;
+    try {
+      // Show Mono Connect using native SDK
+      // With selectedInstitution, the bank selection screen is skipped
+      result = await showMonoConnectBottomSheet(
+        context: buildContext,
+        publicKey: MonoConfig.publicKey,
+        institutionId: institutionId,
+        reference: reference,
+        title: _selectedBank.isNotEmpty ? 'Link $_selectedBank' : 'Link Bank Account',
+        customerName: customerName.isNotEmpty ? customerName : null,
+        customerEmail: customerEmail,
+      );
+    } finally {
+      // Clear loading state when Mono Connect closes
+      if (mounted) {
+        setState(() {
+          _isMonoLoading = false;
+        });
+      }
+    }
+
+    if (result != null) {
+      // Successfully got result - check if user changed bank in Mono flow
+      if (result.institutionName != null && result.institutionName!.isNotEmpty) {
+        // Try to find matching bank name in our list
+        final monoInstitutionName = result.institutionName!;
+        final matchingBank = _findMatchingBankName(monoInstitutionName);
+
+        if (matchingBank != null && matchingBank != _selectedBank) {
+          // User selected a different bank in Mono - update our selection
+          debugPrint('[Deposit] Bank changed in Mono: $_selectedBank -> $matchingBank');
+          setState(() {
+            _selectedBank = matchingBank;
+          });
+        }
+      }
+
+      // Link the account with the auth code
+      final accessToken = authState.profile.session.accessToken;
+      if (mounted) {
+        buildContext.read<OpenBankingCubit>().linkAccount(
+          userId: userId,
+          code: result.code,
+          accessToken: accessToken,
+          setAsDefault: true,
+        );
+      }
+    } else {
+      // User cancelled or error occurred
+      Get.snackbar(
+        'Cancelled',
+        'Bank linking was cancelled. Please try again to make a deposit.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.grey.withOpacity(0.9),
+        colorText: Colors.white,
+      );
+    }
+  }
+
+  /// Find matching bank name in our list from Mono's institution name
+  String? _findMatchingBankName(String monoInstitutionName) {
+    final lowerMonoName = monoInstitutionName.toLowerCase();
+
+    // First try exact match
+    for (final bank in _banks) {
+      final bankName = bank['name'] as String? ?? '';
+      if (bankName.toLowerCase() == lowerMonoName) {
+        return bankName;
+      }
+    }
+
+    // Try fuzzy match (contains)
+    for (final bank in _banks) {
+      final bankName = bank['name'] as String? ?? '';
+      if (bankName.toLowerCase().contains(lowerMonoName) ||
+          lowerMonoName.contains(bankName.toLowerCase())) {
+        return bankName;
+      }
+    }
+
+    // Try matching by key words
+    final monoWords = lowerMonoName.split(' ').where((w) => w.length > 2).toList();
+    for (final bank in _banks) {
+      final bankName = bank['name'] as String? ?? '';
+      final bankNameLower = bankName.toLowerCase();
+      for (final word in monoWords) {
+        if (bankNameLower.contains(word)) {
+          return bankName;
+        }
+      }
+    }
+
+    return null;
+  }
+
+  /// Proceed with deposit after account is linked
+  void _proceedWithMonoDeposit(BuildContext buildContext) {
+    debugPrint('[Deposit] _proceedWithMonoDeposit called');
+
+    final authState = buildContext.read<AuthenticationCubit>().state;
+    if (authState is! AuthenticationSuccess) {
+      debugPrint('[Deposit] ERROR: User not authenticated');
+      return;
+    }
+
+    final amountText = _amountController.text;
+    final amount = double.tryParse(amountText) ?? 0;
+    debugPrint('[Deposit] Amount text: "$amountText", parsed amount: $amount, linkedAccountId: $_linkedAccountId');
+
+    if (amount <= 0) {
+      debugPrint('[Deposit] ERROR: Amount is <= 0, cannot proceed');
+      Get.snackbar(
+        'Error',
+        'Please enter a valid deposit amount.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.withOpacity(0.9),
+        colorText: Colors.white,
+      );
+      return;
+    }
+
+    if (_linkedAccountId == null) {
+      debugPrint('[Deposit] ERROR: linkedAccountId is null');
+      Get.snackbar(
+        'Error',
+        'Bank account not linked. Please try again.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.withOpacity(0.9),
+        colorText: Colors.white,
+      );
+      return;
+    }
+
+    final userId = authState.profile.user.id;
+    final accessToken = authState.profile.session.accessToken;
+
+    // Get destination account ID
+    String? destinationAccountId;
+    if (widget.selectedCard['id'] is int) {
+      destinationAccountId = widget.selectedCard['id'].toString();
+    } else if (widget.selectedCard['id'] is String) {
+      destinationAccountId = widget.selectedCard['id'] as String;
+    }
+    debugPrint('[Deposit] Destination account ID: $destinationAccountId (from widget.selectedCard["id"]: ${widget.selectedCard['id']})');
+
+    if (destinationAccountId == null) {
+      debugPrint('[Deposit] ERROR: destinationAccountId is null');
+      Get.snackbar(
+        'Error',
+        'Invalid account information. Please try again.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.withOpacity(0.9),
+        colorText: Colors.white,
+      );
+      return;
+    }
+
+    debugPrint('[Deposit] Initiating deposit: userId=$userId, linkedAccountId=$_linkedAccountId, destAccountId=$destinationAccountId, amount=$amount');
+
+    // Initiate deposit via open banking
+    buildContext.read<OpenBankingCubit>().initiateDeposit(
+      userId: userId,
+      linkedAccountId: _linkedAccountId!,
+      destinationAccountId: destinationAccountId,
       amount: amount,
-      currency: currency,
-      sourceBankName: _selectedBank,
+      narration: 'Deposit from $_selectedBank to LazerVault',
       accessToken: accessToken,
     );
   }
@@ -992,9 +1746,255 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
 
   @override
   void dispose() {
+    _amountController.removeListener(_onAmountChanged);
     _amountController.dispose();
     _flutterTts.stop();
     _speech.cancel();
     super.dispose();
+  }
+}
+
+/// Bottom sheet widget with bank search functionality
+class _BankSearchBottomSheet extends StatefulWidget {
+  final List<Map<String, dynamic>> banks;
+  final String selectedBank;
+  final Function(String) onBankSelected;
+
+  const _BankSearchBottomSheet({
+    required this.banks,
+    required this.selectedBank,
+    required this.onBankSelected,
+  });
+
+  @override
+  State<_BankSearchBottomSheet> createState() => _BankSearchBottomSheetState();
+}
+
+class _BankSearchBottomSheetState extends State<_BankSearchBottomSheet> {
+  final TextEditingController _searchController = TextEditingController();
+  List<Map<String, dynamic>> _filteredBanks = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _filteredBanks = widget.banks;
+    _searchController.addListener(_filterBanks);
+  }
+
+  void _filterBanks() {
+    final query = _searchController.text.toLowerCase().trim();
+    setState(() {
+      if (query.isEmpty) {
+        _filteredBanks = widget.banks;
+      } else {
+        _filteredBanks = widget.banks.where((bank) {
+          final bankName = (bank['name'] as String? ?? '').toLowerCase();
+          return bankName.contains(query);
+        }).toList();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.removeListener(_filterBanks);
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.8,
+      padding: EdgeInsets.all(24.w),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Select Bank',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 20.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.close, color: Colors.white),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ],
+          ),
+          SizedBox(height: 16.h),
+          // Search field
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.08),
+              borderRadius: BorderRadius.circular(12.r),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.1),
+              ),
+            ),
+            child: TextField(
+              controller: _searchController,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 16.sp,
+              ),
+              decoration: InputDecoration(
+                hintText: 'Search banks...',
+                hintStyle: TextStyle(
+                  color: Colors.white.withOpacity(0.4),
+                  fontSize: 16.sp,
+                ),
+                prefixIcon: Icon(
+                  Icons.search,
+                  color: Colors.white.withOpacity(0.5),
+                  size: 22.sp,
+                ),
+                suffixIcon: _searchController.text.isNotEmpty
+                    ? IconButton(
+                        icon: Icon(
+                          Icons.clear,
+                          color: Colors.white.withOpacity(0.5),
+                          size: 20.sp,
+                        ),
+                        onPressed: () {
+                          _searchController.clear();
+                        },
+                      )
+                    : null,
+                border: InputBorder.none,
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 16.w,
+                  vertical: 14.h,
+                ),
+              ),
+              autofocus: true,
+            ),
+          ),
+          SizedBox(height: 16.h),
+          // Results count
+          if (_searchController.text.isNotEmpty)
+            Padding(
+              padding: EdgeInsets.only(bottom: 8.h),
+              child: Text(
+                '${_filteredBanks.length} bank${_filteredBanks.length == 1 ? '' : 's'} found',
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.5),
+                  fontSize: 13.sp,
+                ),
+              ),
+            ),
+          // Bank list
+          Expanded(
+            child: _filteredBanks.isEmpty
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.search_off,
+                          color: Colors.white.withOpacity(0.3),
+                          size: 48.sp,
+                        ),
+                        SizedBox(height: 16.h),
+                        Text(
+                          'No banks found',
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.5),
+                            fontSize: 16.sp,
+                          ),
+                        ),
+                        SizedBox(height: 8.h),
+                        Text(
+                          'Try a different search term',
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.3),
+                            fontSize: 14.sp,
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                : ListView.builder(
+                    itemCount: _filteredBanks.length,
+                    itemBuilder: (context, index) {
+                      final bank = _filteredBanks[index];
+                      final isSelected = widget.selectedBank == bank['name'];
+                      return Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: () => widget.onBankSelected(bank['name']),
+                          borderRadius: BorderRadius.circular(16.r),
+                          child: Container(
+                            margin: EdgeInsets.only(bottom: 12.h),
+                            padding: EdgeInsets.all(16.w),
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? bank['color'].withOpacity(0.1)
+                                  : Colors.white.withOpacity(0.05),
+                              borderRadius: BorderRadius.circular(16.r),
+                              border: Border.all(
+                                color: isSelected
+                                    ? bank['color']
+                                    : Colors.white.withOpacity(0.1),
+                                width: isSelected ? 2 : 1,
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  padding: EdgeInsets.all(8.w),
+                                  decoration: BoxDecoration(
+                                    color: bank['color'].withOpacity(0.1),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Icon(
+                                    bank['icon'],
+                                    color: bank['color'],
+                                    size: 24.sp,
+                                  ),
+                                ),
+                                SizedBox(width: 16.w),
+                                Expanded(
+                                  child: Text(
+                                    bank['name'],
+                                    style: TextStyle(
+                                      color: isSelected
+                                          ? bank['color']
+                                          : Colors.white,
+                                      fontSize: 16.sp,
+                                      fontWeight: FontWeight.w700,
+                                      letterSpacing: 0.2,
+                                    ),
+                                  ),
+                                ),
+                                if (isSelected)
+                                  Container(
+                                    padding: EdgeInsets.all(4.w),
+                                    decoration: BoxDecoration(
+                                      color: bank['color'],
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Icon(
+                                      Icons.check,
+                                      color: Colors.white,
+                                      size: 16.sp,
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+          ),
+        ],
+      ),
+    );
   }
 }

@@ -6925,6 +6925,364 @@ class DailyReportResponse extends $pb.GeneratedMessage {
   void clearTotalLedgerBalance() => clearField(16);
 }
 
+class GetMonoInstitutionsRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetMonoInstitutionsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'banking'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'scope')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'country')
+    ..hasRequiredFields = false
+  ;
+
+  GetMonoInstitutionsRequest._() : super();
+  factory GetMonoInstitutionsRequest({
+    $core.String? scope,
+    $core.String? country,
+  }) {
+    final _result = create();
+    if (scope != null) {
+      _result.scope = scope;
+    }
+    if (country != null) {
+      _result.country = country;
+    }
+    return _result;
+  }
+  factory GetMonoInstitutionsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetMonoInstitutionsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetMonoInstitutionsRequest clone() => GetMonoInstitutionsRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetMonoInstitutionsRequest copyWith(void Function(GetMonoInstitutionsRequest) updates) => super.copyWith((message) => updates(message as GetMonoInstitutionsRequest)) as GetMonoInstitutionsRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GetMonoInstitutionsRequest create() => GetMonoInstitutionsRequest._();
+  GetMonoInstitutionsRequest createEmptyInstance() => create();
+  static $pb.PbList<GetMonoInstitutionsRequest> createRepeated() => $pb.PbList<GetMonoInstitutionsRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetMonoInstitutionsRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetMonoInstitutionsRequest>(create);
+  static GetMonoInstitutionsRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get scope => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set scope($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasScope() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearScope() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get country => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set country($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasCountry() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearCountry() => clearField(2);
+}
+
+class MonoInstitutionsResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'MonoInstitutionsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'banking'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'errorCode')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'errorMessage')
+    ..pc<MonoInstitution>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'institutions', $pb.PbFieldType.PM, subBuilder: MonoInstitution.create)
+    ..hasRequiredFields = false
+  ;
+
+  MonoInstitutionsResponse._() : super();
+  factory MonoInstitutionsResponse({
+    $core.bool? success,
+    $core.String? errorCode,
+    $core.String? errorMessage,
+    $core.Iterable<MonoInstitution>? institutions,
+  }) {
+    final _result = create();
+    if (success != null) {
+      _result.success = success;
+    }
+    if (errorCode != null) {
+      _result.errorCode = errorCode;
+    }
+    if (errorMessage != null) {
+      _result.errorMessage = errorMessage;
+    }
+    if (institutions != null) {
+      _result.institutions.addAll(institutions);
+    }
+    return _result;
+  }
+  factory MonoInstitutionsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory MonoInstitutionsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  MonoInstitutionsResponse clone() => MonoInstitutionsResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  MonoInstitutionsResponse copyWith(void Function(MonoInstitutionsResponse) updates) => super.copyWith((message) => updates(message as MonoInstitutionsResponse)) as MonoInstitutionsResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static MonoInstitutionsResponse create() => MonoInstitutionsResponse._();
+  MonoInstitutionsResponse createEmptyInstance() => create();
+  static $pb.PbList<MonoInstitutionsResponse> createRepeated() => $pb.PbList<MonoInstitutionsResponse>();
+  @$core.pragma('dart2js:noInline')
+  static MonoInstitutionsResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<MonoInstitutionsResponse>(create);
+  static MonoInstitutionsResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool v) { $_setBool(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get errorCode => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set errorCode($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasErrorCode() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearErrorCode() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get errorMessage => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set errorMessage($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasErrorMessage() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearErrorMessage() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.List<MonoInstitution> get institutions => $_getList(3);
+}
+
+class MonoInstitution extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'MonoInstitution', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'banking'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'name')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'bankCode')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'icon')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'type')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'country')
+    ..pc<MonoAuthMethod>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'authMethods', $pb.PbFieldType.PM, subBuilder: MonoAuthMethod.create)
+    ..aOB(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'supportsMobileBanking')
+    ..aOB(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'supportsInternetBanking')
+    ..hasRequiredFields = false
+  ;
+
+  MonoInstitution._() : super();
+  factory MonoInstitution({
+    $core.String? id,
+    $core.String? name,
+    $core.String? bankCode,
+    $core.String? icon,
+    $core.String? type,
+    $core.String? country,
+    $core.Iterable<MonoAuthMethod>? authMethods,
+    $core.bool? supportsMobileBanking,
+    $core.bool? supportsInternetBanking,
+  }) {
+    final _result = create();
+    if (id != null) {
+      _result.id = id;
+    }
+    if (name != null) {
+      _result.name = name;
+    }
+    if (bankCode != null) {
+      _result.bankCode = bankCode;
+    }
+    if (icon != null) {
+      _result.icon = icon;
+    }
+    if (type != null) {
+      _result.type = type;
+    }
+    if (country != null) {
+      _result.country = country;
+    }
+    if (authMethods != null) {
+      _result.authMethods.addAll(authMethods);
+    }
+    if (supportsMobileBanking != null) {
+      _result.supportsMobileBanking = supportsMobileBanking;
+    }
+    if (supportsInternetBanking != null) {
+      _result.supportsInternetBanking = supportsInternetBanking;
+    }
+    return _result;
+  }
+  factory MonoInstitution.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory MonoInstitution.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  MonoInstitution clone() => MonoInstitution()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  MonoInstitution copyWith(void Function(MonoInstitution) updates) => super.copyWith((message) => updates(message as MonoInstitution)) as MonoInstitution; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static MonoInstitution create() => MonoInstitution._();
+  MonoInstitution createEmptyInstance() => create();
+  static $pb.PbList<MonoInstitution> createRepeated() => $pb.PbList<MonoInstitution>();
+  @$core.pragma('dart2js:noInline')
+  static MonoInstitution getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<MonoInstitution>(create);
+  static MonoInstitution? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get id => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set id($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get name => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set name($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasName() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearName() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get bankCode => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set bankCode($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasBankCode() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearBankCode() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get icon => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set icon($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasIcon() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearIcon() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get type => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set type($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasType() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearType() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get country => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set country($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasCountry() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearCountry() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.List<MonoAuthMethod> get authMethods => $_getList(6);
+
+  @$pb.TagNumber(8)
+  $core.bool get supportsMobileBanking => $_getBF(7);
+  @$pb.TagNumber(8)
+  set supportsMobileBanking($core.bool v) { $_setBool(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasSupportsMobileBanking() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearSupportsMobileBanking() => clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.bool get supportsInternetBanking => $_getBF(8);
+  @$pb.TagNumber(9)
+  set supportsInternetBanking($core.bool v) { $_setBool(8, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasSupportsInternetBanking() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearSupportsInternetBanking() => clearField(9);
+}
+
+class MonoAuthMethod extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'MonoAuthMethod', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'banking'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'type')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'name')
+    ..hasRequiredFields = false
+  ;
+
+  MonoAuthMethod._() : super();
+  factory MonoAuthMethod({
+    $core.String? type,
+    $core.String? name,
+  }) {
+    final _result = create();
+    if (type != null) {
+      _result.type = type;
+    }
+    if (name != null) {
+      _result.name = name;
+    }
+    return _result;
+  }
+  factory MonoAuthMethod.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory MonoAuthMethod.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  MonoAuthMethod clone() => MonoAuthMethod()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  MonoAuthMethod copyWith(void Function(MonoAuthMethod) updates) => super.copyWith((message) => updates(message as MonoAuthMethod)) as MonoAuthMethod; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static MonoAuthMethod create() => MonoAuthMethod._();
+  MonoAuthMethod createEmptyInstance() => create();
+  static $pb.PbList<MonoAuthMethod> createRepeated() => $pb.PbList<MonoAuthMethod>();
+  @$core.pragma('dart2js:noInline')
+  static MonoAuthMethod getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<MonoAuthMethod>(create);
+  static MonoAuthMethod? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get type => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set type($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasType() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearType() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get name => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set name($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasName() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearName() => clearField(2);
+}
+
 class GetConnectWidgetConfigRequest extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetConnectWidgetConfigRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'banking'), createEmptyInstance: create)
     ..hasRequiredFields = false
