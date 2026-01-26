@@ -17,6 +17,7 @@ import 'package:lazervault/src/features/funds/data/services/mono_institutions_se
 import 'package:lazervault/src/features/funds/presentation/widgets/pay_by_transfer_card.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/recurring_access_toggle.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/directpay_authorization_sheet.dart';
+import 'package:lazervault/src/features/funds/presentation/widgets/directpay_progress_bottomsheet.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
@@ -54,6 +55,10 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
   // false = DirectPay (one-time authorization per transaction)
   // true = Mandate (authorize once for recurring access)
   bool _useRecurringAccess = false;
+
+  // DirectPay progress controller for animated bottomsheet
+  final DirectPayProgressController _progressController = DirectPayProgressController();
+  bool _isProgressSheetShown = false;
 
   List<Map<String, dynamic>> get _displayedBanks {
     if (_banks.isEmpty) return [];
@@ -806,26 +811,67 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
       debugPrint('[MonoConnect] Success - Code: ${result.code.substring(0, result.code.length > 10 ? 10 : result.code.length)}...');
       debugPrint('[MonoConnect] Institution: ${result.institutionName ?? result.institutionId ?? 'unknown'}');
 
+      // Show progress bottomsheet
+      _progressController.show(
+        bankName: result.institutionName ?? 'Bank',
+        amount: amount,
+        currency: _currency,
+      );
+      _showProgressBottomsheet(context);
+
       // Link the account using the OpenBankingCubit
       context.read<OpenBankingCubit>().linkAccount(
         userId: userId,
         code: result.code,
         accessToken: accessToken,
       );
-
-      Get.snackbar(
-        'Bank Linked Successfully',
-        'Your deposit is being processed',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.green.withOpacity(0.9),
-        colorText: Colors.white,
-        duration: const Duration(seconds: 3),
-      );
-
-      // Refresh account balances
-      _refreshAccountBalances(context);
     } else {
       debugPrint('[MonoConnect] User cancelled or closed');
+    }
+  }
+
+  /// Show the DirectPay progress bottomsheet
+  void _showProgressBottomsheet(BuildContext context) {
+    if (_isProgressSheetShown) return;
+    _isProgressSheetShown = true;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isDismissible: false,
+      enableDrag: false,
+      isScrollControlled: true,
+      builder: (sheetContext) => DirectPayProgressBottomsheet(
+        controller: _progressController,
+        onSuccess: () {
+          _isProgressSheetShown = false;
+          Navigator.of(sheetContext).pop();
+          // Navigate back to dashboard
+          _navigateToDashboard();
+        },
+        onDismiss: () {
+          _isProgressSheetShown = false;
+          Navigator.of(sheetContext).pop();
+        },
+      ),
+    ).whenComplete(() {
+      _isProgressSheetShown = false;
+    });
+  }
+
+  /// Navigate back to dashboard after successful deposit
+  void _navigateToDashboard() {
+    // Clear form
+    _amountController.clear();
+    setState(() {
+      _selectedBank = '';
+      _wasSelectedFromBottomSheet = false;
+      _linkedAccountId = null;
+    });
+
+    // Navigate back
+    if (mounted && Navigator.canPop(context)) {
+      Navigator.of(context).pop();
     }
   }
 
@@ -844,23 +890,15 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
 
     if (result.success) {
       debugPrint('[DirectPay] Authorization successful');
-      Get.snackbar(
-        'Payment Authorized',
-        'Your deposit is being processed',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.green.withOpacity(0.9),
-        colorText: Colors.white,
-      );
+      // Update progress to processing stage
+      _progressController.updateStage(DirectPayStage.processing);
       // Refresh balances after successful authorization
       _refreshAccountBalances(context);
     } else {
       debugPrint('[DirectPay] Authorization failed: ${result.errorMessage}');
-      Get.snackbar(
-        'Authorization Failed',
-        result.errorMessage ?? 'Payment authorization was cancelled',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withOpacity(0.9),
-        colorText: Colors.white,
+      _progressController.updateStage(
+        DirectPayStage.failed,
+        errorMessage: result.errorMessage ?? 'Payment authorization was cancelled',
       );
     }
   }
@@ -875,14 +913,9 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
       setState(() {
         _linkedAccountId = state.account.id;
       });
-      Get.snackbar(
-        'Account Linked',
-        'Your ${state.account.bankName} account has been linked successfully.',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.green.withOpacity(0.9),
-        colorText: Colors.white,
-        duration: const Duration(seconds: 3),
-      );
+
+      // Update progress to initiating stage
+      _progressController.updateStage(DirectPayStage.initiating);
 
       // For all currencies (including NGN), initiate the deposit after linking
       // The Mono Connect SDK only LINKS the account - we must call InitiateDeposit
@@ -897,22 +930,16 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
       if (deposit.requiresAuthorization &&
           deposit.paymentUrl != null &&
           deposit.paymentUrl!.isNotEmpty) {
-        // DirectPay authorization needed - open in-app WebView
+        // DirectPay authorization needed - update progress and open in-app WebView
         debugPrint('[Deposit] DirectPay authorization required: ${deposit.paymentUrl}');
+        _progressController.updateStage(DirectPayStage.authorizing);
         _handleDirectPayAuth(
           deposit.paymentUrl!,
           deposit.paymentId ?? deposit.id,
         );
       } else {
         // No authorization needed (mandate already approved or instant)
-        Get.snackbar(
-          'Processing Deposit',
-          'Your deposit is being processed. Please wait...',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.blue.withOpacity(0.9),
-          colorText: Colors.white,
-          duration: const Duration(seconds: 5),
-        );
+        _progressController.updateStage(DirectPayStage.processing);
       }
     } else if (state is DepositStatusUpdated) {
       // Check deposit status
@@ -920,40 +947,22 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
       if (deposit.status == DepositStatus.successful) {
         // Deposit completed - refresh balances
         _refreshAccountBalances(context);
-        Get.snackbar(
-          'Deposit Successful',
-          'Your deposit has been completed successfully.',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.green.withOpacity(0.9),
-          colorText: Colors.white,
-          duration: const Duration(seconds: 3),
-        );
 
-        // Navigate back after success
-        Future.delayed(const Duration(seconds: 2), () {
-          if (Navigator.canPop(context)) {
-            Navigator.of(context).pop();
-          }
-        });
+        // Update progress to success
+        _progressController.updateStage(DirectPayStage.success);
+
+        // Navigation will be handled by the progress sheet's onSuccess callback
       } else if (deposit.status == DepositStatus.failed) {
-        Get.snackbar(
-          'Deposit Failed',
-          deposit.failureReason ?? 'The deposit could not be completed.',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red.withOpacity(0.9),
-          colorText: Colors.white,
-          duration: const Duration(seconds: 5),
+        _progressController.updateStage(
+          DirectPayStage.failed,
+          errorMessage: deposit.failureReason ?? 'The deposit could not be completed.',
         );
       }
     } else if (state is OpenBankingError) {
       debugPrint('[Deposit] OpenBankingError: ${state.message}, operation: ${state.operation}');
-      Get.snackbar(
-        'Error',
-        state.message,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withOpacity(0.9),
-        colorText: Colors.white,
-        duration: const Duration(seconds: 5),
+      _progressController.updateStage(
+        DirectPayStage.failed,
+        errorMessage: state.message,
       );
     }
   }
@@ -1690,6 +1699,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
 
     if (result != null) {
       // Successfully got result - check if user changed bank in Mono flow
+      String bankName = _selectedBank;
       if (result.institutionName != null && result.institutionName!.isNotEmpty) {
         // Try to find matching bank name in our list
         final monoInstitutionName = result.institutionName!;
@@ -1698,11 +1708,21 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
         if (matchingBank != null && matchingBank != _selectedBank) {
           // User selected a different bank in Mono - update our selection
           debugPrint('[Deposit] Bank changed in Mono: $_selectedBank -> $matchingBank');
+          bankName = matchingBank;
           setState(() {
             _selectedBank = matchingBank;
           });
         }
       }
+
+      // Show progress bottomsheet
+      final amount = double.tryParse(_amountController.text) ?? 0;
+      _progressController.show(
+        bankName: result.institutionName ?? bankName,
+        amount: amount,
+        currency: _currency,
+      );
+      _showProgressBottomsheet(buildContext);
 
       // Link the account with the auth code
       final accessToken = authState.profile.session.accessToken;
@@ -1850,6 +1870,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
     _amountController.dispose();
     _flutterTts.stop();
     _speech.cancel();
+    _progressController.dispose();
     super.dispose();
   }
 }
