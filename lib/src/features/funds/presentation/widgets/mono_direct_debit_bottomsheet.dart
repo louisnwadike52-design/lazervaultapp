@@ -486,12 +486,16 @@ class _MonoDirectDebitBottomsheetState extends State<MonoDirectDebitBottomsheet>
     Navigator.pop(context);
 
     // Launch Mono Connect using the native SDK (shows as bottomsheet)
+    // Use directPay operation for payment flows - this sets scope to 'payments'
     final result = await showMonoConnectBottomSheet(
       context: context,
       publicKey: MonoConfig.publicKey,
       customerName: customerName.isNotEmpty ? customerName : null,
       customerEmail: customerEmail.isNotEmpty ? customerEmail : null,
       reference: 'lzv_deposit_${DateTime.now().millisecondsSinceEpoch}',
+      operation: widget.useRecurringAccess
+          ? MonoOperation.mandate
+          : MonoOperation.directPay,
     );
 
     if (result != null) {

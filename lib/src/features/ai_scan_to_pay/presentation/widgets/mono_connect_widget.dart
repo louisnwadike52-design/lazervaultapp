@@ -24,6 +24,17 @@ import '../../../../core/config/mono_config.dart';
 ///
 /// Note: The native SDK manages its own UI presentation.
 /// This function provides a consistent API with the previous webview implementation.
+///
+/// Parameters:
+/// - [operation]: The type of Mono operation (accountLinking, directPay, etc.)
+///   This determines the scope sent to Mono:
+///   - accountLinking → 'auth' (read-only access)
+///   - directPay/directDebit/mandate → 'payments' (payment authorization)
+///
+/// In sandbox mode (test_pk_ keys):
+/// - Use test credentials: user_good/123456, PIN: 1234, OTP: 123456
+/// - API calls are free
+/// - Customers appear in Mono dashboard under sandbox environment
 Future<MonoConnectResult?> showMonoConnectBottomSheet({
   required BuildContext context,
   required String publicKey,
@@ -33,6 +44,7 @@ Future<MonoConnectResult?> showMonoConnectBottomSheet({
   String? customerName,
   String? customerEmail,
   String? customerBvn,
+  MonoOperation operation = MonoOperation.accountLinking,
 }) async {
   final completer = MonoConnectCompleter();
 
@@ -80,13 +92,25 @@ Future<MonoConnectResult?> showMonoConnectBottomSheet({
 
   final ref = reference ?? 'lzv_${DateTime.now().millisecondsSinceEpoch}';
 
+  // Determine the scope based on the operation type
+  final scope = MonoConfig.getScopeForOperation(operation);
+
   debugPrint('[MonoConnect] ========== CONFIGURATION ==========');
   debugPrint('[MonoConnect] Public Key: ${publicKey.substring(0, publicKey.length > 20 ? 20 : publicKey.length)}...');
-  debugPrint('[MonoConnect] Is Test Mode: ${MonoConfig.isTestMode}');
+  debugPrint('[MonoConnect] Is Test/Sandbox Mode: ${MonoConfig.isTestMode}');
+  debugPrint('[MonoConnect] Operation: ${operation.name}');
+  debugPrint('[MonoConnect] Scope: $scope');
   debugPrint('[MonoConnect] Institution ID: $institutionId');
   debugPrint('[MonoConnect] Reference: $ref');
   debugPrint('[MonoConnect] Customer Name: ${customerName ?? 'LazerVault User'}');
   debugPrint('[MonoConnect] Customer Email: $emailToUse');
+  if (MonoConfig.isTestMode) {
+    debugPrint('[MonoConnect] SANDBOX MODE - Use test credentials:');
+    debugPrint('[MonoConnect]   Username: ${MonoConfig.sandboxTestUsername}');
+    debugPrint('[MonoConnect]   Password: ${MonoConfig.sandboxTestPassword}');
+    debugPrint('[MonoConnect]   PIN: ${MonoConfig.sandboxTestPin}');
+    debugPrint('[MonoConnect]   OTP: ${MonoConfig.sandboxTestOtp}');
+  }
   debugPrint('[MonoConnect] ================================');
 
   // Build configuration
@@ -94,7 +118,7 @@ Future<MonoConnectResult?> showMonoConnectBottomSheet({
     publicKey: publicKey,
     customer: customer,
     reference: ref,
-    scope: 'auth',
+    scope: scope,
     selectedInstitution: selectedInstitution,
     onSuccess: (code) {
       debugPrint('[MonoConnect] Success - Code: ${code.substring(0, code.length > 10 ? 10 : code.length)}...');
@@ -199,6 +223,10 @@ void _launchCustomMonoBottomSheet(BuildContext context, ConnectConfiguration con
 
 /// Launch Mono Connect using native SDK (Full screen modal style)
 /// Returns MonoConnectResult with auth code and institution info
+///
+/// Parameters:
+/// - [operation]: The type of Mono operation. Defaults to accountLinking.
+///   Use MonoOperation.directPay for payment flows.
 Future<MonoConnectResult?> showMonoConnect({
   required BuildContext context,
   required String publicKey,
@@ -208,6 +236,7 @@ Future<MonoConnectResult?> showMonoConnect({
   String? customerName,
   String? customerEmail,
   String? customerBvn,
+  MonoOperation operation = MonoOperation.accountLinking,
 }) async {
   // Use the same implementation as bottom sheet
   // The SDK manages its own presentation
@@ -220,6 +249,7 @@ Future<MonoConnectResult?> showMonoConnect({
     customerName: customerName,
     customerEmail: customerEmail,
     customerBvn: customerBvn,
+    operation: operation,
   );
 }
 
