@@ -437,8 +437,8 @@ import 'package:lazervault/src/features/transaction_history/presentation/screens
 final serviceLocator = GetIt.instance;
 
 Future<void> init() async {
-  // Load environment variables
-  await dotenv.load();
+  // Note: Environment variables are loaded in main.dart before calling init()
+  // This allows selecting the correct .env file (.env vs .env.prod) based on device type
 
   // ================== External / gRPC / HTTP ==================
   serviceLocator.registerLazySingleton(http.Client.new);

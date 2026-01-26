@@ -10,11 +10,17 @@ import 'package:lazervault/src/features/ai_scan_to_pay/presentation/widgets/mono
 
 /// Mono Direct Debit Bottomsheet - Matches exact Mono Connect design
 /// Custom bottomsheet that displays Mono info before launching Mono Connect WebView
+///
+/// Supports two modes:
+/// - DirectPay (useRecurringAccess=false): One-time payment, requires per-transaction authorization
+/// - Mandate (useRecurringAccess=true): Recurring access, authorize once for future debits
 class MonoDirectDebitBottomsheet extends StatefulWidget {
   final Map<String, dynamic> selectedAccount;
   final VoidCallback onSuccess;
   final Function(String message) onError;
   final OpenBankingCubit openBankingCubit;
+  final bool useRecurringAccess;
+  final Future<void> Function(String paymentUrl, String paymentId)? onDirectPayAuth;
 
   const MonoDirectDebitBottomsheet({
     super.key,
@@ -22,6 +28,8 @@ class MonoDirectDebitBottomsheet extends StatefulWidget {
     required this.onSuccess,
     required this.onError,
     required this.openBankingCubit,
+    this.useRecurringAccess = false,
+    this.onDirectPayAuth,
   });
 
   @override
@@ -44,7 +52,31 @@ class _MonoDirectDebitBottomsheetState extends State<MonoDirectDebitBottomsheet>
           setState(() => _isLinking = false);
           Navigator.pop(context);
           widget.onSuccess();
+        } else if (state is DepositInitiated) {
+          // Deposit initiated - check if DirectPay authorization is needed
+          print('[Deposit] Deposit initiated: ${state.deposit.id}');
+          setState(() => _isLinking = false);
+
+          if (state.deposit.requiresAuthorization &&
+              state.deposit.paymentUrl != null &&
+              state.deposit.paymentUrl!.isNotEmpty) {
+            // DirectPay authorization needed - open in-app WebView
+            print('[Deposit] DirectPay authorization required: ${state.deposit.paymentUrl}');
+            Navigator.pop(context);
+            if (widget.onDirectPayAuth != null) {
+              widget.onDirectPayAuth!(
+                state.deposit.paymentUrl!,
+                state.deposit.paymentId ?? state.deposit.id,
+              );
+            }
+          } else {
+            // No authorization needed (mandate already approved or instant)
+            Navigator.pop(context);
+            widget.onSuccess();
+          }
         } else if (state is AccountLinkingInProgress) {
+          setState(() => _isLinking = true);
+        } else if (state is OpenBankingLoading) {
           setState(() => _isLinking = true);
         } else if (state is OpenBankingError) {
           print('[Deposit] OpenBankingError: ${state.message}, operation: ${state.operation}');
@@ -481,12 +513,18 @@ class _MonoDirectDebitBottomsheetState extends State<MonoDirectDebitBottomsheet>
 }
 
 /// Show Mono Direct Debit bottomsheet
+///
+/// Parameters:
+/// - useRecurringAccess: If false, use DirectPay (one-time). If true, use Mandate (recurring).
+/// - onDirectPayAuth: Called when DirectPay authorization is needed. Opens in-app WebView.
 void showMonoDirectDebitBottomsheet({
   required BuildContext context,
   required Map<String, dynamic> selectedAccount,
   required VoidCallback onSuccess,
   required Function(String message) onError,
   required OpenBankingCubit openBankingCubit,
+  bool useRecurringAccess = false,
+  Future<void> Function(String paymentUrl, String paymentId)? onDirectPayAuth,
 }) {
   showModalBottomSheet(
     context: context,
@@ -501,6 +539,8 @@ void showMonoDirectDebitBottomsheet({
         onSuccess: onSuccess,
         onError: onError,
         openBankingCubit: openBankingCubit,
+        useRecurringAccess: useRecurringAccess,
+        onDirectPayAuth: onDirectPayAuth,
       ),
     ),
   );

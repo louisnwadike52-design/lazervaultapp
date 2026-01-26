@@ -295,6 +295,7 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
 
   /// Initiate a deposit from linked account
   /// Uses gRPC when available for better performance
+  /// Set useRecurringAccess=false for DirectPay (one-time), true for Mandate (recurring)
   Future<void> initiateDeposit({
     required String userId,
     required String linkedAccountId,
@@ -302,6 +303,7 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
     required double amount, // In major units (Naira)
     String? narration,
     required String accessToken,
+    bool useRecurringAccess = false, // false = DirectPay (one-time), true = Mandate (recurring)
   }) async {
     if (isClosed) return;
     emit(OpenBankingLoading());
@@ -320,6 +322,7 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
           amountInKobo: amountInKobo,
           narration: narration,
           idempotencyKey: idempotencyKey,
+          useRecurringAccess: useRecurringAccess,
         );
       } else {
         // Fallback to REST

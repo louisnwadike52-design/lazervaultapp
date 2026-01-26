@@ -224,6 +224,7 @@ class OpenBankingGrpcDataSource {
 
   /// Initiate a deposit via direct debit
   /// Uses idempotency key to prevent duplicate transactions
+  /// Set useRecurringAccess=false for DirectPay (one-time), true for Mandate (recurring)
   Future<Deposit> initiateDeposit({
     required String userId,
     required String linkedAccountId,
@@ -231,6 +232,7 @@ class OpenBankingGrpcDataSource {
     required int amountInKobo,
     String? narration,
     String? idempotencyKey,
+    bool useRecurringAccess = false, // false = DirectPay (one-time), true = Mandate
   }) async {
     return await RetryPolicy.critical.execute(
       () async {
@@ -241,6 +243,7 @@ class OpenBankingGrpcDataSource {
           amount: Int64(amountInKobo),
           narration: narration ?? 'Deposit to LazerVault',
           idempotencyKey: idempotencyKey ?? _uuid.v4(),
+          useRecurringAccess: useRecurringAccess,
         );
 
         try {
@@ -258,7 +261,19 @@ class OpenBankingGrpcDataSource {
             throw _mapDepositError(response);
           }
 
-          return _mapDeposit(response.deposit);
+          // Map the deposit and include DirectPay authorization fields from response
+          final deposit = _mapDeposit(response.deposit);
+
+          // If DirectPay authorization is required, add the auth fields
+          if (response.requiresAuthorization) {
+            return deposit.copyWith(
+              requiresAuthorization: true,
+              paymentUrl: response.paymentUrl.isNotEmpty ? response.paymentUrl : null,
+              paymentId: response.paymentId.isNotEmpty ? response.paymentId : null,
+            );
+          }
+
+          return deposit;
         } on GrpcError catch (e) {
           throw _mapGrpcError(e, 'initiateDeposit');
         }

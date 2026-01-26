@@ -52,6 +52,9 @@ class AccountSummaryEntity extends Equatable {
   final String currency;
   final double balance;
   final String accountNumberLast4; // e.g., "7890"
+  final String? accountNumber; // Full NUBAN account number for deposits
+  final String? bankName; // Bank name (e.g., "Wema Bank", "VFD MFB")
+  final String? accountName; // Account holder name for deposits
   final double trendPercentage; // e.g., 2.4 or -0.8
   final bool isUp; // Derived from trendPercentage > 0
   final bool isPrimary; // Whether this is the user's primary account
@@ -71,6 +74,9 @@ class AccountSummaryEntity extends Equatable {
     required this.currency,
     required this.balance,
     required this.accountNumberLast4,
+    this.accountNumber,
+    this.bankName,
+    this.accountName,
     required this.trendPercentage,
     this.isPrimary = false,
     this.accountLabel,
@@ -104,6 +110,9 @@ class AccountSummaryEntity extends Equatable {
         currency,
         balance,
         accountNumberLast4,
+        accountNumber,
+        bankName,
+        accountName,
         trendPercentage,
         isUp,
         isPrimary,
@@ -150,6 +159,9 @@ class AccountSummaryEntity extends Equatable {
     String? currency,
     double? balance,
     String? accountNumberLast4,
+    String? accountNumber,
+    String? bankName,
+    String? accountName,
     double? trendPercentage,
     bool? isPrimary,
     String? accountLabel,
@@ -166,6 +178,9 @@ class AccountSummaryEntity extends Equatable {
       currency: currency ?? this.currency,
       balance: balance ?? this.balance,
       accountNumberLast4: accountNumberLast4 ?? this.accountNumberLast4,
+      accountNumber: accountNumber ?? this.accountNumber,
+      bankName: bankName ?? this.bankName,
+      accountName: accountName ?? this.accountName,
       trendPercentage: trendPercentage ?? this.trendPercentage,
       isPrimary: isPrimary ?? this.isPrimary,
       accountLabel: accountLabel ?? this.accountLabel,

@@ -60,6 +60,11 @@ class Deposit extends Equatable {
   final DateTime createdAt;
   final DateTime? completedAt;
 
+  // DirectPay authorization fields (for one-time payments)
+  final bool requiresAuthorization;
+  final String? paymentUrl; // URL to open for DirectPay authorization
+  final String? paymentId;  // DirectPay payment ID for tracking
+
   const Deposit({
     required this.id,
     required this.userId,
@@ -77,6 +82,9 @@ class Deposit extends Equatable {
     this.failureReason,
     required this.createdAt,
     this.completedAt,
+    this.requiresAuthorization = false,
+    this.paymentUrl,
+    this.paymentId,
   });
 
   /// Net amount after fee deduction
@@ -169,6 +177,9 @@ class Deposit extends Equatable {
     String? failureReason,
     DateTime? createdAt,
     DateTime? completedAt,
+    bool? requiresAuthorization,
+    String? paymentUrl,
+    String? paymentId,
   }) {
     return Deposit(
       id: id ?? this.id,
@@ -187,6 +198,9 @@ class Deposit extends Equatable {
       failureReason: failureReason ?? this.failureReason,
       createdAt: createdAt ?? this.createdAt,
       completedAt: completedAt ?? this.completedAt,
+      requiresAuthorization: requiresAuthorization ?? this.requiresAuthorization,
+      paymentUrl: paymentUrl ?? this.paymentUrl,
+      paymentId: paymentId ?? this.paymentId,
     );
   }
 
@@ -208,6 +222,9 @@ class Deposit extends Equatable {
         failureReason,
         createdAt,
         completedAt,
+        requiresAuthorization,
+        paymentUrl,
+        paymentId,
       ];
 }
 

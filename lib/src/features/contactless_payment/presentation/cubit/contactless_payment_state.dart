@@ -125,9 +125,120 @@ class SessionStatusChecked extends ContactlessPaymentState {
 /// Error state
 class ContactlessPaymentError extends ContactlessPaymentState {
   final String message;
+  final ContactlessErrorType errorType;
+  final bool retryable;
 
-  const ContactlessPaymentError(this.message);
+  const ContactlessPaymentError(
+    this.message, {
+    this.errorType = ContactlessErrorType.unknown,
+    this.retryable = false,
+  });
+
+  @override
+  List<Object?> get props => [message, errorType, retryable];
+}
+
+/// Error type enum for better error categorization
+enum ContactlessErrorType {
+  nfcNotAvailable,
+  nfcDisabled,
+  networkError,
+  timeout,
+  serverError,
+  insufficientBalance,
+  sessionExpired,
+  sessionNotFound,
+  pinValidationFailed,
+  accountLocked,
+  unknown,
+}
+
+/// State when NFC is not available on the device
+class NfcNotAvailable extends ContactlessPaymentState {
+  final String message;
+  final bool canOpenSettings;
+
+  const NfcNotAvailable({
+    required this.message,
+    this.canOpenSettings = false,
+  });
+
+  @override
+  List<Object?> get props => [message, canOpenSettings];
+}
+
+/// State when NFC is disabled but available
+class NfcDisabled extends ContactlessPaymentState {
+  final String message;
+
+  const NfcDisabled({
+    required this.message,
+  });
 
   @override
   List<Object?> get props => [message];
+}
+
+/// State when there's a network error
+class NetworkError extends ContactlessPaymentState {
+  final String message;
+  final bool retryable;
+  final int? retryCount;
+
+  const NetworkError({
+    required this.message,
+    this.retryable = true,
+    this.retryCount,
+  });
+
+  @override
+  List<Object?> get props => [message, retryable, retryCount];
+}
+
+/// State when the session has expired
+class SessionExpired extends ContactlessPaymentState {
+  final String sessionId;
+  final String message;
+
+  const SessionExpired({
+    required this.sessionId,
+    required this.message,
+  });
+
+  @override
+  List<Object?> get props => [sessionId, message];
+}
+
+/// State when there's insufficient balance
+class InsufficientBalance extends ContactlessPaymentState {
+  final String accountId;
+  final double required;
+  final double available;
+  final String currency;
+
+  const InsufficientBalance({
+    required this.accountId,
+    required this.required,
+    required this.available,
+    required this.currency,
+  });
+
+  @override
+  List<Object?> get props => [accountId, required, available, currency];
+}
+
+/// State when PIN validation fails
+class PinValidationFailed extends ContactlessPaymentState {
+  final String message;
+  final int attemptsRemaining;
+  final bool accountLocked;
+
+  const PinValidationFailed({
+    required this.message,
+    this.attemptsRemaining = 3,
+    this.accountLocked = false,
+  });
+
+  @override
+  List<Object?> get props => [message, attemptsRemaining, accountLocked];
 }

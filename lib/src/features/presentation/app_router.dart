@@ -224,6 +224,14 @@ import 'package:lazervault/src/features/barcode_payment/presentation/view/barcod
 import 'package:lazervault/src/features/barcode_payment/presentation/view/generated_barcodes_history_screen.dart';
 import 'package:lazervault/src/features/barcode_payment/presentation/view/scanned_barcodes_history_screen.dart';
 
+// Contactless Payment imports
+import 'package:lazervault/src/features/contactless_payment/presentation/cubit/contactless_payment_cubit.dart';
+import 'package:lazervault/src/features/contactless_payment/presentation/view/contactless_payment_home_screen.dart';
+import 'package:lazervault/src/features/contactless_payment/presentation/view/create_payment_session_screen.dart';
+import 'package:lazervault/src/features/contactless_payment/presentation/view/nfc_reader_screen.dart';
+import 'package:lazervault/src/features/contactless_payment/presentation/view/payment_history_screen.dart' as contactless_history;
+import 'package:lazervault/src/features/contactless_payment/domain/repositories/contactless_payment_repository.dart';
+
 // Crowdfund imports
 import 'package:lazervault/src/features/crowdfund/presentation/cubit/crowdfund_cubit.dart';
 import 'package:lazervault/src/features/crowdfund/presentation/views/crowdfund_home_screen.dart';
@@ -1672,6 +1680,43 @@ class AppRouter {
           child: const ScannedBarcodesHistoryScreen(),
         );
       },
+      transition: Transition.rightToLeft,
+    ),
+
+    // Contactless Payment routes
+    GetPage(
+      name: AppRoutes.contactlessPay,
+      page: () => BlocProvider(
+        create: (_) => ContactlessPaymentCubit(
+          repository: serviceLocator<ContactlessPaymentRepository>(),
+        ),
+        child: const ContactlessPaymentHomeScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.contactlessPayCreate,
+      page: () => BlocProvider(
+        create: (_) => ContactlessPaymentCubit(
+          repository: serviceLocator<ContactlessPaymentRepository>(),
+        ),
+        child: const CreatePaymentSessionScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.contactlessPayReader,
+      page: () => const NfcReaderScreen(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.contactlessPayHistory,
+      page: () => BlocProvider(
+        create: (_) => ContactlessPaymentCubit(
+          repository: serviceLocator<ContactlessPaymentRepository>(),
+        ),
+        child: const contactless_history.PaymentHistoryScreen(),
+      ),
       transition: Transition.rightToLeft,
     ),
 

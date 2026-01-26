@@ -194,7 +194,10 @@ class _AccountCarouselState extends State<AccountCarousel> {
       'accountType': account.accountType,
       'currency': account.currency,
       'balance': currentBalance,
-      'accountNumber': '•••• ${account.accountNumberLast4}',
+      'accountNumber': account.accountNumber ?? '•••• ${account.accountNumberLast4}', // Full NUBAN for deposits
+      'accountNumberMasked': '•••• ${account.accountNumberLast4}',
+      'bankName': account.bankName ?? 'Wema Bank', // Partner bank name
+      'accountName': account.accountName ?? 'LazerVault Account', // Account holder name
       'trend': '${account.trendPercentage > 0 ? '+' : ''}${account.trendPercentage.toStringAsFixed(1)}%',
       'isUp': isUp,
     };
