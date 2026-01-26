@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/balance_websocket_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
@@ -42,6 +43,35 @@ class _DepositFlowScreenState extends State<DepositFlowScreen> {
 
   // DirectPay vs Mandate toggle
   bool _useRecurringAccess = false; // false = DirectPay (one-time), true = Mandate (recurring)
+
+  // Get current user ID
+  String? _getUserId() {
+    final authState = context.read<AuthenticationCubit>().state;
+    if (authState is AuthenticationSuccess) {
+      return authState.profile.user.id;
+    }
+    return null;
+  }
+
+  // Fetch latest account data
+  void _fetchData() {
+    final userId = _getUserId();
+    if (userId != null) {
+      context.read<AccountCardsSummaryCubit>().fetchAccountSummaries(
+        userId: userId,
+        accessToken: _getAccessToken(),
+      );
+    }
+  }
+
+  // Get access token
+  String _getAccessToken() {
+    final authState = context.read<AuthenticationCubit>().state;
+    if (authState is AuthenticationSuccess) {
+      return authState.profile.session.accessToken;
+    }
+    return '';
+  }
 
   // Payment methods for NGN (bank transfer is primary for Nigerian users)
   final List<Map<String, dynamic>> _paymentMethods = [
@@ -111,6 +141,7 @@ class _DepositFlowScreenState extends State<DepositFlowScreen> {
       providers: [
         BlocProvider(create: (_) => serviceLocator<DepositCubit>()),
         BlocProvider(create: (_) => serviceLocator<OpenBankingCubit>()),
+        BlocProvider.value(value: serviceLocator<AccountCardsSummaryCubit>()),
       ],
       child: Scaffold(
         backgroundColor: const Color(0xFF1A1A1A),
@@ -391,6 +422,12 @@ class _DepositFlowScreenState extends State<DepositFlowScreen> {
             accountNumber: accountNumber,
             accountName: accountName,
             bankName: bankName,
+            accountId: widget.selectedAccount['id'] as String?,
+            userId: _getUserId(),
+            onSimulationComplete: () {
+              // Refresh balance after simulation
+              _fetchData();
+            },
           ),
           SizedBox(height: 32.h),
 
