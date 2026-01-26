@@ -97,21 +97,31 @@ Future<MonoConnectResult?> showMonoConnectBottomSheet({
 
   debugPrint('[MonoConnect] ========== CONFIGURATION ==========');
   debugPrint('[MonoConnect] Public Key: ${publicKey.substring(0, publicKey.length > 20 ? 20 : publicKey.length)}...');
-  debugPrint('[MonoConnect] Is Test/Sandbox Mode: ${MonoConfig.isTestMode}');
+  debugPrint('[MonoConnect] Effective Mode: ${MonoConfig.effectiveMode}');
+  debugPrint('[MonoConnect] Environment: ${MonoConfig.environment}');
   debugPrint('[MonoConnect] Operation: ${operation.name}');
   debugPrint('[MonoConnect] Scope: $scope');
   debugPrint('[MonoConnect] Institution ID: $institutionId');
   debugPrint('[MonoConnect] Reference: $ref');
   debugPrint('[MonoConnect] Customer Name: ${customerName ?? 'LazerVault User'}');
   debugPrint('[MonoConnect] Customer Email: $emailToUse');
-  if (MonoConfig.isTestMode) {
+  debugPrint('[MonoConnect] Requires Business Approval: ${MonoConfig.requiresBusinessApproval}');
+
+  // Log environment/key mismatch warning if any
+  final mismatchWarning = MonoConfig.environmentMismatchWarning;
+  if (mismatchWarning != null) {
+    debugPrint('[MonoConnect] ⚠️  $mismatchWarning');
+  }
+
+  // Log sandbox test credentials if in sandbox mode
+  if (MonoConfig.isSandboxMode) {
     debugPrint('[MonoConnect] SANDBOX MODE - Use test credentials:');
     debugPrint('[MonoConnect]   Username: ${MonoConfig.sandboxTestUsername}');
     debugPrint('[MonoConnect]   Password: ${MonoConfig.sandboxTestPassword}');
     debugPrint('[MonoConnect]   PIN: ${MonoConfig.sandboxTestPin}');
     debugPrint('[MonoConnect]   OTP: ${MonoConfig.sandboxTestOtp}');
   }
-  debugPrint('[MonoConnect] ================================');
+  debugPrint('[MonoConnect] ==========================================');
 
   // Build configuration
   final config = ConnectConfiguration(
