@@ -43,6 +43,8 @@ extension AppServiceNameMapper on AppServiceName {
         return TransactionServiceType.unknown;
       case AppServiceName.whatsappIntegration:
         return TransactionServiceType.unknown;
+      case AppServiceName.contactlessPay:
+        return TransactionServiceType.unknown;
     }
   }
 }

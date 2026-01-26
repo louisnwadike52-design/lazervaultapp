@@ -5,18 +5,21 @@ class FormFieldValidators {
   /// Validates email format
   ///
   /// Returns null if valid, error message if invalid
+  /// Production-grade: Requires domain.tld format (must have at least one dot)
   static String? validateEmail(String? value) {
     if (value == null || value.isEmpty) {
       return 'Email is required';
     }
 
-    // Email regex matching authentication cubit pattern
+    // Production-grade email regex - requires at least one dot in domain
+    // Prevents typos like "user@gmailcom" instead of "user@gmail.com"
     final emailRegex = RegExp(
-      r'^[a-zA-Z0-9.!#$%&*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$',
+      r'^[a-zA-Z0-9.!#$%&*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$',
+      // Note: + at end requires at least one .tld in domain
     );
 
     if (!emailRegex.hasMatch(value)) {
-      return 'Enter a valid email address';
+      return 'Enter a valid email address (e.g., user@example.com)';
     }
 
     if (value.length > 254) {
@@ -29,11 +32,13 @@ class FormFieldValidators {
   /// Checks if email format is valid (for real-time validation)
   ///
   /// Returns true if valid format, false otherwise
+  /// Production-grade: Requires domain.tld format
   static bool isValidEmailFormat(String email) {
     if (email.isEmpty) return false;
 
+    // Production-grade email regex - requires at least one dot in domain
     final emailRegex = RegExp(
-      r'^[a-zA-Z0-9.!#$%&*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$',
+      r'^[a-zA-Z0-9.!#$%&*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$',
     );
 
     return emailRegex.hasMatch(email) && email.length <= 254;

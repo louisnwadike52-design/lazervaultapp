@@ -1826,9 +1826,12 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
 
   // --- Helper Methods ---
   bool _isValidEmail(String email) {
-    // Enhanced email validation with more comprehensive regex
+    // Production-grade email validation
+    // Requires: user@domain.tld format (must have at least one dot in domain)
+    // This prevents typos like "user@gmailcom" instead of "user@gmail.com"
     final emailRegex = RegExp(
-      r'^[a-zA-Z0-9.!#$%&*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$',
+      r'^[a-zA-Z0-9.!#$%&*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$',
+      // Note: Changed * to + at the end to require at least one dot in domain
     );
     return email.isNotEmpty && emailRegex.hasMatch(email) && email.length <= 254;
   }

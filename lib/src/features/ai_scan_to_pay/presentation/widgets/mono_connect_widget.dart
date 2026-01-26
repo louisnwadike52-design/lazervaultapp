@@ -60,12 +60,15 @@ Future<MonoConnectResult?> showMonoConnectBottomSheet({
     debugPrint('[MonoConnect] Pre-selecting institution: $institutionId (${selectedInstitutionName ?? "unknown"}) with mobileBanking');
   }
 
+  // Use authenticated user's email directly - validated during signup
+  // Production-grade: no fallback emails, use the real user data
+  final emailToUse = customerEmail ?? '';
+
   // Build customer config - required by the SDK
-  // Use provided values or defaults
   final customer = MonoCustomer(
     newCustomer: MonoNewCustomer(
       name: customerName ?? 'LazerVault User',
-      email: customerEmail ?? 'user@lazervault.app',
+      email: emailToUse,
       identity: (customerBvn != null && customerBvn.isNotEmpty)
           ? MonoCustomerIdentity(
               type: 'bvn',
@@ -77,9 +80,14 @@ Future<MonoConnectResult?> showMonoConnectBottomSheet({
 
   final ref = reference ?? 'lzv_${DateTime.now().millisecondsSinceEpoch}';
 
-  debugPrint('[MonoConnect] Launching with publicKey: ${publicKey.substring(0, publicKey.length > 15 ? 15 : publicKey.length)}...');
+  debugPrint('[MonoConnect] ========== CONFIGURATION ==========');
+  debugPrint('[MonoConnect] Public Key: ${publicKey.substring(0, publicKey.length > 20 ? 20 : publicKey.length)}...');
+  debugPrint('[MonoConnect] Is Test Mode: ${MonoConfig.isTestMode}');
   debugPrint('[MonoConnect] Institution ID: $institutionId');
   debugPrint('[MonoConnect] Reference: $ref');
+  debugPrint('[MonoConnect] Customer Name: ${customerName ?? 'LazerVault User'}');
+  debugPrint('[MonoConnect] Customer Email: $emailToUse');
+  debugPrint('[MonoConnect] ================================');
 
   // Build configuration
   final config = ConnectConfiguration(
