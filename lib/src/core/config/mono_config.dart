@@ -79,8 +79,47 @@ class MonoConfig {
   /// Whether we're in production environment (from ENVIRONMENT variable)
   static bool get isProduction => environment == 'production';
 
+  /// Whether we're in staging environment
+  static bool get isStaging => environment == 'staging';
+
+  /// Whether we're in development environment
+  static bool get isDevelopment => environment == 'development' || environment.isEmpty;
+
   /// Get Mono Connect base URL (same for sandbox and live)
   static String get connectUrl => 'https://connect.mono.co';
+
+  /// Get the effective Mono mode label for logging
+  static String get effectiveMode => isLiveMode ? 'LIVE' : 'SANDBOX';
+
+  /// Check if there's a key/environment mismatch that should be warned about
+  /// Returns a warning message if there's a mismatch, null otherwise
+  static String? get environmentMismatchWarning {
+    // Production environment with test keys - major warning
+    if (isProduction && isTestMode) {
+      return 'WARNING: Using TEST/SANDBOX keys in PRODUCTION environment. '
+          'Direct debit will use sandbox mode (test data only). '
+          'Switch to live_pk_ keys for real transactions.';
+    }
+
+    // Development environment with live keys - potential issue
+    if (isDevelopment && isLiveMode) {
+      return 'WARNING: Using LIVE keys in DEVELOPMENT environment. '
+          'Direct debit will charge REAL money and require business approval. '
+          'Consider using test_pk_ keys for development.';
+    }
+
+    // Staging with live keys - informational
+    if (isStaging && isLiveMode) {
+      return 'INFO: Using LIVE keys in STAGING environment. '
+          'Direct debit will use live mode (real transactions).';
+    }
+
+    return null;
+  }
+
+  /// Whether business approval is likely required
+  /// Live mode requires business activation in Mono dashboard for direct debit
+  static bool get requiresBusinessApproval => isLiveMode;
 
   // ========== SANDBOX TEST CREDENTIALS ==========
   // Use these for testing in sandbox mode
@@ -387,8 +426,9 @@ class MonoConfig {
   static Map<String, dynamic> getSummary() {
     return {
       'enabled': isEnabled,
-      'mode': mode,
-      'environment': environment,
+      'keyMode': mode, // sandbox (test keys) or live (live keys)
+      'effectiveMode': effectiveMode, // SANDBOX or LIVE
+      'environment': environment, // development, staging, production
       'hasPublicKey': publicKey.isNotEmpty,
       'hasSecretKey': secretKey.isNotEmpty,
       'publicKeyPrefix': publicKey.isNotEmpty
@@ -396,19 +436,39 @@ class MonoConfig {
           : 'NOT_SET',
       'connectUrl': connectUrl,
       'supportedBanks': institutions.length,
+      'requiresBusinessApproval': requiresBusinessApproval,
+      'environmentMismatch': environmentMismatchWarning != null,
     };
   }
 
   /// Log configuration (safe - masks sensitive data)
   static void logConfiguration() {
     final summary = getSummary();
-    print('[MonoConfig] Mode: ${summary['mode']}');
+    print('[MonoConfig] ========== MONO CONFIGURATION ==========');
+    print('[MonoConfig] Effective Mode: ${summary['effectiveMode']}');
     print('[MonoConfig] Environment: ${summary['environment']}');
     print('[MonoConfig] Enabled: ${summary['enabled']}');
     print('[MonoConfig] Public Key: ${summary['publicKeyPrefix']}');
     print('[MonoConfig] Has Secret Key: ${summary['hasSecretKey']}');
+    print('[MonoConfig] Requires Business Approval: ${summary['requiresBusinessApproval']}');
     print('[MonoConfig] Connect URL: ${summary['connectUrl']}');
     print('[MonoConfig] Supported Banks: ${summary['supportedBanks']}');
+
+    // Log environment/key mismatch warning if any
+    final warning = environmentMismatchWarning;
+    if (warning != null) {
+      print('[MonoConfig] ⚠️  $warning');
+    }
+
+    // Log sandbox test credentials if in sandbox mode
+    if (isSandboxMode) {
+      print('[MonoConfig] Sandbox Test Credentials:');
+      print('[MonoConfig]   Username: $sandboxTestUsername');
+      print('[MonoConfig]   Password: $sandboxTestPassword');
+      print('[MonoConfig]   PIN: $sandboxTestPin');
+      print('[MonoConfig]   OTP: $sandboxTestOtp');
+    }
+    print('[MonoConfig] ==========================================');
   }
 
   /// Validate configuration and return any issues
@@ -421,14 +481,10 @@ class MonoConfig {
       issues.add('MONO_PUBLIC_KEY has invalid format (should start with test_pk_ or live_pk_)');
     }
 
-    // Warn if using test keys in production environment
-    if (isProduction && isTestMode) {
-      issues.add('WARNING: Using TEST keys in production environment');
-    }
-
-    // Warn if using live keys in development environment
-    if (!isProduction && isLiveMode) {
-      issues.add('WARNING: Using LIVE keys in non-production environment');
+    // Add environment/key mismatch warning if any
+    final warning = environmentMismatchWarning;
+    if (warning != null) {
+      issues.add(warning);
     }
 
     return issues;
