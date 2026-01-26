@@ -72,9 +72,10 @@ dependencies:
   lottie: ^3.3.1
   get: ^4.7.2
   fl_chart: ^0.71.0
+  animated_flip_counter: ^0.3.4  # Revolut-style rolling digit animation
   flutter_launcher_icons: ^0.14.3
   emoji_picker_flutter: ^4.3.0
-  file_picker: ^10.1.2
+  file_picker: ^8.0.0  # Using 8.x for Android build compatibility (10.x has Kotlin plugin issues)
   image_picker: ^1.1.2
   camera: ^0.11.0+2
   sqflite: ^2.4.2
