@@ -453,6 +453,14 @@ class OpenBankingGrpcDataSource {
         return LimitExceededException(message: message, limitType: 'transaction');
       case 'ACCOUNT_NOT_FOUND':
         return AccountNotFoundException(message: message);
+      case 'NEEDS_MANDATE':
+        return NeedsMandateException(
+          message: message,
+          mandateId: response.mandateId.isNotEmpty ? response.mandateId : null,
+          authorizationUrl: response.authorizationUrl.isNotEmpty
+              ? response.authorizationUrl
+              : null,
+        );
       case 'REAUTHORIZATION_REQUIRED':
         return GenericBankingException(
           code: code,

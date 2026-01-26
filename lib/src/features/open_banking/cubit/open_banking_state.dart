@@ -24,6 +24,9 @@ enum BankingErrorType {
   /// Session expired - redirect to login
   unauthorized,
 
+  /// Needs mandate - user must set up direct debit mandate
+  needsMandate,
+
   /// General error - show generic message
   general,
 }
@@ -218,6 +221,7 @@ class OpenBankingError extends OpenBankingState {
       AccountNotFoundException() => BankingErrorType.accountIssue,
       AccountFrozenException() => BankingErrorType.accountIssue,
       UnauthorizedException() => BankingErrorType.unauthorized,
+      NeedsMandateException() => BankingErrorType.needsMandate,
       _ => BankingErrorType.general,
     };
   }

@@ -292,6 +292,48 @@ class BankingServiceClient extends $grpc.Client {
       ($0.CalculateDepositFeeRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
           $0.CalculateDepositFeeResponse.fromBuffer(value));
+  static final _$createMandate =
+      $grpc.ClientMethod<$0.CreateMandateRequest, $0.MandateResponse>(
+          '/banking.BankingService/CreateMandate',
+          ($0.CreateMandateRequest value) => value.writeToBuffer(),
+          ($core.List<$core.int> value) =>
+              $0.MandateResponse.fromBuffer(value));
+  static final _$getMandate =
+      $grpc.ClientMethod<$0.GetMandateRequest, $0.MandateResponse>(
+          '/banking.BankingService/GetMandate',
+          ($0.GetMandateRequest value) => value.writeToBuffer(),
+          ($core.List<$core.int> value) =>
+              $0.MandateResponse.fromBuffer(value));
+  static final _$getUserMandates =
+      $grpc.ClientMethod<$0.GetUserMandatesRequest, $0.MandatesResponse>(
+          '/banking.BankingService/GetUserMandates',
+          ($0.GetUserMandatesRequest value) => value.writeToBuffer(),
+          ($core.List<$core.int> value) =>
+              $0.MandatesResponse.fromBuffer(value));
+  static final _$pauseMandate =
+      $grpc.ClientMethod<$0.PauseMandateRequest, $0.PauseMandateResponse>(
+          '/banking.BankingService/PauseMandate',
+          ($0.PauseMandateRequest value) => value.writeToBuffer(),
+          ($core.List<$core.int> value) =>
+              $0.PauseMandateResponse.fromBuffer(value));
+  static final _$reinstateMandate = $grpc.ClientMethod<
+          $0.ReinstateMandateRequest, $0.ReinstateMandateResponse>(
+      '/banking.BankingService/ReinstateMandate',
+      ($0.ReinstateMandateRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $0.ReinstateMandateResponse.fromBuffer(value));
+  static final _$cancelMandate =
+      $grpc.ClientMethod<$0.CancelMandateRequest, $0.CancelMandateResponse>(
+          '/banking.BankingService/CancelMandate',
+          ($0.CancelMandateRequest value) => value.writeToBuffer(),
+          ($core.List<$core.int> value) =>
+              $0.CancelMandateResponse.fromBuffer(value));
+  static final _$checkMandateBalance = $grpc.ClientMethod<
+          $0.CheckMandateBalanceRequest, $0.CheckMandateBalanceResponse>(
+      '/banking.BankingService/CheckMandateBalance',
+      ($0.CheckMandateBalanceRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $0.CheckMandateBalanceResponse.fromBuffer(value));
   static final _$initiateWithdrawal =
       $grpc.ClientMethod<$0.InitiateWithdrawalRequest, $0.WithdrawalResponse>(
           '/banking.BankingService/InitiateWithdrawal',
@@ -607,6 +649,48 @@ class BankingServiceClient extends $grpc.Client {
       $0.CalculateDepositFeeRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$calculateDepositFee, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.MandateResponse> createMandate(
+      $0.CreateMandateRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$createMandate, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.MandateResponse> getMandate(
+      $0.GetMandateRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getMandate, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.MandatesResponse> getUserMandates(
+      $0.GetUserMandatesRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getUserMandates, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.PauseMandateResponse> pauseMandate(
+      $0.PauseMandateRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$pauseMandate, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.ReinstateMandateResponse> reinstateMandate(
+      $0.ReinstateMandateRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$reinstateMandate, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.CancelMandateResponse> cancelMandate(
+      $0.CancelMandateRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$cancelMandate, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.CheckMandateBalanceResponse> checkMandateBalance(
+      $0.CheckMandateBalanceRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$checkMandateBalance, request, options: options);
   }
 
   $grpc.ResponseFuture<$0.WithdrawalResponse> initiateWithdrawal(
@@ -1053,6 +1137,66 @@ abstract class BankingServiceBase extends $grpc.Service {
         ($core.List<$core.int> value) =>
             $0.CalculateDepositFeeRequest.fromBuffer(value),
         ($0.CalculateDepositFeeResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.CreateMandateRequest, $0.MandateResponse>(
+        'CreateMandate',
+        createMandate_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.CreateMandateRequest.fromBuffer(value),
+        ($0.MandateResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetMandateRequest, $0.MandateResponse>(
+        'GetMandate',
+        getMandate_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.GetMandateRequest.fromBuffer(value),
+        ($0.MandateResponse value) => value.writeToBuffer()));
+    $addMethod(
+        $grpc.ServiceMethod<$0.GetUserMandatesRequest, $0.MandatesResponse>(
+            'GetUserMandates',
+            getUserMandates_Pre,
+            false,
+            false,
+            ($core.List<$core.int> value) =>
+                $0.GetUserMandatesRequest.fromBuffer(value),
+            ($0.MandatesResponse value) => value.writeToBuffer()));
+    $addMethod(
+        $grpc.ServiceMethod<$0.PauseMandateRequest, $0.PauseMandateResponse>(
+            'PauseMandate',
+            pauseMandate_Pre,
+            false,
+            false,
+            ($core.List<$core.int> value) =>
+                $0.PauseMandateRequest.fromBuffer(value),
+            ($0.PauseMandateResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.ReinstateMandateRequest,
+            $0.ReinstateMandateResponse>(
+        'ReinstateMandate',
+        reinstateMandate_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.ReinstateMandateRequest.fromBuffer(value),
+        ($0.ReinstateMandateResponse value) => value.writeToBuffer()));
+    $addMethod(
+        $grpc.ServiceMethod<$0.CancelMandateRequest, $0.CancelMandateResponse>(
+            'CancelMandate',
+            cancelMandate_Pre,
+            false,
+            false,
+            ($core.List<$core.int> value) =>
+                $0.CancelMandateRequest.fromBuffer(value),
+            ($0.CancelMandateResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.CheckMandateBalanceRequest,
+            $0.CheckMandateBalanceResponse>(
+        'CheckMandateBalance',
+        checkMandateBalance_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.CheckMandateBalanceRequest.fromBuffer(value),
+        ($0.CheckMandateBalanceResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.InitiateWithdrawalRequest,
             $0.WithdrawalResponse>(
         'InitiateWithdrawal',
@@ -1362,6 +1506,45 @@ abstract class BankingServiceBase extends $grpc.Service {
     return calculateDepositFee(call, await request);
   }
 
+  $async.Future<$0.MandateResponse> createMandate_Pre($grpc.ServiceCall call,
+      $async.Future<$0.CreateMandateRequest> request) async {
+    return createMandate(call, await request);
+  }
+
+  $async.Future<$0.MandateResponse> getMandate_Pre($grpc.ServiceCall call,
+      $async.Future<$0.GetMandateRequest> request) async {
+    return getMandate(call, await request);
+  }
+
+  $async.Future<$0.MandatesResponse> getUserMandates_Pre($grpc.ServiceCall call,
+      $async.Future<$0.GetUserMandatesRequest> request) async {
+    return getUserMandates(call, await request);
+  }
+
+  $async.Future<$0.PauseMandateResponse> pauseMandate_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$0.PauseMandateRequest> request) async {
+    return pauseMandate(call, await request);
+  }
+
+  $async.Future<$0.ReinstateMandateResponse> reinstateMandate_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$0.ReinstateMandateRequest> request) async {
+    return reinstateMandate(call, await request);
+  }
+
+  $async.Future<$0.CancelMandateResponse> cancelMandate_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$0.CancelMandateRequest> request) async {
+    return cancelMandate(call, await request);
+  }
+
+  $async.Future<$0.CheckMandateBalanceResponse> checkMandateBalance_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$0.CheckMandateBalanceRequest> request) async {
+    return checkMandateBalance(call, await request);
+  }
+
   $async.Future<$0.WithdrawalResponse> initiateWithdrawal_Pre(
       $grpc.ServiceCall call,
       $async.Future<$0.InitiateWithdrawalRequest> request) async {
@@ -1479,6 +1662,20 @@ abstract class BankingServiceBase extends $grpc.Service {
       $grpc.ServiceCall call, $0.CancelDepositRequest request);
   $async.Future<$0.CalculateDepositFeeResponse> calculateDepositFee(
       $grpc.ServiceCall call, $0.CalculateDepositFeeRequest request);
+  $async.Future<$0.MandateResponse> createMandate(
+      $grpc.ServiceCall call, $0.CreateMandateRequest request);
+  $async.Future<$0.MandateResponse> getMandate(
+      $grpc.ServiceCall call, $0.GetMandateRequest request);
+  $async.Future<$0.MandatesResponse> getUserMandates(
+      $grpc.ServiceCall call, $0.GetUserMandatesRequest request);
+  $async.Future<$0.PauseMandateResponse> pauseMandate(
+      $grpc.ServiceCall call, $0.PauseMandateRequest request);
+  $async.Future<$0.ReinstateMandateResponse> reinstateMandate(
+      $grpc.ServiceCall call, $0.ReinstateMandateRequest request);
+  $async.Future<$0.CancelMandateResponse> cancelMandate(
+      $grpc.ServiceCall call, $0.CancelMandateRequest request);
+  $async.Future<$0.CheckMandateBalanceResponse> checkMandateBalance(
+      $grpc.ServiceCall call, $0.CheckMandateBalanceRequest request);
   $async.Future<$0.WithdrawalResponse> initiateWithdrawal(
       $grpc.ServiceCall call, $0.InitiateWithdrawalRequest request);
   $async.Future<$0.WithdrawalResponse> getWithdrawalStatus(
