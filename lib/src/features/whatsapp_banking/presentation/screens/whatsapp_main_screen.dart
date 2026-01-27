@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import '../../cubit/whatsapp_banking_cubit.dart';
+import '../../cubit/whatsapp_banking_state.dart';
 
 class WhatsAppMainScreen extends StatefulWidget {
   const WhatsAppMainScreen({super.key});
@@ -11,10 +14,11 @@ class WhatsAppMainScreen extends StatefulWidget {
 }
 
 class _WhatsAppMainScreenState extends State<WhatsAppMainScreen> {
-  // TODO: Replace with actual provider state
-  bool isLinked = false;
-  String? linkedPhoneNumber;
-  DateTime? linkedAt;
+  @override
+  void initState() {
+    super.initState();
+    context.read<WhatsAppBankingCubit>().loadStatus();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +41,45 @@ class _WhatsAppMainScreenState extends State<WhatsAppMainScreen> {
         ),
         centerTitle: true,
       ),
-      body: isLinked ? _buildLinkedView() : _buildUnlinkedView(),
+      body: BlocConsumer<WhatsAppBankingCubit, WhatsAppBankingState>(
+        listener: (context, state) {
+          if (state is WhatsAppBankingUnlinkSuccess) {
+            Get.snackbar(
+              'Account Unlinked',
+              'Your WhatsApp account has been unlinked successfully',
+              backgroundColor: Colors.green.withValues(alpha: 0.9),
+              colorText: Colors.white,
+              snackPosition: SnackPosition.TOP,
+              duration: Duration(seconds: 3),
+              margin: EdgeInsets.all(16.w),
+            );
+            context.read<WhatsAppBankingCubit>().loadStatus();
+          } else if (state is WhatsAppBankingError) {
+            Get.snackbar(
+              'Error',
+              state.message,
+              backgroundColor: Colors.red.withValues(alpha: 0.9),
+              colorText: Colors.white,
+              snackPosition: SnackPosition.TOP,
+              duration: Duration(seconds: 3),
+              margin: EdgeInsets.all(16.w),
+            );
+          }
+        },
+        builder: (context, state) {
+          if (state is WhatsAppBankingLoading) {
+            return Center(
+              child: CircularProgressIndicator(
+                color: Color.fromARGB(255, 78, 3, 208),
+              ),
+            );
+          }
+          if (state is WhatsAppBankingLoaded && state.isLinked) {
+            return _buildLinkedView(state);
+          }
+          return _buildUnlinkedView();
+        },
+      ),
     );
   }
 
@@ -184,7 +226,8 @@ class _WhatsAppMainScreenState extends State<WhatsAppMainScreen> {
     );
   }
 
-  Widget _buildLinkedView() {
+  Widget _buildLinkedView(WhatsAppBankingLoaded state) {
+    final user = state.user!;
     return SingleChildScrollView(
       padding: EdgeInsets.all(20.w),
       child: Column(
@@ -242,7 +285,7 @@ class _WhatsAppMainScreenState extends State<WhatsAppMainScreen> {
                           ),
                           SizedBox(height: 4.h),
                           Text(
-                            linkedPhoneNumber ?? '+234 XXX XXX XXXX',
+                            user.phoneNumber,
                             style: TextStyle(
                               fontSize: 14.sp,
                               color: Colors.black54,
@@ -267,8 +310,8 @@ class _WhatsAppMainScreenState extends State<WhatsAppMainScreen> {
                       ),
                     ),
                     Text(
-                      linkedAt != null
-                          ? '${linkedAt!.day}/${linkedAt!.month}/${linkedAt!.year}'
+                      user.linkedAt != null
+                          ? '${user.linkedAt!.day}/${user.linkedAt!.month}/${user.linkedAt!.year}'
                           : 'Today',
                       style: TextStyle(
                         fontSize: 13.sp,
@@ -403,7 +446,7 @@ class _WhatsAppMainScreenState extends State<WhatsAppMainScreen> {
 
           // Unlink Button
           OutlinedButton(
-            onPressed: _showUnlinkDialog,
+            onPressed: () => _showUnlinkDialog(),
             style: OutlinedButton.styleFrom(
               foregroundColor: Colors.red,
               side: BorderSide(color: Colors.red, width: 1.5),
@@ -538,7 +581,7 @@ class _WhatsAppMainScreenState extends State<WhatsAppMainScreen> {
   void _showUnlinkDialog() {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16.r),
         ),
@@ -559,7 +602,7 @@ class _WhatsAppMainScreenState extends State<WhatsAppMainScreen> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: Text(
               'Cancel',
               style: TextStyle(
@@ -570,13 +613,8 @@ class _WhatsAppMainScreenState extends State<WhatsAppMainScreen> {
           ),
           ElevatedButton(
             onPressed: () {
-              // TODO: Implement unlink logic
-              Navigator.pop(context);
-              setState(() {
-                isLinked = false;
-                linkedPhoneNumber = null;
-                linkedAt = null;
-              });
+              Navigator.pop(dialogContext);
+              context.read<WhatsAppBankingCubit>().unlinkAccount();
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,

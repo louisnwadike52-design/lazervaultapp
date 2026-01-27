@@ -14,6 +14,9 @@ class AccountCardsSummaryCubit extends Cubit<AccountCardsSummaryState> {
   // Keep track of current summaries for WebSocket updates
   List<AccountSummaryEntity> _currentSummaries = [];
 
+  // Track the user ID for whom the data was loaded
+  String? _currentUserId;
+
   AccountCardsSummaryCubit(
     this._getAccountSummariesUseCase, {
     BalanceWebSocketService? wsService,
@@ -23,6 +26,17 @@ class AccountCardsSummaryCubit extends Cubit<AccountCardsSummaryState> {
     if (_wsService != null) {
       _wsSubscription = _wsService!.balanceUpdates.listen(_handleBalanceUpdate);
     }
+  }
+
+  /// Get the current user ID for whom data is loaded
+  String? get currentUserId => _currentUserId;
+
+  /// Reset the cubit state (call on logout)
+  void reset() {
+    _currentSummaries = [];
+    _currentUserId = null;
+    emit(AccountCardsSummaryInitial());
+    print('AccountCardsSummaryCubit: State reset');
   }
 
   /// Handle incoming WebSocket balance update
@@ -85,6 +99,14 @@ class AccountCardsSummaryCubit extends Cubit<AccountCardsSummaryState> {
     String? country,
   }) async {
     if (isClosed) return;
+
+    // If it's a different user, reset first
+    if (_currentUserId != null && _currentUserId != userId) {
+      print('AccountCardsSummaryCubit: User changed from $_currentUserId to $userId, resetting state');
+      reset();
+    }
+
+    _currentUserId = userId;
     emit(AccountCardsSummaryLoading());
     final result = await _getAccountSummariesUseCase.call(
       userId: userId,

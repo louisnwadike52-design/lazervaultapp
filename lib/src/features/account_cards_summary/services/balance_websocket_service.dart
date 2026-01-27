@@ -124,7 +124,7 @@ class BalanceWebSocketService {
     // Get WebSocket balance service host and port from environment
     // Falls back to financial gateway if WS_BALANCE_HOST is not set
     final wsBalanceHost = dotenv.env['WS_BALANCE_HOST'] ?? dotenv.env['PAYMENT_GRPC_HOST'] ?? '10.0.2.2';
-    final wsBalancePort = int.tryParse(dotenv.env['WS_BALANCE_PORT'] ?? '8095') ?? 8095;
+    final wsBalancePort = int.tryParse(dotenv.env['WS_BALANCE_PORT'] ?? '8080') ?? 8080;
 
     // Build WebSocket URL - only include country_code in query string
     final wsUrl = Uri(
@@ -180,7 +180,7 @@ class BalanceWebSocketService {
   Future<void> _connectSSE(String userId, String countryCode, String accessToken) async {
     // Get WebSocket balance service host and port from environment
     final wsBalanceHost = dotenv.env['WS_BALANCE_HOST'] ?? dotenv.env['PAYMENT_GRPC_HOST'] ?? '10.0.2.2';
-    final wsBalancePort = int.tryParse(dotenv.env['WS_BALANCE_PORT'] ?? '8095') ?? 8095;
+    final wsBalancePort = int.tryParse(dotenv.env['WS_BALANCE_PORT'] ?? '8080') ?? 8080;
 
     // Build SSE URL - only non-sensitive params in query string
     final sseUrl = Uri(

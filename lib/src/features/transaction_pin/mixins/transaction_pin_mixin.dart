@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 import 'package:lazervault/src/features/transaction_pin/widgets/transaction_pin_modal.dart';
 
@@ -67,9 +69,13 @@ mixin TransactionPinMixin<T extends StatefulWidget> on State<T> {
         if (!shouldCreate) return false;
 
         // Navigate to create PIN screen
-        // TODO: Navigate to create PIN screen
-        // Get.toNamed(() => CreateTransactionPinScreen());
-        return false;
+        await Get.toNamed(AppRoutes.transactionPinSetup);
+
+        // Check again if user created PIN
+        final hasPinNow = await transactionPinService.checkUserHasPin();
+        if (!hasPinNow) return false;
+
+        // If PIN was created, continue with the validation flow
       }
 
       // Start PIN validation loop

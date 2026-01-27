@@ -56,6 +56,16 @@ import 'package:lazervault/src/features/referral/domain/usecases/get_my_referral
 import 'package:lazervault/src/features/referral/domain/usecases/get_my_referrals_usecase.dart';
 import 'package:lazervault/src/features/referral/domain/usecases/get_referral_leaderboard_usecase.dart';
 import 'package:lazervault/src/features/referral/presentation/cubit/referral_cubit.dart';
+import 'package:lazervault/src/generated/whatsapp.pbgrpc.dart';
+import 'package:lazervault/src/features/whatsapp_banking/domain/repositories/i_whatsapp_repository.dart';
+import 'package:lazervault/src/features/whatsapp_banking/data/repositories/whatsapp_repository_impl.dart';
+import 'package:lazervault/src/features/whatsapp_banking/domain/usecases/get_link_status_usecase.dart';
+import 'package:lazervault/src/features/whatsapp_banking/domain/usecases/initiate_linking_usecase.dart';
+import 'package:lazervault/src/features/whatsapp_banking/domain/usecases/verify_linking_usecase.dart';
+import 'package:lazervault/src/features/whatsapp_banking/domain/usecases/unlink_account_usecase.dart';
+import 'package:lazervault/src/features/whatsapp_banking/domain/usecases/get_security_settings_usecase.dart';
+import 'package:lazervault/src/features/whatsapp_banking/domain/usecases/update_security_settings_usecase.dart' as whatsapp_usecases;
+import 'package:lazervault/src/features/whatsapp_banking/cubit/whatsapp_banking_cubit.dart';
 import 'package:lazervault/src/features/authentication/domain/repositories/i_face_recognition_repository.dart';
 import 'package:lazervault/src/features/authentication/presentation/views/email_sign_in_screen.dart';
 import 'package:lazervault/src/features/profile/data/repositories/profile_repository.dart';
@@ -165,6 +175,7 @@ import 'package:lazervault/src/features/funds/domain/usecases/initiate_deposit_u
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/balance_websocket_cubit.dart';
 import 'package:lazervault/src/features/account_cards_summary/services/balance_websocket_service.dart';
+import 'package:lazervault/src/features/banking/services/banking_websocket_service.dart';
 import 'package:lazervault/src/features/account_cards_summary/data/repositories/account_summary_repository_impl.dart';
 import 'package:lazervault/src/features/account_cards_summary/domain/repositories/i_account_summary_repository.dart';
 import 'package:lazervault/src/features/account_cards_summary/domain/usecases/get_account_summaries_usecase.dart';
@@ -538,16 +549,31 @@ Future<void> init() async {
     ),
   );
 
-  // ===== 3-GATEWAY ARCHITECTURE =====
-  // Register 3 independent gateway channels for optimal API organization:
-  // 1. Core Gateway (7878) - Auth, Accounts, Users, Support, Referrals, Crowdfund
-  // 2. Investment Gateway (8090) - Stocks, Crypto, Portfolio, Analytics
-  // 3. Financial Gateway (8100) - Payments, Cards, Invoices, Expenses, Loans, Insurance
+  // ===== MULTI-GATEWAY ARCHITECTURE =====
+  // Register independent gateway channels for optimal API organization:
+  // 1. Core Gateway (50070) - Auth, Accounts, Users, Support, Referrals, Notifications
+  // 2. Commerce Gateway (50071) - Utility Payments, GiftCards, Invoices
+  // 3. Investment Gateway (50072) - Stocks, Crypto, Portfolio, Analytics
+  // 4. Transfer Gateway (50076) - Payments, Transfers
+  // 5. Banking Gateway (50077) - Banking, Virtual Accounts, Bank Verification
+  // 6. Products Gateway (50078) - Group Accounts, AutoSave, Crowdfund
 
   // Core Gateway Channel - For authentication and core account operations
   serviceLocator.registerLazySingleton<ClientChannel>(
     () => GrpcChannelFactory.createCoreChannel(),
     instanceName: 'coreChannel',
+  );
+
+  // Commerce Gateway Channel - For utility payments, giftcards, invoices
+  serviceLocator.registerLazySingleton<ClientChannel>(
+    () => GrpcChannelFactory.createCommerceChannel(),
+    instanceName: 'commerceChannel',
+  );
+
+  // Backward compatibility alias for financialChannel → commerceChannel
+  serviceLocator.registerLazySingleton<ClientChannel>(
+    () => serviceLocator<ClientChannel>(instanceName: 'commerceChannel'),
+    instanceName: 'financialChannel',
   );
 
   // Investment Gateway Channel - For stocks, crypto, portfolio, analytics
@@ -556,16 +582,28 @@ Future<void> init() async {
     instanceName: 'investmentChannel',
   );
 
-  // Financial Gateway Channel - For payments, cards, invoices, expenses, loans
+  // Transfer Gateway Channel - For payments, transfers
   serviceLocator.registerLazySingleton<ClientChannel>(
-    () => GrpcChannelFactory.createFinancialChannel(),
-    instanceName: 'financialChannel',
+    () => GrpcChannelFactory.createTransferChannel(),
+    instanceName: 'transferChannel',
   );
 
-  // Banking Service Channel - For transfers, virtual accounts, bank verification
+  // Banking Gateway Channel - For banking operations via gateway (port 50077)
   serviceLocator.registerLazySingleton<ClientChannel>(
-    () => GrpcChannelFactory.createBankingChannel(),
+    () => GrpcChannelFactory.createBankingGatewayChannel(),
     instanceName: 'bankingChannel',
+  );
+
+  // Products Gateway Channel - For group accounts, autosave, crowdfund
+  serviceLocator.registerLazySingleton<ClientChannel>(
+    () => GrpcChannelFactory.createProductsChannel(),
+    instanceName: 'productsChannel',
+  );
+
+  // Contactless Payment Gateway Channel - For NFC contactless payments
+  serviceLocator.registerLazySingleton<ClientChannel>(
+    () => GrpcChannelFactory.createContactlessChannel(),
+    instanceName: 'contactlessChannel',
   );
 
   // Default channel for backward compatibility (points to Core Gateway)
@@ -584,7 +622,7 @@ Future<void> init() async {
     () => TransactionPinServiceClient(serviceLocator<ClientChannel>()),
   );
   serviceLocator.registerLazySingleton<DepositServiceClient>(
-    () => DepositServiceClient(serviceLocator<ClientChannel>()),
+    () => DepositServiceClient(serviceLocator<ClientChannel>(instanceName: 'bankingChannel')),
   );
   serviceLocator.registerLazySingleton<account_grpc.AccountServiceClient>(
     () => account_grpc.AccountServiceClient(serviceLocator<ClientChannel>()),
@@ -596,14 +634,14 @@ Future<void> init() async {
     () => family_accounts_grpc.FamilyAccountsServiceClient(serviceLocator<ClientChannel>()),
   );
   serviceLocator.registerLazySingleton<RecipientServiceClient>(
-    () => RecipientServiceClient(serviceLocator<ClientChannel>()),
+    () => RecipientServiceClient(serviceLocator<ClientChannel>(instanceName: 'coreChannel')),
   );
   serviceLocator.registerLazySingleton<WithdrawServiceClient>(
-    () => WithdrawServiceClient(serviceLocator<ClientChannel>()),
+    () => WithdrawServiceClient(serviceLocator<ClientChannel>(instanceName: 'bankingChannel')),
   );
-  // Legacy transfer client (points to Core Gateway for backward compatibility)
+  // Transfer client - routes to Transfer Gateway (50076)
   serviceLocator.registerLazySingleton<TransferServiceClient>(
-    () => TransferServiceClient(serviceLocator<ClientChannel>()),
+    () => TransferServiceClient(serviceLocator<ClientChannel>(instanceName: 'transferChannel')),
   );
 
   // Banking Service Client - For production-grade transfers via banking-service
@@ -625,13 +663,19 @@ Future<void> init() async {
     () => ContactSyncServiceClient(serviceLocator<ClientChannel>()),
   );
   serviceLocator.registerLazySingleton<GroupAccountServiceClient>(
-    () => GroupAccountServiceClient(serviceLocator<ClientChannel>()),
+    () => GroupAccountServiceClient(
+      serviceLocator<ClientChannel>(instanceName: 'productsChannel'),
+    ),
   );
   serviceLocator.registerLazySingleton<AutoSaveServiceClient>(
-    () => AutoSaveServiceClient(serviceLocator<ClientChannel>()),
+    () => AutoSaveServiceClient(
+      serviceLocator<ClientChannel>(instanceName: 'productsChannel'),
+    ),
   );
   serviceLocator.registerLazySingleton<crowdfund_grpc.CrowdfundServiceClient>(
-    () => crowdfund_grpc.CrowdfundServiceClient(serviceLocator<ClientChannel>()),
+    () => crowdfund_grpc.CrowdfundServiceClient(
+      serviceLocator<ClientChannel>(instanceName: 'productsChannel'),
+    ),
   );
   // Portfolio temporarily disabled
   // serviceLocator.registerLazySingleton<PortfolioServiceClient>(
@@ -646,11 +690,19 @@ Future<void> init() async {
     () => VoiceBiometricsServiceClient(serviceLocator<ClientChannel>()),
   );
 
+  // Notifications Service Client - Uses Core Gateway (50070)
+  // TODO: Uncomment when notifications.pbgrpc.dart is generated
+  // serviceLocator.registerLazySingleton<NotificationsServiceClient>(
+  //   () => NotificationsServiceClient(
+  //     serviceLocator<ClientChannel>(instanceName: 'coreChannel'),
+  //   ),
+  // );
+
   // Payments Service Client (for account verification, transfers, etc.)
-  // Uses Financial Gateway (8100) for payments-related operations
+  // Uses Transfer Gateway (50076) for payments-related operations
   serviceLocator.registerLazySingleton<payments_grpc.PaymentsServiceClient>(
     () => payments_grpc.PaymentsServiceClient(
-      serviceLocator<ClientChannel>(instanceName: 'financialChannel'),
+      serviceLocator<ClientChannel>(instanceName: 'transferChannel'),
     ),
   );
 
@@ -821,9 +873,9 @@ Future<void> init() async {
 
   // ================== Feature: Currency Exchange ==================
 
-  // Register Exchange Service Client
+  // Register Exchange Service Client - routes to Commerce/Financial Gateway
   serviceLocator.registerLazySingleton<ExchangeServiceClient>(
-    () => ExchangeServiceClient(serviceLocator<ClientChannel>()),
+    () => ExchangeServiceClient(serviceLocator<ClientChannel>(instanceName: 'commerceChannel')),
   );
 
   // Repositories
@@ -858,6 +910,38 @@ Future<void> init() async {
         getLeaderboard: serviceLocator<GetReferralLeaderboardUseCase>(),
       ));
 
+  // ================== Feature: WhatsApp Banking ==================
+
+  // gRPC Client
+  serviceLocator.registerLazySingleton<WhatsAppServiceClient>(
+    () => WhatsAppServiceClient(serviceLocator<ClientChannel>()),
+  );
+
+  // Repositories
+  serviceLocator.registerLazySingleton<IWhatsAppRepository>(
+      () => WhatsAppRepositoryImpl(
+          serviceClient: serviceLocator<WhatsAppServiceClient>(),
+          callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
+        ));
+
+  // Use Cases
+  serviceLocator.registerLazySingleton(() => GetLinkStatusUseCase(serviceLocator<IWhatsAppRepository>()));
+  serviceLocator.registerLazySingleton(() => InitiateLinkingUseCase(serviceLocator<IWhatsAppRepository>()));
+  serviceLocator.registerLazySingleton(() => VerifyLinkingUseCase(serviceLocator<IWhatsAppRepository>()));
+  serviceLocator.registerLazySingleton(() => UnlinkAccountUseCase(serviceLocator<IWhatsAppRepository>()));
+  serviceLocator.registerLazySingleton(() => GetSecuritySettingsUseCase(serviceLocator<IWhatsAppRepository>()));
+  serviceLocator.registerLazySingleton(() => whatsapp_usecases.UpdateSecuritySettingsUseCase(serviceLocator<IWhatsAppRepository>()));
+
+  // Blocs/Cubits
+  serviceLocator.registerFactory(() => WhatsAppBankingCubit(
+        getLinkStatus: serviceLocator<GetLinkStatusUseCase>(),
+        initiateLinking: serviceLocator<InitiateLinkingUseCase>(),
+        verifyLinking: serviceLocator<VerifyLinkingUseCase>(),
+        unlinkAccount: serviceLocator<UnlinkAccountUseCase>(),
+        getSecuritySettings: serviceLocator<GetSecuritySettingsUseCase>(),
+        updateSecuritySettings: serviceLocator<whatsapp_usecases.UpdateSecuritySettingsUseCase>(),
+      ));
+
   // ================== Feature: Account Cards Summary ==================
 
   // Repositories
@@ -876,6 +960,7 @@ Future<void> init() async {
   // WebSocket Balance Update Service
   serviceLocator.registerLazySingleton(() => BalanceWebSocketService());
   serviceLocator.registerLazySingleton(() => BalanceWebSocketCubit(serviceLocator<BalanceWebSocketService>()));
+  serviceLocator.registerLazySingleton(() => BankingWebSocketService());
 
 
   // ================== Feature: Card Settings ==================
@@ -936,7 +1021,10 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton(() => InitiateDepositUseCase(serviceLocator<IDepositRepository>()));
 
   // Blocs/Cubits
-  serviceLocator.registerFactory(() => DepositCubit(serviceLocator<InitiateDepositUseCase>()));
+  serviceLocator.registerFactory(() => DepositCubit(
+    serviceLocator<InitiateDepositUseCase>(),
+    bankingWebSocketService: serviceLocator<BankingWebSocketService>(),
+  ));
 
   // ================== Feature: Open Banking (Mono) ==================
 
@@ -1278,9 +1366,12 @@ Future<void> init() async {
   // ================== Feature: Tag Pay ==================
 
   // Repositories - Using gRPC implementation for backend integration
+  // User search is decoupled from TagPay - uses AuthServiceClient via core-gateway
   serviceLocator.registerLazySingleton<TagPayRepository>(
     () => TagPayRepositoryGrpcImpl(
       grpcClient: serviceLocator<GrpcClient>(),
+      authServiceClient: serviceLocator<auth_proto.AuthServiceClient>(),
+      callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
     ),
   );
 
@@ -1311,11 +1402,20 @@ Future<void> init() async {
   ));
 
   // ================== Feature: Contactless Payment (NFC) ==================
+  // Uses dedicated Contactless Payment Gateway (port 50075)
+
+  // Dedicated gRPC client for contactless payments via dedicated gateway
+  final contactlessGrpcClient = GrpcClient(
+    channel: serviceLocator<ClientChannel>(instanceName: 'contactlessChannel'),
+    secureStorage: serviceLocator<FlutterSecureStorage>(),
+    callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
+  );
+  await contactlessGrpcClient.initialize();
 
   // Repositories
   serviceLocator.registerLazySingleton<ContactlessPaymentRepository>(
     () => ContactlessPaymentRepositoryImpl(
-      grpcClient: serviceLocator<GrpcClient>(),
+      grpcClient: contactlessGrpcClient,
     ),
   );
 
@@ -1715,10 +1815,10 @@ Future<void> init() async {
 
   // ================== Feature: Statistics ==================
 
-  // GrpcClient (for statistics and invoices) - Uses Financial Gateway (8100)
+  // GrpcClient (for statistics and invoices) - Uses Commerce Gateway (50071)
   // Now with automatic token rotation support via GrpcCallOptionsHelper
   final grpcClient = GrpcClient(
-    channel: serviceLocator<ClientChannel>(instanceName: 'financialChannel'),
+    channel: serviceLocator<ClientChannel>(instanceName: 'commerceChannel'),
     secureStorage: serviceLocator<FlutterSecureStorage>(),
     callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
   );

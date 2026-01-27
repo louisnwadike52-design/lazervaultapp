@@ -325,7 +325,7 @@ class _AccountCarouselState extends State<AccountCarousel> {
                       currencySymbol: currencySymbol,
                       fontSize: 28,
                       color: Colors.white,
-                      duration: const Duration(milliseconds: 800),
+                      duration: const Duration(seconds: 3),
                     ),
                     const Spacer(),
                     Row(
@@ -737,7 +737,7 @@ class _AccountCarouselState extends State<AccountCarousel> {
                       currencySymbol: currencySymbol,
                       fontSize: 26,
                       color: Colors.white,
-                      duration: const Duration(milliseconds: 800),
+                      duration: const Duration(seconds: 3),
                     ),
                     SizedBox(height: 2.h),
                     Text(

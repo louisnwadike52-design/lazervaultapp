@@ -125,12 +125,13 @@ class TransactionPinService implements ITransactionPinService {
         _accountManager = accountManager;
 
   Future<String> _getUserId() async {
-    // Get user ID from account manager
-    final accountId = _accountManager.activeAccountId;
-    if (accountId != null && accountId.isNotEmpty) {
-      return accountId;
+    // Get USER ID from secure storage (not account ID)
+    // The transaction PIN is tied to the user, not individual accounts
+    final userId = await _callOptionsHelper.storage.read(key: 'user_id');
+    if (userId != null && userId.isNotEmpty) {
+      return userId;
     }
-    throw Exception('No active account/user found');
+    throw Exception('No user ID found. Please log in again.');
   }
 
   Future<String> _getDeviceId() async {

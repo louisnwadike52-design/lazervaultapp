@@ -3,10 +3,13 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 /// Factory for creating gRPC channels for different API gateways
 ///
-/// LazerVault uses 3 independent API gateways with dual servers (HTTP + gRPC):
+/// LazerVault uses independent API gateways with dual servers (HTTP + gRPC):
 /// 1. Core Gateway - gRPC: 50070, HTTP: 7878 (Auth, Accounts, Users, Support, Referrals)
-/// 2. Investment Gateway - gRPC: 50072, HTTP: 9090 (Stocks, Crypto, Portfolio, Analytics)
-/// 3. Financial Gateway - gRPC: 50071, HTTP: 8080 (Payments, Cards, Invoices, Expenses, Loans)
+/// 2. Commerce Gateway - gRPC: 50071, HTTP: 8080 (Utility Payments, GiftCards, Invoices)
+/// 3. Investment Gateway - gRPC: 50072, HTTP: 9090 (Stocks, Crypto, Portfolio, Analytics)
+/// 4. Transfer Gateway - gRPC: 50076 (Payments, Transfers)
+/// 5. Banking Gateway - gRPC: 50077 (Banking, Virtual Accounts, Bank Verification)
+/// 6. Products Gateway - gRPC: 50078 (Group Accounts, AutoSave, Crowdfund)
 class GrpcChannelFactory {
   /// Creates Core Gateway gRPC channel (Auth, Accounts, Users, Deposits, Withdrawals, etc.)
   /// gRPC Port: 50070
@@ -34,9 +37,9 @@ class GrpcChannelFactory {
     return _createChannel(host, port, 'Investment Gateway');
   }
 
-  /// Creates Financial Gateway gRPC channel (Payments, Cards, Invoices, Expenses, Loans, etc.)
+  /// Creates Commerce Gateway gRPC channel (Utility Payments, GiftCards, Invoices)
   /// gRPC Port: 50071
-  static ClientChannel createFinancialChannel() {
+  static ClientChannel createCommerceChannel() {
     final host = dotenv.env['PAYMENT_GRPC_HOST'] ??
         dotenv.env['INVOICE_GRPC_HOST'] ??
         dotenv.env['CARDS_GRPC_HOST'] ??
@@ -46,8 +49,46 @@ class GrpcChannelFactory {
         dotenv.env['CARDS_GRPC_PORT'] ??
         '50071');
 
-    print("💳 Creating Financial Gateway Channel → $host:$port");
-    return _createChannel(host, port, 'Financial Gateway');
+    print("💳 Creating Commerce Gateway Channel → $host:$port");
+    return _createChannel(host, port, 'Commerce Gateway');
+  }
+
+  /// @deprecated Use [createCommerceChannel] instead.
+  /// Kept for backward compatibility.
+  static ClientChannel createFinancialChannel() => createCommerceChannel();
+
+  /// Creates Transfer Gateway gRPC channel (Payments, Transfers)
+  /// gRPC Port: 50076
+  static ClientChannel createTransferChannel() {
+    final host = dotenv.env['TRANSFER_GRPC_HOST'] ?? '10.0.2.2';
+    final port = int.parse(dotenv.env['TRANSFER_GRPC_PORT'] ?? '50076');
+    return _createChannel(host, port, 'Transfer Gateway');
+  }
+
+  /// Creates Banking Gateway gRPC channel (Banking, Virtual Accounts, Bank Verification)
+  /// gRPC Port: 50077
+  static ClientChannel createBankingGatewayChannel() {
+    final host = dotenv.env['BANKING_GATEWAY_GRPC_HOST'] ?? '10.0.2.2';
+    final port = int.parse(dotenv.env['BANKING_GATEWAY_GRPC_PORT'] ?? '50077');
+    return _createChannel(host, port, 'Banking Gateway');
+  }
+
+  /// Creates Products Gateway gRPC channel (Group Accounts, AutoSave, Crowdfund)
+  /// gRPC Port: 50078
+  static ClientChannel createProductsChannel() {
+    final host = dotenv.env['PRODUCTS_GRPC_HOST'] ?? '10.0.2.2';
+    final port = int.parse(dotenv.env['PRODUCTS_GRPC_PORT'] ?? '50078');
+    return _createChannel(host, port, 'Products Gateway');
+  }
+
+  /// Creates Contactless Payment Gateway gRPC channel (NFC Payments, Sessions)
+  /// gRPC Port: 50075
+  static ClientChannel createContactlessChannel() {
+    final host = dotenv.env['CONTACTLESS_GRPC_HOST'] ?? '10.0.2.2';
+    final port = int.parse(dotenv.env['CONTACTLESS_GRPC_PORT'] ?? '50075');
+
+    print("📡 Creating Contactless Payment Gateway Channel → $host:$port");
+    return _createChannel(host, port, 'Contactless Payment Gateway');
   }
 
   /// Creates Banking Service gRPC channel (Transfers, Virtual Accounts, Bank Verification)
@@ -82,17 +123,25 @@ class GrpcChannelFactory {
   static Future<void> closeAllChannels(
     ClientChannel coreChannel,
     ClientChannel investmentChannel,
-    ClientChannel financialChannel, {
+    ClientChannel commerceChannel, {
     ClientChannel? bankingChannel,
+    ClientChannel? transferChannel,
+    ClientChannel? productsChannel,
   }) async {
     print("🔌 Closing all gRPC channels...");
     final futures = [
       coreChannel.shutdown(),
       investmentChannel.shutdown(),
-      financialChannel.shutdown(),
+      commerceChannel.shutdown(),
     ];
     if (bankingChannel != null) {
       futures.add(bankingChannel.shutdown());
+    }
+    if (transferChannel != null) {
+      futures.add(transferChannel.shutdown());
+    }
+    if (productsChannel != null) {
+      futures.add(productsChannel.shutdown());
     }
     await Future.wait(futures);
     print("✅ All gRPC channels closed");

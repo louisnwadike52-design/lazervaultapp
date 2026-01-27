@@ -81,17 +81,25 @@ class _DashboardCardSummaryViewState extends State<_DashboardCardSummaryView> {
   }
 
   void _fetchData() {
-    // Check if data is already loaded - skip fetch if so (WebSocket handles updates)
-    final currentState = context.read<AccountCardsSummaryCubit>().state;
-    if (currentState is AccountCardsSummaryLoaded) {
-      debugPrint('_DashboardCardSummaryView: Accounts already loaded, skipping fetch (WebSocket handles updates)');
+    final authState = context.read<AuthenticationCubit>().state;
+    if (authState is! AuthenticationSuccess) {
+      print("_DashboardCardSummaryView: User not authenticated, cannot fetch summaries.");
       return;
     }
 
-    final authState = context.read<AuthenticationCubit>().state;
-    if (authState is AuthenticationSuccess) {
-      final userId = authState.profile.user.id;
-      final accessToken = authState.profile.session.accessToken;
+    final userId = authState.profile.user.id;
+    final accessToken = authState.profile.session.accessToken;
+
+    // Check if data is already loaded FOR THE SAME USER - skip fetch if so
+    final cubit = context.read<AccountCardsSummaryCubit>();
+    final currentState = cubit.state;
+    if (currentState is AccountCardsSummaryLoaded) {
+      // Only skip if accounts are loaded for the SAME user
+      if (cubit.currentUserId == userId && currentState.accountSummaries.isNotEmpty) {
+        debugPrint('_DashboardCardSummaryView: Accounts already loaded for user $userId, skipping fetch (WebSocket handles updates)');
+        return;
+      }
+    }
 
       // Get active country from ProfileCubit
       final profileState = context.read<ProfileCubit>().state;
@@ -102,18 +110,12 @@ class _DashboardCardSummaryViewState extends State<_DashboardCardSummaryView> {
             : null;
       }
 
-      // Use context.read to get the cubit provided in main.dart
-      context.read<AccountCardsSummaryCubit>().fetchAccountSummaries(
-            userId: userId,
-            accessToken: accessToken,
-            country: activeCountry,
-          );
-    } else {
-      print(
-          "_DashboardCardSummaryView: User not authenticated, cannot fetch summaries.");
-      // Optionally, handle the non-authenticated state, e.g., show an error in the UI
-      // context.read<AccountCardsSummaryCubit>().emit(AccountCardsSummaryError("User not authenticated"));
-    }
+    // Use context.read to get the cubit provided in main.dart
+    context.read<AccountCardsSummaryCubit>().fetchAccountSummaries(
+          userId: userId,
+          accessToken: accessToken,
+          country: activeCountry,
+        );
   }
 
   void _setupWebSocketConnection() {

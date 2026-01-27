@@ -37,10 +37,9 @@ class SettingsScreen extends StatelessWidget{
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => serviceLocator<ProfileCubit>()..getUserProfile(),
-      child: const _SettingsView(),
-    );
+    // Use the global ProfileCubit instead of creating a new one
+    // This ensures profile updates from email verification are reflected
+    return const _SettingsView();
   }
 }
 
@@ -53,90 +52,99 @@ class _SettingsView extends StatefulWidget {
 
 class _SettingsViewState extends State<_SettingsView> {
   @override
+  void initState() {
+    super.initState();
+    // Refresh profile data when screen opens
+    // Uses the global ProfileCubit from main.dart
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<ProfileCubit>().getUserProfile();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return BlocListener<ProfileCubit, ProfileState>(
-      listener: (context, state) {
-        if (state is ProfileError) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.message),
-              backgroundColor: Colors.red,
+    return Scaffold(
+      backgroundColor: const Color(0xFFF9FAFB),
+      body: Column(
+        children: [
+          ThemedAppBar(
+            title: 'Settings',
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () => Get.back(),
             ),
-          );
-        } else if (state is PreferencesUpdateSuccess) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Preferences updated successfully'),
-              backgroundColor: Colors.green,
-            ),
-          );
-          context.read<ProfileCubit>().getUserProfile();
-        } else if (state is PasswordUpdateSuccess) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.message),
-              backgroundColor: Colors.green,
-            ),
-          );
-        }
-      },
-      child: Scaffold(
-        backgroundColor: const Color(0xFFF9FAFB),
-        body: Column(
-          children: [
-            ThemedAppBar(
-              title: 'Settings',
-              leading: IconButton(
-                icon: const Icon(Icons.arrow_back),
-                onPressed: () => Get.back(),
-              ),
-            ),
-            Expanded(
-              child: BlocBuilder<ProfileCubit, ProfileState>(
-                builder: (context, state) {
-                  if (state is ProfileLoading) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-
-                  return SingleChildScrollView(
-                    physics: const BouncingScrollPhysics(),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        SizedBox(height: 16.h),
-
-                        // Profile Section
-                        _buildProfileSection(state),
-
-                        SizedBox(height: 16.h),
-
-                        // Security Section
-                        _buildSecuritySection(),
-
-                        SizedBox(height: 16.h),
-
-                        // App Settings Section
-                        _buildAppSettingsSection(state),
-
-                        SizedBox(height: 16.h),
-
-                        // Preferences Section
-                        _buildPreferencesSection(state),
-
-                        SizedBox(height: 16.h),
-
-                        // Help & Support Section
-                        _buildHelpSupportSection(),
-
-                        SizedBox(height: 32.h),
-                      ],
+          ),
+          Expanded(
+            // Use BlocConsumer to handle both side effects and UI updates
+            child: BlocConsumer<ProfileCubit, ProfileState>(
+              listener: (context, state) {
+                if (state is ProfileError) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(state.message),
+                      backgroundColor: Colors.red,
                     ),
                   );
-                },
-              ),
+                } else if (state is PreferencesUpdateSuccess) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Preferences updated successfully'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                  context.read<ProfileCubit>().getUserProfile();
+                } else if (state is PasswordUpdateSuccess) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(state.message),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                }
+              },
+              builder: (context, state) {
+                if (state is ProfileLoading) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                return SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      SizedBox(height: 16.h),
+
+                      // Profile Section
+                      _buildProfileSection(state),
+
+                      SizedBox(height: 16.h),
+
+                      // Security Section
+                      _buildSecuritySection(),
+
+                      SizedBox(height: 16.h),
+
+                      // App Settings Section
+                      _buildAppSettingsSection(state),
+
+                      SizedBox(height: 16.h),
+
+                      // Preferences Section
+                      _buildPreferencesSection(state),
+
+                      SizedBox(height: 16.h),
+
+                      // Help & Support Section
+                      _buildHelpSupportSection(),
+
+                      SizedBox(height: 32.h),
+                    ],
+                  ),
+                );
+              },
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -459,6 +467,19 @@ class _SettingsViewState extends State<_SettingsView> {
           ),
           onTap: () {
             Get.toNamed(AppRoutes.changePasscode);
+          },
+        ),
+        _buildSettingsTile(
+          icon: Icons.lock_outline,
+          title: 'Transaction PIN',
+          subtitle: 'Set or change your 4-digit payment PIN',
+          trailing: Icon(
+            Icons.arrow_forward_ios,
+            size: 16.sp,
+            color: const Color(0xFF9CA3AF),
+          ),
+          onTap: () {
+            Get.toNamed(AppRoutes.transactionPinSetup);
           },
         ),
         _buildSettingsTile(

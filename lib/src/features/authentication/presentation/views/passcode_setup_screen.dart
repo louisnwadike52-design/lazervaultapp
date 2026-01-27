@@ -47,51 +47,6 @@ class _PasscodeSetupScreenState extends State<PasscodeSetupScreen> {
     context.read<AuthenticationCubit>().skipPasscodeSetup();
   }
 
-  void _showFaceRegistrationPrompt() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext dialogContext) {
-        return AlertDialog(
-          title: Text(
-            'Setup Face Recognition?',
-            style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold),
-          ),
-          content: Text(
-            'Would you like to enable Face Recognition for faster login?',
-            style: TextStyle(fontSize: 14.sp),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(dialogContext).pop();
-                Get.offAllNamed(AppRoutes.dashboard);
-              },
-              child: Text(
-                'Skip for now',
-                style: TextStyle(fontSize: 14.sp, color: Colors.grey),
-              ),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(dialogContext).pop();
-                Get.offAllNamed(AppRoutes.faceScan);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
-                foregroundColor: Colors.white,
-              ),
-              child: Text(
-                'Setup Face Recognition',
-                style: TextStyle(fontSize: 14.sp),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
@@ -102,10 +57,10 @@ class _PasscodeSetupScreenState extends State<PasscodeSetupScreen> {
     return BlocConsumer<AuthenticationCubit, AuthenticationState>(
       listener: (context, state) {
         if (state is AuthenticationSuccess) {
-          // Show face registration prompt after successful passcode setup
+          // Navigate to Transaction PIN setup after successful passcode setup
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (mounted) {
-              _showFaceRegistrationPrompt();
+              Get.offNamed(AppRoutes.transactionPinSetup);
             }
           });
         }
