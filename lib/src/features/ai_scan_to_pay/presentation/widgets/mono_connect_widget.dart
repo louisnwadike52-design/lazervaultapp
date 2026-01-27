@@ -176,14 +176,14 @@ Future<MonoConnectResult?> showMonoConnectBottomSheet({
   return completer.future;
 }
 
-/// Custom themed Mono Connect bottom sheet with 70% screen height
+/// Custom themed Mono Connect bottom sheet with 90% screen height and styled overlay
 void _launchCustomMonoBottomSheet(BuildContext context, ConnectConfiguration config) {
   showModalBottomSheet<dynamic>(
     context: context,
     useSafeArea: true,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
-    barrierColor: const Color(0xFF1E3A5F).withOpacity(0.7), // Theme overlay
+    barrierColor: const Color(0xFF0D0D1A).withOpacity(0.85), // Dark themed overlay
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(
         top: Radius.circular(24),
@@ -191,15 +191,22 @@ void _launchCustomMonoBottomSheet(BuildContext context, ConnectConfiguration con
     ),
     clipBehavior: Clip.hardEdge,
     builder: (_) => Container(
-      height: MediaQuery.of(context).size.height * 0.70, // 70% of screen
+      height: MediaQuery.of(context).size.height * 0.85, // 85% of screen
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF6C5CE7).withOpacity(0.3),
-            blurRadius: 20,
-            offset: const Offset(0, -5),
+            color: const Color(0xFF4E03D0).withOpacity(0.4),
+            blurRadius: 30,
+            spreadRadius: 2,
+            offset: const Offset(0, -8),
+          ),
+          BoxShadow(
+            color: const Color(0xFF6C5CE7).withOpacity(0.2),
+            blurRadius: 60,
+            spreadRadius: 0,
+            offset: const Offset(0, -4),
           ),
         ],
       ),
@@ -211,7 +218,9 @@ void _launchCustomMonoBottomSheet(BuildContext context, ConnectConfiguration con
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: const Color(0xFF6C5CE7),
+              gradient: const LinearGradient(
+                colors: [Color(0xFF4E03D0), Color(0xFF6C5CE7)],
+              ),
               borderRadius: BorderRadius.circular(2),
             ),
           ),

@@ -473,7 +473,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
               ),
               SizedBox(height: 8.h),
               Text(
-                'Min: ₦100 • Max: ₦1,000,000',
+                'Min: ₦200 • Max: ₦1,000,000',
                 style: TextStyle(
                   color: Colors.white.withOpacity(0.5),
                   fontSize: 12.sp,
@@ -738,10 +738,10 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
     final amountText = _amountController.text.trim();
     final amount = double.tryParse(amountText) ?? 0;
 
-    if (amount < 100) {
+    if (amount < 200) {
       Get.snackbar(
         'Invalid Amount',
-        'Minimum deposit amount is ₦100',
+        'Minimum deposit amount is ₦200',
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.red.withOpacity(0.9),
         colorText: Colors.white,
@@ -988,8 +988,26 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
     } else if (state is DepositSuccess) {
       Get.closeAllSnackbars();
       Get.snackbar(
-        'Deposit Successful',
-        'Your deposit of $_currencySymbol${_amountController.text} from $_selectedBank has been received successfully.',
+        'Deposit Initiated',
+        'Your deposit of $_currencySymbol${_amountController.text} from $_selectedBank is being processed.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.blue.withOpacity(0.9),
+        colorText: Colors.white,
+        isDismissible: true,
+        duration: const Duration(seconds: 3),
+        margin: EdgeInsets.all(16.w),
+        borderRadius: 12.r,
+        icon: Icon(
+          Icons.hourglass_top_rounded,
+          color: Colors.white,
+          size: 28.sp,
+        ),
+      );
+    } else if (state is DepositWebSocketCompleted) {
+      Get.closeAllSnackbars();
+      Get.snackbar(
+        'Deposit Completed',
+        'Your deposit has been completed successfully.',
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.green.withOpacity(0.9),
         colorText: Colors.white,
@@ -1020,6 +1038,45 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
           Navigator.of(context).pop();
         }
       });
+    } else if (state is DepositReversed) {
+      Get.closeAllSnackbars();
+      Get.snackbar(
+        'Deposit Reversed',
+        state.reason,
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.orange.withOpacity(0.9),
+        colorText: Colors.white,
+        isDismissible: true,
+        duration: const Duration(seconds: 6),
+        margin: EdgeInsets.all(16.w),
+        borderRadius: 12.r,
+        icon: Icon(
+          Icons.undo_rounded,
+          color: Colors.white,
+          size: 28.sp,
+        ),
+      );
+
+      // Refresh balances since reversal affects the balance
+      _refreshAccountBalances(context);
+    } else if (state is DepositWebSocketFailed) {
+      Get.closeAllSnackbars();
+      Get.snackbar(
+        'Deposit Failed',
+        state.message,
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.withOpacity(0.9),
+        colorText: Colors.white,
+        isDismissible: true,
+        duration: const Duration(seconds: 5),
+        margin: EdgeInsets.all(16.w),
+        borderRadius: 12.r,
+        icon: Icon(
+          Icons.error_outline_rounded,
+          color: Colors.white,
+          size: 28.sp,
+        ),
+      );
     }
   }
   

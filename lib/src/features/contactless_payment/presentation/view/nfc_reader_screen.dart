@@ -3,9 +3,10 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get_it/get_it.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:nfc_manager/nfc_manager.dart';
-import 'package:nfc_manager/ndef_record.dart';
 import 'package:nfc_manager_ndef/nfc_manager_ndef.dart';
 import '../../domain/repositories/contactless_payment_repository.dart';
 import '../cubit/contactless_payment_cubit.dart';
@@ -33,575 +34,562 @@ class _NfcReaderView extends StatefulWidget {
   State<_NfcReaderView> createState() => _NfcReaderViewState();
 }
 
-enum NfcErrorType {
-  notSupported,
-  disabled,
-  sessionFailed,
-  readError,
-  invalidData,
-}
-
 class _NfcReaderViewState extends State<_NfcReaderView>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
+  bool _isScanning = false;
+  bool _nfcAvailable = true;
+  String _statusMessage = 'Ready to scan';
+  bool _hasError = false;
+
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
-  bool _isNfcAvailable = false;
-  bool _isNfcSupported = true;
-  bool _isNfcSessionStarted = false;
-  bool _isProcessing = false;
-  String? _errorMessage;
-  NfcErrorType? _errorType;
-  int _retryCount = 0;
-  static const int _maxRetries = 3;
+  late AnimationController _rippleController;
+  late Animation<double> _rippleAnimation;
+  late AnimationController _fadeController;
+  late Animation<double> _fadeAnimation;
 
   @override
   void initState() {
     super.initState();
     _pulseController = AnimationController(
+      duration: const Duration(milliseconds: 1500),
       vsync: this,
-      duration: const Duration(seconds: 2),
-    )..repeat(reverse: true);
-
+    );
     _pulseAnimation = Tween<double>(begin: 1.0, end: 1.15).animate(
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
 
-    _checkNfcAvailability();
+    _rippleController = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    );
+    _rippleAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _rippleController, curve: Curves.easeOut),
+    );
+
+    _fadeController = AnimationController(
+      duration: const Duration(milliseconds: 600),
+      vsync: this,
+    );
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _fadeController, curve: Curves.easeOut),
+    );
+
+    _fadeController.forward();
+    _checkNfcAndStartScan();
   }
 
   @override
   void dispose() {
     _pulseController.dispose();
-    _stopNfcSession();
+    _rippleController.dispose();
+    _fadeController.dispose();
+    _stopNfcScan();
     super.dispose();
   }
 
-  Future<void> _checkNfcAvailability() async {
+  Future<void> _checkNfcAndStartScan() async {
     try {
-      final availability = await NfcManager.instance.checkAvailability();
+      final isAvailable = await NfcManager.instance.isAvailable();
+      if (!mounted) return;
 
-      switch (availability) {
-        case NfcAvailability.enabled:
-          setState(() {
-            _isNfcAvailable = true;
-            _isNfcSupported = true;
-          });
-          _startNfcSession();
-          break;
-
-        case NfcAvailability.disabled:
-          setState(() {
-            _isNfcAvailable = false;
-            _isNfcSupported = true;
-            _errorType = NfcErrorType.disabled;
-            _errorMessage = 'NFC is disabled. Please enable it in your device settings.';
-          });
-          break;
-
-        case NfcAvailability.unsupported:
-          setState(() {
-            _isNfcAvailable = false;
-            _isNfcSupported = false;
-            _errorType = NfcErrorType.notSupported;
-            _errorMessage = 'NFC is not supported on this device';
-          });
-          break;
+      if (!isAvailable) {
+        setState(() {
+          _nfcAvailable = false;
+          _statusMessage = Platform.isIOS
+              ? 'NFC is not available on this device'
+              : 'Please enable NFC in your device settings';
+          _hasError = true;
+        });
+        return;
       }
+
+      _startNfcScan();
     } catch (e) {
+      if (!mounted) return;
       setState(() {
-        _isNfcAvailable = false;
-        _isNfcSupported = false;
-        _errorType = NfcErrorType.notSupported;
-        _errorMessage = 'NFC is not available on this device';
+        _nfcAvailable = false;
+        _statusMessage = 'Could not access NFC hardware';
+        _hasError = true;
       });
     }
   }
 
-  Future<void> _openNfcSettings() async {
-    try {
-      if (Platform.isAndroid) {
-        // Use method channel to open Android NFC settings
-        const platform = MethodChannel('com.lazervault.app/settings');
-        try {
-          await platform.invokeMethod('openNfcSettings');
-        } catch (e) {
-          // Fallback: Open general settings
-          try {
-            await platform.invokeMethod('openSettings');
-          } catch (_) {
-            _showSettingsInstructionDialog();
-          }
-        }
-      } else if (Platform.isIOS) {
-        // iOS doesn't allow direct NFC settings access, show instructions
-        _showSettingsInstructionDialog();
-      }
-    } catch (e) {
-      debugPrint('Failed to open NFC settings: $e');
-      _showSettingsInstructionDialog();
-    }
-  }
+  void _startNfcScan() {
+    setState(() {
+      _isScanning = true;
+      _statusMessage = 'Hold your phone near the other device';
+      _hasError = false;
+    });
 
-  void _showSettingsInstructionDialog() {
-    if (!mounted) return;
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Enable NFC'),
-        content: Text(
-          Platform.isAndroid
-              ? 'To enable NFC:\n\n1. Open your phone Settings\n2. Go to "Connected devices" or "Connections"\n3. Turn on NFC'
-              : 'To enable NFC on iPhone:\n\n1. Go to Settings > Control Center\n2. Add NFC Tag Reader\n3. Use Control Center to scan NFC tags',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('OK'),
-          ),
-        ],
-      ),
+    _pulseController.repeat(reverse: true);
+    _rippleController.repeat();
+
+    NfcManager.instance.startSession(
+      pollingOptions: {NfcPollingOption.iso14443, NfcPollingOption.iso15693},
+      alertMessageIos: 'Hold your device near the payment terminal',
+      onDiscovered: (NfcTag tag) async {
+        try {
+          final ndef = Ndef.from(tag);
+          if (ndef == null) {
+            _handleScanError('Device does not support NDEF format');
+            return;
+          }
+
+          final message = await ndef.read();
+          if (message == null || message.records.isEmpty) {
+            _handleScanError('No payment data found on this device');
+            return;
+          }
+
+          final record = message.records.first;
+          final payloadString = String.fromCharCodes(
+            record.payload.sublist(record.payload[0] + 1),
+          );
+
+          Map<String, dynamic> payloadData;
+          try {
+            payloadData = jsonDecode(payloadString) as Map<String, dynamic>;
+          } catch (_) {
+            _handleScanError('Invalid payment data format');
+            return;
+          }
+
+          if (payloadData['type'] != 'lazervault_contactless_payment') {
+            _handleScanError('This is not a LazerVault payment tag');
+            return;
+          }
+
+          final expiresAt = payloadData['expiresAt'] as int? ?? 0;
+          if (DateTime.now().millisecondsSinceEpoch > expiresAt * 1000) {
+            _handleScanError('This payment request has expired');
+            return;
+          }
+
+          final sessionId = payloadData['sessionId'] as String?;
+          if (sessionId == null || sessionId.isEmpty) {
+            _handleScanError('Invalid session data');
+            return;
+          }
+
+          _stopNfcScan();
+
+          if (!mounted) return;
+          setState(() {
+            _statusMessage = 'Payment found! Loading details...';
+          });
+
+          context.read<ContactlessPaymentCubit>().getPaymentSession(sessionId);
+        } catch (e) {
+          _handleScanError('Failed to read payment data');
+        }
+      },
+      onSessionErrorIos: (error) {
+        _handleScanError('NFC read failed. Please try again.');
+      },
     );
   }
 
-  Future<void> _startNfcSession() async {
-    if (_isNfcSessionStarted) return;
-
+  void _handleScanError(String message) {
+    if (!mounted) return;
     setState(() {
-      _isNfcSessionStarted = true;
-      _errorMessage = null;
-      _errorType = null;
+      _statusMessage = message;
+      _hasError = true;
+      _isScanning = false;
     });
+    _pulseController.stop();
+    _rippleController.stop();
+    HapticFeedback.heavyImpact();
+  }
 
+  void _stopNfcScan() {
     try {
-      await NfcManager.instance.startSession(
-        pollingOptions: {
-          NfcPollingOption.iso14443,
-          NfcPollingOption.iso15693,
-        },
-        onDiscovered: (NfcTag tag) async {
-          try {
-            // Read NDEF data from the tag
-            final ndef = Ndef.from(tag);
-            if (ndef == null) {
-              setState(() {
-                _errorMessage = 'Unable to read payment data from this device. Make sure NFC is properly positioned.';
-                _errorType = NfcErrorType.readError;
-              });
-              return;
-            }
-
-            final cachedMessage = ndef.cachedMessage;
-            if (cachedMessage == null || cachedMessage.records.isEmpty) {
-              setState(() {
-                _errorMessage = 'No payment data found. Please ensure the other device is displaying a payment request.';
-                _errorType = NfcErrorType.invalidData;
-              });
-              return;
-            }
-
-            // Parse the payment payload
-            for (final record in cachedMessage.records) {
-              if (record.typeNameFormat == TypeNameFormat.wellKnown) {
-                final payload = String.fromCharCodes(record.payload.skip(3));
-
-                try {
-                  // Try to parse as our payment payload
-                  final data = jsonDecode(payload);
-                  if (data['type'] == 'lazervault_contactless_payment') {
-                    setState(() => _isProcessing = true);
-                    _stopNfcSession();
-
-                    // Get the full session details
-                    if (mounted) {
-                      context.read<ContactlessPaymentCubit>()
-                          .getPaymentSession(data['session_id']);
-                    }
-                    return;
-                  }
-                } catch (e) {
-                  // Not our payment format, continue checking
-                }
-              }
-            }
-
-            setState(() {
-              _errorMessage = 'Invalid payment format. This doesn\'t appear to be a LazerVault payment request.';
-              _errorType = NfcErrorType.invalidData;
-            });
-          } catch (e) {
-            _handleNfcError(e);
-          }
-        },
-      );
-    } catch (e) {
-      _handleNfcSessionError(e);
-    }
-  }
-
-  void _handleNfcError(dynamic error) {
-    final errorString = error.toString().toLowerCase();
-
-    if (errorString.contains('cancelled') || errorString.contains('canceled')) {
-      // User cancelled - not really an error
-      return;
-    }
-
-    setState(() {
-      if (errorString.contains('timeout')) {
-        _errorMessage = 'NFC read timed out. Please try again.';
-        _errorType = NfcErrorType.readError;
-      } else if (errorString.contains('tag lost') || errorString.contains('connection')) {
-        _errorMessage = 'Connection lost. Hold phones together steadily.';
-        _errorType = NfcErrorType.readError;
-      } else {
-        _errorMessage = 'NFC Error: Please try again';
-        _errorType = NfcErrorType.readError;
-      }
-    });
-  }
-
-  void _handleNfcSessionError(dynamic error) {
-    setState(() {
-      _isNfcSessionStarted = false;
-      _errorMessage = 'Failed to start NFC session. Please try again.';
-      _errorType = NfcErrorType.sessionFailed;
-    });
-
-    // Auto-retry for session start failures
-    if (_retryCount < _maxRetries) {
-      _retryCount++;
-      Future.delayed(const Duration(seconds: 1), () {
-        if (mounted && !_isNfcSessionStarted) {
-          _startNfcSession();
-        }
-      });
-    }
-  }
-
-  void _stopNfcSession() {
-    if (_isNfcSessionStarted) {
       NfcManager.instance.stopSession();
-      _isNfcSessionStarted = false;
-    }
+    } catch (_) {}
+    _pulseController.stop();
+    _rippleController.stop();
   }
 
-  void _retry() {
+  void _retryScan() {
     setState(() {
-      _errorMessage = null;
-      _errorType = null;
-      _isProcessing = false;
-      _retryCount = 0;
+      _hasError = false;
+      _statusMessage = 'Ready to scan';
     });
-    _checkNfcAvailability();
-  }
-
-  void _refreshNfcStatus() {
-    _stopNfcSession();
-    setState(() {
-      _errorMessage = null;
-      _errorType = null;
-      _retryCount = 0;
-    });
-    _checkNfcAvailability();
+    _checkNfcAndStartScan();
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    return BlocListener<ContactlessPaymentCubit, ContactlessPaymentState>(
-      listener: (context, state) {
-        if (state is PaymentSessionLoaded) {
-          // Navigate to confirmation screen
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (context) => PaymentConfirmationScreen(
-                session: state.session,
+    return Scaffold(
+      backgroundColor: const Color(0xFF0A0A0A),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFF1A1A3E),
+              Color(0xFF0A0E27),
+              Color(0xFF0F0F23),
+            ],
+          ),
+        ),
+        child: BlocListener<ContactlessPaymentCubit, ContactlessPaymentState>(
+          listener: (context, state) {
+            if (state is PaymentSessionLoaded) {
+              HapticFeedback.mediumImpact();
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => PaymentConfirmationScreen(
+                    session: state.session,
+                  ),
+                ),
+              );
+            } else if (state is SessionExpired) {
+              _handleScanError(state.message);
+            } else if (state is ContactlessPaymentError) {
+              _handleScanError(state.message);
+            }
+          },
+          child: SafeArea(
+            child: FadeTransition(
+              opacity: _fadeAnimation,
+              child: Column(
+                children: [
+                  _buildHeader(),
+                  Expanded(
+                    child: Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          _buildNfcIndicator(),
+                          SizedBox(height: 40.h),
+                          _buildStatusText(),
+                          SizedBox(height: 32.h),
+                          if (_hasError) _buildRetryButton(),
+                          if (!_nfcAvailable && Platform.isAndroid)
+                            _buildOpenSettingsButton(),
+                        ],
+                      ),
+                    ),
+                  ),
+                  _buildBottomHints(),
+                ],
               ),
             ),
-          );
-        } else if (state is SessionExpired) {
-          setState(() {
-            _isProcessing = false;
-            _errorMessage = state.message;
-            _errorType = NfcErrorType.invalidData;
-          });
-        } else if (state is ContactlessPaymentError) {
-          setState(() {
-            _isProcessing = false;
-            _errorMessage = state.message;
-            _errorType = state.retryable ? NfcErrorType.sessionFailed : NfcErrorType.invalidData;
-          });
-        }
-      },
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Tap to Pay'),
-          centerTitle: true,
+          ),
         ),
-        body: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              children: [
-                const Spacer(),
+      ),
+    );
+  }
 
-                // NFC Animation
-                AnimatedBuilder(
-                  animation: _pulseAnimation,
-                  builder: (context, child) {
-                    return Transform.scale(
-                      scale: _isProcessing ? 1.0 : _pulseAnimation.value,
-                      child: Container(
-                        width: 200,
-                        height: 200,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: _errorMessage != null
-                              ? colorScheme.errorContainer.withValues(alpha: 0.5)
-                              : _isProcessing
-                                  ? Colors.green.withValues(alpha: 0.2)
-                                  : colorScheme.primaryContainer.withValues(alpha: 0.5),
-                          border: Border.all(
-                            color: _errorMessage != null
-                                ? colorScheme.error
-                                : _isProcessing
-                                    ? Colors.green
-                                    : colorScheme.primary,
-                            width: 3,
-                          ),
-                        ),
-                        child: _isProcessing
-                            ? const Center(
-                                child: CircularProgressIndicator(),
-                              )
-                            : Icon(
-                                _errorMessage != null
-                                    ? Icons.error_outline
-                                    : Icons.nfc,
-                                size: 80,
-                                color: _errorMessage != null
-                                    ? colorScheme.error
-                                    : colorScheme.primary,
-                              ),
-                      ),
-                    );
-                  },
-                ),
-                const SizedBox(height: 32),
-
-                // Status text
-                if (!_isNfcAvailable && !_isNfcSupported) ...[
-                  // NFC not supported on device
-                  Icon(
-                    Icons.phonelink_erase,
-                    color: colorScheme.error,
-                    size: 48,
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'NFC Not Supported',
-                    style: theme.textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: colorScheme.error,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Your device does not support NFC contactless payments.\n\nPlease use a device with NFC capability.',
-                    style: theme.textTheme.bodyLarge?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ] else if (!_isNfcAvailable && _isNfcSupported) ...[
-                  // NFC disabled but supported
-                  Icon(
-                    Icons.nfc_rounded,
-                    color: colorScheme.tertiary,
-                    size: 48,
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'NFC is Disabled',
-                    style: theme.textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: colorScheme.tertiary,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Please enable NFC in your device settings to use contactless payments.',
-                    style: theme.textTheme.bodyLarge?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 24),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      FilledButton.icon(
-                        onPressed: _openNfcSettings,
-                        icon: const Icon(Icons.settings),
-                        label: const Text('Open Settings'),
-                      ),
-                      const SizedBox(width: 12),
-                      OutlinedButton.icon(
-                        onPressed: _refreshNfcStatus,
-                        icon: const Icon(Icons.refresh),
-                        label: const Text('Refresh'),
-                      ),
-                    ],
-                  ),
-                ] else if (_errorMessage != null) ...[
-                  Text(
-                    _errorType == NfcErrorType.invalidData ? 'Invalid Data' : 'Error',
-                    style: theme.textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: colorScheme.error,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: Text(
-                      _errorMessage!,
-                      style: theme.textTheme.bodyLarge?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  FilledButton.icon(
-                    onPressed: _retry,
-                    icon: const Icon(Icons.refresh),
-                    label: const Text('Try Again'),
-                  ),
-                ] else if (_isProcessing) ...[
-                  Text(
-                    'Processing...',
-                    style: theme.textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Loading payment details',
-                    style: theme.textTheme.bodyLarge?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                ] else ...[
-                  Text(
-                    'Ready to Scan',
-                    style: theme.textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Hold your phone near the receiver\'s device',
-                    style: theme.textTheme.bodyLarge?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                    ),
-                    textAlign: TextAlign.center,
+  Widget _buildHeader() {
+    return Container(
+      padding: EdgeInsets.all(20.w),
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: () {
+              _stopNfcScan();
+              Navigator.of(context).pop();
+            },
+            child: Container(
+              width: 44.w,
+              height: 44.w,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(22.r),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.15),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
                   ),
                 ],
-
-                const Spacer(),
-
-                // Instructions
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-                    borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                Icons.close_rounded,
+                color: Colors.white,
+                size: 22.sp,
+              ),
+            ),
+          ),
+          SizedBox(width: 16.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Scan to Pay',
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 24.sp,
+                    fontWeight: FontWeight.w700,
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'How to pay:',
-                        style: theme.textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      _InstructionRow(
-                        number: '1',
-                        text: 'Ask the receiver to show their payment request',
-                      ),
-                      _InstructionRow(
-                        number: '2',
-                        text: 'Hold your phones close together, back to back',
-                      ),
-                      _InstructionRow(
-                        number: '3',
-                        text: 'Confirm the payment amount and enter your PIN',
-                      ),
-                    ],
+                ),
+                SizedBox(height: 4.h),
+                Text(
+                  'Hold your phone near the receiver',
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF9CA3AF),
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w400,
                   ),
                 ),
               ],
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNfcIndicator() {
+    final Color indicatorColor = _hasError
+        ? const Color(0xFFEF4444)
+        : _isScanning
+            ? const Color(0xFF6366F1)
+            : const Color(0xFF9CA3AF);
+
+    return SizedBox(
+      width: 220.w,
+      height: 220.w,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          if (_isScanning) ...[
+            AnimatedBuilder(
+              animation: _rippleAnimation,
+              builder: (context, child) {
+                return Container(
+                  width: 220.w * _rippleAnimation.value,
+                  height: 220.w * _rippleAnimation.value,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: indicatorColor.withValues(
+                          alpha: 0.3 * (1 - _rippleAnimation.value)),
+                      width: 2,
+                    ),
+                  ),
+                );
+              },
+            ),
+            AnimatedBuilder(
+              animation: _rippleAnimation,
+              builder: (context, child) {
+                final delayedValue =
+                    (_rippleAnimation.value - 0.3).clamp(0.0, 1.0) / 0.7;
+                return Container(
+                  width: 220.w * delayedValue,
+                  height: 220.w * delayedValue,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: indicatorColor
+                          .withValues(alpha: 0.2 * (1 - delayedValue)),
+                      width: 2,
+                    ),
+                  ),
+                );
+              },
+            ),
+          ],
+          AnimatedBuilder(
+            animation: _pulseAnimation,
+            builder: (context, child) {
+              return Transform.scale(
+                scale: _isScanning ? _pulseAnimation.value : 1.0,
+                child: Container(
+                  width: 130.w,
+                  height: 130.w,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: _hasError
+                          ? [
+                              const Color(0xFFEF4444).withValues(alpha: 0.2),
+                              const Color(0xFFEF4444).withValues(alpha: 0.1),
+                            ]
+                          : [
+                              const Color(0xFF6366F1).withValues(alpha: 0.2),
+                              const Color(0xFF8B5CF6).withValues(alpha: 0.1),
+                            ],
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: indicatorColor.withValues(alpha: 0.3),
+                        blurRadius: 40,
+                        spreadRadius: 5,
+                      ),
+                    ],
+                  ),
+                  child: Icon(
+                    _hasError
+                        ? Icons.error_outline_rounded
+                        : Icons.nfc_rounded,
+                    size: 56.sp,
+                    color: indicatorColor,
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatusText() {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 40.w),
+      child: Column(
+        children: [
+          Text(
+            _hasError ? 'Scan Failed' : (_isScanning ? 'Scanning...' : 'Ready'),
+            style: GoogleFonts.inter(
+              color: _hasError ? const Color(0xFFEF4444) : Colors.white,
+              fontSize: 22.sp,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          SizedBox(height: 8.h),
+          Text(
+            _statusMessage,
+            style: GoogleFonts.inter(
+              color: const Color(0xFF9CA3AF),
+              fontSize: 14.sp,
+              height: 1.4,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRetryButton() {
+    return GestureDetector(
+      onTap: _retryScan,
+      child: Container(
+        margin: EdgeInsets.only(top: 8.h),
+        padding: EdgeInsets.symmetric(horizontal: 32.w, vertical: 14.h),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+          ),
+          borderRadius: BorderRadius.circular(14.r),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF6366F1).withValues(alpha: 0.4),
+              blurRadius: 16,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.refresh_rounded, color: Colors.white, size: 20.sp),
+            SizedBox(width: 8.w),
+            Text(
+              'Try Again',
+              style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 15.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
-}
 
-class _InstructionRow extends StatelessWidget {
-  final String number;
-  final String text;
-
-  const _InstructionRow({
-    required this.number,
-    required this.text,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 20,
-            height: 20,
-            decoration: BoxDecoration(
-              color: colorScheme.primary,
-              shape: BoxShape.circle,
-            ),
-            child: Center(
-              child: Text(
-                number,
-                style: theme.textTheme.labelSmall?.copyWith(
-                  color: colorScheme.onPrimary,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
+  Widget _buildOpenSettingsButton() {
+    return GestureDetector(
+      onTap: () {
+        const MethodChannel('com.lazervault.app/settings')
+            .invokeMethod('openNfcSettings');
+      },
+      child: Container(
+        margin: EdgeInsets.only(top: 16.h),
+        padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+        ),
+        child: Text(
+          'Open NFC Settings',
+          style: GoogleFonts.inter(
+            color: Colors.white,
+            fontSize: 14.sp,
+            fontWeight: FontWeight.w500,
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              text,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: colorScheme.onSurfaceVariant,
-              ),
-            ),
-          ),
-        ],
+        ),
       ),
+    );
+  }
+
+  Widget _buildBottomHints() {
+    return Container(
+      padding: EdgeInsets.all(20.w),
+      margin: EdgeInsets.only(bottom: 20.h),
+      child: Container(
+        padding: EdgeInsets.all(16.w),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              const Color(0xFF2A2A3E).withValues(alpha: 0.6),
+              const Color(0xFF1F1F35).withValues(alpha: 0.6),
+            ],
+          ),
+          borderRadius: BorderRadius.circular(16.r),
+        ),
+        child: Column(
+          children: [
+            _buildHintRow(
+              Icons.phone_android_rounded,
+              'Place phones back-to-back for best results',
+            ),
+            SizedBox(height: 12.h),
+            _buildHintRow(
+              Icons.remove_circle_outline_rounded,
+              'Remove phone cases if scan fails',
+            ),
+            SizedBox(height: 12.h),
+            _buildHintRow(
+              Icons.lock_outline_rounded,
+              'Transaction PIN required before payment',
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHintRow(IconData icon, String text) {
+    return Row(
+      children: [
+        Icon(icon, color: const Color(0xFF6366F1), size: 18.sp),
+        SizedBox(width: 12.w),
+        Expanded(
+          child: Text(
+            text,
+            style: GoogleFonts.inter(
+              color: const Color(0xFF9CA3AF),
+              fontSize: 13.sp,
+              height: 1.3,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

@@ -1,9 +1,13 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
 import 'package:get_it/get_it.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:nfc_manager/nfc_manager.dart';
 import 'package:nfc_manager/ndef_record.dart';
 import 'package:nfc_manager_ndef/nfc_manager_ndef.dart';
@@ -29,10 +33,7 @@ class NfcBroadcastScreen extends StatelessWidget {
       create: (context) => ContactlessPaymentCubit(
         repository: GetIt.instance<ContactlessPaymentRepository>(),
       ),
-      child: _NfcBroadcastView(
-        session: session,
-        nfcPayload: nfcPayload,
-      ),
+      child: _NfcBroadcastView(session: session, nfcPayload: nfcPayload),
     );
   }
 }
@@ -51,45 +52,59 @@ class _NfcBroadcastView extends StatefulWidget {
 }
 
 class _NfcBroadcastViewState extends State<_NfcBroadcastView>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
+  Timer? _expiryTimer;
+  Timer? _pollTimer;
+  int _remainingSeconds = 0;
+  String _statusText = 'Waiting for payer...';
+  String? _payerName;
+  bool _isCompleted = false;
+  bool _isExpired = false;
+  bool _isCancelling = false;
+  bool _nfcStarted = false;
+
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
-  Timer? _expiryTimer;
-  Timer? _statusPollingTimer;
-  Duration _remainingTime = Duration.zero;
-  bool _isNfcAvailable = false;
-  bool _isNfcSessionStarted = false;
-  String _currentStatus = 'pending';
-  String? _payerName;
-  bool _showExpiryWarning = false;
-  bool _isExpired = false;
-  static const int _expiryWarningSeconds = 30;
+  late AnimationController _fadeController;
+  late Animation<double> _fadeAnimation;
 
   @override
   void initState() {
     super.initState();
     _pulseController = AnimationController(
-      vsync: this,
       duration: const Duration(seconds: 2),
+      vsync: this,
     )..repeat(reverse: true);
-
-    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.2).animate(
+    _pulseAnimation = Tween<double>(begin: 0.8, end: 1.0).animate(
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
 
-    _remainingTime = widget.session.expiresAt.difference(DateTime.now());
-    _startExpiryTimer();
-    _checkNfcAvailability();
-    _startStatusPolling();
+    _fadeController = AnimationController(
+      duration: const Duration(milliseconds: 600),
+      vsync: this,
+    );
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _fadeController, curve: Curves.easeOut),
+    );
+    _fadeController.forward();
+
+    _initializeSession();
   }
 
-  @override
-  void dispose() {
-    _pulseController.dispose();
-    _expiryTimer?.cancel();
-    _statusPollingTimer?.cancel();
-    _stopNfcSession();
-    super.dispose();
+  void _initializeSession() {
+    _remainingSeconds =
+        widget.session.expiresAt.difference(DateTime.now()).inSeconds;
+    if (_remainingSeconds <= 0) {
+      setState(() {
+        _isExpired = true;
+        _statusText = 'Session expired';
+      });
+      return;
+    }
+
+    _startExpiryTimer();
+    _startNfcBroadcast();
+    _startPolling();
   }
 
   void _startExpiryTimer() {
@@ -98,398 +113,581 @@ class _NfcBroadcastViewState extends State<_NfcBroadcastView>
         timer.cancel();
         return;
       }
-
       setState(() {
-        _remainingTime = widget.session.expiresAt.difference(DateTime.now());
-
-        // Show warning at 30 seconds remaining
-        if (_remainingTime.inSeconds <= _expiryWarningSeconds && !_showExpiryWarning) {
-          _showExpiryWarning = true;
-          // Vibrate to alert user
-          HapticFeedback.heavyImpact();
-        }
-
-        if (_remainingTime.isNegative && !_isExpired) {
-          _isExpired = true;
-          timer.cancel();
-          _handleExpired();
-        }
+        _remainingSeconds--;
       });
+      if (_remainingSeconds <= 0) {
+        timer.cancel();
+        setState(() {
+          _isExpired = true;
+          _statusText = 'Session expired';
+        });
+        _stopNfcBroadcast();
+        _pollTimer?.cancel();
+      }
     });
   }
 
-  void _startStatusPolling() {
-    _statusPollingTimer = Timer.periodic(const Duration(seconds: 2), (timer) {
-      context.read<ContactlessPaymentCubit>().checkSessionStatus(widget.session.id);
-    });
-  }
-
-  Future<void> _checkNfcAvailability() async {
-    final availability = await NfcManager.instance.checkAvailability();
-    final isAvailable = availability == NfcAvailability.enabled;
-    setState(() => _isNfcAvailable = isAvailable);
-
-    if (isAvailable) {
-      _startNfcSession();
-    }
-  }
-
-  Future<void> _startNfcSession() async {
-    if (_isNfcSessionStarted) return;
-
-    setState(() => _isNfcSessionStarted = true);
-
+  void _startNfcBroadcast() async {
     try {
-      await NfcManager.instance.startSession(
-        pollingOptions: {
-          NfcPollingOption.iso14443,
-          NfcPollingOption.iso15693,
-        },
+      final isAvailable = await NfcManager.instance.isAvailable();
+      if (!isAvailable || !mounted) return;
+
+      // Encode text payload as NDEF well-known Text record (UTF-8)
+      final languageCode = Uint8List.fromList([0x02]); // UTF-8, language code length = 2
+      final langBytes = Uint8List.fromList(utf8.encode('en'));
+      final textBytes = Uint8List.fromList(utf8.encode(widget.nfcPayload));
+      final payload = Uint8List.fromList([...languageCode, ...langBytes, ...textBytes]);
+      final ndefRecord = NdefRecord(
+        typeNameFormat: TypeNameFormat.wellKnown,
+        type: Uint8List.fromList([0x54]), // 'T' for Text
+        identifier: Uint8List(0),
+        payload: payload,
+      );
+      final ndefMessage = NdefMessage(records: [ndefRecord]);
+
+      NfcManager.instance.startSession(
+        pollingOptions: {NfcPollingOption.iso14443, NfcPollingOption.iso15693},
+        alertMessageIos: 'Hold another phone close to share payment request',
         onDiscovered: (NfcTag tag) async {
           try {
-            // When another device taps, write our payment data
             final ndef = Ndef.from(tag);
-            if (ndef == null || !ndef.isWritable) {
-              return;
-            }
-
-            // Create NDEF text record with our payment payload
-            // Text record format: [language code length][language code][text]
-            final languageCode = 'en';
-            final textBytes = utf8.encode(widget.nfcPayload);
-            final payload = Uint8List(1 + languageCode.length + textBytes.length);
-            payload[0] = languageCode.length;
-            payload.setRange(1, 1 + languageCode.length, utf8.encode(languageCode));
-            payload.setRange(1 + languageCode.length, payload.length, textBytes);
-
-            final ndefMessage = NdefMessage(
-              records: [
-                NdefRecord(
-                  typeNameFormat: TypeNameFormat.wellKnown,
-                  type: Uint8List.fromList([0x54]), // 'T' for text record
-                  identifier: Uint8List(0),
-                  payload: payload,
-                ),
-              ],
-            );
+            if (ndef == null || !ndef.isWritable) return;
 
             await ndef.write(message: ndefMessage);
+            if (!mounted) return;
+
+            HapticFeedback.mediumImpact();
+            setState(() {
+              _nfcStarted = true;
+              _statusText = 'Payment request sent! Waiting for confirmation...';
+            });
           } catch (e) {
-            debugPrint('Error writing NFC: $e');
+            if (!mounted) return;
+            Get.snackbar(
+              'NFC Write Failed',
+              'Please try holding phones together again',
+              backgroundColor: const Color(0xFFEF4444),
+              colorText: Colors.white,
+              snackPosition: SnackPosition.TOP,
+            );
           }
         },
+        onSessionErrorIos: (error) {
+          // Silently handle NFC errors during broadcast
+        },
       );
+
+      setState(() {
+        _nfcStarted = true;
+      });
     } catch (e) {
-      debugPrint('NFC Session Error: $e');
+      if (!mounted) return;
+      setState(() {
+        _statusText = 'NFC not available. Share session ID manually.';
+      });
     }
   }
 
-  void _stopNfcSession() {
-    if (_isNfcSessionStarted) {
+  void _startPolling() {
+    _pollTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
+      if (!mounted || _isCompleted || _isExpired) {
+        timer.cancel();
+        return;
+      }
+      context
+          .read<ContactlessPaymentCubit>()
+          .checkSessionStatus(widget.session.id);
+    });
+  }
+
+  void _stopNfcBroadcast() {
+    try {
       NfcManager.instance.stopSession();
-      _isNfcSessionStarted = false;
-    }
-  }
-
-  void _handleExpired() {
-    // Stop all timers and NFC session
-    _expiryTimer?.cancel();
-    _statusPollingTimer?.cancel();
-    _stopNfcSession();
-
-    // Vibrate to alert user
-    HapticFeedback.heavyImpact();
-
-    // Show dialog with expired message
-    if (mounted) {
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => AlertDialog(
-          title: const Row(
-            children: [
-              Icon(Icons.timer_off, color: Colors.orange),
-              SizedBox(width: 12),
-              Text('Session Expired'),
-            ],
-          ),
-          content: const Text(
-            'Your payment request has expired. Please create a new request to receive payment.',
-          ),
-          actions: [
-            FilledButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Close dialog
-                Navigator.of(context).pop(); // Go back to home
-              },
-              child: const Text('OK'),
-            ),
-          ],
-        ),
-      );
-    }
+    } catch (_) {}
   }
 
   void _cancelSession() {
-    context.read<ContactlessPaymentCubit>().cancelSession(widget.session.id);
+    setState(() => _isCancelling = true);
+    context
+        .read<ContactlessPaymentCubit>()
+        .cancelSession(widget.session.id);
   }
 
-  String _formatDuration(Duration duration) {
-    final minutes = duration.inMinutes;
-    final seconds = duration.inSeconds % 60;
-    return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+  @override
+  void dispose() {
+    _expiryTimer?.cancel();
+    _pollTimer?.cancel();
+    _pulseController.dispose();
+    _fadeController.dispose();
+    _stopNfcBroadcast();
+    super.dispose();
+  }
+
+  String get _formattedTime {
+    final minutes = (_remainingSeconds ~/ 60).toString().padLeft(2, '0');
+    final seconds = (_remainingSeconds % 60).toString().padLeft(2, '0');
+    return '$minutes:$seconds';
+  }
+
+  double get _timerProgress {
+    final totalSeconds =
+        widget.session.expiresAt.difference(widget.session.createdAt).inSeconds;
+    if (totalSeconds <= 0) return 0;
+    return _remainingSeconds / totalSeconds;
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    return BlocListener<ContactlessPaymentCubit, ContactlessPaymentState>(
-      listener: (context, state) {
-        if (state is SessionCancelled) {
-          Navigator.of(context).pop();
-        } else if (state is SessionExpired) {
-          // Handle session expired from server
-          if (!_isExpired) {
-            _isExpired = true;
-            _handleExpired();
-          }
-        } else if (state is SessionStatusChecked) {
-          setState(() {
-            _currentStatus = state.status;
-            _payerName = state.payerName;
-          });
-
-          // If completed, navigate to success
-          if (state.status == 'completed') {
-            _statusPollingTimer?.cancel();
-            _expiryTimer?.cancel();
-            _stopNfcSession();
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (context) => PaymentSuccessScreen(
-                  amount: widget.session.amount,
-                  currency: widget.session.currency,
-                  payerName: state.payerName ?? 'Unknown',
-                  isReceiver: true,
-                ),
-              ),
-            );
-          } else if (state.status == 'expired' || state.status == 'cancelled') {
-            // Session was expired or cancelled
-            if (!_isExpired) {
-              _isExpired = true;
-              _expiryTimer?.cancel();
-              _statusPollingTimer?.cancel();
-              _stopNfcSession();
-
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Payment session ${state.status}'),
-                  backgroundColor: Colors.orange,
-                ),
-              );
-              Navigator.of(context).pop();
-            }
-          }
-        }
-      },
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Waiting for Payment'),
-          centerTitle: true,
-          automaticallyImplyLeading: false,
+    return Scaffold(
+      backgroundColor: const Color(0xFF0A0A0A),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFF1A1A3E),
+              Color(0xFF0A0E27),
+              Color(0xFF0F0F23),
+            ],
+          ),
         ),
-        body: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              children: [
-                // Timer with expiry warning
-                AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  padding: EdgeInsets.symmetric(
-                    horizontal: _showExpiryWarning ? 20 : 16,
-                    vertical: _showExpiryWarning ? 12 : 8,
-                  ),
-                  decoration: BoxDecoration(
-                    color: _showExpiryWarning
-                        ? colorScheme.errorContainer
-                        : colorScheme.primaryContainer,
-                    borderRadius: BorderRadius.circular(20),
-                    border: _showExpiryWarning
-                        ? Border.all(color: colorScheme.error, width: 2)
-                        : null,
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (_showExpiryWarning) ...[
-                        Row(
+        child: BlocListener<ContactlessPaymentCubit, ContactlessPaymentState>(
+          listener: (context, state) {
+            if (state is SessionStatusChecked) {
+              if (state.status == 'completed') {
+                setState(() {
+                  _isCompleted = true;
+                  _statusText = 'Payment completed!';
+                  _payerName = state.payerName;
+                });
+                _stopNfcBroadcast();
+                _expiryTimer?.cancel();
+                _pollTimer?.cancel();
+
+                HapticFeedback.heavyImpact();
+
+                Future.delayed(const Duration(seconds: 1), () {
+                  if (!mounted) return;
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => PaymentSuccessScreen(
+                        amount: widget.session.amount,
+                        currency: widget.session.currency,
+                        payerName: state.payerName ?? 'Unknown',
+                        isReceiver: true,
+                      ),
+                    ),
+                  );
+                });
+              } else if (state.status == 'read') {
+                setState(() {
+                  _statusText = 'Payer is reviewing the payment...';
+                  _payerName = state.payerName;
+                });
+              } else if (state.status == 'processing') {
+                setState(() {
+                  _statusText = 'Processing payment...';
+                  _payerName = state.payerName;
+                });
+              }
+            } else if (state is SessionExpired) {
+              setState(() {
+                _isExpired = true;
+                _statusText = 'Session expired';
+              });
+              _stopNfcBroadcast();
+              _expiryTimer?.cancel();
+              _pollTimer?.cancel();
+            } else if (state is SessionCancelled) {
+              _stopNfcBroadcast();
+              _expiryTimer?.cancel();
+              _pollTimer?.cancel();
+              Navigator.of(context).pop();
+            } else if (state is ContactlessPaymentError &&
+                _isCancelling) {
+              setState(() => _isCancelling = false);
+              Get.snackbar(
+                'Cancel Failed',
+                state.message,
+                backgroundColor: const Color(0xFFEF4444),
+                colorText: Colors.white,
+                snackPosition: SnackPosition.TOP,
+              );
+            }
+          },
+          child: SafeArea(
+            child: FadeTransition(
+              opacity: _fadeAnimation,
+              child: Column(
+                children: [
+                  _buildHeader(),
+                  Expanded(
+                    child: Center(
+                      child: SingleChildScrollView(
+                        padding: EdgeInsets.symmetric(horizontal: 20.w),
+                        child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(
-                              Icons.warning_amber_rounded,
-                              color: colorScheme.error,
-                              size: 18,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Expiring Soon!',
-                              style: theme.textTheme.labelSmall?.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: colorScheme.error,
-                              ),
-                            ),
+                            _buildAmountCard(),
+                            SizedBox(height: 32.h),
+                            _buildTimerSection(),
+                            SizedBox(height: 32.h),
+                            _buildStatusSection(),
+                            SizedBox(height: 32.h),
+                            if (_payerName != null) _buildPayerInfo(),
                           ],
-                        ),
-                        const SizedBox(height: 4),
-                      ],
-                      Text(
-                        'Expires in ${_formatDuration(_remainingTime)}',
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: _showExpiryWarning
-                              ? colorScheme.error
-                              : colorScheme.onPrimaryContainer,
                         ),
                       ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 32),
-
-                // Amount display
-                Text(
-                  '${widget.session.currency} ${widget.session.amount.toStringAsFixed(2)}',
-                  style: theme.textTheme.displaySmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: colorScheme.primary,
-                  ),
-                ),
-                if (widget.session.description != null) ...[
-                  const SizedBox(height: 8),
-                  Text(
-                    widget.session.description!,
-                    style: theme.textTheme.bodyLarge?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
                     ),
                   ),
+                  _buildBottomActions(),
                 ],
-                const SizedBox(height: 48),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 
-                // NFC Animation
-                Expanded(
-                  child: Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        AnimatedBuilder(
-                          animation: _pulseAnimation,
-                          builder: (context, child) {
-                            return Transform.scale(
-                              scale: _pulseAnimation.value,
-                              child: Container(
-                                width: 180,
-                                height: 180,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: _currentStatus == 'read'
-                                      ? Colors.green.withValues(alpha: 0.2)
-                                      : colorScheme.primaryContainer.withValues(alpha: 0.5),
-                                  border: Border.all(
-                                    color: _currentStatus == 'read'
-                                        ? Colors.green
-                                        : colorScheme.primary,
-                                    width: 3,
-                                  ),
-                                ),
-                                child: Icon(
-                                  _currentStatus == 'read'
-                                      ? Icons.check_circle
-                                      : Icons.contactless,
-                                  size: 80,
-                                  color: _currentStatus == 'read'
-                                      ? Colors.green
-                                      : colorScheme.primary,
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                        const SizedBox(height: 32),
-                        if (!_isNfcAvailable) ...[
-                          Icon(
-                            Icons.warning_amber,
-                            color: colorScheme.error,
-                            size: 32,
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'NFC is not available on this device',
-                            style: theme.textTheme.titleMedium?.copyWith(
-                              color: colorScheme.error,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ] else if (_currentStatus == 'read') ...[
-                          Text(
-                            'Payment request read!',
-                            style: theme.textTheme.titleLarge?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.green,
-                            ),
-                          ),
-                          if (_payerName != null) ...[
-                            const SizedBox(height: 8),
-                            Text(
-                              '$_payerName is reviewing...',
-                              style: theme.textTheme.bodyLarge?.copyWith(
-                                color: colorScheme.onSurfaceVariant,
-                              ),
-                            ),
-                          ],
-                        ] else ...[
-                          Text(
-                            'Ready to receive',
-                            style: theme.textTheme.titleLarge?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Ask the payer to tap their phone',
-                            style: theme.textTheme.bodyLarge?.copyWith(
-                              color: colorScheme.onSurfaceVariant,
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
+  Widget _buildHeader() {
+    return Container(
+      padding: EdgeInsets.all(20.w),
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: () {
+              _cancelSession();
+            },
+            child: Container(
+              width: 44.w,
+              height: 44.w,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(22.r),
+              ),
+              child: Icon(
+                Icons.close_rounded,
+                color: Colors.white,
+                size: 22.sp,
+              ),
+            ),
+          ),
+          SizedBox(width: 16.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Waiting for Payment',
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 24.sp,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
-
-                // Cancel button
-                OutlinedButton.icon(
-                  onPressed: _cancelSession,
-                  icon: const Icon(Icons.close),
-                  label: const Text('Cancel'),
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 32,
-                      vertical: 16,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+                SizedBox(height: 4.h),
+                Text(
+                  'NFC broadcast active',
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF10B981),
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ],
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAmountCard() {
+    return AnimatedBuilder(
+      animation: _pulseAnimation,
+      builder: (context, child) {
+        return Transform.scale(
+          scale: _isCompleted ? 1.0 : _pulseAnimation.value,
+          child: Container(
+            width: double.infinity,
+            padding: EdgeInsets.all(28.w),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: _isCompleted
+                    ? [const Color(0xFF10B981), const Color(0xFF059669)]
+                    : _isExpired
+                        ? [const Color(0xFFEF4444), const Color(0xFFDC2626)]
+                        : [const Color(0xFF6366F1), const Color(0xFF8B5CF6)],
+              ),
+              borderRadius: BorderRadius.circular(24.r),
+              boxShadow: [
+                BoxShadow(
+                  color: (_isCompleted
+                          ? const Color(0xFF10B981)
+                          : const Color(0xFF6366F1))
+                      .withValues(alpha: 0.4),
+                  blurRadius: 30,
+                  offset: const Offset(0, 12),
+                ),
+              ],
+            ),
+            child: Column(
+              children: [
+                Text(
+                  'Amount to Receive',
+                  style: GoogleFonts.inter(
+                    color: Colors.white.withValues(alpha: 0.8),
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                SizedBox(height: 12.h),
+                Text(
+                  '${widget.session.currency} ${widget.session.amount.toStringAsFixed(2)}',
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 36.sp,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                if (widget.session.description != null) ...[
+                  SizedBox(height: 8.h),
+                  Text(
+                    widget.session.description!,
+                    style: GoogleFonts.inter(
+                      color: Colors.white.withValues(alpha: 0.7),
+                      fontSize: 14.sp,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildTimerSection() {
+    if (_isCompleted || _isExpired) return const SizedBox.shrink();
+
+    final isLow = _remainingSeconds <= 30;
+    final timerColor =
+        isLow ? const Color(0xFFEF4444) : const Color(0xFF6366F1);
+
+    return Column(
+      children: [
+        SizedBox(
+          width: 100.w,
+          height: 100.w,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              SizedBox(
+                width: 100.w,
+                height: 100.w,
+                child: CircularProgressIndicator(
+                  value: _timerProgress,
+                  strokeWidth: 4,
+                  backgroundColor: Colors.white.withValues(alpha: 0.1),
+                  valueColor: AlwaysStoppedAnimation<Color>(timerColor),
+                ),
+              ),
+              Text(
+                _formattedTime,
+                style: GoogleFonts.inter(
+                  color: timerColor,
+                  fontSize: 24.sp,
+                  fontWeight: FontWeight.w700,
+                  fontFeatures: [const FontFeature.tabularFigures()],
+                ),
+              ),
+            ],
+          ),
         ),
+        SizedBox(height: 8.h),
+        Text(
+          isLow ? 'Expiring soon!' : 'Time remaining',
+          style: GoogleFonts.inter(
+            color: isLow ? const Color(0xFFEF4444) : const Color(0xFF9CA3AF),
+            fontSize: 13.sp,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatusSection() {
+    IconData statusIcon;
+    Color statusColor;
+
+    if (_isCompleted) {
+      statusIcon = Icons.check_circle_rounded;
+      statusColor = const Color(0xFF10B981);
+    } else if (_isExpired) {
+      statusIcon = Icons.timer_off_rounded;
+      statusColor = const Color(0xFFEF4444);
+    } else {
+      statusIcon = Icons.contactless_rounded;
+      statusColor = const Color(0xFF6366F1);
+    }
+
+    return Container(
+      padding: EdgeInsets.all(20.w),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            const Color(0xFF2A2A3E).withValues(alpha: 0.8),
+            const Color(0xFF1F1F35).withValues(alpha: 0.9),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(16.r),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: EdgeInsets.all(12.w),
+            decoration: BoxDecoration(
+              color: statusColor.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(12.r),
+            ),
+            child: Icon(statusIcon, color: statusColor, size: 24.sp),
+          ),
+          SizedBox(width: 16.w),
+          Expanded(
+            child: Text(
+              _statusText,
+              style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 15.sp,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPayerInfo() {
+    return Container(
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFF10B981).withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(
+          color: const Color(0xFF10B981).withValues(alpha: 0.3),
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.person_rounded,
+              color: const Color(0xFF10B981), size: 22.sp),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Payer',
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF9CA3AF),
+                    fontSize: 12.sp,
+                  ),
+                ),
+                Text(
+                  _payerName!,
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 15.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBottomActions() {
+    return Container(
+      padding: EdgeInsets.all(20.w),
+      child: Column(
+        children: [
+          if (!_isCompleted && !_isExpired)
+            GestureDetector(
+              onTap: _isCancelling ? null : _cancelSession,
+              child: Container(
+                width: double.infinity,
+                padding: EdgeInsets.symmetric(vertical: 16.h),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEF4444).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(14.r),
+                  border: Border.all(
+                    color: const Color(0xFFEF4444).withValues(alpha: 0.3),
+                  ),
+                ),
+                child: Center(
+                  child: _isCancelling
+                      ? SizedBox(
+                          height: 20.h,
+                          width: 20.w,
+                          child: const CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                                Color(0xFFEF4444)),
+                          ),
+                        )
+                      : Text(
+                          'Cancel Session',
+                          style: GoogleFonts.inter(
+                            color: const Color(0xFFEF4444),
+                            fontSize: 15.sp,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                ),
+              ),
+            ),
+          if (_isExpired) ...[
+            GestureDetector(
+              onTap: () => Navigator.of(context).pop(),
+              child: Container(
+                width: double.infinity,
+                padding: EdgeInsets.symmetric(vertical: 16.h),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                  ),
+                  borderRadius: BorderRadius.circular(14.r),
+                ),
+                child: Center(
+                  child: Text(
+                    'Create New Session',
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 15.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+          SizedBox(height: 20.h),
+        ],
       ),
     );
   }

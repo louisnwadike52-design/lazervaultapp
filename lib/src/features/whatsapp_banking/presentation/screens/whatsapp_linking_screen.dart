@@ -1,8 +1,11 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import '../../cubit/whatsapp_banking_cubit.dart';
+import '../../cubit/whatsapp_banking_state.dart';
 
 class WhatsAppLinkingScreen extends StatefulWidget {
   const WhatsAppLinkingScreen({super.key});
@@ -16,10 +19,9 @@ class _WhatsAppLinkingScreenState extends State<WhatsAppLinkingScreen> {
   final _otpController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
-  bool _isLoading = false;
   bool _otpSent = false;
-  String? _errorMessage;
-  int _remainingSeconds = 300; // 5 minutes
+  String _phoneNumber = '';
+  int _remainingSeconds = 300;
   Timer? _timer;
 
   @override
@@ -48,77 +50,18 @@ class _WhatsAppLinkingScreenState extends State<WhatsAppLinkingScreen> {
     return '${minutes.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
   }
 
-  Future<void> _sendOTP() async {
+  void _sendOTP() {
     if (!_formKey.currentState!.validate()) return;
-
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
-
-    try {
-      // TODO: Call API to send OTP
-      // await whatsappRepository.initiateLinking(_phoneController.text);
-
-      // Simulate API call
-      await Future.delayed(Duration(seconds: 2));
-
-      setState(() {
-        _otpSent = true;
-        _isLoading = false;
-      });
-      _startTimer();
-
-      // Show success message
-      Get.snackbar(
-        'OTP Sent',
-        'Check your WhatsApp for the verification code',
-        backgroundColor: Colors.green.withValues(alpha: 0.9),
-        colorText: Colors.white,
-        snackPosition: SnackPosition.TOP,
-        duration: Duration(seconds: 3),
-        margin: EdgeInsets.all(16.w),
-      );
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-        _errorMessage = 'Failed to send OTP. Please try again.';
-      });
-    }
+    _phoneNumber = _phoneController.text;
+    context.read<WhatsAppBankingCubit>().initiateLinking(_phoneNumber);
   }
 
-  Future<void> _verifyOTP() async {
-    if (_otpController.text.length != 6) {
-      setState(() => _errorMessage = 'Please enter a valid 6-digit OTP');
-      return;
-    }
-
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
-
-    try {
-      // TODO: Call API to verify OTP
-      // await whatsappRepository.verifyLinking(_phoneController.text, _otpController.text);
-
-      // Simulate API call
-      await Future.delayed(Duration(seconds: 2));
-
-      setState(() => _isLoading = false);
-      _timer?.cancel();
-
-      // Show success dialog
-      _showSuccessDialog();
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-        _errorMessage = 'Invalid OTP. Please try again.';
-      });
-    }
+  void _verifyOTP() {
+    if (_otpController.text.length != 6) return;
+    context.read<WhatsAppBankingCubit>().verifyLinking(_phoneNumber, _otpController.text);
   }
 
-  Future<void> _resendOTP() async {
+  void _resendOTP() {
     if (_remainingSeconds > 240) {
       Get.snackbar(
         'Please Wait',
@@ -131,15 +74,14 @@ class _WhatsAppLinkingScreenState extends State<WhatsAppLinkingScreen> {
       );
       return;
     }
-
-    await _sendOTP();
+    _sendOTP();
   }
 
   void _showSuccessDialog() {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20.r),
         ),
@@ -187,8 +129,8 @@ class _WhatsAppLinkingScreenState extends State<WhatsAppLinkingScreen> {
             SizedBox(height: 24.h),
             ElevatedButton(
               onPressed: () {
-                Navigator.pop(context);
-                Get.back(); // Go back to main screen
+                Navigator.pop(dialogContext);
+                Get.back();
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Color.fromARGB(255, 78, 3, 208),
@@ -233,291 +175,296 @@ class _WhatsAppLinkingScreenState extends State<WhatsAppLinkingScreen> {
         ),
         centerTitle: true,
       ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(20.w),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Header Icon
-              Container(
-                width: 80.w,
-                height: 80.w,
-                margin: EdgeInsets.only(bottom: 24.h),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
-                      Color.fromARGB(255, 120, 40, 230).withValues(alpha: 0.1),
-                    ],
-                  ),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.chat_bubble_outline,
-                  size: 40.sp,
-                  color: Color.fromARGB(255, 78, 3, 208),
-                ),
-              ),
-
-              // Title
-              Text(
-                _otpSent ? 'Enter Verification Code' : 'Link Your WhatsApp',
-                style: TextStyle(
-                  fontSize: 24.sp,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.black87,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              SizedBox(height: 8.h),
-
-              // Subtitle
-              Text(
-                _otpSent
-                    ? 'We sent a 6-digit code to your WhatsApp\n${_phoneController.text}'
-                    : 'Enter your phone number to receive a verification code via WhatsApp',
-                style: TextStyle(
-                  fontSize: 14.sp,
-                  color: Colors.black54,
-                  height: 1.4,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              SizedBox(height: 32.h),
-
-              // Phone Number Input (only show if OTP not sent)
-              if (!_otpSent) ...[
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12.r),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.05),
-                        blurRadius: 10,
-                        offset: Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: TextFormField(
-                    controller: _phoneController,
-                    keyboardType: TextInputType.phone,
-                    style: TextStyle(fontSize: 16.sp),
-                    decoration: InputDecoration(
-                      hintText: 'Phone Number',
-                      prefixIcon: Icon(
-                        Icons.phone,
-                        color: Color.fromARGB(255, 78, 3, 208),
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12.r),
-                        borderSide: BorderSide.none,
-                      ),
-                      filled: true,
-                      fillColor: Colors.white,
-                      contentPadding: EdgeInsets.symmetric(
-                        horizontal: 16.w,
-                        vertical: 16.h,
-                      ),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your phone number';
-                      }
-                      if (value.length < 10) {
-                        return 'Please enter a valid phone number';
-                      }
-                      return null;
-                    },
-                  ),
-                ),
-                SizedBox(height: 24.h),
-
-                // Info Card
-                Container(
-                  padding: EdgeInsets.all(16.w),
-                  decoration: BoxDecoration(
-                    color: Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.05),
-                    borderRadius: BorderRadius.circular(12.r),
-                    border: Border.all(
-                      color: Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.info_outline,
-                        color: Color.fromARGB(255, 78, 3, 208),
-                        size: 20.sp,
-                      ),
-                      SizedBox(width: 12.w),
-                      Expanded(
-                        child: Text(
-                          'Make sure this number is linked to your WhatsApp account',
-                          style: TextStyle(
-                            fontSize: 13.sp,
-                            color: Colors.black87,
-                            height: 1.3,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-
-              // OTP Input (only show if OTP sent)
-              if (_otpSent) ...[
-                // Timer
-                if (_remainingSeconds > 0)
+      body: BlocConsumer<WhatsAppBankingCubit, WhatsAppBankingState>(
+        listener: (context, state) {
+          if (state is WhatsAppBankingOtpSent) {
+            setState(() => _otpSent = true);
+            _startTimer();
+            Get.snackbar(
+              'OTP Sent',
+              'Check your WhatsApp for the verification code',
+              backgroundColor: Colors.green.withValues(alpha: 0.9),
+              colorText: Colors.white,
+              snackPosition: SnackPosition.TOP,
+              duration: Duration(seconds: 3),
+              margin: EdgeInsets.all(16.w),
+            );
+          } else if (state is WhatsAppBankingLinkingSuccess) {
+            _timer?.cancel();
+            _showSuccessDialog();
+          } else if (state is WhatsAppBankingError) {
+            Get.snackbar(
+              'Error',
+              state.message,
+              backgroundColor: Colors.red.withValues(alpha: 0.9),
+              colorText: Colors.white,
+              snackPosition: SnackPosition.TOP,
+              duration: Duration(seconds: 3),
+              margin: EdgeInsets.all(16.w),
+            );
+          }
+        },
+        builder: (context, state) {
+          final isLoading = state is WhatsAppBankingLoading;
+          return SingleChildScrollView(
+            padding: EdgeInsets.all(20.w),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Header Icon
                   Container(
-                    padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 16.w),
-                    margin: EdgeInsets.only(bottom: 20.h),
+                    width: 80.w,
+                    height: 80.w,
+                    margin: EdgeInsets.only(bottom: 24.h),
                     decoration: BoxDecoration(
-                      color: Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(12.r),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.timer_outlined,
-                          color: Color.fromARGB(255, 78, 3, 208),
-                          size: 20.sp,
-                        ),
-                        SizedBox(width: 8.w),
-                        Text(
-                          'Code expires in ${_formatTime(_remainingSeconds)}',
-                          style: TextStyle(
-                            fontSize: 14.sp,
-                            fontWeight: FontWeight.w600,
-                            color: Color.fromARGB(255, 78, 3, 208),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                // OTP Input
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12.r),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.05),
-                        blurRadius: 10,
-                        offset: Offset(0, 4),
+                      gradient: LinearGradient(
+                        colors: [
+                          Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
+                          Color.fromARGB(255, 120, 40, 230).withValues(alpha: 0.1),
+                        ],
                       ),
-                    ],
-                  ),
-                  child: TextFormField(
-                    controller: _otpController,
-                    keyboardType: TextInputType.number,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 24.sp,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 8.w,
+                      shape: BoxShape.circle,
                     ),
-                    maxLength: 6,
-                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                    decoration: InputDecoration(
-                      hintText: '000000',
-                      counterText: '',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12.r),
-                        borderSide: BorderSide.none,
-                      ),
-                      filled: true,
-                      fillColor: Colors.white,
-                      contentPadding: EdgeInsets.symmetric(vertical: 20.h),
-                    ),
-                  ),
-                ),
-                SizedBox(height: 16.h),
-
-                // Resend OTP
-                TextButton(
-                  onPressed: _isLoading ? null : _resendOTP,
-                  child: Text(
-                    'Didn\'t receive code? Resend',
-                    style: TextStyle(
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w600,
+                    child: Icon(
+                      Icons.chat_bubble_outline,
+                      size: 40.sp,
                       color: Color.fromARGB(255, 78, 3, 208),
                     ),
                   ),
-                ),
-              ],
 
-              // Error Message
-              if (_errorMessage != null) ...[
-                SizedBox(height: 16.h),
-                Container(
-                  padding: EdgeInsets.all(12.w),
-                  decoration: BoxDecoration(
-                    color: Colors.red.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8.r),
-                    border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
+                  // Title
+                  Text(
+                    _otpSent ? 'Enter Verification Code' : 'Link Your WhatsApp',
+                    style: TextStyle(
+                      fontSize: 24.sp,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.black87,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.error_outline, color: Colors.red, size: 20.sp),
-                      SizedBox(width: 8.w),
-                      Expanded(
-                        child: Text(
-                          _errorMessage!,
-                          style: TextStyle(
-                            fontSize: 13.sp,
-                            color: Colors.red.shade700,
+                  SizedBox(height: 8.h),
+
+                  // Subtitle
+                  Text(
+                    _otpSent
+                        ? 'We sent a 6-digit code to your WhatsApp\n$_phoneNumber'
+                        : 'Enter your phone number to receive a verification code via WhatsApp',
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      color: Colors.black54,
+                      height: 1.4,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: 32.h),
+
+                  // Phone Number Input (only show if OTP not sent)
+                  if (!_otpSent) ...[
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12.r),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.05),
+                            blurRadius: 10,
+                            offset: Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: TextFormField(
+                        controller: _phoneController,
+                        keyboardType: TextInputType.phone,
+                        style: TextStyle(fontSize: 16.sp),
+                        decoration: InputDecoration(
+                          hintText: 'Phone Number',
+                          prefixIcon: Icon(
+                            Icons.phone,
+                            color: Color.fromARGB(255, 78, 3, 208),
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12.r),
+                            borderSide: BorderSide.none,
+                          ),
+                          filled: true,
+                          fillColor: Colors.white,
+                          contentPadding: EdgeInsets.symmetric(
+                            horizontal: 16.w,
+                            vertical: 16.h,
                           ),
                         ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter your phone number';
+                          }
+                          if (value.length < 10) {
+                            return 'Please enter a valid phone number';
+                          }
+                          return null;
+                        },
                       ),
-                    ],
-                  ),
-                ),
-              ],
+                    ),
+                    SizedBox(height: 24.h),
 
-              SizedBox(height: 32.h),
-
-              // Action Button
-              ElevatedButton(
-                onPressed: _isLoading
-                    ? null
-                    : (_otpSent ? _verifyOTP : _sendOTP),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Color.fromARGB(255, 78, 3, 208),
-                  foregroundColor: Colors.white,
-                  disabledBackgroundColor: Colors.grey.shade300,
-                  padding: EdgeInsets.symmetric(vertical: 16.h),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12.r),
-                  ),
-                  elevation: 4,
-                ),
-                child: _isLoading
-                    ? SizedBox(
-                        height: 20.h,
-                        width: 20.w,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    // Info Card
+                    Container(
+                      padding: EdgeInsets.all(16.w),
+                      decoration: BoxDecoration(
+                        color: Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.05),
+                        borderRadius: BorderRadius.circular(12.r),
+                        border: Border.all(
+                          color: Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
                         ),
-                      )
-                    : Text(
-                        _otpSent ? 'Verify & Link Account' : 'Send Verification Code',
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.info_outline,
+                            color: Color.fromARGB(255, 78, 3, 208),
+                            size: 20.sp,
+                          ),
+                          SizedBox(width: 12.w),
+                          Expanded(
+                            child: Text(
+                              'Make sure this number is linked to your WhatsApp account',
+                              style: TextStyle(
+                                fontSize: 13.sp,
+                                color: Colors.black87,
+                                height: 1.3,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+
+                  // OTP Input (only show if OTP sent)
+                  if (_otpSent) ...[
+                    // Timer
+                    if (_remainingSeconds > 0)
+                      Container(
+                        padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 16.w),
+                        margin: EdgeInsets.only(bottom: 20.h),
+                        decoration: BoxDecoration(
+                          color: Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(12.r),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.timer_outlined,
+                              color: Color.fromARGB(255, 78, 3, 208),
+                              size: 20.sp,
+                            ),
+                            SizedBox(width: 8.w),
+                            Text(
+                              'Code expires in ${_formatTime(_remainingSeconds)}',
+                              style: TextStyle(
+                                fontSize: 14.sp,
+                                fontWeight: FontWeight.w600,
+                                color: Color.fromARGB(255, 78, 3, 208),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                    // OTP Input
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12.r),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.05),
+                            blurRadius: 10,
+                            offset: Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: TextFormField(
+                        controller: _otpController,
+                        keyboardType: TextInputType.number,
+                        textAlign: TextAlign.center,
                         style: TextStyle(
-                          fontSize: 16.sp,
+                          fontSize: 24.sp,
                           fontWeight: FontWeight.w600,
+                          letterSpacing: 8.w,
+                        ),
+                        maxLength: 6,
+                        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                        decoration: InputDecoration(
+                          hintText: '000000',
+                          counterText: '',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12.r),
+                            borderSide: BorderSide.none,
+                          ),
+                          filled: true,
+                          fillColor: Colors.white,
+                          contentPadding: EdgeInsets.symmetric(vertical: 20.h),
                         ),
                       ),
+                    ),
+                    SizedBox(height: 16.h),
+
+                    // Resend OTP
+                    TextButton(
+                      onPressed: isLoading ? null : _resendOTP,
+                      child: Text(
+                        'Didn\'t receive code? Resend',
+                        style: TextStyle(
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w600,
+                          color: Color.fromARGB(255, 78, 3, 208),
+                        ),
+                      ),
+                    ),
+                  ],
+
+                  SizedBox(height: 32.h),
+
+                  // Action Button
+                  ElevatedButton(
+                    onPressed: isLoading
+                        ? null
+                        : (_otpSent ? _verifyOTP : _sendOTP),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Color.fromARGB(255, 78, 3, 208),
+                      foregroundColor: Colors.white,
+                      disabledBackgroundColor: Colors.grey.shade300,
+                      padding: EdgeInsets.symmetric(vertical: 16.h),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                      elevation: 4,
+                    ),
+                    child: isLoading
+                        ? SizedBox(
+                            height: 20.h,
+                            width: 20.w,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            ),
+                          )
+                        : Text(
+                            _otpSent ? 'Verify & Link Account' : 'Send Verification Code',
+                            style: TextStyle(
+                              fontSize: 16.sp,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                  ),
+                ],
               ),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
     );
   }

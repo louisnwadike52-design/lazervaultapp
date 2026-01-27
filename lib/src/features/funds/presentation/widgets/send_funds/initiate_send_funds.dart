@@ -170,15 +170,37 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
     });
   }
 
+  /// Get currency symbol from currency code
+  String _getCurrencySymbol(String? currencyCode) {
+    switch (currencyCode?.toUpperCase()) {
+      case 'NGN':
+        return '₦';
+      case 'GBP':
+        return '£';
+      case 'USD':
+        return '\$';
+      case 'EUR':
+        return '€';
+      case 'CAD':
+        return 'C\$';
+      case 'AUD':
+        return 'A\$';
+      default:
+        return '₦'; // Default to Naira since signup is Nigeria-only
+    }
+  }
+
+  /// Format amount WITHOUT currency symbol (symbol is shown separately)
   String _formatAmount() {
-    if (amount.isEmpty) return '£0.00';
+    if (amount.isEmpty) return '0.00';
     try {
       // Parse the minor unit string and convert to major units for formatting
       double value = double.parse(amount) / 100.0;
-      return NumberFormat.currency(symbol: '£', decimalDigits: 2).format(value);
+      // Format without symbol - just the number with 2 decimal places
+      return NumberFormat('#,##0.00', 'en_US').format(value);
     } catch (e) {
       print("Error formatting amount: $e");
-      return '£0.00'; // Handle parsing error gracefully
+      return '0.00'; // Handle parsing error gracefully
     }
   }
 
@@ -333,7 +355,16 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
             style: TextStyle(color: Colors.white70)));
   }
 
-  Widget _buildQuickAmounts() {
+  Widget _buildQuickAmounts(AccountCardsSummaryState accountState) {
+    // Get currency symbol from selected account
+    String currencySymbol = '₦'; // Default to Naira
+    if (accountState is AccountCardsSummaryLoaded &&
+        accountState.accountSummaries.isNotEmpty &&
+        selectedCardIndex < accountState.accountSummaries.length) {
+      currencySymbol = _getCurrencySymbol(
+          accountState.accountSummaries[selectedCardIndex].currency);
+    }
+
     return SizedBox(
       height: 40.h,
       child: Row(
@@ -348,16 +379,15 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                       color: Colors.white.withValues(alpha: 0.05),
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.08),
+                          blurRadius: 6,
+                          offset: Offset(0, 2),
+                        ),
+                      ],
                     ),
                     child: Text(
-                      '£$amountValue',
+                      '$currencySymbol$amountValue',
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 14,
@@ -1676,7 +1706,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                                           ),
                                           decoration: InputDecoration(
                                             border: InputBorder.none,
-                                            hintText: '£0.00',
+                                            hintText: '0.00',
                                             hintStyle: TextStyle(
                                               color: Colors.white.withValues(alpha: 0.5),
                                               fontSize: 24,
@@ -1711,10 +1741,21 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                                   ),
                                   Align(
                                     alignment: Alignment.centerRight,
-                                    child: Text(
-                                      'Max ${NumberFormat.currency(symbol: '£', decimalDigits: 2).format(maxAmount)}', // Use dynamic max amount
-                                      style: const TextStyle(
-                                          color: Colors.white70),
+                                    child: Builder(
+                                      builder: (context) {
+                                        // Get currency symbol from selected account
+                                        String currencySymbol = '₦';
+                                        if (accountState is AccountCardsSummaryLoaded &&
+                                            accountState.accountSummaries.isNotEmpty &&
+                                            selectedCardIndex < accountState.accountSummaries.length) {
+                                          currencySymbol = _getCurrencySymbol(
+                                              accountState.accountSummaries[selectedCardIndex].currency);
+                                        }
+                                        return Text(
+                                          'Max $currencySymbol${NumberFormat('#,##0.00', 'en_US').format(maxAmount)}',
+                                          style: const TextStyle(color: Colors.white70),
+                                        );
+                                      },
                                     ),
                                   ),
                                   SizedBox(height: 16.h),
@@ -1804,7 +1845,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                             SizedBox(height: 16.h),
 
                             // Quick amounts section
-                            _buildQuickAmounts(),
+                            _buildQuickAmounts(accountState),
                             SizedBox(height: 16.h),
 
                             // Send/Schedule Button Row

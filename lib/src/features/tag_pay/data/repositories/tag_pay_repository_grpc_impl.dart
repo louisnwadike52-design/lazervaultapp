@@ -1,7 +1,10 @@
 import 'package:grpc/grpc.dart';
 import 'package:lazervault/src/core/network/grpc_client.dart';
 import 'package:lazervault/src/core/network/retry_helper.dart';
+import 'package:lazervault/core/services/grpc_call_options_helper.dart';
 import 'package:lazervault/src/generated/tag_pay.pb.dart' as pb;
+import 'package:lazervault/src/generated/auth.pb.dart' as auth_pb;
+import 'package:lazervault/src/generated/auth.pbgrpc.dart' as auth_grpc;
 import '../../domain/entities/tag_pay_entity.dart';
 import '../../domain/entities/user_tag_entity.dart';
 import '../../domain/entities/user_search_result_entity.dart';
@@ -9,8 +12,14 @@ import '../../domain/repositories/tag_pay_repository.dart';
 
 class TagPayRepositoryGrpcImpl implements TagPayRepository {
   final GrpcClient grpcClient;
+  final auth_grpc.AuthServiceClient authServiceClient;
+  final GrpcCallOptionsHelper callOptionsHelper;
 
-  TagPayRepositoryGrpcImpl({required this.grpcClient});
+  TagPayRepositoryGrpcImpl({
+    required this.grpcClient,
+    required this.authServiceClient,
+    required this.callOptionsHelper,
+  });
 
   @override
   Future<TagPayEntity> createTagPay({
@@ -548,17 +557,24 @@ class TagPayRepositoryGrpcImpl implements TagPayRepository {
     required String query,
     int limit = 10,
   }) async {
+    // User search is decoupled from TagPay - use AuthService instead
+    // This follows proper architecture where user search is handled by UserService/AuthService
     return retryWithBackoff(
       operation: () async {
-        final request = pb.SearchUsersForTagRequest()
+        final request = auth_pb.SearchUsersByUsernameRequest()
           ..query = query
           ..limit = limit;
 
-        final options = await grpcClient.callOptions;
-        final response = await grpcClient.tagPayClient.searchUsers(
+        final options = await callOptionsHelper.withAuth();
+        final response = await authServiceClient.searchUsersByUsername(
           request,
           options: options,
         );
+
+        if (!response.success) {
+          print('[TagPayRepository] User search failed: ${response.msg}');
+          return [];
+        }
 
         return response.users
             .map((user) => UserSearchResultEntity(
@@ -566,7 +582,7 @@ class TagPayRepositoryGrpcImpl implements TagPayRepository {
                   username: user.username,
                   firstName: user.firstName,
                   lastName: user.lastName,
-                  email: user.email,
+                  email: '', // UserLookupResult doesn't have email field
                   profilePicture: user.profilePicture,
                 ))
             .toList();

@@ -1,17 +1,23 @@
+import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
-// import 'package:lazervault/src/features/funds/domain/repositories/i_deposit_repository.dart'; // No longer needed directly
-import 'package:lazervault/src/features/funds/domain/usecases/initiate_deposit_usecase.dart'; // Import the use case
+import 'package:lazervault/src/features/funds/domain/usecases/initiate_deposit_usecase.dart';
 import 'package:lazervault/src/features/funds/cubit/deposit_state.dart';
+import 'package:lazervault/src/features/banking/services/banking_websocket_service.dart';
 
 
 class DepositCubit extends Cubit<DepositState> {
-  // final IDepositRepository _repository; // Replaced with use case
   final InitiateDepositUseCase _initiateDepositUseCase;
+  final BankingWebSocketService? _bankingWebSocketService;
+  StreamSubscription<BankingStatusEvent>? _wsSubscription;
 
-  DepositCubit(this._initiateDepositUseCase) : super(DepositInitial());
+  DepositCubit(
+    this._initiateDepositUseCase, {
+    BankingWebSocketService? bankingWebSocketService,
+  })  : _bankingWebSocketService = bankingWebSocketService,
+        super(DepositInitial());
 
   Future<void> initiateDeposit({
-    required String targetAccountId, // UUID string
+    required String targetAccountId,
     required double amount,
     required String currency,
     required String sourceBankName,
@@ -39,7 +45,6 @@ class DepositCubit extends Cubit<DepositState> {
     }
 
     try {
-      // Call the use case
       final result = await _initiateDepositUseCase.call(
         targetAccountId: targetAccountId,
         amount: amount,
@@ -54,11 +59,49 @@ class DepositCubit extends Cubit<DepositState> {
           failure.message,
           statusCode: failure.statusCode,
         )),
-        (depositDetails) => emit(DepositSuccess(depositDetails)),
+        (depositDetails) {
+          emit(DepositSuccess(depositDetails));
+          // Subscribe to WebSocket for real-time status updates
+          _subscribeToDepositUpdates(depositDetails.depositId);
+        },
       );
     } catch (e) {
       if (isClosed) return;
       emit(DepositFailure('An unexpected error occurred: $e'));
     }
   }
-} 
+
+  void _subscribeToDepositUpdates(String? depositReference) {
+    if (_bankingWebSocketService == null || depositReference == null || depositReference.isEmpty) return;
+
+    _wsSubscription?.cancel();
+    _wsSubscription = _bankingWebSocketService!
+        .filterByReference(depositReference)
+        .listen((event) {
+      if (isClosed) return;
+      final status = event.status.toLowerCase();
+      if (status == 'completed' || status == 'successful') {
+        emit(DepositWebSocketCompleted(
+          reference: event.reference ?? event.transferId,
+          status: event.status,
+        ));
+      } else if (status == 'reversed') {
+        emit(DepositReversed(
+          reference: event.reference ?? event.transferId,
+          reason: event.errorMessage ?? 'Deposit was reversed due to a processing error',
+        ));
+      } else if (status == 'failed') {
+        emit(DepositWebSocketFailed(
+          reference: event.reference ?? event.transferId,
+          message: event.errorMessage ?? 'Deposit failed',
+        ));
+      }
+    });
+  }
+
+  @override
+  Future<void> close() {
+    _wsSubscription?.cancel();
+    return super.close();
+  }
+}

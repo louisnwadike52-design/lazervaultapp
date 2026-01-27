@@ -13,6 +13,7 @@ import 'package:lazervault/src/features/authentication/presentation/views/phone_
 import 'package:lazervault/src/features/authentication/cubit/phone_verification_cubit.dart';
 import 'package:lazervault/src/features/authentication/presentation/views/passcode_setup_screen.dart';
 import 'package:lazervault/src/features/authentication/presentation/views/change_passcode_screen.dart';
+import 'package:lazervault/src/features/transaction_pin/presentation/views/transaction_pin_setup_screen.dart';
 import 'package:lazervault/src/features/crypto/presentation/view/crypto_screen.dart';
 import 'package:lazervault/src/features/crypto/presentation/view/buy_crypto_screen.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/transfer_proof.dart';
@@ -272,6 +273,12 @@ import 'package:lazervault/src/features/settings/presentation/view/help_support_
 import 'package:lazervault/src/features/settings/presentation/view/contact_us_screen.dart';
 import 'package:lazervault/src/features/referral/presentation/screens/referral_dashboard_screen.dart';
 import 'package:lazervault/src/features/referral/presentation/cubit/referral_cubit.dart';
+
+// WhatsApp Banking imports
+import 'package:lazervault/src/features/whatsapp_banking/cubit/whatsapp_banking_cubit.dart';
+import 'package:lazervault/src/features/whatsapp_banking/presentation/screens/whatsapp_main_screen.dart';
+import 'package:lazervault/src/features/whatsapp_banking/presentation/screens/whatsapp_linking_screen.dart';
+import 'package:lazervault/src/features/whatsapp_banking/presentation/screens/whatsapp_security_screen.dart';
 
 // KYC imports
 import 'package:lazervault/src/features/kyc/presentation/views/progressive_kyc_screen.dart';
@@ -568,6 +575,11 @@ class AppRouter {
       transition: Transition.rightToLeft,
     ),
     GetPage(
+      name: AppRoutes.transactionPinSetup,
+      page: () => const TransactionPinSetupScreen(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
       name: AppRoutes.changePasscode,
       page: () => const ChangePasscodeScreen(),
       transition: Transition.rightToLeft,
@@ -689,6 +701,31 @@ class AppRouter {
       page: () => BlocProvider(
         create: (context) => serviceLocator<ReferralCubit>(),
         child: const ReferralDashboardScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    // WhatsApp Banking Routes
+    GetPage(
+      name: AppRoutes.whatsappBanking,
+      page: () => BlocProvider(
+        create: (context) => serviceLocator<WhatsAppBankingCubit>(),
+        child: const WhatsAppMainScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.whatsappLinking,
+      page: () => BlocProvider(
+        create: (context) => serviceLocator<WhatsAppBankingCubit>(),
+        child: const WhatsAppLinkingScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.whatsappSecurity,
+      page: () => BlocProvider(
+        create: (context) => serviceLocator<WhatsAppBankingCubit>(),
+        child: const WhatsAppSecurityScreen(),
       ),
       transition: Transition.rightToLeft,
     ),
