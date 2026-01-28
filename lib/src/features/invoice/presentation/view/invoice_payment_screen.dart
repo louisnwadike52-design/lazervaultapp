@@ -241,12 +241,12 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Color(0xFF3B82F6).withOpacity(0.1),
-            Color(0xFF8B5CF6).withOpacity(0.1),
+            Color(0xFF3B82F6).withValues(alpha: 0.1),
+            Color(0xFF8B5CF6).withValues(alpha: 0.1),
           ],
         ),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Color(0xFF3B82F6).withOpacity(0.2)),
+        border: Border.all(color: Color(0xFF3B82F6).withValues(alpha: 0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -256,7 +256,7 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
               Container(
                 padding: EdgeInsets.all(8.w),
                 decoration: BoxDecoration(
-                  color: Color(0xFF3B82F6).withOpacity(0.2),
+                  color: Color(0xFF3B82F6).withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(8.r),
                 ),
                 child: Icon(
@@ -472,7 +472,7 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
           color: isSelected 
-              ? Color(0xFF3B82F6).withOpacity(0.1) 
+              ? Color(0xFF3B82F6).withValues(alpha: 0.1) 
               : InvoiceThemeColors.secondaryBackground,
           borderRadius: BorderRadius.circular(12.r),
           border: Border.all(
@@ -480,7 +480,7 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
                 ? Color(0xFF3B82F6) 
                 : hasEnoughBalance 
                     ? Colors.grey[700]! 
-                    : Colors.red.withOpacity(0.3),
+                    : Colors.red.withValues(alpha: 0.3),
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -489,7 +489,7 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
             Container(
               padding: EdgeInsets.all(8.w),
               decoration: BoxDecoration(
-                color: account["color"].withOpacity(0.1),
+                color: account["color"].withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8.r),
               ),
               child: Icon(
@@ -576,7 +576,7 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
           color: isSelected 
-              ? Color(0xFF3B82F6).withOpacity(0.1) 
+              ? Color(0xFF3B82F6).withValues(alpha: 0.1) 
               : InvoiceThemeColors.secondaryBackground,
           borderRadius: BorderRadius.circular(12.r),
           border: Border.all(
@@ -590,7 +590,7 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
               width: 40.w,
               height: 40.h,
               decoration: BoxDecoration(
-                color: crypto["color"].withOpacity(0.1),
+                color: crypto["color"].withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Center(
@@ -681,7 +681,7 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
           color: isSelected 
-              ? Color(0xFF3B82F6).withOpacity(0.1) 
+              ? Color(0xFF3B82F6).withValues(alpha: 0.1) 
               : InvoiceThemeColors.secondaryBackground,
           borderRadius: BorderRadius.circular(12.r),
           border: Border.all(
@@ -694,7 +694,7 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
             Container(
               padding: EdgeInsets.all(8.w),
               decoration: BoxDecoration(
-                color: option["color"].withOpacity(0.1),
+                color: option["color"].withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8.r),
               ),
               child: Icon(
@@ -763,9 +763,9 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
               padding: EdgeInsets.all(12.w),
               margin: EdgeInsets.only(bottom: 16.h),
               decoration: BoxDecoration(
-                color: Color(0xFF3B82F6).withOpacity(0.1),
+                color: Color(0xFF3B82F6).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8.r),
-                border: Border.all(color: Color(0xFF3B82F6).withOpacity(0.2)),
+                border: Border.all(color: Color(0xFF3B82F6).withValues(alpha: 0.2)),
               ),
               child: Row(
                 children: [
@@ -875,7 +875,7 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
           decoration: BoxDecoration(
             color: Color(0xFF1E1E1E),
             borderRadius: BorderRadius.circular(20.r),
-            border: Border.all(color: Colors.green.withOpacity(0.3)),
+            border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -883,7 +883,7 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
               Container(
                 padding: EdgeInsets.all(16.w),
                 decoration: BoxDecoration(
-                  color: Colors.green.withOpacity(0.1),
+                  color: Colors.green.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(

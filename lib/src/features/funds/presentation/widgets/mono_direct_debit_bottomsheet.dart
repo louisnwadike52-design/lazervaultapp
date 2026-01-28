@@ -473,10 +473,10 @@ class _MonoDirectDebitBottomsheetState extends State<MonoDirectDebitBottomsheet>
     }
 
     final user = authState.profile.user;
-    final userId = user?.id ?? '';
+    final userId = user.id;
     final accessToken = authState.profile.session.accessToken;
-    final customerName = '${user?.firstName ?? ''} ${user?.lastName ?? ''}'.trim();
-    final customerEmail = user?.email ?? '';
+    final customerName = '${user.firstName} ${user.lastName}'.trim();
+    final customerEmail = user.email;
 
     print('[MonoConnect] Launching Mono Connect SDK bottomsheet');
     print('[MonoConnect] Customer: $customerName ($customerEmail)');

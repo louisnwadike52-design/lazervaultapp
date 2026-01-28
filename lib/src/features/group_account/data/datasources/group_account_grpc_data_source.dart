@@ -903,8 +903,6 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
       case pb_enum.GroupMemberRole.GROUP_MEMBER_ROLE_ADMIN:
         return GroupMemberRole.admin;
       case pb_enum.GroupMemberRole.GROUP_MEMBER_ROLE_MEMBER:
-        return GroupMemberRole.moderator;
-      case pb_enum.GroupMemberRole.GROUP_MEMBER_ROLE_MEMBER:
         return GroupMemberRole.member;
       default:
         return GroupMemberRole.member;
@@ -1020,8 +1018,6 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
         return pb_enum.ContributionFrequency.CONTRIBUTION_FREQUENCY_MONTHLY;
       case ContributionFrequency.quarterly:
         return pb_enum.ContributionFrequency.CONTRIBUTION_FREQUENCY_QUARTERLY;
-      case ContributionFrequency.monthly:
-        return pb_enum.ContributionFrequency.CONTRIBUTION_FREQUENCY_YEARLY;
     }
   }
 

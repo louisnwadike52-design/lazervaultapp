@@ -31,7 +31,7 @@ class ScanErrorDialog extends StatelessWidget {
               width: 64.w,
               height: 64.h,
               decoration: BoxDecoration(
-                color: _getErrorColor().withOpacity(0.1),
+                color: _getErrorColor().withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -224,8 +224,8 @@ class LowConfidenceWarning extends StatelessWidget {
       padding: EdgeInsets.all(16.r),
       decoration: BoxDecoration(
         color: isVeryLow
-            ? const Color(0xFFEF4444).withOpacity(0.1)
-            : const Color(0xFFF59E0B).withOpacity(0.1),
+            ? const Color(0xFFEF4444).withValues(alpha: 0.1)
+            : const Color(0xFFF59E0B).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
           color: isVeryLow ? const Color(0xFFEF4444) : const Color(0xFFF59E0B),
@@ -394,10 +394,10 @@ class FieldErrorIndicator extends StatelessWidget {
       margin: EdgeInsets.only(top: 8.h),
       padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
       decoration: BoxDecoration(
-        color: const Color(0xFFEF4444).withOpacity(0.1),
+        color: const Color(0xFFEF4444).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(6.r),
         border: Border.all(
-          color: const Color(0xFFEF4444).withOpacity(0.3),
+          color: const Color(0xFFEF4444).withValues(alpha: 0.3),
           width: 1,
         ),
       ),

@@ -266,7 +266,7 @@ class DocumentUploadErrorHandler extends StatelessWidget {
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -282,7 +282,7 @@ class DocumentUploadErrorHandler extends StatelessWidget {
                 width: 48.w,
                 height: 48.h,
                 decoration: BoxDecoration(
-                  color: _getErrorColor(details.type).withOpacity(0.1),
+                  color: _getErrorColor(details.type).withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(

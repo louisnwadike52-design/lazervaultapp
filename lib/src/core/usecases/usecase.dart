@@ -15,19 +15,19 @@ typedef ResultVoid = ResultFuture<void>;
 ///
 /// [Type] is the return type upon success.
 /// [Params] is the type of the parameters required to execute the use case.
-abstract class UseCaseWithParams<Type, Params> {
+abstract class UseCaseWithParams<T, Params> {
   const UseCaseWithParams();
 
   /// Executes the use case with the given [params].
-  ResultFuture<Type> call(Params params);
+  ResultFuture<T> call(Params params);
 }
 
 /// An abstract class representing a use case that does not take parameters.
 ///
-/// [Type] is the return type upon success.
-abstract class UseCaseWithoutParams<Type> {
+/// [T] is the return type upon success.
+abstract class UseCaseWithoutParams<T> {
   const UseCaseWithoutParams();
 
   /// Executes the use case.
-  ResultFuture<Type> call();
+  ResultFuture<T> call();
 } 

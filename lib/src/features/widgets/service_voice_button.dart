@@ -56,10 +56,10 @@ class ServiceVoiceButton extends StatelessWidget {
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: (backgroundColor ?? Colors.white).withOpacity(0.1),
+        color: (backgroundColor ?? Colors.white).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(size / 2),
         border: Border.all(
-          color: Colors.white.withOpacity(0.1),
+          color: Colors.white.withValues(alpha: 0.1),
           width: 1,
         ),
       ),

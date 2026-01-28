@@ -219,7 +219,7 @@ class _TagPayHomeViewState extends State<_TagPayHomeView> {
         borderRadius: BorderRadius.circular(24.r),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF3B82F6).withOpacity(0.3),
+            color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -229,7 +229,7 @@ class _TagPayHomeViewState extends State<_TagPayHomeView> {
         children: [
           CircleAvatar(
             radius: 40.r,
-            backgroundColor: Colors.white.withOpacity(0.2),
+            backgroundColor: Colors.white.withValues(alpha: 0.2),
             child: Text(
               state.tagPay.displayName.isNotEmpty
                   ? state.tagPay.displayName[0].toUpperCase()
@@ -254,7 +254,7 @@ class _TagPayHomeViewState extends State<_TagPayHomeView> {
           Container(
             padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(20.r),
             ),
             child: Text(
@@ -328,7 +328,7 @@ class _TagPayHomeViewState extends State<_TagPayHomeView> {
       child: Container(
         padding: EdgeInsets.all(20.w),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
+          color: color.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(16.r),
           boxShadow: [
             BoxShadow(
@@ -565,7 +565,7 @@ class _TagPayHomeViewState extends State<_TagPayHomeView> {
             width: 40.w,
             height: 40.w,
             decoration: BoxDecoration(
-              color: iconColor.withOpacity(0.1),
+              color: iconColor.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(20.r),
             ),
             child: Icon(
@@ -638,7 +638,7 @@ class _UsernameSetupCardState extends State<_UsernameSetupCard> {
       Get.snackbar(
         'Error',
         'Please enter a username',
-        backgroundColor: Colors.red.withOpacity(0.8),
+        backgroundColor: Colors.red.withValues(alpha: 0.8),
         colorText: Colors.white,
         duration: const Duration(seconds: 2),
       );
@@ -656,13 +656,15 @@ class _UsernameSetupCardState extends State<_UsernameSetupCard> {
       // Wait a bit for profile to update
       await Future.delayed(const Duration(milliseconds: 500));
 
+      if (!mounted) return;
+
       // Refresh tag pay data
       context.read<TagPayCubit>().getMyTagPay(username: username);
 
       Get.snackbar(
         'Success',
         'Username set successfully!',
-        backgroundColor: const Color(0xFF10B981).withOpacity(0.8),
+        backgroundColor: const Color(0xFF10B981).withValues(alpha: 0.8),
         colorText: Colors.white,
         duration: const Duration(seconds: 2),
       );
@@ -670,7 +672,7 @@ class _UsernameSetupCardState extends State<_UsernameSetupCard> {
       Get.snackbar(
         'Error',
         'Failed to set username: ${e.toString()}',
-        backgroundColor: Colors.red.withOpacity(0.8),
+        backgroundColor: Colors.red.withValues(alpha: 0.8),
         colorText: Colors.white,
         duration: const Duration(seconds: 3),
       );
@@ -755,7 +757,7 @@ class _UsernameSetupCardState extends State<_UsernameSetupCard> {
               onPressed: _isLoading ? null : _handleSetUsername,
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF3B82F6),
-                disabledBackgroundColor: const Color(0xFF3B82F6).withOpacity(0.5),
+                disabledBackgroundColor: const Color(0xFF3B82F6).withValues(alpha: 0.5),
                 padding: EdgeInsets.symmetric(horizontal: 32.w, vertical: 16.h),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12.r),

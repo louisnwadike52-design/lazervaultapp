@@ -79,7 +79,7 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
               width: 40.w,
               height: 4.h,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.3),
+                color: Colors.white.withValues(alpha: 0.3),
                 borderRadius: BorderRadius.circular(2.r),
               ),
             ),
@@ -94,8 +94,8 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
-                        const Color(0xFF6C5CE7).withOpacity(0.3),
-                        const Color(0xFFA29BFE).withOpacity(0.1),
+                        const Color(0xFF6C5CE7).withValues(alpha: 0.3),
+                        const Color(0xFFA29BFE).withValues(alpha: 0.1),
                       ],
                     ),
                     shape: BoxShape.circle,
@@ -133,7 +133,7 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                         style: TextStyle(
                           color: member.role == FamilyMemberRole.admin
                               ? const Color(0xFF6C5CE7)
-                              : Colors.white.withOpacity(0.6),
+                              : Colors.white.withValues(alpha: 0.6),
                           fontSize: 12.sp,
                           fontWeight: FontWeight.w600,
                         ),
@@ -230,7 +230,7 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
               style: TextStyle(color: Colors.white, fontSize: 16.sp),
               decoration: InputDecoration(
                 labelText: 'Amount',
-                labelStyle: TextStyle(color: Colors.white.withOpacity(0.6)),
+                labelStyle: TextStyle(color: Colors.white.withValues(alpha: 0.6)),
                 prefixText: '\$ ',
                 prefixStyle: TextStyle(
                   color: const Color(0xFF6C5CE7),
@@ -238,7 +238,7 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                   fontWeight: FontWeight.bold,
                 ),
                 filled: true,
-                fillColor: Colors.white.withOpacity(0.05),
+                fillColor: Colors.white.withValues(alpha: 0.05),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.r),
                 ),
@@ -250,9 +250,9 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
               style: TextStyle(color: Colors.white, fontSize: 16.sp),
               decoration: InputDecoration(
                 labelText: 'Description (Optional)',
-                labelStyle: TextStyle(color: Colors.white.withOpacity(0.6)),
+                labelStyle: TextStyle(color: Colors.white.withValues(alpha: 0.6)),
                 filled: true,
-                fillColor: Colors.white.withOpacity(0.05),
+                fillColor: Colors.white.withValues(alpha: 0.05),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.r),
                 ),
@@ -265,7 +265,7 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
             onPressed: () => Get.back(),
             child: Text(
               'Cancel',
-              style: TextStyle(color: Colors.white.withOpacity(0.6)),
+              style: TextStyle(color: Colors.white.withValues(alpha: 0.6)),
             ),
           ),
           ElevatedButton(
@@ -316,14 +316,14 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
         ),
         content: Text(
           'This will remove ${member.fullName} from the family account. Their remaining balance will be returned to the pool.',
-          style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 14.sp),
+          style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 14.sp),
         ),
         actions: [
           TextButton(
             onPressed: () => Get.back(),
             child: Text(
               'Cancel',
-              style: TextStyle(color: Colors.white.withOpacity(0.6)),
+              style: TextStyle(color: Colors.white.withValues(alpha: 0.6)),
             ),
           ),
           ElevatedButton(
@@ -370,7 +370,7 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
               width: 40.w,
               height: 4.h,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.3),
+                color: Colors.white.withValues(alpha: 0.3),
                 borderRadius: BorderRadius.circular(2.r),
               ),
             ),
@@ -438,14 +438,14 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
         ),
         content: Text(
           'This will temporarily freeze all spending on this family account. You can unfreeze it at any time.',
-          style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 14.sp),
+          style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 14.sp),
         ),
         actions: [
           TextButton(
             onPressed: () => Get.back(),
             child: Text(
               'Cancel',
-              style: TextStyle(color: Colors.white.withOpacity(0.6)),
+              style: TextStyle(color: Colors.white.withValues(alpha: 0.6)),
             ),
           ),
           ElevatedButton(
@@ -491,7 +491,7 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
           children: [
             Text(
               'This action cannot be undone. All remaining funds will be returned to your account.',
-              style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 14.sp),
+              style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 14.sp),
             ),
             SizedBox(height: 16.h),
             TextField(
@@ -499,9 +499,9 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
               style: TextStyle(color: Colors.white, fontSize: 14.sp),
               decoration: InputDecoration(
                 hintText: 'Type "DELETE" to confirm',
-                hintStyle: TextStyle(color: Colors.white.withOpacity(0.4)),
+                hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.4)),
                 filled: true,
-                fillColor: Colors.white.withOpacity(0.05),
+                fillColor: Colors.white.withValues(alpha: 0.05),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.r),
                 ),
@@ -514,7 +514,7 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
             onPressed: () => Get.back(),
             child: Text(
               'Cancel',
-              style: TextStyle(color: Colors.white.withOpacity(0.6)),
+              style: TextStyle(color: Colors.white.withValues(alpha: 0.6)),
             ),
           ),
           ElevatedButton(
@@ -662,17 +662,17 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                   Container(
                     margin: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.05),
+                      color: Colors.white.withValues(alpha: 0.05),
                       borderRadius: BorderRadius.circular(12.r),
                     ),
                     child: TabBar(
                       controller: _tabController,
                       indicator: BoxDecoration(
-                        color: const Color(0xFF6C5CE7).withOpacity(0.3),
+                        color: const Color(0xFF6C5CE7).withValues(alpha: 0.3),
                         borderRadius: BorderRadius.circular(8.r),
                       ),
                       labelColor: const Color(0xFF6C5CE7),
-                      unselectedLabelColor: Colors.white.withOpacity(0.6),
+                      unselectedLabelColor: Colors.white.withValues(alpha: 0.6),
                       labelStyle: TextStyle(
                         fontSize: 14.sp,
                         fontWeight: FontWeight.w600,
@@ -731,13 +731,13 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  const Color(0xFF6C5CE7).withOpacity(0.2),
-                  const Color(0xFFA29BFE).withOpacity(0.1),
+                  const Color(0xFF6C5CE7).withValues(alpha: 0.2),
+                  const Color(0xFFA29BFE).withValues(alpha: 0.1),
                 ],
               ),
               borderRadius: BorderRadius.circular(16.r),
               border: Border.all(
-                color: const Color(0xFF6C5CE7).withOpacity(0.3),
+                color: const Color(0xFF6C5CE7).withValues(alpha: 0.3),
                 width: 1,
               ),
             ),
@@ -768,7 +768,7 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                             Text(
                               account.description!,
                               style: TextStyle(
-                                color: Colors.white.withOpacity(0.6),
+                                color: Colors.white.withValues(alpha: 0.6),
                                 fontSize: 12.sp,
                               ),
                             ),
@@ -827,13 +827,13 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
             padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
               color: account.status == FamilyAccountStatus.active
-                  ? Colors.green.withOpacity(0.1)
-                  : Colors.blue.withOpacity(0.1),
+                  ? Colors.green.withValues(alpha: 0.1)
+                  : Colors.blue.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12.r),
               border: Border.all(
                 color: account.status == FamilyAccountStatus.active
-                    ? Colors.green.withOpacity(0.3)
-                    : Colors.blue.withOpacity(0.3),
+                    ? Colors.green.withValues(alpha: 0.3)
+                    : Colors.blue.withValues(alpha: 0.3),
                 width: 1,
               ),
             ),
@@ -946,7 +946,7 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
           Icon(
             Icons.history,
             size: 48.sp,
-            color: Colors.white.withOpacity(0.3),
+            color: Colors.white.withValues(alpha: 0.3),
           ),
           SizedBox(height: 16.h),
           Text(
@@ -961,7 +961,7 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
           Text(
             'Coming soon',
             style: TextStyle(
-              color: Colors.white.withOpacity(0.6),
+              color: Colors.white.withValues(alpha: 0.6),
               fontSize: 14.sp,
             ),
           ),
@@ -974,7 +974,7 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
     return Container(
       padding: EdgeInsets.all(12.w),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12.r),
       ),
       child: Column(
@@ -989,7 +989,7 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
           Text(
             label,
             style: TextStyle(
-              color: Colors.white.withOpacity(0.6),
+              color: Colors.white.withValues(alpha: 0.6),
               fontSize: 11.sp,
               fontWeight: FontWeight.w500,
             ),
@@ -1020,12 +1020,12 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
         margin: EdgeInsets.only(bottom: 12.h),
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.05),
+          color: Colors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(12.r),
           border: Border.all(
             color: member.invitationStatus == InvitationStatus.accepted
-                ? Colors.white.withOpacity(0.1)
-                : const Color(0xFF6C5CE7).withOpacity(0.3),
+                ? Colors.white.withValues(alpha: 0.1)
+                : const Color(0xFF6C5CE7).withValues(alpha: 0.3),
             width: 1,
           ),
         ),
@@ -1042,8 +1042,8 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
-                        const Color(0xFF6C5CE7).withOpacity(0.3),
-                        const Color(0xFFA29BFE).withOpacity(0.1),
+                        const Color(0xFF6C5CE7).withValues(alpha: 0.3),
+                        const Color(0xFFA29BFE).withValues(alpha: 0.1),
                       ],
                     ),
                     shape: BoxShape.circle,
@@ -1088,7 +1088,7 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                             Container(
                               padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF6C5CE7).withOpacity(0.2),
+                                color: const Color(0xFF6C5CE7).withValues(alpha: 0.2),
                                 borderRadius: BorderRadius.circular(8.r),
                               ),
                               child: Text(
@@ -1105,7 +1105,7 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                             Container(
                               padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                               decoration: BoxDecoration(
-                                color: Colors.orange.withOpacity(0.2),
+                                color: Colors.orange.withValues(alpha: 0.2),
                                 borderRadius: BorderRadius.circular(8.r),
                               ),
                               child: Text(
@@ -1123,7 +1123,7 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                       Text(
                         member.role == FamilyMemberRole.admin ? 'Administrator' : 'Member',
                         style: TextStyle(
-                          color: Colors.white.withOpacity(0.6),
+                          color: Colors.white.withValues(alpha: 0.6),
                           fontSize: 12.sp,
                         ),
                       ),
@@ -1132,7 +1132,7 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                 ),
                 Icon(
                   Icons.more_vert,
-                  color: Colors.white.withOpacity(0.6),
+                  color: Colors.white.withValues(alpha: 0.6),
                   size: 20.sp,
                 ),
               ],
@@ -1189,7 +1189,7 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                       Text(
                         'Utilization',
                         style: TextStyle(
-                          color: Colors.white.withOpacity(0.6),
+                          color: Colors.white.withValues(alpha: 0.6),
                           fontSize: 11.sp,
                         ),
                       ),
@@ -1211,7 +1211,7 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                   Container(
                     height: 4.h,
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.1),
+                      color: Colors.white.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(2.r),
                     ),
                     child: FractionallySizedBox(
@@ -1255,7 +1255,7 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
         Text(
           label,
           style: TextStyle(
-            color: Colors.white.withOpacity(0.5),
+            color: Colors.white.withValues(alpha: 0.5),
             fontSize: 10.sp,
           ),
         ),
@@ -1277,14 +1277,14 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
       children: [
         Icon(
           icon,
-          color: Colors.white.withOpacity(0.6),
+          color: Colors.white.withValues(alpha: 0.6),
           size: 18.sp,
         ),
         SizedBox(width: 12.w),
         Text(
           label,
           style: TextStyle(
-            color: Colors.white.withOpacity(0.6),
+            color: Colors.white.withValues(alpha: 0.6),
             fontSize: 13.sp,
           ),
         ),
@@ -1316,7 +1316,7 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
       child: Container(
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.05),
+          color: Colors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(12.r),
         ),
         child: Row(
@@ -1325,7 +1325,7 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
               width: 40.w,
               height: 40.h,
               decoration: BoxDecoration(
-                color: const Color(0xFF6C5CE7).withOpacity(0.2),
+                color: const Color(0xFF6C5CE7).withValues(alpha: 0.2),
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -1351,7 +1351,7 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                   Text(
                     description,
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.5),
+                      color: Colors.white.withValues(alpha: 0.5),
                       fontSize: 12.sp,
                     ),
                   ),
@@ -1360,7 +1360,7 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
             ),
             Icon(
               Icons.arrow_forward_ios,
-              color: Colors.white.withOpacity(0.4),
+              color: Colors.white.withValues(alpha: 0.4),
               size: 16.sp,
             ),
           ],
@@ -1385,7 +1385,7 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
           children: [
             Icon(
               icon,
-              color: color ?? Colors.white.withOpacity(0.6),
+              color: color ?? Colors.white.withValues(alpha: 0.6),
               size: 20.sp,
             ),
             SizedBox(width: 12.w),
@@ -1406,7 +1406,7 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                     Text(
                       description,
                       style: TextStyle(
-                        color: color?.withOpacity(0.7) ?? Colors.white.withOpacity(0.5),
+                        color: color?.withValues(alpha: 0.7) ?? Colors.white.withValues(alpha: 0.5),
                         fontSize: 11.sp,
                       ),
                     ),

@@ -455,7 +455,7 @@ class _VoiceVerificationScreenState extends State<VoiceVerificationScreen>
   Future<bool> _checkNetworkConnectivity() async {
     try {
       final result = await _connectivity.checkConnectivity();
-      return result != ConnectivityResult.none;
+      return !result.contains(ConnectivityResult.none);
     } catch (e) {
       return true;
     }
@@ -599,7 +599,7 @@ class _VoiceVerificationScreenState extends State<VoiceVerificationScreen>
                 height: 120,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: theme.primaryColor.withOpacity(0.1),
+                  color: theme.primaryColor.withValues(alpha: 0.1),
                   border: Border.all(
                     color: theme.primaryColor,
                     width: 3,
@@ -723,7 +723,7 @@ class _VoiceVerificationScreenState extends State<VoiceVerificationScreen>
                       boxShadow: _hasPermission && !_isRecording && !_isVerifying
                           ? [
                               BoxShadow(
-                                color: theme.primaryColor.withOpacity(0.3),
+                                color: theme.primaryColor.withValues(alpha: 0.3),
                                 blurRadius: 20,
                                 spreadRadius: 5,
                               ),
@@ -850,8 +850,8 @@ class _VoiceVerificationScreenState extends State<VoiceVerificationScreen>
         title: const Text('Voice Verification'),
         centerTitle: true,
       ),
-      body: WillPopScope(
-        onWillPop: () async => false,
+      body: PopScope(
+        canPop: false,
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,

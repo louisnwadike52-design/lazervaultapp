@@ -45,7 +45,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
         content: Text(
           'Are you sure you want to delete this reminder?',
           style: GoogleFonts.inter(
-            color: Colors.white.withOpacity(0.8),
+            color: Colors.white.withValues(alpha: 0.8),
             fontSize: 14.sp,
             fontWeight: FontWeight.w400,
           ),
@@ -56,7 +56,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
             child: Text(
               'Cancel',
               style: GoogleFonts.inter(
-                color: Colors.white.withOpacity(0.6),
+                color: Colors.white.withValues(alpha: 0.6),
                 fontSize: 14.sp,
                 fontWeight: FontWeight.w600,
               ),
@@ -108,7 +108,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
                       Get.snackbar(
                         'Error',
                         state.message,
-                        backgroundColor: Colors.red.withOpacity(0.9),
+                        backgroundColor: Colors.red.withValues(alpha: 0.9),
                         colorText: Colors.white,
                       );
                     }
@@ -117,7 +117,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
                       Get.snackbar(
                         'Success',
                         state.message,
-                        backgroundColor: Colors.green.withOpacity(0.9),
+                        backgroundColor: Colors.green.withValues(alpha: 0.9),
                         colorText: Colors.white,
                       );
                       context.read<ReminderCubit>().getReminders();
@@ -127,7 +127,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
                       Get.snackbar(
                         'Success',
                         state.message,
-                        backgroundColor: Colors.green.withOpacity(0.9),
+                        backgroundColor: Colors.green.withValues(alpha: 0.9),
                         colorText: Colors.white,
                       );
                       context.read<ReminderCubit>().getReminders();
@@ -232,10 +232,10 @@ class _RemindersScreenState extends State<RemindersScreen> {
               width: 44.w,
               height: 44.w,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(22.r),
                 border: Border.all(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   width: 1,
                 ),
               ),
@@ -262,7 +262,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
                 Text(
                   'Never miss a payment',
                   style: GoogleFonts.inter(
-                    color: Colors.white.withOpacity(0.6),
+                    color: Colors.white.withValues(alpha: 0.6),
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w400,
                   ),
@@ -311,15 +311,15 @@ class _RemindersScreenState extends State<RemindersScreen> {
               height: 120.w,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.white.withOpacity(0.05),
+                color: Colors.white.withValues(alpha: 0.05),
                 border: Border.all(
-                  color: Colors.white.withOpacity(0.1),
+                  color: Colors.white.withValues(alpha: 0.1),
                   width: 2,
                 ),
               ),
               child: Icon(
                 Icons.notifications_none,
-                color: Colors.white.withOpacity(0.3),
+                color: Colors.white.withValues(alpha: 0.3),
                 size: 56.sp,
               ),
             ),
@@ -336,7 +336,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
             Text(
               'Set up reminders to never miss\nyour electricity bill payments',
               style: GoogleFonts.inter(
-                color: Colors.white.withOpacity(0.6),
+                color: Colors.white.withValues(alpha: 0.6),
                 fontSize: 14.sp,
                 fontWeight: FontWeight.w400,
               ),
@@ -355,14 +355,14 @@ class _RemindersScreenState extends State<RemindersScreen> {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(
           color: isDue
               ? const Color(0xFFFFA726)
               : reminder.isCompleted
-                  ? Colors.grey.withOpacity(0.3)
-                  : Colors.white.withOpacity(0.1),
+                  ? Colors.grey.withValues(alpha: 0.3)
+                  : Colors.white.withValues(alpha: 0.1),
           width: isDue ? 2 : 1,
         ),
       ),
@@ -375,7 +375,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
                 width: 48.w,
                 height: 48.w,
                 decoration: BoxDecoration(
-                  color: _getStatusColor(reminder.status).withOpacity(0.2),
+                  color: _getStatusColor(reminder.status).withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12.r),
                 ),
                 child: Icon(
@@ -408,7 +408,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
                     Text(
                       reminder.description,
                       style: GoogleFonts.inter(
-                        color: Colors.white.withOpacity(0.6),
+                        color: Colors.white.withValues(alpha: 0.6),
                         fontSize: 14.sp,
                         fontWeight: FontWeight.w400,
                       ),
@@ -421,7 +421,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                 decoration: BoxDecoration(
-                  color: _getStatusColor(reminder.status).withOpacity(0.2),
+                  color: _getStatusColor(reminder.status).withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(8.r),
                 ),
                 child: Text(
@@ -478,7 +478,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
             Container(
               padding: EdgeInsets.all(12.w),
               decoration: BoxDecoration(
-                color: const Color(0xFFFFA726).withOpacity(0.1),
+                color: const Color(0xFFFFA726).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8.r),
               ),
               child: Row(
@@ -513,7 +513,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
                     child: Container(
                       padding: EdgeInsets.symmetric(vertical: 12.h),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF4CAF50).withOpacity(0.2),
+                        color: const Color(0xFF4CAF50).withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(12.r),
                         border: Border.all(
                           color: const Color(0xFF4CAF50),
@@ -549,7 +549,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
                   width: 44.w,
                   height: 44.w,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFEF5350).withOpacity(0.2),
+                    color: const Color(0xFFEF5350).withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(12.r),
                     border: Border.all(
                       color: const Color(0xFFEF5350),
@@ -574,7 +574,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(8.r),
       ),
       child: Row(
@@ -582,7 +582,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
         children: [
           Icon(
             icon,
-            color: Colors.white.withOpacity(0.6),
+            color: Colors.white.withValues(alpha: 0.6),
             size: 14.sp,
           ),
           SizedBox(width: 6.w),
@@ -590,7 +590,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
             child: Text(
               text,
               style: GoogleFonts.inter(
-                color: Colors.white.withOpacity(0.6),
+                color: Colors.white.withValues(alpha: 0.6),
                 fontSize: 12.sp,
                 fontWeight: FontWeight.w400,
               ),

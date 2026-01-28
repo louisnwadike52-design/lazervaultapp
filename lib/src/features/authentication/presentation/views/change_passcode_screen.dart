@@ -113,6 +113,8 @@ class _ChangePasscodeScreenState extends State<ChangePasscodeScreen> {
             _isLoading = false;
           });
 
+          if (!mounted) return;
+
           // Show success message and go back
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -240,7 +242,7 @@ class _ChangePasscodeScreenState extends State<ChangePasscodeScreen> {
   Widget _buildNumberRow(List<String> numbers) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: numbers.map((num) => _buildNumberButton(num)).toList(),
+      children: numbers.map((number) => _buildNumberButton(number)).toList(),
     );
   }
 

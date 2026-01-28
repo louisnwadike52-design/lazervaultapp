@@ -90,10 +90,10 @@ class _NfcReaderViewState extends State<_NfcReaderView>
 
   Future<void> _checkNfcAndStartScan() async {
     try {
-      final isAvailable = await NfcManager.instance.isAvailable();
+      final availability = await NfcManager.instance.checkAvailability();
       if (!mounted) return;
 
-      if (!isAvailable) {
+      if (availability != NfcAvailability.enabled) {
         setState(() {
           _nfcAvailable = false;
           _statusMessage = Platform.isIOS

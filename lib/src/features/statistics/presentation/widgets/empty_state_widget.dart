@@ -27,7 +27,7 @@ class EmptyStateWidget extends StatelessWidget {
               width: 100.w,
               height: 100.h,
               decoration: BoxDecoration(
-                color: const Color(0xFF4E03D0).withOpacity(0.1),
+                color: const Color(0xFF4E03D0).withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -112,10 +112,10 @@ class EmptyStateWidget extends StatelessWidget {
             Container(
               padding: EdgeInsets.all(16.w),
               decoration: BoxDecoration(
-                color: const Color(0xFF3B82F6).withOpacity(0.1),
+                color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12.r),
                 border: Border.all(
-                  color: const Color(0xFF3B82F6).withOpacity(0.3),
+                  color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
                   width: 1,
                 ),
               ),

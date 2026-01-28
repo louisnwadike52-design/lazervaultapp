@@ -78,7 +78,7 @@ class _PayTaggedInvoiceDialogState extends State<PayTaggedInvoiceDialog> {
             width: 48.w,
             height: 48.w,
             decoration: BoxDecoration(
-              color: const Color(0xFF3B82F6).withOpacity(0.2),
+              color: const Color(0xFF3B82F6).withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(24.r),
             ),
             child: Icon(
@@ -233,7 +233,7 @@ class _PayTaggedInvoiceDialogState extends State<PayTaggedInvoiceDialog> {
                         padding: EdgeInsets.all(16.w),
                         decoration: BoxDecoration(
                           color: isSelected
-                              ? const Color(0xFF3B82F6).withOpacity(0.1)
+                              ? const Color(0xFF3B82F6).withValues(alpha: 0.1)
                               : const Color(0xFF0A0A0A),
                           borderRadius: BorderRadius.circular(12.r),
                           border: Border.all(
@@ -291,7 +291,7 @@ class _PayTaggedInvoiceDialogState extends State<PayTaggedInvoiceDialog> {
                                     horizontal: 8.w, vertical: 4.h),
                                 decoration: BoxDecoration(
                                   color: const Color(0xFFEF4444)
-                                      .withOpacity(0.2),
+                                      .withValues(alpha: 0.2),
                                   borderRadius: BorderRadius.circular(6.r),
                                 ),
                                 child: Text(

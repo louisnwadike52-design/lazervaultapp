@@ -320,7 +320,7 @@ class _LinkBankScreenState extends State<LinkBankScreen> {
               WebViewWidget(controller: _webViewController),
               if (_isLoading)
                 Container(
-                  color: Colors.white.withOpacity(0.8),
+                  color: Colors.white.withValues(alpha: 0.8),
                   child: const Center(
                     child: CircularProgressIndicator(
                       color: Color(0xFF6C5CE7),

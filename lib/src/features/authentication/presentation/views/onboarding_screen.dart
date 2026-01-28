@@ -117,7 +117,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 style: TextStyle(
                   fontSize: 16.sp,
                   fontWeight: FontWeight.w600,
-                  color: AppData.onboardingSlides[currentPage].textColor.withOpacity(0.7),
+                  color: AppData.onboardingSlides[currentPage].textColor.withValues(alpha: 0.7),
                 ),
               ),
             ),
@@ -181,7 +181,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     decoration: BoxDecoration(
                       color: isSelected
                           ? slide.textColor
-                          : slide.textColor.withOpacity(0.3),
+                          : slide.textColor.withValues(alpha: 0.3),
                       borderRadius: BorderRadius.circular(5.r),
                     ),
                     duration: const Duration(milliseconds: 300),
@@ -274,7 +274,7 @@ class OnboardingCarouselItem extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 16.sp,
-                  color: slide.textColor.withOpacity(0.7),
+                  color: slide.textColor.withValues(alpha: 0.7),
                   height: 1.5,
                 ),
               ),
@@ -292,7 +292,7 @@ class OnboardingCarouselItem extends StatelessWidget {
         width: 200.w,
         height: 200.w,
         decoration: BoxDecoration(
-          color: slide.textColor.withOpacity(0.1),
+          color: slide.textColor.withValues(alpha: 0.1),
           shape: BoxShape.circle,
         ),
         child: ClipOval(
@@ -319,7 +319,7 @@ class OnboardingCarouselItem extends StatelessWidget {
       width: 280.w,
       height: 280.w,
       decoration: BoxDecoration(
-        color: slide.textColor.withOpacity(0.1),
+        color: slide.textColor.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(24.r),
       ),
       child: ClipRRect(

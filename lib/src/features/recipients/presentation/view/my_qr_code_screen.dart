@@ -71,10 +71,10 @@ class MyQRCodeScreen extends StatelessWidget {
               width: 44.w,
               height: 44.w,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(22.r),
                 border: Border.all(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   width: 1,
                 ),
               ),
@@ -101,7 +101,7 @@ class MyQRCodeScreen extends StatelessWidget {
                 Text(
                   'Share with others to receive payments',
                   style: GoogleFonts.inter(
-                    color: Colors.white.withOpacity(0.6),
+                    color: Colors.white.withValues(alpha: 0.6),
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w400,
                   ),
@@ -152,7 +152,7 @@ class MyQRCodeScreen extends StatelessWidget {
               children: [
                 CircleAvatar(
                   radius: 40.r,
-                  backgroundColor: Colors.white.withOpacity(0.2),
+                  backgroundColor: Colors.white.withValues(alpha: 0.2),
                   child: Text(
                     fullName.isNotEmpty ? fullName[0].toUpperCase() : 'U',
                     style: GoogleFonts.inter(
@@ -176,7 +176,7 @@ class MyQRCodeScreen extends StatelessWidget {
                 Text(
                   '@$username',
                   style: GoogleFonts.inter(
-                    color: Colors.white.withOpacity(0.9),
+                    color: Colors.white.withValues(alpha: 0.9),
                     fontSize: 16.sp,
                     fontWeight: FontWeight.w500,
                   ),
@@ -195,7 +195,7 @@ class MyQRCodeScreen extends StatelessWidget {
               borderRadius: BorderRadius.circular(24.r),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF4E03D0).withOpacity(0.3),
+                  color: const Color(0xFF4E03D0).withValues(alpha: 0.3),
                   blurRadius: 30,
                   offset: const Offset(0, 15),
                 ),
@@ -242,10 +242,10 @@ class MyQRCodeScreen extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(
-          color: Colors.white.withOpacity(0.1),
+          color: Colors.white.withValues(alpha: 0.1),
           width: 1,
         ),
       ),
@@ -291,7 +291,7 @@ class MyQRCodeScreen extends StatelessWidget {
           width: 32.w,
           height: 32.w,
           decoration: BoxDecoration(
-            color: const Color(0xFF4E03D0).withOpacity(0.2),
+            color: const Color(0xFF4E03D0).withValues(alpha: 0.2),
             borderRadius: BorderRadius.circular(16.r),
           ),
           child: Center(
@@ -322,7 +322,7 @@ class MyQRCodeScreen extends StatelessWidget {
               Text(
                 description,
                 style: GoogleFonts.inter(
-                  color: Colors.white.withOpacity(0.6),
+                  color: Colors.white.withValues(alpha: 0.6),
                   fontSize: 14.sp,
                   fontWeight: FontWeight.w400,
                 ),
@@ -380,7 +380,7 @@ class MyQRCodeScreen extends StatelessWidget {
           Text(
             'Loading your QR code...',
             style: GoogleFonts.inter(
-              color: Colors.white.withOpacity(0.6),
+              color: Colors.white.withValues(alpha: 0.6),
               fontSize: 16.sp,
             ),
           ),

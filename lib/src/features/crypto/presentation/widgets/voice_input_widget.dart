@@ -112,9 +112,11 @@ class _VoiceInputWidgetState extends State<VoiceInputWidget>
       },
       listenFor: const Duration(seconds: 30),
       pauseFor: const Duration(seconds: 3),
-      cancelOnError: true,
-      partialResults: true,
-      listenMode: stt.ListenMode.confirmation,
+      listenOptions: stt.SpeechListenOptions(
+        cancelOnError: true,
+        partialResults: true,
+        listenMode: stt.ListenMode.confirmation,
+      ),
     );
   }
 
@@ -272,7 +274,7 @@ class _VoiceInputWidgetState extends State<VoiceInputWidget>
                                   ? [
                                       BoxShadow(
                                         color: const Color(0xFF6C5CE7)
-                                            .withOpacity(0.5),
+                                            .withValues(alpha: 0.5),
                                         blurRadius: 30,
                                         spreadRadius: 5,
                                       ),
@@ -304,7 +306,7 @@ class _VoiceInputWidgetState extends State<VoiceInputWidget>
                       fontWeight: FontWeight.w600,
                       color: _isListening
                           ? const Color(0xFF6C5CE7)
-                          : Colors.white.withOpacity(0.7),
+                          : Colors.white.withValues(alpha: 0.7),
                     ),
                   ),
 
@@ -363,13 +365,13 @@ class _VoiceInputWidgetState extends State<VoiceInputWidget>
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [
-                            const Color(0xFF6C5CE7).withOpacity(0.2),
-                            const Color(0xFF00B4D8).withOpacity(0.2),
+                            const Color(0xFF6C5CE7).withValues(alpha: 0.2),
+                            const Color(0xFF00B4D8).withValues(alpha: 0.2),
                           ],
                         ),
                         borderRadius: BorderRadius.circular(16.r),
                         border: Border.all(
-                          color: const Color(0xFF6C5CE7).withOpacity(0.3),
+                          color: const Color(0xFF6C5CE7).withValues(alpha: 0.3),
                           width: 1,
                         ),
                       ),
@@ -415,10 +417,10 @@ class _VoiceInputWidgetState extends State<VoiceInputWidget>
                       width: double.infinity,
                       padding: EdgeInsets.all(16.w),
                       decoration: BoxDecoration(
-                        color: Colors.red.withOpacity(0.1),
+                        color: Colors.red.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(16.r),
                         border: Border.all(
-                          color: Colors.red.withOpacity(0.3),
+                          color: Colors.red.withValues(alpha: 0.3),
                           width: 1,
                         ),
                       ),
@@ -450,7 +452,7 @@ class _VoiceInputWidgetState extends State<VoiceInputWidget>
                     width: double.infinity,
                     padding: EdgeInsets.all(16.w),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF1E2746).withOpacity(0.5),
+                      color: const Color(0xFF1E2746).withValues(alpha: 0.5),
                       borderRadius: BorderRadius.circular(16.r),
                     ),
                     child: Column(
@@ -461,7 +463,7 @@ class _VoiceInputWidgetState extends State<VoiceInputWidget>
                           style: GoogleFonts.inter(
                             fontSize: 14.sp,
                             fontWeight: FontWeight.w600,
-                            color: Colors.white.withOpacity(0.7),
+                            color: Colors.white.withValues(alpha: 0.7),
                           ),
                         ),
                         SizedBox(height: 12.h),
@@ -498,7 +500,7 @@ class _VoiceInputWidgetState extends State<VoiceInputWidget>
             '"$command"',
             style: GoogleFonts.inter(
               fontSize: 14.sp,
-              color: Colors.white.withOpacity(0.6),
+              color: Colors.white.withValues(alpha: 0.6),
               fontStyle: FontStyle.italic,
             ),
           ),

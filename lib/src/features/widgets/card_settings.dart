@@ -55,7 +55,7 @@ class _CardSettingsState extends State<CardSettings> {
             style: TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 20.sp,
-              color: HexColor.fromHex("#262626"),
+              color: HybridHexColor.fromHex("#262626"),
             ),
           ),
           SizedBox(height: 12.h),

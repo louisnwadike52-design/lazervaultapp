@@ -58,7 +58,7 @@ class WatchlistSection extends StatelessWidget {
       decoration: BoxDecoration(
         border: Border(
           bottom: BorderSide(
-            color: Colors.white.withOpacity(0.1),
+            color: Colors.white.withValues(alpha: 0.1),
             width: 1,
           ),
         ),
@@ -69,7 +69,7 @@ class WatchlistSection extends StatelessWidget {
             width: 32.w,
             height: 32.w,
             decoration: BoxDecoration(
-              color: const Color(0xFF6C5CE7).withOpacity(0.2),
+              color: const Color(0xFF6C5CE7).withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(16.r),
             ),
             child: Icon(
@@ -96,7 +96,7 @@ class WatchlistSection extends StatelessWidget {
                     watchlist.description,
                     style: GoogleFonts.inter(
                       fontSize: 12.sp,
-                      color: Colors.white.withOpacity(0.6),
+                      color: Colors.white.withValues(alpha: 0.6),
                     ),
                   ),
               ],
@@ -105,14 +105,14 @@ class WatchlistSection extends StatelessWidget {
           Container(
             padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.1),
+              color: Colors.white.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: Text(
               '${watchlistCryptos.length} asset${watchlistCryptos.length != 1 ? 's' : ''}',
               style: GoogleFonts.inter(
                 fontSize: 10.sp,
-                color: Colors.white.withOpacity(0.8),
+                color: Colors.white.withValues(alpha: 0.8),
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -121,7 +121,7 @@ class WatchlistSection extends StatelessWidget {
           PopupMenuButton<String>(
             icon: Icon(
               Icons.more_vert,
-              color: Colors.white.withOpacity(0.6),
+              color: Colors.white.withValues(alpha: 0.6),
               size: 20.sp,
             ),
             color: const Color(0xFF2A3B5C),
@@ -164,7 +164,7 @@ class WatchlistSection extends StatelessWidget {
         children: [
           Icon(
             Icons.visibility_off,
-            color: Colors.white.withOpacity(0.4),
+            color: Colors.white.withValues(alpha: 0.4),
             size: 32.sp,
           ),
           SizedBox(height: 12.h),
@@ -172,7 +172,7 @@ class WatchlistSection extends StatelessWidget {
             'No cryptos in this watchlist',
             style: GoogleFonts.inter(
               fontSize: 14.sp,
-              color: Colors.white.withOpacity(0.6),
+              color: Colors.white.withValues(alpha: 0.6),
             ),
           ),
           SizedBox(height: 4.h),
@@ -181,7 +181,7 @@ class WatchlistSection extends StatelessWidget {
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(
               fontSize: 12.sp,
-              color: Colors.white.withOpacity(0.4),
+              color: Colors.white.withValues(alpha: 0.4),
             ),
           ),
         ],
@@ -196,7 +196,7 @@ class WatchlistSection extends StatelessWidget {
       decoration: BoxDecoration(
         border: Border(
           bottom: BorderSide(
-            color: Colors.white.withOpacity(0.05),
+            color: Colors.white.withValues(alpha: 0.05),
             width: 1,
           ),
         ),
@@ -208,7 +208,7 @@ class WatchlistSection extends StatelessWidget {
           width: 40.w,
           height: 40.w,
           decoration: BoxDecoration(
-            color: _getCryptoColor(crypto.symbol).withOpacity(0.2),
+            color: _getCryptoColor(crypto.symbol).withValues(alpha: 0.2),
             borderRadius: BorderRadius.circular(20.r),
           ),
           child: Center(
@@ -240,7 +240,7 @@ class WatchlistSection extends StatelessWidget {
                     'Rank #${crypto.marketCapRank}',
                     style: GoogleFonts.inter(
                       fontSize: 12.sp,
-                      color: Colors.white.withOpacity(0.6),
+                      color: Colors.white.withValues(alpha: 0.6),
                     ),
                   ),
                 ],
@@ -283,7 +283,7 @@ class WatchlistSection extends StatelessWidget {
         trailing: IconButton(
           icon: Icon(
             Icons.close,
-            color: Colors.white.withOpacity(0.6),
+            color: Colors.white.withValues(alpha: 0.6),
             size: 18.sp,
           ),
           onPressed: () => onRemoveFromWatchlist?.call(watchlist.id, crypto.id),

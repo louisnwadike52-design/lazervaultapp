@@ -287,13 +287,13 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen> {
           end: Alignment.bottomRight,
           colors: [
             const Color.fromARGB(255, 78, 3, 208),
-            const Color.fromARGB(255, 78, 3, 208).withOpacity(0.8),
+            const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.8),
           ],
         ),
         borderRadius: BorderRadius.circular(20.r),
         boxShadow: [
           BoxShadow(
-            color: const Color.fromARGB(255, 78, 3, 208).withOpacity(0.2),
+            color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -362,7 +362,7 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen> {
       children: [
         Icon(
           icon,
-          color: Colors.white.withOpacity(0.8),
+          color: Colors.white.withValues(alpha: 0.8),
           size: 20.sp,
         ),
         SizedBox(height: 8.h),
@@ -379,7 +379,7 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen> {
           title,
           style: GoogleFonts.inter(
             fontSize: 11.sp,
-            color: Colors.white.withOpacity(0.8),
+            color: Colors.white.withValues(alpha: 0.8),
           ),
           textAlign: TextAlign.center,
         ),
@@ -397,10 +397,10 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen> {
             Container(
               padding: EdgeInsets.all(24.w),
               decoration: BoxDecoration(
-                color: const Color.fromARGB(255, 78, 3, 208).withOpacity(0.1),
+                color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: const Color.fromARGB(255, 78, 3, 208).withOpacity(0.2),
+                  color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
                 ),
               ),
               child: Icon(

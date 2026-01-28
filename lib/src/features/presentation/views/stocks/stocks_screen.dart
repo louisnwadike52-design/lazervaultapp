@@ -48,7 +48,7 @@ class _StocksScreenState extends State<StocksScreen> {
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.blue.withOpacity(0.4),
+            color: Colors.blue.withValues(alpha: 0.4),
             blurRadius: 16,
             offset: const Offset(0, 8),
           ),
@@ -86,7 +86,7 @@ class _StocksScreenState extends State<StocksScreen> {
       'Quick Trade',
       'Quick trade feature coming soon!',
       snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.blue.withOpacity(0.8),
+      backgroundColor: Colors.blue.withValues(alpha: 0.8),
       colorText: Colors.white,
       borderRadius: 12.r,
       margin: EdgeInsets.all(16.w),

@@ -2,8 +2,8 @@ import '../entities/group_entities.dart';
 import '../repositories/group_account_repository.dart';
 
 // Base use case class
-abstract class UseCase<Type, Params> {
-  Future<Type> call(Params params);
+abstract class UseCase<T, Params> {
+  Future<T> call(Params params);
 }
 
 class NoParams {}

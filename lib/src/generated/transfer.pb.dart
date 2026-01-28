@@ -193,7 +193,7 @@ class TransferTransaction extends $pb.GeneratedMessage {
 
 class InitiateTransferRequest extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'InitiateTransferRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..a<$fixnum.Int64>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'from_account_id', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'from_account_id')
     ..a<$fixnum.Int64>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'category')
     ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'reference')
@@ -207,7 +207,7 @@ class InitiateTransferRequest extends $pb.GeneratedMessage {
 
   InitiateTransferRequest._() : super();
   factory InitiateTransferRequest({
-    $fixnum.Int64? fromAccountId,
+    $core.String? fromAccountId,
     $fixnum.Int64? amount,
     $core.String? category,
     $core.String? reference,
@@ -269,9 +269,9 @@ class InitiateTransferRequest extends $pb.GeneratedMessage {
   static InitiateTransferRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $fixnum.Int64 get fromAccountId => $_getI64(0);
+  $core.String get fromAccountId => $_getSZ(0);
   @$pb.TagNumber(1)
-  set fromAccountId($fixnum.Int64 v) { $_setInt64(0, v); }
+  set fromAccountId($core.String v) { $_setString(0, v); }
   @$pb.TagNumber(1)
   $core.bool hasFromAccountId() => $_has(0);
   @$pb.TagNumber(1)

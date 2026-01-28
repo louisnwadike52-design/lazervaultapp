@@ -26,8 +26,8 @@ class SwitchDetailRow extends StatelessWidget {
             label,
             style: TextStyle(
               color: isCardActive
-                  ? Colors.white.withOpacity(0.7)
-                  : Colors.white.withOpacity(0.3), 
+                  ? Colors.white.withValues(alpha: 0.7)
+                  : Colors.white.withValues(alpha: 0.3), 
               fontSize: 14.sp,
             ),
           ),
@@ -39,8 +39,8 @@ class SwitchDetailRow extends StatelessWidget {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12.r),
                 color: (isCardActive && isEnabled)
-                    ? Colors.green.withOpacity(0.2)
-                    : Colors.white.withOpacity(0.1),
+                    ? Colors.green.withValues(alpha: 0.2)
+                    : Colors.white.withValues(alpha: 0.1),
               ),
               child: Stack(
                 children: [
@@ -57,7 +57,7 @@ class SwitchDetailRow extends StatelessWidget {
                         shape: BoxShape.circle,
                         color: (isCardActive && isEnabled)
                             ? Colors.green[400]
-                            : Colors.white.withOpacity(0.5),
+                            : Colors.white.withValues(alpha: 0.5),
                       ),
                     ),
                   ),

@@ -179,7 +179,7 @@ class _AirtimePaymentProcessingScreenState extends State<AirtimePaymentProcessin
                           Container(
                             padding: EdgeInsets.all(16.w),
                             decoration: BoxDecoration(
-                              color: Color(0xFF3B82F6).withOpacity(0.1),
+                              color: Color(0xFF3B82F6).withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(12.r),
                               boxShadow: [
                                 BoxShadow(
@@ -246,7 +246,7 @@ class _AirtimePaymentProcessingScreenState extends State<AirtimePaymentProcessin
                   height: 200.w,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: Color(0xFF3B82F6).withOpacity(0.1),
+                    color: Color(0xFF3B82F6).withValues(alpha: 0.1),
                     boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.08),
@@ -267,7 +267,7 @@ class _AirtimePaymentProcessingScreenState extends State<AirtimePaymentProcessin
             height: 140.w,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: Color(0xFF3B82F6).withOpacity(0.2),
+              color: Color(0xFF3B82F6).withValues(alpha: 0.2),
               boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.08),
@@ -297,7 +297,7 @@ class _AirtimePaymentProcessingScreenState extends State<AirtimePaymentProcessin
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Color(0xFF3B82F6).withOpacity(0.4),
+                        color: Color(0xFF3B82F6).withValues(alpha: 0.4),
                         blurRadius: 20,
                         offset: Offset(0, 8),
                       ),
@@ -355,7 +355,7 @@ class _AirtimePaymentProcessingScreenState extends State<AirtimePaymentProcessin
             currentStep,
             style: TextStyle(
               fontSize: 16.sp,
-              color: Colors.white.withOpacity(0.9),
+              color: Colors.white.withValues(alpha: 0.9),
               fontWeight: FontWeight.w400,
             ),
             textAlign: TextAlign.center,
@@ -366,7 +366,7 @@ class _AirtimePaymentProcessingScreenState extends State<AirtimePaymentProcessin
             subtitle,
             style: TextStyle(
               fontSize: 14.sp,
-              color: Colors.white.withOpacity(0.6),
+              color: Colors.white.withValues(alpha: 0.6),
               fontWeight: FontWeight.w400,
               height: 1.5,
             ),
@@ -398,7 +398,7 @@ class _AirtimePaymentProcessingScreenState extends State<AirtimePaymentProcessin
           width: 200.w,
           height: 8.h,
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.2),
+            color: Colors.white.withValues(alpha: 0.2),
             borderRadius: BorderRadius.circular(4.r),
           ),
           child: FractionallySizedBox(
@@ -419,7 +419,7 @@ class _AirtimePaymentProcessingScreenState extends State<AirtimePaymentProcessin
           '${(progress * 100).toInt()}%',
           style: TextStyle(
             fontSize: 14.sp,
-            color: Colors.white.withOpacity(0.8),
+            color: Colors.white.withValues(alpha: 0.8),
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -444,7 +444,7 @@ class _AirtimePaymentProcessingScreenState extends State<AirtimePaymentProcessin
               height: 8.w,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Color(0xFF3B82F6).withOpacity(opacity),
+                color: Color(0xFF3B82F6).withValues(alpha: opacity),
               ),
             );
           },
@@ -477,7 +477,7 @@ class _AirtimePaymentProcessingScreenState extends State<AirtimePaymentProcessin
                       ? const Color(0xFF10B981)
                       : isActive
                           ? const Color(0xFF3B82F6)
-                          : Colors.white.withOpacity(0.2),
+                          : Colors.white.withValues(alpha: 0.2),
                 ),
                 child: Icon(
                   isCompleted ? Icons.check : Icons.circle,
@@ -518,7 +518,7 @@ class _AirtimePaymentProcessingScreenState extends State<AirtimePaymentProcessin
       margin: EdgeInsets.symmetric(horizontal: 20.w),
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
@@ -562,7 +562,7 @@ class _AirtimePaymentProcessingScreenState extends State<AirtimePaymentProcessin
           label,
           style: TextStyle(
             fontSize: 12.sp,
-            color: Colors.white.withOpacity(0.6),
+            color: Colors.white.withValues(alpha: 0.6),
             fontWeight: FontWeight.w400,
           ),
         ),

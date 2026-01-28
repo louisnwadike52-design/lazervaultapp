@@ -193,7 +193,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
           ),
           TextButton(
             style: TextButton.styleFrom(
-              backgroundColor: Color.fromARGB(255, 78, 3, 208).withOpacity(0.1),
+              backgroundColor: Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
               foregroundColor: Color.fromARGB(255, 78, 3, 208),
               padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
               shape: RoundedRectangleBorder(

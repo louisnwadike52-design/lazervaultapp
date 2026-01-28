@@ -30,7 +30,7 @@ class IncomeExpenseChart extends StatelessWidget {
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF1A1A1A).withOpacity(0.08),
+            color: const Color(0xFF1A1A1A).withValues(alpha: 0.08),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),

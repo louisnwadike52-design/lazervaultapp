@@ -39,7 +39,7 @@ class _SuccessDialogState extends State<SuccessDialog> {
               style: TextStyle(
                 fontSize: 16.sp,
                 fontWeight: FontWeight.bold,
-                color: HexColor.fromHex("#262626"),
+                color: HybridHexColor.fromHex("#262626"),
               ),
             ),
             SizedBox(height: 8.0.h),
@@ -47,7 +47,7 @@ class _SuccessDialogState extends State<SuccessDialog> {
               "Sent \$5000 successfully",
               style: TextStyle(
                 fontSize: 14.sp,
-                color: HexColor.fromHex("#A3A3A3"),
+                color: HybridHexColor.fromHex("#A3A3A3"),
               ),
             ),
             SizedBox(height: 16.0.h),
@@ -69,7 +69,7 @@ class _SuccessDialogState extends State<SuccessDialog> {
                     )
                 ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: HexColor.fromHex("#3784F9"),
+                backgroundColor: HybridHexColor.fromHex("#3784F9"),
                 foregroundColor: Colors.white,
               ),
               child: Text(
@@ -83,7 +83,7 @@ class _SuccessDialogState extends State<SuccessDialog> {
                 "Back to home",
                 style: TextStyle(
                   fontSize: 14.sp,
-                  color: HexColor.fromHex("#3784F9"),
+                  color: HybridHexColor.fromHex("#3784F9"),
                 ),
               ),
             ),

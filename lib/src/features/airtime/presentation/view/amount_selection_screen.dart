@@ -204,7 +204,7 @@ class _AmountSelectionScreenState extends State<AmountSelectionScreen> {
               width: 40.w,
               height: 40.w,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12.r),
                 boxShadow: [
           BoxShadow(
@@ -244,7 +244,7 @@ class _AmountSelectionScreenState extends State<AmountSelectionScreen> {
                   'How much airtime would you like to purchase?',
                   style: TextStyle(
                     fontSize: 14.sp,
-                    color: Colors.white.withOpacity(0.6),
+                    color: Colors.white.withValues(alpha: 0.6),
                     fontWeight: FontWeight.w400,
                   ),
                 ),
@@ -260,7 +260,7 @@ class _AmountSelectionScreenState extends State<AmountSelectionScreen> {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
@@ -310,7 +310,7 @@ class _AmountSelectionScreenState extends State<AmountSelectionScreen> {
                   phoneNumber ?? '',
                   style: TextStyle(
                     fontSize: 12.sp,
-                    color: Colors.white.withOpacity(0.6),
+                    color: Colors.white.withValues(alpha: 0.6),
                     fontWeight: FontWeight.w400,
                   ),
                 ),
@@ -319,7 +319,7 @@ class _AmountSelectionScreenState extends State<AmountSelectionScreen> {
                     recipientName!,
                     style: TextStyle(
                       fontSize: 12.sp,
-                      color: Colors.white.withOpacity(0.6),
+                      color: Colors.white.withValues(alpha: 0.6),
                       fontWeight: FontWeight.w400,
                     ),
                   ),
@@ -348,7 +348,7 @@ class _AmountSelectionScreenState extends State<AmountSelectionScreen> {
         
         Container(
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.05),
+            color: Colors.white.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(16.r),
             boxShadow: [
           BoxShadow(
@@ -389,7 +389,7 @@ class _AmountSelectionScreenState extends State<AmountSelectionScreen> {
             decoration: InputDecoration(
               hintText: '0',
               hintStyle: TextStyle(
-                color: Colors.white.withOpacity(0.4),
+                color: Colors.white.withValues(alpha: 0.4),
                 fontSize: 24.sp,
                 fontWeight: FontWeight.w700,
               ),
@@ -419,7 +419,7 @@ class _AmountSelectionScreenState extends State<AmountSelectionScreen> {
           'Minimum: ₦50 • Maximum: ₦50,000',
           style: TextStyle(
             fontSize: 12.sp,
-            color: Colors.white.withOpacity(0.5),
+            color: Colors.white.withValues(alpha: 0.5),
             fontWeight: FontWeight.w400,
           ),
         ),
@@ -454,7 +454,7 @@ class _AmountSelectionScreenState extends State<AmountSelectionScreen> {
                 decoration: BoxDecoration(
                   color: isSelected 
                     ? Color(0xFF3B82F6) 
-                    : Colors.white.withOpacity(0.05),
+                    : Colors.white.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(12.r),
                   boxShadow: [
           BoxShadow(
@@ -470,7 +470,7 @@ class _AmountSelectionScreenState extends State<AmountSelectionScreen> {
                   style: TextStyle(
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w600,
-                    color: isSelected ? Colors.white : Colors.white.withOpacity(0.8),
+                    color: isSelected ? Colors.white : Colors.white.withValues(alpha: 0.8),
                   ),
                 ),
               ),
@@ -492,7 +492,7 @@ class _AmountSelectionScreenState extends State<AmountSelectionScreen> {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
@@ -513,7 +513,7 @@ class _AmountSelectionScreenState extends State<AmountSelectionScreen> {
           SizedBox(height: 8.h),
           _buildSummaryRow('Service Fee', '₦${clampedFee.toStringAsFixed(0)}'),
           SizedBox(height: 12.h),
-          Divider(color: Colors.white.withOpacity(0.1)),
+          Divider(color: Colors.white.withValues(alpha: 0.1)),
           SizedBox(height: 12.h),
           _buildSummaryRow('Total Amount', '₦${total.toStringAsFixed(0)}', isTotal: true),
         ],
@@ -530,7 +530,7 @@ class _AmountSelectionScreenState extends State<AmountSelectionScreen> {
           style: TextStyle(
             fontSize: isTotal ? 16.sp : 14.sp,
             fontWeight: isTotal ? FontWeight.w600 : FontWeight.w400,
-            color: Colors.white.withOpacity(isTotal ? 1.0 : 0.6),
+            color: Colors.white.withValues(alpha: isTotal ? 1.0 : 0.6),
           ),
         ),
         Text(
@@ -542,7 +542,7 @@ class _AmountSelectionScreenState extends State<AmountSelectionScreen> {
               ? Color(0xFF10B981) 
               : isTotal 
                 ? Colors.white 
-                : Colors.white.withOpacity(0.8),
+                : Colors.white.withValues(alpha: 0.8),
           ),
         ),
       ],
@@ -559,7 +559,7 @@ class _AmountSelectionScreenState extends State<AmountSelectionScreen> {
           style: ElevatedButton.styleFrom(
             backgroundColor: selectedAmount != null && selectedAmount! >= 50 
               ? Color(0xFF3B82F6) 
-              : Colors.white.withOpacity(0.1),
+              : Colors.white.withValues(alpha: 0.1),
             padding: EdgeInsets.symmetric(vertical: 16.h),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16.r),
@@ -573,7 +573,7 @@ class _AmountSelectionScreenState extends State<AmountSelectionScreen> {
               fontWeight: FontWeight.w600,
               color: selectedAmount != null && selectedAmount! >= 50 
                 ? Colors.white 
-                : Colors.white.withOpacity(0.4),
+                : Colors.white.withValues(alpha: 0.4),
             ),
           ),
         ),

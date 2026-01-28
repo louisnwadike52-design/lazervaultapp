@@ -441,7 +441,7 @@ class _SearchUsersViewState extends State<_SearchUsersView> {
           children: [
             CircleAvatar(
               radius: 30.r,
-              backgroundColor: const Color(0xFF3B82F6).withOpacity(0.1),
+              backgroundColor: const Color(0xFF3B82F6).withValues(alpha: 0.1),
               child: Text(
                 tagPay.displayName.isNotEmpty
                     ? tagPay.displayName[0].toUpperCase()

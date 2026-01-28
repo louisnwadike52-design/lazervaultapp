@@ -172,7 +172,7 @@ class _AddMembersToContributionDialogState extends State<AddMembersToContributio
             child: Container(
               padding: EdgeInsets.all(8.w),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8.r),
               ),
               child: Icon(
@@ -312,7 +312,7 @@ class _AddMembersToContributionDialogState extends State<AddMembersToContributio
                       padding: EdgeInsets.all(16.w),
                       decoration: BoxDecoration(
                         color: isSelected 
-                            ? const Color(0xFF6C5CE7).withOpacity(0.1)
+                            ? const Color(0xFF6C5CE7).withValues(alpha: 0.1)
                             : const Color(0xFF1F1F1F),
                         borderRadius: BorderRadius.circular(12.r),
                         boxShadow: [
@@ -396,7 +396,7 @@ class _AddMembersToContributionDialogState extends State<AddMembersToContributio
                           Container(
                             padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                             decoration: BoxDecoration(
-                              color: _getRoleColor(member.role).withOpacity(0.1),
+                              color: _getRoleColor(member.role).withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(6.r),
                               boxShadow: [
           BoxShadow(
@@ -446,7 +446,7 @@ class _AddMembersToContributionDialogState extends State<AddMembersToContributio
             child: Container(
               height: 48.h,
               decoration: BoxDecoration(
-                border: Border.all(color: Colors.white.withOpacity(0.3)),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
                 borderRadius: BorderRadius.circular(12.r),
               ),
               child: Material(

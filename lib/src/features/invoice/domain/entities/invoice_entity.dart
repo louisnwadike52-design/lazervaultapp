@@ -15,7 +15,7 @@ enum InvoiceType {
 }
 
 enum PaymentMethod {
-  bank_transfer,
+  bankTransfer,
   crypto,
   paypal,
   card,

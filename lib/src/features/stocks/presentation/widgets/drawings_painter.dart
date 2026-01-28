@@ -162,7 +162,7 @@ class DrawingsPainter extends CustomPainter {
         final level = levels[i];
         final y = start.dy + (height * level);
         final levelPaint = Paint()
-          ..color = colors[i].withOpacity(0.8)
+          ..color = colors[i].withValues(alpha: 0.8)
           ..strokeWidth = 1.0
           ..style = PaintingStyle.stroke;
         
@@ -197,7 +197,7 @@ class DrawingsPainter extends CustomPainter {
     
     // Draw dotted line for extension
     final dottedPaint = Paint()
-      ..color = paint.color.withOpacity(0.5)
+      ..color = paint.color.withValues(alpha: 0.5)
       ..strokeWidth = paint.strokeWidth
       ..style = PaintingStyle.stroke;
     
@@ -268,7 +268,7 @@ class DrawingsPainter extends CustomPainter {
       textPainter.height + 4,
     );
     
-    canvas.drawRect(rect, Paint()..color = Colors.black.withOpacity(0.8));
+    canvas.drawRect(rect, Paint()..color = Colors.black.withValues(alpha: 0.8));
     textPainter.paint(canvas, Offset(position.dx, position.dy - textPainter.height / 2));
   }
 
@@ -299,7 +299,7 @@ class DrawingsPainter extends CustomPainter {
         textPainter.height + 4,
       );
       
-      canvas.drawRect(rect, Paint()..color = Colors.black.withOpacity(0.8));
+      canvas.drawRect(rect, Paint()..color = Colors.black.withValues(alpha: 0.8));
       textPainter.paint(canvas, Offset(position.dx - textPainter.width / 2, position.dy - textPainter.height));
     }
   }
@@ -331,7 +331,7 @@ class DrawingsPainter extends CustomPainter {
     
     canvas.drawRRect(
       RRect.fromRectAndRadius(rect, Radius.circular(4)),
-      Paint()..color = Colors.black.withOpacity(0.8),
+      Paint()..color = Colors.black.withValues(alpha: 0.8),
     );
     
     textPainter.paint(canvas, Offset(
@@ -375,7 +375,7 @@ class DrawingsPainter extends CustomPainter {
     textPainter.layout();
     
     // Draw circle background
-    canvas.drawCircle(position, 10, Paint()..color = Colors.black.withOpacity(0.8));
+    canvas.drawCircle(position, 10, Paint()..color = Colors.black.withValues(alpha: 0.8));
     canvas.drawCircle(position, 10, Paint()
       ..color = paint.color
       ..style = PaintingStyle.stroke

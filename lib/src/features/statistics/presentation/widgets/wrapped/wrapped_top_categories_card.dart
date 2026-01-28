@@ -47,10 +47,10 @@ class _CategoryItem extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(isFirst ? 0.3 : 0.15),
+        color: Colors.white.withValues(alpha: isFirst ? 0.3 : 0.15),
         borderRadius: BorderRadius.circular(16),
         border: isFirst
-            ? Border.all(color: Colors.white.withOpacity(0.5), width: 2)
+            ? Border.all(color: Colors.white.withValues(alpha: 0.5), width: 2)
             : null,
       ),
       child: Row(
@@ -59,7 +59,7 @@ class _CategoryItem extends StatelessWidget {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.3),
+              color: Colors.white.withValues(alpha: 0.3),
               shape: BoxShape.circle,
             ),
             child: Center(
@@ -91,7 +91,7 @@ class _CategoryItem extends StatelessWidget {
                     Text(
                       '${category.transactionCount} transactions',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Colors.white.withOpacity(0.7),
+                        color: Colors.white.withValues(alpha: 0.7),
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -117,7 +117,7 @@ class _CategoryItem extends StatelessWidget {
               Text(
                 '${category.percentage.toStringAsFixed(1)}%',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Colors.white.withOpacity(0.7),
+                  color: Colors.white.withValues(alpha: 0.7),
                 ),
               ),
             ],
@@ -149,7 +149,7 @@ class _TrendBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
-        color: isUp ? Colors.red.withOpacity(0.3) : Colors.green.withOpacity(0.3),
+        color: isUp ? Colors.red.withValues(alpha: 0.3) : Colors.green.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(

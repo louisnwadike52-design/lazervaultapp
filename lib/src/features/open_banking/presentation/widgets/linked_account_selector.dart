@@ -112,7 +112,7 @@ class LinkedAccountSelector extends StatelessWidget {
             width: 36.w,
             height: 36.w,
             decoration: BoxDecoration(
-              color: _getBankColor(account.bankName).withOpacity(0.1),
+              color: _getBankColor(account.bankName).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8.r),
             ),
             child: Icon(
@@ -150,7 +150,7 @@ class LinkedAccountSelector extends StatelessWidget {
                           vertical: 2.h,
                         ),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF6C5CE7).withOpacity(0.1),
+                          color: const Color(0xFF6C5CE7).withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(4.r),
                         ),
                         child: Text(
@@ -178,7 +178,7 @@ class LinkedAccountSelector extends StatelessWidget {
           ),
 
           // Balance (if enabled)
-          if (showBalance && account.lastKnownBalance != null) ...[
+          if (showBalance) ...[
             SizedBox(width: 8.w),
             Text(
               account.formattedBalance,

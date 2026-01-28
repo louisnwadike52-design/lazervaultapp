@@ -797,10 +797,10 @@ Amount Paid: £${widget.invoice.totalAmount.toStringAsFixed(2)}
 Thank you for your payment!
     ''';
     
-    await Share.share(
-      receiptText,
+    await SharePlus.instance.share(ShareParams(
+      text: receiptText,
       subject: 'Payment Receipt - Invoice #${widget.invoice.invoiceNumber}',
-    );
+    ));
   }
 
   Future<void> _downloadReceipt() async {

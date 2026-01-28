@@ -3,8 +3,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/config/country_config.dart';
-import 'package:lazervault/src/features/widgets/universal_image_loader.dart';
-import 'package:lazervault/core/data/app_data.dart';
 import 'package:lazervault/src/features/kyc/domain/entities/kyc_tier_entity.dart';
 
 /// Progressive KYC prompt shown during signup flow
@@ -321,7 +319,7 @@ class ProgressiveKYCPromptScreen extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: isHighlighted ? color.withOpacity(0.1) : Colors.white,
+        color: isHighlighted ? color.withValues(alpha: 0.1) : Colors.white,
         borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
           color: isHighlighted ? color : Colors.transparent,

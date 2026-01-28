@@ -99,7 +99,7 @@ class _DashboardState extends State<Dashboard> {
             Container(
               padding: EdgeInsets.all(8.w),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
+                color: Colors.white.withValues(alpha: 0.2),
                 shape: BoxShape.circle,
               ),
               child: Icon(icon, color: Colors.white, size: 20.sp),
@@ -121,7 +121,7 @@ class _DashboardState extends State<Dashboard> {
                     'New balance: ${formatter.format(state.newBalance)}',
                     style: TextStyle(
                       fontSize: 12.sp,
-                      color: Colors.white.withOpacity(0.8),
+                      color: Colors.white.withValues(alpha: 0.8),
                     ),
                   ),
                 ],

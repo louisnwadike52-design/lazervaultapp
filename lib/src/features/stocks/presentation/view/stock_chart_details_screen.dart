@@ -503,7 +503,7 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
             end: Alignment.bottomCenter,
             colors: [
               Colors.transparent,
-              Colors.black.withOpacity(0.8),
+              Colors.black.withValues(alpha: 0.8),
               Colors.black,
             ],
           ),
@@ -564,7 +564,7 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 8.h),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.blue.withOpacity(0.2) : Colors.grey[800],
+          color: isSelected ? Colors.blue.withValues(alpha: 0.2) : Colors.grey[800],
           borderRadius: BorderRadius.circular(8.r),
           border: isSelected ? Border.all(color: Colors.blue, width: 1) : null,
         ),
@@ -656,7 +656,7 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
               Container(
                 padding: EdgeInsets.all(16.w),
                 decoration: BoxDecoration(
-                  color: Colors.blue.withOpacity(0.1),
+                  color: Colors.blue.withValues(alpha: 0.1),
                   border: Border(bottom: BorderSide(color: Colors.grey[700]!)),
                 ),
                 child: Row(
@@ -738,7 +738,7 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
           Container(
             padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.vertical(top: Radius.circular(12.r)),
               border: Border(bottom: BorderSide(color: Colors.grey[700]!)),
             ),
@@ -747,7 +747,7 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
                 Container(
                   padding: EdgeInsets.all(8.w),
                   decoration: BoxDecoration(
-                    color: color.withOpacity(0.2),
+                    color: color.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(8.r),
                   ),
                   child: Icon(icon, color: color, size: 20.sp),
@@ -766,7 +766,7 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
                   Container(
                     padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                     decoration: BoxDecoration(
-                      color: color.withOpacity(0.2),
+                      color: color.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(12.r),
                       border: Border.all(color: color),
                     ),
@@ -810,7 +810,7 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
                     padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
                     decoration: BoxDecoration(
                       color: isSelected 
-                          ? color.withOpacity(0.2) 
+                          ? color.withValues(alpha: 0.2) 
                           : Colors.grey[700],
                       borderRadius: BorderRadius.circular(25.r),
                       border: Border.all(
@@ -819,7 +819,7 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
                       ),
                       boxShadow: isSelected ? [
                         BoxShadow(
-                          color: color.withOpacity(0.3),
+                          color: color.withValues(alpha: 0.3),
                           blurRadius: 8,
                           offset: Offset(0, 2),
                         ),
@@ -1141,9 +1141,9 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
 
       return Container(
         decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.3),
+          color: Colors.black.withValues(alpha: 0.3),
           border: Border(
-            top: BorderSide(color: Colors.grey.withOpacity(0.3), width: 1),
+            top: BorderSide(color: Colors.grey.withValues(alpha: 0.3), width: 1),
           ),
         ),
         child: CustomPaint(
@@ -1821,7 +1821,7 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
             minPrice: minPrice,
             candleWidth: _calculateOptimalCandleWidth(validPrices.length),
             showGrid: true,
-            gridColor: Colors.grey.withOpacity(0.1),
+            gridColor: Colors.grey.withValues(alpha: 0.1),
             bullishColor: const Color(0xFF26C281),
             bearishColor: const Color(0xFFEF5350),
           ),
@@ -1899,7 +1899,7 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
             horizontalInterval: (maxPrice - minPrice) / 8,
             getDrawingHorizontalLine: (value) {
               return FlLine(
-                color: Colors.grey.withOpacity(0.1),
+                color: Colors.grey.withValues(alpha: 0.1),
                 strokeWidth: 0.5,
               );
             },
@@ -2337,7 +2337,7 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
           Container(
             padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.vertical(top: Radius.circular(12.r)),
               border: Border(bottom: BorderSide(color: Colors.grey[700]!)),
             ),
@@ -2346,7 +2346,7 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
                 Container(
                   padding: EdgeInsets.all(8.w),
                   decoration: BoxDecoration(
-                    color: color.withOpacity(0.2),
+                    color: color.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(8.r),
                   ),
                   child: Icon(icon, color: color, size: 20.sp),
@@ -2387,7 +2387,7 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
           decoration: BoxDecoration(
             border: Border(
               bottom: BorderSide(
-                color: Colors.grey[700]!.withOpacity(0.5),
+                color: Colors.grey[700]!.withValues(alpha: 0.5),
                 width: 0.5,
               ),
             ),
@@ -2497,7 +2497,7 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
       leading: Container(
         padding: EdgeInsets.all(8.w),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.blue.withOpacity(0.2) : Colors.grey[700],
+          color: isSelected ? Colors.blue.withValues(alpha: 0.2) : Colors.grey[700],
           borderRadius: BorderRadius.circular(8.r),
         ),
         child: Icon(icon, color: isSelected ? Colors.blue : Colors.white, size: 20.sp),
@@ -2999,7 +2999,7 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
                               Container(
                                 padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                                 decoration: BoxDecoration(
-                                  color: (widget.stock.isPositive ? Colors.green : Colors.red).withOpacity(0.2),
+                                  color: (widget.stock.isPositive ? Colors.green : Colors.red).withValues(alpha: 0.2),
                                   borderRadius: BorderRadius.circular(6.r),
                                 ),
                                 child: Text(
@@ -3649,7 +3649,7 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
                 Container(
                   padding: EdgeInsets.all(16.w),
                   decoration: BoxDecoration(
-                    color: Colors.orange.withOpacity(0.1),
+                    color: Colors.orange.withValues(alpha: 0.1),
                     border: Border(bottom: BorderSide(color: Colors.grey[700]!)),
                   ),
                   child: Row(

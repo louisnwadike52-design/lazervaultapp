@@ -28,6 +28,7 @@ class VoiceSetupGuard {
   ) async {
     final userId = await _storage.read(key: 'user_id');
     if (userId == null) {
+      if (!context.mounted) return false;
       _showNotLoggedInDialog(context);
       return false;
     }
@@ -36,6 +37,7 @@ class VoiceSetupGuard {
     final isEnrolled = await _voiceManager.isVoiceEnrolled(userId);
 
     if (!isEnrolled) {
+      if (!context.mounted) return false;
       // Show setup required prompt
       final shouldSetup = await _showVoiceSetupRequired(
         context,
@@ -53,6 +55,7 @@ class VoiceSetupGuard {
 
     // Check if verification required for high-risk features
     if (_isHighRiskFeature(featureName)) {
+      if (!context.mounted) return false;
       return await _verifyVoice(context, userId);
     }
 

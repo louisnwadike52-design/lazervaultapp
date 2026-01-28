@@ -198,7 +198,7 @@ class _AutoSaveRulesListScreenState extends State<AutoSaveRulesListScreen> {
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                 decoration: BoxDecoration(
-                  color: _getStatusColor(rule.status).withOpacity(0.1),
+                  color: _getStatusColor(rule.status).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(6.r),
                 ),
                 child: Text(

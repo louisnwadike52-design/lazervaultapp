@@ -25,13 +25,13 @@ class WrappedScreen extends StatelessWidget {
     super.key,
     this.year,
     this.month,
-    this.period = WrappedPeriod.WRAPPED_PERIOD_YEARLY,
+    this.period = WrappedPeriod.wrappedPeriodYearly,
   });
 
   static MaterialPageRoute route({
     int? year,
     int? month,
-    WrappedPeriod period = WrappedPeriod.WRAPPED_PERIOD_YEARLY,
+    WrappedPeriod period = WrappedPeriod.wrappedPeriodYearly,
   }) {
     return MaterialPageRoute(
       builder: (context) => WrappedScreen(
@@ -155,7 +155,7 @@ ${wrapped.aiInsights?.financialPersona ?? ''}
 Shared from LazerVault
 ''';
 
-    Share.share(shareText, subject: 'My ${wrapped.year} Financial Wrapped');
+    SharePlus.instance.share(ShareParams(text: shareText, subject: 'My ${wrapped.year} Financial Wrapped'));
   }
 }
 
@@ -192,7 +192,7 @@ class _LoadingView extends StatelessWidget {
             Text(
               'This may take a moment',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Colors.white.withOpacity(0.7),
+                color: Colors.white.withValues(alpha: 0.7),
               ),
             ),
           ],
@@ -347,7 +347,7 @@ class _LoadedView extends StatelessWidget {
             icon: Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.3),
+                color: Colors.black.withValues(alpha: 0.3),
                 shape: BoxShape.circle,
               ),
               child: const Icon(
@@ -394,7 +394,7 @@ class _ProgressIndicator extends StatelessWidget {
           width: isActive ? 24 : 8,
           height: 8,
           decoration: BoxDecoration(
-            color: isActive ? Colors.white : Colors.white.withOpacity(0.3),
+            color: isActive ? Colors.white : Colors.white.withValues(alpha: 0.3),
             borderRadius: BorderRadius.circular(4),
           ),
         );

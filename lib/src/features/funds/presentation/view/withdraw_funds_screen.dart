@@ -6,7 +6,6 @@ import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/utilities/banks_data.dart';
-import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/features/funds/cubit/withdrawal_cubit.dart';
@@ -227,13 +226,13 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen> {
                         padding: EdgeInsets.all(16.w),
                         decoration: BoxDecoration(
                           color: isSelected
-                              ? bank['color'].withOpacity(0.1)
-                              : Colors.white.withOpacity(0.05),
+                              ? bank['color'].withValues(alpha: 0.1)
+                              : Colors.white.withValues(alpha: 0.05),
                           borderRadius: BorderRadius.circular(12.r),
                           border: Border.all(
                             color: isSelected
                                 ? bank['color']
-                                : Colors.white.withOpacity(0.1),
+                                : Colors.white.withValues(alpha: 0.1),
                             width: isSelected ? 2 : 1,
                           ),
                         ),
@@ -242,7 +241,7 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen> {
                             Container(
                               padding: EdgeInsets.all(8.w),
                               decoration: BoxDecoration(
-                                color: bank['color'].withOpacity(0.1),
+                                color: bank['color'].withValues(alpha: 0.1),
                                 shape: BoxShape.circle,
                               ),
                               child: Icon(
@@ -312,7 +311,7 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen> {
           if (authState is! AuthenticationSuccess) {
             Get.snackbar('Authentication Error', 'You need to be logged in to make a withdrawal.', 
               snackPosition: SnackPosition.BOTTOM,
-              backgroundColor: Colors.red.withOpacity(0.7),
+              backgroundColor: Colors.red.withValues(alpha: 0.7),
               colorText: Colors.white
             );
           }
@@ -332,7 +331,7 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen> {
                   'Withdrawal Successful',
                   'Your withdrawal of £${_amountController.text} has been processed successfully.',
                   snackPosition: SnackPosition.BOTTOM,
-                  backgroundColor: Colors.green.withOpacity(0.9),
+                  backgroundColor: Colors.green.withValues(alpha: 0.9),
                   colorText: Colors.white,
                   duration: const Duration(seconds: 3),
                   margin: EdgeInsets.all(16.w),
@@ -356,6 +355,7 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen> {
 
                 // Navigate back to dashboard after delay
                 Future.delayed(const Duration(seconds: 2), () {
+                  if (!mounted) return;
                   if (Navigator.canPop(context)) {
                     Navigator.pop(context);
                   }
@@ -366,7 +366,7 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen> {
                   'Withdrawal Failed',
                   state.message,
                   snackPosition: SnackPosition.BOTTOM,
-                  backgroundColor: Colors.red.withOpacity(0.9),
+                  backgroundColor: Colors.red.withValues(alpha: 0.9),
                   colorText: Colors.white,
                   duration: const Duration(seconds: 5),
                   margin: EdgeInsets.all(16.w),
@@ -427,7 +427,7 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen> {
                         Container(
                           padding: EdgeInsets.all(24.w),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.05),
+                            color: Colors.white.withValues(alpha: 0.05),
                             borderRadius: BorderRadius.circular(16.r),
                             boxShadow: [
           BoxShadow(
@@ -447,7 +447,7 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen> {
                                   Text(
                                     widget.selectedCard['accountType'] as String,
                                     style: TextStyle(
-                                      color: Colors.white.withOpacity(0.7),
+                                      color: Colors.white.withValues(alpha: 0.7),
                                       fontSize: 14.sp,
                                       fontWeight: FontWeight.w500,
                                     ),
@@ -459,8 +459,8 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen> {
                                     ),
                                     decoration: BoxDecoration(
                                       color: widget.selectedCard['isUp']
-                                          ? Colors.green.withOpacity(0.2)
-                                          : Colors.red.withOpacity(0.2),
+                                          ? Colors.green.withValues(alpha: 0.2)
+                                          : Colors.red.withValues(alpha: 0.2),
                                       borderRadius: BorderRadius.circular(20.r),
                                     ),
                                     child: Text(
@@ -494,13 +494,13 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen> {
                                       vertical: 6.h,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: Colors.white.withOpacity(0.1),
+                                      color: Colors.white.withValues(alpha: 0.1),
                                       borderRadius: BorderRadius.circular(20.r),
                                     ),
                                     child: Text(
                                       widget.selectedCard['accountNumber'] as String,
                                       style: TextStyle(
-                                        color: Colors.white.withOpacity(0.7),
+                                        color: Colors.white.withValues(alpha: 0.7),
                                         fontSize: 12.sp,
                                         fontWeight: FontWeight.w500,
                                       ),
@@ -518,7 +518,7 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen> {
                           Container(
                             padding: EdgeInsets.all(16.w),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF3498DB).withOpacity(0.1),
+                              color: const Color(0xFF3498DB).withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(16.r),
                               boxShadow: [
           BoxShadow(
@@ -572,7 +572,7 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen> {
                             child: Container(
                               padding: EdgeInsets.all(16.w),
                               decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.05),
+                                color: Colors.white.withValues(alpha: 0.05),
                                 borderRadius: BorderRadius.circular(12.r),
                                 boxShadow: [
           BoxShadow(
@@ -587,7 +587,7 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen> {
                                 children: [
                                   Icon(
                                     Icons.account_balance,
-                                    color: Colors.white.withOpacity(0.7),
+                                    color: Colors.white.withValues(alpha: 0.7),
                                     size: 24.sp,
                                   ),
                                   SizedBox(width: 16.w),
@@ -598,7 +598,7 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen> {
                                           : _selectedBank,
                                       style: TextStyle(
                                         color: _selectedBank.isEmpty
-                                            ? Colors.white.withOpacity(0.5)
+                                            ? Colors.white.withValues(alpha: 0.5)
                                             : Colors.white,
                                         fontSize: 16.sp,
                                         fontWeight: FontWeight.w500,
@@ -607,7 +607,7 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen> {
                                   ),
                                   Icon(
                                     Icons.arrow_forward_ios,
-                                    color: Colors.white.withOpacity(0.7),
+                                    color: Colors.white.withValues(alpha: 0.7),
                                     size: 16.sp,
                                   ),
                                 ],
@@ -628,9 +628,9 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen> {
                                 end: Alignment.bottomRight,
                                 colors: [
                                   (selectedBankDetails['color'] as Color)
-                                      .withOpacity(0.2),
+                                      .withValues(alpha: 0.2),
                                   (selectedBankDetails['color'] as Color)
-                                      .withOpacity(0.1),
+                                      .withValues(alpha: 0.1),
                                 ],
                               ),
                               borderRadius: BorderRadius.circular(16.r),
@@ -652,7 +652,7 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen> {
                                       padding: EdgeInsets.all(8.w),
                                       decoration: BoxDecoration(
                                         color: (selectedBankDetails['color'] as Color)
-                                            .withOpacity(0.2),
+                                            .withValues(alpha: 0.2),
                                         shape: BoxShape.circle,
                                       ),
                                       child: Icon(
@@ -678,7 +678,7 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen> {
                                           Text(
                                             selectedBankDetails['accountType'] as String,
                                             style: TextStyle(
-                                              color: Colors.white.withOpacity(0.7),
+                                              color: Colors.white.withValues(alpha: 0.7),
                                               fontSize: 14.sp,
                                               fontWeight: FontWeight.w500,
                                             ),
@@ -695,7 +695,7 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen> {
                                     vertical: 12.h,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.1),
+                                    color: Colors.white.withValues(alpha: 0.1),
                                     borderRadius: BorderRadius.circular(12.r),
                                   ),
                                   child: Row(
@@ -704,7 +704,7 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen> {
                                       Text(
                                         'Account Number',
                                         style: TextStyle(
-                                          color: Colors.white.withOpacity(0.7),
+                                          color: Colors.white.withValues(alpha: 0.7),
                                           fontSize: 14.sp,
                                           fontWeight: FontWeight.w500,
                                         ),
@@ -739,7 +739,7 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen> {
                         Container(
                           padding: EdgeInsets.all(16.w),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.05),
+                            color: Colors.white.withValues(alpha: 0.05),
                             borderRadius: BorderRadius.circular(12.r),
                             boxShadow: [
           BoxShadow(
@@ -774,7 +774,7 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen> {
                                     border: InputBorder.none,
                                     hintText: '0.00',
                                     hintStyle: TextStyle(
-                                      color: Colors.white.withOpacity(0.3),
+                                      color: Colors.white.withValues(alpha: 0.3),
                                       fontSize: 24.sp,
                                     ),
                                   ),
@@ -824,7 +824,7 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen> {
         boxShadow: isValid && !_isProcessing
             ? [
                 BoxShadow(
-                  color: const Color(0xFF3498DB).withOpacity(0.3),
+                  color: const Color(0xFF3498DB).withValues(alpha: 0.3),
                   blurRadius: 12,
                   offset: const Offset(0, 6),
                 ),
@@ -838,9 +838,9 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen> {
               margin: EdgeInsets.only(bottom: 12.h),
               padding: EdgeInsets.all(12.w),
               decoration: BoxDecoration(
-                color: Colors.red.withOpacity(0.1),
+                color: Colors.red.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12.r),
-                border: Border.all(color: Colors.red.withOpacity(0.3)),
+                border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
               ),
               child: Row(
                 children: [
@@ -935,7 +935,7 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen> {
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.05),
+          color: Colors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(8.r),
           boxShadow: [
           BoxShadow(
@@ -1009,7 +1009,7 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen> {
     } else {
       Get.snackbar('Authentication Error', 'You need to be logged in to make a withdrawal.', 
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withOpacity(0.7),
+        backgroundColor: Colors.red.withValues(alpha: 0.7),
         colorText: Colors.white
       );
       return;

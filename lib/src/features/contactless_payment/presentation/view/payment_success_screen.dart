@@ -187,7 +187,7 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen>
     buffer.writeln('─────────────────────────');
     buffer.writeln('Powered by LazerVault');
 
-    Share.share(buffer.toString(), subject: 'Payment Receipt');
+    SharePlus.instance.share(ShareParams(text: buffer.toString(), subject: 'Payment Receipt'));
   }
 
   void _copyReference() {

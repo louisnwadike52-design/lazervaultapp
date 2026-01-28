@@ -88,7 +88,7 @@ class _CardDetailsBottomSheetState extends State<CardDetailsBottomSheet> {
                   width: 40.w,
                   height: 4.h,
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.3),
+                    color: Colors.white.withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(2.r),
                   ),
                 ),
@@ -243,7 +243,7 @@ class _CardDetailsBottomSheetState extends State<CardDetailsBottomSheet> {
                         Container(
                           padding: EdgeInsets.all(16.w),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.05),
+                            color: Colors.white.withValues(alpha: 0.05),
                             borderRadius: BorderRadius.circular(16.r),
                             boxShadow: [
           BoxShadow(
@@ -262,7 +262,7 @@ class _CardDetailsBottomSheetState extends State<CardDetailsBottomSheet> {
                                   vertical: 8.h,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.1),
+                                  color: Colors.white.withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(8.r),
                                 ),
                                 child: Text(
@@ -287,7 +287,7 @@ class _CardDetailsBottomSheetState extends State<CardDetailsBottomSheet> {
                                     border: InputBorder.none,
                                     hintText: '0.00',
                                     hintStyle: TextStyle(
-                                      color: Colors.white.withOpacity(0.3),
+                                      color: Colors.white.withValues(alpha: 0.3),
                                       fontSize: 24.sp,
                                     ),
                                   ),
@@ -328,7 +328,7 @@ class _CardDetailsBottomSheetState extends State<CardDetailsBottomSheet> {
                               Get.snackbar(
                                 'Transaction Initiated',
                                 'Your transaction is being processed',
-                                backgroundColor: Colors.green.withOpacity(0.1),
+                                backgroundColor: Colors.green.withValues(alpha: 0.1),
                                 colorText: Colors.white,
                                 snackPosition: SnackPosition.BOTTOM,
                                 duration: const Duration(seconds: 3),
@@ -367,7 +367,7 @@ class _CardDetailsBottomSheetState extends State<CardDetailsBottomSheet> {
     Get.snackbar(
       'Copied!',
       '$label copied to clipboard',
-      backgroundColor: Colors.green.withOpacity(0.1),
+      backgroundColor: Colors.green.withValues(alpha: 0.1),
       colorText: Colors.white,
       snackPosition: SnackPosition.BOTTOM,
       duration: const Duration(seconds: 2),
@@ -403,7 +403,7 @@ class _CardDetailsBottomSheetState extends State<CardDetailsBottomSheet> {
             Get.snackbar(
               'Download Started',
               'Your statement is being prepared',
-              backgroundColor: Colors.blue.withOpacity(0.1),
+              backgroundColor: Colors.blue.withValues(alpha: 0.1),
               colorText: Colors.white,
               snackPosition: SnackPosition.BOTTOM,
               duration: const Duration(seconds: 2),
@@ -419,7 +419,7 @@ class _CardDetailsBottomSheetState extends State<CardDetailsBottomSheet> {
             Get.snackbar(
               'Download Started',
               'Your confirmation letter is being prepared',
-              backgroundColor: Colors.blue.withOpacity(0.1),
+              backgroundColor: Colors.blue.withValues(alpha: 0.1),
               colorText: Colors.white,
               snackPosition: SnackPosition.BOTTOM,
               duration: const Duration(seconds: 2),
@@ -439,7 +439,7 @@ class _CardDetailsBottomSheetState extends State<CardDetailsBottomSheet> {
         child: Container(
           padding: EdgeInsets.symmetric(vertical: 12.h),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.1),
+            color: Colors.white.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12.r),
             boxShadow: [
           BoxShadow(
@@ -483,7 +483,7 @@ class _CardDetailsBottomSheetState extends State<CardDetailsBottomSheet> {
         child: Container(
           padding: EdgeInsets.all(16.w),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.05),
+            color: Colors.white.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(16.r),
             boxShadow: [
           BoxShadow(
@@ -499,7 +499,7 @@ class _CardDetailsBottomSheetState extends State<CardDetailsBottomSheet> {
               Container(
                 padding: EdgeInsets.all(10.w),
                 decoration: BoxDecoration(
-                  color: Colors.blue.withOpacity(0.1),
+                  color: Colors.blue.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12.r),
                 ),
                 child: Icon(
@@ -525,7 +525,7 @@ class _CardDetailsBottomSheetState extends State<CardDetailsBottomSheet> {
                     Text(
                       subtitle,
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.5),
+                        color: Colors.white.withValues(alpha: 0.5),
                         fontSize: 12.sp,
                       ),
                     ),
@@ -534,7 +534,7 @@ class _CardDetailsBottomSheetState extends State<CardDetailsBottomSheet> {
               ),
               Icon(
                 Icons.arrow_forward_ios_rounded,
-                color: Colors.white.withOpacity(0.5),
+                color: Colors.white.withValues(alpha: 0.5),
                 size: 16.sp,
               ),
             ],
@@ -667,7 +667,7 @@ class _CardDetailsBottomSheetState extends State<CardDetailsBottomSheet> {
             Get.snackbar(
               'Bank Information',
               'We partner with top-tier banks to ensure your funds are secure',
-              backgroundColor: Colors.blue.withOpacity(0.1),
+              backgroundColor: Colors.blue.withValues(alpha: 0.1),
               colorText: Colors.white,
               snackPosition: SnackPosition.BOTTOM,
             );
@@ -703,7 +703,7 @@ class _CardDetailsBottomSheetState extends State<CardDetailsBottomSheet> {
             margin: EdgeInsets.only(top: 2.h),
             child: Icon(
               icon,
-              color: Colors.white.withOpacity(0.7),
+              color: Colors.white.withValues(alpha: 0.7),
               size: 18.sp,
             ),
           ),
@@ -715,7 +715,7 @@ class _CardDetailsBottomSheetState extends State<CardDetailsBottomSheet> {
                   child: Text(
                     text,
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.7),
+                      color: Colors.white.withValues(alpha: 0.7),
                       fontSize: 14.sp,
                     ),
                   ),
@@ -749,7 +749,7 @@ class _CardDetailsBottomSheetState extends State<CardDetailsBottomSheet> {
           Get.snackbar(
             'Currency Transfers',
             'Additional currency options will be available soon',
-            backgroundColor: Colors.blue.withOpacity(0.1),
+            backgroundColor: Colors.blue.withValues(alpha: 0.1),
             colorText: Colors.white,
             snackPosition: SnackPosition.BOTTOM,
           );
@@ -758,7 +758,7 @@ class _CardDetailsBottomSheetState extends State<CardDetailsBottomSheet> {
         child: Container(
           padding: EdgeInsets.all(16.w),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.05),
+            color: Colors.white.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(16.r),
             boxShadow: [
           BoxShadow(
@@ -774,7 +774,7 @@ class _CardDetailsBottomSheetState extends State<CardDetailsBottomSheet> {
               Container(
                 padding: EdgeInsets.all(8.w),
                 decoration: BoxDecoration(
-                  color: Colors.green.withOpacity(0.1),
+                  color: Colors.green.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
@@ -800,7 +800,7 @@ class _CardDetailsBottomSheetState extends State<CardDetailsBottomSheet> {
                     Text(
                       'Get account details for other currencies',
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.5),
+                        color: Colors.white.withValues(alpha: 0.5),
                         fontSize: 12.sp,
                       ),
                     ),
@@ -809,7 +809,7 @@ class _CardDetailsBottomSheetState extends State<CardDetailsBottomSheet> {
               ),
               Icon(
                 Icons.arrow_forward_ios_rounded,
-                color: Colors.white.withOpacity(0.5),
+                color: Colors.white.withValues(alpha: 0.5),
                 size: 16.sp,
               ),
             ],
@@ -828,7 +828,7 @@ class _CardDetailsBottomSheetState extends State<CardDetailsBottomSheet> {
           Get.snackbar(
             'Support',
             'Connecting you to customer support...',
-            backgroundColor: Colors.blue.withOpacity(0.1),
+            backgroundColor: Colors.blue.withValues(alpha: 0.1),
             colorText: Colors.white,
             snackPosition: SnackPosition.BOTTOM,
           );
@@ -837,7 +837,7 @@ class _CardDetailsBottomSheetState extends State<CardDetailsBottomSheet> {
         child: Container(
           padding: EdgeInsets.all(16.w),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.05),
+            color: Colors.white.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(16.r),
             boxShadow: [
           BoxShadow(
@@ -861,7 +861,7 @@ class _CardDetailsBottomSheetState extends State<CardDetailsBottomSheet> {
               Spacer(),
               Icon(
                 Icons.arrow_forward_ios_rounded,
-                color: Colors.white.withOpacity(0.5),
+                color: Colors.white.withValues(alpha: 0.5),
                 size: 16.sp,
               ),
             ],
@@ -875,7 +875,7 @@ class _CardDetailsBottomSheetState extends State<CardDetailsBottomSheet> {
     return Container(
       padding: EdgeInsets.all(12.w),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12.r),
         boxShadow: [
           BoxShadow(
@@ -898,7 +898,7 @@ class _CardDetailsBottomSheetState extends State<CardDetailsBottomSheet> {
             child: Text(
               'Your card details are protected with end-to-end encryption',
               style: TextStyle(
-                color: Colors.white.withOpacity(0.7),
+                color: Colors.white.withValues(alpha: 0.7),
                 fontSize: 12.sp,
               ),
             ),
@@ -940,7 +940,7 @@ class _CardDetailsBottomSheetState extends State<CardDetailsBottomSheet> {
                       ? 'You can unblock your card at any time. Your card will remain blocked until you choose to unblock it.'
                       : 'This will permanently block your card. You\'ll need to order a new card if you want to use this account again.',
               style: TextStyle(
-                color: Colors.white.withOpacity(0.7),
+                color: Colors.white.withValues(alpha: 0.7),
                 fontSize: 14.sp,
               ),
             ),
@@ -950,9 +950,9 @@ class _CardDetailsBottomSheetState extends State<CardDetailsBottomSheet> {
               style: TextStyle(color: Colors.white),
               decoration: InputDecoration(
                 hintText: 'Reason for blocking (optional)',
-                hintStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
+                hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
                 filled: true,
-                fillColor: Colors.white.withOpacity(0.05),
+                fillColor: Colors.white.withValues(alpha: 0.05),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.r),
                   borderSide: BorderSide.none,
@@ -972,7 +972,7 @@ class _CardDetailsBottomSheetState extends State<CardDetailsBottomSheet> {
             child: Text(
               'Cancel',
               style: TextStyle(
-                color: Colors.white.withOpacity(0.7),
+                color: Colors.white.withValues(alpha: 0.7),
                 fontSize: 14.sp,
               ),
             ),
@@ -1033,7 +1033,7 @@ class _CardDetailsBottomSheetState extends State<CardDetailsBottomSheet> {
           isTemporary
               ? 'Your card has been temporarily blocked'
               : 'Your card has been permanently blocked',
-          backgroundColor: Colors.red.withOpacity(0.1),
+          backgroundColor: Colors.red.withValues(alpha: 0.1),
           colorText: Colors.white,
           snackPosition: SnackPosition.BOTTOM,
           duration: const Duration(seconds: 3),
@@ -1064,7 +1064,7 @@ class _CardDetailsBottomSheetState extends State<CardDetailsBottomSheet> {
             Text(
               'Your card has been permanently blocked. Please follow these steps:',
               style: TextStyle(
-                color: Colors.white.withOpacity(0.7),
+                color: Colors.white.withValues(alpha: 0.7),
                 fontSize: 14.sp,
               ),
             ),
@@ -1119,7 +1119,7 @@ class _CardDetailsBottomSheetState extends State<CardDetailsBottomSheet> {
           width: 24.w,
           height: 24.h,
           decoration: BoxDecoration(
-            color: Colors.blue.withOpacity(0.1),
+            color: Colors.blue.withValues(alpha: 0.1),
             shape: BoxShape.circle,
           ),
           child: Center(
@@ -1178,7 +1178,7 @@ class _CardDetailsBottomSheetState extends State<CardDetailsBottomSheet> {
         content: Text(
           'Are you sure you want to unblock your card? This will allow all transactions again.',
           style: TextStyle(
-            color: Colors.white.withOpacity(0.7),
+            color: Colors.white.withValues(alpha: 0.7),
             fontSize: 14.sp,
           ),
         ),
@@ -1188,7 +1188,7 @@ class _CardDetailsBottomSheetState extends State<CardDetailsBottomSheet> {
             child: Text(
               'Cancel',
               style: TextStyle(
-                color: Colors.white.withOpacity(0.7),
+                color: Colors.white.withValues(alpha: 0.7),
                 fontSize: 14.sp,
               ),
             ),
@@ -1223,7 +1223,7 @@ class _CardDetailsBottomSheetState extends State<CardDetailsBottomSheet> {
                 Get.snackbar(
                   'Card Unblocked',
                   'Your card has been successfully unblocked',
-                  backgroundColor: Colors.green.withOpacity(0.1),
+                  backgroundColor: Colors.green.withValues(alpha: 0.1),
                   colorText: Colors.white,
                   snackPosition: SnackPosition.BOTTOM,
                   duration: const Duration(seconds: 3),
@@ -1272,7 +1272,7 @@ class _CardDetailsBottomSheetState extends State<CardDetailsBottomSheet> {
             Text(
               'Please authenticate to view your PIN',
               style: TextStyle(
-                color: Colors.white.withOpacity(0.7),
+                color: Colors.white.withValues(alpha: 0.7),
                 fontSize: 14.sp,
               ),
             ),
@@ -1284,7 +1284,7 @@ class _CardDetailsBottomSheetState extends State<CardDetailsBottomSheet> {
             child: Text(
               'Cancel',
               style: TextStyle(
-                color: Colors.white.withOpacity(0.7),
+                color: Colors.white.withValues(alpha: 0.7),
                 fontSize: 14.sp,
               ),
             ),
@@ -1338,9 +1338,9 @@ class _CardDetailsBottomSheetState extends State<CardDetailsBottomSheet> {
                     width: 40.w,
                     height: 48.h,
                     decoration: BoxDecoration(
-                      color: Colors.blue.withOpacity(0.1),
+                      color: Colors.blue.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8.r),
-                      border: Border.all(color: Colors.blue.withOpacity(0.3)),
+                      border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
                     ),
                     child: Center(
                       child: Text(
@@ -1359,7 +1359,7 @@ class _CardDetailsBottomSheetState extends State<CardDetailsBottomSheet> {
             Text(
               'Your PIN will be hidden in 30 seconds for security',
               style: TextStyle(
-                color: Colors.white.withOpacity(0.7),
+                color: Colors.white.withValues(alpha: 0.7),
                 fontSize: 12.sp,
               ),
             ),
@@ -1392,7 +1392,7 @@ class _CardDetailsBottomSheetState extends State<CardDetailsBottomSheet> {
         Get.snackbar(
           'PIN Hidden',
           'Your PIN has been hidden for security',
-          backgroundColor: Colors.blue.withOpacity(0.1),
+          backgroundColor: Colors.blue.withValues(alpha: 0.1),
           colorText: Colors.white,
           snackPosition: SnackPosition.BOTTOM,
           duration: const Duration(seconds: 2),

@@ -45,8 +45,8 @@ class InvoiceThemeColors {
   static final Color buttonBackgroundGray = Colors.grey[900]!;
 
   // Shadow Colors
-  static final Color shadowColor = Colors.black.withOpacity(0.1);
-  static final Color shadowColorElevated = primaryPurple.withOpacity(0.2);
+  static final Color shadowColor = Colors.black.withValues(alpha: 0.1);
+  static final Color shadowColorElevated = primaryPurple.withValues(alpha: 0.2);
 }
 
 /// Invoice text styles
@@ -266,13 +266,13 @@ class InvoiceDecorations {
           end: Alignment.bottomRight,
           colors: [
             InvoiceThemeColors.primaryPurple,
-            InvoiceThemeColors.primaryPurple.withOpacity(0.8),
+            InvoiceThemeColors.primaryPurple.withValues(alpha: 0.8),
           ],
         ),
         borderRadius: BorderRadius.circular(12.r),
         boxShadow: [
           BoxShadow(
-            color: InvoiceThemeColors.primaryPurple.withOpacity(0.3),
+            color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.3),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -291,7 +291,7 @@ class InvoiceDecorations {
 
   // Status Badge Decoration
   static BoxDecoration statusBadgeDecoration(Color color) => BoxDecoration(
-        color: color.withOpacity(0.2),
+        color: color.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(8.r),
       );
 

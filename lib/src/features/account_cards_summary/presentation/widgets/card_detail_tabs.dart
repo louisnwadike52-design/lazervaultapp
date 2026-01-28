@@ -17,7 +17,7 @@ class CardDetailTabs extends StatelessWidget {
     return Container(
       height: 56.h,
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16.r),
       ),
       child: Stack(
@@ -32,8 +32,8 @@ class CardDetailTabs extends StatelessWidget {
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    Colors.blue.withOpacity(0.2),
-                    Colors.purple.withOpacity(0.2),
+                    Colors.blue.withValues(alpha: 0.2),
+                    Colors.purple.withValues(alpha: 0.2),
                   ],
                 ),
                 borderRadius: BorderRadius.circular(16.r),
@@ -88,14 +88,14 @@ class CardDetailTabs extends StatelessWidget {
             children: [
               Icon(
                 icon,
-                color: isSelected ? Colors.white : Colors.white.withOpacity(0.5),
+                color: isSelected ? Colors.white : Colors.white.withValues(alpha: 0.5),
                 size: 20.sp,
               ),
               SizedBox(height: 4.h),
               Text(
                 label,
                 style: TextStyle(
-                  color: isSelected ? Colors.white : Colors.white.withOpacity(0.5),
+                  color: isSelected ? Colors.white : Colors.white.withValues(alpha: 0.5),
                   fontSize: 12.sp,
                   fontWeight: FontWeight.w500,
                 ),

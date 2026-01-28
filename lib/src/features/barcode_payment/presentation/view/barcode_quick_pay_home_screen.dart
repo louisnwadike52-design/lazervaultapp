@@ -114,10 +114,10 @@ class _BarcodeQuickPayHomeScreenState extends State<BarcodeQuickPayHomeScreen>
               width: 44.w,
               height: 44.w,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(22.r),
                 border: Border.all(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   width: 1,
                 ),
               ),
@@ -144,7 +144,7 @@ class _BarcodeQuickPayHomeScreenState extends State<BarcodeQuickPayHomeScreen>
                 Text(
                   'Fast & Secure Payments',
                   style: GoogleFonts.inter(
-                    color: Colors.white.withOpacity(0.6),
+                    color: Colors.white.withValues(alpha: 0.6),
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w400,
                   ),
@@ -176,7 +176,7 @@ class _BarcodeQuickPayHomeScreenState extends State<BarcodeQuickPayHomeScreen>
           borderRadius: BorderRadius.circular(20.r),
           boxShadow: [
             BoxShadow(
-              color: gradient.colors.first.withOpacity(0.3),
+              color: gradient.colors.first.withValues(alpha: 0.3),
               blurRadius: 20,
               offset: const Offset(0, 10),
             ),
@@ -188,7 +188,7 @@ class _BarcodeQuickPayHomeScreenState extends State<BarcodeQuickPayHomeScreen>
               width: 60.w,
               height: 60.w,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
+                color: Colors.white.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(16.r),
               ),
               child: Icon(
@@ -214,7 +214,7 @@ class _BarcodeQuickPayHomeScreenState extends State<BarcodeQuickPayHomeScreen>
                   Text(
                     subtitle,
                     style: GoogleFonts.inter(
-                      color: Colors.white.withOpacity(0.9),
+                      color: Colors.white.withValues(alpha: 0.9),
                       fontSize: 14.sp,
                       fontWeight: FontWeight.w400,
                     ),
@@ -273,10 +273,10 @@ class _BarcodeQuickPayHomeScreenState extends State<BarcodeQuickPayHomeScreen>
       child: Container(
         padding: EdgeInsets.all(20.w),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.05),
+          color: Colors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(16.r),
           border: Border.all(
-            color: Colors.white.withOpacity(0.1),
+            color: Colors.white.withValues(alpha: 0.1),
             width: 1,
           ),
         ),
@@ -286,7 +286,7 @@ class _BarcodeQuickPayHomeScreenState extends State<BarcodeQuickPayHomeScreen>
               width: 48.w,
               height: 48.w,
               decoration: BoxDecoration(
-                color: const Color(0xFF4E03D0).withOpacity(0.2),
+                color: const Color(0xFF4E03D0).withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(12.r),
               ),
               child: Icon(
@@ -312,7 +312,7 @@ class _BarcodeQuickPayHomeScreenState extends State<BarcodeQuickPayHomeScreen>
                   Text(
                     subtitle,
                     style: GoogleFonts.inter(
-                      color: Colors.white.withOpacity(0.6),
+                      color: Colors.white.withValues(alpha: 0.6),
                       fontSize: 13.sp,
                       fontWeight: FontWeight.w400,
                     ),
@@ -322,7 +322,7 @@ class _BarcodeQuickPayHomeScreenState extends State<BarcodeQuickPayHomeScreen>
             ),
             Icon(
               Icons.arrow_forward_ios,
-              color: Colors.white.withOpacity(0.5),
+              color: Colors.white.withValues(alpha: 0.5),
               size: 16.sp,
             ),
           ],

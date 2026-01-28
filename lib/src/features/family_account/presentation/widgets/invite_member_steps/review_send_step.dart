@@ -157,7 +157,7 @@ class _ReviewSendStepState extends State<ReviewSendStep> {
                   Container(
                     padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF6C5CE7).withOpacity(0.1),
+                      color: const Color(0xFF6C5CE7).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8.r),
                     ),
                     child: Row(
@@ -275,7 +275,7 @@ class _ReviewSendStepState extends State<ReviewSendStep> {
                   borderRadius: BorderRadius.circular(28.r),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF6C5CE7).withOpacity(0.4),
+                      color: const Color(0xFF6C5CE7).withValues(alpha: 0.4),
                       blurRadius: 20,
                       offset: const Offset(0, 10),
                     ),
@@ -327,10 +327,10 @@ class _ReviewSendStepState extends State<ReviewSendStep> {
           Container(
             padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
-              color: const Color(0xFF6C5CE7).withOpacity(0.08),
+              color: const Color(0xFF6C5CE7).withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(12.r),
               border: Border.all(
-                color: const Color(0xFF6C5CE7).withOpacity(0.2),
+                color: const Color(0xFF6C5CE7).withValues(alpha: 0.2),
                 width: 1,
               ),
             ),

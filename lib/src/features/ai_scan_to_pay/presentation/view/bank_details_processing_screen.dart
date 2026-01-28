@@ -56,8 +56,8 @@ class _BankDetailsProcessingScreenState
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async => false, // Prevent back button during processing
+    return PopScope(
+      canPop: false, // Prevent back button during processing
       child: Scaffold(
         backgroundColor: Colors.white,
         body: SafeArea(
@@ -111,7 +111,7 @@ class _BankDetailsProcessingScreenState
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF4E03D0).withOpacity(0.1),
+              color: const Color(0xFF4E03D0).withValues(alpha: 0.1),
               blurRadius: 30.r,
               offset: Offset(0, 10.h),
             ),
@@ -191,7 +191,7 @@ class _BankDetailsProcessingScreenState
               borderRadius: BorderRadius.circular(4.r),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF4E03D0).withOpacity(0.3),
+                  color: const Color(0xFF4E03D0).withValues(alpha: 0.3),
                   blurRadius: 8.r,
                   offset: Offset(0, 2.h),
                 ),
@@ -209,7 +209,7 @@ class _BankDetailsProcessingScreenState
                 gradient: LinearGradient(
                   colors: [
                     Colors.transparent,
-                    Colors.white.withOpacity(0.3),
+                    Colors.white.withValues(alpha: 0.3),
                     Colors.transparent,
                   ],
                   stops: const [0.0, 0.5, 1.0],

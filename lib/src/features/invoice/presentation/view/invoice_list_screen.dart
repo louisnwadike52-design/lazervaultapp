@@ -593,7 +593,7 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
   }
 
   void _showMarkAsPaidDialog(Invoice invoice) {
-    PaymentMethod selectedMethod = PaymentMethod.bank_transfer;
+    PaymentMethod selectedMethod = PaymentMethod.bankTransfer;
     final referenceController = TextEditingController();
 
     showDialog(
@@ -724,7 +724,7 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
 
   String _getPaymentMethodName(PaymentMethod method) {
     switch (method) {
-      case PaymentMethod.bank_transfer:
+      case PaymentMethod.bankTransfer:
         return 'Bank Transfer';
       case PaymentMethod.crypto:
         return 'Cryptocurrency';

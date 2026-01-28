@@ -617,7 +617,7 @@ Status: Completed
 
 Thank you for your payment!
 ''';
-    Share.share(text);
+    SharePlus.instance.share(ShareParams(text: text));
   }
 
   void _copyDetails() {

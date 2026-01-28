@@ -275,7 +275,7 @@ class _TagPayProcessingScreenState extends State<TagPayProcessingScreen>
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: const Color(0xFF3B82F6).withOpacity(0.3),
+                    color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
                     width: 3,
                   ),
                 ),
@@ -300,14 +300,14 @@ class _TagPayProcessingScreenState extends State<TagPayProcessingScreen>
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
-                        const Color(0xFF3B82F6).withOpacity(0.2),
-                        const Color(0xFF3B82F6).withOpacity(0.1),
+                        const Color(0xFF3B82F6).withValues(alpha: 0.2),
+                        const Color(0xFF3B82F6).withValues(alpha: 0.1),
                       ],
                     ),
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFF3B82F6).withOpacity(0.3),
+                        color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
                         blurRadius: 20,
                         offset: const Offset(0, 10),
                         spreadRadius: 0,
@@ -360,10 +360,10 @@ class _TagPayProcessingScreenState extends State<TagPayProcessingScreen>
       margin: EdgeInsets.symmetric(horizontal: 32.w),
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
-          color: Colors.white.withOpacity(0.1),
+          color: Colors.white.withValues(alpha: 0.1),
           width: 1,
         ),
       ),
@@ -394,15 +394,15 @@ class _TagPayProcessingScreenState extends State<TagPayProcessingScreen>
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(
-          color: Colors.white.withOpacity(0.1),
+          color: Colors.white.withValues(alpha: 0.1),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.15),
+            color: Colors.black.withValues(alpha: 0.15),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -412,7 +412,7 @@ class _TagPayProcessingScreenState extends State<TagPayProcessingScreen>
         children: [
           _buildDetailRow('Amount', '${tag.currency} ${tag.amount.toStringAsFixed(2)}'),
           SizedBox(height: 12.h),
-          Divider(color: Colors.white.withOpacity(0.1)),
+          Divider(color: Colors.white.withValues(alpha: 0.1)),
           SizedBox(height: 12.h),
           _buildDetailRow('To', tag.taggerName),
           SizedBox(height: 12.h),

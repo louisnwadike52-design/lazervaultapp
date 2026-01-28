@@ -124,7 +124,7 @@ class _QuickSellScreenState extends State<QuickSellScreen> {
       width: 120.w,
       margin: EdgeInsets.only(right: 12.w),
       decoration: BoxDecoration(
-        color: isSelected ? Colors.blue.withOpacity(0.1) : Colors.grey[900],
+        color: isSelected ? Colors.blue.withValues(alpha: 0.1) : Colors.grey[900],
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
@@ -341,7 +341,7 @@ class _QuickSellScreenState extends State<QuickSellScreen> {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: Colors.blue.withOpacity(0.1),
+        color: Colors.blue.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(

@@ -311,7 +311,7 @@ class _GiftCardsScreenState extends State<GiftCardsScreen>
         borderRadius: BorderRadius.circular(24.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.blue.withOpacity(0.2),
+            color: Colors.blue.withValues(alpha: 0.2),
             blurRadius: 20,
             offset: Offset(0, 10),
           ),
@@ -323,7 +323,7 @@ class _GiftCardsScreenState extends State<GiftCardsScreen>
           Text(
             'Total Gift Cards Value',
             style: TextStyle(
-              color: Colors.white.withOpacity(0.7),
+              color: Colors.white.withValues(alpha: 0.7),
               fontSize: 14.sp,
             ),
           ),
@@ -346,7 +346,7 @@ class _GiftCardsScreenState extends State<GiftCardsScreen>
                   vertical: 6.h,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.green.withOpacity(0.2),
+                  color: Colors.green.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(20.r),
                 ),
                 child: Row(
@@ -391,7 +391,7 @@ class _GiftCardsScreenState extends State<GiftCardsScreen>
         Text(
           label,
           style: TextStyle(
-            color: Colors.white.withOpacity(0.7),
+            color: Colors.white.withValues(alpha: 0.7),
             fontSize: 12.sp,
           ),
         ),
@@ -515,11 +515,11 @@ class _GiftCardsScreenState extends State<GiftCardsScreen>
       itemCount: 6,
       itemBuilder: (context, index) {
         return Shimmer.fromColors(
-          baseColor: Colors.white.withOpacity(0.1),
-          highlightColor: Colors.white.withOpacity(0.2),
+          baseColor: Colors.white.withValues(alpha: 0.1),
+          highlightColor: Colors.white.withValues(alpha: 0.2),
           child: Container(
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.1),
+              color: Colors.white.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(20.r),
             ),
           ),
@@ -588,7 +588,7 @@ class _GiftCardsScreenState extends State<GiftCardsScreen>
                         borderRadius: BorderRadius.circular(16.r),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
+                            color: Colors.black.withValues(alpha: 0.1),
                             blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),
@@ -662,7 +662,7 @@ class _GiftCardsScreenState extends State<GiftCardsScreen>
                               borderRadius: BorderRadius.circular(8.r),
                               boxShadow: [
                                 BoxShadow(
-                                  color: const Color(0xFF10B981).withOpacity(0.3),
+                                  color: const Color(0xFF10B981).withValues(alpha: 0.3),
                                   blurRadius: 8,
                                   offset: const Offset(0, 2),
                                 ),
@@ -692,7 +692,7 @@ class _GiftCardsScreenState extends State<GiftCardsScreen>
                               borderRadius: BorderRadius.circular(8.r),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.blue.withOpacity(0.3),
+                                  color: Colors.blue.withValues(alpha: 0.3),
                                   blurRadius: 8,
                                   offset: const Offset(0, 2),
                                 ),
@@ -741,7 +741,7 @@ class _GiftCardsScreenState extends State<GiftCardsScreen>
             child: Icon(
               Icons.card_giftcard_outlined,
               size: 48.sp,
-              color: Colors.white.withOpacity(0.6),
+              color: Colors.white.withValues(alpha: 0.6),
             ),
           ),
           SizedBox(height: 16.h),
@@ -758,7 +758,7 @@ class _GiftCardsScreenState extends State<GiftCardsScreen>
             'Start by purchasing your first gift card',
             style: GoogleFonts.inter(
               fontSize: 14.sp,
-              color: Colors.white.withOpacity(0.7),
+              color: Colors.white.withValues(alpha: 0.7),
               fontWeight: FontWeight.w400,
             ),
           ),
@@ -807,7 +807,7 @@ class _GiftCardsScreenState extends State<GiftCardsScreen>
               'Gift card brands will appear here when available',
               style: GoogleFonts.inter(
                 fontSize: 14.sp,
-                color: Colors.white.withOpacity(0.7),
+                color: Colors.white.withValues(alpha: 0.7),
                 fontWeight: FontWeight.w400,
               ),
               textAlign: TextAlign.center,
@@ -825,7 +825,7 @@ class _GiftCardsScreenState extends State<GiftCardsScreen>
               borderRadius: BorderRadius.circular(12.r),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF8B5CF6).withOpacity(0.3),
+                  color: const Color(0xFF8B5CF6).withValues(alpha: 0.3),
                   blurRadius: 12,
                   offset: const Offset(0, 4),
                 ),
@@ -898,7 +898,7 @@ class _GiftCardsScreenState extends State<GiftCardsScreen>
               message,
               style: GoogleFonts.inter(
                 fontSize: 14.sp,
-                color: Colors.white.withOpacity(0.7),
+                color: Colors.white.withValues(alpha: 0.7),
                 fontWeight: FontWeight.w400,
               ),
               textAlign: TextAlign.center,
@@ -917,7 +917,7 @@ class _GiftCardsScreenState extends State<GiftCardsScreen>
                 borderRadius: BorderRadius.circular(12.r),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF8B5CF6).withOpacity(0.3),
+                    color: const Color(0xFF8B5CF6).withValues(alpha: 0.3),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),
@@ -998,7 +998,7 @@ class _GiftCardsScreenState extends State<GiftCardsScreen>
               message,
               style: GoogleFonts.inter(
                 fontSize: 14.sp,
-                color: Colors.white.withOpacity(0.7),
+                color: Colors.white.withValues(alpha: 0.7),
                 fontWeight: FontWeight.w400,
               ),
               textAlign: TextAlign.center,
@@ -1016,7 +1016,7 @@ class _GiftCardsScreenState extends State<GiftCardsScreen>
               borderRadius: BorderRadius.circular(12.r),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF8B5CF6).withOpacity(0.3),
+                  color: const Color(0xFF8B5CF6).withValues(alpha: 0.3),
                   blurRadius: 12,
                   offset: const Offset(0, 4),
                 ),
@@ -1201,7 +1201,7 @@ class _GiftCardsScreenState extends State<GiftCardsScreen>
   ) {
     return Container(
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12.r),
       ),
       child: Material(
@@ -1216,7 +1216,7 @@ class _GiftCardsScreenState extends State<GiftCardsScreen>
                 Container(
                   padding: EdgeInsets.all(8.w),
                   decoration: BoxDecoration(
-                    color: color.withOpacity(0.2),
+                    color: color.withValues(alpha: 0.2),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(icon, color: color, size: 24.sp),
@@ -1302,7 +1302,7 @@ class _GiftCardsScreenState extends State<GiftCardsScreen>
           borderRadius: BorderRadius.circular(16.r),
           boxShadow: [
             BoxShadow(
-              color: Colors.purple.withOpacity(0.4),
+              color: Colors.purple.withValues(alpha: 0.4),
               blurRadius: 16,
               offset: const Offset(0, 8),
             ),
@@ -1674,7 +1674,7 @@ class _GiftCardsScreenState extends State<GiftCardsScreen>
                   'Gift Card Sent',
                   'Gift card has been sent to ${contact['name']}',
                   snackPosition: SnackPosition.BOTTOM,
-                  backgroundColor: Colors.green.withOpacity(0.8),
+                  backgroundColor: Colors.green.withValues(alpha: 0.8),
                   colorText: Colors.white,
                   borderRadius: 12.r,
                   margin: EdgeInsets.all(16.w),

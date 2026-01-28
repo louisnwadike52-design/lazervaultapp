@@ -1,6 +1,7 @@
 import 'package:dartz/dartz.dart';
 import 'package:lazervault/core/error/failure.dart';
 import 'package:lazervault/src/features/authentication/domain/entities/user.dart';
+import 'package:lazervault/src/features/tag_pay/domain/entities/user_search_result_entity.dart';
 import '../entities/user_preferences.dart';
 
 abstract class IProfileRepository {
@@ -23,6 +24,12 @@ abstract class IProfileRepository {
   Future<Either<Failure, void>> updatePassword({
     required String currentPassword,
     required String newPassword,
+  });
+
+  // Search users by username
+  Future<List<UserSearchResultEntity>> searchUsersByUsername({
+    required String query,
+    int limit = 10,
   });
 
   // Update preferences

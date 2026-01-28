@@ -87,7 +87,7 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
               width: 40.w,
               height: 40.w,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12.r),
                 boxShadow: [
           BoxShadow(
@@ -128,7 +128,7 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
               width: 40.w,
               height: 40.w,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12.r),
                 boxShadow: [
           BoxShadow(
@@ -230,7 +230,7 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: statusColor.withOpacity(0.1),
+        color: statusColor.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
@@ -276,7 +276,7 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
                   statusMessage,
                   style: TextStyle(
                     fontSize: 12.sp,
-                    color: Colors.white.withOpacity(0.6),
+                    color: Colors.white.withValues(alpha: 0.6),
                     fontWeight: FontWeight.w400,
                   ),
                 ),
@@ -292,7 +292,7 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(20.r),
         boxShadow: [
           BoxShadow(
@@ -316,7 +316,7 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
                   borderRadius: BorderRadius.circular(16.r),
                   boxShadow: [
                     BoxShadow(
-                      color: _getProviderColor(networkProvider.type).withOpacity(0.3),
+                      color: _getProviderColor(networkProvider.type).withValues(alpha: 0.3),
                       blurRadius: 8,
                       offset: Offset(0, 4),
                     ),
@@ -353,7 +353,7 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
                       transaction.formattedRecipientNumber,
                       style: TextStyle(
                         fontSize: 14.sp,
-                        color: Colors.white.withOpacity(0.6),
+                        color: Colors.white.withValues(alpha: 0.6),
                         fontWeight: FontWeight.w400,
                       ),
                     ),
@@ -370,7 +370,7 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
             width: double.infinity,
             padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.05),
+              color: Colors.white.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: Column(
@@ -379,7 +379,7 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
                   'Amount',
                   style: TextStyle(
                     fontSize: 14.sp,
-                    color: Colors.white.withOpacity(0.6),
+                    color: Colors.white.withValues(alpha: 0.6),
                     fontWeight: FontWeight.w400,
                   ),
                 ),
@@ -404,7 +404,7 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(20.r),
         boxShadow: [
           BoxShadow(
@@ -460,7 +460,7 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(20.r),
         boxShadow: [
           BoxShadow(
@@ -498,7 +498,7 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
           ],
           
           SizedBox(height: 12.h),
-          Divider(color: Colors.white.withOpacity(0.1)),
+          Divider(color: Colors.white.withValues(alpha: 0.1)),
           SizedBox(height: 12.h),
           
           _buildBreakdownRow('Total Amount', '₦${transaction.totalAmount.toStringAsFixed(0)}', isTotal: true),
@@ -517,7 +517,7 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
             label,
             style: TextStyle(
               fontSize: 14.sp,
-              color: Colors.white.withOpacity(0.6),
+              color: Colors.white.withValues(alpha: 0.6),
               fontWeight: FontWeight.w400,
             ),
           ),
@@ -546,7 +546,7 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
           style: TextStyle(
             fontSize: isTotal ? 16.sp : 14.sp,
             fontWeight: isTotal ? FontWeight.w600 : FontWeight.w400,
-            color: Colors.white.withOpacity(isTotal ? 1.0 : 0.6),
+            color: Colors.white.withValues(alpha: isTotal ? 1.0 : 0.6),
           ),
         ),
         Text(
@@ -558,7 +558,7 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
               ? Color(0xFF10B981) 
               : isTotal 
                 ? Colors.white 
-                : Colors.white.withOpacity(0.8),
+                : Colors.white.withValues(alpha: 0.8),
           ),
         ),
       ],
@@ -606,7 +606,7 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
             onPressed: () => _downloadReceipt(transaction),
             icon: Icon(
               Icons.download,
-              color: Colors.white.withOpacity(0.8),
+              color: Colors.white.withValues(alpha: 0.8),
               size: 20.sp,
             ),
             label: Text(
@@ -614,12 +614,12 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
               style: TextStyle(
                 fontSize: 16.sp,
                 fontWeight: FontWeight.w600,
-                color: Colors.white.withOpacity(0.8),
+                color: Colors.white.withValues(alpha: 0.8),
               ),
             ),
             style: OutlinedButton.styleFrom(
               side: BorderSide(
-                color: Colors.white.withOpacity(0.3),
+                color: Colors.white.withValues(alpha: 0.3),
                 width: 1.5,
               ),
               padding: EdgeInsets.symmetric(vertical: 16.h),
@@ -637,7 +637,7 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
     return Container(
       margin: EdgeInsets.symmetric(vertical: 8.h),
       height: 1,
-      color: Colors.white.withOpacity(0.1),
+      color: Colors.white.withValues(alpha: 0.1),
     );
   }
 
@@ -654,7 +654,7 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
             'Loading transaction details...',
             style: TextStyle(
               fontSize: 14.sp,
-              color: Colors.white.withOpacity(0.6),
+              color: Colors.white.withValues(alpha: 0.6),
             ),
           ),
         ],
@@ -670,7 +670,7 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
           Icon(
             Icons.error_outline,
             size: 64.sp,
-            color: Colors.red.withOpacity(0.6),
+            color: Colors.red.withValues(alpha: 0.6),
           ),
           SizedBox(height: 16.h),
           Text(
@@ -686,7 +686,7 @@ class _AirtimeDetailsScreenState extends State<AirtimeDetailsScreen> {
             message,
             style: TextStyle(
               fontSize: 14.sp,
-              color: Colors.white.withOpacity(0.6),
+              color: Colors.white.withValues(alpha: 0.6),
             ),
             textAlign: TextAlign.center,
           ),

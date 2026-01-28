@@ -180,7 +180,7 @@ class _MyGiftCardsScreenState extends State<MyGiftCardsScreen> with TickerProvid
         color: Colors.grey[900],
         borderRadius: BorderRadius.circular(16.r),        boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: Colors.black.withValues(alpha: 0.2),
             blurRadius: 16,
             offset: const Offset(0, 8),
           ),
@@ -198,7 +198,7 @@ class _MyGiftCardsScreenState extends State<MyGiftCardsScreen> with TickerProvid
           borderRadius: BorderRadius.circular(12.r),
           boxShadow: [
             BoxShadow(
-              color: Colors.blue.withOpacity(0.3),
+              color: Colors.blue.withValues(alpha: 0.3),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),
@@ -247,7 +247,7 @@ class _MyGiftCardsScreenState extends State<MyGiftCardsScreen> with TickerProvid
             Container(
               padding: EdgeInsets.all(24.w),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(24.r),
                 boxShadow: [
           BoxShadow(
@@ -261,7 +261,7 @@ class _MyGiftCardsScreenState extends State<MyGiftCardsScreen> with TickerProvid
               child: Icon(
                 Icons.card_giftcard_outlined,
                 size: 48.sp,
-                color: Colors.white.withOpacity(0.6),
+                color: Colors.white.withValues(alpha: 0.6),
               ),
             ),
             SizedBox(height: 16.h),
@@ -278,7 +278,7 @@ class _MyGiftCardsScreenState extends State<MyGiftCardsScreen> with TickerProvid
               'Your ${_getStatusText(_selectedTabIndex)} gift cards will appear here',
               style: GoogleFonts.inter(
                 fontSize: 14.sp,
-                color: Colors.white.withOpacity(0.7),
+                color: Colors.white.withValues(alpha: 0.7),
                 fontWeight: FontWeight.w400,
               ),
             ),
@@ -311,7 +311,7 @@ class _MyGiftCardsScreenState extends State<MyGiftCardsScreen> with TickerProvid
           color: Colors.grey[900],
           borderRadius: BorderRadius.circular(20.r),        boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: Colors.black.withValues(alpha: 0.2),
               blurRadius: 16,
               offset: const Offset(0, 8),
           ),
@@ -334,7 +334,7 @@ class _MyGiftCardsScreenState extends State<MyGiftCardsScreen> with TickerProvid
                       borderRadius: BorderRadius.circular(16.r),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
+                          color: Colors.black.withValues(alpha: 0.1),
                           blurRadius: 8,
                           offset: const Offset(0, 2),
                         ),
@@ -415,13 +415,13 @@ class _MyGiftCardsScreenState extends State<MyGiftCardsScreen> with TickerProvid
                           gradient: LinearGradient(
                             colors: [
                               _getStatusColor(card.status),
-                              _getStatusColor(card.status).withOpacity(0.8),
+                              _getStatusColor(card.status).withValues(alpha: 0.8),
                             ],
                           ),
                           borderRadius: BorderRadius.circular(20.r),
                           boxShadow: [
                             BoxShadow(
-                              color: _getStatusColor(card.status).withOpacity(0.3),
+                              color: _getStatusColor(card.status).withValues(alpha: 0.3),
                               blurRadius: 8,
                               offset: const Offset(0, 2),
                             ),
@@ -461,7 +461,7 @@ class _MyGiftCardsScreenState extends State<MyGiftCardsScreen> with TickerProvid
           Container(
             padding: EdgeInsets.all(24.w),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.1),
+              color: Colors.white.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(24.r),
               boxShadow: [
           BoxShadow(
@@ -483,7 +483,7 @@ class _MyGiftCardsScreenState extends State<MyGiftCardsScreen> with TickerProvid
             style: GoogleFonts.inter(
               fontSize: 16.sp,
               fontWeight: FontWeight.w600,
-              color: Colors.white.withOpacity(0.7),
+              color: Colors.white.withValues(alpha: 0.7),
             ),
           ),
         ],
@@ -499,7 +499,7 @@ class _MyGiftCardsScreenState extends State<MyGiftCardsScreen> with TickerProvid
           Container(
             padding: EdgeInsets.all(24.w),
             decoration: BoxDecoration(
-              color: Colors.red.withOpacity(0.1),
+              color: Colors.red.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(24.r),
               boxShadow: [
           BoxShadow(
@@ -532,7 +532,7 @@ class _MyGiftCardsScreenState extends State<MyGiftCardsScreen> with TickerProvid
               message,
               style: GoogleFonts.inter(
                 fontSize: 14.sp,
-                color: Colors.white.withOpacity(0.7),
+                color: Colors.white.withValues(alpha: 0.7),
                 fontWeight: FontWeight.w400,
               ),
               textAlign: TextAlign.center,
@@ -550,7 +550,7 @@ class _MyGiftCardsScreenState extends State<MyGiftCardsScreen> with TickerProvid
               borderRadius: BorderRadius.circular(12.r),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.blue.withOpacity(0.3),
+                  color: Colors.blue.withValues(alpha: 0.3),
                   blurRadius: 12,
                   offset: const Offset(0, 4),
                 ),
@@ -591,7 +591,7 @@ class _MyGiftCardsScreenState extends State<MyGiftCardsScreen> with TickerProvid
           Container(
             padding: EdgeInsets.all(24.w),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.1),
+              color: Colors.white.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(24.r),
               boxShadow: [
           BoxShadow(
@@ -605,7 +605,7 @@ class _MyGiftCardsScreenState extends State<MyGiftCardsScreen> with TickerProvid
             child: Icon(
               Icons.card_giftcard_outlined,
               size: 48.sp,
-              color: Colors.white.withOpacity(0.6),
+              color: Colors.white.withValues(alpha: 0.6),
             ),
           ),
           SizedBox(height: 16.h),
@@ -622,7 +622,7 @@ class _MyGiftCardsScreenState extends State<MyGiftCardsScreen> with TickerProvid
             'Start by purchasing your first gift card',
             style: GoogleFonts.inter(
               fontSize: 14.sp,
-              color: Colors.white.withOpacity(0.7),
+              color: Colors.white.withValues(alpha: 0.7),
               fontWeight: FontWeight.w400,
             ),
           ),
@@ -638,7 +638,7 @@ class _MyGiftCardsScreenState extends State<MyGiftCardsScreen> with TickerProvid
               borderRadius: BorderRadius.circular(12.r),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.blue.withOpacity(0.3),
+                  color: Colors.blue.withValues(alpha: 0.3),
                   blurRadius: 12,
                   offset: const Offset(0, 4),
             ),

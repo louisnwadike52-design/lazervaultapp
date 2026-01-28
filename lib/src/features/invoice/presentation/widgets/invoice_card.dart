@@ -28,7 +28,7 @@ class InvoiceCard extends StatelessWidget {
           color: InvoiceThemeColors.secondaryBackground,
           borderRadius: BorderRadius.circular(12.r),
           border: Border.all(
-            color: _getStatusColor().withOpacity(0.3),
+            color: _getStatusColor().withValues(alpha: 0.3),
             width: 1,
           ),
         ),
@@ -52,7 +52,7 @@ class InvoiceCard extends StatelessWidget {
         Container(
           padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
           decoration: BoxDecoration(
-            color: _getStatusColor().withOpacity(0.2),
+            color: _getStatusColor().withValues(alpha: 0.2),
             borderRadius: BorderRadius.circular(6.r),
           ),
           child: Text(

@@ -10,7 +10,6 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:get_it/get_it.dart';
 import '../../../../../core/services/voice_biometrics_service.dart';
-import '../../../../../core/services/injection_container.dart';
 import '../screens/voice_registration_screen.dart';
 
 /// Voice Transaction Screen - Records voice command and processes transaction
@@ -617,7 +616,7 @@ class _VoiceTransactionScreenState extends State<VoiceTransactionScreen>
   Future<bool> _checkNetworkConnectivity() async {
     try {
       final result = await _connectivity.checkConnectivity();
-      return result != ConnectivityResult.none;
+      return !result.contains(ConnectivityResult.none);
     } catch (e) {
       // If connectivity check fails, assume connected
       return true;
@@ -759,14 +758,12 @@ class _VoiceTransactionScreenState extends State<VoiceTransactionScreen>
       );
     }
 
-    return WillPopScope(
-      onWillPop: () async {
+    return PopScope(
+      canPop: !_isRecording && !_isVerifying && !_isProcessing,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
         // Prevent back navigation during operations
-        if (_isRecording || _isVerifying || _isProcessing) {
-          _showError('Please wait for current operation to complete');
-          return false;
-        }
-        return true;
+        _showError('Please wait for current operation to complete');
       },
       child: Scaffold(
         appBar: AppBar(
@@ -836,14 +833,14 @@ class _VoiceTransactionScreenState extends State<VoiceTransactionScreen>
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   color: _isRecording
-                                      ? Colors.red.withOpacity(0.8)
+                                      ? Colors.red.withValues(alpha: 0.8)
                                       : _isVerifying || _isProcessing
-                                          ? Colors.grey.withOpacity(0.5)
+                                          ? Colors.grey.withValues(alpha: 0.5)
                                           : theme.colorScheme.primary,
                                   boxShadow: _isRecording
                                       ? [
                                           BoxShadow(
-                                            color: Colors.red.withOpacity(
+                                            color: Colors.red.withValues(alpha: 
                                               0.3 +
                                                   _pulseController.value * 0.3,
                                             ),
@@ -856,7 +853,7 @@ class _VoiceTransactionScreenState extends State<VoiceTransactionScreen>
                                       : [
                                           BoxShadow(
                                             color: theme.colorScheme.primary
-                                                .withOpacity(0.3),
+                                                .withValues(alpha: 0.3),
                                             blurRadius: 15,
                                             spreadRadius: 2,
                                           ),

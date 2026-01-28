@@ -20,7 +20,7 @@ class TransferRepositoryImpl implements ITransferRepository {
 
   @override
   Future<Either<Failure, TransferEntity>> initiateTransfer({
-    required Int64 fromAccountId,
+    required String fromAccountId,
     required Int64 amount,
     required String accessToken,
     Int64? toAccountId,

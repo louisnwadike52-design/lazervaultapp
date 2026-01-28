@@ -184,7 +184,7 @@ class _CrowdfundHomeScreenState extends State<CrowdfundHomeScreen> {
         borderRadius: BorderRadius.circular(24.r),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF4E03D0).withOpacity(0.3),
+            color: const Color(0xFF4E03D0).withValues(alpha: 0.3),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -217,7 +217,7 @@ class _CrowdfundHomeScreenState extends State<CrowdfundHomeScreen> {
               Container(
                 width: 1,
                 height: 40.h,
-                color: Colors.white.withOpacity(0.2),
+                color: Colors.white.withValues(alpha: 0.2),
               ),
               _buildMetricItem(
                 label: 'Active',
@@ -226,7 +226,7 @@ class _CrowdfundHomeScreenState extends State<CrowdfundHomeScreen> {
               Container(
                 width: 1,
                 height: 40.h,
-                color: Colors.white.withOpacity(0.2),
+                color: Colors.white.withValues(alpha: 0.2),
               ),
               _buildMetricItem(
                 label: 'Raised',
@@ -254,7 +254,7 @@ class _CrowdfundHomeScreenState extends State<CrowdfundHomeScreen> {
         Text(
           label,
           style: GoogleFonts.inter(
-            color: Colors.white.withOpacity(0.8),
+            color: Colors.white.withValues(alpha: 0.8),
             fontSize: 12.sp,
             fontWeight: FontWeight.w500,
           ),
@@ -336,7 +336,7 @@ class _CrowdfundHomeScreenState extends State<CrowdfundHomeScreen> {
             'Create or support crowdfund campaigns',
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(
-              color: Colors.white.withOpacity(0.8),
+              color: Colors.white.withValues(alpha: 0.8),
               fontSize: 14.sp,
               fontWeight: FontWeight.w400,
             ),
@@ -385,10 +385,10 @@ class _CrowdfundHomeScreenState extends State<CrowdfundHomeScreen> {
       child: Container(
         padding: EdgeInsets.all(20.w),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
+          color: color.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(16.r),
           border: Border.all(
-            color: color.withOpacity(0.3),
+            color: color.withValues(alpha: 0.3),
             width: 1,
           ),
           boxShadow: [

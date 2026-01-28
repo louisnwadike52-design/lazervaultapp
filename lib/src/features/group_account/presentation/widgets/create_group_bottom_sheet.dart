@@ -97,7 +97,7 @@ class _CreateGroupBottomSheetState extends State<CreateGroupBottomSheet> {
                             gradient: LinearGradient(
                               colors: [
                                 const Color.fromARGB(255, 78, 3, 208),
-                                const Color.fromARGB(255, 78, 3, 208).withOpacity(0.8),
+                                const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.8),
                               ],
                             ),
                             borderRadius: BorderRadius.circular(12.r),
@@ -267,10 +267,10 @@ class _CreateGroupBottomSheetState extends State<CreateGroupBottomSheet> {
                     Container(
                       padding: EdgeInsets.all(16.w),
                       decoration: BoxDecoration(
-                        color: const Color.fromARGB(255, 78, 3, 208).withOpacity(0.1),
+                        color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12.r),
                         border: Border.all(
-                          color: const Color.fromARGB(255, 78, 3, 208).withOpacity(0.2),
+                          color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
                         ),
                       ),
                       child: Row(

@@ -382,7 +382,7 @@ class _LifeStyleScreenState extends State<LifeStyleScreen> {
                       height: 200.w,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: Colors.white.withOpacity(0.1),
+                        color: Colors.white.withValues(alpha: 0.1),
                       ),
                     ),
                   ),
@@ -462,7 +462,7 @@ class _LifeStyleScreenState extends State<LifeStyleScreen> {
                     shape: BoxShape.circle,
                     boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 6,
             offset: Offset(0, 2),
           ),
@@ -529,7 +529,7 @@ class _LifeStyleScreenState extends State<LifeStyleScreen> {
                             end: Alignment.bottomLeft,
                             colors: [
                               Colors.transparent,
-                              promo.backgroundColor.withOpacity(0.9),
+                              promo.backgroundColor.withValues(alpha: 0.9),
                             ],
                           ),
                         ),
@@ -618,7 +618,7 @@ class _LifeStyleScreenState extends State<LifeStyleScreen> {
                 onTap: () => _showCategoryDetails(category),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: category.color.withOpacity(0.1),
+                    color: category.color.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(16.r),
                   ),
                   child: Column(
@@ -711,7 +711,7 @@ class _LifeStyleScreenState extends State<LifeStyleScreen> {
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: Colors.black.withValues(alpha: 0.2),
             blurRadius: 10,
             offset: Offset(0, 4),
           ),
@@ -737,7 +737,7 @@ class _LifeStyleScreenState extends State<LifeStyleScreen> {
                     begin: Alignment.bottomCenter,
                     end: Alignment.topCenter,
                     colors: [
-                      Colors.black.withOpacity(0.9),
+                      Colors.black.withValues(alpha: 0.9),
                       Colors.transparent,
                     ],
                   ),
@@ -801,7 +801,7 @@ class _LifeStyleScreenState extends State<LifeStyleScreen> {
                     borderRadius: BorderRadius.circular(16.r),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
+                        color: Colors.black.withValues(alpha: 0.1),
                         blurRadius: 10,
                         offset: Offset(0, 4),
                       ),
@@ -887,7 +887,7 @@ class _LifeStyleScreenState extends State<LifeStyleScreen> {
                   borderRadius: BorderRadius.circular(16.r),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
+                      color: Colors.black.withValues(alpha: 0.1),
                       blurRadius: 10,
                       offset: Offset(0, 4),
                     ),
@@ -899,7 +899,7 @@ class _LifeStyleScreenState extends State<LifeStyleScreen> {
                       width: 60.w,
                       height: 60.w,
                       decoration: BoxDecoration(
-                        color: _categories[index].color.withOpacity(0.2),
+                        color: _categories[index].color.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(12.r),
                       ),
                       child: Icon(
@@ -961,7 +961,7 @@ class _LifeStyleScreenState extends State<LifeStyleScreen> {
         borderRadius: BorderRadius.circular(24.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.blue.withOpacity(0.2),
+            color: Colors.blue.withValues(alpha: 0.2),
             blurRadius: 20,
             offset: Offset(0, 10),
           ),
@@ -1001,7 +1001,7 @@ class _LifeStyleScreenState extends State<LifeStyleScreen> {
       margin: EdgeInsets.only(right: 12.w),
       padding: EdgeInsets.all(12.w),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
+        color: Colors.white.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(16.r),
       ),
       child: Column(
@@ -1043,7 +1043,7 @@ class _LifeStyleScreenState extends State<LifeStyleScreen> {
         borderRadius: BorderRadius.circular(24.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.purple.withOpacity(0.2),
+            color: Colors.purple.withValues(alpha: 0.2),
             blurRadius: 20,
             offset: Offset(0, 10),
           ),
@@ -1066,7 +1066,7 @@ class _LifeStyleScreenState extends State<LifeStyleScreen> {
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(20.r),
                 ),
                 child: Text(
@@ -1117,7 +1117,7 @@ class _LifeStyleScreenState extends State<LifeStyleScreen> {
       margin: EdgeInsets.only(right: 16.w),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20.r),
-        color: Colors.white.withOpacity(0.1),
+        color: Colors.white.withValues(alpha: 0.1),
       ),
       child: Stack(
         children: [
@@ -1137,7 +1137,7 @@ class _LifeStyleScreenState extends State<LifeStyleScreen> {
                 end: Alignment.bottomCenter,
                 colors: [
                   Colors.transparent,
-                  Colors.black.withOpacity(0.8),
+                  Colors.black.withValues(alpha: 0.8),
                 ],
               ),
             ),
@@ -1252,7 +1252,7 @@ class _LifeStyleScreenState extends State<LifeStyleScreen> {
         borderRadius: BorderRadius.circular(20.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: Colors.black.withValues(alpha: 0.2),
             blurRadius: 10,
             offset: Offset(0, 4),
           ),
@@ -1276,7 +1276,7 @@ class _LifeStyleScreenState extends State<LifeStyleScreen> {
                   child: Container(
                     padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                     decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.6),
+                      color: Colors.black.withValues(alpha: 0.6),
                       borderRadius: BorderRadius.circular(12.r),
                     ),
                     child: Row(
@@ -1402,7 +1402,7 @@ class _LifeStyleScreenState extends State<LifeStyleScreen> {
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(16.r),
                 ),
                 child: Row(
@@ -1458,7 +1458,7 @@ class _LifeStyleScreenState extends State<LifeStyleScreen> {
       width: 160.w,
       margin: EdgeInsets.only(right: 16.w),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
+        color: Colors.white.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(16.r),
       ),
       child: Stack(
@@ -1479,7 +1479,7 @@ class _LifeStyleScreenState extends State<LifeStyleScreen> {
                 end: Alignment.bottomCenter,
                 colors: [
                   Colors.transparent,
-                  Colors.black.withOpacity(0.8),
+                  Colors.black.withValues(alpha: 0.8),
                 ],
               ),
             ),
@@ -1617,7 +1617,7 @@ class _LifeStyleScreenState extends State<LifeStyleScreen> {
         color: isUnread ? Color(0xFF2A2A2A) : Color(0xFF222222),
         borderRadius: BorderRadius.circular(12.r),
         border: isUnread
-            ? Border.all(color: Colors.blue.withOpacity(0.3))
+            ? Border.all(color: Colors.blue.withValues(alpha: 0.3))
             : null,
       ),
       child: Row(
@@ -1698,7 +1698,7 @@ class _LifeStyleScreenState extends State<LifeStyleScreen> {
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                 decoration: BoxDecoration(
-                  color: Colors.blue.withOpacity(0.2),
+                  color: Colors.blue.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(20.r),
                 ),
                 child: Row(
@@ -1838,7 +1838,7 @@ class _LifeStyleScreenState extends State<LifeStyleScreen> {
                 end: Alignment.bottomCenter,
                 colors: [
                   Colors.transparent,
-                  Colors.black.withOpacity(0.8),
+                  Colors.black.withValues(alpha: 0.8),
                 ],
               ),
             ),
@@ -1849,7 +1849,7 @@ class _LifeStyleScreenState extends State<LifeStyleScreen> {
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.6),
+                color: Colors.black.withValues(alpha: 0.6),
                 borderRadius: BorderRadius.circular(12.r),
               ),
               child: Row(
@@ -1963,7 +1963,7 @@ class _LifeStyleScreenState extends State<LifeStyleScreen> {
                 end: Alignment.bottomCenter,
                 colors: [
                   Colors.transparent,
-                  Colors.black.withOpacity(0.9),
+                  Colors.black.withValues(alpha: 0.9),
                 ],
               ),
             ),
@@ -2004,7 +2004,7 @@ class _LifeStyleScreenState extends State<LifeStyleScreen> {
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                   decoration: BoxDecoration(
-                    color: color.withOpacity(0.2),
+                    color: color.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(8.r),
                   ),
                   child: Text(

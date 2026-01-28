@@ -28,7 +28,6 @@ import '../domain/entities/profile_entity.dart';
 import '../domain/entities/user.dart';
 import '../domain/entities/signup_draft.dart';
 import '../domain/entities/two_factor_entity.dart';
-import '../domain/usecases/enable_two_factor_usecase.dart';
 import 'authentication_state.dart';
 
 class AuthenticationCubit extends Cubit<AuthenticationState> {
@@ -1129,7 +1128,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
 
       result.fold(
         (failure) {
-          final errorMsg = failure.message ?? 'Failed to verify identity';
+          final errorMsg = failure.message;
           _showErrorSnackbar('Verification Failed', errorMsg);
           emit(currentState.copyWith(
             isLoading: false,
@@ -1162,7 +1161,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
             final phoneNumber = currentState.phoneNumber;
 
             // Determine if secondary verification is needed
-            final hasSecondaryPhone = phoneNumber != null && phoneNumber.isNotEmpty;
+            final hasSecondaryPhone = phoneNumber.isNotEmpty;
 
             // Navigate to email verification (codeSent: false - page will send email on load)
             Get.offAllNamed(AppRoutes.emailVerification, arguments: {
@@ -1283,7 +1282,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     final phoneNumber = currentState.phoneNumber;
 
     // Determine if secondary verification is needed
-    final hasSecondaryPhone = phoneNumber != null && phoneNumber.isNotEmpty;
+    final hasSecondaryPhone = phoneNumber.isNotEmpty;
 
     // Navigate to email verification (codeSent: false - page will send email on load)
     Get.offAllNamed(AppRoutes.emailVerification, arguments: {
@@ -1808,7 +1807,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       final phoneNumber = currentState.phoneNumber;
 
       // Determine if secondary verification is needed
-      final hasSecondaryPhone = phoneNumber != null && phoneNumber.isNotEmpty;
+      final hasSecondaryPhone = phoneNumber.isNotEmpty;
 
       // Navigate to email verification (codeSent: false - page will send email on load)
       Get.offAllNamed(AppRoutes.emailVerification, arguments: {
@@ -1973,7 +1972,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       title,
       message,
       snackPosition: SnackPosition.TOP,
-      backgroundColor: Colors.green.withOpacity(0.9),
+      backgroundColor: Colors.green.withValues(alpha: 0.9),
       colorText: Colors.white,
       margin: const EdgeInsets.all(15),
       borderRadius: 10,
@@ -1989,7 +1988,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       title,
       message,
       snackPosition: SnackPosition.TOP,
-      backgroundColor: Colors.red.withOpacity(0.9),
+      backgroundColor: Colors.red.withValues(alpha: 0.9),
       colorText: Colors.white,
       margin: const EdgeInsets.all(15),
       borderRadius: 10,
@@ -2005,7 +2004,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       title,
       message,
       snackPosition: SnackPosition.TOP,
-      backgroundColor: Colors.blue.withOpacity(0.9),
+      backgroundColor: Colors.blue.withValues(alpha: 0.9),
       colorText: Colors.white,
       margin: const EdgeInsets.all(15),
       borderRadius: 10,

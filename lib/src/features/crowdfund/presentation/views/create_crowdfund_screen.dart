@@ -267,7 +267,7 @@ class _CreateCrowdfundScreenState extends State<CreateCrowdfundScreen> {
                           borderRadius: BorderRadius.circular(12.r),
                         ),
                         disabledBackgroundColor:
-                            const Color(0xFF4E03D0).withOpacity(0.5),
+                            const Color(0xFF4E03D0).withValues(alpha: 0.5),
                       ),
                       child: isLoading
                           ? SizedBox(
@@ -507,54 +507,56 @@ class _CreateCrowdfundScreenState extends State<CreateCrowdfundScreen> {
   }
 
   Widget _buildVisibilitySelector() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Visibility',
-          style: TextStyle(
-            color: Colors.grey[400],
-            fontSize: 14.sp,
-            fontWeight: FontWeight.w600,
+    return RadioGroup<CrowdfundVisibility>(
+      groupValue: _selectedVisibility,
+      onChanged: (value) {
+        setState(() {
+          _selectedVisibility = value ?? _selectedVisibility;
+        });
+      },
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Visibility',
+            style: TextStyle(
+              color: Colors.grey[400],
+              fontSize: 14.sp,
+              fontWeight: FontWeight.w600,
+            ),
           ),
-        ),
-        SizedBox(height: 8.h),
-        ...CrowdfundVisibility.values.map((visibility) {
-          return RadioListTile<CrowdfundVisibility>(
-            value: visibility,
-            groupValue: _selectedVisibility,
-            onChanged: (value) {
-              setState(() {
-                _selectedVisibility = value!;
-              });
-            },
-            title: Text(
-              _getVisibilityLabel(visibility),
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 14.sp,
+          SizedBox(height: 8.h),
+          ...CrowdfundVisibility.values.map((visibility) {
+            return RadioListTile<CrowdfundVisibility>(
+              value: visibility,
+              title: Text(
+                _getVisibilityLabel(visibility),
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 14.sp,
+                ),
               ),
-            ),
-            subtitle: Text(
-              _getVisibilityDescription(visibility),
-              style: TextStyle(
-                color: Colors.grey[600],
-                fontSize: 12.sp,
+              subtitle: Text(
+                _getVisibilityDescription(visibility),
+                style: TextStyle(
+                  color: Colors.grey[600],
+                  fontSize: 12.sp,
+                ),
               ),
-            ),
-            activeColor: const Color(0xFF4E03D0),
-            tileColor: const Color(0xFF1F1F1F),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12.r),
-              side: BorderSide(
-                color: _selectedVisibility == visibility
-                    ? const Color(0xFF4E03D0)
-                    : const Color(0xFF2D2D2D),
+              activeColor: const Color(0xFF4E03D0),
+              tileColor: const Color(0xFF1F1F1F),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12.r),
+                side: BorderSide(
+                  color: _selectedVisibility == visibility
+                      ? const Color(0xFF4E03D0)
+                      : const Color(0xFF2D2D2D),
+                ),
               ),
-            ),
-          );
-        }),
-      ],
+            );
+          }),
+        ],
+      ),
     );
   }
 

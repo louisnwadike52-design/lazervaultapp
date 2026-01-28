@@ -67,7 +67,7 @@ class TagPaymentReceiptScreen extends StatelessWidget {
       width: 100.w,
       height: 100.w,
       decoration: BoxDecoration(
-        color: const Color(0xFF10B981).withOpacity(0.1),
+        color: const Color(0xFF10B981).withValues(alpha: 0.1),
         shape: BoxShape.circle,
       ),
       child: Icon(
@@ -229,7 +229,7 @@ class TagPaymentReceiptScreen extends StatelessWidget {
                 child: OutlinedButton.icon(
                   onPressed: () {
                     // Share receipt
-                    Share.share('Payment Receipt\nAmount: ...');
+                    SharePlus.instance.share(ShareParams(text: 'Payment Receipt\nAmount: ...'));
                   },
                   icon: Icon(Icons.share, size: 18.sp),
                   label: Text(

@@ -31,7 +31,7 @@ class _NewCardScreenState extends State<NewCardScreen> {
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 18.sp,
-                  color: HexColor.fromHex("#262626"),
+                  color: HybridHexColor.fromHex("#262626"),
                 ),
               ),
               SizedBox(height: 16.h),
@@ -91,7 +91,7 @@ class _NewCardScreenState extends State<NewCardScreen> {
               IconButton(
                 icon: Icon(
                   Icons.scanner_outlined,
-                  color: HexColor.fromHex("#262626"),
+                  color: HybridHexColor.fromHex("#262626"),
                 ),
                 onPressed: () => _showBottomSheet(context), // Open BottomSheet
               ),

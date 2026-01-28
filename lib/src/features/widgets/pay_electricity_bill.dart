@@ -93,7 +93,7 @@ class _PayElectricityBillState extends State<PayElectricityBill> {
                                             borderRadius: BorderRadius.circular(20.r),
                                             boxShadow: [
                                               BoxShadow(
-                                                color: Colors.black.withOpacity(0.05),
+                                                color: Colors.black.withValues(alpha: 0.05),
                                                 blurRadius: 10,
                                                 offset: Offset(0, 4),
                                               ),
@@ -196,7 +196,7 @@ class _PayElectricityBillState extends State<PayElectricityBill> {
                                       borderRadius: BorderRadius.circular(16.r),
                                       boxShadow: [
                                         BoxShadow(
-                                          color: Colors.black.withOpacity(0.05),
+                                          color: Colors.black.withValues(alpha: 0.05),
                                           blurRadius: 10,
                                           offset: Offset(0, 4),
                                         ),
@@ -208,7 +208,7 @@ class _PayElectricityBillState extends State<PayElectricityBill> {
                                           padding: EdgeInsets.all(12.w),
                                           decoration: BoxDecoration(
                                             color: Color.fromARGB(255, 78, 3, 208)
-                                                .withOpacity(0.1),
+                                                .withValues(alpha: 0.1),
                                             borderRadius: BorderRadius.circular(12.r),
                                           ),
                                           child: Icon(

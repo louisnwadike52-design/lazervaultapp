@@ -70,7 +70,7 @@ class TagCreationReceiptScreen extends StatelessWidget {
       width: 100.w,
       height: 100.w,
       decoration: BoxDecoration(
-        color: const Color(0xFF10B981).withOpacity(0.1),
+        color: const Color(0xFF10B981).withValues(alpha: 0.1),
         shape: BoxShape.circle,
       ),
       child: Icon(
@@ -228,7 +228,7 @@ class TagCreationReceiptScreen extends StatelessWidget {
                 child: OutlinedButton.icon(
                   onPressed: () {
                     // Share tag details
-                    Share.share('Tag Created\nAmount: ...');
+                    SharePlus.instance.share(ShareParams(text: 'Tag Created\nAmount: ...'));
                   },
                   icon: Icon(Icons.share, size: 18.sp),
                   label: Text(

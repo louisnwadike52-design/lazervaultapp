@@ -153,7 +153,7 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
               width: 40.w,
               height: 40.w,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12.r),
               ),
               child: Icon(
@@ -181,7 +181,7 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
                 Text(
                   'Please confirm your batch transfer details',
                   style: GoogleFonts.inter(
-                    color: Colors.white.withOpacity(0.6),
+                    color: Colors.white.withValues(alpha: 0.6),
                     fontSize: 13.sp,
                     fontWeight: FontWeight.w400,
                   ),
@@ -244,11 +244,11 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(20.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -269,7 +269,7 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
                   borderRadius: BorderRadius.circular(16.r),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.blue[600]!.withOpacity(0.3),
+                      color: Colors.blue[600]!.withValues(alpha: 0.3),
                       blurRadius: 8,
                       offset: const Offset(0, 4),
                     ),
@@ -299,7 +299,7 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
                       '$recipientCount ${recipientCount == 1 ? 'recipient' : 'recipients'}',
                       style: GoogleFonts.inter(
                         fontSize: 12.sp,
-                        color: Colors.white.withOpacity(0.6),
+                        color: Colors.white.withValues(alpha: 0.6),
                         fontWeight: FontWeight.w400,
                       ),
                     ),
@@ -316,7 +316,7 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
             width: double.infinity,
             padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.05),
+              color: Colors.white.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: Column(
@@ -325,7 +325,7 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
                   'Total Amount',
                   style: GoogleFonts.inter(
                     fontSize: 14.sp,
-                    color: Colors.white.withOpacity(0.6),
+                    color: Colors.white.withValues(alpha: 0.6),
                     fontWeight: FontWeight.w400,
                   ),
                 ),
@@ -350,11 +350,11 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(20.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -387,11 +387,11 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(20.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -433,7 +433,7 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.03),
+        color: Colors.white.withValues(alpha: 0.03),
         borderRadius: BorderRadius.circular(12.r),
       ),
       child: Row(
@@ -475,7 +475,7 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
                   Text(
                     recipient.reference!,
                     style: GoogleFonts.inter(
-                      color: Colors.white.withOpacity(0.6),
+                      color: Colors.white.withValues(alpha: 0.6),
                       fontSize: 12.sp,
                       fontWeight: FontWeight.w400,
                     ),
@@ -500,11 +500,11 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(20.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -526,7 +526,7 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
           SizedBox(height: 8.h),
           _buildBreakdownRow('Service Fee (0.5%)', fee),
           SizedBox(height: 12.h),
-          Divider(color: Colors.white.withOpacity(0.1)),
+          Divider(color: Colors.white.withValues(alpha: 0.1)),
           SizedBox(height: 12.h),
           _buildBreakdownRow('Total Amount', grandTotal, isTotal: true),
         ],
@@ -542,7 +542,7 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
           label,
           style: GoogleFonts.inter(
             fontSize: 14.sp,
-            color: Colors.white.withOpacity(0.6),
+            color: Colors.white.withValues(alpha: 0.6),
             fontWeight: FontWeight.w400,
           ),
         ),
@@ -566,7 +566,7 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
           label,
           style: GoogleFonts.inter(
             fontSize: isTotal ? 16.sp : 14.sp,
-            color: isTotal ? Colors.white : Colors.white.withOpacity(0.6),
+            color: isTotal ? Colors.white : Colors.white.withValues(alpha: 0.6),
             fontWeight: isTotal ? FontWeight.w600 : FontWeight.w400,
           ),
         ),

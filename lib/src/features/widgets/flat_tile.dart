@@ -15,14 +15,14 @@ class FlatTile extends StatelessWidget {
           style: TextStyle(
               fontWeight: FontWeight.w500,
               fontSize: 16.0.sp,
-              color: HexColor.fromHex("#262626"))),
+              color: HybridHexColor.fromHex("#262626"))),
       Text(
         value,
         style: TextStyle(
             fontSize: 14.0.sp,
-            color: name == TransactionAttribute.status
+            color: name == TransactionAttribute.status.displayName
                 ? Colors.blue
-                : HexColor.fromHex("#A3A3A3")),
+                : HybridHexColor.fromHex("#A3A3A3")),
       )
     ]);
   }

@@ -50,7 +50,7 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
                       Get.snackbar(
                         'Error',
                         state.message,
-                        backgroundColor: Colors.red.withOpacity(0.9),
+                        backgroundColor: Colors.red.withValues(alpha: 0.9),
                         colorText: Colors.white,
                       );
                     }
@@ -106,10 +106,10 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
               width: 44.w,
               height: 44.w,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(22.r),
                 border: Border.all(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   width: 1,
                 ),
               ),
@@ -136,7 +136,7 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
                 Text(
                   'View all your transactions',
                   style: GoogleFonts.inter(
-                    color: Colors.white.withOpacity(0.6),
+                    color: Colors.white.withValues(alpha: 0.6),
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w400,
                   ),
@@ -161,15 +161,15 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
               height: 120.w,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.white.withOpacity(0.05),
+                color: Colors.white.withValues(alpha: 0.05),
                 border: Border.all(
-                  color: Colors.white.withOpacity(0.1),
+                  color: Colors.white.withValues(alpha: 0.1),
                   width: 2,
                 ),
               ),
               child: Icon(
                 Icons.receipt_long,
-                color: Colors.white.withOpacity(0.3),
+                color: Colors.white.withValues(alpha: 0.3),
                 size: 56.sp,
               ),
             ),
@@ -186,7 +186,7 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
             Text(
               'Your payment history will appear here\nonce you make your first payment',
               style: GoogleFonts.inter(
-                color: Colors.white.withOpacity(0.6),
+                color: Colors.white.withValues(alpha: 0.6),
                 fontSize: 14.sp,
                 fontWeight: FontWeight.w400,
               ),
@@ -240,10 +240,10 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
       child: Container(
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.05),
+          color: Colors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(16.r),
           border: Border.all(
-            color: Colors.white.withOpacity(0.1),
+            color: Colors.white.withValues(alpha: 0.1),
             width: 1,
           ),
         ),
@@ -256,7 +256,7 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
                   width: 48.w,
                   height: 48.w,
                   decoration: BoxDecoration(
-                    color: _getStatusColor(payment.status).withOpacity(0.2),
+                    color: _getStatusColor(payment.status).withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(12.r),
                   ),
                   child: Icon(
@@ -282,7 +282,7 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
                       Text(
                         payment.customerName,
                         style: GoogleFonts.inter(
-                          color: Colors.white.withOpacity(0.6),
+                          color: Colors.white.withValues(alpha: 0.6),
                           fontSize: 14.sp,
                           fontWeight: FontWeight.w400,
                         ),
@@ -305,7 +305,7 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
                     Container(
                       padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                       decoration: BoxDecoration(
-                        color: _getStatusColor(payment.status).withOpacity(0.2),
+                        color: _getStatusColor(payment.status).withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(8.r),
                       ),
                       child: Text(
@@ -344,7 +344,7 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
               Container(
                 padding: EdgeInsets.all(12.w),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF4E03D0).withOpacity(0.1),
+                  color: const Color(0xFF4E03D0).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8.r),
                 ),
                 child: Row(
@@ -381,7 +381,7 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(8.r),
       ),
       child: Row(
@@ -389,7 +389,7 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
         children: [
           Icon(
             icon,
-            color: Colors.white.withOpacity(0.6),
+            color: Colors.white.withValues(alpha: 0.6),
             size: 14.sp,
           ),
           SizedBox(width: 6.w),
@@ -397,7 +397,7 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
             child: Text(
               text,
               style: GoogleFonts.inter(
-                color: Colors.white.withOpacity(0.6),
+                color: Colors.white.withValues(alpha: 0.6),
                 fontSize: 12.sp,
                 fontWeight: FontWeight.w400,
               ),

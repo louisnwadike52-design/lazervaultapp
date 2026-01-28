@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:google_fonts/google_fonts.dart';
 
-/// Transaction PIN entry modal for payment verification
+/// Transaction PIN entry bottom sheet for payment verification
 class TransactionPinModal extends StatefulWidget {
   final String? title;
   final String? message;
   final double? amount;
   final String? currency;
+  final String? currencySymbol;
   final Function(String) onPinSubmitted;
   final VoidCallback? onForgotPin;
   final VoidCallback? onCancel;
@@ -21,6 +24,7 @@ class TransactionPinModal extends StatefulWidget {
     this.message,
     this.amount,
     this.currency,
+    this.currencySymbol,
     required this.onPinSubmitted,
     this.onForgotPin,
     this.onCancel,
@@ -35,7 +39,6 @@ class TransactionPinModal extends StatefulWidget {
 }
 
 class _TransactionPinModalState extends State<TransactionPinModal> {
-  final TextEditingController _pinController = TextEditingController();
   final List<FocusNode> _pinFocusNodes = List.generate(4, (_) => FocusNode());
   final List<TextEditingController> _pinControllers =
       List.generate(4, (_) => TextEditingController());
@@ -46,7 +49,6 @@ class _TransactionPinModalState extends State<TransactionPinModal> {
   @override
   void initState() {
     super.initState();
-    // Auto-focus first PIN field
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_pinFocusNodes.isNotEmpty) {
         _pinFocusNodes[0].requestFocus();
@@ -56,7 +58,6 @@ class _TransactionPinModalState extends State<TransactionPinModal> {
 
   @override
   void dispose() {
-    _pinController.dispose();
     for (var node in _pinFocusNodes) {
       node.dispose();
     }
@@ -68,17 +69,13 @@ class _TransactionPinModalState extends State<TransactionPinModal> {
 
   void _onPinChanged(String value, int index) {
     if (value.length == 1 && index < 3) {
-      // Move to next field
       _pinFocusNodes[index + 1].requestFocus();
     } else if (value.isEmpty && index > 0) {
-      // Move to previous field
       _pinFocusNodes[index - 1].requestFocus();
     }
 
-    // Update PIN string
     _pin = _pinControllers.map((c) => c.text).join();
 
-    // Auto-submit when 4 digits entered
     if (_pin.length == 4) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _submitPin();
@@ -89,298 +86,300 @@ class _TransactionPinModalState extends State<TransactionPinModal> {
   void _submitPin() {
     if (_pin.length == 4) {
       widget.onPinSubmitted(_pin);
-    } else {
-      // Show error
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a 4-digit PIN')),
-      );
     }
   }
 
-  void _clearPin() {
-    for (var controller in _pinControllers) {
-      controller.clear();
-    }
-    _pin = '';
-    if (_pinFocusNodes.isNotEmpty) {
-      _pinFocusNodes[0].requestFocus();
-    }
-  }
+  String get _displaySymbol =>
+      widget.currencySymbol ?? widget.currency ?? '';
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final remainingAttempts = widget.maxAttempts - widget.currentAttempt;
 
-    return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Container(
-        constraints: const BoxConstraints(maxWidth: 400),
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Header
-            _buildHeader(context, theme),
-
-            const SizedBox(height: 24),
-
-            // Amount display (if provided)
-            if (widget.amount != null && widget.currency != null)
-              _buildAmountDisplay(context, theme),
-
-            const SizedBox(height: 24),
-
-            // Error message
-            if (widget.errorMessage != null)
-              _buildErrorMessage(context, theme),
-
-            const SizedBox(height: 8),
-
-            // Remaining attempts warning
-            if (remainingAttempts > 0 && remainingAttempts < widget.maxAttempts)
-              _buildAttemptsWarning(context, theme, remainingAttempts),
-
-            const SizedBox(height: 24),
-
-            // PIN input fields
-            _buildPinInputFields(context, theme),
-
-            const SizedBox(height: 24),
-
-            // Actions
-            _buildActions(context, theme),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHeader(BuildContext context, ThemeData theme) {
-    return Column(
-      children: [
-        // Lock icon
-        Container(
-          width: 64,
-          height: 64,
-          decoration: BoxDecoration(
-            color: theme.colorScheme.primaryContainer,
-            shape: BoxShape.circle,
-          ),
-          child: Icon(
-            Icons.lock_outline,
-            size: 32,
-            color: theme.colorScheme.primary,
-          ),
-        ),
-
-        const SizedBox(height: 16),
-
-        // Title
-        Text(
-          widget.title ?? 'Enter Transaction PIN',
-          style: theme.textTheme.headlineSmall?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
-          textAlign: TextAlign.center,
-        ),
-
-        const SizedBox(height: 8),
-
-        // Message
-        if (widget.message != null)
-          Text(
-            widget.message!,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurface.withOpacity(0.7),
-            ),
-            textAlign: TextAlign.center,
-          ),
-      ],
-    );
-  }
-
-  Widget _buildAmountDisplay(BuildContext context, ThemeData theme) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+      ),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(12),
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
       ),
-      child: Column(
-        children: [
-          Text(
-            'Amount',
-            style: theme.textTheme.labelSmall?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            '${widget.currency} ${widget.amount!.toStringAsFixed(2)}',
-            style: theme.textTheme.headlineMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: theme.colorScheme.primary,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildErrorMessage(BuildContext context, ThemeData theme) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.errorContainer,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        children: [
-          Icon(
-            Icons.error_outline,
-            color: theme.colorScheme.error,
-            size: 20,
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              widget.errorMessage!,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onErrorContainer,
+      child: SafeArea(
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 20.h),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Drag handle
+              Container(
+                width: 40.w,
+                height: 4.h,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2.r),
+                ),
               ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+              SizedBox(height: 20.h),
 
-  Widget _buildAttemptsWarning(
-    BuildContext context,
-    ThemeData theme,
-    int remainingAttempts,
-  ) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.errorContainer.withOpacity(0.5),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: theme.colorScheme.error,
-          width: 1,
-        ),
-      ),
-      child: Row(
-        children: [
-          Icon(
-            Icons.warning_amber_rounded,
-            color: theme.colorScheme.error,
-            size: 20,
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              '$remainingAttempts attempt${remainingAttempts == 1 ? '' : 's'} remaining',
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.error,
-                fontWeight: FontWeight.w500,
+              // Lock icon
+              Container(
+                width: 56.w,
+                height: 56.w,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF4E03D0).withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.lock_outline,
+                  size: 28.sp,
+                  color: const Color(0xFF4E03D0),
+                ),
               ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+              SizedBox(height: 16.h),
 
-  Widget _buildPinInputFields(BuildContext context, ThemeData theme) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: List.generate(4, (index) {
-        return SizedBox(
-          width: 56,
-          height: 64,
-          child: TextField(
-            controller: _pinControllers[index],
-            focusNode: _pinFocusNodes[index],
-            textAlign: TextAlign.center,
-            style: theme.textTheme.headlineMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
-            keyboardType: TextInputType.number,
-            obscureText: _isObscured,
-            inputFormatters: [
-              FilteringTextInputFormatter.digitsOnly,
-              LengthLimitingTextInputFormatter(1),
+              // Title
+              Text(
+                widget.title ?? 'Enter Transaction PIN',
+                style: GoogleFonts.inter(
+                  fontSize: 20.sp,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.black,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 6.h),
+
+              // Message
+              if (widget.message != null)
+                Text(
+                  widget.message!,
+                  style: GoogleFonts.inter(
+                    fontSize: 13.sp,
+                    color: Colors.grey.shade600,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+
+              // Amount display
+              if (widget.amount != null) ...[
+                SizedBox(height: 16.h),
+                Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 16.w),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade50,
+                    borderRadius: BorderRadius.circular(12.r),
+                    border: Border.all(color: Colors.grey.shade200),
+                  ),
+                  child: Column(
+                    children: [
+                      Text(
+                        'Amount',
+                        style: GoogleFonts.inter(
+                          fontSize: 12.sp,
+                          color: Colors.grey.shade500,
+                        ),
+                      ),
+                      SizedBox(height: 4.h),
+                      Text(
+                        '$_displaySymbol${widget.amount!.toStringAsFixed(2)}',
+                        style: GoogleFonts.inter(
+                          fontSize: 24.sp,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF4E03D0),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+
+              // Error message
+              if (widget.errorMessage != null) ...[
+                SizedBox(height: 12.h),
+                Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.all(10.w),
+                  decoration: BoxDecoration(
+                    color: Colors.red.shade50,
+                    borderRadius: BorderRadius.circular(8.r),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.error_outline, color: Colors.red.shade700, size: 18.sp),
+                      SizedBox(width: 8.w),
+                      Expanded(
+                        child: Text(
+                          widget.errorMessage!,
+                          style: GoogleFonts.inter(
+                            fontSize: 12.sp,
+                            color: Colors.red.shade700,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+
+              // Attempts warning
+              if (remainingAttempts > 0 && remainingAttempts < widget.maxAttempts) ...[
+                SizedBox(height: 8.h),
+                Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.all(10.w),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.shade50,
+                    borderRadius: BorderRadius.circular(8.r),
+                    border: Border.all(color: Colors.orange.shade200),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.warning_amber_rounded, color: Colors.orange.shade700, size: 18.sp),
+                      SizedBox(width: 8.w),
+                      Text(
+                        '$remainingAttempts attempt${remainingAttempts == 1 ? '' : 's'} remaining',
+                        style: GoogleFonts.inter(
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.orange.shade700,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+
+              SizedBox(height: 24.h),
+
+              // PIN input fields
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(4, (index) {
+                  return Container(
+                    width: 56.w,
+                    height: 60.h,
+                    margin: EdgeInsets.symmetric(horizontal: 6.w),
+                    child: TextField(
+                      controller: _pinControllers[index],
+                      focusNode: _pinFocusNodes[index],
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.inter(
+                        fontSize: 24.sp,
+                        fontWeight: FontWeight.w700,
+                      ),
+                      keyboardType: TextInputType.number,
+                      obscureText: _isObscured,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        LengthLimitingTextInputFormatter(1),
+                      ],
+                      onChanged: (value) => _onPinChanged(value, index),
+                      decoration: InputDecoration(
+                        counterText: '',
+                        contentPadding: EdgeInsets.symmetric(vertical: 14.h),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12.r),
+                          borderSide: BorderSide(color: Colors.grey.shade300),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12.r),
+                          borderSide: BorderSide(color: Colors.grey.shade300),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12.r),
+                          borderSide: const BorderSide(color: Color(0xFF4E03D0), width: 2),
+                        ),
+                        filled: true,
+                        fillColor: Colors.grey.shade50,
+                      ),
+                    ),
+                  );
+                }),
+              ),
+
+              SizedBox(height: 16.h),
+
+              // Actions row
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // Show/Hide PIN
+                  TextButton.icon(
+                    onPressed: () {
+                      setState(() {
+                        _isObscured = !_isObscured;
+                      });
+                    },
+                    icon: Icon(
+                      _isObscured ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                      size: 18.sp,
+                      color: Colors.grey.shade600,
+                    ),
+                    label: Text(
+                      _isObscured ? 'Show' : 'Hide',
+                      style: GoogleFonts.inter(
+                        fontSize: 13.sp,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                  ),
+                  // Forgot PIN
+                  TextButton(
+                    onPressed: widget.isLoading
+                        ? null
+                        : () {
+                            Navigator.of(context).pop();
+                            widget.onForgotPin?.call();
+                          },
+                    child: Text(
+                      'Forgot PIN?',
+                      style: GoogleFonts.inter(
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF4E03D0),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
+              SizedBox(height: 8.h),
+
+              // Cancel button
+              SizedBox(
+                width: double.infinity,
+                height: 48.h,
+                child: OutlinedButton(
+                  onPressed: widget.isLoading ? null : () {
+                    Navigator.of(context).pop();
+                    widget.onCancel?.call();
+                  },
+                  style: OutlinedButton.styleFrom(
+                    side: BorderSide(color: Colors.grey.shade300),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                  ),
+                  child: Text(
+                    'Cancel',
+                    style: GoogleFonts.inter(
+                      fontSize: 15.sp,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey.shade700,
+                    ),
+                  ),
+                ),
+              ),
             ],
-            onChanged: (value) => _onPinChanged(value, index),
-            decoration: InputDecoration(
-              contentPadding: const EdgeInsets.all(12),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(
-                  color: theme.colorScheme.outline,
-                ),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(
-                  color: theme.colorScheme.primary,
-                  width: 2,
-                ),
-              ),
-              filled: true,
-              fillColor: theme.colorScheme.surfaceContainerHighest.withOpacity(0.5),
-            ),
           ),
-        );
-      }),
-    );
-  }
-
-  Widget _buildActions(BuildContext context, ThemeData theme) {
-    return Column(
-      children: [
-        // Toggle PIN visibility button
-        if (!_isObscured || _pin.isNotEmpty)
-          TextButton.icon(
-            onPressed: () {
-              setState(() {
-                _isObscured = !_isObscured;
-              });
-            },
-            icon: Icon(
-              _isObscured ? Icons.visibility_outlined : Icons.visibility_off_outlined,
-            ),
-            label: Text(_isObscured ? 'Show PIN' : 'Hide PIN'),
-          ),
-
-        const SizedBox(height: 8),
-
-        // Cancel button
-        if (widget.onCancel != null)
-          TextButton(
-            onPressed: widget.isLoading ? null : widget.onCancel,
-            child: Text(
-              'Cancel',
-              style: theme.textTheme.bodyLarge?.copyWith(
-                color: theme.colorScheme.error,
-              ),
-            ),
-          ),
-
-        // Forgot PIN link
-        if (widget.onForgotPin != null)
-          TextButton(
-            onPressed: widget.isLoading ? null : widget.onForgotPin,
-            child: const Text('Forgot PIN?'),
-          ),
-      ],
+        ),
+      ),
     );
   }
 }
 
-/// Show transaction PIN modal
+/// Show transaction PIN bottom sheet
 /// Returns the PIN if submitted, null if cancelled
 Future<String?> showTransactionPinModal(
   BuildContext context, {
@@ -388,21 +387,27 @@ Future<String?> showTransactionPinModal(
   String? message,
   double? amount,
   String? currency,
+  String? currencySymbol,
   int maxAttempts = 3,
   int currentAttempt = 1,
   String? errorMessage,
   bool isLoading = false,
+  VoidCallback? onForgotPin,
 }) async {
   String? submittedPin;
 
-  await showDialog(
+  await showModalBottomSheet(
     context: context,
-    barrierDismissible: false,
+    isScrollControlled: true,
+    isDismissible: false,
+    enableDrag: false,
+    backgroundColor: Colors.transparent,
     builder: (context) => TransactionPinModal(
       title: title,
       message: message,
       amount: amount,
       currency: currency,
+      currencySymbol: currencySymbol,
       maxAttempts: maxAttempts,
       currentAttempt: currentAttempt,
       errorMessage: errorMessage,
@@ -411,9 +416,8 @@ Future<String?> showTransactionPinModal(
         submittedPin = pin;
         Navigator.of(context).pop();
       },
-      onCancel: () {
-        Navigator.of(context).pop();
-      },
+      onForgotPin: onForgotPin,
+      onCancel: () {},
     ),
   );
 

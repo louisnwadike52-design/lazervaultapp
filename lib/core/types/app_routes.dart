@@ -98,6 +98,8 @@ abstract class AppRoutes {
   static const String passcodeLogin = '/auth/passcode-login';
   static const String passcodeSetup = '/auth/passcode-setup';
   static const String transactionPinSetup = '/auth/transaction-pin-setup';
+  static const String pinManagement = '/settings/pin-management';
+  static const String forgotPin = '/pin/forgot';
   static const String changePasscode = '/auth/change-passcode';
   static const String emailVerification = '/auth/email-verification';
   static const String phoneVerification = '/auth/phone-verification';

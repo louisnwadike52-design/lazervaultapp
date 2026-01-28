@@ -7,17 +7,23 @@ import 'package:lazervault/src/features/authentication/domain/entities/user.dart
 import 'package:lazervault/src/features/profile/data/models/user_preferences_model.dart';
 import 'package:lazervault/src/features/profile/domain/entities/user_preferences.dart' as domain;
 import 'package:lazervault/src/features/profile/domain/repositories/i_profile_repository.dart';
+import 'package:lazervault/src/features/tag_pay/domain/entities/user_search_result_entity.dart';
+import 'package:lazervault/src/generated/auth.pb.dart' as auth_pb;
+import 'package:lazervault/src/generated/auth.pbgrpc.dart' as auth_grpc;
 import 'package:lazervault/src/generated/user.pbgrpc.dart';
 import 'package:lazervault/src/generated/user.pb.dart' as user_pb;
 
 class ProfileRepositoryImpl implements IProfileRepository {
   final UserServiceClient _userServiceClient;
+  final auth_grpc.AuthServiceClient _authServiceClient;
   final GrpcCallOptionsHelper _callOptionsHelper;
 
   ProfileRepositoryImpl({
     required UserServiceClient userServiceClient,
+    required auth_grpc.AuthServiceClient authServiceClient,
     required GrpcCallOptionsHelper callOptionsHelper,
   })  : _userServiceClient = userServiceClient,
+        _authServiceClient = authServiceClient,
         _callOptionsHelper = callOptionsHelper;
 
   @override
@@ -219,6 +225,48 @@ class ProfileRepositoryImpl implements IProfileRepository {
         message: 'An unexpected error occurred',
         statusCode: 500,
       ));
+    }
+  }
+
+  @override
+  Future<List<UserSearchResultEntity>> searchUsersByUsername({
+    required String query,
+    int limit = 10,
+  }) async {
+    try {
+      final request = auth_pb.SearchUsersByUsernameRequest()
+        ..query = query
+        ..limit = limit;
+
+      print('[ProfileRepository] searchUsersByUsername: query="$query", limit=$limit');
+      final options = await _callOptionsHelper.withAuth();
+      final response = await _authServiceClient.searchUsersByUsername(
+        request,
+        options: options,
+      );
+
+      print('[ProfileRepository] searchUsersByUsername response: success=${response.success}, msg="${response.msg}", users=${response.users.length}');
+      if (!response.success) {
+        print('[ProfileRepository] User search failed: ${response.msg}');
+        return [];
+      }
+
+      return response.users
+          .map((user) => UserSearchResultEntity(
+                userId: user.userId,
+                username: user.username,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                email: '',
+                profilePicture: user.profilePicture,
+              ))
+          .toList();
+    } on GrpcError catch (e) {
+      print('[ProfileRepository] gRPC Error searching users: ${e.codeName} - ${e.message}');
+      return [];
+    } catch (e) {
+      print('[ProfileRepository] Error searching users: $e');
+      return [];
     }
   }
 }

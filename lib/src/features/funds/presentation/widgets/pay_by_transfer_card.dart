@@ -40,7 +40,7 @@ class _PayByTransferCardState extends State<PayByTransferCard> {
     Get.snackbar(
       'Copied',
       '$label copied to clipboard',
-      backgroundColor: const Color(0xFF6C5CE7).withOpacity(0.9),
+      backgroundColor: const Color(0xFF6C5CE7).withValues(alpha: 0.9),
       colorText: Colors.white,
       snackPosition: SnackPosition.BOTTOM,
       duration: const Duration(seconds: 2),
@@ -70,7 +70,7 @@ class _PayByTransferCardState extends State<PayByTransferCard> {
                 width: 40.w,
                 height: 4.h,
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.3),
+                  color: Colors.white.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(2.r),
                 ),
               ),
@@ -85,7 +85,7 @@ class _PayByTransferCardState extends State<PayByTransferCard> {
                       width: 40.w,
                       height: 40.w,
                       decoration: BoxDecoration(
-                        color: const Color(0xFF00D09C).withOpacity(0.2),
+                        color: const Color(0xFF00D09C).withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(10.r),
                       ),
                       child: Icon(
@@ -110,7 +110,7 @@ class _PayByTransferCardState extends State<PayByTransferCard> {
                           Text(
                             'Testing mode - simulate Flutterwave webhook',
                             style: TextStyle(
-                              color: Colors.white.withOpacity(0.6),
+                              color: Colors.white.withValues(alpha: 0.6),
                               fontSize: 12.sp,
                             ),
                           ),
@@ -119,7 +119,7 @@ class _PayByTransferCardState extends State<PayByTransferCard> {
                     ),
                     IconButton(
                       onPressed: () => Navigator.pop(context),
-                      icon: Icon(Icons.close, color: Colors.white.withOpacity(0.6)),
+                      icon: Icon(Icons.close, color: Colors.white.withValues(alpha: 0.6)),
                     ),
                   ],
                 ),
@@ -131,7 +131,7 @@ class _PayByTransferCardState extends State<PayByTransferCard> {
                 margin: EdgeInsets.symmetric(horizontal: 24.w),
                 padding: EdgeInsets.all(16.w),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.05),
+                  color: Colors.white.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(12.r),
                 ),
                 child: Column(
@@ -140,7 +140,7 @@ class _PayByTransferCardState extends State<PayByTransferCard> {
                     Text(
                       'Simulating deposit to:',
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.6),
+                        color: Colors.white.withValues(alpha: 0.6),
                         fontSize: 12.sp,
                       ),
                     ),
@@ -157,7 +157,7 @@ class _PayByTransferCardState extends State<PayByTransferCard> {
                     Text(
                       widget.accountName,
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.8),
+                        color: Colors.white.withValues(alpha: 0.8),
                         fontSize: 14.sp,
                       ),
                     ),
@@ -172,7 +172,7 @@ class _PayByTransferCardState extends State<PayByTransferCard> {
                 child: Text(
                   'Select amount',
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.9),
+                    color: Colors.white.withValues(alpha: 0.9),
                     fontSize: 16.sp,
                     fontWeight: FontWeight.w600,
                   ),
@@ -200,7 +200,7 @@ class _PayByTransferCardState extends State<PayByTransferCard> {
                         decoration: BoxDecoration(
                           color: isSelected
                               ? const Color(0xFF00D09C)
-                              : Colors.white.withOpacity(0.1),
+                              : Colors.white.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8.r),
                           border: Border.all(
                             color: isSelected ? const Color(0xFF00D09C) : Colors.transparent,
@@ -209,7 +209,7 @@ class _PayByTransferCardState extends State<PayByTransferCard> {
                         child: Text(
                           '₦${amount.toString()}',
                           style: TextStyle(
-                            color: isSelected ? Colors.white : Colors.white.withOpacity(0.7),
+                            color: isSelected ? Colors.white : Colors.white.withValues(alpha: 0.7),
                             fontSize: 14.sp,
                             fontWeight: FontWeight.w600,
                           ),
@@ -249,7 +249,7 @@ class _PayByTransferCardState extends State<PayByTransferCard> {
                               Get.snackbar(
                                 'Deposit Simulated!',
                                 result.message,
-                                backgroundColor: Colors.green.withOpacity(0.9),
+                                backgroundColor: Colors.green.withValues(alpha: 0.9),
                                 colorText: Colors.white,
                                 snackPosition: SnackPosition.BOTTOM,
                                 duration: const Duration(seconds: 3),
@@ -260,7 +260,7 @@ class _PayByTransferCardState extends State<PayByTransferCard> {
                               Get.snackbar(
                                 'Simulation Failed',
                                 result.message,
-                                backgroundColor: Colors.red.withOpacity(0.9),
+                                backgroundColor: Colors.red.withValues(alpha: 0.9),
                                 colorText: Colors.white,
                                 snackPosition: SnackPosition.BOTTOM,
                                 duration: const Duration(seconds: 4),
@@ -313,10 +313,10 @@ class _PayByTransferCardState extends State<PayByTransferCard> {
       width: double.infinity,
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
+        color: Colors.white.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(
-          color: Colors.white.withOpacity(0.2),
+          color: Colors.white.withValues(alpha: 0.2),
         ),
       ),
       child: Column(
@@ -329,7 +329,7 @@ class _PayByTransferCardState extends State<PayByTransferCard> {
                 width: 40.w,
                 height: 40.w,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF00D09C).withOpacity(0.2),
+                  color: const Color(0xFF00D09C).withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(10.r),
                 ),
                 child: Icon(
@@ -354,7 +354,7 @@ class _PayByTransferCardState extends State<PayByTransferCard> {
                     Text(
                       'Transfer directly to your LazerVault wallet',
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.6),
+                        color: Colors.white.withValues(alpha: 0.6),
                         fontSize: 12.sp,
                       ),
                     ),
@@ -366,7 +366,7 @@ class _PayByTransferCardState extends State<PayByTransferCard> {
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                   decoration: BoxDecoration(
-                    color: Colors.orange.withOpacity(0.2),
+                    color: Colors.orange.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(4.r),
                   ),
                   child: Text(
@@ -412,10 +412,10 @@ class _PayByTransferCardState extends State<PayByTransferCard> {
           Container(
             padding: EdgeInsets.all(12.w),
             decoration: BoxDecoration(
-              color: const Color(0xFF00D09C).withOpacity(0.1),
+              color: const Color(0xFF00D09C).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8.r),
               border: Border.all(
-                color: const Color(0xFF00D09C).withOpacity(0.3),
+                color: const Color(0xFF00D09C).withValues(alpha: 0.3),
               ),
             ),
             child: Row(
@@ -497,7 +497,7 @@ class _PayByTransferCardState extends State<PayByTransferCard> {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(8.r),
       ),
       child: Row(
@@ -509,7 +509,7 @@ class _PayByTransferCardState extends State<PayByTransferCard> {
               Text(
                 label,
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.5),
+                  color: Colors.white.withValues(alpha: 0.5),
                   fontSize: 11.sp,
                 ),
               ),
@@ -531,7 +531,7 @@ class _PayByTransferCardState extends State<PayByTransferCard> {
               child: Container(
                 padding: EdgeInsets.all(8.w),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF6C5CE7).withOpacity(0.2),
+                  color: const Color(0xFF6C5CE7).withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(6.r),
                 ),
                 child: Icon(

@@ -166,7 +166,7 @@ class _RecipientManagementScreenState extends State<RecipientManagementScreen>
       decoration: BoxDecoration(
         color: Colors.grey[900],
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Row(
         children: [
@@ -285,7 +285,7 @@ class _RecipientManagementScreenState extends State<RecipientManagementScreen>
         decoration: BoxDecoration(
           color: Colors.grey[900],
           borderRadius: BorderRadius.circular(16.r),
-          border: Border.all(color: Colors.white.withOpacity(0.1)),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
         ),
         child: Material(
           color: Colors.transparent,
@@ -362,7 +362,7 @@ class _RecipientManagementScreenState extends State<RecipientManagementScreen>
                                 height: 16.h,
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(2.r),
-                                  border: Border.all(color: Colors.white.withOpacity(0.3)),
+                                  border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
                                 ),
                                 child: ClipRRect(
                                   borderRadius: BorderRadius.circular(2.r),
@@ -492,13 +492,13 @@ class _RecipientManagementScreenState extends State<RecipientManagementScreen>
           Container(
             padding: EdgeInsets.all(24.w),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.1),
+              color: Colors.white.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(24.r),
             ),
             child: Icon(
               Icons.people_outline,
               size: 48.sp,
-              color: Colors.white.withOpacity(0.6),
+              color: Colors.white.withValues(alpha: 0.6),
             ),
           ),
           SizedBox(height: 16.h),
@@ -515,7 +515,7 @@ class _RecipientManagementScreenState extends State<RecipientManagementScreen>
             'Add recipients to send money worldwide',
             style: GoogleFonts.inter(
               fontSize: 14.sp,
-              color: Colors.white.withOpacity(0.7),
+              color: Colors.white.withValues(alpha: 0.7),
             ),
           ),
         ],
@@ -532,7 +532,7 @@ class _RecipientManagementScreenState extends State<RecipientManagementScreen>
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.blue.withOpacity(0.4),
+            color: Colors.blue.withValues(alpha: 0.4),
             blurRadius: 16,
             offset: const Offset(0, 8),
           ),
@@ -685,7 +685,7 @@ class _RecipientManagementScreenState extends State<RecipientManagementScreen>
                       _handleRecipientAction('edit', recipient);
                     },
                     style: OutlinedButton.styleFrom(
-                      side: BorderSide(color: Colors.white.withOpacity(0.3)),
+                      side: BorderSide(color: Colors.white.withValues(alpha: 0.3)),
                       padding: EdgeInsets.symmetric(vertical: 12.h),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12.r),
@@ -786,7 +786,7 @@ class _RecipientManagementScreenState extends State<RecipientManagementScreen>
     return Container(
       margin: EdgeInsets.only(bottom: 8.h),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12.r),
       ),
       child: Material(
@@ -853,7 +853,7 @@ class _RecipientManagementScreenState extends State<RecipientManagementScreen>
           'Send Money',
           'Sending money to ${recipient.name}',
           snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.blue.withOpacity(0.8),
+          backgroundColor: Colors.blue.withValues(alpha: 0.8),
           colorText: Colors.white,
         );
         break;
@@ -881,7 +881,7 @@ class _RecipientManagementScreenState extends State<RecipientManagementScreen>
       'Edit Recipient',
       'Edit recipient feature will be implemented',
       snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.orange.withOpacity(0.8),
+      backgroundColor: Colors.orange.withValues(alpha: 0.8),
       colorText: Colors.white,
     );
   }
@@ -930,7 +930,7 @@ class _RecipientManagementScreenState extends State<RecipientManagementScreen>
                 'Deleted',
                 '${recipient.name} has been deleted',
                 snackPosition: SnackPosition.BOTTOM,
-                backgroundColor: Colors.red.withOpacity(0.8),
+                backgroundColor: Colors.red.withValues(alpha: 0.8),
                 colorText: Colors.white,
               );
             },
@@ -959,7 +959,7 @@ class _RecipientManagementScreenState extends State<RecipientManagementScreen>
       'Add Recipient',
       'Add recipient feature will be implemented',
       snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.green.withOpacity(0.8),
+      backgroundColor: Colors.green.withValues(alpha: 0.8),
       colorText: Colors.white,
     );
   }

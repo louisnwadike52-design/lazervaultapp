@@ -222,8 +222,8 @@ class _IncomingTagsScreenState extends State<IncomingTagsScreen> {
                 padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                 decoration: BoxDecoration(
                   color: isPending
-                      ? const Color(0xFF3B82F6).withOpacity(0.1)
-                      : const Color(0xFF10B981).withOpacity(0.1),
+                      ? const Color(0xFF3B82F6).withValues(alpha: 0.1)
+                      : const Color(0xFF10B981).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8.r),
                 ),
                 child: Text(
@@ -278,7 +278,7 @@ class _IncomingTagsScreenState extends State<IncomingTagsScreen> {
                     borderRadius: BorderRadius.circular(12.r),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFF3B82F6).withOpacity(0.3),
+                        color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
                         blurRadius: 8,
                         offset: const Offset(0, 4),
                       ),
@@ -476,12 +476,12 @@ class _AccountSelectionBottomSheetState extends State<_AccountSelectionBottomShe
                         padding: EdgeInsets.all(16.w),
                         decoration: BoxDecoration(
                           color: hasEnoughBalance
-                              ? (isSelected ? const Color(0xFF3B82F6).withOpacity(0.15) : const Color(0xFF2D2D2D))
+                              ? (isSelected ? const Color(0xFF3B82F6).withValues(alpha: 0.15) : const Color(0xFF2D2D2D))
                               : const Color(0xFF1A1A1A),
                           borderRadius: BorderRadius.circular(12.r),
                           border: Border.all(
                             color: hasEnoughBalance
-                                ? (isSelected ? const Color(0xFF3B82F6) : const Color(0xFF3B82F6).withOpacity(0.3))
+                                ? (isSelected ? const Color(0xFF3B82F6) : const Color(0xFF3B82F6).withValues(alpha: 0.3))
                                 : const Color(0xFF374151),
                             width: isSelected ? 2 : 1,
                           ),
@@ -493,8 +493,8 @@ class _AccountSelectionBottomSheetState extends State<_AccountSelectionBottomShe
                               height: 48.w,
                               decoration: BoxDecoration(
                                 color: hasEnoughBalance
-                                    ? const Color(0xFF3B82F6).withOpacity(0.1)
-                                    : const Color(0xFF374151).withOpacity(0.1),
+                                    ? const Color(0xFF3B82F6).withValues(alpha: 0.1)
+                                    : const Color(0xFF374151).withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(24.r),
                               ),
                               child: Icon(
@@ -562,7 +562,7 @@ class _AccountSelectionBottomSheetState extends State<_AccountSelectionBottomShe
                                   vertical: 4.h,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFEF4444).withOpacity(0.1),
+                                  color: const Color(0xFFEF4444).withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(4.r),
                                 ),
                                 child: Text(
@@ -601,7 +601,7 @@ class _AccountSelectionBottomSheetState extends State<_AccountSelectionBottomShe
               boxShadow: _selectedAccountId != null
                   ? [
                       BoxShadow(
-                        color: const Color(0xFF3B82F6).withOpacity(0.3),
+                        color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
                         blurRadius: 8,
                         offset: const Offset(0, 4),
                       ),

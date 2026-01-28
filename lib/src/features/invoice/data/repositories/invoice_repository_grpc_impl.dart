@@ -62,7 +62,7 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
           ..accountId = currentUserId
           ..recipientEmail = invoice.toEmail ?? ''
           ..recipientName = invoice.toName ?? ''
-          ..description = invoice.description ?? invoice.title
+          ..description = invoice.description
           ..amount = invoice.amount
           ..dueDate = invoice.dueDate?.toUtc().toIso8601String() ?? DateTime.now().add(Duration(days: 30)).toUtc().toIso8601String()
           ..tax = invoice.taxAmount ?? 0.0
@@ -210,7 +210,7 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
     final lowerQuery = query.toLowerCase();
     return allInvoices.where((inv) {
       return inv.title.toLowerCase().contains(lowerQuery) ||
-             (inv.description?.toLowerCase().contains(lowerQuery) ?? false) ||
+             inv.description.toLowerCase().contains(lowerQuery) ||
              inv.toEmail?.toLowerCase().contains(lowerQuery) == true;
     }).toList();
   }
@@ -354,7 +354,7 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
       return description.split(':').first.trim();
     }
     if (description.length > 30) {
-      return description.substring(0, 30) + '...';
+      return '${description.substring(0, 30)}...';
     }
     return description.isNotEmpty ? description : 'Item';
   }

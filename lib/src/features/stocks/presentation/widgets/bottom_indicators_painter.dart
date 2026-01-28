@@ -46,7 +46,7 @@ class BottomIndicatorsPainter extends CustomPainter {
         // Draw separator line between indicators
         if (currentTop < size.height) {
           final separatorPaint = Paint()
-            ..color = Colors.grey.withOpacity(0.3)
+            ..color = Colors.grey.withValues(alpha: 0.3)
             ..strokeWidth = 1.0;
           
           canvas.drawLine(
@@ -67,7 +67,7 @@ class BottomIndicatorsPainter extends CustomPainter {
     
     // Draw background
     final bgPaint = Paint()
-      ..color = Colors.black.withOpacity(0.8);
+      ..color = Colors.black.withValues(alpha: 0.8);
     canvas.drawRect(panelRect, bgPaint);
 
     // Draw title
@@ -75,7 +75,7 @@ class BottomIndicatorsPainter extends CustomPainter {
 
     // Draw RSI levels (30, 50, 70)
     final levelPaint = Paint()
-      ..color = Colors.grey.withOpacity(0.3)
+      ..color = Colors.grey.withValues(alpha: 0.3)
       ..strokeWidth = 0.5;
 
     final oversoldY = top + (height * 0.7); // 30 level
@@ -124,7 +124,7 @@ class BottomIndicatorsPainter extends CustomPainter {
     
     // Draw background
     final bgPaint = Paint()
-      ..color = Colors.black.withOpacity(0.8);
+      ..color = Colors.black.withValues(alpha: 0.8);
     canvas.drawRect(panelRect, bgPaint);
 
     // Draw title
@@ -145,7 +145,7 @@ class BottomIndicatorsPainter extends CustomPainter {
     // Draw zero line
     final zeroY = top + (height * 0.5);
     final zeroLinePaint = Paint()
-      ..color = Colors.grey.withOpacity(0.5)
+      ..color = Colors.grey.withValues(alpha: 0.5)
       ..strokeWidth = 1.0;
     canvas.drawLine(Offset(0, zeroY), Offset(size.width, zeroY), zeroLinePaint);
 
@@ -209,7 +209,7 @@ class BottomIndicatorsPainter extends CustomPainter {
     
     // Draw background
     final bgPaint = Paint()
-      ..color = Colors.black.withOpacity(0.8);
+      ..color = Colors.black.withValues(alpha: 0.8);
     canvas.drawRect(panelRect, bgPaint);
 
     // Draw title
@@ -217,7 +217,7 @@ class BottomIndicatorsPainter extends CustomPainter {
 
     // Draw overbought/oversold levels
     final levelPaint = Paint()
-      ..color = Colors.grey.withOpacity(0.3)
+      ..color = Colors.grey.withValues(alpha: 0.3)
       ..strokeWidth = 0.5;
 
     final overboughtY = top + (height * 0.2); // 80 level
@@ -286,7 +286,7 @@ class BottomIndicatorsPainter extends CustomPainter {
     
     // Draw background
     final bgPaint = Paint()
-      ..color = Colors.black.withOpacity(0.8);
+      ..color = Colors.black.withValues(alpha: 0.8);
     canvas.drawRect(panelRect, bgPaint);
 
     // Draw title
@@ -334,7 +334,7 @@ class BottomIndicatorsPainter extends CustomPainter {
     
     // Draw background
     final bgPaint = Paint()
-      ..color = Colors.black.withOpacity(0.8);
+      ..color = Colors.black.withValues(alpha: 0.8);
     canvas.drawRect(panelRect, bgPaint);
 
     // Draw title
@@ -349,7 +349,7 @@ class BottomIndicatorsPainter extends CustomPainter {
       
       final isUp = priceHistory[i].close >= priceHistory[i].open;
       final paint = Paint()
-        ..color = (isUp ? Colors.green : Colors.red).withOpacity(0.7);
+        ..color = (isUp ? Colors.green : Colors.red).withValues(alpha: 0.7);
       
       canvas.drawRect(
         Rect.fromLTWH(x - 1, top + height - barHeight - (height * 0.1), 2, barHeight),

@@ -27,7 +27,7 @@ class BudgetProgressWidget extends StatelessWidget {
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF1A1A1A).withOpacity(0.08),
+            color: const Color(0xFF1A1A1A).withValues(alpha: 0.08),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -88,10 +88,10 @@ class _BudgetProgressItem extends StatelessWidget {
       margin: EdgeInsets.only(bottom: 16.h),
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: status.color.withOpacity(0.05),
+        color: status.color.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
-          color: status.color.withOpacity(0.2),
+          color: status.color.withValues(alpha: 0.2),
           width: 1,
         ),
       ),

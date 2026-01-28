@@ -13,7 +13,7 @@ class _TransferProofScreenState extends State<TransferProofScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black.withOpacity(0.2),
+      backgroundColor: Colors.black.withValues(alpha: 0.2),
         body: TransferProof(transferDetails: widget.transferDetails),
     );  
   }

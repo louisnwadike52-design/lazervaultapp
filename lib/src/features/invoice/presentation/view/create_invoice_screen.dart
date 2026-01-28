@@ -597,7 +597,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
           Container(
             padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
-              color: InvoiceThemeColors.infoBlue.withOpacity(0.1),
+              color: InvoiceThemeColors.infoBlue.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(16.r),
             ),
             child: Icon(
@@ -638,7 +638,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
           Container(
             padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
-              color: InvoiceThemeColors.infoBlue.withOpacity(0.1),
+              color: InvoiceThemeColors.infoBlue.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(16.r),
             ),
             child: Icon(
@@ -687,7 +687,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
               Container(
                 padding: EdgeInsets.all(8.w),
                 decoration: BoxDecoration(
-                  color: InvoiceThemeColors.infoBlue.withOpacity(0.1),
+                  color: InvoiceThemeColors.infoBlue.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8.r),
                 ),
                 child: Icon(
@@ -729,7 +729,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                     child: Container(
                       padding: EdgeInsets.all(6.w),
                       decoration: BoxDecoration(
-                        color: InvoiceThemeColors.infoBlue.withOpacity(0.1),
+                        color: InvoiceThemeColors.infoBlue.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(6.r),
                       ),
                       child: Icon(
@@ -745,7 +745,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                     child: Container(
                       padding: EdgeInsets.all(6.w),
                       decoration: BoxDecoration(
-                        color: InvoiceThemeColors.errorRed.withOpacity(0.1),
+                        color: InvoiceThemeColors.errorRed.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(6.r),
                       ),
                       child: Icon(
@@ -805,7 +805,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                 Container(
                   padding: EdgeInsets.all(8.w),
                   decoration: BoxDecoration(
-                    color: InvoiceThemeColors.infoBlue.withOpacity(0.1),
+                    color: InvoiceThemeColors.infoBlue.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8.r),
                   ),
                   child: Icon(
@@ -848,7 +848,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                     child: Container(
                       padding: EdgeInsets.all(6.w),
                       decoration: BoxDecoration(
-                        color: InvoiceThemeColors.infoBlue.withOpacity(0.1),
+                        color: InvoiceThemeColors.infoBlue.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(6.r),
                       ),
                       child: Icon(
@@ -864,7 +864,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                     child: Container(
                       padding: EdgeInsets.all(6.w),
                       decoration: BoxDecoration(
-                        color: InvoiceThemeColors.errorRed.withOpacity(0.1),
+                        color: InvoiceThemeColors.errorRed.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(6.r),
                       ),
                       child: Icon(
@@ -1175,7 +1175,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                         Container(
                           padding: EdgeInsets.all(8.w),
                           decoration: BoxDecoration(
-                            color: InvoiceThemeColors.infoBlue.withOpacity(0.1),
+                            color: InvoiceThemeColors.infoBlue.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(8.r),
                           ),
                           child: Icon(
@@ -1386,7 +1386,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                         Container(
                           padding: EdgeInsets.all(8.w),
                           decoration: BoxDecoration(
-                            color: InvoiceThemeColors.infoBlue.withOpacity(0.1),
+                            color: InvoiceThemeColors.infoBlue.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(8.r),
                           ),
                           child: Icon(
@@ -1833,7 +1833,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
             borderRadius: BorderRadius.circular(12.r),
             boxShadow: [
               BoxShadow(
-                color: InvoiceThemeColors.infoBlue.withOpacity(0.3),
+                color: InvoiceThemeColors.infoBlue.withValues(alpha: 0.3),
                 offset: const Offset(0, 4),
                 blurRadius: 12,
               ),
@@ -1913,7 +1913,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
         border: Border.all(color: const Color(0xFF2D2D2D)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             offset: const Offset(0, 2),
             blurRadius: 12,
           ),
@@ -1928,7 +1928,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                 Container(
                   padding: EdgeInsets.all(8.w),
                   decoration: BoxDecoration(
-                    color: InvoiceThemeColors.infoBlue.withOpacity(0.1),
+                    color: InvoiceThemeColors.infoBlue.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8.r),
                   ),
                   child: Icon(
@@ -2205,7 +2205,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
           Container(
             padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
-              color: InvoiceThemeColors.infoBlue.withOpacity(0.1),
+              color: InvoiceThemeColors.infoBlue.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(16.r),
             ),
             child: Icon(
@@ -2253,7 +2253,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
           Container(
             padding: EdgeInsets.all(8.w),
             decoration: BoxDecoration(
-              color: InvoiceThemeColors.infoBlue.withOpacity(0.1),
+              color: InvoiceThemeColors.infoBlue.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8.r),
             ),
             child: Icon(
@@ -2358,7 +2358,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                       child: Container(
                         padding: EdgeInsets.all(6.w),
                         decoration: BoxDecoration(
-                          color: InvoiceThemeColors.infoBlue.withOpacity(0.1),
+                          color: InvoiceThemeColors.infoBlue.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(6.r),
                         ),
                         child: Icon(
@@ -2374,7 +2374,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                       child: Container(
                         padding: EdgeInsets.all(6.w),
                         decoration: BoxDecoration(
-                          color: InvoiceThemeColors.errorRed.withOpacity(0.1),
+                          color: InvoiceThemeColors.errorRed.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(6.r),
                         ),
                         child: Icon(
@@ -2414,9 +2414,9 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    const Color(0xFF2D2D2D).withOpacity(0.1),
+                    const Color(0xFF2D2D2D).withValues(alpha: 0.1),
                     const Color(0xFF2D2D2D),
-                    const Color(0xFF2D2D2D).withOpacity(0.1),
+                    const Color(0xFF2D2D2D).withValues(alpha: 0.1),
                   ],
                 ),
               ),
@@ -2504,7 +2504,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
             Container(
               padding: EdgeInsets.all(8.w),
               decoration: BoxDecoration(
-                color: InvoiceThemeColors.infoBlue.withOpacity(0.1),
+                color: InvoiceThemeColors.infoBlue.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8.r),
               ),
               child: Icon(
@@ -2724,7 +2724,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
           Container(
             padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
             decoration: BoxDecoration(
-              color: InvoiceThemeColors.errorRed.withOpacity(0.1),
+              color: InvoiceThemeColors.errorRed.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8.r),
               boxShadow: [
           BoxShadow(
@@ -3146,7 +3146,7 @@ class _CountrySelectionSheetState extends State<_CountrySelectionSheet> {
                     Container(
                       padding: EdgeInsets.all(8.w),
                       decoration: BoxDecoration(
-                        color: InvoiceThemeColors.infoBlue.withOpacity(0.1),
+                        color: InvoiceThemeColors.infoBlue.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8.r),
                       ),
                       child: Icon(
@@ -3243,7 +3243,7 @@ class _CountrySelectionSheetState extends State<_CountrySelectionSheet> {
                     padding: EdgeInsets.all(16.w),
                     decoration: BoxDecoration(
                       color: isSelected 
-                          ? InvoiceThemeColors.infoBlue.withOpacity(0.1)
+                          ? InvoiceThemeColors.infoBlue.withValues(alpha: 0.1)
                           : const Color(0xFF111111),
                       borderRadius: BorderRadius.circular(12.r),
                       border: Border.all(

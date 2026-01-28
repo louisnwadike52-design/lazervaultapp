@@ -48,7 +48,7 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
       Get.snackbar(
         'Error',
         'Please enter an amount',
-        backgroundColor: Colors.red.withOpacity(0.9),
+        backgroundColor: Colors.red.withValues(alpha: 0.9),
         colorText: Colors.white,
       );
       return;
@@ -59,7 +59,7 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
       Get.snackbar(
         'Error',
         'Please enter a valid amount',
-        backgroundColor: Colors.red.withOpacity(0.9),
+        backgroundColor: Colors.red.withValues(alpha: 0.9),
         colorText: Colors.white,
       );
       return;
@@ -71,7 +71,7 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
         Get.snackbar(
           'Error',
           'Minimum amount is ₦${provider.minAmount?.toStringAsFixed(0)}',
-          backgroundColor: Colors.red.withOpacity(0.9),
+          backgroundColor: Colors.red.withValues(alpha: 0.9),
           colorText: Colors.white,
         );
         return;
@@ -80,7 +80,7 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
         Get.snackbar(
           'Error',
           'Maximum amount is ₦${provider.maxAmount?.toStringAsFixed(0)}',
-          backgroundColor: Colors.red.withOpacity(0.9),
+          backgroundColor: Colors.red.withValues(alpha: 0.9),
           colorText: Colors.white,
         );
         return;
@@ -143,6 +143,7 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
 
     // Then trigger the payment with verification token
     Future.delayed(const Duration(milliseconds: 500), () {
+      if (!mounted) return;
       context.read<ElectricityBillCubit>().initiatePaymentWithToken(
             providerCode: provider.providerCode,
             meterNumber: meterNumber,
@@ -218,10 +219,10 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
               width: 44.w,
               height: 44.w,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(22.r),
                 border: Border.all(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   width: 1,
                 ),
               ),
@@ -248,7 +249,7 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
                 Text(
                   'Review details before paying',
                   style: GoogleFonts.inter(
-                    color: Colors.white.withOpacity(0.6),
+                    color: Colors.white.withValues(alpha: 0.6),
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w400,
                   ),
@@ -301,7 +302,7 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
                 width: 56.w,
                 height: 56.w,
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(28.r),
                 ),
                 child: Icon(
@@ -327,7 +328,7 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
                     Text(
                       validationResult.meterNumber,
                       style: GoogleFonts.inter(
-                        color: Colors.white.withOpacity(0.8),
+                        color: Colors.white.withValues(alpha: 0.8),
                         fontSize: 14.sp,
                         fontWeight: FontWeight.w400,
                       ),
@@ -337,7 +338,7 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
                       Text(
                         validationResult.customerAddress!,
                         style: GoogleFonts.inter(
-                          color: Colors.white.withOpacity(0.7),
+                          color: Colors.white.withValues(alpha: 0.7),
                           fontSize: 12.sp,
                           fontWeight: FontWeight.w400,
                         ),
@@ -354,7 +355,7 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
           Container(
             padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(20.r),
             ),
             child: Text(
@@ -375,10 +376,10 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(
-          color: Colors.white.withOpacity(0.1),
+          color: Colors.white.withValues(alpha: 0.1),
           width: 1,
         ),
       ),
@@ -388,7 +389,7 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
             width: 48.w,
             height: 48.w,
             decoration: BoxDecoration(
-              color: const Color(0xFF4E03D0).withOpacity(0.2),
+              color: const Color(0xFF4E03D0).withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: Icon(
@@ -405,7 +406,7 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
                 Text(
                   'Provider',
                   style: GoogleFonts.inter(
-                    color: Colors.white.withOpacity(0.6),
+                    color: Colors.white.withValues(alpha: 0.6),
                     fontSize: 12.sp,
                     fontWeight: FontWeight.w400,
                   ),
@@ -457,10 +458,10 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
         Container(
           padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.05),
+            color: Colors.white.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(12.r),
             border: Border.all(
-              color: Colors.white.withOpacity(0.1),
+              color: Colors.white.withValues(alpha: 0.1),
               width: 1,
             ),
           ),
@@ -475,7 +476,7 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
             decoration: InputDecoration(
               hintText: '0.00',
               hintStyle: GoogleFonts.inter(
-                color: Colors.white.withOpacity(0.3),
+                color: Colors.white.withValues(alpha: 0.3),
                 fontSize: 24.sp,
               ),
               border: InputBorder.none,
@@ -500,10 +501,10 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
         return Container(
           padding: EdgeInsets.all(16.w),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.05),
+            color: Colors.white.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(16.r),
             border: Border.all(
-              color: Colors.white.withOpacity(0.1),
+              color: Colors.white.withValues(alpha: 0.1),
               width: 1,
             ),
           ),
@@ -522,7 +523,7 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
                     Text(
                       'Payment Account',
                       style: GoogleFonts.inter(
-                        color: Colors.white.withOpacity(0.6),
+                        color: Colors.white.withValues(alpha: 0.6),
                         fontSize: 12.sp,
                         fontWeight: FontWeight.w400,
                       ),

@@ -4,7 +4,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/src/core/config/mono_config.dart';
-import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/features/funds/cubit/deposit_cubit.dart';
@@ -271,7 +270,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
           if (authState is! AuthenticationSuccess) {
             Get.snackbar('Authentication Error', 'You need to be logged in to make a deposit.',
               snackPosition: SnackPosition.BOTTOM,
-              backgroundColor: Colors.red.withOpacity(0.7),
+              backgroundColor: Colors.red.withValues(alpha: 0.7),
               colorText: Colors.white
             );
           }
@@ -338,13 +337,13 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            const Color(0xFF4E03D0).withOpacity(0.1),
-            const Color(0xFF5F14E1).withOpacity(0.1),
+            const Color(0xFF4E03D0).withValues(alpha: 0.1),
+            const Color(0xFF5F14E1).withValues(alpha: 0.1),
           ],
         ),
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(
-          color: const Color(0xFF4E03D0).withOpacity(0.3),
+          color: const Color(0xFF4E03D0).withValues(alpha: 0.3),
           width: 1,
         ),
       ),
@@ -353,7 +352,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
           Container(
             padding: EdgeInsets.all(10.w),
             decoration: BoxDecoration(
-              color: const Color(0xFF4E03D0).withOpacity(0.2),
+              color: const Color(0xFF4E03D0).withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: Icon(
@@ -379,7 +378,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
                 Text(
                   'Powered by Mono. Your bank credentials are never stored.',
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.7),
+                    color: Colors.white.withValues(alpha: 0.7),
                     fontSize: 12.sp,
                   ),
                 ),
@@ -418,10 +417,10 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
         Container(
           padding: EdgeInsets.all(20.w),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.05),
+            color: Colors.white.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(16.r),
             border: Border.all(
-              color: Colors.white.withOpacity(0.1),
+              color: Colors.white.withValues(alpha: 0.1),
             ),
           ),
           child: Column(
@@ -430,7 +429,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
               Text(
                 'Deposit Amount',
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.7),
+                  color: Colors.white.withValues(alpha: 0.7),
                   fontSize: 14.sp,
                   fontWeight: FontWeight.w500,
                 ),
@@ -460,7 +459,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
                       decoration: InputDecoration(
                         hintText: '0.00',
                         hintStyle: TextStyle(
-                          color: Colors.white.withOpacity(0.3),
+                          color: Colors.white.withValues(alpha: 0.3),
                           fontSize: 32.sp,
                           fontWeight: FontWeight.w700,
                         ),
@@ -475,7 +474,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
               Text(
                 'Min: ₦200 • Max: ₦1,000,000',
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.5),
+                  color: Colors.white.withValues(alpha: 0.5),
                   fontSize: 12.sp,
                 ),
               ),
@@ -491,15 +490,15 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                const Color(0xFF6C5CE7).withOpacity(0.2),
-                const Color(0xFF6C5CE7).withOpacity(0.05),
+                const Color(0xFF6C5CE7).withValues(alpha: 0.2),
+                const Color(0xFF6C5CE7).withValues(alpha: 0.05),
               ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
             borderRadius: BorderRadius.circular(16.r),
             border: Border.all(
-              color: const Color(0xFF6C5CE7).withOpacity(0.3),
+              color: const Color(0xFF6C5CE7).withValues(alpha: 0.3),
             ),
           ),
           child: Column(
@@ -538,7 +537,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
                         Text(
                           'Securely deposit from your bank via Mono',
                           style: TextStyle(
-                            color: Colors.white.withOpacity(0.6),
+                            color: Colors.white.withValues(alpha: 0.6),
                             fontSize: 12.sp,
                           ),
                         ),
@@ -608,7 +607,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
             Expanded(
               child: Container(
                 height: 1,
-                color: Colors.white.withOpacity(0.2),
+                color: Colors.white.withValues(alpha: 0.2),
               ),
             ),
             Padding(
@@ -616,7 +615,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
               child: Text(
                 'OR',
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.5),
+                  color: Colors.white.withValues(alpha: 0.5),
                   fontSize: 12.sp,
                   fontWeight: FontWeight.w600,
                 ),
@@ -625,7 +624,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
             Expanded(
               child: Container(
                 height: 1,
-                color: Colors.white.withOpacity(0.2),
+                color: Colors.white.withValues(alpha: 0.2),
               ),
             ),
           ],
@@ -658,10 +657,10 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
           width: double.infinity,
           padding: EdgeInsets.all(16.w),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.05),
+            color: Colors.white.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(12.r),
             border: Border.all(
-              color: Colors.white.withOpacity(0.1),
+              color: Colors.white.withValues(alpha: 0.1),
             ),
           ),
           child: Column(
@@ -671,14 +670,14 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
                 children: [
                   Icon(
                     Icons.info_outline,
-                    color: Colors.white.withOpacity(0.7),
+                    color: Colors.white.withValues(alpha: 0.7),
                     size: 18.sp,
                   ),
                   SizedBox(width: 8.w),
                   Text(
                     'How Mono Direct Debit Works',
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.9),
+                      color: Colors.white.withValues(alpha: 0.9),
                       fontSize: 14.sp,
                       fontWeight: FontWeight.w600,
                     ),
@@ -701,7 +700,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
           'By continuing, you agree to Mono\'s End-user Policy. Mono will have read-only access to your account.',
           textAlign: TextAlign.center,
           style: TextStyle(
-            color: Colors.white.withOpacity(0.5),
+            color: Colors.white.withValues(alpha: 0.5),
             fontSize: 11.sp,
             height: 1.4,
           ),
@@ -724,7 +723,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
         Text(
           text,
           style: TextStyle(
-            color: Colors.white.withOpacity(0.7),
+            color: Colors.white.withValues(alpha: 0.7),
             fontSize: 12.sp,
           ),
         ),
@@ -743,7 +742,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
         'Invalid Amount',
         'Minimum deposit amount is ₦200',
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withOpacity(0.9),
+        backgroundColor: Colors.red.withValues(alpha: 0.9),
         colorText: Colors.white,
       );
       return;
@@ -754,7 +753,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
         'Invalid Amount',
         'Maximum deposit amount is ₦1,000,000',
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withOpacity(0.9),
+        backgroundColor: Colors.red.withValues(alpha: 0.9),
         colorText: Colors.white,
       );
       return;
@@ -766,7 +765,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
         'Authentication Error',
         'You need to be logged in to make a deposit.',
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withOpacity(0.7),
+        backgroundColor: Colors.red.withValues(alpha: 0.7),
         colorText: Colors.white,
       );
       return;
@@ -777,7 +776,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
         'Configuration Error',
         'Open banking is not configured. Please contact support.',
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withOpacity(0.9),
+        backgroundColor: Colors.red.withValues(alpha: 0.9),
         colorText: Colors.white,
       );
       return;
@@ -787,10 +786,10 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
     debugPrint('[MonoConnect] Recurring access mode: $_useRecurringAccess');
 
     final user = authState.profile.user;
-    final userId = user?.id ?? '';
+    final userId = user.id;
     final accessToken = authState.profile.session.accessToken;
-    final customerName = '${user?.firstName ?? ''} ${user?.lastName ?? ''}'.trim();
-    final customerEmail = user?.email ?? '';
+    final customerName = '${user.firstName} ${user.lastName}'.trim();
+    final customerEmail = user.email;
 
     debugPrint('[MonoConnect] Launching Mono Connect SDK');
     debugPrint('[MonoConnect] Customer: $customerName ($customerEmail)');
@@ -972,7 +971,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
         'Deposit Failed',
         state.message,
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withOpacity(0.9),
+        backgroundColor: Colors.red.withValues(alpha: 0.9),
         colorText: Colors.white,
         isDismissible: true,
         duration: const Duration(seconds: 5),
@@ -991,7 +990,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
         'Deposit Initiated',
         'Your deposit of $_currencySymbol${_amountController.text} from $_selectedBank is being processed.',
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.blue.withOpacity(0.9),
+        backgroundColor: Colors.blue.withValues(alpha: 0.9),
         colorText: Colors.white,
         isDismissible: true,
         duration: const Duration(seconds: 3),
@@ -1009,7 +1008,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
         'Deposit Completed',
         'Your deposit has been completed successfully.',
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.green.withOpacity(0.9),
+        backgroundColor: Colors.green.withValues(alpha: 0.9),
         colorText: Colors.white,
         isDismissible: true,
         duration: const Duration(seconds: 3),
@@ -1034,6 +1033,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
 
       // Navigate back to dashboard after delay
       Future.delayed(const Duration(seconds: 2), () {
+        if (!mounted) return;
         if (Navigator.canPop(context)) {
           Navigator.of(context).pop();
         }
@@ -1044,7 +1044,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
         'Deposit Reversed',
         state.reason,
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.orange.withOpacity(0.9),
+        backgroundColor: Colors.orange.withValues(alpha: 0.9),
         colorText: Colors.white,
         isDismissible: true,
         duration: const Duration(seconds: 6),
@@ -1065,7 +1065,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
         'Deposit Failed',
         state.message,
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withOpacity(0.9),
+        backgroundColor: Colors.red.withValues(alpha: 0.9),
         colorText: Colors.white,
         isDismissible: true,
         duration: const Duration(seconds: 5),
@@ -1144,7 +1144,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
         borderRadius: BorderRadius.circular(24.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.15),
+            color: Colors.black.withValues(alpha: 0.15),
             blurRadius: 20,
             offset: Offset(0, 10),
           ),
@@ -1170,7 +1170,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
                   vertical: 6.h,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.1),
+                  color: Colors.white.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20.r),
                 ),
                 child: Text(
@@ -1204,8 +1204,8 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
                 ),
                 decoration: BoxDecoration(
                   color: widget.selectedCard['isUp']
-                      ? Colors.green.withOpacity(0.2)
-                      : Colors.red.withOpacity(0.2),
+                      ? Colors.green.withValues(alpha: 0.2)
+                      : Colors.red.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(20.r),
                 ),
                 child: Text(
@@ -1230,7 +1230,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF3498DB).withOpacity(0.1),
+        color: const Color(0xFF3498DB).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
@@ -1280,7 +1280,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
         ),
         Container(
           decoration: BoxDecoration(
-            color: const Color(0xFF3498DB).withOpacity(0.1),
+            color: const Color(0xFF3498DB).withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(20.r),
           ),
           child: TextButton.icon(
@@ -1335,13 +1335,13 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
               padding: EdgeInsets.all(6.w),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? bank['color'].withOpacity(0.2)
-                    : Colors.white.withOpacity(0.05),
+                    ? bank['color'].withValues(alpha: 0.2)
+                    : Colors.white.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(8.r),
                 border: Border.all(
                   color: isSelected
                       ? bank['color']
-                      : Colors.white.withOpacity(0.1),
+                      : Colors.white.withValues(alpha: 0.1),
                   width: isSelected ? 2 : 1,
                 ),
               ),
@@ -1351,7 +1351,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
                   Container(
                     padding: EdgeInsets.all(4.w),
                     decoration: BoxDecoration(
-                      color: bank['color'].withOpacity(0.2),
+                      color: bank['color'].withValues(alpha: 0.2),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
@@ -1399,7 +1399,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
         Container(
           padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.05),
+            color: Colors.white.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(16.r),
             boxShadow: [
           BoxShadow(
@@ -1418,7 +1418,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
                   vertical: 8.h,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.1),
+                  color: Colors.white.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8.r),
                 ),
                 child: Text(
@@ -1444,7 +1444,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
                     border: InputBorder.none,
                     hintText: '0.00',
                     hintStyle: TextStyle(
-                      color: Colors.white.withOpacity(0.3),
+                      color: Colors.white.withValues(alpha: 0.3),
                       fontSize: 24.sp,
                     ),
                   ),
@@ -1497,7 +1497,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
         child: Container(
           padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.05),
+            color: Colors.white.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(12.r),
             boxShadow: [
           BoxShadow(
@@ -1511,7 +1511,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
           child: Text(
             amount,
             style: TextStyle(
-              color: isLoading ? Colors.white.withOpacity(0.3) : Colors.white,
+              color: isLoading ? Colors.white.withValues(alpha: 0.3) : Colors.white,
               fontSize: 14.sp,
               fontWeight: FontWeight.w500,
             ),
@@ -1535,7 +1535,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
         boxShadow: isValid && !isAnyLoading
             ? [
                 BoxShadow(
-                  color: const Color(0xFF10B981).withOpacity(0.3),
+                  color: const Color(0xFF10B981).withValues(alpha: 0.3),
                   blurRadius: 12,
                   offset: const Offset(0, 6),
                 ),
@@ -1658,7 +1658,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
         'Configuration Error',
         'Open banking is not configured. Please contact support.',
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withOpacity(0.9),
+        backgroundColor: Colors.red.withValues(alpha: 0.9),
         colorText: Colors.white,
       );
       return;
@@ -1696,7 +1696,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
         'Authentication Error',
         'You need to be logged in to make a deposit.',
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withOpacity(0.7),
+        backgroundColor: Colors.red.withValues(alpha: 0.7),
         colorText: Colors.white
       );
       return;
@@ -1712,7 +1712,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
     final reference = 'deposit_${userId}_${DateTime.now().millisecondsSinceEpoch}';
 
     // Get customer info for Mono
-    final customerName = '${user.firstName ?? ''} ${user.lastName ?? ''}'.trim();
+    final customerName = '${user.firstName} ${user.lastName}'.trim();
     final customerEmail = user.email;
 
     MonoConnectResult? result;
@@ -1780,7 +1780,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
         'Cancelled',
         'Bank linking was cancelled. Please try again to make a deposit.',
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.grey.withOpacity(0.9),
+        backgroundColor: Colors.grey.withValues(alpha: 0.9),
         colorText: Colors.white,
       );
     }
@@ -1842,7 +1842,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
         'Error',
         'Please enter a valid deposit amount.',
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withOpacity(0.9),
+        backgroundColor: Colors.red.withValues(alpha: 0.9),
         colorText: Colors.white,
       );
       return;
@@ -1854,7 +1854,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
         'Error',
         'Bank account not linked. Please try again.',
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withOpacity(0.9),
+        backgroundColor: Colors.red.withValues(alpha: 0.9),
         colorText: Colors.white,
       );
       return;
@@ -1878,7 +1878,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
         'Error',
         'Invalid account information. Please try again.',
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withOpacity(0.9),
+        backgroundColor: Colors.red.withValues(alpha: 0.9),
         colorText: Colors.white,
       );
       return;
@@ -1992,10 +1992,10 @@ class _BankSearchBottomSheetState extends State<_BankSearchBottomSheet> {
           // Search field
           Container(
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.08),
+              color: Colors.white.withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(12.r),
               border: Border.all(
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.white.withValues(alpha: 0.1),
               ),
             ),
             child: TextField(
@@ -2007,19 +2007,19 @@ class _BankSearchBottomSheetState extends State<_BankSearchBottomSheet> {
               decoration: InputDecoration(
                 hintText: 'Search banks...',
                 hintStyle: TextStyle(
-                  color: Colors.white.withOpacity(0.4),
+                  color: Colors.white.withValues(alpha: 0.4),
                   fontSize: 16.sp,
                 ),
                 prefixIcon: Icon(
                   Icons.search,
-                  color: Colors.white.withOpacity(0.5),
+                  color: Colors.white.withValues(alpha: 0.5),
                   size: 22.sp,
                 ),
                 suffixIcon: _searchController.text.isNotEmpty
                     ? IconButton(
                         icon: Icon(
                           Icons.clear,
-                          color: Colors.white.withOpacity(0.5),
+                          color: Colors.white.withValues(alpha: 0.5),
                           size: 20.sp,
                         ),
                         onPressed: () {
@@ -2044,7 +2044,7 @@ class _BankSearchBottomSheetState extends State<_BankSearchBottomSheet> {
               child: Text(
                 '${_filteredBanks.length} bank${_filteredBanks.length == 1 ? '' : 's'} found',
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.5),
+                  color: Colors.white.withValues(alpha: 0.5),
                   fontSize: 13.sp,
                 ),
               ),
@@ -2058,14 +2058,14 @@ class _BankSearchBottomSheetState extends State<_BankSearchBottomSheet> {
                       children: [
                         Icon(
                           Icons.search_off,
-                          color: Colors.white.withOpacity(0.3),
+                          color: Colors.white.withValues(alpha: 0.3),
                           size: 48.sp,
                         ),
                         SizedBox(height: 16.h),
                         Text(
                           'No banks found',
                           style: TextStyle(
-                            color: Colors.white.withOpacity(0.5),
+                            color: Colors.white.withValues(alpha: 0.5),
                             fontSize: 16.sp,
                           ),
                         ),
@@ -2073,7 +2073,7 @@ class _BankSearchBottomSheetState extends State<_BankSearchBottomSheet> {
                         Text(
                           'Try a different search term',
                           style: TextStyle(
-                            color: Colors.white.withOpacity(0.3),
+                            color: Colors.white.withValues(alpha: 0.3),
                             fontSize: 14.sp,
                           ),
                         ),
@@ -2095,13 +2095,13 @@ class _BankSearchBottomSheetState extends State<_BankSearchBottomSheet> {
                             padding: EdgeInsets.all(16.w),
                             decoration: BoxDecoration(
                               color: isSelected
-                                  ? bank['color'].withOpacity(0.1)
-                                  : Colors.white.withOpacity(0.05),
+                                  ? bank['color'].withValues(alpha: 0.1)
+                                  : Colors.white.withValues(alpha: 0.05),
                               borderRadius: BorderRadius.circular(16.r),
                               border: Border.all(
                                 color: isSelected
                                     ? bank['color']
-                                    : Colors.white.withOpacity(0.1),
+                                    : Colors.white.withValues(alpha: 0.1),
                                 width: isSelected ? 2 : 1,
                               ),
                             ),
@@ -2110,7 +2110,7 @@ class _BankSearchBottomSheetState extends State<_BankSearchBottomSheet> {
                                 Container(
                                   padding: EdgeInsets.all(8.w),
                                   decoration: BoxDecoration(
-                                    color: bank['color'].withOpacity(0.1),
+                                    color: bank['color'].withValues(alpha: 0.1),
                                     shape: BoxShape.circle,
                                   ),
                                   child: Icon(

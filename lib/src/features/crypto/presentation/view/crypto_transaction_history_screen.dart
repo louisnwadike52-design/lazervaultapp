@@ -240,12 +240,12 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
             decoration: InputDecoration(
               hintText: 'Search transactions...',
               hintStyle: GoogleFonts.inter(
-                color: Colors.white.withOpacity(0.5),
+                color: Colors.white.withValues(alpha: 0.5),
                 fontSize: 14.sp,
               ),
               prefixIcon: Icon(
                 Icons.search,
-                color: Colors.white.withOpacity(0.5),
+                color: Colors.white.withValues(alpha: 0.5),
                 size: 20.sp,
               ),
               filled: true,
@@ -339,7 +339,7 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
           label,
           style: GoogleFonts.inter(
             fontSize: 12.sp,
-            color: Colors.white.withOpacity(0.6),
+            color: Colors.white.withValues(alpha: 0.6),
           ),
         ),
       ],
@@ -371,7 +371,7 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
           Icon(
             Icons.receipt_long,
             size: 64.sp,
-            color: Colors.white.withOpacity(0.3),
+            color: Colors.white.withValues(alpha: 0.3),
           ),
           SizedBox(height: 16.h),
           Text(
@@ -379,7 +379,7 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
             style: GoogleFonts.inter(
               fontSize: 18.sp,
               fontWeight: FontWeight.w600,
-              color: Colors.white.withOpacity(0.7),
+              color: Colors.white.withValues(alpha: 0.7),
             ),
           ),
           SizedBox(height: 8.h),
@@ -387,7 +387,7 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
             'Try adjusting your search or filter criteria',
             style: GoogleFonts.inter(
               fontSize: 14.sp,
-              color: Colors.white.withOpacity(0.5),
+              color: Colors.white.withValues(alpha: 0.5),
             ),
           ),
         ],
@@ -420,7 +420,7 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
                 Container(
                   padding: EdgeInsets.all(12.w),
                   decoration: BoxDecoration(
-                    color: _getTransactionTypeColor(transaction.type).withOpacity(0.2),
+                    color: _getTransactionTypeColor(transaction.type).withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(12.r),
                   ),
                   child: Icon(
@@ -448,7 +448,7 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
                           Container(
                             padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                             decoration: BoxDecoration(
-                              color: _getStatusColor(transaction.status).withOpacity(0.2),
+                              color: _getStatusColor(transaction.status).withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(12.r),
                             ),
                             child: Text(
@@ -467,7 +467,7 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
                         _formatDateTime(transaction.timestamp),
                         style: GoogleFonts.inter(
                           fontSize: 12.sp,
-                          color: Colors.white.withOpacity(0.6),
+                          color: Colors.white.withValues(alpha: 0.6),
                         ),
                       ),
                     ],
@@ -486,7 +486,7 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
                       'Amount',
                       style: GoogleFonts.inter(
                         fontSize: 12.sp,
-                        color: Colors.white.withOpacity(0.6),
+                        color: Colors.white.withValues(alpha: 0.6),
                       ),
                     ),
                     Text(
@@ -506,7 +506,7 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
                       'Value',
                       style: GoogleFonts.inter(
                         fontSize: 12.sp,
-                        color: Colors.white.withOpacity(0.6),
+                        color: Colors.white.withValues(alpha: 0.6),
                       ),
                     ),
                     Text(
@@ -526,7 +526,7 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
                       'Fee',
                       style: GoogleFonts.inter(
                         fontSize: 12.sp,
-                        color: Colors.white.withOpacity(0.6),
+                        color: Colors.white.withValues(alpha: 0.6),
                       ),
                     ),
                     Text(
@@ -549,12 +549,12 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
                   'ID: ${transaction.id}',
                   style: GoogleFonts.inter(
                     fontSize: 12.sp,
-                    color: Colors.white.withOpacity(0.5),
+                    color: Colors.white.withValues(alpha: 0.5),
                   ),
                 ),
                 Icon(
                   Icons.chevron_right,
-                  color: Colors.white.withOpacity(0.5),
+                  color: Colors.white.withValues(alpha: 0.5),
                   size: 16.sp,
                 ),
               ],
@@ -716,7 +716,7 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
             label,
             style: GoogleFonts.inter(
               fontSize: 14.sp,
-              color: Colors.white.withOpacity(0.8),
+              color: Colors.white.withValues(alpha: 0.8),
             ),
           ),
           Text(
@@ -809,11 +809,11 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
   Color _getStatusBorderColor(CryptoTransactionStatus status) {
     switch (status) {
       case CryptoTransactionStatus.completed:
-        return Colors.green.withOpacity(0.3);
+        return Colors.green.withValues(alpha: 0.3);
       case CryptoTransactionStatus.pending:
-        return Colors.orange.withOpacity(0.3);
+        return Colors.orange.withValues(alpha: 0.3);
       case CryptoTransactionStatus.failed:
-        return Colors.red.withOpacity(0.3);
+        return Colors.red.withValues(alpha: 0.3);
     }
   }
 

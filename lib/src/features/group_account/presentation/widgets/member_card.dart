@@ -40,10 +40,10 @@ class MemberCard extends StatelessWidget {
               width: 48.w,
               height: 48.w,
               decoration: BoxDecoration(
-                color: const Color.fromARGB(255, 78, 3, 208).withOpacity(0.2),
+                color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: const Color.fromARGB(255, 78, 3, 208).withOpacity(0.3),
+                  color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.3),
                   width: 2,
                 ),
               ),
@@ -140,15 +140,15 @@ class MemberCard extends StatelessWidget {
     
     switch (role) {
       case GroupMemberRole.admin:
-        backgroundColor = const Color(0xFFEF4444).withOpacity(0.2);
+        backgroundColor = const Color(0xFFEF4444).withValues(alpha: 0.2);
         textColor = const Color(0xFFEF4444);
         break;
       case GroupMemberRole.moderator:
-        backgroundColor = const Color(0xFFF59E0B).withOpacity(0.2);
+        backgroundColor = const Color(0xFFF59E0B).withValues(alpha: 0.2);
         textColor = const Color(0xFFF59E0B);
         break;
       case GroupMemberRole.member:
-        backgroundColor = const Color(0xFF10B981).withOpacity(0.2);
+        backgroundColor = const Color(0xFF10B981).withValues(alpha: 0.2);
         textColor = const Color(0xFF10B981);
         break;
     }
@@ -184,19 +184,19 @@ class MemberCard extends StatelessWidget {
     
     switch (status) {
       case GroupMemberStatus.active:
-        backgroundColor = const Color(0xFF10B981).withOpacity(0.2);
+        backgroundColor = const Color(0xFF10B981).withValues(alpha: 0.2);
         textColor = const Color(0xFF10B981);
         break;
       case GroupMemberStatus.inactive:
-        backgroundColor = Colors.grey.withOpacity(0.2);
+        backgroundColor = Colors.grey.withValues(alpha: 0.2);
         textColor = Colors.grey;
         break;
       case GroupMemberStatus.pending:
-        backgroundColor = const Color(0xFFF59E0B).withOpacity(0.2);
+        backgroundColor = const Color(0xFFF59E0B).withValues(alpha: 0.2);
         textColor = const Color(0xFFF59E0B);
         break;
       case GroupMemberStatus.removed:
-        backgroundColor = const Color(0xFFEF4444).withOpacity(0.2);
+        backgroundColor = const Color(0xFFEF4444).withValues(alpha: 0.2);
         textColor = const Color(0xFFEF4444);
         break;
     }
@@ -230,10 +230,10 @@ class MemberCard extends StatelessWidget {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
       decoration: BoxDecoration(
-        color: const Color(0xFF3B82F6).withOpacity(0.2),
+        color: const Color(0xFF3B82F6).withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
-          color: const Color(0xFF3B82F6).withOpacity(0.5),
+          color: const Color(0xFF3B82F6).withValues(alpha: 0.5),
           width: 1,
         ),
         boxShadow: [

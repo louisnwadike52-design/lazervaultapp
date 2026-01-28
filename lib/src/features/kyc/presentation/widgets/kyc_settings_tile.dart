@@ -77,7 +77,7 @@ class _KYCSettingsTileState extends State<KYCSettingsTile> {
           children: [
             RoundedCenteredImage(
               size: responsiveController.isMobile ? 40.w : 48.0,
-              backgroundColor: HexColor.fromHex(color),
+              backgroundColor: HybridHexColor.fromHex(color),
               imagePath: imagePath,
             ),
             if (status == KYCStatus.approved)
@@ -144,7 +144,7 @@ class _KYCSettingsTileState extends State<KYCSettingsTile> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: badgeColor.withOpacity(0.1),
+        color: badgeColor.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: badgeColor, width: 1),
       ),

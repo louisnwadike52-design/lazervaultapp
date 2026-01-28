@@ -310,7 +310,7 @@ class _TagPaymentConfirmationScreenState
                     padding: EdgeInsets.all(16.w),
                     decoration: BoxDecoration(
                       color: isSelected
-                          ? const Color(0xFF3B82F6).withOpacity(0.1)
+                          ? const Color(0xFF3B82F6).withValues(alpha: 0.1)
                           : const Color(0xFF1F1F1F),
                       border: Border.all(
                         color: isSelected
@@ -326,7 +326,7 @@ class _TagPaymentConfirmationScreenState
                           width: 40.w,
                           height: 40.w,
                           decoration: BoxDecoration(
-                            color: const Color(0xFF3B82F6).withOpacity(0.2),
+                            color: const Color(0xFF3B82F6).withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(20.r),
                           ),
                           child: Icon(
@@ -431,7 +431,7 @@ class _TagPaymentConfirmationScreenState
         onPressed: _isProcessing ? null : _processPayment,
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF10B981),
-          disabledBackgroundColor: const Color(0xFF10B981).withOpacity(0.5),
+          disabledBackgroundColor: const Color(0xFF10B981).withValues(alpha: 0.5),
           padding: EdgeInsets.symmetric(vertical: 16.h),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12.r),

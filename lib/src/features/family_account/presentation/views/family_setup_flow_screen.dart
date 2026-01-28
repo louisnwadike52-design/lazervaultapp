@@ -108,7 +108,7 @@ class _FamilySetupFlowScreenState extends State<FamilySetupFlowScreen> {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -277,8 +277,8 @@ class FamilyWelcomeStep extends StatelessWidget {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  const Color(0xFF6C5CE7).withOpacity(0.2),
-                  const Color(0xFFA29BFE).withOpacity(0.1),
+                  const Color(0xFF6C5CE7).withValues(alpha: 0.2),
+                  const Color(0xFFA29BFE).withValues(alpha: 0.1),
                 ],
               ),
               shape: BoxShape.circle,
@@ -347,7 +347,7 @@ class FamilyWelcomeStep extends StatelessWidget {
               borderRadius: BorderRadius.circular(25.r),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF6C5CE7).withOpacity(0.3),
+                  color: const Color(0xFF6C5CE7).withValues(alpha: 0.3),
                   blurRadius: 15,
                   offset: const Offset(0, 8),
                 ),
@@ -405,7 +405,7 @@ class FamilyWelcomeStep extends StatelessWidget {
             width: 40.w,
             height: 40.h,
             decoration: BoxDecoration(
-              color: const Color(0xFF6C5CE7).withOpacity(0.15),
+              color: const Color(0xFF6C5CE7).withValues(alpha: 0.15),
               shape: BoxShape.circle,
             ),
             child: Icon(
@@ -741,7 +741,7 @@ class _FamilyAccountDetailsStepState extends State<FamilyAccountDetailsStep> {
                         _allowMemberContributions = value;
                       });
                     },
-                    activeColor: const Color(0xFF6C5CE7),
+                    activeThumbColor: const Color(0xFF6C5CE7),
                   ),
                 ],
               ),
@@ -759,7 +759,7 @@ class _FamilyAccountDetailsStepState extends State<FamilyAccountDetailsStep> {
                 borderRadius: BorderRadius.circular(28.r),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF6C5CE7).withOpacity(0.4),
+                    color: const Color(0xFF6C5CE7).withValues(alpha: 0.4),
                     blurRadius: 20,
                     offset: const Offset(0, 10),
                   ),
@@ -821,8 +821,8 @@ class FamilyFundingConfirmationStep extends StatelessWidget {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  const Color(0xFF6C5CE7).withOpacity(0.2),
-                  const Color(0xFFA29BFE).withOpacity(0.1),
+                  const Color(0xFF6C5CE7).withValues(alpha: 0.2),
+                  const Color(0xFFA29BFE).withValues(alpha: 0.1),
                 ],
               ),
               shape: BoxShape.circle,
@@ -917,7 +917,7 @@ class FamilyFundingConfirmationStep extends StatelessWidget {
                   borderRadius: BorderRadius.circular(28.r),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF6C5CE7).withOpacity(0.4),
+                      color: const Color(0xFF6C5CE7).withValues(alpha: 0.4),
                       blurRadius: 20,
                       offset: const Offset(0, 10),
                     ),
@@ -1026,8 +1026,8 @@ class FamilyInviteMembersStep extends StatelessWidget {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  Colors.green.withOpacity(0.2),
-                  Colors.green.withOpacity(0.1),
+                  Colors.green.withValues(alpha: 0.2),
+                  Colors.green.withValues(alpha: 0.1),
                 ],
               ),
               shape: BoxShape.circle,
@@ -1060,8 +1060,8 @@ class FamilyInviteMembersStep extends StatelessWidget {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  const Color(0xFF6C5CE7).withOpacity(0.2),
-                  const Color(0xFFA29BFE).withOpacity(0.1),
+                  const Color(0xFF6C5CE7).withValues(alpha: 0.2),
+                  const Color(0xFFA29BFE).withValues(alpha: 0.1),
                 ],
               ),
               shape: BoxShape.circle,
@@ -1105,7 +1105,7 @@ class FamilyInviteMembersStep extends StatelessWidget {
               borderRadius: BorderRadius.circular(28.r),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF6C5CE7).withOpacity(0.4),
+                  color: const Color(0xFF6C5CE7).withValues(alpha: 0.4),
                   blurRadius: 20,
                   offset: const Offset(0, 10),
                 ),
@@ -1185,10 +1185,10 @@ class FamilyInviteMembersStep extends StatelessWidget {
           Container(
             padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
-              color: const Color(0xFF6C5CE7).withOpacity(0.08),
+              color: const Color(0xFF6C5CE7).withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(12.r),
               border: Border.all(
-                color: const Color(0xFF6C5CE7).withOpacity(0.2),
+                color: const Color(0xFF6C5CE7).withValues(alpha: 0.2),
                 width: 1,
               ),
             ),

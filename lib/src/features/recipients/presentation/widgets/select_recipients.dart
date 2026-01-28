@@ -1182,7 +1182,7 @@ class _SelectRecipientsState extends State<SelectRecipients> {
                                 isFavorite = value;
                               });
                             },
-                            activeColor: Color.fromARGB(255, 78, 3, 208),
+                            activeThumbColor: Color.fromARGB(255, 78, 3, 208),
                           ),
                         ],
                       ),

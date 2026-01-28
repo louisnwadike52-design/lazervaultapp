@@ -29,7 +29,7 @@ class _GenerateBankCardState extends State<GenerateBankCard> {
         borderRadius: BorderRadius.circular(24.r),
         boxShadow: [
           BoxShadow(
-            color: Color.fromARGB(255, 20, 1, 39).withOpacity(0.3),
+            color: Color.fromARGB(255, 20, 1, 39).withValues(alpha: 0.3),
             blurRadius: 20,
             offset: Offset(0, 8),
           ),
@@ -46,7 +46,7 @@ class _GenerateBankCardState extends State<GenerateBankCard> {
                   Container(
                     padding: EdgeInsets.all(8.w),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.1),
+                      color: Colors.white.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12.r),
                     ),
                     child: Icon(
@@ -70,7 +70,7 @@ class _GenerateBankCardState extends State<GenerateBankCard> {
               Container(
                 padding: EdgeInsets.all(8.w),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.1),
+                  color: Colors.white.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12.r),
                 ),
                 child: Icon(
@@ -89,7 +89,7 @@ class _GenerateBankCardState extends State<GenerateBankCard> {
                   icon: Container(
                     padding: EdgeInsets.all(12.w),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.1),
+                      color: Colors.white.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(16.r),
                     ),
                     child: UniversalImageLoader(
@@ -115,7 +115,7 @@ class _GenerateBankCardState extends State<GenerateBankCard> {
                   icon: Container(
                     padding: EdgeInsets.all(16.w),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.1),
+                      color: Colors.white.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(16.r),
                     ),
                     child: Icon(
@@ -155,7 +155,7 @@ class _GenerateBankCardState extends State<GenerateBankCard> {
         child: Container(
           padding: EdgeInsets.all(16.w),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.05),
+            color: Colors.white.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(20.r),
             boxShadow: [
           BoxShadow(
@@ -184,7 +184,7 @@ class _GenerateBankCardState extends State<GenerateBankCard> {
                 subtitle,
                 style: TextStyle(
                   fontSize: 13.sp,
-                  color: Colors.white.withOpacity(0.7),
+                  color: Colors.white.withValues(alpha: 0.7),
                   letterSpacing: 0.2,
                 ),
               ),

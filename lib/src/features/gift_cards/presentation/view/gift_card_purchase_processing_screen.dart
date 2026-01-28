@@ -72,8 +72,8 @@ class _GiftCardPurchaseProcessingScreenState
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async => false, // Prevent back navigation during processing
+    return PopScope(
+      canPop: false, // Prevent back navigation during processing
       child: Scaffold(
         backgroundColor: const Color(0xFF0A0A0A),
         body: BlocListener<GiftCardCubit, GiftCardState>(
@@ -188,7 +188,7 @@ class _GiftCardPurchaseProcessingScreenState
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF6366F1).withOpacity(0.3),
+                    color: const Color(0xFF6366F1).withValues(alpha: 0.3),
                     blurRadius: 30,
                     spreadRadius: 5,
                   ),
@@ -344,10 +344,10 @@ class _GiftCardPurchaseProcessingScreenState
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
-          color: Colors.white.withOpacity(0.1),
+          color: Colors.white.withValues(alpha: 0.1),
         ),
       ),
       child: Row(

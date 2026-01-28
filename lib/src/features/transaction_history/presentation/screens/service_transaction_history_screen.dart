@@ -208,7 +208,7 @@ class _ServiceTransactionHistoryScreenState
               width: 40.w,
               height: 40.w,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12.r),
               ),
               child: Icon(
@@ -280,7 +280,7 @@ class _ServiceTransactionHistoryScreenState
                       subtitle,
                       style: TextStyle(
                         fontSize: 12.sp,
-                        color: Colors.white.withOpacity(0.6),
+                        color: Colors.white.withValues(alpha: 0.6),
                         fontWeight: FontWeight.w400,
                       ),
                     );
@@ -301,7 +301,7 @@ class _ServiceTransactionHistoryScreenState
               decoration: BoxDecoration(
                 color: _showFilters
                     ? widget.serviceType.color.withValues(alpha: 0.2)
-                    : Colors.white.withOpacity(0.1),
+                    : Colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12.r),
                 border: _showFilters
                     ? Border.all(
@@ -343,17 +343,17 @@ class _ServiceTransactionHistoryScreenState
           Container(
             padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.1),
+              color: Colors.white.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12.r),
               border: Border.all(
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.white.withValues(alpha: 0.1),
               ),
             ),
             child: Row(
               children: [
                 Icon(
                   Icons.search_rounded,
-                  color: Colors.white.withOpacity(0.6),
+                  color: Colors.white.withValues(alpha: 0.6),
                   size: 20.sp,
                 ),
                 SizedBox(width: 12.w),
@@ -369,7 +369,7 @@ class _ServiceTransactionHistoryScreenState
                     decoration: InputDecoration(
                       hintText: 'Search ${widget.serviceType.displayName}...',
                       hintStyle: TextStyle(
-                        color: Colors.white.withOpacity(0.5),
+                        color: Colors.white.withValues(alpha: 0.5),
                         fontSize: 14.sp,
                       ),
                       border: InputBorder.none,
@@ -386,7 +386,7 @@ class _ServiceTransactionHistoryScreenState
                     },
                     child: Icon(
                       Icons.clear_rounded,
-                      color: Colors.white.withOpacity(0.6),
+                      color: Colors.white.withValues(alpha: 0.6),
                       size: 20.sp,
                     ),
                   ),
@@ -402,7 +402,7 @@ class _ServiceTransactionHistoryScreenState
             style: TextStyle(
               fontSize: 13.sp,
               fontWeight: FontWeight.w600,
-              color: Colors.white.withOpacity(0.7),
+              color: Colors.white.withValues(alpha: 0.7),
             ),
           ),
           SizedBox(height: 8.h),
@@ -427,7 +427,7 @@ class _ServiceTransactionHistoryScreenState
                             isSelected ? FontWeight.w600 : FontWeight.w500,
                         color: isSelected
                             ? Colors.white
-                            : Colors.white.withOpacity(0.7),
+                            : Colors.white.withValues(alpha: 0.7),
                       ),
                     ),
                     selected: isSelected,
@@ -441,13 +441,13 @@ class _ServiceTransactionHistoryScreenState
                       });
                       _applyFilters();
                     },
-                    backgroundColor: Colors.white.withOpacity(0.1),
+                    backgroundColor: Colors.white.withValues(alpha: 0.1),
                     selectedColor: status.color.withValues(alpha: 0.3),
                     checkmarkColor: Colors.white,
                     side: BorderSide(
                       color: isSelected
                           ? status.color
-                          : Colors.white.withOpacity(0.1),
+                          : Colors.white.withValues(alpha: 0.1),
                     ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10.r),
@@ -492,7 +492,7 @@ class _ServiceTransactionHistoryScreenState
                 ElevatedButton(
                   onPressed: _clearFilters,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white.withOpacity(0.1),
+                    backgroundColor: Colors.white.withValues(alpha: 0.1),
                     foregroundColor: Colors.white.withValues(alpha: 0.7),
                     padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
                     shape: RoundedRectangleBorder(

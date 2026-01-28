@@ -382,10 +382,10 @@ class _DepositScreenState extends State<DepositScreen> {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF6C5CE7).withOpacity(0.1),
+        color: const Color(0xFF6C5CE7).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
-          color: const Color(0xFF6C5CE7).withOpacity(0.3),
+          color: const Color(0xFF6C5CE7).withValues(alpha: 0.3),
         ),
       ),
       child: Row(
@@ -549,7 +549,7 @@ class _DepositScreenState extends State<DepositScreen> {
               width: 64.w,
               height: 64.w,
               decoration: BoxDecoration(
-                color: Colors.green.withOpacity(0.1),
+                color: Colors.green.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -582,7 +582,7 @@ class _DepositScreenState extends State<DepositScreen> {
                 vertical: 6.h,
               ),
               decoration: BoxDecoration(
-                color: Colors.orange.withOpacity(0.1),
+                color: Colors.orange.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8.r),
               ),
               child: Text(

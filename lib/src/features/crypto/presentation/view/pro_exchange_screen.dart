@@ -103,7 +103,7 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
                   'Advanced trading tools',
                   style: GoogleFonts.inter(
                     fontSize: 14.sp,
-                    color: Colors.white.withOpacity(0.7),
+                    color: Colors.white.withValues(alpha: 0.7),
                   ),
                 ),
               ],
@@ -112,7 +112,7 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
           Container(
             padding: EdgeInsets.all(8.w),
             decoration: BoxDecoration(
-              color: Colors.orange.withOpacity(0.2),
+              color: Colors.orange.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: Icon(Icons.candlestick_chart, color: Colors.orange, size: 20.sp),
@@ -153,7 +153,7 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
             'Pro',
             style: GoogleFonts.inter(
               fontSize: 14.sp,
-              color: _isAdvancedView ? Colors.orange : Colors.white.withOpacity(0.6),
+              color: _isAdvancedView ? Colors.orange : Colors.white.withValues(alpha: 0.6),
             ),
           ),
         ],
@@ -167,12 +167,12 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [Colors.green.withOpacity(0.2), const Color(0xFF1E2746)],
+          colors: [Colors.green.withValues(alpha: 0.2), const Color(0xFF1E2746)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.green.withOpacity(0.3)),
+        border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
       ),
       child: Column(
         children: [
@@ -212,7 +212,7 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
                     '24h Volume',
                     style: GoogleFonts.inter(
                       fontSize: 12.sp,
-                      color: Colors.white.withOpacity(0.6),
+                      color: Colors.white.withValues(alpha: 0.6),
                     ),
                   ),
                   Text(
@@ -255,7 +255,7 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
           borderRadius: BorderRadius.circular(12.r),
         ),
         labelColor: Colors.white,
-        unselectedLabelColor: Colors.white.withOpacity(0.6),
+        unselectedLabelColor: Colors.white.withValues(alpha: 0.6),
         labelStyle: GoogleFonts.inter(fontSize: 12.sp, fontWeight: FontWeight.w600),
         tabs: [
           Tab(text: 'Trade'),
@@ -360,7 +360,7 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
                   style: GoogleFonts.inter(
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w600,
-                    color: isSelected ? Colors.white : Colors.white.withOpacity(0.6),
+                    color: isSelected ? Colors.white : Colors.white.withValues(alpha: 0.6),
                   ),
                 ),
               ),
@@ -377,7 +377,7 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
       decoration: BoxDecoration(
         color: const Color(0xFF1E2746),
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: Colors.green.withOpacity(0.3)),
+        border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -420,7 +420,7 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
       decoration: BoxDecoration(
         color: const Color(0xFF1E2746),
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: Colors.red.withOpacity(0.3)),
+        border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -463,7 +463,7 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
       decoration: BoxDecoration(
         color: const Color(0xFF1E2746),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -502,7 +502,7 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
       decoration: BoxDecoration(
         color: const Color(0xFF1E2746),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -544,7 +544,7 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
             'Price (GBP)',
             style: GoogleFonts.inter(
               fontSize: 12.sp,
-              color: Colors.white.withOpacity(0.6),
+              color: Colors.white.withValues(alpha: 0.6),
             ),
           ),
         ),
@@ -554,7 +554,7 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(
               fontSize: 12.sp,
-              color: Colors.white.withOpacity(0.6),
+              color: Colors.white.withValues(alpha: 0.6),
             ),
           ),
         ),
@@ -564,7 +564,7 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
             textAlign: TextAlign.right,
             style: GoogleFonts.inter(
               fontSize: 12.sp,
-              color: Colors.white.withOpacity(0.6),
+              color: Colors.white.withValues(alpha: 0.6),
             ),
           ),
         ),
@@ -629,7 +629,7 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
       decoration: BoxDecoration(
         color: const Color(0xFF1E2746),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -651,7 +651,7 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
                   child: Container(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [Colors.green.withOpacity(0.1), Colors.green.withOpacity(0.3)],
+                        colors: [Colors.green.withValues(alpha: 0.1), Colors.green.withValues(alpha: 0.3)],
                         begin: Alignment.bottomCenter,
                         end: Alignment.topCenter,
                       ),
@@ -679,7 +679,7 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
                   child: Container(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [Colors.red.withOpacity(0.1), Colors.red.withOpacity(0.3)],
+                        colors: [Colors.red.withValues(alpha: 0.1), Colors.red.withValues(alpha: 0.3)],
                         begin: Alignment.bottomCenter,
                         end: Alignment.topCenter,
                       ),
@@ -730,7 +730,7 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
                   style: GoogleFonts.inter(
                     fontSize: 12.sp,
                     fontWeight: FontWeight.w600,
-                    color: isSelected ? Colors.white : Colors.white.withOpacity(0.6),
+                    color: isSelected ? Colors.white : Colors.white.withValues(alpha: 0.6),
                   ),
                 ),
               ),
@@ -748,7 +748,7 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
       decoration: BoxDecoration(
         color: const Color(0xFF1E2746),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -783,27 +783,27 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
             child: Container(
               width: double.infinity,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.05),
+                color: Colors.white.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(8.r),
               ),
               child: Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.show_chart, size: 48.sp, color: Colors.white.withOpacity(0.3)),
+                    Icon(Icons.show_chart, size: 48.sp, color: Colors.white.withValues(alpha: 0.3)),
                     SizedBox(height: 8.h),
                     Text(
                       'Advanced Chart',
                       style: GoogleFonts.inter(
                         fontSize: 16.sp,
-                        color: Colors.white.withOpacity(0.7),
+                        color: Colors.white.withValues(alpha: 0.7),
                       ),
                     ),
                     Text(
                       'Candlestick chart with indicators',
                       style: GoogleFonts.inter(
                         fontSize: 12.sp,
-                        color: Colors.white.withOpacity(0.5),
+                        color: Colors.white.withValues(alpha: 0.5),
                       ),
                     ),
                   ],
@@ -822,7 +822,7 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
       decoration: BoxDecoration(
         color: const Color(0xFF1E2746),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -851,7 +851,7 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
       decoration: BoxDecoration(
         color: const Color(0xFF1E2746),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -884,7 +884,7 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
       decoration: BoxDecoration(
         color: const Color(0xFF1E2746),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -912,7 +912,7 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
       decoration: BoxDecoration(
         color: const Color(0xFF1E2746),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -947,7 +947,7 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
           label,
           style: GoogleFonts.inter(
             fontSize: 12.sp,
-            color: Colors.white.withOpacity(0.6),
+            color: Colors.white.withValues(alpha: 0.6),
           ),
         ),
         Text(
@@ -970,7 +970,7 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
           label,
           style: GoogleFonts.inter(
             fontSize: 12.sp,
-            color: Colors.white.withOpacity(0.6),
+            color: Colors.white.withValues(alpha: 0.6),
           ),
         ),
         SizedBox(height: 4.h),
@@ -978,9 +978,9 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
           style: GoogleFonts.inter(color: Colors.white),
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: GoogleFonts.inter(color: Colors.white.withOpacity(0.3)),
+            hintStyle: GoogleFonts.inter(color: Colors.white.withValues(alpha: 0.3)),
             filled: true,
-            fillColor: Colors.white.withOpacity(0.05),
+            fillColor: Colors.white.withValues(alpha: 0.05),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8.r),
               borderSide: BorderSide.none,
@@ -1002,7 +1002,7 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
               margin: EdgeInsets.only(right: amounts.last == amount ? 0 : 4.w),
               padding: EdgeInsets.symmetric(vertical: 8.h),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(6.r),
               ),
               child: Text(
@@ -1010,7 +1010,7 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
                 textAlign: TextAlign.center,
                 style: GoogleFonts.inter(
                   fontSize: 12.sp,
-                  color: Colors.white.withOpacity(0.8),
+                  color: Colors.white.withValues(alpha: 0.8),
                 ),
               ),
             ),
@@ -1031,7 +1031,7 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
           Container(
             padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
             decoration: BoxDecoration(
-              color: typeColor.withOpacity(0.2),
+              color: typeColor.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(4.r),
             ),
             child: Text(
@@ -1060,7 +1060,7 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
                   price,
                   style: GoogleFonts.inter(
                     fontSize: 12.sp,
-                    color: Colors.white.withOpacity(0.6),
+                    color: Colors.white.withValues(alpha: 0.6),
                   ),
                 ),
               ],
@@ -1069,7 +1069,7 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
           Container(
             padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
             decoration: BoxDecoration(
-              color: statusColor.withOpacity(0.2),
+              color: statusColor.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(4.r),
             ),
             child: Text(
@@ -1092,9 +1092,9 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
       child: Container(
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.05),
+          color: Colors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(color: Colors.orange.withOpacity(0.3)),
+          border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
         ),
         child: Column(
           children: [
@@ -1144,7 +1144,7 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
               textAlign: TextAlign.right,
               style: GoogleFonts.robotoMono(
                 fontSize: 12.sp,
-                color: Colors.white.withOpacity(0.7),
+                color: Colors.white.withValues(alpha: 0.7),
               ),
             ),
           ),
@@ -1180,7 +1180,7 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.2),
+                  color: color.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(4.r),
                 ),
                 child: Text(
@@ -1207,7 +1207,7 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
           label,
           style: GoogleFonts.inter(
             fontSize: 12.sp,
-            color: Colors.white.withOpacity(0.6),
+            color: Colors.white.withValues(alpha: 0.6),
           ),
         ),
         Text(
@@ -1243,7 +1243,7 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
                 amount,
                 style: GoogleFonts.inter(
                   fontSize: 12.sp,
-                  color: Colors.white.withOpacity(0.6),
+                  color: Colors.white.withValues(alpha: 0.6),
                 ),
               ),
             ],
@@ -1289,7 +1289,7 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
           label,
           style: GoogleFonts.inter(
             fontSize: 12.sp,
-            color: Colors.white.withOpacity(0.6),
+            color: Colors.white.withValues(alpha: 0.6),
           ),
         ),
       ],
@@ -1301,7 +1301,7 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
     Get.snackbar(
       'Order Placed',
       'Buy order has been submitted',
-      backgroundColor: Colors.green.withOpacity(0.2),
+      backgroundColor: Colors.green.withValues(alpha: 0.2),
       colorText: Colors.white,
     );
   }
@@ -1310,7 +1310,7 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
     Get.snackbar(
       'Order Placed',
       'Sell order has been submitted',
-      backgroundColor: Colors.red.withOpacity(0.2),
+      backgroundColor: Colors.red.withValues(alpha: 0.2),
       colorText: Colors.white,
     );
   }
@@ -1319,7 +1319,7 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
     Get.snackbar(
       'Amount Set',
       'Set to $percentage of available balance',
-      backgroundColor: Colors.orange.withOpacity(0.2),
+      backgroundColor: Colors.orange.withValues(alpha: 0.2),
       colorText: Colors.white,
     );
   }
@@ -1328,7 +1328,7 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
     Get.snackbar(
       'Orders',
       'Opening detailed order history',
-      backgroundColor: Colors.blue.withOpacity(0.2),
+      backgroundColor: Colors.blue.withValues(alpha: 0.2),
       colorText: Colors.white,
     );
   }
@@ -1337,7 +1337,7 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
     Get.snackbar(
       tool,
       'Opening $tool configuration',
-      backgroundColor: Colors.orange.withOpacity(0.2),
+      backgroundColor: Colors.orange.withValues(alpha: 0.2),
       colorText: Colors.white,
     );
   }
@@ -1346,7 +1346,7 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
     Get.snackbar(
       'Chart Type',
       'Switching chart visualization',
-      backgroundColor: Colors.orange.withOpacity(0.2),
+      backgroundColor: Colors.orange.withValues(alpha: 0.2),
       colorText: Colors.white,
     );
   }
@@ -1355,7 +1355,7 @@ class _ProExchangeScreenState extends State<ProExchangeScreen>
     Get.snackbar(
       'Indicator',
       'Adding technical indicator',
-      backgroundColor: Colors.blue.withOpacity(0.2),
+      backgroundColor: Colors.blue.withValues(alpha: 0.2),
       colorText: Colors.white,
     );
   }

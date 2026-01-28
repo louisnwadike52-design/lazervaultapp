@@ -96,10 +96,10 @@ class _BarcodeDisplayScreenState extends State<BarcodeDisplayScreen>
               width: 44.w,
               height: 44.w,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(22.r),
                 border: Border.all(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   width: 1,
                 ),
               ),
@@ -126,7 +126,7 @@ class _BarcodeDisplayScreenState extends State<BarcodeDisplayScreen>
                 Text(
                   'Show this to receive payment',
                   style: GoogleFonts.inter(
-                    color: Colors.white.withOpacity(0.6),
+                    color: Colors.white.withValues(alpha: 0.6),
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w400,
                   ),
@@ -154,7 +154,7 @@ class _BarcodeDisplayScreenState extends State<BarcodeDisplayScreen>
           borderRadius: BorderRadius.circular(24.r),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF4E03D0).withOpacity(0.4),
+              color: const Color(0xFF4E03D0).withValues(alpha: 0.4),
               blurRadius: 30,
               offset: const Offset(0, 15),
             ),
@@ -190,7 +190,7 @@ class _BarcodeDisplayScreenState extends State<BarcodeDisplayScreen>
                 barcode.description,
                 textAlign: TextAlign.center,
                 style: GoogleFonts.inter(
-                  color: Colors.white.withOpacity(0.9),
+                  color: Colors.white.withValues(alpha: 0.9),
                   fontSize: 14.sp,
                   fontWeight: FontWeight.w400,
                 ),
@@ -206,19 +206,19 @@ class _BarcodeDisplayScreenState extends State<BarcodeDisplayScreen>
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(
-          color: Colors.white.withOpacity(0.1),
+          color: Colors.white.withValues(alpha: 0.1),
           width: 1,
         ),
       ),
       child: Column(
         children: [
           _buildDetailRow('Barcode Code', barcode.barcodeCode),
-          Divider(color: Colors.white.withOpacity(0.1), height: 24.h),
+          Divider(color: Colors.white.withValues(alpha: 0.1), height: 24.h),
           _buildDetailRow('Status', barcode.status.displayName),
-          Divider(color: Colors.white.withOpacity(0.1), height: 24.h),
+          Divider(color: Colors.white.withValues(alpha: 0.1), height: 24.h),
           _buildDetailRow(
             'Created',
             DateFormat('MMM dd, yyyy - hh:mm a').format(barcode.createdAt),
@@ -235,7 +235,7 @@ class _BarcodeDisplayScreenState extends State<BarcodeDisplayScreen>
         Text(
           label,
           style: GoogleFonts.inter(
-            color: Colors.white.withOpacity(0.6),
+            color: Colors.white.withValues(alpha: 0.6),
             fontSize: 14.sp,
             fontWeight: FontWeight.w400,
           ),
@@ -260,8 +260,8 @@ class _BarcodeDisplayScreenState extends State<BarcodeDisplayScreen>
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: isExpired
-            ? const Color(0xFFEF4444).withOpacity(0.1)
-            : const Color(0xFFFB923C).withOpacity(0.1),
+            ? const Color(0xFFEF4444).withValues(alpha: 0.1)
+            : const Color(0xFFFB923C).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
           color: isExpired
@@ -338,7 +338,7 @@ class _BarcodeDisplayScreenState extends State<BarcodeDisplayScreen>
             onPressed: () => Get.offAllNamed(AppRoutes.dashboard),
             style: OutlinedButton.styleFrom(
               side: BorderSide(
-                color: Colors.white.withOpacity(0.3),
+                color: Colors.white.withValues(alpha: 0.3),
                 width: 1.5,
               ),
               padding: EdgeInsets.symmetric(vertical: 16.h),

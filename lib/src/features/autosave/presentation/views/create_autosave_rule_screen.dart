@@ -129,7 +129,7 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
       appBar: AppBar(
         backgroundColor: const Color(0xFF0A0A0A),
         elevation: 0,
-        shadowColor: Colors.black.withOpacity(0.05),
+        shadowColor: Colors.black.withValues(alpha: 0.05),
         title: Text(
           'Create Auto-Save Rule',
           style: GoogleFonts.inter(
@@ -281,7 +281,7 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
                         borderRadius: BorderRadius.circular(16.r),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color.fromARGB(255, 78, 3, 208).withOpacity(0.3),
+                            color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.3),
                             blurRadius: 12,
                             offset: const Offset(0, 4),
                           ),
@@ -376,7 +376,7 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
             border: Border.all(color: const Color(0xFF2D2D2D)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
+                color: Colors.black.withValues(alpha: 0.1),
                 blurRadius: 10,
                 offset: const Offset(0, 2),
               ),
@@ -452,7 +452,7 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
       child: Container(
         padding: EdgeInsets.symmetric(vertical: 16.h),
         decoration: BoxDecoration(
-          color: isSelected ? const Color.fromARGB(255, 78, 3, 208).withOpacity(0.1) : const Color(0xFF1F1F1F),
+          color: isSelected ? const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1) : const Color(0xFF1F1F1F),
           borderRadius: BorderRadius.circular(12.r),
           border: Border.all(
             color: isSelected ? const Color.fromARGB(255, 78, 3, 208) : const Color(0xFF2D2D2D),
@@ -460,7 +460,7 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 10,
               offset: const Offset(0, 2),
             ),
@@ -497,49 +497,49 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
         border: Border.all(color: const Color(0xFF2D2D2D)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
         ],
       ),
-      child: Row(
-        children: [
-          Expanded(
-            child: RadioListTile<AmountType>(
-              title: Text(
-                'Fixed Amount',
-                style: GoogleFonts.inter(
-                  color: Colors.white,
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.w500,
+      child: RadioGroup<AmountType>(
+        groupValue: _selectedAmountType,
+        onChanged: (value) => setState(() => _selectedAmountType = value ?? _selectedAmountType),
+        child: Row(
+          children: [
+            Expanded(
+              child: RadioListTile<AmountType>(
+                title: Text(
+                  'Fixed Amount',
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
+                value: AmountType.fixed,
+                activeColor: const Color.fromARGB(255, 78, 3, 208),
+                contentPadding: EdgeInsets.zero,
               ),
-              value: AmountType.fixed,
-              groupValue: _selectedAmountType,
-              onChanged: (value) => setState(() => _selectedAmountType = value!),
-              activeColor: const Color.fromARGB(255, 78, 3, 208),
-              contentPadding: EdgeInsets.zero,
             ),
-          ),
-          Expanded(
-            child: RadioListTile<AmountType>(
-              title: Text(
-                'Percentage',
-                style: GoogleFonts.inter(
-                  color: Colors.white,
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.w500,
+            Expanded(
+              child: RadioListTile<AmountType>(
+                title: Text(
+                  'Percentage',
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
+                value: AmountType.percentage,
+                activeColor: const Color.fromARGB(255, 78, 3, 208),
+                contentPadding: EdgeInsets.zero,
               ),
-              value: AmountType.percentage,
-              groupValue: _selectedAmountType,
-              onChanged: (value) => setState(() => _selectedAmountType = value!),
-              activeColor: const Color.fromARGB(255, 78, 3, 208),
-              contentPadding: EdgeInsets.zero,
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -582,7 +582,7 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
       child: Container(
         padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 16.w),
         decoration: BoxDecoration(
-          color: isSelected ? const Color.fromARGB(255, 78, 3, 208).withOpacity(0.1) : const Color(0xFF1F1F1F),
+          color: isSelected ? const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1) : const Color(0xFF1F1F1F),
           borderRadius: BorderRadius.circular(12.r),
           border: Border.all(
             color: isSelected ? const Color.fromARGB(255, 78, 3, 208) : const Color(0xFF2D2D2D),
@@ -590,7 +590,7 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 10,
               offset: const Offset(0, 2),
             ),
@@ -629,7 +629,7 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
           border: Border.all(color: const Color(0xFF2D2D2D)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 10,
               offset: const Offset(0, 2),
             ),
@@ -716,10 +716,10 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
                 Container(
                   padding: EdgeInsets.all(12.w),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFEF4444).withOpacity(0.1),
+                    color: const Color(0xFFEF4444).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8.r),
                     border: Border.all(
-                      color: const Color(0xFFEF4444).withOpacity(0.3),
+                      color: const Color(0xFFEF4444).withValues(alpha: 0.3),
                     ),
                   ),
                   child: Row(
@@ -786,7 +786,7 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF00C853).withOpacity(0.1),
+                  color: const Color(0xFF00C853).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8.r),
                 ),
                 child: Text(
@@ -810,7 +810,7 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
             border: Border.all(color: const Color(0xFF2D2D2D)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
+                color: Colors.black.withValues(alpha: 0.1),
                 blurRadius: 10,
                 offset: const Offset(0, 2),
               ),

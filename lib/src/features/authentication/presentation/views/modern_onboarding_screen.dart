@@ -196,8 +196,8 @@ class _ModernOnboardingScreenState extends State<ModernOnboardingScreen> with Ti
                       style: TextButton.styleFrom(
                         foregroundColor: _pages[_currentPage].useLightTheme ? const Color(0xFF6366F1) : Colors.white,
                         backgroundColor: _pages[_currentPage].useLightTheme
-                            ? const Color(0xFF6366F1).withOpacity(0.1)
-                            : Colors.white.withOpacity(0.15),
+                            ? const Color(0xFF6366F1).withValues(alpha: 0.1)
+                            : Colors.white.withValues(alpha: 0.15),
                         padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(20.r),
@@ -239,7 +239,7 @@ class _ModernOnboardingScreenState extends State<ModernOnboardingScreen> with Ti
                       count: _pages.length,
                       effect: ExpandingDotsEffect(
                         activeDotColor: _pages[_currentPage].useLightTheme ? const Color(0xFF6366F1) : Colors.white,
-                        dotColor: _pages[_currentPage].useLightTheme ? const Color(0xFF6366F1).withOpacity(0.3) : Colors.white.withOpacity(0.3),
+                        dotColor: _pages[_currentPage].useLightTheme ? const Color(0xFF6366F1).withValues(alpha: 0.3) : Colors.white.withValues(alpha: 0.3),
                         dotHeight: 10.h,
                         dotWidth: 10.w,
                         expansionFactor: 4,
@@ -258,7 +258,7 @@ class _ModernOnboardingScreenState extends State<ModernOnboardingScreen> with Ti
                           backgroundColor: _pages[_currentPage].useLightTheme ? const Color(0xFF6366F1) : Colors.white,
                           foregroundColor: _pages[_currentPage].useLightTheme ? Colors.white : _pages[_currentPage].gradient.colors.first,
                           elevation: 8,
-                          shadowColor: Colors.black.withOpacity(0.3),
+                          shadowColor: Colors.black.withValues(alpha: 0.3),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(18.r),
                           ),
@@ -345,17 +345,17 @@ class _ModernOnboardingScreenState extends State<ModernOnboardingScreen> with Ti
                                 gradient: RadialGradient(
                                   colors: page.useLightTheme
                                       ? [
-                                          const Color(0xFF6366F1).withOpacity(0.15),
-                                          const Color(0xFF6366F1).withOpacity(0.05),
+                                          const Color(0xFF6366F1).withValues(alpha: 0.15),
+                                          const Color(0xFF6366F1).withValues(alpha: 0.05),
                                         ]
                                       : [
-                                          Colors.white.withOpacity(0.2),
-                                          Colors.white.withOpacity(0.05),
+                                          Colors.white.withValues(alpha: 0.2),
+                                          Colors.white.withValues(alpha: 0.05),
                                         ],
                                 ),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.black.withOpacity(0.15),
+                                    color: Colors.black.withValues(alpha: 0.15),
                                     blurRadius: 30,
                                     offset: const Offset(0, 15),
                                   ),
@@ -377,7 +377,7 @@ class _ModernOnboardingScreenState extends State<ModernOnboardingScreen> with Ti
                                               shape: BoxShape.circle,
                                               boxShadow: [
                                                 BoxShadow(
-                                                  color: page.gradient.colors.first.withOpacity(0.3),
+                                                  color: page.gradient.colors.first.withValues(alpha: 0.3),
                                                   blurRadius: 20,
                                                   offset: const Offset(0, 10),
                                                 ),
@@ -398,7 +398,7 @@ class _ModernOnboardingScreenState extends State<ModernOnboardingScreen> with Ti
                                           shape: BoxShape.circle,
                                           boxShadow: [
                                             BoxShadow(
-                                              color: page.gradient.colors.first.withOpacity(0.3),
+                                              color: page.gradient.colors.first.withValues(alpha: 0.3),
                                               blurRadius: 20,
                                               offset: const Offset(0, 10),
                                             ),
@@ -432,7 +432,7 @@ class _ModernOnboardingScreenState extends State<ModernOnboardingScreen> with Ti
                                 ? null
                                 : [
                                     Shadow(
-                                      color: Colors.black.withOpacity(0.2),
+                                      color: Colors.black.withValues(alpha: 0.2),
                                       blurRadius: 10,
                                       offset: const Offset(0, 4),
                                     ),
@@ -450,7 +450,7 @@ class _ModernOnboardingScreenState extends State<ModernOnboardingScreen> with Ti
                           style: TextStyle(
                             fontSize: 18.sp,
                             fontWeight: FontWeight.w700,
-                            color: page.useLightTheme ? const Color(0xFF64748B) : Colors.white.withOpacity(0.95),
+                            color: page.useLightTheme ? const Color(0xFF64748B) : Colors.white.withValues(alpha: 0.95),
                             height: 1.3,
                             letterSpacing: 0.3,
                           ),
@@ -466,7 +466,7 @@ class _ModernOnboardingScreenState extends State<ModernOnboardingScreen> with Ti
                           style: TextStyle(
                             fontSize: 15.sp,
                             fontWeight: FontWeight.w400,
-                            color: page.useLightTheme ? const Color(0xFF475569) : Colors.white.withOpacity(0.85),
+                            color: page.useLightTheme ? const Color(0xFF475569) : Colors.white.withValues(alpha: 0.85),
                             height: 1.5,
                             letterSpacing: 0.2,
                           ),
@@ -480,12 +480,12 @@ class _ModernOnboardingScreenState extends State<ModernOnboardingScreen> with Ti
                             decoration: BoxDecoration(
                               color: page.useLightTheme
                                   ? const Color(0xFFF1F5F9)
-                                  : Colors.white.withOpacity(0.1),
+                                  : Colors.white.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(20.r),
                               border: Border.all(
                                 color: page.useLightTheme
                                     ? const Color(0xFFE2E8F0)
-                                    : Colors.white.withOpacity(0.2),
+                                    : Colors.white.withValues(alpha: 0.2),
                                 width: 1.5,
                               ),
                             ),
@@ -499,7 +499,7 @@ class _ModernOnboardingScreenState extends State<ModernOnboardingScreen> with Ti
                                       Container(
                                         padding: EdgeInsets.all(6.w),
                                         decoration: BoxDecoration(
-                                          color: page.useLightTheme ? const Color(0xFF6366F1) : Colors.white.withOpacity(0.9),
+                                          color: page.useLightTheme ? const Color(0xFF6366F1) : Colors.white.withValues(alpha: 0.9),
                                           shape: BoxShape.circle,
                                         ),
                                         child: Icon(

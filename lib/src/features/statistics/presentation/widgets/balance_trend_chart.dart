@@ -33,7 +33,7 @@ class BalanceTrendChart extends StatelessWidget {
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF1A1A1A).withOpacity(0.08),
+            color: const Color(0xFF1A1A1A).withValues(alpha: 0.08),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -96,7 +96,7 @@ class BalanceTrendChart extends StatelessWidget {
                     color: (isPositive
                             ? const Color(0xFF10B981)
                             : const Color(0xFFEF4444))
-                        .withOpacity(0.1),
+                        .withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(20.r),
                   ),
                   child: Row(
@@ -137,7 +137,7 @@ class BalanceTrendChart extends StatelessWidget {
             Container(
               padding: EdgeInsets.all(12.w),
               decoration: BoxDecoration(
-                color: const Color(0xFF4E03D0).withOpacity(0.05),
+                color: const Color(0xFF4E03D0).withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(8.r),
               ),
               child: Row(

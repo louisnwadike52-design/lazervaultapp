@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 
 class DepositSuccessScreen extends StatefulWidget {
   const DepositSuccessScreen({super.key});
@@ -37,6 +40,23 @@ class _DepositSuccessScreenState extends State<DepositSuccessScreen>
     _currency = args['currency'] ?? {};
     _paymentMethod = args['paymentMethod'] ?? {};
     _amount = args['amount'] ?? 0.0;
+
+    // Refresh account balances after successful deposit
+    _refreshAccountBalances();
+  }
+
+  void _refreshAccountBalances() {
+    try {
+      final authCubit = context.read<AuthenticationCubit>();
+      final userId = authCubit.currentProfile?.user.id;
+      if (userId != null) {
+        context.read<AccountCardsSummaryCubit>().fetchAccountSummaries(
+          userId: userId,
+        );
+      }
+    } catch (e) {
+      print('[DepositSuccessScreen] Could not refresh balances: $e');
+    }
   }
 
   void _setupAnimations() {

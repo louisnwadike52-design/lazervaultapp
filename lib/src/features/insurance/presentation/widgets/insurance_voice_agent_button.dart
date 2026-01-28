@@ -56,16 +56,17 @@ class _InsuranceVoiceAgentButtonState extends State<InsuranceVoiceAgentButton>
       );
 
       // Create room
-      _room = livekit.Room();
+      _room = livekit.Room(
+        roomOptions: const livekit.RoomOptions(
+          adaptiveStream: true,
+          dynacast: true,
+        ),
+      );
 
       // Connect to LiveKit room
       await _room!.connect(
         livekitUrl,
         widget.accessToken ?? '',
-        roomOptions: const livekit.RoomOptions(
-          adaptiveStream: true,
-          dynacast: true,
-        ),
       );
 
       // Set up event listeners
@@ -203,14 +204,15 @@ class _InsuranceVoiceAgentControlState extends State<InsuranceVoiceAgentControl>
     );
 
     try {
-      _room = livekit.Room();
-      await _room!.connect(
-        livekitUrl,
-        widget.accessToken ?? '',
+      _room = livekit.Room(
         roomOptions: const livekit.RoomOptions(
           adaptiveStream: true,
           dynacast: true,
         ),
+      );
+      await _room!.connect(
+        livekitUrl,
+        widget.accessToken ?? '',
       );
 
       setState(() => _isConnected = true);

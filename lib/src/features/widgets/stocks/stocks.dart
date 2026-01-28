@@ -295,7 +295,7 @@ class _StocksState extends State<Stocks> with TickerProviderStateMixin {
         borderRadius: BorderRadius.circular(24.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.blue.withOpacity(0.2),
+            color: Colors.blue.withValues(alpha: 0.2),
             blurRadius: 20,
             offset: Offset(0, 10),
           ),
@@ -307,7 +307,7 @@ class _StocksState extends State<Stocks> with TickerProviderStateMixin {
           Text(
             'Portfolio Value',
             style: TextStyle(
-              color: Colors.white.withOpacity(0.7),
+              color: Colors.white.withValues(alpha: 0.7),
               fontSize: 14.sp,
             ),
           ),
@@ -331,8 +331,8 @@ class _StocksState extends State<Stocks> with TickerProviderStateMixin {
                 ),
                 decoration: BoxDecoration(
                   color: portfolioData['todayPercentage'] >= 0 
-                      ? Colors.green.withOpacity(0.2)
-                      : Colors.red.withOpacity(0.2),
+                      ? Colors.green.withValues(alpha: 0.2)
+                      : Colors.red.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(20.r),
                 ),
                 child: Row(
@@ -385,7 +385,7 @@ class _StocksState extends State<Stocks> with TickerProviderStateMixin {
               Text(
           label,
           style: TextStyle(
-            color: Colors.white.withOpacity(0.7),
+            color: Colors.white.withValues(alpha: 0.7),
             fontSize: 12.sp,
           ),
         ),
@@ -452,7 +452,7 @@ class _StocksState extends State<Stocks> with TickerProviderStateMixin {
       width: 120.w,
       height: 48.h,
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12.r),
         boxShadow: [
           BoxShadow(
@@ -619,7 +619,7 @@ class _StocksState extends State<Stocks> with TickerProviderStateMixin {
               color: Colors.grey[900],
               borderRadius: BorderRadius.circular(16.r),              boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
+                  color: Colors.black.withValues(alpha: 0.2),
                   blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),
@@ -644,8 +644,8 @@ class _StocksState extends State<Stocks> with TickerProviderStateMixin {
                       padding: EdgeInsets.all(4.r),
                       decoration: BoxDecoration(
                         color: isPositive 
-                            ? Colors.green.withOpacity(0.2)
-                            : Colors.red.withOpacity(0.2),
+                            ? Colors.green.withValues(alpha: 0.2)
+                            : Colors.red.withValues(alpha: 0.2),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
@@ -727,8 +727,8 @@ class _StocksState extends State<Stocks> with TickerProviderStateMixin {
                 padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                 decoration: BoxDecoration(
                   color: isPositive 
-                      ? Colors.green.withOpacity(0.2)
-                      : Colors.red.withOpacity(0.2),
+                      ? Colors.green.withValues(alpha: 0.2)
+                      : Colors.red.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(8.r),
                 ),
                 child: Text(
@@ -894,7 +894,7 @@ class _StocksState extends State<Stocks> with TickerProviderStateMixin {
           color: Colors.grey[900],
           borderRadius: BorderRadius.circular(16.r),            boxShadow: [
               BoxShadow(
-              color: Colors.black.withOpacity(0.2),
+              color: Colors.black.withValues(alpha: 0.2),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
@@ -993,8 +993,8 @@ class _StocksState extends State<Stocks> with TickerProviderStateMixin {
                         padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
                         decoration: BoxDecoration(
                           color: stock['isUp'] 
-                              ? Colors.green.withOpacity(0.2)
-                              : Colors.red.withOpacity(0.2),
+                              ? Colors.green.withValues(alpha: 0.2)
+                              : Colors.red.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(4.r),
                         ),
                         child: Text(
@@ -1124,7 +1124,7 @@ class _StocksState extends State<Stocks> with TickerProviderStateMixin {
           Container(
             padding: EdgeInsets.all(24.w),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.1),
+              color: Colors.white.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(24.r),
               boxShadow: [
           BoxShadow(
@@ -1138,7 +1138,7 @@ class _StocksState extends State<Stocks> with TickerProviderStateMixin {
             child: Icon(
               Icons.upcoming,
               size: 48.r,
-              color: Colors.white.withOpacity(0.6),
+              color: Colors.white.withValues(alpha: 0.6),
             ),
           ),
           SizedBox(height: 16.h),
@@ -1155,7 +1155,7 @@ class _StocksState extends State<Stocks> with TickerProviderStateMixin {
             "We're working on bringing you the best $feature trading experience",
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(
-              color: Colors.white.withOpacity(0.7),
+              color: Colors.white.withValues(alpha: 0.7),
                     fontSize: 14.sp,
                   ),
                 ),
@@ -1187,13 +1187,13 @@ class _StocksState extends State<Stocks> with TickerProviderStateMixin {
               itemCount: 6,
               itemBuilder: (context, index) {
                 return Shimmer.fromColors(
-                  baseColor: Colors.white.withOpacity(0.1),
-                  highlightColor: Colors.white.withOpacity(0.2),
+                  baseColor: Colors.white.withValues(alpha: 0.1),
+                  highlightColor: Colors.white.withValues(alpha: 0.2),
                   child: Container(
                     height: 80.h,
                     margin: EdgeInsets.only(bottom: 12.h),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.1),
+                      color: Colors.white.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(16.r),
                     ),
                   ),
@@ -1231,7 +1231,7 @@ class _StocksState extends State<Stocks> with TickerProviderStateMixin {
                   Container(
                     padding: EdgeInsets.all(24.w),
                     decoration: BoxDecoration(
-                      color: Colors.red.withOpacity(0.1),
+                      color: Colors.red.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(24.r),
                       boxShadow: [
           BoxShadow(
@@ -1264,7 +1264,7 @@ class _StocksState extends State<Stocks> with TickerProviderStateMixin {
                       message,
                       style: GoogleFonts.inter(
                         fontSize: 14.sp,
-                        color: Colors.white.withOpacity(0.7),
+                        color: Colors.white.withValues(alpha: 0.7),
                         fontWeight: FontWeight.w400,
             ),
             textAlign: TextAlign.center,
@@ -1282,7 +1282,7 @@ class _StocksState extends State<Stocks> with TickerProviderStateMixin {
                       borderRadius: BorderRadius.circular(12.r),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.blue.withOpacity(0.3),
+                          color: Colors.blue.withValues(alpha: 0.3),
                           blurRadius: 12,
                           offset: const Offset(0, 4),
                         ),
@@ -1329,7 +1329,7 @@ class _StocksState extends State<Stocks> with TickerProviderStateMixin {
       'Buy Stock',
       'Buy stock feature coming soon!',
       snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.green.withOpacity(0.8),
+      backgroundColor: Colors.green.withValues(alpha: 0.8),
       colorText: Colors.white,
       borderRadius: 12.r,
       margin: EdgeInsets.all(16.w),
@@ -1341,7 +1341,7 @@ class _StocksState extends State<Stocks> with TickerProviderStateMixin {
       'Sell Stock',
       'Sell stock feature coming soon!',
       snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.red.withOpacity(0.8),
+      backgroundColor: Colors.red.withValues(alpha: 0.8),
       colorText: Colors.white,
       borderRadius: 12.r,
       margin: EdgeInsets.all(16.w),
@@ -1359,7 +1359,7 @@ class _StocksState extends State<Stocks> with TickerProviderStateMixin {
       'Analysis',
       'Stock analysis feature coming soon!',
       snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.purple.withOpacity(0.8),
+      backgroundColor: Colors.purple.withValues(alpha: 0.8),
       colorText: Colors.white,
       borderRadius: 12.r,
       margin: EdgeInsets.all(16.w),
@@ -1371,7 +1371,7 @@ class _StocksState extends State<Stocks> with TickerProviderStateMixin {
       stock['symbol'],
       'Stock details for ${stock['name']} coming soon!',
       snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.blue.withOpacity(0.8),
+      backgroundColor: Colors.blue.withValues(alpha: 0.8),
       colorText: Colors.white,
       borderRadius: 12.r,
       margin: EdgeInsets.all(16.w),

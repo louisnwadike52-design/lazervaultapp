@@ -4,6 +4,7 @@ import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/src/features/profile/cubit/profile_state.dart';
 import 'package:lazervault/src/features/profile/domain/repositories/i_profile_repository.dart';
+import 'package:lazervault/src/features/tag_pay/domain/entities/user_search_result_entity.dart';
 
 class ProfileCubit extends Cubit<ProfileState> {
   final IProfileRepository _repository;
@@ -28,6 +29,9 @@ class ProfileCubit extends Cubit<ProfileState> {
         final user = data['user'];
         final preferences = data['preferences'];
 
+        // First emit ProfileLoaded so the UI is unblocked
+        emit(ProfileLoaded(user: user, preferences: preferences));
+
         // Sync activeCountry from LocaleManager if not already set
         // This ensures the country selected during signup is persisted to preferences
         if (preferences.activeCountry.isEmpty) {
@@ -37,15 +41,12 @@ class ProfileCubit extends Cubit<ProfileState> {
             if (countryFromLocale.isNotEmpty) {
               // Update preferences with the country from LocaleManager
               await updatePreferences(activeCountry: countryFromLocale);
-              return; // updatePreferences will emit the new state
             }
           } catch (e) {
             // Silently fail - locale sync is best effort
             print('Error syncing country from LocaleManager: $e');
           }
         }
-
-        emit(ProfileLoaded(user: user, preferences: preferences));
       },
     );
   }
@@ -191,6 +192,10 @@ class ProfileCubit extends Cubit<ProfileState> {
   Future<void> setActiveCountry(String countryCode) async {
     if (state is! ProfileLoaded) return;
     await updatePreferences(activeCountry: countryCode);
+  }
+
+  Future<List<UserSearchResultEntity>> searchUsers(String query, {int limit = 10}) async {
+    return await _repository.searchUsersByUsername(query: query, limit: limit);
   }
 
   void resetState() {

@@ -132,7 +132,7 @@ class _ExchangeRatesState extends State<ExchangeRates> {
         borderRadius: BorderRadius.circular(24.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 20,
             offset: Offset(0, 4),
           ),
@@ -151,7 +151,7 @@ class _ExchangeRatesState extends State<ExchangeRates> {
                     Container(
                       padding: EdgeInsets.all(8.w),
                       decoration: BoxDecoration(
-                        color: Color.fromARGB(255, 78, 3, 208).withOpacity(0.1),
+                        color: Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12.r),
                       ),
                       child: Icon(
@@ -179,7 +179,7 @@ class _ExchangeRatesState extends State<ExchangeRates> {
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
                 decoration: BoxDecoration(
-                  color: Color.fromARGB(255, 78, 3, 208).withOpacity(0.1),
+                  color: Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20.r),
                 ),
                 child: Row(

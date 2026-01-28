@@ -301,7 +301,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen>
             decoration: BoxDecoration(
               color: Colors.grey[900],
               borderRadius: BorderRadius.circular(16.r),
-              border: Border.all(color: Colors.white.withOpacity(0.1)),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
             ),
             child: Row(
               children: [
@@ -371,7 +371,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen>
         decoration: BoxDecoration(
           color: Colors.grey[900],
           borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(color: Colors.white.withOpacity(0.1)),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -544,9 +544,9 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen>
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Column(
         children: [
@@ -599,7 +599,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen>
         decoration: BoxDecoration(
           color: Colors.grey[900],
           borderRadius: BorderRadius.circular(16.r),
-          border: Border.all(color: Colors.white.withOpacity(0.1)),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
         ),
         child: Material(
           color: Colors.transparent,
@@ -616,7 +616,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen>
                         width: 48.w,
                         height: 48.h,
                         decoration: BoxDecoration(
-                          color: _getStatusColor(transaction.status).withOpacity(0.2),
+                          color: _getStatusColor(transaction.status).withValues(alpha: 0.2),
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
@@ -694,7 +694,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen>
                           Container(
                             padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
                             decoration: BoxDecoration(
-                              color: _getStatusColor(transaction.status).withOpacity(0.2),
+                              color: _getStatusColor(transaction.status).withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(8.r),
                             ),
                             child: Text(
@@ -715,9 +715,9 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen>
                     Container(
                       padding: EdgeInsets.all(8.w),
                       decoration: BoxDecoration(
-                        color: Colors.red.withOpacity(0.1),
+                        color: Colors.red.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8.r),
-                        border: Border.all(color: Colors.red.withOpacity(0.3)),
+                        border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
                       ),
                       child: Row(
                         children: [
@@ -751,7 +751,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen>
       height: 14.h,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(2.r),
-        border: Border.all(color: Colors.white.withOpacity(0.3)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(2.r),
@@ -779,13 +779,13 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen>
           Container(
             padding: EdgeInsets.all(24.w),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.1),
+              color: Colors.white.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(24.r),
             ),
             child: Icon(
               Icons.receipt_long,
               size: 48.sp,
-              color: Colors.white.withOpacity(0.6),
+              color: Colors.white.withValues(alpha: 0.6),
             ),
           ),
           SizedBox(height: 16.h),
@@ -802,7 +802,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen>
             'Your transaction history will appear here',
             style: GoogleFonts.inter(
               fontSize: 14.sp,
-              color: Colors.white.withOpacity(0.7),
+              color: Colors.white.withValues(alpha: 0.7),
             ),
           ),
         ],
@@ -896,7 +896,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen>
                   width: 60.w,
                   height: 60.h,
                   decoration: BoxDecoration(
-                    color: _getStatusColor(transaction.status).withOpacity(0.2),
+                    color: _getStatusColor(transaction.status).withValues(alpha: 0.2),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
@@ -954,7 +954,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen>
                       _shareTransaction(transaction);
                     },
                     style: OutlinedButton.styleFrom(
-                      side: BorderSide(color: Colors.white.withOpacity(0.3)),
+                      side: BorderSide(color: Colors.white.withValues(alpha: 0.3)),
                       padding: EdgeInsets.symmetric(vertical: 12.h),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12.r),
@@ -1119,7 +1119,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen>
     return Container(
       margin: EdgeInsets.only(bottom: 8.h),
       decoration: BoxDecoration(
-        color: isSelected ? Colors.blue.withOpacity(0.2) : Colors.white.withOpacity(0.05),
+        color: isSelected ? Colors.blue.withValues(alpha: 0.2) : Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12.r),
       ),
       child: Material(
@@ -1175,7 +1175,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen>
       'Export',
       'Transaction export feature will be implemented',
       snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.blue.withOpacity(0.8),
+      backgroundColor: Colors.blue.withValues(alpha: 0.8),
       colorText: Colors.white,
     );
   }
@@ -1185,7 +1185,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen>
       'Share',
       'Transaction sharing feature will be implemented',
       snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.blue.withOpacity(0.8),
+      backgroundColor: Colors.blue.withValues(alpha: 0.8),
       colorText: Colors.white,
     );
   }
@@ -1195,7 +1195,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen>
       'Download',
       'Receipt download feature will be implemented',
       snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.green.withOpacity(0.8),
+      backgroundColor: Colors.green.withValues(alpha: 0.8),
       colorText: Colors.white,
     );
   }

@@ -84,10 +84,10 @@ class InvoiceStatisticsCard extends StatelessWidget {
         Container(
           padding: EdgeInsets.all(12.w),
           decoration: BoxDecoration(
-            color: InvoiceThemeColors.primaryPurple.withOpacity(0.1),
+            color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8.r),
             border: Border.all(
-              color: InvoiceThemeColors.primaryPurple.withOpacity(0.3),
+              color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.3),
             ),
           ),
           child: Row(
@@ -152,9 +152,9 @@ class InvoiceStatisticsCard extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(8.w),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8.r),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Column(
         children: [

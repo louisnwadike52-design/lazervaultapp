@@ -267,7 +267,7 @@ class _DirectPayProgressBottomsheetState
           borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.3),
+              color: Colors.black.withValues(alpha: 0.3),
               blurRadius: 20,
               offset: const Offset(0, -5),
             ),
@@ -284,7 +284,7 @@ class _DirectPayProgressBottomsheetState
                 width: 40.w,
                 height: 4.h,
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.3),
+                  color: Colors.white.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(2.r),
                 ),
               ),
@@ -304,10 +304,10 @@ class _DirectPayProgressBottomsheetState
                       width: 80.w,
                       height: 80.w,
                       decoration: BoxDecoration(
-                        color: stage.color.withOpacity(0.15),
+                        color: stage.color.withValues(alpha: 0.15),
                         shape: BoxShape.circle,
                         border: Border.all(
-                          color: stage.color.withOpacity(0.3),
+                          color: stage.color.withValues(alpha: 0.3),
                           width: 2,
                         ),
                       ),
@@ -346,8 +346,8 @@ class _DirectPayProgressBottomsheetState
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: stage == DirectPayStage.failed
-                        ? Colors.red.withOpacity(0.8)
-                        : Colors.white.withOpacity(0.7),
+                        ? Colors.red.withValues(alpha: 0.8)
+                        : Colors.white.withValues(alpha: 0.7),
                     fontSize: 14.sp,
                   ),
                 ),
@@ -359,10 +359,10 @@ class _DirectPayProgressBottomsheetState
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.05),
+                    color: Colors.white.withValues(alpha: 0.05),
                     borderRadius: BorderRadius.circular(12.r),
                     border: Border.all(
-                      color: Colors.white.withOpacity(0.1),
+                      color: Colors.white.withValues(alpha: 0.1),
                     ),
                   ),
                   child: Row(
@@ -370,14 +370,14 @@ class _DirectPayProgressBottomsheetState
                     children: [
                       Icon(
                         Icons.account_balance,
-                        color: Colors.white.withOpacity(0.6),
+                        color: Colors.white.withValues(alpha: 0.6),
                         size: 18.sp,
                       ),
                       SizedBox(width: 8.w),
                       Text(
                         widget.controller.bankName ?? 'Bank',
                         style: TextStyle(
-                          color: Colors.white.withOpacity(0.8),
+                          color: Colors.white.withValues(alpha: 0.8),
                           fontSize: 14.sp,
                         ),
                       ),
@@ -385,7 +385,7 @@ class _DirectPayProgressBottomsheetState
                       Container(
                         width: 1,
                         height: 16.h,
-                        color: Colors.white.withOpacity(0.2),
+                        color: Colors.white.withValues(alpha: 0.2),
                       ),
                       SizedBox(width: 16.w),
                       Text(
@@ -471,7 +471,7 @@ class _DirectPayProgressBottomsheetState
                 decoration: BoxDecoration(
                   color: isCompleted
                       ? const Color(0xFF10B981)
-                      : Colors.white.withOpacity(0.2),
+                      : Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(1.r),
                 ),
               ),
@@ -516,7 +516,7 @@ class _DirectPayProgressBottomsheetState
       borderColor = Colors.red;
       child = Icon(Icons.close, color: Colors.white, size: 14.sp);
     } else if (isActive) {
-      bgColor = const Color(0xFF6C5CE7).withOpacity(0.2);
+      bgColor = const Color(0xFF6C5CE7).withValues(alpha: 0.2);
       borderColor = const Color(0xFF6C5CE7);
       child = AnimatedBuilder(
         animation: _pulseAnimation,
@@ -533,7 +533,7 @@ class _DirectPayProgressBottomsheetState
       );
     } else {
       bgColor = Colors.transparent;
-      borderColor = Colors.white.withOpacity(0.3);
+      borderColor = Colors.white.withValues(alpha: 0.3);
       child = null;
     }
 

@@ -34,7 +34,7 @@ class _PortfolioState extends State<Portfolio> {
           borderRadius: BorderRadius.circular(24.r),
           boxShadow: [
             BoxShadow(
-              color: Color.fromARGB(255, 20, 1, 39).withOpacity(0.3),
+              color: Color.fromARGB(255, 20, 1, 39).withValues(alpha: 0.3),
               blurRadius: 20,
               offset: Offset(0, 8),
             ),
@@ -54,7 +54,7 @@ class _PortfolioState extends State<Portfolio> {
                         Container(
                           padding: EdgeInsets.all(8.w),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.1),
+                            color: Colors.white.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(12.r),
                           ),
                           child: Icon(
@@ -82,7 +82,7 @@ class _PortfolioState extends State<Portfolio> {
                       child: Container(
                         padding: EdgeInsets.all(8.w),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.1),
+                          color: Colors.white.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(12.r),
                         ),
                         child: Icon(
@@ -133,7 +133,7 @@ class _PortfolioState extends State<Portfolio> {
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
+        color: Colors.white.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20.r),
       ),
       child: Column(
@@ -142,7 +142,7 @@ class _PortfolioState extends State<Portfolio> {
           Text(
             'Total Portfolio Value',
             style: TextStyle(
-              color: Colors.white.withOpacity(0.7),
+              color: Colors.white.withValues(alpha: 0.7),
               fontSize: 14.sp,
               fontWeight: FontWeight.w500,
             ),
@@ -185,14 +185,14 @@ class _PortfolioState extends State<Portfolio> {
       return Container(
         padding: EdgeInsets.all(20.w),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.05),
+          color: Colors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(16.r),
         ),
         child: Center(
           child: Text(
             'No assets yet',
             style: TextStyle(
-              color: Colors.white.withOpacity(0.5),
+              color: Colors.white.withValues(alpha: 0.5),
               fontSize: 14.sp,
             ),
           ),
@@ -237,7 +237,7 @@ class _PortfolioState extends State<Portfolio> {
                     Container(
                       padding: EdgeInsets.all(12.w),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.1),
+                        color: Colors.white.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12.r),
                       ),
                       child: asset.iconUrl != null && asset.iconUrl!.isNotEmpty
@@ -271,7 +271,7 @@ class _PortfolioState extends State<Portfolio> {
                           Text(
                             '${asset.quantity.toStringAsFixed(4)} ${asset.symbol}',
                             style: TextStyle(
-                              color: Colors.white.withOpacity(0.7),
+                              color: Colors.white.withValues(alpha: 0.7),
                               fontSize: 14.sp,
                             ),
                           ),
@@ -327,9 +327,9 @@ class _PortfolioState extends State<Portfolio> {
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: Colors.red.withOpacity(0.1),
+        color: Colors.red.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.red.withOpacity(0.3)),
+        border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
       ),
       child: Column(
         children: [

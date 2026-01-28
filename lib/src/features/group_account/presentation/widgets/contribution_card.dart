@@ -242,7 +242,7 @@ class ContributionCard extends StatelessWidget {
                   Container(
                     padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF10B981).withOpacity(0.2),
+                      color: const Color(0xFF10B981).withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(8.r),
                       boxShadow: [
           BoxShadow(
@@ -319,32 +319,32 @@ class ContributionCard extends StatelessWidget {
     IconData icon;
     
     if (isOverdue) {
-      backgroundColor = const Color(0xFFEF4444).withOpacity(0.2);
+      backgroundColor = const Color(0xFFEF4444).withValues(alpha: 0.2);
       textColor = const Color(0xFFEF4444);
       displayText = 'Overdue';
       icon = Icons.access_time;
     } else {
       switch (status) {
         case ContributionStatus.active:
-          backgroundColor = const Color(0xFF10B981).withOpacity(0.2);
+          backgroundColor = const Color(0xFF10B981).withValues(alpha: 0.2);
           textColor = const Color(0xFF10B981);
           displayText = 'Active';
           icon = Icons.trending_up;
           break;
         case ContributionStatus.completed:
-          backgroundColor = const Color(0xFF10B981).withOpacity(0.2);
+          backgroundColor = const Color(0xFF10B981).withValues(alpha: 0.2);
           textColor = const Color(0xFF10B981);
           displayText = 'Completed';
           icon = Icons.check_circle;
           break;
         case ContributionStatus.paused:
-          backgroundColor = const Color(0xFFF59E0B).withOpacity(0.2);
+          backgroundColor = const Color(0xFFF59E0B).withValues(alpha: 0.2);
           textColor = const Color(0xFFF59E0B);
           displayText = 'Paused';
           icon = Icons.pause_circle;
           break;
         case ContributionStatus.cancelled:
-          backgroundColor = const Color(0xFFEF4444).withOpacity(0.2);
+          backgroundColor = const Color(0xFFEF4444).withValues(alpha: 0.2);
           textColor = const Color(0xFFEF4444);
           displayText = 'Cancelled';
           icon = Icons.cancel;

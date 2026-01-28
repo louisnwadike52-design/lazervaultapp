@@ -81,7 +81,7 @@ class _ChangePinState extends State<ChangePin>
                     Text("Use your fingerprint to verify your identity",
                         style: TextStyle(
                           fontSize: 14.0.sp,
-                          color: HexColor.fromHex("#A3A3A3"),
+                          color: HybridHexColor.fromHex("#A3A3A3"),
                         )),
                     SizedBox(height: 16.0.h),
                     AnimatedBuilder(
@@ -118,7 +118,7 @@ class _ChangePinState extends State<ChangePin>
               onDismiss: () => Get.offAllNamed(AppRoutes.dashboard),
             ),
             style: ElevatedButton.styleFrom(
-              backgroundColor: HexColor.fromHex("#3784F9"),
+              backgroundColor: HybridHexColor.fromHex("#3784F9"),
               foregroundColor: Colors.white,
             ),
             child: Text(

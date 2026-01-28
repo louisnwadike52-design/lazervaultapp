@@ -2,9 +2,9 @@
 // TODO: Replace with generated proto types when available
 
 enum WrappedPeriod {
-  WRAPPED_PERIOD_UNSPECIFIED,
-  WRAPPED_PERIOD_MONTHLY,
-  WRAPPED_PERIOD_YEARLY,
+  wrappedPeriodUnspecified,
+  wrappedPeriodMonthly,
+  wrappedPeriodYearly,
 }
 
 class FinancialWrapped {

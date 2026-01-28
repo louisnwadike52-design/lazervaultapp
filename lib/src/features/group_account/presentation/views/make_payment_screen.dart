@@ -161,13 +161,13 @@ class _MakePaymentScreenState extends State<MakePaymentScreen> {
           end: Alignment.bottomRight,
           colors: [
             const Color(0xFF6C5CE7),
-            const Color(0xFF6C5CE7).withOpacity(0.8),
+            const Color(0xFF6C5CE7).withValues(alpha: 0.8),
           ],
         ),
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF6C5CE7).withOpacity(0.2),
+            color: const Color(0xFF6C5CE7).withValues(alpha: 0.2),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -189,7 +189,7 @@ class _MakePaymentScreenState extends State<MakePaymentScreen> {
             contribution.description,
             style: GoogleFonts.inter(
               fontSize: 14.sp,
-              color: Colors.white.withOpacity(0.8),
+              color: Colors.white.withValues(alpha: 0.8),
             ),
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
@@ -205,7 +205,7 @@ class _MakePaymentScreenState extends State<MakePaymentScreen> {
                     'Current Progress',
                     style: GoogleFonts.inter(
                       fontSize: 12.sp,
-                      color: Colors.white.withOpacity(0.8),
+                      color: Colors.white.withValues(alpha: 0.8),
                     ),
                   ),
                   SizedBox(height: 4.h),
@@ -226,7 +226,7 @@ class _MakePaymentScreenState extends State<MakePaymentScreen> {
                     'Target Amount',
                     style: GoogleFonts.inter(
                       fontSize: 12.sp,
-                      color: Colors.white.withOpacity(0.8),
+                      color: Colors.white.withValues(alpha: 0.8),
                     ),
                   ),
                   SizedBox(height: 4.h),
@@ -253,7 +253,7 @@ class _MakePaymentScreenState extends State<MakePaymentScreen> {
                     'Progress',
                     style: GoogleFonts.inter(
                       fontSize: 12.sp,
-                      color: Colors.white.withOpacity(0.8),
+                      color: Colors.white.withValues(alpha: 0.8),
                     ),
                   ),
                   Text(
@@ -270,7 +270,7 @@ class _MakePaymentScreenState extends State<MakePaymentScreen> {
               Container(
                 height: 6.h,
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(3.r),
                 ),
                 child: Stack(
@@ -447,7 +447,7 @@ class _MakePaymentScreenState extends State<MakePaymentScreen> {
         margin: EdgeInsets.only(bottom: 12.h),
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF6C5CE7).withOpacity(0.1) : const Color(0xFF1F1F1F),
+          color: isSelected ? const Color(0xFF6C5CE7).withValues(alpha: 0.1) : const Color(0xFF1F1F1F),
           borderRadius: BorderRadius.circular(12.r),
           border: Border.all(
             color: isSelected ? const Color(0xFF6C5CE7) : const Color(0xFF2D2D2D),

@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -61,7 +60,6 @@ class _NfcBroadcastViewState extends State<_NfcBroadcastView>
   bool _isCompleted = false;
   bool _isExpired = false;
   bool _isCancelling = false;
-  bool _nfcStarted = false;
 
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
@@ -130,8 +128,8 @@ class _NfcBroadcastViewState extends State<_NfcBroadcastView>
 
   void _startNfcBroadcast() async {
     try {
-      final isAvailable = await NfcManager.instance.isAvailable();
-      if (!isAvailable || !mounted) return;
+      final availability = await NfcManager.instance.checkAvailability();
+      if (availability != NfcAvailability.enabled || !mounted) return;
 
       // Encode text payload as NDEF well-known Text record (UTF-8)
       final languageCode = Uint8List.fromList([0x02]); // UTF-8, language code length = 2
@@ -159,7 +157,6 @@ class _NfcBroadcastViewState extends State<_NfcBroadcastView>
 
             HapticFeedback.mediumImpact();
             setState(() {
-              _nfcStarted = true;
               _statusText = 'Payment request sent! Waiting for confirmation...';
             });
           } catch (e) {
@@ -178,9 +175,6 @@ class _NfcBroadcastViewState extends State<_NfcBroadcastView>
         },
       );
 
-      setState(() {
-        _nfcStarted = true;
-      });
     } catch (e) {
       if (!mounted) return;
       setState(() {

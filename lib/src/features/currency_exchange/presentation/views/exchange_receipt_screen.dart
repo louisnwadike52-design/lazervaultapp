@@ -148,7 +148,7 @@ class _ExchangeReceiptScreenState extends State<ExchangeReceiptScreen>
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF10B981).withOpacity(0.3),
+            color: const Color(0xFF10B981).withValues(alpha: 0.3),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -177,7 +177,7 @@ class _ExchangeReceiptScreenState extends State<ExchangeReceiptScreen>
         borderRadius: BorderRadius.circular(20.r),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF10B981).withOpacity(0.3),
+            color: const Color(0xFF10B981).withValues(alpha: 0.3),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -226,7 +226,7 @@ class _ExchangeReceiptScreenState extends State<ExchangeReceiptScreen>
         border: Border.all(color: const Color(0xFF2D2D2D)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 20,
             offset: const Offset(0, 4),
           ),
@@ -308,7 +308,7 @@ class _ExchangeReceiptScreenState extends State<ExchangeReceiptScreen>
             child: Text(
               label,
               style: GoogleFonts.inter(
-                color: isWhite ? Colors.white.withOpacity(0.8) : const Color(0xFF9CA3AF),
+                color: isWhite ? Colors.white.withValues(alpha: 0.8) : const Color(0xFF9CA3AF),
                 fontSize: 14.sp,
               ),
             ),
@@ -338,7 +338,7 @@ class _ExchangeReceiptScreenState extends State<ExchangeReceiptScreen>
         color: const Color(0xFF0A0A0A),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, -2),
           ),
@@ -352,7 +352,7 @@ class _ExchangeReceiptScreenState extends State<ExchangeReceiptScreen>
               borderRadius: BorderRadius.circular(16.r),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF3B82F6).withOpacity(0.3),
+                  color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
                   blurRadius: 12,
                   offset: const Offset(0, 4),
                 ),
@@ -420,7 +420,7 @@ class _ExchangeReceiptScreenState extends State<ExchangeReceiptScreen>
     Get.snackbar(
       'Share Receipt',
       'Receipt sharing feature coming soon',
-      backgroundColor: const Color(0xFF3B82F6).withOpacity(0.9),
+      backgroundColor: const Color(0xFF3B82F6).withValues(alpha: 0.9),
       colorText: Colors.white,
       snackPosition: SnackPosition.BOTTOM,
     );

@@ -67,7 +67,7 @@ class _CryptoSearchBarState extends State<CryptoSearchBar> {
             width: 40.w,
             height: 40.w,
             decoration: BoxDecoration(
-              color: const Color(0xFF6C5CE7).withOpacity(0.2),
+              color: const Color(0xFF6C5CE7).withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(20.r),
             ),
             child: Icon(
@@ -93,7 +93,7 @@ class _CryptoSearchBarState extends State<CryptoSearchBar> {
                   'Find and explore digital assets',
                   style: GoogleFonts.inter(
                     fontSize: 12.sp,
-                    color: Colors.white.withOpacity(0.6),
+                    color: Colors.white.withValues(alpha: 0.6),
                   ),
                 ),
               ],
@@ -154,13 +154,13 @@ class _CryptoSearchBarState extends State<CryptoSearchBar> {
           hintText: 'Search by name or symbol (e.g., Bitcoin, BTC)',
           hintStyle: GoogleFonts.inter(
             fontSize: 14.sp,
-            color: Colors.white.withOpacity(0.5),
+            color: Colors.white.withValues(alpha: 0.5),
           ),
           prefixIcon: Container(
             padding: EdgeInsets.all(12.w),
             child: Icon(
               Icons.search,
-              color: Colors.white.withOpacity(0.6),
+              color: Colors.white.withValues(alpha: 0.6),
               size: 20.sp,
             ),
           ),
@@ -175,7 +175,7 @@ class _CryptoSearchBarState extends State<CryptoSearchBar> {
                   },
                   icon: Icon(
                     Icons.clear,
-                    color: Colors.white.withOpacity(0.6),
+                    color: Colors.white.withValues(alpha: 0.6),
                     size: 20.sp,
                   ),
                 )
@@ -214,7 +214,7 @@ class _CryptoSearchBarState extends State<CryptoSearchBar> {
               'Searching...',
               style: GoogleFonts.inter(
                 fontSize: 14.sp,
-                color: Colors.white.withOpacity(0.6),
+                color: Colors.white.withValues(alpha: 0.6),
               ),
             ),
           ],
@@ -290,7 +290,7 @@ class _CryptoSearchBarState extends State<CryptoSearchBar> {
                     'Tip: You can search by cryptocurrency name or symbol',
                     style: GoogleFonts.inter(
                       fontSize: 12.sp,
-                      color: Colors.white.withOpacity(0.6),
+                      color: Colors.white.withValues(alpha: 0.6),
                     ),
                   ),
                 ),
@@ -315,7 +315,7 @@ class _CryptoSearchBarState extends State<CryptoSearchBar> {
           width: 32.w,
           height: 32.w,
           decoration: BoxDecoration(
-            color: color.withOpacity(0.2),
+            color: color.withValues(alpha: 0.2),
             borderRadius: BorderRadius.circular(16.r),
           ),
           child: Center(
@@ -341,12 +341,12 @@ class _CryptoSearchBarState extends State<CryptoSearchBar> {
           symbol,
           style: GoogleFonts.inter(
             fontSize: 12.sp,
-            color: Colors.white.withOpacity(0.6),
+            color: Colors.white.withValues(alpha: 0.6),
           ),
         ),
         trailing: Icon(
           Icons.arrow_forward_ios,
-          color: Colors.white.withOpacity(0.3),
+          color: Colors.white.withValues(alpha: 0.3),
           size: 14.sp,
         ),
         shape: RoundedRectangleBorder(
@@ -365,7 +365,7 @@ class _CryptoSearchBarState extends State<CryptoSearchBar> {
         children: [
           Icon(
             Icons.search_off,
-            color: Colors.white.withOpacity(0.4),
+            color: Colors.white.withValues(alpha: 0.4),
             size: 48.sp,
           ),
           SizedBox(height: 16.h),
@@ -383,7 +383,7 @@ class _CryptoSearchBarState extends State<CryptoSearchBar> {
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(
               fontSize: 14.sp,
-              color: Colors.white.withOpacity(0.6),
+              color: Colors.white.withValues(alpha: 0.6),
             ),
           ),
         ],
@@ -417,7 +417,7 @@ class _CryptoSearchBarState extends State<CryptoSearchBar> {
           width: 40.w,
           height: 40.w,
           decoration: BoxDecoration(
-            color: _getCryptoColor(crypto.symbol).withOpacity(0.2),
+            color: _getCryptoColor(crypto.symbol).withValues(alpha: 0.2),
             borderRadius: BorderRadius.circular(20.r),
           ),
           child: Center(
@@ -449,7 +449,7 @@ class _CryptoSearchBarState extends State<CryptoSearchBar> {
                     'Rank #${crypto.marketCapRank}',
                     style: GoogleFonts.inter(
                       fontSize: 12.sp,
-                      color: Colors.white.withOpacity(0.6),
+                      color: Colors.white.withValues(alpha: 0.6),
                     ),
                   ),
                 ],

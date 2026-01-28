@@ -115,7 +115,7 @@ class _AutoSaveRuleReceiptScreenState extends State<AutoSaveRuleReceiptScreen>
   Widget build(BuildContext context) {
     return PopScope(
       canPop: false,
-      onPopInvoked: (didPop) {
+      onPopInvokedWithResult: (didPop, _) {
         if (!didPop) {
           _navigateToDashboard();
         }
@@ -175,7 +175,7 @@ class _AutoSaveRuleReceiptScreenState extends State<AutoSaveRuleReceiptScreen>
                 Text(
                   'Your automatic savings are now active',
                   style: GoogleFonts.inter(
-                    color: Colors.white.withOpacity(0.6),
+                    color: Colors.white.withValues(alpha: 0.6),
                     fontSize: 13.sp,
                     fontWeight: FontWeight.w400,
                   ),
@@ -216,7 +216,7 @@ class _AutoSaveRuleReceiptScreenState extends State<AutoSaveRuleReceiptScreen>
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color.fromARGB(255, 78, 3, 208).withOpacity(0.4),
+                    color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.4),
                     blurRadius: 30,
                     spreadRadius: 5,
                   ),
@@ -323,10 +323,10 @@ class _AutoSaveRuleReceiptScreenState extends State<AutoSaveRuleReceiptScreen>
           Container(
             padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
-              color: const Color.fromARGB(255, 78, 3, 208).withOpacity(0.1),
+              color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12.r),
               border: Border.all(
-                color: const Color.fromARGB(255, 78, 3, 208).withOpacity(0.3),
+                color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.3),
               ),
             ),
             child: Row(
@@ -341,7 +341,7 @@ class _AutoSaveRuleReceiptScreenState extends State<AutoSaveRuleReceiptScreen>
                   child: Text(
                     'Your auto-save rule is now active and will automatically save based on your trigger settings.',
                     style: GoogleFonts.inter(
-                      color: Colors.white.withOpacity(0.8),
+                      color: Colors.white.withValues(alpha: 0.8),
                       fontSize: 13.sp,
                       fontWeight: FontWeight.w500,
                       height: 1.5,
@@ -395,7 +395,7 @@ class _AutoSaveRuleReceiptScreenState extends State<AutoSaveRuleReceiptScreen>
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            const Color(0xFF0A0A0A).withOpacity(0),
+            const Color(0xFF0A0A0A).withValues(alpha: 0),
             const Color(0xFF0A0A0A),
           ],
         ),
@@ -418,7 +418,7 @@ class _AutoSaveRuleReceiptScreenState extends State<AutoSaveRuleReceiptScreen>
                 borderRadius: BorderRadius.circular(16.r),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color.fromARGB(255, 78, 3, 208).withOpacity(0.4),
+                    color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.4),
                     blurRadius: 20,
                     offset: const Offset(0, 8),
                   ),

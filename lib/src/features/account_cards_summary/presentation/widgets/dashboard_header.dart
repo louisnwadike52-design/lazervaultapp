@@ -99,6 +99,8 @@ class DashboardHeader extends StatelessWidget {
                 selectedCountry.countryCode,
               );
 
+              if (!context.mounted) return;
+
               // Refresh account data for the new country
               final authState = context.read<AuthenticationCubit>().state;
               if (authState is AuthenticationSuccess) {
@@ -188,7 +190,7 @@ class DashboardHeader extends StatelessWidget {
       width: 40.w,
       height: 40.h,
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
+        color: Colors.white.withValues(alpha: 0.1),
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
@@ -226,7 +228,7 @@ class DashboardHeader extends StatelessWidget {
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
+                color: Colors.black.withValues(alpha: 0.1),
                 blurRadius: 20,
                 offset: Offset(0, -4),
               ),

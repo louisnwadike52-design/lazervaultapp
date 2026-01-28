@@ -55,7 +55,7 @@ class ThemedDrawer extends StatelessWidget {
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: Colors.white.withOpacity(0.3),
+                            color: Colors.white.withValues(alpha: 0.3),
                             width: 3,
                           ),
                         ),
@@ -80,7 +80,7 @@ class ThemedDrawer extends StatelessWidget {
                         userEmail,
                         style: GoogleFonts.inter(
                           fontSize: 13.sp,
-                          color: Colors.white.withOpacity(0.8),
+                          color: Colors.white.withValues(alpha: 0.8),
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -103,10 +103,10 @@ class ThemedDrawer extends StatelessWidget {
                             vertical: 8.h,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
+                            color: Colors.white.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(20.r),
                             border: Border.all(
-                              color: Colors.white.withOpacity(0.3),
+                              color: Colors.white.withValues(alpha: 0.3),
                             ),
                           ),
                           child: Row(
@@ -200,7 +200,7 @@ class ThemedDrawer extends StatelessWidget {
                     leading: Container(
                       padding: EdgeInsets.all(8.w),
                       decoration: BoxDecoration(
-                        color: Color(0xFFFF2D2D).withOpacity(0.1),
+                        color: Color(0xFFFF2D2D).withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8.r),
                       ),
                       child: Icon(
@@ -260,7 +260,7 @@ class ThemedDrawer extends StatelessWidget {
           leading: Container(
             padding: EdgeInsets.all(8.w),
             decoration: BoxDecoration(
-              color: item.iconColor.withOpacity(0.1),
+              color: item.iconColor.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8.r),
             ),
             child: Icon(
@@ -428,7 +428,7 @@ class ThemedDrawer extends StatelessWidget {
           final bytes = base64Decode(base64String);
           return CircleAvatar(
             radius: 40.r,
-            backgroundColor: Colors.white.withOpacity(0.2),
+            backgroundColor: Colors.white.withValues(alpha: 0.2),
             backgroundImage: MemoryImage(bytes),
           );
         } catch (e) {
@@ -438,7 +438,7 @@ class ThemedDrawer extends StatelessWidget {
         // It's a URL
         return CircleAvatar(
           radius: 40.r,
-          backgroundColor: Colors.white.withOpacity(0.2),
+          backgroundColor: Colors.white.withValues(alpha: 0.2),
           backgroundImage: NetworkImage(profilePicture),
         );
       }
@@ -447,7 +447,7 @@ class ThemedDrawer extends StatelessWidget {
     // Default: show initials
     return CircleAvatar(
       radius: 40.r,
-      backgroundColor: Colors.white.withOpacity(0.2),
+      backgroundColor: Colors.white.withValues(alpha: 0.2),
       child: Text(
         userInitials,
         style: GoogleFonts.inter(

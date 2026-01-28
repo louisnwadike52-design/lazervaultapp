@@ -27,7 +27,7 @@ class _InviteFriendsState extends State<InviteFriends> {
         borderRadius: BorderRadius.circular(24.r),
         boxShadow: [
           BoxShadow(
-            color: Color.fromARGB(255, 57, 2, 111).withOpacity(0.3),
+            color: Color.fromARGB(255, 57, 2, 111).withValues(alpha: 0.3),
             blurRadius: 20,
             offset: Offset(0, 8),
           ),
@@ -44,7 +44,7 @@ class _InviteFriendsState extends State<InviteFriends> {
               height: 100.w,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.white.withValues(alpha: 0.1),
               ),
             ),
           ),
@@ -64,7 +64,7 @@ class _InviteFriendsState extends State<InviteFriends> {
                           vertical: 6.h,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
+                          color: Colors.white.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(20.r),
                         ),
                         child: Text(
@@ -91,7 +91,7 @@ class _InviteFriendsState extends State<InviteFriends> {
                         'Get £100 for each friend you invite\nwho joins LazerVault',
                         style: TextStyle(
                           fontSize: 14.sp,
-                          color: Colors.white.withOpacity(0.8),
+                          color: Colors.white.withValues(alpha: 0.8),
                           height: 1.4,
                         ),
                       ),
@@ -149,7 +149,7 @@ class _InviteFriendsState extends State<InviteFriends> {
                           height: 60.w,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: Colors.white.withOpacity(0.1),
+                            color: Colors.white.withValues(alpha: 0.1),
                           ),
                         ),
                       ),

@@ -156,11 +156,11 @@ class _FamilyAddMemberScreenState extends State<FamilyAddMemberScreen> {
                       ? 'Enter email address'
                       : 'Enter phone number',
                   hintStyle: TextStyle(
-                    color: Colors.white.withOpacity(0.4),
+                    color: Colors.white.withValues(alpha: 0.4),
                     fontSize: 14.sp,
                   ),
                   filled: true,
-                  fillColor: Colors.white.withOpacity(0.05),
+                  fillColor: Colors.white.withValues(alpha: 0.05),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12.r),
                     borderSide: BorderSide.none,
@@ -168,7 +168,7 @@ class _FamilyAddMemberScreenState extends State<FamilyAddMemberScreen> {
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12.r),
                     borderSide: BorderSide(
-                      color: Colors.white.withOpacity(0.1),
+                      color: Colors.white.withValues(alpha: 0.1),
                       width: 1,
                     ),
                   ),
@@ -215,7 +215,7 @@ class _FamilyAddMemberScreenState extends State<FamilyAddMemberScreen> {
               Text(
                 'Set how much this member can spend. Enter 0 for no limit.',
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.6),
+                  color: Colors.white.withValues(alpha: 0.6),
                   fontSize: 12.sp,
                 ),
               ),
@@ -268,7 +268,7 @@ class _FamilyAddMemberScreenState extends State<FamilyAddMemberScreen> {
                       Text(
                         'of total pool',
                         style: TextStyle(
-                          color: Colors.white.withOpacity(0.6),
+                          color: Colors.white.withValues(alpha: 0.6),
                           fontSize: 12.sp,
                         ),
                       ),
@@ -291,7 +291,7 @@ class _FamilyAddMemberScreenState extends State<FamilyAddMemberScreen> {
                   Text(
                     'Maximum percentage of total pool this member can have allocated to them',
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.5),
+                      color: Colors.white.withValues(alpha: 0.5),
                       fontSize: 11.sp,
                     ),
                   ),
@@ -318,11 +318,11 @@ class _FamilyAddMemberScreenState extends State<FamilyAddMemberScreen> {
                 decoration: InputDecoration(
                   hintText: 'Add a personal message to the invitation...',
                   hintStyle: TextStyle(
-                    color: Colors.white.withOpacity(0.4),
+                    color: Colors.white.withValues(alpha: 0.4),
                     fontSize: 14.sp,
                   ),
                   filled: true,
-                  fillColor: Colors.white.withOpacity(0.05),
+                  fillColor: Colors.white.withValues(alpha: 0.05),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12.r),
                     borderSide: BorderSide.none,
@@ -330,7 +330,7 @@ class _FamilyAddMemberScreenState extends State<FamilyAddMemberScreen> {
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12.r),
                     borderSide: BorderSide(
-                      color: Colors.white.withOpacity(0.1),
+                      color: Colors.white.withValues(alpha: 0.1),
                       width: 1,
                     ),
                   ),
@@ -365,7 +365,7 @@ class _FamilyAddMemberScreenState extends State<FamilyAddMemberScreen> {
                       borderRadius: BorderRadius.circular(28.r),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF6C5CE7).withOpacity(0.4),
+                          color: const Color(0xFF6C5CE7).withValues(alpha: 0.4),
                           blurRadius: 20,
                           offset: const Offset(0, 10),
                         ),
@@ -422,7 +422,7 @@ class _FamilyAddMemberScreenState extends State<FamilyAddMemberScreen> {
   Widget _buildInvitationMethodSelector() {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12.r),
       ),
       child: Column(
@@ -430,12 +430,12 @@ class _FamilyAddMemberScreenState extends State<FamilyAddMemberScreen> {
           _buildMethodOption('email', Icons.email, 'Email'),
           Divider(
             height: 1.h,
-            color: Colors.white.withOpacity(0.1),
+            color: Colors.white.withValues(alpha: 0.1),
           ),
           _buildMethodOption('sms', Icons.sms, 'SMS'),
           Divider(
             height: 1.h,
-            color: Colors.white.withOpacity(0.1),
+            color: Colors.white.withValues(alpha: 0.1),
           ),
           _buildMethodOption('username', Icons.person, 'Username'),
         ],
@@ -455,14 +455,14 @@ class _FamilyAddMemberScreenState extends State<FamilyAddMemberScreen> {
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF6C5CE7).withOpacity(0.2) : Colors.transparent,
+          color: isSelected ? const Color(0xFF6C5CE7).withValues(alpha: 0.2) : Colors.transparent,
           borderRadius: BorderRadius.circular(12.r),
         ),
         child: Row(
           children: [
             Icon(
               icon,
-              color: isSelected ? const Color(0xFF6C5CE7) : Colors.white.withOpacity(0.6),
+              color: isSelected ? const Color(0xFF6C5CE7) : Colors.white.withValues(alpha: 0.6),
               size: 20.sp,
             ),
             SizedBox(width: 12.w),
@@ -509,11 +509,11 @@ class _FamilyAddMemberScreenState extends State<FamilyAddMemberScreen> {
         ),
         hintText: placeholder,
         hintStyle: TextStyle(
-          color: Colors.white.withOpacity(0.4),
+          color: Colors.white.withValues(alpha: 0.4),
           fontSize: 20.sp,
         ),
         filled: true,
-        fillColor: Colors.white.withOpacity(0.05),
+        fillColor: Colors.white.withValues(alpha: 0.05),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.r),
           borderSide: BorderSide.none,
@@ -521,7 +521,7 @@ class _FamilyAddMemberScreenState extends State<FamilyAddMemberScreen> {
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.r),
           borderSide: BorderSide(
-            color: Colors.white.withOpacity(0.1),
+            color: Colors.white.withValues(alpha: 0.1),
             width: 1,
           ),
         ),
@@ -559,10 +559,10 @@ class _FamilyAddMemberScreenState extends State<FamilyAddMemberScreen> {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
-          color: Colors.white.withOpacity(0.1),
+          color: Colors.white.withValues(alpha: 0.1),
           width: 1,
         ),
       ),
@@ -605,11 +605,11 @@ class _FamilyAddMemberScreenState extends State<FamilyAddMemberScreen> {
               ),
               hintText: '0.00',
               hintStyle: TextStyle(
-                color: Colors.white.withOpacity(0.4),
+                color: Colors.white.withValues(alpha: 0.4),
                 fontSize: 18.sp,
               ),
               filled: true,
-              fillColor: Colors.white.withOpacity(0.05),
+              fillColor: Colors.white.withValues(alpha: 0.05),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8.r),
                 borderSide: BorderSide.none,
@@ -617,7 +617,7 @@ class _FamilyAddMemberScreenState extends State<FamilyAddMemberScreen> {
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8.r),
                 borderSide: BorderSide(
-                  color: Colors.white.withOpacity(0.1),
+                  color: Colors.white.withValues(alpha: 0.1),
                   width: 1,
                 ),
               ),
@@ -649,7 +649,7 @@ class _FamilyAddMemberScreenState extends State<FamilyAddMemberScreen> {
           Text(
             hint,
             style: TextStyle(
-              color: Colors.white.withOpacity(0.5),
+              color: Colors.white.withValues(alpha: 0.5),
               fontSize: 11.sp,
             ),
           ),
@@ -661,7 +661,7 @@ class _FamilyAddMemberScreenState extends State<FamilyAddMemberScreen> {
   Widget _buildRoleSelector() {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12.r),
       ),
       child: Column(
@@ -669,7 +669,7 @@ class _FamilyAddMemberScreenState extends State<FamilyAddMemberScreen> {
           _buildRoleOption('member', 'Member', 'Can spend allocated funds'),
           Divider(
             height: 1.h,
-            color: Colors.white.withOpacity(0.1),
+            color: Colors.white.withValues(alpha: 0.1),
           ),
           _buildRoleOption('admin', 'Admin', 'Full control + can manage members'),
         ],
@@ -689,14 +689,14 @@ class _FamilyAddMemberScreenState extends State<FamilyAddMemberScreen> {
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF6C5CE7).withOpacity(0.2) : Colors.transparent,
+          color: isSelected ? const Color(0xFF6C5CE7).withValues(alpha: 0.2) : Colors.transparent,
           borderRadius: BorderRadius.circular(12.r),
         ),
         child: Row(
           children: [
             Icon(
               isSelected ? Icons.check_circle : Icons.radio_button_unchecked,
-              color: isSelected ? const Color(0xFF6C5CE7) : Colors.white.withOpacity(0.6),
+              color: isSelected ? const Color(0xFF6C5CE7) : Colors.white.withValues(alpha: 0.6),
               size: 20.sp,
             ),
             SizedBox(width: 12.w),
@@ -716,7 +716,7 @@ class _FamilyAddMemberScreenState extends State<FamilyAddMemberScreen> {
                   Text(
                     description,
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.5),
+                      color: Colors.white.withValues(alpha: 0.5),
                       fontSize: 12.sp,
                     ),
                   ),

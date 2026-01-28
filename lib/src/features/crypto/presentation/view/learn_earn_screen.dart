@@ -109,7 +109,7 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
                   'Crypto education',
                   style: GoogleFonts.inter(
                     fontSize: 14.sp,
-                    color: Colors.white.withOpacity(0.7),
+                    color: Colors.white.withValues(alpha: 0.7),
                   ),
                 ),
               ],
@@ -118,7 +118,7 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
           Container(
             padding: EdgeInsets.all(8.w),
             decoration: BoxDecoration(
-              color: Colors.green.withOpacity(0.2),
+              color: Colors.green.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: Icon(Icons.school, color: Colors.green, size: 20.sp),
@@ -134,12 +134,12 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [Colors.green.withOpacity(0.2), const Color(0xFF1E2746)],
+          colors: [Colors.green.withValues(alpha: 0.2), const Color(0xFF1E2746)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(color: Colors.green.withOpacity(0.3)),
+        border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
       ),
       child: Column(
         children: [
@@ -172,7 +172,7 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
           borderRadius: BorderRadius.circular(12.r),
         ),
         labelColor: Colors.white,
-        unselectedLabelColor: Colors.white.withOpacity(0.6),
+        unselectedLabelColor: Colors.white.withValues(alpha: 0.6),
         labelStyle: GoogleFonts.inter(fontSize: 12.sp, fontWeight: FontWeight.w600),
         tabs: [
           Tab(text: 'Courses'),
@@ -259,7 +259,7 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
         Container(
           padding: EdgeInsets.all(12.w),
           decoration: BoxDecoration(
-            color: color.withOpacity(0.2),
+            color: color.withValues(alpha: 0.2),
             shape: BoxShape.circle,
           ),
           child: Icon(icon, color: color, size: 24.sp),
@@ -277,7 +277,7 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
           label,
           style: GoogleFonts.inter(
             fontSize: 12.sp,
-            color: Colors.white.withOpacity(0.7),
+            color: Colors.white.withValues(alpha: 0.7),
           ),
         ),
       ],
@@ -295,7 +295,7 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
               'Overall Progress',
               style: GoogleFonts.inter(
                 fontSize: 14.sp,
-                color: Colors.white.withOpacity(0.8),
+                color: Colors.white.withValues(alpha: 0.8),
               ),
             ),
             Text(
@@ -314,7 +314,7 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
           builder: (context, child) {
             return LinearProgressIndicator(
               value: 0.73 * _progressController.value,
-              backgroundColor: Colors.white.withOpacity(0.1),
+              backgroundColor: Colors.white.withValues(alpha: 0.1),
               valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
               borderRadius: BorderRadius.circular(4.r),
             );
@@ -329,12 +329,12 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [Colors.blue.withOpacity(0.3), const Color(0xFF1E2746)],
+          colors: [Colors.blue.withValues(alpha: 0.3), const Color(0xFF1E2746)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.blue.withOpacity(0.3)),
+        border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -381,7 +381,7 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
             'Learn the basics of Bitcoin, blockchain technology, and how cryptocurrency works.',
             style: GoogleFonts.inter(
               fontSize: 14.sp,
-              color: Colors.white.withOpacity(0.8),
+              color: Colors.white.withValues(alpha: 0.8),
               height: 1.4,
             ),
           ),
@@ -428,14 +428,14 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
           decoration: BoxDecoration(
             color: const Color(0xFF1E2746),
             borderRadius: BorderRadius.circular(12.r),
-            border: Border.all(color: color.withOpacity(0.3)),
+            border: Border.all(color: color.withValues(alpha: 0.3)),
           ),
           child: Row(
             children: [
               Container(
                 padding: EdgeInsets.all(12.w),
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.2),
+                  color: color.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12.r),
                 ),
                 child: Icon(
@@ -461,7 +461,7 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
                       description,
                       style: GoogleFonts.inter(
                         fontSize: 12.sp,
-                        color: Colors.white.withOpacity(0.6),
+                        color: Colors.white.withValues(alpha: 0.6),
                       ),
                     ),
                     Text(
@@ -476,7 +476,7 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
               ),
               Icon(
                 Icons.arrow_forward_ios,
-                color: Colors.white.withOpacity(0.5),
+                color: Colors.white.withValues(alpha: 0.5),
                 size: 16.sp,
               ),
             ],
@@ -491,12 +491,12 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [Colors.purple.withOpacity(0.2), const Color(0xFF1E2746)],
+          colors: [Colors.purple.withValues(alpha: 0.2), const Color(0xFF1E2746)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.purple.withOpacity(0.3)),
+        border: Border.all(color: Colors.purple.withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -517,7 +517,7 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                 decoration: BoxDecoration(
-                  color: Colors.purple.withOpacity(0.2),
+                  color: Colors.purple.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(8.r),
                 ),
                 child: Text(
@@ -545,7 +545,7 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
             'Test your knowledge about Decentralized Finance protocols and earn rewards!',
             style: GoogleFonts.inter(
               fontSize: 14.sp,
-              color: Colors.white.withOpacity(0.8),
+              color: Colors.white.withValues(alpha: 0.8),
             ),
           ),
           SizedBox(height: 16.h),
@@ -618,14 +618,14 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
       decoration: BoxDecoration(
         color: const Color(0xFF1E2746),
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Row(
         children: [
           Container(
             padding: EdgeInsets.all(8.w),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.2),
+              color: color.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(8.r),
             ),
             child: Icon(Icons.quiz, color: color, size: 20.sp),
@@ -695,7 +695,7 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
       decoration: BoxDecoration(
         color: const Color(0xFF1E2746),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -746,7 +746,7 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
       decoration: BoxDecoration(
         color: const Color(0xFF1E2746),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -774,7 +774,7 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
       decoration: BoxDecoration(
         color: const Color(0xFF1E2746),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -807,7 +807,7 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
       decoration: BoxDecoration(
         color: const Color(0xFF1E2746),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -836,7 +836,7 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
       decoration: BoxDecoration(
         color: const Color(0xFF1E2746),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -865,7 +865,7 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
       decoration: BoxDecoration(
         color: const Color(0xFF1E2746),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -891,13 +891,13 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
   Widget _buildCourseInfo(IconData icon, String text) {
     return Row(
       children: [
-        Icon(icon, color: Colors.white.withOpacity(0.6), size: 16.sp),
+        Icon(icon, color: Colors.white.withValues(alpha: 0.6), size: 16.sp),
         SizedBox(width: 4.w),
         Text(
           text,
           style: GoogleFonts.inter(
             fontSize: 12.sp,
-            color: Colors.white.withOpacity(0.6),
+            color: Colors.white.withValues(alpha: 0.6),
           ),
         ),
       ],
@@ -907,13 +907,13 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
   Widget _buildQuizInfo(IconData icon, String text) {
     return Row(
       children: [
-        Icon(icon, color: Colors.white.withOpacity(0.6), size: 16.sp),
+        Icon(icon, color: Colors.white.withValues(alpha: 0.6), size: 16.sp),
         SizedBox(width: 4.w),
         Text(
           text,
           style: GoogleFonts.inter(
             fontSize: 12.sp,
-            color: Colors.white.withOpacity(0.6),
+            color: Colors.white.withValues(alpha: 0.6),
           ),
         ),
       ],
@@ -935,7 +935,7 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
           label,
           style: GoogleFonts.inter(
             fontSize: 12.sp,
-            color: Colors.white.withOpacity(0.6),
+            color: Colors.white.withValues(alpha: 0.6),
           ),
         ),
       ],
@@ -963,7 +963,7 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
                   time,
                   style: GoogleFonts.inter(
                     fontSize: 12.sp,
-                    color: Colors.white.withOpacity(0.6),
+                    color: Colors.white.withValues(alpha: 0.6),
                   ),
                 ),
               ],
@@ -988,7 +988,7 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
         Container(
           padding: EdgeInsets.all(16.w),
           decoration: BoxDecoration(
-            color: earned ? color.withOpacity(0.2) : Colors.white.withOpacity(0.05),
+            color: earned ? color.withValues(alpha: 0.2) : Colors.white.withValues(alpha: 0.05),
             shape: BoxShape.circle,
             boxShadow: [
           BoxShadow(
@@ -1001,7 +1001,7 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
           ),
           child: Icon(
             icon,
-            color: earned ? color : Colors.white.withOpacity(0.3),
+            color: earned ? color : Colors.white.withValues(alpha: 0.3),
             size: 24.sp,
           ),
         ),
@@ -1010,7 +1010,7 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
           title,
           style: GoogleFonts.inter(
             fontSize: 12.sp,
-            color: earned ? Colors.white : Colors.white.withOpacity(0.5),
+            color: earned ? Colors.white : Colors.white.withValues(alpha: 0.5),
             fontWeight: earned ? FontWeight.w600 : FontWeight.normal,
           ),
         ),
@@ -1026,12 +1026,12 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
           Container(
             padding: EdgeInsets.all(4.w),
             decoration: BoxDecoration(
-              color: completed ? color : Colors.white.withOpacity(0.1),
+              color: completed ? color : Colors.white.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(
               completed ? Icons.check : Icons.circle_outlined,
-              color: completed ? Colors.white : Colors.white.withOpacity(0.5),
+              color: completed ? Colors.white : Colors.white.withValues(alpha: 0.5),
               size: 16.sp,
             ),
           ),
@@ -1040,7 +1040,7 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
             title,
             style: GoogleFonts.inter(
               fontSize: 14.sp,
-              color: completed ? Colors.white : Colors.white.withOpacity(0.6),
+              color: completed ? Colors.white : Colors.white.withValues(alpha: 0.6),
               fontWeight: completed ? FontWeight.w500 : FontWeight.normal,
             ),
           ),
@@ -1077,7 +1077,7 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
           SizedBox(height: 8.h),
           LinearProgressIndicator(
             value: progress,
-            backgroundColor: Colors.white.withOpacity(0.1),
+            backgroundColor: Colors.white.withValues(alpha: 0.1),
             valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
             borderRadius: BorderRadius.circular(4.r),
           ),
@@ -1091,7 +1091,7 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
       margin: EdgeInsets.only(bottom: 12.h),
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12.r),
         boxShadow: [
           BoxShadow(
@@ -1162,7 +1162,7 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
     Get.snackbar(
       'Course Started',
       'Starting $courseName...',
-      backgroundColor: Colors.blue.withOpacity(0.2),
+      backgroundColor: Colors.blue.withValues(alpha: 0.2),
       colorText: Colors.white,
     );
   }
@@ -1171,7 +1171,7 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
     Get.snackbar(
       category,
       'Opening $category courses...',
-      backgroundColor: Colors.green.withOpacity(0.2),
+      backgroundColor: Colors.green.withValues(alpha: 0.2),
       colorText: Colors.white,
     );
   }
@@ -1180,7 +1180,7 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
     Get.snackbar(
       'Quiz Started',
       'Starting $quizName...',
-      backgroundColor: Colors.purple.withOpacity(0.2),
+      backgroundColor: Colors.purple.withValues(alpha: 0.2),
       colorText: Colors.white,
     );
   }
@@ -1189,7 +1189,7 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
     Get.snackbar(
       'Rewards Claimed!',
       'Successfully claimed £23 in rewards',
-      backgroundColor: Colors.green.withOpacity(0.2),
+      backgroundColor: Colors.green.withValues(alpha: 0.2),
       colorText: Colors.white,
     );
   }
@@ -1198,7 +1198,7 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
     Get.snackbar(
       'Certificate Downloaded',
       'Certificate for $course has been downloaded',
-      backgroundColor: Colors.green.withOpacity(0.2),
+      backgroundColor: Colors.green.withValues(alpha: 0.2),
       colorText: Colors.white,
     );
   }

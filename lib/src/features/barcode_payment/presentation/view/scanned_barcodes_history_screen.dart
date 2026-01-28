@@ -72,7 +72,7 @@ class _ScannedBarcodesHistoryScreenState
                               state.message,
                               textAlign: TextAlign.center,
                               style: GoogleFonts.inter(
-                                color: Colors.white.withOpacity(0.6),
+                                color: Colors.white.withValues(alpha: 0.6),
                                 fontSize: 16.sp,
                               ),
                             ),
@@ -126,10 +126,10 @@ class _ScannedBarcodesHistoryScreenState
               width: 44.w,
               height: 44.w,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(22.r),
                 border: Border.all(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   width: 1,
                 ),
               ),
@@ -156,7 +156,7 @@ class _ScannedBarcodesHistoryScreenState
                 Text(
                   'Your payment history',
                   style: GoogleFonts.inter(
-                    color: Colors.white.withOpacity(0.6),
+                    color: Colors.white.withValues(alpha: 0.6),
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w400,
                   ),
@@ -174,10 +174,10 @@ class _ScannedBarcodesHistoryScreenState
       margin: EdgeInsets.only(bottom: 16.h),
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(
-          color: Colors.white.withOpacity(0.1),
+          color: Colors.white.withValues(alpha: 0.1),
           width: 1,
         ),
       ),
@@ -193,7 +193,7 @@ class _ScannedBarcodesHistoryScreenState
                     width: 40.w,
                     height: 40.w,
                     decoration: BoxDecoration(
-                      color: const Color(0xFF4E03D0).withOpacity(0.2),
+                      color: const Color(0xFF4E03D0).withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(20.r),
                     ),
                     child: Icon(
@@ -241,14 +241,14 @@ class _ScannedBarcodesHistoryScreenState
             Text(
               transaction.description,
               style: GoogleFonts.inter(
-                color: Colors.white.withOpacity(0.6),
+                color: Colors.white.withValues(alpha: 0.6),
                 fontSize: 14.sp,
                 fontWeight: FontWeight.w400,
               ),
             ),
             SizedBox(height: 12.h),
           ],
-          Divider(color: Colors.white.withOpacity(0.1)),
+          Divider(color: Colors.white.withValues(alpha: 0.1)),
           SizedBox(height: 12.h),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -257,7 +257,7 @@ class _ScannedBarcodesHistoryScreenState
                 children: [
                   Icon(
                     Icons.access_time,
-                    color: Colors.white.withOpacity(0.6),
+                    color: Colors.white.withValues(alpha: 0.6),
                     size: 16.sp,
                   ),
                   SizedBox(width: 8.w),
@@ -265,7 +265,7 @@ class _ScannedBarcodesHistoryScreenState
                     DateFormat('MMM dd, yyyy - hh:mm a')
                         .format(transaction.createdAt),
                     style: GoogleFonts.inter(
-                      color: Colors.white.withOpacity(0.6),
+                      color: Colors.white.withValues(alpha: 0.6),
                       fontSize: 13.sp,
                       fontWeight: FontWeight.w400,
                     ),
@@ -280,14 +280,14 @@ class _ScannedBarcodesHistoryScreenState
             children: [
               Icon(
                 Icons.tag,
-                color: Colors.white.withOpacity(0.6),
+                color: Colors.white.withValues(alpha: 0.6),
                 size: 16.sp,
               ),
               SizedBox(width: 8.w),
               Text(
                 transaction.referenceNumber,
                 style: GoogleFonts.inter(
-                  color: Colors.white.withOpacity(0.6),
+                  color: Colors.white.withValues(alpha: 0.6),
                   fontSize: 13.sp,
                   fontWeight: FontWeight.w400,
                 ),
@@ -308,7 +308,7 @@ class _ScannedBarcodesHistoryScreenState
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20.r),
         border: Border.all(color: color, width: 1),
       ),
@@ -330,7 +330,7 @@ class _ScannedBarcodesHistoryScreenState
         children: [
           Icon(
             Icons.qr_code_scanner,
-            color: Colors.white.withOpacity(0.3),
+            color: Colors.white.withValues(alpha: 0.3),
             size: 80.sp,
           ),
           SizedBox(height: 16.h),
@@ -347,7 +347,7 @@ class _ScannedBarcodesHistoryScreenState
             'Scan a barcode to make a payment',
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(
-              color: Colors.white.withOpacity(0.6),
+              color: Colors.white.withValues(alpha: 0.6),
               fontSize: 14.sp,
               fontWeight: FontWeight.w400,
             ),

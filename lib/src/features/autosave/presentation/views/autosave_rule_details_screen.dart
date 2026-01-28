@@ -91,7 +91,7 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> {
                 onConfirm();
               },
               style: TextButton.styleFrom(
-                backgroundColor: confirmColor.withOpacity(0.1),
+                backgroundColor: confirmColor.withValues(alpha: 0.1),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8.r),
                 ),
@@ -167,6 +167,7 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> {
       AppRoutes.createAutoSaveRule,
       arguments: {'duplicateFrom': rule},
     )?.then((_) {
+      if (!mounted) return;
       Navigator.pop(context);
     });
   }
@@ -195,7 +196,7 @@ Created: ${DateFormat('MMM dd, yyyy').format(rule.createdAt)}
 ${rule.lastTriggeredAt != null ? 'Last Triggered: ${DateFormat('MMM dd, yyyy').format(rule.lastTriggeredAt!)}' : ''}
 ''';
 
-    Share.share(details, subject: 'Auto-Save Rule: ${rule.name}');
+    SharePlus.instance.share(ShareParams(text: details, subject: 'Auto-Save Rule: ${rule.name}'));
   }
 
   void _navigateToEdit() {
@@ -203,6 +204,7 @@ ${rule.lastTriggeredAt != null ? 'Last Triggered: ${DateFormat('MMM dd, yyyy').f
       AppRoutes.editAutoSaveRule,
       arguments: rule,
     )?.then((_) {
+      if (!mounted) return;
       // Refresh data when returning from edit screen
       context.read<AutoSaveCubit>().getRulesWithCache(forceRefresh: true);
     });
@@ -533,7 +535,7 @@ ${rule.lastTriggeredAt != null ? 'Last Triggered: ${DateFormat('MMM dd, yyyy').f
               color: statusColor,
               boxShadow: [
                 BoxShadow(
-                  color: statusColor.withOpacity(0.5),
+                  color: statusColor.withValues(alpha: 0.5),
                   blurRadius: 8,
                   spreadRadius: 2,
                 ),
@@ -554,10 +556,10 @@ ${rule.lastTriggeredAt != null ? 'Last Triggered: ${DateFormat('MMM dd, yyyy').f
             Container(
               padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
               decoration: BoxDecoration(
-                color: const Color(0xFF10B981).withOpacity(0.1),
+                color: const Color(0xFF10B981).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8.r),
                 border: Border.all(
-                  color: const Color(0xFF10B981).withOpacity(0.3),
+                  color: const Color(0xFF10B981).withValues(alpha: 0.3),
                 ),
               ),
               child: Row(
@@ -853,9 +855,9 @@ ${rule.lastTriggeredAt != null ? 'Last Triggered: ${DateFormat('MMM dd, yyyy').f
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -942,12 +944,12 @@ ${rule.lastTriggeredAt != null ? 'Last Triggered: ${DateFormat('MMM dd, yyyy').f
       decoration: BoxDecoration(
         color: onPressed == null
             ? const Color(0xFF2D2D2D)
-            : color.withOpacity(0.1),
+            : color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(
           color: onPressed == null
               ? const Color(0xFF2D2D2D)
-              : color.withOpacity(0.3),
+              : color.withValues(alpha: 0.3),
         ),
       ),
       child: Material(

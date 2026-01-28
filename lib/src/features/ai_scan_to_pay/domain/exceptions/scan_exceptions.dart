@@ -1,5 +1,5 @@
-/// Custom exceptions for AI Scan to Pay feature
-/// Provides specific error types for better error handling and user messaging
+// Custom exceptions for AI Scan to Pay feature
+// Provides specific error types for better error handling and user messaging
 
 /// Base exception for scan operations
 abstract class ScanException implements Exception {

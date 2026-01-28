@@ -28,7 +28,7 @@ class VerificationBadge extends StatelessWidget {
       height: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: color.withOpacity(0.15),
+        color: color.withValues(alpha: 0.15),
         border: Border.all(color: color, width: 1.5),
       ),
       child: Center(
@@ -66,7 +66,7 @@ class VerificationBadge extends StatelessWidget {
             Text(
               _getStatusLabel(),
               style: theme.textTheme.labelSmall?.copyWith(
-                color: color.withOpacity(0.8),
+                color: color.withValues(alpha: 0.8),
               ),
             ),
           ],
@@ -332,7 +332,7 @@ class TierProgressIndicator extends StatelessWidget {
               height: 40,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: color.withOpacity(0.15),
+                color: color.withValues(alpha: 0.15),
               ),
               child: Icon(
                 isCompleted ? Icons.check : icon,
@@ -355,13 +355,13 @@ class TierProgressIndicator extends StatelessWidget {
                   Text(
                     subtitle,
                     style: theme.textTheme.labelSmall?.copyWith(
-                      color: color.withOpacity(0.8),
+                      color: color.withValues(alpha: 0.8),
                     ),
                   ),
                   Text(
                     description,
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.textTheme.bodySmall?.color?.withOpacity(0.7),
+                      color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.7),
                     ),
                   ),
                 ],

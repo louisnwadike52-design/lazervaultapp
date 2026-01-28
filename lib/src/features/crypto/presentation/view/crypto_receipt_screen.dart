@@ -169,8 +169,8 @@ class _CryptoReceiptScreenState extends State<CryptoReceiptScreen>
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            Colors.green.withOpacity(0.2),
-            Colors.green.withOpacity(0.05),
+            Colors.green.withValues(alpha: 0.2),
+            Colors.green.withValues(alpha: 0.05),
           ],
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
@@ -190,7 +190,7 @@ class _CryptoReceiptScreenState extends State<CryptoReceiptScreen>
           Container(
             padding: EdgeInsets.all(20.w),
             decoration: BoxDecoration(
-              color: Colors.green.withOpacity(0.2),
+              color: Colors.green.withValues(alpha: 0.2),
               shape: BoxShape.circle,
             ),
             child: Icon(
@@ -214,7 +214,7 @@ class _CryptoReceiptScreenState extends State<CryptoReceiptScreen>
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(
               fontSize: 16.sp,
-              color: Colors.white.withOpacity(0.8),
+              color: Colors.white.withValues(alpha: 0.8),
             ),
           ),
         ],
@@ -254,7 +254,7 @@ class _CryptoReceiptScreenState extends State<CryptoReceiptScreen>
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                 decoration: BoxDecoration(
-                  color: _getStatusColor().withOpacity(0.2),
+                  color: _getStatusColor().withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(20.r),
                 ),
                 child: Text(
@@ -286,7 +286,7 @@ class _CryptoReceiptScreenState extends State<CryptoReceiptScreen>
           _buildReceiptRow('Trading Fee', '£${widget.receipt.transactionDetails.tradingFee.toStringAsFixed(2)}'),
           SizedBox(height: 16.h),
           _buildReceiptRow('Network Fee', '£${widget.receipt.transactionDetails.networkFee.toStringAsFixed(2)}'),
-          Divider(color: Colors.white.withOpacity(0.2), height: 32.h),
+          Divider(color: Colors.white.withValues(alpha: 0.2), height: 32.h),
           _buildReceiptRow('Total Amount', '£${widget.receipt.transactionDetails.totalAmount.toStringAsFixed(2)}', isTotal: true),
           SizedBox(height: 16.h),
           _buildReceiptRow('Payment Method', widget.receipt.transactionDetails.paymentMethod),
@@ -302,12 +302,12 @@ class _CryptoReceiptScreenState extends State<CryptoReceiptScreen>
           child: ElevatedButton(
             onPressed: _downloadReceipt,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF6C5CE7).withOpacity(0.2),
+              backgroundColor: const Color(0xFF6C5CE7).withValues(alpha: 0.2),
               foregroundColor: const Color(0xFF6C5CE7),
               padding: EdgeInsets.symmetric(vertical: 16.h),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12.r),
-                side: BorderSide(color: const Color(0xFF6C5CE7).withOpacity(0.3)),
+                side: BorderSide(color: const Color(0xFF6C5CE7).withValues(alpha: 0.3)),
               ),
               elevation: 0,
             ),
@@ -487,7 +487,7 @@ class _CryptoReceiptScreenState extends State<CryptoReceiptScreen>
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12.r),
               ),
-              side: BorderSide(color: Colors.white.withOpacity(0.3)),
+              side: BorderSide(color: Colors.white.withValues(alpha: 0.3)),
             ),
             child: Text(
               'Back to Crypto',
@@ -512,7 +512,7 @@ class _CryptoReceiptScreenState extends State<CryptoReceiptScreen>
           style: GoogleFonts.inter(
             fontSize: isTotal ? 16.sp : 14.sp,
             fontWeight: isTotal ? FontWeight.w600 : FontWeight.w500,
-            color: Colors.white.withOpacity(isTotal ? 1.0 : 0.8),
+            color: Colors.white.withValues(alpha: isTotal ? 1.0 : 0.8),
           ),
         ),
         Row(
@@ -550,7 +550,7 @@ class _CryptoReceiptScreenState extends State<CryptoReceiptScreen>
           label,
           style: GoogleFonts.inter(
             fontSize: 14.sp,
-            color: Colors.white.withOpacity(0.8),
+            color: Colors.white.withValues(alpha: 0.8),
           ),
         ),
         Row(
@@ -594,7 +594,7 @@ class _CryptoReceiptScreenState extends State<CryptoReceiptScreen>
             text,
             style: GoogleFonts.inter(
               fontSize: 14.sp,
-              color: Colors.white.withOpacity(0.8),
+              color: Colors.white.withValues(alpha: 0.8),
             ),
           ),
         ),
@@ -660,7 +660,7 @@ class _CryptoReceiptScreenState extends State<CryptoReceiptScreen>
     Get.snackbar(
       'Copied',
       'Copied to clipboard',
-      backgroundColor: Colors.green.withOpacity(0.1),
+      backgroundColor: Colors.green.withValues(alpha: 0.1),
       colorText: Colors.green,
       duration: const Duration(seconds: 2),
     );
@@ -680,7 +680,7 @@ Status: ${widget.receipt.status.name.toUpperCase()}
 Powered by LazerVault - Your trusted crypto platform
 ''';
 
-    Share.share(receiptText, subject: 'LazerVault Transaction Receipt');
+    SharePlus.instance.share(ShareParams(text: receiptText, subject: 'LazerVault Transaction Receipt'));
   }
 
   void _downloadReceipt() {
@@ -688,7 +688,7 @@ Powered by LazerVault - Your trusted crypto platform
     Get.snackbar(
       'Download',
       'Receipt saved to Downloads',
-      backgroundColor: const Color(0xFF6C5CE7).withOpacity(0.1),
+      backgroundColor: const Color(0xFF6C5CE7).withValues(alpha: 0.1),
       colorText: const Color(0xFF6C5CE7),
       duration: const Duration(seconds: 3),
     );

@@ -45,6 +45,31 @@ abstract class ITransactionPinService {
     required String newPin,
     required String confirmNewPin,
   });
+
+  /// Initiate OTP for PIN operation
+  Future<OTPInitiationResult> initiatePinOTP({
+    required String operationType,
+    required String channel,
+  });
+
+  /// Verify OTP and execute PIN operation
+  Future<PinOTPVerifyResult> verifyPinOTP({
+    required String otpCode,
+    required String operationType,
+    String? currentPin,
+    required String newPin,
+    required String confirmNewPin,
+  });
+
+  /// Get available OTP channels
+  Future<List<OTPChannelInfo>> getPinOTPChannels();
+
+  /// Complete forgot PIN flow
+  Future<PinOTPVerifyResult> completeForgotPin({
+    required String otpCode,
+    required String newPin,
+    required String confirmNewPin,
+  });
 }
 
 /// Result of PIN verification
@@ -110,6 +135,53 @@ class TransactionPinVerificationResult {
   }
 }
 
+/// Result of OTP initiation
+class OTPInitiationResult {
+  final bool success;
+  final String message;
+  final String channel;
+  final String maskedDestination;
+  final int expiresInSeconds;
+  final int cooldownSeconds;
+
+  OTPInitiationResult({
+    required this.success,
+    required this.message,
+    this.channel = '',
+    this.maskedDestination = '',
+    this.expiresInSeconds = 600,
+    this.cooldownSeconds = 60,
+  });
+}
+
+/// Result of OTP verification
+class PinOTPVerifyResult {
+  final bool success;
+  final String message;
+  final int remainingAttempts;
+
+  PinOTPVerifyResult({
+    required this.success,
+    required this.message,
+    this.remainingAttempts = 0,
+  });
+}
+
+/// OTP channel information
+class OTPChannelInfo {
+  final String type;
+  final String maskedDestination;
+  final bool isVerified;
+  final bool isAvailable;
+
+  OTPChannelInfo({
+    required this.type,
+    required this.maskedDestination,
+    required this.isVerified,
+    required this.isAvailable,
+  });
+}
+
 /// Implementation of transaction PIN service using gRPC
 class TransactionPinService implements ITransactionPinService {
   final TransactionPinServiceClient _client;
@@ -141,7 +213,7 @@ class TransactionPinService implements ITransactionPinService {
 
       if (Platform.isAndroid) {
         final androidInfo = await deviceInfo.androidInfo;
-        return androidInfo.id ?? uuid.v4();
+        return androidInfo.id;
       } else if (Platform.isIOS) {
         final iosInfo = await deviceInfo.iosInfo;
         return iosInfo.identifierForVendor ?? uuid.v4();
@@ -163,7 +235,7 @@ class TransactionPinService implements ITransactionPinService {
         return '${androidInfo.brand} ${androidInfo.model}';
       } else if (Platform.isIOS) {
         final iosInfo = await deviceInfo.iosInfo;
-        return iosInfo.model ?? 'iOS Device';
+        return iosInfo.model;
       }
 
       return 'Mobile Device';
@@ -176,6 +248,7 @@ class TransactionPinService implements ITransactionPinService {
   Future<bool> checkUserHasPin() async {
     try {
       final userId = await _getUserId();
+      print('[TransactionPinService] checkUserHasPin for userId: $userId');
 
       final request = CheckUserHasPinRequest()..userId = userId;
 
@@ -185,13 +258,14 @@ class TransactionPinService implements ITransactionPinService {
         options: callOptions,
       );
 
+      print('[TransactionPinService] checkUserHasPin response: hasPin=${response.hasPin}, isActive=${response.isActive}');
       return response.hasPin;
     } on GrpcError catch (e) {
-      print('gRPC Error checking PIN: $e');
+      print('[TransactionPinService] gRPC Error checking PIN: ${e.codeName} - ${e.message}');
       throw Exception('Failed to check PIN status: ${e.message ?? "Unknown error"}');
     } catch (e) {
-      print('Unexpected error checking PIN: $e');
-      throw Exception('An unexpected error occurred');
+      print('[TransactionPinService] Unexpected error checking PIN: $e');
+      throw Exception('An unexpected error occurred: $e');
     }
   }
 
@@ -232,7 +306,7 @@ class TransactionPinService implements ITransactionPinService {
         }
 
         return TransactionPinVerificationResult.failure(
-          message: response.message ?? 'Invalid PIN',
+          message: response.message,
           remainingAttempts: response.remainingAttempts,
         );
       }
@@ -307,14 +381,16 @@ class TransactionPinService implements ITransactionPinService {
         ..deviceName = deviceName;
 
       final callOptions = await _callOptionsHelper.withAuth();
+      print('[TransactionPinService] createPin for userId: $userId, deviceId: $deviceId');
       final response = await _client.createTransactionPin(
         request,
         options: callOptions,
       );
 
+      print('[TransactionPinService] createPin response: success=${response.success}, message=${response.message}');
       return response.success;
     } on GrpcError catch (e) {
-      print('gRPC Error creating PIN: $e');
+      print('[TransactionPinService] gRPC Error creating PIN: ${e.codeName} - ${e.message}');
       throw Exception('Failed to create PIN: ${e.message ?? "Unknown error"}');
     } catch (e) {
       print('Unexpected error creating PIN: $e');
@@ -380,6 +456,154 @@ class TransactionPinService implements ITransactionPinService {
       throw Exception('Failed to reset PIN: ${e.message ?? "Unknown error"}');
     } catch (e) {
       print('Unexpected error resetting PIN: $e');
+      throw Exception('An unexpected error occurred');
+    }
+  }
+
+  @override
+  Future<OTPInitiationResult> initiatePinOTP({
+    required String operationType,
+    required String channel,
+  }) async {
+    try {
+      final userId = await _getUserId();
+      final deviceId = await _getDeviceId();
+
+      final request = InitiatePinOTPRequest()
+        ..userId = userId
+        ..operationType = operationType
+        ..channel = channel
+        ..deviceId = deviceId;
+
+      final callOptions = await _callOptionsHelper.withAuth();
+      final response = await _client.initiatePinOTP(
+        request,
+        options: callOptions,
+      );
+
+      return OTPInitiationResult(
+        success: response.success,
+        message: response.message,
+        channel: response.channel,
+        maskedDestination: response.maskedDestination,
+        expiresInSeconds: response.expiresInSeconds,
+        cooldownSeconds: response.cooldownSeconds,
+      );
+    } on GrpcError catch (e) {
+      print('[TransactionPinService] gRPC Error initiating PIN OTP: ${e.codeName} - ${e.message}');
+      throw Exception('Failed to initiate OTP: ${e.message ?? "Unknown error"}');
+    } catch (e) {
+      print('[TransactionPinService] Unexpected error initiating PIN OTP: $e');
+      throw Exception('An unexpected error occurred');
+    }
+  }
+
+  @override
+  Future<PinOTPVerifyResult> verifyPinOTP({
+    required String otpCode,
+    required String operationType,
+    String? currentPin,
+    required String newPin,
+    required String confirmNewPin,
+  }) async {
+    try {
+      final userId = await _getUserId();
+      final deviceId = await _getDeviceId();
+
+      final request = VerifyPinOTPRequest()
+        ..userId = userId
+        ..otpCode = otpCode
+        ..operationType = operationType
+        ..newPin = newPin
+        ..confirmNewPin = confirmNewPin
+        ..deviceId = deviceId;
+
+      if (currentPin != null) {
+        request.currentPin = currentPin;
+      }
+
+      final callOptions = await _callOptionsHelper.withAuth();
+      final response = await _client.verifyPinOTP(
+        request,
+        options: callOptions,
+      );
+
+      return PinOTPVerifyResult(
+        success: response.success,
+        message: response.message,
+        remainingAttempts: response.remainingAttempts,
+      );
+    } on GrpcError catch (e) {
+      print('[TransactionPinService] gRPC Error verifying PIN OTP: ${e.codeName} - ${e.message}');
+      throw Exception('Failed to verify OTP: ${e.message ?? "Unknown error"}');
+    } catch (e) {
+      print('[TransactionPinService] Unexpected error verifying PIN OTP: $e');
+      throw Exception('An unexpected error occurred');
+    }
+  }
+
+  @override
+  Future<List<OTPChannelInfo>> getPinOTPChannels() async {
+    try {
+      final userId = await _getUserId();
+
+      final request = GetPinOTPChannelsRequest()
+        ..userId = userId;
+
+      final callOptions = await _callOptionsHelper.withAuth();
+      final response = await _client.getPinOTPChannels(
+        request,
+        options: callOptions,
+      );
+
+      return response.channels.map((ch) => OTPChannelInfo(
+        type: ch.type,
+        maskedDestination: ch.maskedDestination,
+        isVerified: ch.isVerified,
+        isAvailable: ch.isAvailable,
+      )).toList();
+    } on GrpcError catch (e) {
+      print('[TransactionPinService] gRPC Error getting PIN OTP channels: ${e.codeName} - ${e.message}');
+      throw Exception('Failed to get OTP channels: ${e.message ?? "Unknown error"}');
+    } catch (e) {
+      print('[TransactionPinService] Unexpected error getting PIN OTP channels: $e');
+      throw Exception('An unexpected error occurred');
+    }
+  }
+
+  @override
+  Future<PinOTPVerifyResult> completeForgotPin({
+    required String otpCode,
+    required String newPin,
+    required String confirmNewPin,
+  }) async {
+    try {
+      final userId = await _getUserId();
+      final deviceId = await _getDeviceId();
+
+      final request = CompleteForgotPinRequest()
+        ..userId = userId
+        ..otpCode = otpCode
+        ..newPin = newPin
+        ..confirmNewPin = confirmNewPin
+        ..deviceId = deviceId;
+
+      final callOptions = await _callOptionsHelper.withAuth();
+      final response = await _client.completeForgotPin(
+        request,
+        options: callOptions,
+      );
+
+      return PinOTPVerifyResult(
+        success: response.success,
+        message: response.message,
+        remainingAttempts: response.remainingAttempts,
+      );
+    } on GrpcError catch (e) {
+      print('[TransactionPinService] gRPC Error completing forgot PIN: ${e.codeName} - ${e.message}');
+      throw Exception('Failed to complete forgot PIN: ${e.message ?? "Unknown error"}');
+    } catch (e) {
+      print('[TransactionPinService] Unexpected error completing forgot PIN: $e');
       throw Exception('An unexpected error occurred');
     }
   }

@@ -37,7 +37,7 @@ class InitiateTransferUseCase
 }
 
 class InitiateTransferParams extends Equatable {
-  final Int64 fromAccountId;
+  final String fromAccountId;
   final Int64 amount;
   final String accessToken;
   final Int64? toAccountId;

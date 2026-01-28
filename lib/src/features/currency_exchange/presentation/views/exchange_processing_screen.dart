@@ -112,7 +112,7 @@ class _ExchangeProcessingScreenState extends State<ExchangeProcessingScreen>
           Text(
             'Please wait while we process your transfer',
             style: GoogleFonts.inter(
-              color: Colors.white.withOpacity(0.8),
+              color: Colors.white.withValues(alpha: 0.8),
               fontSize: 12.sp,
             ),
           ),
@@ -144,7 +144,7 @@ class _ExchangeProcessingScreenState extends State<ExchangeProcessingScreen>
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF3B82F6).withOpacity(0.3),
+                          color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
                           blurRadius: 20,
                           offset: const Offset(0, 10),
                         ),
@@ -242,7 +242,7 @@ class _ExchangeProcessingScreenState extends State<ExchangeProcessingScreen>
                 border: Border.all(color: const Color(0xFF2D2D2D)),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
+                    color: Colors.black.withValues(alpha: 0.04),
                     blurRadius: 20,
                     offset: const Offset(0, 4),
                   ),

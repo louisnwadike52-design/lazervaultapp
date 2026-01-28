@@ -241,7 +241,7 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
             margin: EdgeInsets.only(bottom: 12.h),
             padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
-              color: isSelected ? const Color(0xFF6C5CE7).withOpacity(0.2) : const Color(0xFF1F1F1F),
+              color: isSelected ? const Color(0xFF6C5CE7).withValues(alpha: 0.2) : const Color(0xFF1F1F1F),
               boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.08),
@@ -797,7 +797,7 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
             activeThumbColor: const Color(0xFF6C5CE7),
             trackColor: WidgetStateProperty.resolveWith((states) {
               return states.contains(WidgetState.selected) 
-                  ? const Color(0xFF6C5CE7).withOpacity(0.3)
+                  ? const Color(0xFF6C5CE7).withValues(alpha: 0.3)
                   : const Color(0xFF2D2D2D);
             }),
           ),

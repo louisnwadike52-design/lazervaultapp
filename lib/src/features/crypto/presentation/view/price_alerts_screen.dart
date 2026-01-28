@@ -230,7 +230,7 @@ class _PriceAlertsScreenState extends State<PriceAlertsScreen> {
         children: [
           Icon(
             Icons.notifications_none,
-            color: Colors.white.withOpacity(0.3),
+            color: Colors.white.withValues(alpha: 0.3),
             size: 48.sp,
           ),
           SizedBox(height: 12.h),
@@ -239,7 +239,7 @@ class _PriceAlertsScreenState extends State<PriceAlertsScreen> {
             style: GoogleFonts.inter(
               fontSize: 16.sp,
               fontWeight: FontWeight.w600,
-              color: Colors.white.withOpacity(0.7),
+              color: Colors.white.withValues(alpha: 0.7),
             ),
           ),
           SizedBox(height: 4.h),
@@ -248,7 +248,7 @@ class _PriceAlertsScreenState extends State<PriceAlertsScreen> {
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(
               fontSize: 14.sp,
-              color: Colors.white.withOpacity(0.5),
+              color: Colors.white.withValues(alpha: 0.5),
             ),
           ),
         ],
@@ -266,8 +266,8 @@ class _PriceAlertsScreenState extends State<PriceAlertsScreen> {
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: alert.isActive 
-            ? (isTriggered ? Colors.green.withOpacity(0.1) : const Color(0xFF0A0E27))
-            : Colors.grey.withOpacity(0.1),
+            ? (isTriggered ? Colors.green.withValues(alpha: 0.1) : const Color(0xFF0A0E27))
+            : Colors.grey.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12.r),
         boxShadow: [
           BoxShadow(
@@ -286,7 +286,7 @@ class _PriceAlertsScreenState extends State<PriceAlertsScreen> {
                 width: 40.w,
                 height: 40.w,
                 decoration: BoxDecoration(
-                  color: Colors.orange.withOpacity(0.2),
+                  color: Colors.orange.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(20.r),
                 ),
                 child: Icon(
@@ -312,7 +312,7 @@ class _PriceAlertsScreenState extends State<PriceAlertsScreen> {
                       '${alert.alertType == AlertType.above ? 'Above' : 'Below'} £${alert.targetPrice.toStringAsFixed(2)}',
                       style: GoogleFonts.inter(
                         fontSize: 12.sp,
-                        color: Colors.white.withOpacity(0.6),
+                        color: Colors.white.withValues(alpha: 0.6),
                       ),
                     ),
                   ],
@@ -363,7 +363,7 @@ class _PriceAlertsScreenState extends State<PriceAlertsScreen> {
                 'Created ${_formatDate(alert.createdAt)}',
                 style: GoogleFonts.inter(
                   fontSize: 12.sp,
-                  color: Colors.white.withOpacity(0.5),
+                  color: Colors.white.withValues(alpha: 0.5),
                 ),
               ),
               Row(
@@ -373,7 +373,7 @@ class _PriceAlertsScreenState extends State<PriceAlertsScreen> {
                     child: Container(
                       padding: EdgeInsets.all(6.w),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF6C5CE7).withOpacity(0.2),
+                        color: const Color(0xFF6C5CE7).withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(6.r),
                       ),
                       child: Icon(
@@ -389,7 +389,7 @@ class _PriceAlertsScreenState extends State<PriceAlertsScreen> {
                     child: Container(
                       padding: EdgeInsets.all(6.w),
                       decoration: BoxDecoration(
-                        color: Colors.red.withOpacity(0.2),
+                        color: Colors.red.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(6.r),
                       ),
                       child: Icon(
@@ -481,7 +481,7 @@ class _PriceAlertsScreenState extends State<PriceAlertsScreen> {
             label,
             style: GoogleFonts.inter(
               fontSize: 12.sp,
-              color: Colors.white.withOpacity(0.6),
+              color: Colors.white.withValues(alpha: 0.6),
             ),
           ),
         ],
@@ -561,7 +561,7 @@ class _PriceAlertsScreenState extends State<PriceAlertsScreen> {
                 textAlign: TextAlign.center,
                 style: GoogleFonts.inter(
                   fontSize: 14.sp,
-                  color: Colors.white.withOpacity(0.8),
+                  color: Colors.white.withValues(alpha: 0.8),
                 ),
               ),
               SizedBox(height: 24.h),
@@ -739,7 +739,7 @@ class _CreateAlertBottomSheetState extends State<CreateAlertBottomSheet> {
                   margin: EdgeInsets.only(bottom: 8.h),
                   padding: EdgeInsets.all(12.w),
                   decoration: BoxDecoration(
-                    color: isSelected ? const Color(0xFF6C5CE7).withOpacity(0.2) : const Color(0xFF0A0E27),
+                    color: isSelected ? const Color(0xFF6C5CE7).withValues(alpha: 0.2) : const Color(0xFF0A0E27),
                     borderRadius: BorderRadius.circular(12.r),
                     boxShadow: [
           BoxShadow(
@@ -756,7 +756,7 @@ class _CreateAlertBottomSheetState extends State<CreateAlertBottomSheet> {
                         width: 32.w,
                         height: 32.w,
                         decoration: BoxDecoration(
-                          color: Colors.orange.withOpacity(0.2),
+                          color: Colors.orange.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(16.r),
                         ),
                         child: Icon(Icons.currency_bitcoin, color: Colors.orange, size: 20.sp),
@@ -778,7 +778,7 @@ class _CreateAlertBottomSheetState extends State<CreateAlertBottomSheet> {
                               crypto['symbol'],
                               style: GoogleFonts.inter(
                                 fontSize: 12.sp,
-                                color: Colors.white.withOpacity(0.6),
+                                color: Colors.white.withValues(alpha: 0.6),
                               ),
                             ),
                           ],
@@ -825,7 +825,7 @@ class _CreateAlertBottomSheetState extends State<CreateAlertBottomSheet> {
                   padding: EdgeInsets.all(16.w),
                   decoration: BoxDecoration(
                     color: _selectedAlertType == AlertType.above 
-                        ? const Color(0xFF6C5CE7).withOpacity(0.2) 
+                        ? const Color(0xFF6C5CE7).withValues(alpha: 0.2) 
                         : const Color(0xFF0A0E27),
                     borderRadius: BorderRadius.circular(12.r),
                     boxShadow: [
@@ -866,7 +866,7 @@ class _CreateAlertBottomSheetState extends State<CreateAlertBottomSheet> {
                   padding: EdgeInsets.all(16.w),
                   decoration: BoxDecoration(
                     color: _selectedAlertType == AlertType.below 
-                        ? const Color(0xFF6C5CE7).withOpacity(0.2) 
+                        ? const Color(0xFF6C5CE7).withValues(alpha: 0.2) 
                         : const Color(0xFF0A0E27),
                     borderRadius: BorderRadius.circular(12.r),
                     boxShadow: [
@@ -930,7 +930,7 @@ class _CreateAlertBottomSheetState extends State<CreateAlertBottomSheet> {
             hintText: '0.00',
             hintStyle: GoogleFonts.inter(
               fontSize: 18.sp,
-              color: Colors.white.withOpacity(0.3),
+              color: Colors.white.withValues(alpha: 0.3),
             ),
             prefixIcon: Padding(
               padding: EdgeInsets.only(left: 16.w, top: 16.h),

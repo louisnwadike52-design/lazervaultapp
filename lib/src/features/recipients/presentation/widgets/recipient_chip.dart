@@ -23,7 +23,7 @@ class RecipientChip extends StatelessWidget {
           margin: EdgeInsets.only(bottom: 8.h),
           padding: EdgeInsets.all(16.w),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.05),
+            color: Colors.white.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(12.r),
             boxShadow: [
           BoxShadow(
@@ -40,7 +40,7 @@ class RecipientChip extends StatelessWidget {
                 width: 40.w,
                 height: 40.h,
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.1),
+                  color: Colors.white.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: recipient.profileImageUrl != null
@@ -53,7 +53,7 @@ class RecipientChip extends StatelessWidget {
                       )
                     : Icon(
                         Icons.person_outline,
-                        color: Colors.white.withOpacity(0.7),
+                        color: Colors.white.withValues(alpha: 0.7),
                         size: 24.sp,
                       ),
               ),
@@ -74,7 +74,7 @@ class RecipientChip extends StatelessWidget {
                     Text(
                       recipient.accountNumber,
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.7),
+                        color: Colors.white.withValues(alpha: 0.7),
                         fontSize: 14.sp,
                       ),
                     ),
@@ -82,7 +82,7 @@ class RecipientChip extends StatelessWidget {
                     Text(
                       '${recipient.bankName} • ${recipient.sortCode}',
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.5),
+                        color: Colors.white.withValues(alpha: 0.5),
                         fontSize: 12.sp,
                       ),
                     ),

@@ -255,6 +255,7 @@ class RecipientVerificationRemoteDataSourceImpl
   }
 
   /// Close the Dio client.
+  @override
   void dispose() {
     dio.close();
   }

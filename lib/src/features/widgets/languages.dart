@@ -100,45 +100,45 @@ class _LanguagesState extends State<Languages> {
                   ),
                 ),
                 Expanded(
-                  child: ListView.builder(
-                    itemCount: filteredLanguages.length,
-                    shrinkWrap: true,
-                    itemBuilder: (context, index) {
-                      final language = filteredLanguages[index];
-                      return ListTile(
-                        leading: UniversalImageLoader(
-                          imagePath: language.flagPath,
-                          height: 32.0.h,
-                          width: 48.0.w,
-                        ),
-                        title: Text(
-                          language.name,
-                          style: TextStyle(
-                            fontSize: 14.sp,
-                            fontWeight: FontWeight.w500,
+                  child: RadioGroup<String>(
+                    groupValue: selectedLanguageCode ?? '',
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        selectedLanguageCode = newValue ?? selectedLanguageCode;
+                      });
+                    },
+                    child: ListView.builder(
+                      itemCount: filteredLanguages.length,
+                      shrinkWrap: true,
+                      itemBuilder: (context, index) {
+                        final language = filteredLanguages[index];
+                        return ListTile(
+                          leading: UniversalImageLoader(
+                            imagePath: language.flagPath,
+                            height: 32.0.h,
+                            width: 48.0.w,
                           ),
-                        ),
-                        trailing: Radio<String>(
-                          value:
-                              language.code, // Use language code as the value
-                          groupValue:
-                              selectedLanguageCode, // Track selected language
-                          onChanged: (String? newValue) {
+                          title: Text(
+                            language.name,
+                            style: TextStyle(
+                              fontSize: 14.sp,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          trailing: Radio<String>(
+                            value:
+                                language.code, // Use language code as the value
+                            activeColor: Colors.blue,
+                          ),
+                          onTap: () {
                             setState(() {
                               selectedLanguageCode =
-                                  newValue; // Update selected language
+                                  language.code; // Update selection on tap
                             });
                           },
-                          activeColor: Colors.blue,
-                        ),
-                        onTap: () {
-                          setState(() {
-                            selectedLanguageCode =
-                                language.code; // Update selection on tap
-                          });
-                        },
-                      );
-                    },
+                        );
+                      },
+                    ),
                   ),
                 ),
               ],

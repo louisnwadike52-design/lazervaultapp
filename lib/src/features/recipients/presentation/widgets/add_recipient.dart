@@ -23,10 +23,14 @@ import 'package:lazervault/src/features/recipients/presentation/cubit/account_ve
 import 'package:lazervault/src/features/recipients/domain/entities/account_verification_result.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/account_confirmation_bottom_sheet.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/username_search_bottom_sheet.dart';
+import 'package:lazervault/src/features/recipients/presentation/widgets/username_recipient_confirmation_sheet.dart';
 import 'package:lazervault/src/features/tag_pay/domain/entities/user_search_result_entity.dart';
 import 'package:lazervault/src/features/contacts/presentation/cubit/contact_sync_cubit.dart';
 import 'package:lazervault/src/features/contacts/presentation/cubit/contact_sync_state.dart';
 import 'package:lazervault/src/features/contacts/data/models/lazervault_user_match_model.dart';
+import 'package:lazervault/src/generated/accounts.pb.dart' as accounts_pb;
+import 'package:lazervault/src/generated/accounts.pbgrpc.dart' as accounts_grpc;
+import 'package:lazervault/core/services/grpc_call_options_helper.dart';
 
 enum AddRecipientMethod { bankDetails, username, contacts }
 
@@ -46,8 +50,8 @@ class _AddRecipientState extends State<AddRecipient> {
   final TextEditingController _sortCodeController = TextEditingController();
   final TextEditingController _bankController = TextEditingController(text: "Select Bank");
   final TextEditingController _bankSearchController = TextEditingController();
-  bool _isPersonal = true; // Personal or Business account
-  bool _isFavorite = false;
+  final bool _isPersonal = true; // Personal or Business account
+  final bool _isFavorite = false;
   String _bankSearchQuery = '';
 
   // Username Form Controller
@@ -122,7 +126,7 @@ class _AddRecipientState extends State<AddRecipient> {
         });
 
         if (verificationState is AccountVerificationSuccess) {
-          // Store verification result
+          // Store verification result with bank name from Paystack
           _verificationResult = AccountVerificationResult(
             accountNumber: verificationState.accountNumber,
             accountName: verificationState.accountName,
@@ -134,26 +138,31 @@ class _AddRecipientState extends State<AddRecipient> {
           // Show confirmation bottomsheet
           _showAccountConfirmationBottomSheet(_verificationResult!);
         } else if (verificationState is AccountVerificationFailure) {
-          // Show error snackbar
-          Get.snackbar(
-            'Verification Failed',
-            verificationState.userMessage,
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: verificationState.canRetry
-                ? Colors.orange.withOpacity(0.8)
-                : Colors.red.withOpacity(0.8),
-            colorText: Colors.white,
-            duration: Duration(seconds: 4),
-            mainButton: verificationState.canRetry
-                ? TextButton(
-                    onPressed: () {
-                      Get.back();
-                      _handleVerifyAccount();
-                    },
-                    child: Text('Retry', style: TextStyle(color: Colors.white)),
-                  )
-                : null,
-          );
+          if (verificationState.isRateLimitError) {
+            // Rate limit hit — show manual entry bottom sheet
+            _showManualAccountNameBottomSheet();
+          } else {
+            // Show error snackbar
+            Get.snackbar(
+              'Verification Failed',
+              verificationState.userMessage,
+              snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: verificationState.canRetry
+                  ? Colors.orange.withValues(alpha: 0.8)
+                  : Colors.red.withValues(alpha: 0.8),
+              colorText: Colors.white,
+              duration: Duration(seconds: 4),
+              mainButton: verificationState.canRetry
+                  ? TextButton(
+                      onPressed: () {
+                        Get.back();
+                        _handleVerifyAccount();
+                      },
+                      child: Text('Retry', style: TextStyle(color: Colors.white)),
+                    )
+                  : null,
+            );
+          }
         }
       },
       child: BlocConsumer<RecipientCubit, RecipientState>(
@@ -163,7 +172,7 @@ class _AddRecipientState extends State<AddRecipient> {
               'Error',
               state.message,
               snackPosition: SnackPosition.BOTTOM,
-              backgroundColor: Colors.red.withOpacity(0.8),
+              backgroundColor: Colors.red.withValues(alpha: 0.8),
               colorText: Colors.white,
             );
           } else if (state is RecipientSuccess) {
@@ -171,7 +180,7 @@ class _AddRecipientState extends State<AddRecipient> {
               'Success',
               state.message,
               snackPosition: SnackPosition.BOTTOM,
-              backgroundColor: Colors.green.withOpacity(0.8),
+              backgroundColor: Colors.green.withValues(alpha: 0.8),
               colorText: Colors.white,
             );
 
@@ -235,7 +244,7 @@ class _AddRecipientState extends State<AddRecipient> {
                       Text(
                         'Choose how you\'d like to add a recipient',
                         style: TextStyle(
-                          color: Colors.white.withOpacity(0.8),
+                          color: Colors.white.withValues(alpha: 0.8),
                           fontSize: 16.sp,
                           fontWeight: FontWeight.w400,
                         ),
@@ -332,13 +341,13 @@ class _AddRecipientState extends State<AddRecipient> {
         padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 8.w),
         decoration: BoxDecoration(
           color: isSelected 
-            ? Colors.white.withOpacity(0.2) 
-            : Colors.white.withOpacity(0.1),
+            ? Colors.white.withValues(alpha: 0.2) 
+            : Colors.white.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(12.r),
           border: Border.all(
             color: isSelected 
-              ? Colors.white.withOpacity(0.4) 
-              : Colors.white.withOpacity(0.2),
+              ? Colors.white.withValues(alpha: 0.4) 
+              : Colors.white.withValues(alpha: 0.2),
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -581,7 +590,7 @@ class _AddRecipientState extends State<AddRecipient> {
           Container(
             padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
-              color: Colors.green.withOpacity(0.1),
+              color: Colors.green.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12.r),
               border: Border.all(color: Colors.green, width: 1),
             ),
@@ -770,15 +779,78 @@ class _AddRecipientState extends State<AddRecipient> {
     );
   }
 
-  /// Show the username search bottom sheet
+  /// Fetch the recipient's personal account number by user ID
+  Future<String?> _fetchRecipientAccountNumber(String userId) async {
+    try {
+      final accountsClient = serviceLocator<accounts_grpc.AccountsServiceClient>();
+      final callOptions = await serviceLocator<GrpcCallOptionsHelper>().withAuth();
+      final request = accounts_pb.GetUserAccountsRequest()
+        ..targetUserId = userId;
+      final response = await accountsClient.getUserAccounts(request, options: callOptions);
+      // Find the personal account (first account or account_type == 'personal')
+      for (final account in response.accounts) {
+        if (account.accountType == 'personal' || account.accountType == '') {
+          final acctNum = account.accountNumber.isNotEmpty
+              ? account.accountNumber
+              : account.maskedAccountNumber;
+          if (acctNum.isNotEmpty) return acctNum;
+        }
+      }
+      // Fallback: return first account's number
+      if (response.accounts.isNotEmpty) {
+        final first = response.accounts.first;
+        return first.accountNumber.isNotEmpty
+            ? first.accountNumber
+            : first.maskedAccountNumber;
+      }
+      return null;
+    } catch (e) {
+      print('[AddRecipient] Error fetching recipient account: $e');
+      return null;
+    }
+  }
+
+  /// Show the username search bottom sheet, then confirmation sheet
   void _showUsernameSearchSheet() async {
     final selectedUser = await UsernameSearchBottomSheet.show(context);
-    if (selectedUser != null) {
+    if (!mounted) return;
+    if (selectedUser == null) return;
+
+    // Fetch the recipient's personal account number
+    final accountNumber = await _fetchRecipientAccountNumber(selectedUser.userId);
+
+    if (!mounted) return;
+
+    // Show confirmation bottom sheet
+    bool confirmed = false;
+
+    await Get.bottomSheet(
+      UsernameRecipientConfirmationSheet(
+        user: selectedUser,
+        accountNumber: accountNumber ?? '@${selectedUser.username}',
+        onConfirm: () {
+          confirmed = true;
+          Get.back();
+        },
+        onCancel: () {
+          Get.back();
+        },
+      ),
+      isScrollControlled: true,
+      enableDrag: true,
+      isDismissible: true,
+      enterBottomSheetDuration: const Duration(milliseconds: 300),
+      exitBottomSheetDuration: const Duration(milliseconds: 200),
+      backgroundColor: Colors.transparent,
+    );
+
+    if (!mounted) return;
+    if (confirmed) {
       setState(() {
         _selectedUser = selectedUser;
-        // Store just the username without @ - will add single @ when sending to backend
         _usernameController.text = selectedUser.username;
       });
+
     }
   }
 
@@ -811,13 +883,13 @@ class _AddRecipientState extends State<AddRecipient> {
                 decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                Color.fromARGB(255, 78, 3, 208).withOpacity(0.1),
-                Color.fromARGB(255, 95, 20, 225).withOpacity(0.1),
+                Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
+                Color.fromARGB(255, 95, 20, 225).withValues(alpha: 0.1),
               ],
             ),
             borderRadius: BorderRadius.circular(16.r),
             border: Border.all(
-              color: Color.fromARGB(255, 78, 3, 208).withOpacity(0.2),
+              color: Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
             ),
           ),
           child: Column(
@@ -825,7 +897,7 @@ class _AddRecipientState extends State<AddRecipient> {
               Container(
                 padding: EdgeInsets.all(16.w),
                 decoration: BoxDecoration(
-                  color: Color.fromARGB(255, 78, 3, 208).withOpacity(0.1),
+                  color: Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
@@ -1143,7 +1215,7 @@ class _AddRecipientState extends State<AddRecipient> {
         'Name Required',
         'Please enter the recipient\'s ${_isPersonal ? 'full name' : 'business name'}',
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.orange.withOpacity(0.8),
+        backgroundColor: Colors.orange.withValues(alpha: 0.8),
         colorText: Colors.white,
       );
       return;
@@ -1154,7 +1226,7 @@ class _AddRecipientState extends State<AddRecipient> {
         'Account Number Required',
         'Please enter the account number',
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.orange.withOpacity(0.8),
+        backgroundColor: Colors.orange.withValues(alpha: 0.8),
         colorText: Colors.white,
       );
       return;
@@ -1166,7 +1238,7 @@ class _AddRecipientState extends State<AddRecipient> {
         'Invalid Account Number',
         'Account number must be exactly 8 digits',
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withOpacity(0.8),
+        backgroundColor: Colors.red.withValues(alpha: 0.8),
         colorText: Colors.white,
       );
       return;
@@ -1177,7 +1249,7 @@ class _AddRecipientState extends State<AddRecipient> {
         'Sort Code Required',
         'Please enter the sort code',
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.orange.withOpacity(0.8),
+        backgroundColor: Colors.orange.withValues(alpha: 0.8),
         colorText: Colors.white,
       );
       return;
@@ -1189,7 +1261,7 @@ class _AddRecipientState extends State<AddRecipient> {
         'Invalid Sort Code',
         'Sort code must be exactly 6 digits',
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withOpacity(0.8),
+        backgroundColor: Colors.red.withValues(alpha: 0.8),
         colorText: Colors.white,
       );
       return;
@@ -1200,7 +1272,7 @@ class _AddRecipientState extends State<AddRecipient> {
         'Bank Required',
         'Please select a bank',
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.orange.withOpacity(0.8),
+        backgroundColor: Colors.orange.withValues(alpha: 0.8),
         colorText: Colors.white,
       );
       return;
@@ -1241,42 +1313,43 @@ class _AddRecipientState extends State<AddRecipient> {
         'No User Selected',
         'Please search and select a user first',
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.orange.withOpacity(0.8),
+        backgroundColor: Colors.orange.withValues(alpha: 0.8),
         colorText: Colors.white,
       );
       return;
     }
 
-    final authState = context.read<AuthenticationCubit>().state;
-    if (authState is AuthenticationSuccess) {
-      final accessToken = authState.profile.session.accessToken;
-
-      // Get active country from profile preferences
-      String? countryCode;
-      final profileState = context.read<ProfileCubit>().state;
-      if (profileState is ProfileLoaded) {
-        countryCode = profileState.preferences.activeCountry.isNotEmpty
-            ? profileState.preferences.activeCountry
-            : null;
-      }
-
-      // Create username with single @ prefix for backend
-      final usernameForBackend = '@${_selectedUser!.username}';
-
-      context.read<RecipientCubit>().addRecipient(
-        recipient: RecipientModel(
-          id: _selectedUser!.userId,
-          name: _selectedUser!.fullName,
-          accountNumber: usernameForBackend, // Username with single @ for backend
-          bankName: 'LazerVault',
-          sortCode: '',
-          isFavorite: false,
-          countryCode: countryCode,
-          email: _selectedUser!.email.isNotEmpty ? _selectedUser!.email : null,
-        ),
-        accessToken: accessToken,
-      );
+    // Get active country from profile preferences
+    String? countryCode;
+    final profileState = context.read<ProfileCubit>().state;
+    if (profileState is ProfileLoaded) {
+      countryCode = profileState.preferences.activeCountry.isNotEmpty
+          ? profileState.preferences.activeCountry
+          : null;
     }
+
+    // Create temporary recipient model — do NOT save to backend yet.
+    // Recipient will be saved after successful transfer + PIN verification.
+    final recipient = RecipientModel(
+      id: _selectedUser!.userId,
+      name: _selectedUser!.fullName,
+      accountNumber: '@${_selectedUser!.username}',
+      bankName: 'LazerVault',
+      sortCode: '',
+      isFavorite: false,
+      countryCode: countryCode,
+      email: _selectedUser!.email.isNotEmpty ? _selectedUser!.email : null,
+    );
+
+    // Navigate directly to send funds with temporary recipient
+    Get.offNamed(
+      AppRoutes.initiateSendFunds,
+      arguments: {
+        'recipient': recipient,
+        'isTemporary': true,
+        'shouldSaveOnSuccess': true,
+      },
+    );
   }
 
   void _showContactSelection() {
@@ -1380,6 +1453,7 @@ class _AddRecipientState extends State<AddRecipient> {
 
       // Check result
       final state = contactSyncCubit.state;
+      if (!mounted) return;
       Navigator.pop(context); // Close loading dialog
 
       if (state is ContactSyncUsersFound && state.matchedUsers.isNotEmpty) {
@@ -1391,6 +1465,7 @@ class _AddRecipientState extends State<AddRecipient> {
         _showContactBankSelectionSheet(contact);
       }
     } catch (e) {
+      if (!mounted) return;
       Navigator.pop(context); // Close loading dialog
       debugPrint('Error checking LazerVault user: $e');
       // On error, fallback to bank selection
@@ -2028,7 +2103,7 @@ class _AddRecipientState extends State<AddRecipient> {
                     'Verification Failed',
                     verificationState.userMessage,
                     snackPosition: SnackPosition.BOTTOM,
-                    backgroundColor: Colors.red.withOpacity(0.8),
+                    backgroundColor: Colors.red.withValues(alpha: 0.8),
                     colorText: Colors.white,
                   );
                 }
@@ -2290,7 +2365,7 @@ class _AddRecipientState extends State<AddRecipient> {
                       child: Container(
                         padding: EdgeInsets.all(16.w),
                         decoration: BoxDecoration(
-                          color: Colors.green.withOpacity(0.1),
+                          color: Colors.green.withValues(alpha: 0.1),
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
@@ -2348,7 +2423,7 @@ class _AddRecipientState extends State<AddRecipient> {
                     Container(
                       padding: EdgeInsets.all(12.w),
                       decoration: BoxDecoration(
-                        color: Colors.amber.withOpacity(0.1),
+                        color: Colors.amber.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12.r),
                       ),
                       child: Row(
@@ -2376,7 +2451,7 @@ class _AddRecipientState extends State<AddRecipient> {
                                 isFavorite = value;
                               });
                             },
-                            activeColor: Color.fromARGB(255, 78, 3, 208),
+                            activeThumbColor: Color.fromARGB(255, 78, 3, 208),
                           ),
                         ],
                       ),
@@ -2535,7 +2610,7 @@ class _AddRecipientState extends State<AddRecipient> {
                     Container(
                       padding: EdgeInsets.all(12.w),
                       decoration: BoxDecoration(
-                        color: Color.fromARGB(255, 78, 3, 208).withOpacity(0.1),
+                        color: Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12.r),
                       ),
                       child: Icon(
@@ -2788,18 +2863,18 @@ class _AddRecipientState extends State<AddRecipient> {
                             padding: EdgeInsets.all(16.w),
                             decoration: BoxDecoration(
                               color: isSelected 
-                                ? Color.fromARGB(255, 78, 3, 208).withOpacity(0.05)
+                                ? Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.05)
                                 : Colors.white,
                               borderRadius: BorderRadius.circular(16.r),
             border: Border.all(
                                 color: isSelected 
-                                  ? Color.fromARGB(255, 78, 3, 208).withOpacity(0.3)
+                                  ? Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.3)
                                   : Colors.grey[200]!,
                                 width: isSelected ? 2 : 1,
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(0.03),
+                                  color: Colors.black.withValues(alpha: 0.03),
                                   blurRadius: 8,
                                   offset: Offset(0, 2),
                                 ),
@@ -3085,7 +3160,7 @@ class _AddRecipientState extends State<AddRecipient> {
         'Bank Required',
         'Please select a bank first',
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.orange.withOpacity(0.8),
+        backgroundColor: Colors.orange.withValues(alpha: 0.8),
         colorText: Colors.white,
       );
       return;
@@ -3097,7 +3172,7 @@ class _AddRecipientState extends State<AddRecipient> {
         'Account Number Required',
         'Please enter the account number',
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.orange.withOpacity(0.8),
+        backgroundColor: Colors.orange.withValues(alpha: 0.8),
         colorText: Colors.white,
       );
       return;
@@ -3109,7 +3184,7 @@ class _AddRecipientState extends State<AddRecipient> {
         'Invalid Account Number',
         'Account number must be exactly 10 digits',
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withOpacity(0.8),
+        backgroundColor: Colors.red.withValues(alpha: 0.8),
         colorText: Colors.white,
       );
       return;
@@ -3120,7 +3195,7 @@ class _AddRecipientState extends State<AddRecipient> {
         'Error',
         'Bank code not found. Please reselect the bank.',
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withOpacity(0.8),
+        backgroundColor: Colors.red.withValues(alpha: 0.8),
         colorText: Colors.white,
       );
       return;
@@ -3132,6 +3207,185 @@ class _AddRecipientState extends State<AddRecipient> {
           accountNumber: accountNumber,
           bankName: bankName,
         );
+  }
+
+  /// Show manual account name entry when auto-verification is unavailable (rate limit)
+  void _showManualAccountNameBottomSheet() {
+    final nameController = TextEditingController();
+    final accountNumber = _accountController.text.trim();
+    final bankName = _bankController.text;
+    final bankCode = _selectedBankCode ?? '';
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      isDismissible: true,
+      builder: (sheetContext) {
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(sheetContext).viewInsets.bottom,
+          ),
+          child: Container(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(sheetContext).size.height * 0.55,
+            ),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1A1A2E),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+            ),
+            child: Padding(
+              padding: EdgeInsets.all(24.w),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40.w,
+                      height: 4.h,
+                      decoration: BoxDecoration(
+                        color: Colors.white24,
+                        borderRadius: BorderRadius.circular(2.r),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 20.h),
+                  Row(
+                    children: [
+                      Container(
+                        padding: EdgeInsets.all(10.w),
+                        decoration: BoxDecoration(
+                          color: Colors.orange.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(12.r),
+                        ),
+                        child: Icon(Icons.edit_note, color: Colors.orange, size: 24.sp),
+                      ),
+                      SizedBox(width: 12.w),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Enter Account Name',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 18.sp,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            SizedBox(height: 2.h),
+                            Text(
+                              'Auto-verification temporarily unavailable',
+                              style: TextStyle(
+                                color: Colors.grey[400],
+                                fontSize: 12.sp,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 20.h),
+                  // Bank & account info
+                  Container(
+                    padding: EdgeInsets.all(14.w),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.05),
+                      borderRadius: BorderRadius.circular(12.r),
+                      border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                    ),
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text('Bank', style: TextStyle(color: Colors.grey[400], fontSize: 13.sp)),
+                            Text(bankName, style: TextStyle(color: Colors.white, fontSize: 13.sp, fontWeight: FontWeight.w600)),
+                          ],
+                        ),
+                        SizedBox(height: 8.h),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text('Account', style: TextStyle(color: Colors.grey[400], fontSize: 13.sp)),
+                            Text(accountNumber, style: TextStyle(color: Colors.white, fontSize: 13.sp, fontWeight: FontWeight.w600, letterSpacing: 1)),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: 16.h),
+                  // Name input
+                  TextField(
+                    controller: nameController,
+                    autofocus: true,
+                    textCapitalization: TextCapitalization.words,
+                    style: TextStyle(color: Colors.white, fontSize: 16.sp),
+                    decoration: InputDecoration(
+                      hintText: 'Account holder full name',
+                      hintStyle: TextStyle(color: Colors.grey[600], fontSize: 14.sp),
+                      filled: true,
+                      fillColor: Colors.white.withValues(alpha: 0.08),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                        borderSide: BorderSide.none,
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                        borderSide: BorderSide(color: Colors.deepPurple.withValues(alpha: 0.6)),
+                      ),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+                    ),
+                  ),
+                  SizedBox(height: 20.h),
+                  // Confirm button
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        final name = nameController.text.trim();
+                        if (name.isEmpty) {
+                          Get.snackbar('Name Required', 'Please enter the account holder name',
+                              snackPosition: SnackPosition.BOTTOM,
+                              backgroundColor: Colors.orange.withValues(alpha: 0.8),
+                              colorText: Colors.white);
+                          return;
+                        }
+                        Navigator.pop(sheetContext);
+
+                        // Create result with manually entered name
+                        final result = AccountVerificationResult(
+                          accountNumber: accountNumber,
+                          accountName: name,
+                          bankName: bankName,
+                          bankCode: bankCode,
+                          verificationStatus: 'manual',
+                        );
+                        _verificationResult = result;
+                        _showAccountConfirmationBottomSheet(result);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF4E03D0),
+                        padding: EdgeInsets.symmetric(vertical: 16.h),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12.r),
+                        ),
+                      ),
+                      child: Text(
+                        'Continue',
+                        style: TextStyle(color: Colors.white, fontSize: 16.sp, fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
   }
 
   /// Show account confirmation bottomsheet after successful verification

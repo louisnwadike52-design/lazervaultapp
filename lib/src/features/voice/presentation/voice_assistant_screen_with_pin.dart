@@ -229,7 +229,7 @@ class _VoiceAssistantScreenWithPINState extends State<VoiceAssistantScreenWithPI
                         Icon(
                           Icons.mic,
                           size: 80,
-                          color: theme.colorScheme.primary.withOpacity(0.5),
+                          color: theme.colorScheme.primary.withValues(alpha: 0.5),
                         ),
                         const SizedBox(height: 16),
                         Text(
@@ -294,7 +294,7 @@ class _VoiceAssistantScreenWithPINState extends State<VoiceAssistantScreenWithPI
               color: theme.colorScheme.surface,
               boxShadow: [
                 BoxShadow(
-                  color: theme.shadowColor.withOpacity(0.1),
+                  color: theme.shadowColor.withValues(alpha: 0.1),
                   blurRadius: 8,
                 ),
               ],

@@ -70,10 +70,11 @@ class _DonationReceiptScreenState extends State<DonationReceiptScreen>
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
         Navigator.of(context).popUntil((route) => route.isFirst);
-        return false;
       },
       child: Scaffold(
         backgroundColor: const Color(0xFF0A0A0A),
@@ -99,7 +100,7 @@ class _DonationReceiptScreenState extends State<DonationReceiptScreen>
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF10B981).withOpacity(0.4),
+                          color: const Color(0xFF10B981).withValues(alpha: 0.4),
                           blurRadius: 30,
                           spreadRadius: 10,
                         ),
@@ -407,7 +408,7 @@ class _DonationReceiptScreenState extends State<DonationReceiptScreen>
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.2),
+        color: color.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(6.r),
       ),
       child: Text(

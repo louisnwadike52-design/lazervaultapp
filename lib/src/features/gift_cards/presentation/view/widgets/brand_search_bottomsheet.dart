@@ -170,7 +170,7 @@ class _BrandSearchBottomSheetState extends State<BrandSearchBottomSheet>
         height: 4.h,
         margin: EdgeInsets.only(top: 12.h, bottom: 20.h),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.3),
+          color: Colors.white.withValues(alpha: 0.3),
           borderRadius: BorderRadius.circular(2.r),
         ),
       ),
@@ -209,7 +209,7 @@ class _BrandSearchBottomSheetState extends State<BrandSearchBottomSheet>
             ),
             Container(
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12.r),
               ),
               child: IconButton(
@@ -234,10 +234,10 @@ class _BrandSearchBottomSheetState extends State<BrandSearchBottomSheet>
         margin: EdgeInsets.fromLTRB(24.w, 20.h, 24.w, 16.h),
         padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.1),
+          color: Colors.white.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(16.r),
           border: Border.all(
-            color: Colors.white.withOpacity(0.2),
+            color: Colors.white.withValues(alpha: 0.2),
           ),
         ),
         child: TextField(
@@ -342,13 +342,13 @@ class _BrandSearchBottomSheetState extends State<BrandSearchBottomSheet>
                   _onCategorySelected(
                       selected ? category['value'] as GiftCardCategory? : null);
                 },
-                backgroundColor: Colors.white.withOpacity(0.05),
+                backgroundColor: Colors.white.withValues(alpha: 0.05),
                 selectedColor: const Color(0xFF6366F1),
                 checkmarkColor: Colors.white,
                 side: BorderSide(
                   color: isSelected
                       ? const Color(0xFF6366F1)
-                      : Colors.white.withOpacity(0.1),
+                      : Colors.white.withValues(alpha: 0.1),
                 ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12.r),
@@ -428,7 +428,7 @@ class _BrandSearchBottomSheetState extends State<BrandSearchBottomSheet>
         Container(
           padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
           decoration: BoxDecoration(
-            color: const Color(0xFF6366F1).withOpacity(0.2),
+            color: const Color(0xFF6366F1).withValues(alpha: 0.2),
             borderRadius: BorderRadius.circular(8.r),
           ),
           child: Text(
@@ -452,15 +452,15 @@ class _BrandSearchBottomSheetState extends State<BrandSearchBottomSheet>
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Colors.white.withOpacity(0.08),
-            Colors.white.withOpacity(0.04),
+            Colors.white.withValues(alpha: 0.08),
+            Colors.white.withValues(alpha: 0.04),
           ],
         ),
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(
           color: isPopular
-              ? const Color(0xFF6366F1).withOpacity(0.3)
-              : Colors.white.withOpacity(0.1),
+              ? const Color(0xFF6366F1).withValues(alpha: 0.3)
+              : Colors.white.withValues(alpha: 0.1),
         ),
       ),
       child: Material(
@@ -484,7 +484,7 @@ class _BrandSearchBottomSheetState extends State<BrandSearchBottomSheet>
                     borderRadius: BorderRadius.circular(12.r),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
+                        color: Colors.black.withValues(alpha: 0.1),
                         blurRadius: 8,
                         offset: const Offset(0, 4),
                       ),
@@ -595,10 +595,10 @@ class _BrandSearchBottomSheetState extends State<BrandSearchBottomSheet>
                             padding: EdgeInsets.symmetric(
                                 horizontal: 8.w, vertical: 4.h),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.1),
+                              color: Colors.white.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(6.r),
                               border: Border.all(
-                                color: Colors.white.withOpacity(0.2),
+                                color: Colors.white.withValues(alpha: 0.2),
                               ),
                             ),
                             child: Text(
@@ -637,13 +637,13 @@ class _BrandSearchBottomSheetState extends State<BrandSearchBottomSheet>
           Container(
             padding: EdgeInsets.all(24.w),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.1),
+              color: Colors.white.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(24.r),
             ),
             child: Icon(
               Icons.search_off_rounded,
               size: 48.sp,
-              color: Colors.white.withOpacity(0.6),
+              color: Colors.white.withValues(alpha: 0.6),
             ),
           ),
           SizedBox(height: 16.h),
@@ -664,7 +664,7 @@ class _BrandSearchBottomSheetState extends State<BrandSearchBottomSheet>
                   : 'No brands available in this category',
               style: GoogleFonts.inter(
                 fontSize: 14.sp,
-                color: Colors.white.withOpacity(0.7),
+                color: Colors.white.withValues(alpha: 0.7),
               ),
               textAlign: TextAlign.center,
             ),
@@ -719,8 +719,8 @@ class _BrandSearchBottomSheetState extends State<BrandSearchBottomSheet>
         return Container(
           margin: EdgeInsets.only(bottom: 12.h),
           child: Shimmer.fromColors(
-            baseColor: Colors.white.withOpacity(0.1),
-            highlightColor: Colors.white.withOpacity(0.2),
+            baseColor: Colors.white.withValues(alpha: 0.1),
+            highlightColor: Colors.white.withValues(alpha: 0.2),
             child: Container(
               height: 88.h,
               decoration: BoxDecoration(
@@ -742,7 +742,7 @@ class _BrandSearchBottomSheetState extends State<BrandSearchBottomSheet>
           Container(
             padding: EdgeInsets.all(24.w),
             decoration: BoxDecoration(
-              color: Colors.red.withOpacity(0.1),
+              color: Colors.red.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(24.r),
             ),
             child: Icon(
@@ -767,7 +767,7 @@ class _BrandSearchBottomSheetState extends State<BrandSearchBottomSheet>
               message,
               style: GoogleFonts.inter(
                 fontSize: 14.sp,
-                color: Colors.white.withOpacity(0.7),
+                color: Colors.white.withValues(alpha: 0.7),
               ),
               textAlign: TextAlign.center,
             ),

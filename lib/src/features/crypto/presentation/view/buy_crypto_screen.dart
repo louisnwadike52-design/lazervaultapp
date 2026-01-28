@@ -191,7 +191,7 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
                   'Purchase cryptocurrency instantly',
                   style: GoogleFonts.inter(
                     fontSize: 14.sp,
-                    color: Colors.white.withOpacity(0.7),
+                    color: Colors.white.withValues(alpha: 0.7),
                   ),
                 ),
               ],
@@ -200,7 +200,7 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
           Container(
             padding: EdgeInsets.all(8.w),
             decoration: BoxDecoration(
-              color: Colors.green.withOpacity(0.2),
+              color: Colors.green.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: Icon(
@@ -228,7 +228,7 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
         ),
         borderRadius: BorderRadius.circular(20.r),        boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -280,7 +280,7 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
                       height: 40.w,
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
-                          colors: [Colors.orange, Colors.orange.withOpacity(0.7)],
+                          colors: [Colors.orange, Colors.orange.withValues(alpha: 0.7)],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
@@ -309,7 +309,7 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
                             _selectedCrypto!.symbol.toUpperCase(),
                             style: GoogleFonts.inter(
                               fontSize: 12.sp,
-                              color: Colors.white.withOpacity(0.6),
+                              color: Colors.white.withValues(alpha: 0.6),
                             ),
                           ),
                         ],
@@ -354,7 +354,7 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
                   ] else ...[
                     Icon(
                       Icons.search,
-                      color: Colors.white.withOpacity(0.6),
+                      color: Colors.white.withValues(alpha: 0.6),
                       size: 20.sp,
                     ),
                     SizedBox(width: 12.w),
@@ -363,7 +363,7 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
                         'Choose cryptocurrency to buy',
                         style: GoogleFonts.inter(
                           fontSize: 16.sp,
-                          color: Colors.white.withOpacity(0.6),
+                          color: Colors.white.withValues(alpha: 0.6),
                         ),
                       ),
                     ),
@@ -396,7 +396,7 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
         ),
         borderRadius: BorderRadius.circular(20.r),        boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -434,8 +434,8 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
-                          const Color(0xFF6C5CE7).withOpacity(0.3),
-                          const Color(0xFF6C5CE7).withOpacity(0.1),
+                          const Color(0xFF6C5CE7).withValues(alpha: 0.3),
+                          const Color(0xFF6C5CE7).withValues(alpha: 0.1),
                         ],
                       ),
                       borderRadius: BorderRadius.circular(20.r),
@@ -514,7 +514,7 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
                           hintStyle: GoogleFonts.inter(
                             fontSize: 24.sp,
                             fontWeight: FontWeight.bold,
-                            color: Colors.white.withOpacity(0.3),
+                            color: Colors.white.withValues(alpha: 0.3),
                           ),
                           border: InputBorder.none,
                           contentPadding: EdgeInsets.zero,
@@ -531,7 +531,7 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
                       : '≈ ${_cryptoAmount.toStringAsFixed(6)} ${_selectedCrypto!.symbol.toUpperCase()}',
                     style: GoogleFonts.inter(
                       fontSize: 14.sp,
-                      color: Colors.white.withOpacity(0.6),
+                      color: Colors.white.withValues(alpha: 0.6),
                     ),
                   ),
                 ],
@@ -569,8 +569,8 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                const Color(0xFF6C5CE7).withOpacity(0.1),
-                const Color(0xFF6C5CE7).withOpacity(0.05),
+                const Color(0xFF6C5CE7).withValues(alpha: 0.1),
+                const Color(0xFF6C5CE7).withValues(alpha: 0.05),
               ],
             ),
             borderRadius: BorderRadius.circular(8.r),
@@ -609,7 +609,7 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            Colors.green.withOpacity(0.1),
+            Colors.green.withValues(alpha: 0.1),
             const Color(0xFF1E2746),
           ],
           begin: Alignment.topLeft,
@@ -617,7 +617,7 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
         ),
         borderRadius: BorderRadius.circular(20.r),        boxShadow: [
           BoxShadow(
-            color: Colors.green.withOpacity(0.1),
+            color: Colors.green.withValues(alpha: 0.1),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -659,7 +659,7 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
               gradient: LinearGradient(
                 colors: [
                   Colors.transparent,
-                  Colors.white.withOpacity(0.2),
+                  Colors.white.withValues(alpha: 0.2),
                   Colors.transparent,
                 ],
               ),
@@ -681,7 +681,7 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
           style: GoogleFonts.inter(
             fontSize: isTotal ? 16.sp : 14.sp,
             fontWeight: isTotal ? FontWeight.w600 : FontWeight.w500,
-            color: Colors.white.withOpacity(isTotal ? 1.0 : 0.8),
+            color: Colors.white.withValues(alpha: isTotal ? 1.0 : 0.8),
           ),
         ),
         Text(
@@ -710,7 +710,7 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
         ),
         borderRadius: BorderRadius.circular(20.r),        boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -758,15 +758,15 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
             gradient: isSelected 
               ? LinearGradient(
                   colors: [
-                    const Color(0xFF6C5CE7).withOpacity(0.2),
-                    const Color(0xFF6C5CE7).withOpacity(0.1),
+                    const Color(0xFF6C5CE7).withValues(alpha: 0.2),
+                    const Color(0xFF6C5CE7).withValues(alpha: 0.1),
                   ],
                 )
               : null,
             color: isSelected ? null : const Color(0xFF0A0E27),
             borderRadius: BorderRadius.circular(12.r),
             border: Border.all(
-              color: isSelected ? const Color(0xFF6C5CE7) : Colors.white.withOpacity(0.1),
+              color: isSelected ? const Color(0xFF6C5CE7) : Colors.white.withValues(alpha: 0.1),
               width: isSelected ? 2 : 1,
             ),
           ),
@@ -776,8 +776,8 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
                 padding: EdgeInsets.all(8.w),
                 decoration: BoxDecoration(
                   color: isSelected 
-                    ? const Color(0xFF6C5CE7).withOpacity(0.2)
-                    : Colors.white.withOpacity(0.1),
+                    ? const Color(0xFF6C5CE7).withValues(alpha: 0.2)
+                    : Colors.white.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8.r),
                 ),
                 child: Icon(
@@ -803,7 +803,7 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
                       method['subtitle'],
                       style: GoogleFonts.inter(
                         fontSize: 12.sp,
-                        color: Colors.white.withOpacity(0.6),
+                        color: Colors.white.withValues(alpha: 0.6),
                       ),
                     ),
                   ],
@@ -835,8 +835,8 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            Colors.orange.withOpacity(0.1),
-            Colors.orange.withOpacity(0.05),
+            Colors.orange.withValues(alpha: 0.1),
+            Colors.orange.withValues(alpha: 0.05),
           ],
         ),
         borderRadius: BorderRadius.circular(12.r),
@@ -863,7 +863,7 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
               'Cryptocurrency investments are subject to high market risk. Please invest responsibly and only what you can afford to lose.',
               style: GoogleFonts.inter(
                 fontSize: 12.sp,
-                color: Colors.white.withOpacity(0.8),
+                color: Colors.white.withValues(alpha: 0.8),
                 height: 1.4,
               ),
             ),
@@ -907,14 +907,14 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
                   )
                 : LinearGradient(
                     colors: [
-                      Colors.grey.withOpacity(0.3),
-                      Colors.grey.withOpacity(0.1),
+                      Colors.grey.withValues(alpha: 0.3),
+                      Colors.grey.withValues(alpha: 0.1),
                     ],
                   ),
               borderRadius: BorderRadius.circular(16.r),
               boxShadow: isEnabled ? [
                 BoxShadow(
-                  color: const Color(0xFF6C5CE7).withOpacity(0.3),
+                  color: const Color(0xFF6C5CE7).withValues(alpha: 0.3),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
@@ -1020,8 +1020,8 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
                   style: GoogleFonts.inter(color: Colors.white),
                   decoration: InputDecoration(
                     hintText: 'Search cryptocurrencies...',
-                    hintStyle: GoogleFonts.inter(color: Colors.white.withOpacity(0.5)),
-                    prefixIcon: Icon(Icons.search, color: Colors.white.withOpacity(0.5)),
+                    hintStyle: GoogleFonts.inter(color: Colors.white.withValues(alpha: 0.5)),
+                    prefixIcon: Icon(Icons.search, color: Colors.white.withValues(alpha: 0.5)),
                     filled: true,
                     fillColor: const Color(0xFF1E2746),
                     border: OutlineInputBorder(
@@ -1089,7 +1089,7 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
         decoration: BoxDecoration(
           color: const Color(0xFF1E2746),
           borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(color: Colors.white.withOpacity(0.1)),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
         ),
         child: Row(
           children: [
@@ -1098,7 +1098,7 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
               height: 40.w,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [Colors.orange, Colors.orange.withOpacity(0.7)],
+                  colors: [Colors.orange, Colors.orange.withValues(alpha: 0.7)],
                 ),
                 borderRadius: BorderRadius.circular(20.r),
               ),
@@ -1125,7 +1125,7 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
                     crypto.symbol.toUpperCase(),
                     style: GoogleFonts.inter(
                       fontSize: 12.sp,
-                      color: Colors.white.withOpacity(0.6),
+                      color: Colors.white.withValues(alpha: 0.6),
                     ),
                   ),
                 ],

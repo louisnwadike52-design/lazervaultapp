@@ -67,6 +67,8 @@ class _DashboardScreenState extends State<DashboardScreen>
     final status = await setupManager.checkVoiceSetupStatus();
     final skipCount = await setupManager.getSkipCount();
 
+    if (!mounted) return;
+
     switch (status) {
       case VoiceSetupStatus.pending:
         _showVoiceSetupModal(canDismiss: true, skipCount: skipCount);
@@ -199,7 +201,7 @@ class _DashboardScreenState extends State<DashboardScreen>
               _buildCurvedNavItem(3),
             ],
             color: Color(0xFF1E1E1E),
-            buttonBackgroundColor: Colors.blue.withOpacity(0.2),
+            buttonBackgroundColor: Colors.blue.withValues(alpha: 0.2),
             backgroundColor: Colors.transparent,
             animationCurve: Curves.easeInOut,
             animationDuration: Duration(milliseconds: 300),
@@ -228,14 +230,14 @@ class _DashboardScreenState extends State<DashboardScreen>
             size: 24,
             color: index == _currentIndex 
                     ? Colors.blue 
-                : Colors.white.withOpacity(0.7),
+                : Colors.white.withValues(alpha: 0.7),
           ),
           if (index != _currentIndex) ...[
             SizedBox(height: 4),
             Text(
               _getTabLabel(index),
               style: TextStyle(
-                color: Colors.white.withOpacity(0.7),
+                color: Colors.white.withValues(alpha: 0.7),
                 fontSize: 10,
               ),
             ),

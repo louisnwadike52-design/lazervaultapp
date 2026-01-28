@@ -55,7 +55,7 @@ class _RecentHistoryListState extends State<RecentHistoryList> {
                   itemCount: imagePaths.length,
                   shrinkWrap: true,
                   separatorBuilder: (context, index) => Divider(
-                    color: Colors.grey.withOpacity(0.1),
+                    color: Colors.grey.withValues(alpha: 0.1),
                     height: 1,
                     indent: 76.w,
                     endIndent: 16.w,
@@ -76,7 +76,7 @@ class _RecentHistoryListState extends State<RecentHistoryList> {
                               width: 48.w,
                               height: 48.w,
                               decoration: BoxDecoration(
-                                color: Color.fromARGB(255, 78, 3, 208).withOpacity(0.1),
+                                color: Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(16.r),
                               ),
                               child: Center(
@@ -149,7 +149,7 @@ class _RecentHistoryListState extends State<RecentHistoryList> {
                       Get.toNamed(AppRoutes.transactionHistory);
                     },
                     style: TextButton.styleFrom(
-                      backgroundColor: Color.fromARGB(255, 78, 3, 208).withOpacity(0.1),
+                      backgroundColor: Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
                       padding: EdgeInsets.symmetric(
                         vertical: 12.h,
                         horizontal: 24.w,

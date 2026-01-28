@@ -168,7 +168,7 @@ class _BankDetailsBottomSheetState extends State<BankDetailsBottomSheet> {
             width: 48.w,
             height: 48.h,
             decoration: BoxDecoration(
-              color: const Color(0xFF4E03D0).withOpacity(0.1),
+              color: const Color(0xFF4E03D0).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: Icon(
@@ -202,8 +202,8 @@ class _BankDetailsBottomSheetState extends State<BankDetailsBottomSheet> {
                       ),
                       decoration: BoxDecoration(
                         color: isInternal
-                            ? const Color(0xFF10B981).withOpacity(0.1)
-                            : const Color(0xFFF59E0B).withOpacity(0.1),
+                            ? const Color(0xFF10B981).withValues(alpha: 0.1)
+                            : const Color(0xFFF59E0B).withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(4.r),
                       ),
                       child: Text(
@@ -345,7 +345,7 @@ class _BankDetailsBottomSheetState extends State<BankDetailsBottomSheet> {
             Container(
               padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
               decoration: BoxDecoration(
-                color: const Color(0xFF10B981).withOpacity(0.1),
+                color: const Color(0xFF10B981).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(4.r),
               ),
               child: Row(
@@ -534,7 +534,7 @@ class _BankDetailsBottomSheetState extends State<BankDetailsBottomSheet> {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(4.r),
       ),
       child: Text(

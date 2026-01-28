@@ -95,6 +95,8 @@ class _TwoFactorSettingsScreenState extends State<TwoFactorSettingsScreen> {
 
     if (confirmed != true) return;
 
+    if (!mounted) return;
+
     setState(() => _isDisabling = true);
 
     try {
@@ -167,6 +169,8 @@ class _TwoFactorSettingsScreenState extends State<TwoFactorSettingsScreen> {
     );
 
     if (code == null) return;
+
+    if (!mounted) return;
 
     try {
       final cubit = context.read<AuthenticationCubit>();
@@ -296,10 +300,10 @@ class _TwoFactorSettingsScreenState extends State<TwoFactorSettingsScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('I\'ve Saved Them'),
             style: TextButton.styleFrom(
               foregroundColor: Colors.blue,
             ),
+            child: const Text('I\'ve Saved Them'),
           ),
         ],
       ),

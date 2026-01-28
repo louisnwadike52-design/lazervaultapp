@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -658,7 +657,7 @@ class _TwoFactorSetupScreenState extends State<TwoFactorSetupScreen>
             Container(
               padding: EdgeInsets.all(12.w),
               decoration: BoxDecoration(
-                color: Colors.amber.shade50.withOpacity(0.3),
+                color: Colors.amber.shade50.withValues(alpha: 0.3),
                 borderRadius: BorderRadius.circular(8.r),
                 border: Border.all(color: Colors.amber.shade200),
               ),
@@ -771,7 +770,7 @@ class _TwoFactorSetupScreenState extends State<TwoFactorSetupScreen>
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF4E03D0),
                 foregroundColor: Colors.white,
-                disabledBackgroundColor: Colors.blue.shade700.withOpacity(0.5),
+                disabledBackgroundColor: Colors.blue.shade700.withValues(alpha: 0.5),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12.r),
                 ),

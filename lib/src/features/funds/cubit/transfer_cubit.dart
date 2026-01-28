@@ -2,120 +2,100 @@ import 'package:bloc/bloc.dart';
 import 'package:fixnum/fixnum.dart';
 
 import 'package:lazervault/src/features/funds/cubit/transfer_state.dart';
-import 'package:lazervault/src/features/funds/domain/usecases/initiate_transfer_usecase.dart';
+import 'package:lazervault/src/features/funds/data/datasources/banking_transfer_data_source.dart';
+import 'package:lazervault/src/features/funds/domain/entities/transfer_entity.dart';
 
 class TransferCubit extends Cubit<TransferState> {
-  final InitiateTransferUseCase initiateTransferUseCase;
+  final IBankingTransferDataSource bankingTransferDataSource;
 
-  TransferCubit({required this.initiateTransferUseCase})
+  TransferCubit({required this.bankingTransferDataSource})
       : super(const TransferInitial());
 
-  Future<void> initiateTransfer({
-    required Int64 fromAccountId,
-    required Int64 amount,
-    required String accessToken,
-    Int64? toAccountId,
-    Int64? recipientId,
-    String? category,
+  /// Initiate a domestic bank transfer (to external bank account)
+  Future<void> initiateDomesticTransfer({
+    required String userId,
+    required String sourceAccountId,
+    required int amount, // minor units
+    required String destinationAccount,
+    required String destinationBankCode,
+    required String destinationName,
+    String? currency,
+    String? narration,
     String? reference,
-    DateTime? scheduledAt,
   }) async {
-    print("TransferCubit: initiateTransfer method entered.");
     if (isClosed) return;
     emit(const TransferLoading());
 
-    final params = InitiateTransferParams(
-      fromAccountId: fromAccountId,
-      amount: amount,
-      accessToken: accessToken,
-      toAccountId: toAccountId,
-      recipientId: recipientId,
-      category: category,
-      reference: reference,
-      scheduledAt: scheduledAt,
-    );
-
-    print("TransferCubit: initiateTransfer called with params: $params");
-    print("TransferCubit: Calling initiateTransferUseCase...");
-
     try {
-      final result = await initiateTransferUseCase(params);
-      print("TransferCubit: Use case call completed. Result: $result");
+      final result = await bankingTransferDataSource.initiateDomesticTransfer(
+        userId: userId,
+        sourceAccountId: sourceAccountId,
+        amount: amount,
+        destinationAccount: destinationAccount,
+        destinationBankCode: destinationBankCode,
+        destinationName: destinationName,
+        currency: currency,
+        narration: narration,
+        reference: reference,
+      );
 
       if (isClosed) return;
-      result.fold(
-        (failure) {
-          print("TransferCubit: Emitting Failure - ${failure.message}");
-          emit(TransferFailure(
-              message: failure.message ?? 'An unknown error occurred'));
-        },
-        (transferEntity) {
-          print("TransferCubit: Emitting Success - Response: $transferEntity");
-          emit(TransferSuccess(response: transferEntity));
-        },
-      );
-    } catch (e, stackTrace) {
-      print("TransferCubit: Error caught BEFORE result.fold: $e\n$stackTrace");
+
+      if (result.success) {
+        emit(TransferSuccess(response: _toEntity(result, amount)));
+      } else {
+        emit(TransferFailure(
+            message: result.errorMessage ?? 'Transfer failed'));
+      }
+    } catch (e) {
       if (isClosed) return;
-      emit(TransferFailure(
-          message: 'Error during transfer process: ${e.toString()}'));
+      emit(TransferFailure(message: 'Transfer failed: ${e.toString()}'));
     }
   }
 
-  /// Initiate transfer with verification token (for PIN-validated transactions)
-  Future<void> initiateTransferWithToken({
-    required Int64 fromAccountId,
-    required Int64 amount,
-    required String accessToken,
-    Int64? toAccountId,
-    Int64? recipientId,
-    String? category,
-    String? reference,
-    DateTime? scheduledAt,
-    required String transactionId,
-    required String verificationToken,
+  /// Initiate an internal C2C transfer between LazerVault users
+  Future<void> initiateInternalTransfer({
+    required String fromUserId,
+    required String toUserId,
+    required int amount, // minor units
+    String? currency,
+    String? narration,
   }) async {
-    print("TransferCubit: initiateTransferWithToken method entered.");
     if (isClosed) return;
     emit(const TransferLoading());
 
-    final params = InitiateTransferParams(
-      fromAccountId: fromAccountId,
-      amount: amount,
-      accessToken: accessToken,
-      toAccountId: toAccountId,
-      recipientId: recipientId,
-      category: category,
-      reference: reference,
-      scheduledAt: scheduledAt,
-      transactionId: transactionId,
-      verificationToken: verificationToken,
-    );
-
-    print("TransferCubit: initiateTransferWithToken called with params: $params");
-    print("TransferCubit: Calling initiateTransferUseCase...");
-
     try {
-      final result = await initiateTransferUseCase(params);
-      print("TransferCubit: Use case call completed. Result: $result");
+      final result = await bankingTransferDataSource.initiateInternalTransfer(
+        fromUserId: fromUserId,
+        toUserId: toUserId,
+        amount: amount,
+        currency: currency,
+        narration: narration,
+      );
 
       if (isClosed) return;
-      result.fold(
-        (failure) {
-          print("TransferCubit: Emitting Failure - ${failure.message}");
-          emit(TransferFailure(
-              message: failure.message ?? 'An unknown error occurred'));
-        },
-        (transferEntity) {
-          print("TransferCubit: Emitting Success - Response: $transferEntity");
-          emit(TransferSuccess(response: transferEntity));
-        },
-      );
-    } catch (e, stackTrace) {
-      print("TransferCubit: Error caught BEFORE result.fold: $e\n$stackTrace");
+
+      if (result.success) {
+        emit(TransferSuccess(response: _toEntity(result, amount)));
+      } else {
+        emit(TransferFailure(
+            message: result.errorMessage ?? 'Transfer failed'));
+      }
+    } catch (e) {
       if (isClosed) return;
-      emit(TransferFailure(
-          message: 'Error during transfer process: ${e.toString()}'));
+      emit(TransferFailure(message: 'Transfer failed: ${e.toString()}'));
     }
+  }
+
+  /// Convert BankingTransferResult to TransferEntity for state
+  TransferEntity _toEntity(BankingTransferResult result, int amountMinor) {
+    return TransferEntity(
+      transferId: Int64.parseInt(result.transferId ?? '0'),
+      status: result.status ?? 'pending',
+      amount: Int64(result.amount ?? amountMinor),
+      fee: Int64(result.fee ?? 0),
+      totalAmount: Int64((result.amount ?? amountMinor) + (result.fee ?? 0)),
+      createdAt: result.createdAt ?? DateTime.now(),
+    );
   }
 }

@@ -186,7 +186,7 @@ class _BudgetCard extends StatelessWidget {
                     size: 16,
                   ),
                   label: Text(_getCategoryName(budget.category)),
-                  backgroundColor: _getCategoryColor(budget.category).withOpacity(0.1),
+                  backgroundColor: _getCategoryColor(budget.category).withValues(alpha: 0.1),
                 ),
               ],
 
@@ -290,7 +290,7 @@ class _StatusChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: statusInfo['color'].withOpacity(0.1),
+        color: statusInfo['color'].withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: statusInfo['color']),
       ),

@@ -35,7 +35,7 @@ class ServiceFilterChips extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 13.sp,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                  color: isSelected ? Colors.white : Colors.white.withOpacity(0.7),
+                  color: isSelected ? Colors.white : Colors.white.withValues(alpha: 0.7),
                 ),
               ),
               selected: isSelected,
@@ -48,11 +48,11 @@ class ServiceFilterChips extends StatelessWidget {
                 }
                 onSelectionChanged(newSelection);
               },
-              backgroundColor: Colors.white.withOpacity(0.1),
+              backgroundColor: Colors.white.withValues(alpha: 0.1),
               selectedColor: service.color.withValues(alpha: 0.3),
               checkmarkColor: Colors.white,
               side: BorderSide(
-                color: isSelected ? service.color : Colors.white.withOpacity(0.1),
+                color: isSelected ? service.color : Colors.white.withValues(alpha: 0.1),
               ),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12.r),
@@ -110,7 +110,7 @@ class StatusFilterChips extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 13.sp,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                  color: isSelected ? Colors.white : Colors.white.withOpacity(0.7),
+                  color: isSelected ? Colors.white : Colors.white.withValues(alpha: 0.7),
                 ),
               ),
               selected: isSelected,
@@ -123,11 +123,11 @@ class StatusFilterChips extends StatelessWidget {
                 }
                 onSelectionChanged(newSelection);
               },
-              backgroundColor: Colors.white.withOpacity(0.1),
+              backgroundColor: Colors.white.withValues(alpha: 0.1),
               selectedColor: status.color.withValues(alpha: 0.3),
               checkmarkColor: Colors.white,
               side: BorderSide(
-                color: isSelected ? status.color : Colors.white.withOpacity(0.1),
+                color: isSelected ? status.color : Colors.white.withValues(alpha: 0.1),
               ),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12.r),
@@ -159,17 +159,17 @@ class TransactionSearchBar extends StatelessWidget {
       margin: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
+        color: Colors.white.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
-          color: Colors.white.withOpacity(0.1),
+          color: Colors.white.withValues(alpha: 0.1),
         ),
       ),
       child: Row(
         children: [
           Icon(
             Icons.search_rounded,
-            color: Colors.white.withOpacity(0.6),
+            color: Colors.white.withValues(alpha: 0.6),
             size: 20.sp,
           ),
           SizedBox(width: 12.w),
@@ -185,7 +185,7 @@ class TransactionSearchBar extends StatelessWidget {
               decoration: InputDecoration(
                 hintText: 'Search transactions...',
                 hintStyle: TextStyle(
-                  color: Colors.white.withOpacity(0.5),
+                  color: Colors.white.withValues(alpha: 0.5),
                   fontSize: 14.sp,
                 ),
                 border: InputBorder.none,
@@ -199,7 +199,7 @@ class TransactionSearchBar extends StatelessWidget {
               onTap: onClear,
               child: Icon(
                 Icons.clear_rounded,
-                color: Colors.white.withOpacity(0.6),
+                color: Colors.white.withValues(alpha: 0.6),
                 size: 20.sp,
               ),
             ),
@@ -235,7 +235,7 @@ class DateRangeFilterButton extends StatelessWidget {
             Icon(
               Icons.calendar_today_rounded,
               size: 14.sp,
-              color: hasFilter ? Colors.white : Colors.white.withOpacity(0.7),
+              color: hasFilter ? Colors.white : Colors.white.withValues(alpha: 0.7),
             ),
             SizedBox(width: 4.w),
             Text(
@@ -243,18 +243,18 @@ class DateRangeFilterButton extends StatelessWidget {
               style: TextStyle(
                 fontSize: 13.sp,
                 fontWeight: hasFilter ? FontWeight.w600 : FontWeight.w500,
-                color: hasFilter ? Colors.white : Colors.white.withOpacity(0.7),
+                color: hasFilter ? Colors.white : Colors.white.withValues(alpha: 0.7),
               ),
             ),
           ],
         ),
         selected: hasFilter,
         onSelected: (_) => onTap(),
-        backgroundColor: Colors.white.withOpacity(0.1),
+        backgroundColor: Colors.white.withValues(alpha: 0.1),
         selectedColor: Colors.blue.withValues(alpha: 0.3),
         checkmarkColor: Colors.white,
         side: BorderSide(
-          color: hasFilter ? Colors.blue : Colors.white.withOpacity(0.1),
+          color: hasFilter ? Colors.blue : Colors.white.withValues(alpha: 0.1),
         ),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12.r),
@@ -299,14 +299,14 @@ class ClearFiltersButton extends StatelessWidget {
       icon: Icon(
         Icons.clear_all_rounded,
         size: 16.sp,
-        color: Colors.white.withOpacity(0.7),
+        color: Colors.white.withValues(alpha: 0.7),
       ),
       label: Text(
         'Clear All',
         style: TextStyle(
           fontSize: 13.sp,
           fontWeight: FontWeight.w500,
-          color: Colors.white.withOpacity(0.7),
+          color: Colors.white.withValues(alpha: 0.7),
         ),
       ),
       style: TextButton.styleFrom(

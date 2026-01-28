@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:lazervault/src/features/tag_pay/presentation/cubit/tag_pay_cubit.dart';
-import 'package:lazervault/src/features/tag_pay/presentation/cubit/tag_pay_state.dart';
+import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
+
 import 'package:lazervault/src/features/tag_pay/domain/entities/user_search_result_entity.dart';
 
 /// Bottom sheet for searching and selecting LazerVault usernames
@@ -108,7 +108,10 @@ class _UsernameSearchBottomSheetState extends State<UsernameSearchBottomSheet> {
 
   Future<void> _performSearch(String query) async {
     try {
-      final results = await context.read<TagPayCubit>().searchUsers(query);
+      print('[UsernameSearch] Searching for: "$query"');
+      final cubit = serviceLocator<ProfileCubit>();
+      final results = await cubit.searchUsers(query);
+      print('[UsernameSearch] Got ${results.length} results');
       if (mounted) {
         setState(() {
           _searchResults = results;
@@ -117,6 +120,7 @@ class _UsernameSearchBottomSheetState extends State<UsernameSearchBottomSheet> {
         });
       }
     } catch (e) {
+      print('[UsernameSearch] Error: $e');
       if (mounted) {
         setState(() {
           _searchResults = [];
@@ -358,7 +362,7 @@ class _UsernameSearchBottomSheetState extends State<UsernameSearchBottomSheet> {
           border: Border.all(color: Colors.grey[200]!),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 10,
               offset: const Offset(0, 2),
             ),
@@ -371,7 +375,7 @@ class _UsernameSearchBottomSheetState extends State<UsernameSearchBottomSheet> {
               width: 48.w,
               height: 48.h,
               decoration: BoxDecoration(
-                color: const Color.fromARGB(255, 78, 3, 208).withOpacity(0.1),
+                color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: user.profilePicture.isNotEmpty

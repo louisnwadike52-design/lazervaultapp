@@ -69,10 +69,11 @@ class _GiftCardPurchaseConfirmationScreenState
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
         _navigateToHome();
-        return false;
       },
       child: Scaffold(
         backgroundColor: const Color(0xFF0A0A0A),
@@ -157,7 +158,7 @@ class _GiftCardPurchaseConfirmationScreenState
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF10B981).withOpacity(0.3),
+                    color: const Color(0xFF10B981).withValues(alpha: 0.3),
                     blurRadius: 30,
                     spreadRadius: 5,
                   ),
@@ -187,7 +188,7 @@ class _GiftCardPurchaseConfirmationScreenState
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF6366F1).withOpacity(0.3),
+            color: const Color(0xFF6366F1).withValues(alpha: 0.3),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -236,7 +237,7 @@ class _GiftCardPurchaseConfirmationScreenState
 
           SizedBox(height: 20.h),
 
-          Divider(color: Colors.white.withOpacity(0.3)),
+          Divider(color: Colors.white.withValues(alpha: 0.3)),
 
           SizedBox(height: 20.h),
 
@@ -247,7 +248,7 @@ class _GiftCardPurchaseConfirmationScreenState
               style: GoogleFonts.inter(
                 fontSize: 12.sp,
                 fontWeight: FontWeight.w500,
-                color: Colors.white.withOpacity(0.7),
+                color: Colors.white.withValues(alpha: 0.7),
               ),
             ),
             SizedBox(height: 8.h),
@@ -256,7 +257,7 @@ class _GiftCardPurchaseConfirmationScreenState
               child: Container(
                 padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(8.r),
                 ),
                 child: Row(
@@ -291,7 +292,7 @@ class _GiftCardPurchaseConfirmationScreenState
               style: GoogleFonts.inter(
                 fontSize: 12.sp,
                 fontWeight: FontWeight.w500,
-                color: Colors.white.withOpacity(0.7),
+                color: Colors.white.withValues(alpha: 0.7),
               ),
             ),
             SizedBox(height: 8.h),
@@ -300,7 +301,7 @@ class _GiftCardPurchaseConfirmationScreenState
               child: Container(
                 padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(8.r),
                 ),
                 child: Row(
@@ -349,7 +350,7 @@ class _GiftCardPurchaseConfirmationScreenState
               'Scan to redeem',
               style: GoogleFonts.inter(
                 fontSize: 12.sp,
-                color: Colors.white.withOpacity(0.7),
+                color: Colors.white.withValues(alpha: 0.7),
               ),
             ),
           ],
@@ -362,10 +363,10 @@ class _GiftCardPurchaseConfirmationScreenState
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
-          color: Colors.white.withOpacity(0.1),
+          color: Colors.white.withValues(alpha: 0.1),
         ),
       ),
       child: Column(
@@ -431,7 +432,7 @@ class _GiftCardPurchaseConfirmationScreenState
               Get.snackbar(
                 'Share',
                 'Sharing functionality coming soon',
-                backgroundColor: Colors.white.withOpacity(0.1),
+                backgroundColor: Colors.white.withValues(alpha: 0.1),
                 colorText: Colors.white,
               );
             },
@@ -467,10 +468,10 @@ class _GiftCardPurchaseConfirmationScreenState
       child: Container(
         padding: EdgeInsets.symmetric(vertical: 14.h),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.05),
+          color: Colors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(12.r),
           border: Border.all(
-            color: Colors.white.withOpacity(0.1),
+            color: Colors.white.withValues(alpha: 0.1),
           ),
         ),
         child: Row(

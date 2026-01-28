@@ -26,13 +26,11 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
   static const _cacheTTL = Duration(minutes: 5);
 
   TransactionHistoryRepositoryGrpc({
-    required AccountsGrpcClient grpcClient,
-    required AccountManager accountManager,
+    required this.grpcClient,
+    required this.accountManager,
     TransactionHistoryCacheDataSource? cacheDataSource,
     FlutterSecureStorage? storage,
-  })  : grpcClient = grpcClient,
-        accountManager = accountManager,
-        cacheDataSource = cacheDataSource ?? TransactionHistoryCacheDataSource(),
+  })  : cacheDataSource = cacheDataSource ?? TransactionHistoryCacheDataSource(),
         storage = storage ?? const FlutterSecureStorage();
 
   @override

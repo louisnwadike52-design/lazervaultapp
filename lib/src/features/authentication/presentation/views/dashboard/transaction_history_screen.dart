@@ -22,7 +22,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
           Expanded(
             child: Container(
               decoration: BoxDecoration(
-                color: HexColor.fromHex("#581CD9"),
+                color: HybridHexColor.fromHex("#581CD9"),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Column(

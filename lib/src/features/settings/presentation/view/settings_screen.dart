@@ -165,7 +165,7 @@ class _SettingsViewState extends State<_SettingsView> {
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -185,12 +185,12 @@ class _SettingsViewState extends State<_SettingsView> {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: const Color(0xFF4E03D0).withOpacity(0.2),
+                      color: const Color(0xFF4E03D0).withValues(alpha: 0.2),
                       width: 3,
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFF4E03D0).withOpacity(0.1),
+                        color: const Color(0xFF4E03D0).withValues(alpha: 0.1),
                         blurRadius: 8,
                         offset: const Offset(0, 4),
                       ),
@@ -230,7 +230,7 @@ class _SettingsViewState extends State<_SettingsView> {
                                 vertical: 2.h,
                               ),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF4E03D0).withOpacity(0.1),
+                                color: const Color(0xFF4E03D0).withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(8.r),
                               ),
                               child: Text(
@@ -263,10 +263,10 @@ class _SettingsViewState extends State<_SettingsView> {
                               vertical: 2.h,
                             ),
                             decoration: BoxDecoration(
-                              color: Colors.amber.withOpacity(0.1),
+                              color: Colors.amber.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(8.r),
                               border: Border.all(
-                                color: Colors.amber.withOpacity(0.3),
+                                color: Colors.amber.withValues(alpha: 0.3),
                               ),
                             ),
                             child: Row(
@@ -312,7 +312,7 @@ class _SettingsViewState extends State<_SettingsView> {
                   icon: Container(
                     padding: EdgeInsets.all(8.w),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF4E03D0).withOpacity(0.1),
+                      color: const Color(0xFF4E03D0).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(10.r),
                     ),
                     child: Icon(
@@ -331,10 +331,10 @@ class _SettingsViewState extends State<_SettingsView> {
               margin: EdgeInsets.fromLTRB(16.w, 0, 16.w, 16.h),
               padding: EdgeInsets.all(12.w),
               decoration: BoxDecoration(
-                color: const Color(0xFF4E03D0).withOpacity(0.05),
+                color: const Color(0xFF4E03D0).withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(12.r),
                 border: Border.all(
-                  color: const Color(0xFF4E03D0).withOpacity(0.1),
+                  color: const Color(0xFF4E03D0).withValues(alpha: 0.1),
                 ),
               ),
               child: Row(
@@ -364,10 +364,10 @@ class _SettingsViewState extends State<_SettingsView> {
               margin: EdgeInsets.fromLTRB(16.w, 0, 16.w, 16.h),
               padding: EdgeInsets.all(12.w),
               decoration: BoxDecoration(
-                color: Colors.amber.withOpacity(0.05),
+                color: Colors.amber.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(12.r),
                 border: Border.all(
-                  color: Colors.amber.withOpacity(0.2),
+                  color: Colors.amber.withValues(alpha: 0.2),
                 ),
               ),
               child: Row(
@@ -479,7 +479,7 @@ class _SettingsViewState extends State<_SettingsView> {
             color: const Color(0xFF9CA3AF),
           ),
           onTap: () {
-            Get.toNamed(AppRoutes.transactionPinSetup);
+            Get.toNamed(AppRoutes.pinManagement);
           },
         ),
         _buildSettingsTile(
@@ -935,7 +935,7 @@ class _SettingsViewState extends State<_SettingsView> {
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -992,7 +992,7 @@ class _SettingsViewState extends State<_SettingsView> {
                 width: 44.w,
                 height: 44.h,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF4E03D0).withOpacity(0.1),
+                  color: const Color(0xFF4E03D0).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12.r),
                 ),
                 child: Icon(

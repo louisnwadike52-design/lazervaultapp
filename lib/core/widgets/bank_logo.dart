@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:lazervault/core/utilities/banks_data.dart';
+
 
 /// A widget that displays a bank logo with fallback to gradient initials.
 ///

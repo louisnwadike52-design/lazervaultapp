@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../generated/statistics.pb.dart';
 import '../../data/wrapped_types_stub.dart';
 import '../../cubit/statistics_cubit.dart';
 import '../../cubit/statistics_state.dart';
@@ -478,7 +477,7 @@ class WrappedEntryButton extends StatelessWidget {
           context,
           WrappedScreen.route(
             year: displayYear,
-            period: WrappedPeriod.WRAPPED_PERIOD_YEARLY,
+            period: WrappedPeriod.wrappedPeriodYearly,
           ),
         );
       },
@@ -494,7 +493,7 @@ class WrappedEntryButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF667eea).withOpacity(0.4),
+              color: const Color(0xFF667eea).withValues(alpha: 0.4),
               blurRadius: 20,
               offset: const Offset(0, 10),
             ),
@@ -505,7 +504,7 @@ class WrappedEntryButton extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
+                color: Colors.white.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: const Icon(
@@ -530,7 +529,7 @@ class WrappedEntryButton extends StatelessWidget {
                   Text(
                     'See your personalized financial journey',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Colors.white.withOpacity(0.8),
+                      color: Colors.white.withValues(alpha: 0.8),
                     ),
                   ),
                 ],
@@ -538,7 +537,7 @@ class WrappedEntryButton extends StatelessWidget {
             ),
             Icon(
               Icons.arrow_forward_ios,
-              color: Colors.white.withOpacity(0.7),
+              color: Colors.white.withValues(alpha: 0.7),
               size: 20,
             ),
           ],

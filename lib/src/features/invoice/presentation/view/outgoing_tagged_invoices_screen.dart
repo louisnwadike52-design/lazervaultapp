@@ -162,7 +162,7 @@ class _OutgoingTaggedInvoicesScreenState
               Text(
                 'Total Receivable',
                 style: GoogleFonts.inter(
-                  color: Colors.white.withOpacity(0.9),
+                  color: Colors.white.withValues(alpha: 0.9),
                   fontSize: 14.sp,
                   fontWeight: FontWeight.w500,
                 ),
@@ -170,7 +170,7 @@ class _OutgoingTaggedInvoicesScreenState
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12.r),
                 ),
                 child: Text(
@@ -228,7 +228,7 @@ class _OutgoingTaggedInvoicesScreenState
         Text(
           label,
           style: GoogleFonts.inter(
-            color: color.withOpacity(0.8),
+            color: color.withValues(alpha: 0.8),
             fontSize: 10.sp,
             fontWeight: FontWeight.w500,
           ),
@@ -555,15 +555,15 @@ class _OutgoingTaggedInvoicesScreenState
       textColor = Colors.white;
       text = 'OVERDUE';
     } else if (invoice.isPending) {
-      backgroundColor = const Color(0xFFEAB308).withOpacity(0.2);
+      backgroundColor = const Color(0xFFEAB308).withValues(alpha: 0.2);
       textColor = const Color(0xFFEAB308);
       text = 'PENDING';
     } else if (invoice.isPaid) {
-      backgroundColor = const Color(0xFF10B981).withOpacity(0.2);
+      backgroundColor = const Color(0xFF10B981).withValues(alpha: 0.2);
       textColor = const Color(0xFF10B981);
       text = 'PAID';
     } else {
-      backgroundColor = const Color(0xFF6B7280).withOpacity(0.2);
+      backgroundColor = const Color(0xFF6B7280).withValues(alpha: 0.2);
       textColor = const Color(0xFF6B7280);
       text = invoice.statusText.toUpperCase();
     }

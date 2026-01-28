@@ -100,7 +100,7 @@ class _SecureWalletScreenState extends State<SecureWalletScreen>
                   'Multi-layer security',
                   style: GoogleFonts.inter(
                     fontSize: 14.sp,
-                    color: Colors.white.withOpacity(0.7),
+                    color: Colors.white.withValues(alpha: 0.7),
                   ),
                 ),
               ],
@@ -109,7 +109,7 @@ class _SecureWalletScreenState extends State<SecureWalletScreen>
           Container(
             padding: EdgeInsets.all(8.w),
             decoration: BoxDecoration(
-              color: const Color(0xFF6C5CE7).withOpacity(0.2),
+              color: const Color(0xFF6C5CE7).withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: Icon(Icons.security, color: const Color(0xFF6C5CE7), size: 20.sp),
@@ -125,12 +125,12 @@ class _SecureWalletScreenState extends State<SecureWalletScreen>
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [Colors.green.withOpacity(0.2), const Color(0xFF1E2746)],
+          colors: [Colors.green.withValues(alpha: 0.2), const Color(0xFF1E2746)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.green.withOpacity(0.3)),
+        border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
@@ -162,7 +162,7 @@ class _SecureWalletScreenState extends State<SecureWalletScreen>
           Container(
             padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
             decoration: BoxDecoration(
-              color: Colors.green.withOpacity(0.2),
+              color: Colors.green.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: Text(
@@ -193,7 +193,7 @@ class _SecureWalletScreenState extends State<SecureWalletScreen>
           borderRadius: BorderRadius.circular(12.r),
         ),
         labelColor: Colors.white,
-        unselectedLabelColor: Colors.white.withOpacity(0.6),
+        unselectedLabelColor: Colors.white.withValues(alpha: 0.6),
         labelStyle: GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.w600),
         tabs: [
           Tab(text: 'Wallet'),
@@ -257,7 +257,7 @@ class _SecureWalletScreenState extends State<SecureWalletScreen>
       decoration: BoxDecoration(
         color: const Color(0xFF1E2746),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -274,7 +274,7 @@ class _SecureWalletScreenState extends State<SecureWalletScreen>
           Container(
             padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.05),
+              color: Colors.white.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: Row(
@@ -334,7 +334,7 @@ class _SecureWalletScreenState extends State<SecureWalletScreen>
       decoration: BoxDecoration(
         color: const Color(0xFF1E2746),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -374,7 +374,7 @@ class _SecureWalletScreenState extends State<SecureWalletScreen>
       decoration: BoxDecoration(
         color: const Color(0xFF1E2746),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -398,7 +398,7 @@ class _SecureWalletScreenState extends State<SecureWalletScreen>
             '95% of your funds are stored offline in our secure cold storage vaults for maximum security.',
             style: GoogleFonts.inter(
               fontSize: 14.sp,
-              color: Colors.white.withOpacity(0.8),
+              color: Colors.white.withValues(alpha: 0.8),
               height: 1.4,
             ),
           ),
@@ -413,7 +413,7 @@ class _SecureWalletScreenState extends State<SecureWalletScreen>
                       'Hot Wallet',
                       style: GoogleFonts.inter(
                         fontSize: 14.sp,
-                        color: Colors.white.withOpacity(0.6),
+                        color: Colors.white.withValues(alpha: 0.6),
                       ),
                     ),
                     Text(
@@ -435,7 +435,7 @@ class _SecureWalletScreenState extends State<SecureWalletScreen>
                       'Cold Storage',
                       style: GoogleFonts.inter(
                         fontSize: 14.sp,
-                        color: Colors.white.withOpacity(0.6),
+                        color: Colors.white.withValues(alpha: 0.6),
                       ),
                     ),
                     Text(
@@ -462,7 +462,7 @@ class _SecureWalletScreenState extends State<SecureWalletScreen>
       decoration: BoxDecoration(
         color: const Color(0xFF1E2746),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -496,7 +496,7 @@ class _SecureWalletScreenState extends State<SecureWalletScreen>
             'Use fingerprint or face recognition to authenticate transactions and access your wallet.',
             style: GoogleFonts.inter(
               fontSize: 14.sp,
-              color: Colors.white.withOpacity(0.8),
+              color: Colors.white.withValues(alpha: 0.8),
             ),
           ),
         ],
@@ -510,7 +510,7 @@ class _SecureWalletScreenState extends State<SecureWalletScreen>
       decoration: BoxDecoration(
         color: const Color(0xFF1E2746),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -544,7 +544,7 @@ class _SecureWalletScreenState extends State<SecureWalletScreen>
             'Add an extra layer of security with SMS or authenticator app verification.',
             style: GoogleFonts.inter(
               fontSize: 14.sp,
-              color: Colors.white.withOpacity(0.8),
+              color: Colors.white.withValues(alpha: 0.8),
             ),
           ),
           if (_twoFactorEnabled) ...[
@@ -572,7 +572,7 @@ class _SecureWalletScreenState extends State<SecureWalletScreen>
       decoration: BoxDecoration(
         color: const Color(0xFF1E2746),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -606,7 +606,7 @@ class _SecureWalletScreenState extends State<SecureWalletScreen>
             'Automatically lock wallet after 5 minutes of inactivity.',
             style: GoogleFonts.inter(
               fontSize: 14.sp,
-              color: Colors.white.withOpacity(0.8),
+              color: Colors.white.withValues(alpha: 0.8),
             ),
           ),
         ],
@@ -620,7 +620,7 @@ class _SecureWalletScreenState extends State<SecureWalletScreen>
       decoration: BoxDecoration(
         color: const Color(0xFF1E2746),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -660,7 +660,7 @@ class _SecureWalletScreenState extends State<SecureWalletScreen>
       decoration: BoxDecoration(
         color: const Color(0xFF1E2746),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -683,9 +683,9 @@ class _SecureWalletScreenState extends State<SecureWalletScreen>
           Container(
             padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
-              color: Colors.amber.withOpacity(0.1),
+              color: Colors.amber.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12.r),
-              border: Border.all(color: Colors.amber.withOpacity(0.3)),
+              border: Border.all(color: Colors.amber.withValues(alpha: 0.3)),
             ),
             child: Row(
               children: [
@@ -696,7 +696,7 @@ class _SecureWalletScreenState extends State<SecureWalletScreen>
                     'Your seed phrase is the only way to recover your wallet. Keep it safe!',
                     style: GoogleFonts.inter(
                       fontSize: 12.sp,
-                      color: Colors.white.withOpacity(0.9),
+                      color: Colors.white.withValues(alpha: 0.9),
                     ),
                   ),
                 ),
@@ -739,7 +739,7 @@ class _SecureWalletScreenState extends State<SecureWalletScreen>
       decoration: BoxDecoration(
         color: const Color(0xFF1E2746),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -767,7 +767,7 @@ class _SecureWalletScreenState extends State<SecureWalletScreen>
       decoration: BoxDecoration(
         color: const Color(0xFF1E2746),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -810,7 +810,7 @@ class _SecureWalletScreenState extends State<SecureWalletScreen>
                 remaining,
                 style: GoogleFonts.inter(
                   fontSize: 12.sp,
-                  color: Colors.white.withOpacity(0.6),
+                  color: Colors.white.withValues(alpha: 0.6),
                 ),
               ),
             ],
@@ -844,7 +844,7 @@ class _SecureWalletScreenState extends State<SecureWalletScreen>
           Container(
             padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.2),
+              color: color.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(8.r),
             ),
             child: Text(
@@ -903,7 +903,7 @@ class _SecureWalletScreenState extends State<SecureWalletScreen>
         margin: EdgeInsets.only(bottom: 12.h),
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.05),
+          color: Colors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(12.r),
         ),
         child: Row(
@@ -926,13 +926,13 @@ class _SecureWalletScreenState extends State<SecureWalletScreen>
                     description,
                     style: GoogleFonts.inter(
                       fontSize: 12.sp,
-                      color: Colors.white.withOpacity(0.6),
+                      color: Colors.white.withValues(alpha: 0.6),
                     ),
                   ),
                 ],
               ),
             ),
-            Icon(Icons.arrow_forward_ios, color: Colors.white.withOpacity(0.5), size: 16.sp),
+            Icon(Icons.arrow_forward_ios, color: Colors.white.withValues(alpha: 0.5), size: 16.sp),
           ],
         ),
       ),
@@ -944,7 +944,7 @@ class _SecureWalletScreenState extends State<SecureWalletScreen>
     Get.snackbar(
       'Copied!',
       'Wallet address copied to clipboard',
-      backgroundColor: Colors.green.withOpacity(0.2),
+      backgroundColor: Colors.green.withValues(alpha: 0.2),
       colorText: Colors.white,
     );
   }
@@ -993,7 +993,7 @@ class _SecureWalletScreenState extends State<SecureWalletScreen>
     Get.snackbar(
       'Sharing...',
       'Opening share options',
-      backgroundColor: const Color(0xFF6C5CE7).withOpacity(0.2),
+      backgroundColor: const Color(0xFF6C5CE7).withValues(alpha: 0.2),
       colorText: Colors.white,
     );
   }
@@ -1002,7 +1002,7 @@ class _SecureWalletScreenState extends State<SecureWalletScreen>
     Get.snackbar(
       'Edit Limits',
       'Transaction limits configuration',
-      backgroundColor: const Color(0xFF6C5CE7).withOpacity(0.2),
+      backgroundColor: const Color(0xFF6C5CE7).withValues(alpha: 0.2),
       colorText: Colors.white,
     );
   }
@@ -1011,7 +1011,7 @@ class _SecureWalletScreenState extends State<SecureWalletScreen>
     Get.snackbar(
       'Setup Required',
       'Opening authenticator app setup',
-      backgroundColor: Colors.blue.withOpacity(0.2),
+      backgroundColor: Colors.blue.withValues(alpha: 0.2),
       colorText: Colors.white,
     );
   }
@@ -1020,7 +1020,7 @@ class _SecureWalletScreenState extends State<SecureWalletScreen>
     Get.snackbar(
       'Security Scan',
       'Running comprehensive security check...',
-      backgroundColor: const Color(0xFF6C5CE7).withOpacity(0.2),
+      backgroundColor: const Color(0xFF6C5CE7).withValues(alpha: 0.2),
       colorText: Colors.white,
     );
   }
@@ -1035,7 +1035,7 @@ class _SecureWalletScreenState extends State<SecureWalletScreen>
         ),
         content: Text(
           'Make sure no one can see your screen. Your seed phrase provides full access to your wallet.',
-          style: GoogleFonts.inter(color: Colors.white.withOpacity(0.8)),
+          style: GoogleFonts.inter(color: Colors.white.withValues(alpha: 0.8)),
         ),
         actions: [
           TextButton(
@@ -1059,7 +1059,7 @@ class _SecureWalletScreenState extends State<SecureWalletScreen>
     Get.snackbar(
       'Recovery Test',
       'Testing wallet recovery process...',
-      backgroundColor: Colors.green.withOpacity(0.2),
+      backgroundColor: Colors.green.withValues(alpha: 0.2),
       colorText: Colors.white,
     );
   }
@@ -1068,7 +1068,7 @@ class _SecureWalletScreenState extends State<SecureWalletScreen>
     Get.snackbar(
       option,
       'Setting up $option...',
-      backgroundColor: const Color(0xFF6C5CE7).withOpacity(0.2),
+      backgroundColor: const Color(0xFF6C5CE7).withValues(alpha: 0.2),
       colorText: Colors.white,
     );
   }

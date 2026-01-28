@@ -555,7 +555,7 @@ class _VoiceRegistrationScreenState extends State<VoiceRegistrationScreen>
   Future<bool> _checkNetworkConnectivity() async {
     try {
       final result = await _connectivity.checkConnectivity();
-      return result != ConnectivityResult.none;
+      return !result.contains(ConnectivityResult.none);
     } catch (e) {
       // If connectivity check fails, assume connected
       return true;
@@ -752,8 +752,8 @@ class _VoiceRegistrationScreenState extends State<VoiceRegistrationScreen>
           title: const Text('Register Your Voice'),
           centerTitle: true,
         ),
-        body: WillPopScope(
-          onWillPop: () async => false, // Prevent back during processing
+        body: PopScope(
+          canPop: false, // Prevent back during processing
           child: const Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,

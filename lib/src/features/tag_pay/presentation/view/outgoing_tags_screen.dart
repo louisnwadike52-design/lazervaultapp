@@ -259,8 +259,8 @@ class _OutgoingTagsScreenState extends State<OutgoingTagsScreen> {
                 padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                 decoration: BoxDecoration(
                   color: isPending
-                      ? const Color(0xFFFB923C).withOpacity(0.1)
-                      : const Color(0xFF10B981).withOpacity(0.1),
+                      ? const Color(0xFFFB923C).withValues(alpha: 0.1)
+                      : const Color(0xFF10B981).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8.r),
                 ),
                 child: Text(

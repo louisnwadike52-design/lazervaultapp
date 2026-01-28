@@ -65,10 +65,11 @@ class _ContributionPaymentConfirmationScreenState extends State<ContributionPaym
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
         _navigateToContributionsList();
-        return false;
       },
       child: Scaffold(
         backgroundColor: const Color(0xFF0A0E27),
@@ -866,7 +867,7 @@ Thank you for your contribution!
 Powered by LazerVault
 ''';
 
-    Share.share(receiptText, subject: 'Contribution Payment Receipt - ${widget.contribution.title}');
+    SharePlus.instance.share(ShareParams(text: receiptText, subject: 'Contribution Payment Receipt - ${widget.contribution.title}'));
   }
 
   void _downloadReceipt() {

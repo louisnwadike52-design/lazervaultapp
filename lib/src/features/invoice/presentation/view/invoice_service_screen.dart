@@ -74,7 +74,7 @@ class _InvoiceServiceScreenState extends State<InvoiceServiceScreen> {
                       description: 'Create and send invoices to your clients or customers',
                       gradientColors: [
                         InvoiceThemeColors.primaryPurple,
-                        InvoiceThemeColors.primaryPurple.withOpacity(0.7),
+                        InvoiceThemeColors.primaryPurple.withValues(alpha: 0.7),
                       ],
                       onTap: () => Get.toNamed(AppRoutes.invoiceList),
                     ),
@@ -128,13 +128,13 @@ class _InvoiceServiceScreenState extends State<InvoiceServiceScreen> {
           borderRadius: BorderRadius.circular(20.r),
           border: Border.all(
             color: isHovered
-                ? InvoiceThemeColors.textWhite.withOpacity(0.3)
+                ? InvoiceThemeColors.textWhite.withValues(alpha: 0.3)
                 : Colors.transparent,
             width: 2,
           ),
           boxShadow: [
             BoxShadow(
-              color: gradientColors[0].withOpacity(isHovered ? 0.4 : 0.2),
+              color: gradientColors[0].withValues(alpha: isHovered ? 0.4 : 0.2),
               blurRadius: isHovered ? 20 : 10,
               offset: Offset(0, isHovered ? 8 : 4),
             ),
@@ -148,7 +148,7 @@ class _InvoiceServiceScreenState extends State<InvoiceServiceScreen> {
               width: 64.w,
               height: 64.w,
               decoration: BoxDecoration(
-                color: InvoiceThemeColors.textWhite.withOpacity(0.2),
+                color: InvoiceThemeColors.textWhite.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(16.r),
               ),
               child: Icon(
@@ -178,7 +178,7 @@ class _InvoiceServiceScreenState extends State<InvoiceServiceScreen> {
                     style: GoogleFonts.inter(
                       fontSize: 14.sp,
                       fontWeight: FontWeight.w400,
-                      color: InvoiceThemeColors.textWhite.withOpacity(0.9),
+                      color: InvoiceThemeColors.textWhite.withValues(alpha: 0.9),
                       height: 1.4,
                     ),
                   ),
@@ -193,7 +193,7 @@ class _InvoiceServiceScreenState extends State<InvoiceServiceScreen> {
               child: Container(
                 padding: EdgeInsets.all(8.w),
                 decoration: BoxDecoration(
-                  color: InvoiceThemeColors.textWhite.withOpacity(0.2),
+                  color: InvoiceThemeColors.textWhite.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(8.r),
                 ),
                 child: Icon(

@@ -46,7 +46,7 @@ class _AddBeneficiaryScreenState extends State<AddBeneficiaryScreen> {
       Get.snackbar(
         'Error',
         'Please select a provider',
-        backgroundColor: Colors.red.withOpacity(0.9),
+        backgroundColor: Colors.red.withValues(alpha: 0.9),
         colorText: Colors.white,
       );
       return;
@@ -57,7 +57,7 @@ class _AddBeneficiaryScreenState extends State<AddBeneficiaryScreen> {
       Get.snackbar(
         'Error',
         'Please enter meter number',
-        backgroundColor: Colors.red.withOpacity(0.9),
+        backgroundColor: Colors.red.withValues(alpha: 0.9),
         colorText: Colors.white,
       );
       return;
@@ -75,7 +75,7 @@ class _AddBeneficiaryScreenState extends State<AddBeneficiaryScreen> {
       Get.snackbar(
         'Error',
         'Please validate the meter first',
-        backgroundColor: Colors.red.withOpacity(0.9),
+        backgroundColor: Colors.red.withValues(alpha: 0.9),
         colorText: Colors.white,
       );
       return;
@@ -86,7 +86,7 @@ class _AddBeneficiaryScreenState extends State<AddBeneficiaryScreen> {
       Get.snackbar(
         'Error',
         'Please enter a nickname',
-        backgroundColor: Colors.red.withOpacity(0.9),
+        backgroundColor: Colors.red.withValues(alpha: 0.9),
         colorText: Colors.white,
       );
       return;
@@ -138,7 +138,7 @@ class _AddBeneficiaryScreenState extends State<AddBeneficiaryScreen> {
                           Get.snackbar(
                             'Success',
                             'Meter validated successfully',
-                            backgroundColor: Colors.green.withOpacity(0.9),
+                            backgroundColor: Colors.green.withValues(alpha: 0.9),
                             colorText: Colors.white,
                           );
                         }
@@ -154,7 +154,7 @@ class _AddBeneficiaryScreenState extends State<AddBeneficiaryScreen> {
                           Get.snackbar(
                             'Error',
                             state.message,
-                            backgroundColor: Colors.red.withOpacity(0.9),
+                            backgroundColor: Colors.red.withValues(alpha: 0.9),
                             colorText: Colors.white,
                           );
                         }
@@ -166,7 +166,7 @@ class _AddBeneficiaryScreenState extends State<AddBeneficiaryScreen> {
                           Get.snackbar(
                             'Success',
                             state.message,
-                            backgroundColor: Colors.green.withOpacity(0.9),
+                            backgroundColor: Colors.green.withValues(alpha: 0.9),
                             colorText: Colors.white,
                           );
                           Get.back();
@@ -176,7 +176,7 @@ class _AddBeneficiaryScreenState extends State<AddBeneficiaryScreen> {
                           Get.snackbar(
                             'Error',
                             state.message,
-                            backgroundColor: Colors.red.withOpacity(0.9),
+                            backgroundColor: Colors.red.withValues(alpha: 0.9),
                             colorText: Colors.white,
                           );
                         }
@@ -228,10 +228,10 @@ class _AddBeneficiaryScreenState extends State<AddBeneficiaryScreen> {
               width: 44.w,
               height: 44.w,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(22.r),
                 border: Border.all(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   width: 1,
                 ),
               ),
@@ -258,7 +258,7 @@ class _AddBeneficiaryScreenState extends State<AddBeneficiaryScreen> {
                 Text(
                   'Save meter for quick payments',
                   style: GoogleFonts.inter(
-                    color: Colors.white.withOpacity(0.6),
+                    color: Colors.white.withValues(alpha: 0.6),
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w400,
                   ),
@@ -290,10 +290,10 @@ class _AddBeneficiaryScreenState extends State<AddBeneficiaryScreen> {
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.05),
+                  color: Colors.white.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(12.r),
                   border: Border.all(
-                    color: Colors.white.withOpacity(0.1),
+                    color: Colors.white.withValues(alpha: 0.1),
                     width: 1,
                   ),
                 ),
@@ -303,7 +303,7 @@ class _AddBeneficiaryScreenState extends State<AddBeneficiaryScreen> {
                     hint: Text(
                       'Choose electricity provider',
                       style: GoogleFonts.inter(
-                        color: Colors.white.withOpacity(0.5),
+                        color: Colors.white.withValues(alpha: 0.5),
                         fontSize: 14.sp,
                       ),
                     ),
@@ -311,7 +311,7 @@ class _AddBeneficiaryScreenState extends State<AddBeneficiaryScreen> {
                     dropdownColor: const Color(0xFF1A1A3E),
                     icon: Icon(
                       Icons.keyboard_arrow_down,
-                      color: Colors.white.withOpacity(0.6),
+                      color: Colors.white.withValues(alpha: 0.6),
                     ),
                     items: state.providers.map((provider) {
                       return DropdownMenuItem(
@@ -394,11 +394,11 @@ class _AddBeneficiaryScreenState extends State<AddBeneficiaryScreen> {
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
           color: isSelected
-              ? const Color(0xFF4E03D0).withOpacity(0.2)
-              : Colors.white.withOpacity(0.05),
+              ? const Color(0xFF4E03D0).withValues(alpha: 0.2)
+              : Colors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(12.r),
           border: Border.all(
-            color: isSelected ? const Color(0xFF4E03D0) : Colors.white.withOpacity(0.1),
+            color: isSelected ? const Color(0xFF4E03D0) : Colors.white.withValues(alpha: 0.1),
             width: 2,
           ),
         ),
@@ -407,14 +407,14 @@ class _AddBeneficiaryScreenState extends State<AddBeneficiaryScreen> {
           children: [
             Icon(
               icon,
-              color: isSelected ? const Color(0xFF4E03D0) : Colors.white.withOpacity(0.6),
+              color: isSelected ? const Color(0xFF4E03D0) : Colors.white.withValues(alpha: 0.6),
               size: 20.sp,
             ),
             SizedBox(width: 8.w),
             Text(
               label,
               style: GoogleFonts.inter(
-                color: isSelected ? const Color(0xFF4E03D0) : Colors.white.withOpacity(0.8),
+                color: isSelected ? const Color(0xFF4E03D0) : Colors.white.withValues(alpha: 0.8),
                 fontSize: 14.sp,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
               ),
@@ -441,10 +441,10 @@ class _AddBeneficiaryScreenState extends State<AddBeneficiaryScreen> {
         Container(
           padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.05),
+            color: Colors.white.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(12.r),
             border: Border.all(
-              color: Colors.white.withOpacity(0.1),
+              color: Colors.white.withValues(alpha: 0.1),
               width: 1,
             ),
           ),
@@ -459,7 +459,7 @@ class _AddBeneficiaryScreenState extends State<AddBeneficiaryScreen> {
             decoration: InputDecoration(
               hintText: 'Enter meter number',
               hintStyle: GoogleFonts.inter(
-                color: Colors.white.withOpacity(0.3),
+                color: Colors.white.withValues(alpha: 0.3),
                 fontSize: 16.sp,
               ),
               border: InputBorder.none,
@@ -576,7 +576,7 @@ class _AddBeneficiaryScreenState extends State<AddBeneficiaryScreen> {
             child: Text(
               label,
               style: GoogleFonts.inter(
-                color: Colors.white.withOpacity(0.8),
+                color: Colors.white.withValues(alpha: 0.8),
                 fontSize: 12.sp,
                 fontWeight: FontWeight.w400,
               ),
@@ -613,10 +613,10 @@ class _AddBeneficiaryScreenState extends State<AddBeneficiaryScreen> {
         Container(
           padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.05),
+            color: Colors.white.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(12.r),
             border: Border.all(
-              color: Colors.white.withOpacity(0.1),
+              color: Colors.white.withValues(alpha: 0.1),
               width: 1,
             ),
           ),
@@ -630,7 +630,7 @@ class _AddBeneficiaryScreenState extends State<AddBeneficiaryScreen> {
             decoration: InputDecoration(
               hintText: 'e.g., Home, Office, Mom\'s House',
               hintStyle: GoogleFonts.inter(
-                color: Colors.white.withOpacity(0.3),
+                color: Colors.white.withValues(alpha: 0.3),
                 fontSize: 16.sp,
               ),
               border: InputBorder.none,
@@ -651,10 +651,10 @@ class _AddBeneficiaryScreenState extends State<AddBeneficiaryScreen> {
       child: Container(
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.05),
+          color: Colors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(12.r),
           border: Border.all(
-            color: Colors.white.withOpacity(0.1),
+            color: Colors.white.withValues(alpha: 0.1),
             width: 1,
           ),
         ),
@@ -669,7 +669,7 @@ class _AddBeneficiaryScreenState extends State<AddBeneficiaryScreen> {
                 border: Border.all(
                   color: _setAsDefault
                       ? const Color(0xFF4E03D0)
-                      : Colors.white.withOpacity(0.3),
+                      : Colors.white.withValues(alpha: 0.3),
                   width: 2,
                 ),
               ),

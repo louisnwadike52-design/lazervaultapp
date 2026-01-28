@@ -72,7 +72,7 @@ class _GeneratedBarcodesHistoryScreenState
                               state.message,
                               textAlign: TextAlign.center,
                               style: GoogleFonts.inter(
-                                color: Colors.white.withOpacity(0.6),
+                                color: Colors.white.withValues(alpha: 0.6),
                                 fontSize: 16.sp,
                               ),
                             ),
@@ -125,10 +125,10 @@ class _GeneratedBarcodesHistoryScreenState
               width: 44.w,
               height: 44.w,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(22.r),
                 border: Border.all(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   width: 1,
                 ),
               ),
@@ -155,7 +155,7 @@ class _GeneratedBarcodesHistoryScreenState
                 Text(
                   'Your payment barcodes',
                   style: GoogleFonts.inter(
-                    color: Colors.white.withOpacity(0.6),
+                    color: Colors.white.withValues(alpha: 0.6),
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w400,
                   ),
@@ -175,10 +175,10 @@ class _GeneratedBarcodesHistoryScreenState
       margin: EdgeInsets.only(bottom: 16.h),
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(
-          color: Colors.white.withOpacity(0.1),
+          color: Colors.white.withValues(alpha: 0.1),
           width: 1,
         ),
       ),
@@ -204,27 +204,27 @@ class _GeneratedBarcodesHistoryScreenState
             Text(
               barcode.description,
               style: GoogleFonts.inter(
-                color: Colors.white.withOpacity(0.6),
+                color: Colors.white.withValues(alpha: 0.6),
                 fontSize: 14.sp,
                 fontWeight: FontWeight.w400,
               ),
             ),
             SizedBox(height: 12.h),
           ],
-          Divider(color: Colors.white.withOpacity(0.1)),
+          Divider(color: Colors.white.withValues(alpha: 0.1)),
           SizedBox(height: 12.h),
           Row(
             children: [
               Icon(
                 Icons.access_time,
-                color: Colors.white.withOpacity(0.6),
+                color: Colors.white.withValues(alpha: 0.6),
                 size: 16.sp,
               ),
               SizedBox(width: 8.w),
               Text(
                 DateFormat('MMM dd, yyyy - hh:mm a').format(barcode.createdAt),
                 style: GoogleFonts.inter(
-                  color: Colors.white.withOpacity(0.6),
+                  color: Colors.white.withValues(alpha: 0.6),
                   fontSize: 13.sp,
                   fontWeight: FontWeight.w400,
                 ),
@@ -310,7 +310,7 @@ class _GeneratedBarcodesHistoryScreenState
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20.r),
         border: Border.all(color: color, width: 1),
       ),
@@ -332,7 +332,7 @@ class _GeneratedBarcodesHistoryScreenState
         children: [
           Icon(
             Icons.qr_code_2,
-            color: Colors.white.withOpacity(0.3),
+            color: Colors.white.withValues(alpha: 0.3),
             size: 80.sp,
           ),
           SizedBox(height: 16.h),
@@ -349,7 +349,7 @@ class _GeneratedBarcodesHistoryScreenState
             'Create a barcode to receive payments',
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(
-              color: Colors.white.withOpacity(0.6),
+              color: Colors.white.withValues(alpha: 0.6),
               fontSize: 14.sp,
               fontWeight: FontWeight.w400,
             ),

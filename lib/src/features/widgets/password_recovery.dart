@@ -247,47 +247,40 @@ class _PasswordRecoveryState extends State<PasswordRecovery> {
                             ),
                           ),
                           SizedBox(height: 12.0.h),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: RadioListTile<String>(
-                                  title: Text(
-                                    'SMS',
-                                    style: TextStyle(fontSize: 14.sp),
+                          RadioGroup<String>(
+                            groupValue: _deliveryMethod,
+                            onChanged: (value) {
+                                  if (isLoading) return;
+                                    setState(() {
+                                      _deliveryMethod = value ?? _deliveryMethod;
+                                    });
+                                  },
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: RadioListTile<String>(
+                                    title: Text(
+                                      'SMS',
+                                      style: TextStyle(fontSize: 14.sp),
+                                    ),
+                                    value: 'SMS',
+                                    contentPadding: EdgeInsets.zero,
+                                    dense: true,
                                   ),
-                                  value: 'SMS',
-                                  groupValue: _deliveryMethod,
-                                  onChanged: isLoading
-                                      ? null
-                                      : (value) {
-                                          setState(() {
-                                            _deliveryMethod = value!;
-                                          });
-                                        },
-                                  contentPadding: EdgeInsets.zero,
-                                  dense: true,
                                 ),
-                              ),
-                              Expanded(
-                                child: RadioListTile<String>(
-                                  title: Text(
-                                    'Email',
-                                    style: TextStyle(fontSize: 14.sp),
+                                Expanded(
+                                  child: RadioListTile<String>(
+                                    title: Text(
+                                      'Email',
+                                      style: TextStyle(fontSize: 14.sp),
+                                    ),
+                                    value: 'EMAIL',
+                                    contentPadding: EdgeInsets.zero,
+                                    dense: true,
                                   ),
-                                  value: 'EMAIL',
-                                  groupValue: _deliveryMethod,
-                                  onChanged: isLoading
-                                      ? null
-                                      : (value) {
-                                          setState(() {
-                                            _deliveryMethod = value!;
-                                          });
-                                        },
-                                  contentPadding: EdgeInsets.zero,
-                                  dense: true,
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                           SizedBox(height: 24.0.h),
                           BuildFormField(

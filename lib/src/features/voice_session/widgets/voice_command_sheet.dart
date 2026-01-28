@@ -181,7 +181,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,                  boxShadow: [
                     BoxShadow(
-                      color: Colors.blue.withOpacity(0.2),
+                      color: Colors.blue.withValues(alpha: 0.2),
                       blurRadius: 20,
                       offset: const Offset(0, 10),
                     ),
@@ -233,7 +233,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
                   color: Colors.grey[900],
                   border: Border(
                     top: BorderSide(
-                      color: Colors.white.withOpacity(0.1),
+                      color: Colors.white.withValues(alpha: 0.1),
                       width: 1,
                     ),
                   ),
@@ -279,7 +279,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
         height: 100.h,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: Colors.blue.withOpacity(0.1),
+          color: Colors.blue.withValues(alpha: 0.1),
         ),
         child: Center(
           child: CircularProgressIndicator(
@@ -299,7 +299,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
         height: 100.h,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: Colors.red.withOpacity(0.1),
+          color: Colors.red.withValues(alpha: 0.1),
           boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.08),
@@ -330,8 +330,8 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
             shape: BoxShape.circle,
             gradient: RadialGradient(
               colors: [
-                Colors.blue.withOpacity(0.2 + (_micAnimationController.value * 0.3)),
-                Colors.blue.withOpacity(0.1),
+                Colors.blue.withValues(alpha: 0.2 + (_micAnimationController.value * 0.3)),
+                Colors.blue.withValues(alpha: 0.1),
                 Colors.transparent,
               ],
               stops: [0.0, 0.6, 1.0],
@@ -341,15 +341,15 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
             scale: 1.0 + (_micAnimationController.value * 0.15),
             child: Container(
               decoration: BoxDecoration(
-                color: Colors.blue.withOpacity(0.15),
+                color: Colors.blue.withValues(alpha: 0.15),
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: Colors.blue.withOpacity(0.4 + (_micAnimationController.value * 0.4)),
+                  color: Colors.blue.withValues(alpha: 0.4 + (_micAnimationController.value * 0.4)),
                   width: 2 + (_micAnimationController.value * 2),
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.blue.withOpacity(0.3 + (_micAnimationController.value * 0.4)),
+                    color: Colors.blue.withValues(alpha: 0.3 + (_micAnimationController.value * 0.4)),
                     blurRadius: 10 + (_micAnimationController.value * 15),
                     spreadRadius: _micAnimationController.value * 5,
                   ),
@@ -371,7 +371,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
                     Text(
                       _getStatusForMic(state),
                       style: TextStyle(
-                        color: Colors.blue.withOpacity(0.8 + (_micAnimationController.value * 0.2)),
+                        color: Colors.blue.withValues(alpha: 0.8 + (_micAnimationController.value * 0.2)),
                         fontSize: 10.sp,
                         fontWeight: FontWeight.w600,
                       ),
@@ -442,7 +442,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
         Text(
           subText,
           style: TextStyle(
-            color: Colors.white.withOpacity(0.7),
+            color: Colors.white.withValues(alpha: 0.7),
             fontSize: 14.sp,
           ),
           textAlign: TextAlign.center,
@@ -465,7 +465,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
         child: Container(
           padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
           decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
+            color: color.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(16.r),
             boxShadow: [
           BoxShadow(
@@ -525,8 +525,8 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                Colors.blue.withOpacity(0.1),
-                Colors.purple.withOpacity(0.1),
+                Colors.blue.withValues(alpha: 0.1),
+                Colors.purple.withValues(alpha: 0.1),
               ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
@@ -547,7 +547,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
               Container(
                 padding: EdgeInsets.all(8.w),
                 decoration: BoxDecoration(
-                  color: Colors.blue.withOpacity(0.2),
+                  color: Colors.blue.withValues(alpha: 0.2),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
@@ -587,15 +587,15 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            Colors.white.withOpacity(0.1),
-            Colors.white.withOpacity(0.05),
+            Colors.white.withValues(alpha: 0.1),
+            Colors.white.withValues(alpha: 0.05),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(25.r),        boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 4,
             offset: Offset(0, 2),
           ),
@@ -606,14 +606,14 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
         children: [
           Icon(
         Icons.mic_rounded,
-            color: Colors.blue.withOpacity(0.7),
+            color: Colors.blue.withValues(alpha: 0.7),
             size: 14.sp,
           ),
           SizedBox(width: 6.w),
           Text(
             suggestion,
             style: TextStyle(
-        color: Colors.white.withOpacity(0.9),
+        color: Colors.white.withValues(alpha: 0.9),
               fontSize: 13.sp,
               fontWeight: FontWeight.w500,
             ),

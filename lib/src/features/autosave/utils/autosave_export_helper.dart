@@ -71,10 +71,10 @@ class AutoSaveExportHelper {
     final String filename = 'autosave_rules_$timestamp.csv';
 
     // Share the CSV file
-    await Share.share(
-      csv,
+    await SharePlus.instance.share(ShareParams(
+      text: csv,
       subject: 'AutoSave Rules Export - $timestamp',
-    );
+    ));
   }
 
   /// Export a single autosave rule to CSV format and share
@@ -106,10 +106,10 @@ class AutoSaveExportHelper {
     final String filename = 'autosave_rules_$timestamp.json';
 
     // Share the JSON file
-    await Share.share(
-      jsonString,
+    await SharePlus.instance.share(ShareParams(
+      text: jsonString,
       subject: 'AutoSave Rules Export - $timestamp',
-    );
+    ));
   }
 
   /// Export a single autosave rule to JSON format and share
@@ -165,10 +165,10 @@ Rule: ${rule.name}
 ═══════════════════════════════════════
 ''';
 
-    await Share.share(
-      summary,
+    await SharePlus.instance.share(ShareParams(
+      text: summary,
       subject: 'AutoSave Rules Summary Report',
-    );
+    ));
   }
 
   // Helper method to convert a rule to JSON map

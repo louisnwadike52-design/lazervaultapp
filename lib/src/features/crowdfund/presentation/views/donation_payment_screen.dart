@@ -155,7 +155,7 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen> {
                       borderRadius: BorderRadius.circular(12.r),
                     ),
                     disabledBackgroundColor:
-                        const Color(0xFF4E03D0).withOpacity(0.3),
+                        const Color(0xFF4E03D0).withValues(alpha: 0.3),
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -200,7 +200,7 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen> {
             children: [
               CircleAvatar(
                 radius: 24.r,
-                backgroundColor: const Color(0xFF4E03D0).withOpacity(0.2),
+                backgroundColor: const Color(0xFF4E03D0).withValues(alpha: 0.2),
                 backgroundImage: widget.crowdfund.creator.profilePicture != null
                     ? NetworkImage(widget.crowdfund.creator.profilePicture!)
                     : null,
@@ -491,7 +491,7 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen> {
             padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
               color: isSelected
-                  ? const Color(0xFF4E03D0).withOpacity(0.1)
+                  ? const Color(0xFF4E03D0).withValues(alpha: 0.1)
                   : const Color(0xFF1F1F1F),
               borderRadius: BorderRadius.circular(12.r),
               border: Border.all(

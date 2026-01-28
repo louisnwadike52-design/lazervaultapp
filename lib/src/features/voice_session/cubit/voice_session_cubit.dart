@@ -159,23 +159,9 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     // Data packet listening is now handled by the DataReceivedEvent listener above
 
     try {
-      // Define RoomOptions
-      const roomOptions = RoomOptions(
-        adaptiveStream: true,
-        dynacast: true,
-        // autoSubscribe: true, // Removed from here
-      );
-
-      // Define ConnectOptions separately (as it was originally)
-      const connectOptions = ConnectOptions(
-        autoSubscribe: true, // Set autoSubscribe here
-      );
-
       await _room!.connect(
         url,
         token,
-        // roomOptions: roomOptions,
-        // connectOptions: connectOptions, // Pass connectOptions here
       );
 
       // try {

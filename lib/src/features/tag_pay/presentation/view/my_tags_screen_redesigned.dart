@@ -104,7 +104,7 @@ class _MyTagsScreenRedesignedState extends State<MyTagsScreenRedesigned> {
                   width: 44.w,
                   height: 44.w,
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
+                    color: Colors.white.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(22.r),
                   ),
                   child: Icon(
@@ -250,7 +250,7 @@ class _MyTagsScreenRedesignedState extends State<MyTagsScreenRedesigned> {
                       width: 48.w,
                       height: 48.w,
                       decoration: BoxDecoration(
-                        color: const Color(0xFF3B82F6).withOpacity(0.2),
+                        color: const Color(0xFF3B82F6).withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(24.r),
                       ),
                       child: Icon(
@@ -290,7 +290,7 @@ class _MyTagsScreenRedesignedState extends State<MyTagsScreenRedesigned> {
                           vertical: 6.h,
                         ),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF10B981).withOpacity(0.1),
+                          color: const Color(0xFF10B981).withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(20.r),
                         ),
                         child: Row(

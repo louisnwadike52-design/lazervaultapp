@@ -75,6 +75,7 @@ class _BarcodePaymentConfirmationScreenState
 
     // Then trigger the payment with verification token
     Future.delayed(const Duration(milliseconds: 500), () {
+      if (!mounted) return;
       // TODO: Pass verification token to the cubit
       // For now, we call the existing method
       // In production, update processBarcodePayment to accept verificationToken
@@ -147,10 +148,10 @@ class _BarcodePaymentConfirmationScreenState
               width: 44.w,
               height: 44.w,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(22.r),
                 border: Border.all(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   width: 1,
                 ),
               ),
@@ -177,7 +178,7 @@ class _BarcodePaymentConfirmationScreenState
                 Text(
                   'Review details before paying',
                   style: GoogleFonts.inter(
-                    color: Colors.white.withOpacity(0.6),
+                    color: Colors.white.withValues(alpha: 0.6),
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w400,
                   ),
@@ -210,7 +211,7 @@ class _BarcodePaymentConfirmationScreenState
               Text(
                 'Amount to Pay',
                 style: GoogleFonts.inter(
-                  color: Colors.white.withOpacity(0.9),
+                  color: Colors.white.withValues(alpha: 0.9),
                   fontSize: 14.sp,
                   fontWeight: FontWeight.w400,
                 ),
@@ -218,7 +219,7 @@ class _BarcodePaymentConfirmationScreenState
               SizedBox(width: 8.w),
               Icon(
                 Icons.lock_outline,
-                color: Colors.white.withOpacity(0.7),
+                color: Colors.white.withValues(alpha: 0.7),
                 size: 14.sp,
               ),
             ],
@@ -241,10 +242,10 @@ class _BarcodePaymentConfirmationScreenState
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(
-          color: Colors.white.withOpacity(0.1),
+          color: Colors.white.withValues(alpha: 0.1),
           width: 1,
         ),
       ),
@@ -256,7 +257,7 @@ class _BarcodePaymentConfirmationScreenState
               Text(
                 'Recipient',
                 style: GoogleFonts.inter(
-                  color: Colors.white.withOpacity(0.6),
+                  color: Colors.white.withValues(alpha: 0.6),
                   fontSize: 14.sp,
                   fontWeight: FontWeight.w400,
                 ),
@@ -264,7 +265,7 @@ class _BarcodePaymentConfirmationScreenState
               SizedBox(width: 8.w),
               Icon(
                 Icons.lock_outline,
-                color: Colors.white.withOpacity(0.4),
+                color: Colors.white.withValues(alpha: 0.4),
                 size: 14.sp,
               ),
             ],
@@ -276,7 +277,7 @@ class _BarcodePaymentConfirmationScreenState
                 width: 48.w,
                 height: 48.w,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF4E03D0).withOpacity(0.2),
+                  color: const Color(0xFF4E03D0).withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(24.r),
                 ),
                 child: Icon(
@@ -321,10 +322,10 @@ class _BarcodePaymentConfirmationScreenState
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
-          color: const Color(0xFF4E03D0).withOpacity(0.2),
+          color: const Color(0xFF4E03D0).withValues(alpha: 0.2),
           width: 1,
         ),
       ),
@@ -367,7 +368,7 @@ class _BarcodePaymentConfirmationScreenState
                 Text(
                   'Default Account',
                   style: GoogleFonts.inter(
-                    color: Colors.white.withOpacity(0.6),
+                    color: Colors.white.withValues(alpha: 0.6),
                     fontSize: 12.sp,
                   ),
                 ),
@@ -392,10 +393,10 @@ class _BarcodePaymentConfirmationScreenState
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(
-          color: Colors.white.withOpacity(0.1),
+          color: Colors.white.withValues(alpha: 0.1),
           width: 1,
         ),
       ),
@@ -407,7 +408,7 @@ class _BarcodePaymentConfirmationScreenState
               Text(
                 'Description',
                 style: GoogleFonts.inter(
-                  color: Colors.white.withOpacity(0.6),
+                  color: Colors.white.withValues(alpha: 0.6),
                   fontSize: 14.sp,
                   fontWeight: FontWeight.w400,
                 ),
@@ -415,7 +416,7 @@ class _BarcodePaymentConfirmationScreenState
               SizedBox(width: 8.w),
               Icon(
                 Icons.lock_outline,
-                color: Colors.white.withOpacity(0.4),
+                color: Colors.white.withValues(alpha: 0.4),
                 size: 14.sp,
               ),
             ],
@@ -445,7 +446,7 @@ class _BarcodePaymentConfirmationScreenState
             onPressed: isLoading ? null : _processPayment,
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF10B981),
-              disabledBackgroundColor: const Color(0xFF10B981).withOpacity(0.5),
+              disabledBackgroundColor: const Color(0xFF10B981).withValues(alpha: 0.5),
               padding: EdgeInsets.symmetric(vertical: 16.h),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12.r),

@@ -148,7 +148,7 @@ class _NetworkSelectionScreenState extends State<NetworkSelectionScreen> {
               width: 40.w,
               height: 40.w,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12.r),
                 boxShadow: [
           BoxShadow(
@@ -190,7 +190,7 @@ class _NetworkSelectionScreenState extends State<NetworkSelectionScreen> {
                       : 'Choose your network provider',
                   style: TextStyle(
                     fontSize: 14.sp,
-                    color: Colors.white.withOpacity(0.6),
+                    color: Colors.white.withValues(alpha: 0.6),
                     fontWeight: FontWeight.w400,
                   ),
                 ),
@@ -267,10 +267,10 @@ class _NetworkSelectionScreenState extends State<NetworkSelectionScreen> {
       child: Container(
         padding: EdgeInsets.all(20.w),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.05),
+          color: Colors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(16.r),          boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 10,
               offset: Offset(0, 4),
             ),
@@ -287,7 +287,7 @@ class _NetworkSelectionScreenState extends State<NetworkSelectionScreen> {
                 borderRadius: BorderRadius.circular(16.r),
                 boxShadow: [
                   BoxShadow(
-                    color: Color(int.parse(provider.primaryColor.replaceFirst('#', '0xFF'))).withOpacity(0.3),
+                    color: Color(int.parse(provider.primaryColor.replaceFirst('#', '0xFF'))).withValues(alpha: 0.3),
                     blurRadius: 8,
                     offset: Offset(0, 4),
                   ),
@@ -328,7 +328,7 @@ class _NetworkSelectionScreenState extends State<NetworkSelectionScreen> {
                       provider.promoMessage!,
                       style: TextStyle(
                         fontSize: 12.sp,
-                        color: Colors.white.withOpacity(0.6),
+                        color: Colors.white.withValues(alpha: 0.6),
                         fontWeight: FontWeight.w400,
                       ),
                     ),
@@ -342,14 +342,14 @@ class _NetworkSelectionScreenState extends State<NetworkSelectionScreen> {
                       return Container(
                         padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.1),
+                          color: Colors.white.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(4.r),
                         ),
                         child: Text(
                           prefix,
                           style: TextStyle(
                             fontSize: 10.sp,
-                            color: Colors.white.withOpacity(0.8),
+                            color: Colors.white.withValues(alpha: 0.8),
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -388,7 +388,7 @@ class _NetworkSelectionScreenState extends State<NetworkSelectionScreen> {
                 
                 Icon(
                   Icons.arrow_forward_ios,
-                  color: Colors.white.withOpacity(0.4),
+                  color: Colors.white.withValues(alpha: 0.4),
                   size: 16.sp,
                 ),
               ],
@@ -407,7 +407,7 @@ class _NetworkSelectionScreenState extends State<NetworkSelectionScreen> {
           Icon(
             Icons.wifi_off,
             size: 64.sp,
-            color: Colors.white.withOpacity(0.4),
+            color: Colors.white.withValues(alpha: 0.4),
           ),
           SizedBox(height: 16.h),
           Text(
@@ -425,7 +425,7 @@ class _NetworkSelectionScreenState extends State<NetworkSelectionScreen> {
                 : 'No network providers available',
             style: TextStyle(
               fontSize: 14.sp,
-              color: Colors.white.withOpacity(0.6),
+              color: Colors.white.withValues(alpha: 0.6),
             ),
             textAlign: TextAlign.center,
           ),
@@ -468,7 +468,7 @@ class _NetworkSelectionScreenState extends State<NetworkSelectionScreen> {
             style: TextStyle(
               fontSize: 16.sp,
               fontWeight: FontWeight.w500,
-              color: Colors.white.withOpacity(0.8),
+              color: Colors.white.withValues(alpha: 0.8),
             ),
           ),
           SizedBox(height: 8.h),
@@ -476,7 +476,7 @@ class _NetworkSelectionScreenState extends State<NetworkSelectionScreen> {
             'Please wait while we fetch available networks',
             style: TextStyle(
               fontSize: 12.sp,
-              color: Colors.white.withOpacity(0.6),
+              color: Colors.white.withValues(alpha: 0.6),
             ),
             textAlign: TextAlign.center,
           ),
@@ -493,7 +493,7 @@ class _NetworkSelectionScreenState extends State<NetworkSelectionScreen> {
           Icon(
             Icons.error_outline,
             size: 64.sp,
-            color: Colors.red.withOpacity(0.7),
+            color: Colors.red.withValues(alpha: 0.7),
           ),
           SizedBox(height: 16.h),
           Text(
@@ -509,7 +509,7 @@ class _NetworkSelectionScreenState extends State<NetworkSelectionScreen> {
             message,
             style: TextStyle(
               fontSize: 14.sp,
-              color: Colors.white.withOpacity(0.6),
+              color: Colors.white.withValues(alpha: 0.6),
             ),
             textAlign: TextAlign.center,
           ),
@@ -544,7 +544,7 @@ class _NetworkSelectionScreenState extends State<NetworkSelectionScreen> {
               OutlinedButton(
                 onPressed: () => Get.back(),
                 style: OutlinedButton.styleFrom(
-                  side: BorderSide(color: Colors.white.withOpacity(0.3)),
+                  side: BorderSide(color: Colors.white.withValues(alpha: 0.3)),
                   padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12.r),

@@ -155,7 +155,7 @@ class _ExchangeScreenState extends State<ExchangeScreen>
                 Text(
                   'Send money worldwide',
                   style: GoogleFonts.inter(
-                    color: Colors.white.withOpacity(0.9),
+                    color: Colors.white.withValues(alpha: 0.9),
                     fontSize: 13.sp,
                     fontWeight: FontWeight.w500,
                   ),
@@ -193,7 +193,7 @@ class _ExchangeScreenState extends State<ExchangeScreen>
         borderRadius: BorderRadius.circular(24.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 20,
             offset: const Offset(0, 4),
           ),
@@ -228,11 +228,11 @@ class _ExchangeScreenState extends State<ExchangeScreen>
             child: Container(
               padding: EdgeInsets.all(12.w),
               decoration: BoxDecoration(
-                color: const Color(0xFF3B82F6).withOpacity(0.2),
+                color: const Color(0xFF3B82F6).withValues(alpha: 0.2),
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF3B82F6).withOpacity(0.3),
+                    color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),
@@ -279,7 +279,7 @@ class _ExchangeScreenState extends State<ExchangeScreen>
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: Colors.black.withValues(alpha: 0.2),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -310,7 +310,7 @@ class _ExchangeScreenState extends State<ExchangeScreen>
                     borderRadius: BorderRadius.circular(12.r),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.2),
+                        color: Colors.black.withValues(alpha: 0.2),
                         blurRadius: 6,
                         offset: const Offset(0, 2),
                       ),
@@ -436,7 +436,7 @@ class _ExchangeScreenState extends State<ExchangeScreen>
         border: Border.all(color: const Color(0xFF2D2D2D)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 20,
             offset: const Offset(0, 4),
           ),
@@ -543,7 +543,7 @@ class _ExchangeScreenState extends State<ExchangeScreen>
       margin: EdgeInsets.only(top: 16.h),
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: const Color(0xFFEF4444).withOpacity(0.1),
+        color: const Color(0xFFEF4444).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12.r),
         border: Border.all(color: const Color(0xFFEF4444)),
       ),
@@ -582,7 +582,7 @@ class _ExchangeScreenState extends State<ExchangeScreen>
         color: const Color(0xFF0A0A0A),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, -2),
           ),
@@ -595,7 +595,7 @@ class _ExchangeScreenState extends State<ExchangeScreen>
           boxShadow: canContinue
               ? [
                   BoxShadow(
-                    color: const Color(0xFF3B82F6).withOpacity(0.3),
+                    color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),
@@ -655,7 +655,7 @@ class _ExchangeScreenState extends State<ExchangeScreen>
           border: Border.all(color: const Color(0xFF2D2D2D)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: Colors.black.withValues(alpha: 0.04),
               blurRadius: 20,
               offset: const Offset(0, 4),
             ),
@@ -689,7 +689,7 @@ class _ExchangeScreenState extends State<ExchangeScreen>
         border: Border.all(color: const Color(0xFF2D2D2D)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 20,
             offset: const Offset(0, 4),
           ),
@@ -750,7 +750,7 @@ class _ExchangeScreenState extends State<ExchangeScreen>
               width: 40.w,
               height: 40.w,
               decoration: BoxDecoration(
-                color: const Color(0xFF3B82F6).withOpacity(0.1),
+                color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -774,7 +774,7 @@ class _ExchangeScreenState extends State<ExchangeScreen>
                   ),
                   SizedBox(height: 4.h),
                   Text(
-                    transaction.recipientName ?? 'Unknown Recipient',
+                    transaction.recipientName,
                     style: GoogleFonts.inter(
                       color: const Color(0xFF9CA3AF),
                       fontSize: 12.sp,
@@ -798,7 +798,7 @@ class _ExchangeScreenState extends State<ExchangeScreen>
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
                   decoration: BoxDecoration(
-                    color: _getStatusColor(transaction.status.toString().split('.').last).withOpacity(0.1),
+                    color: _getStatusColor(transaction.status.toString().split('.').last).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8.r),
                   ),
                   child: Text(

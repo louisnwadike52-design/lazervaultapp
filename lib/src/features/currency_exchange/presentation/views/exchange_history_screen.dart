@@ -116,7 +116,7 @@ class _ExchangeHistoryScreenState extends State<ExchangeHistoryScreen> {
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 12,
             offset: const Offset(0, 2),
           ),
@@ -217,7 +217,7 @@ class _ExchangeHistoryScreenState extends State<ExchangeHistoryScreen> {
       if (_searchQuery.isNotEmpty) {
         final matchesSearch = transaction.fromCurrency.toLowerCase().contains(_searchQuery) ||
             transaction.toCurrency.toLowerCase().contains(_searchQuery) ||
-            (transaction.recipientName.toLowerCase().contains(_searchQuery) ?? false) ||
+            transaction.recipientName.toLowerCase().contains(_searchQuery) ||
             transaction.transactionId.toLowerCase().contains(_searchQuery);
         if (!matchesSearch) return false;
       }
@@ -359,7 +359,7 @@ class _ExchangeHistoryScreenState extends State<ExchangeHistoryScreen> {
                           ),
                           SizedBox(height: 4.h),
                           Text(
-                            transaction.recipientName ?? 'Unknown Recipient',
+                            transaction.recipientName,
                             style: GoogleFonts.inter(
                               color: const Color(0xFF9CA3AF),
                               fontSize: 13.sp,
@@ -467,7 +467,7 @@ class _ExchangeHistoryScreenState extends State<ExchangeHistoryScreen> {
             _buildDetailRow('Transaction ID', transaction.transactionId),
             _buildDetailRow('From', '${transaction.fromAmount.toStringAsFixed(2)} ${transaction.fromCurrency}'),
             _buildDetailRow('To', '${transaction.toAmount.toStringAsFixed(2)} ${transaction.toCurrency}'),
-            _buildDetailRow('Recipient', transaction.recipientName ?? 'Unknown'),
+            _buildDetailRow('Recipient', transaction.recipientName),
             _buildDetailRow('Exchange Rate', transaction.exchangeRate.toStringAsFixed(4)),
             _buildDetailRow('Fee', '${transaction.fee.toStringAsFixed(2)} ${transaction.fromCurrency}'),
             _buildDetailRow('Status', transaction.statusString),

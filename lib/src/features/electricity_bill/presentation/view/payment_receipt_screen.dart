@@ -54,7 +54,7 @@ class PaymentReceiptScreen extends StatelessWidget {
                             ? 'Your electricity token is ready'
                             : 'Your payment has been processed',
                         style: GoogleFonts.inter(
-                          color: Colors.white.withOpacity(0.6),
+                          color: Colors.white.withValues(alpha: 0.6),
                           fontSize: 14.sp,
                           fontWeight: FontWeight.w400,
                         ),
@@ -90,10 +90,10 @@ class PaymentReceiptScreen extends StatelessWidget {
               width: 44.w,
               height: 44.w,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(22.r),
                 border: Border.all(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   width: 1,
                 ),
               ),
@@ -179,7 +179,7 @@ class PaymentReceiptScreen extends StatelessWidget {
           Container(
             padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: SelectableText(
@@ -201,7 +201,7 @@ class PaymentReceiptScreen extends StatelessWidget {
                 Get.snackbar(
                   'Copied',
                   'Token copied to clipboard',
-                  backgroundColor: Colors.green.withOpacity(0.9),
+                  backgroundColor: Colors.green.withValues(alpha: 0.9),
                   colorText: Colors.white,
                   duration: const Duration(seconds: 2),
                 );
@@ -212,14 +212,14 @@ class PaymentReceiptScreen extends StatelessWidget {
               children: [
                 Icon(
                   Icons.copy,
-                  color: Colors.white.withOpacity(0.9),
+                  color: Colors.white.withValues(alpha: 0.9),
                   size: 16.sp,
                 ),
                 SizedBox(width: 8.w),
                 Text(
                   'Copy Token',
                   style: GoogleFonts.inter(
-                    color: Colors.white.withOpacity(0.9),
+                    color: Colors.white.withValues(alpha: 0.9),
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w600,
                   ),
@@ -232,7 +232,7 @@ class PaymentReceiptScreen extends StatelessWidget {
             Text(
               '${payment.units!.toStringAsFixed(2)} kWh',
               style: GoogleFonts.inter(
-                color: Colors.white.withOpacity(0.8),
+                color: Colors.white.withValues(alpha: 0.8),
                 fontSize: 16.sp,
                 fontWeight: FontWeight.w600,
               ),
@@ -249,10 +249,10 @@ class PaymentReceiptScreen extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(20.r),
         border: Border.all(
-          color: Colors.white.withOpacity(0.1),
+          color: Colors.white.withValues(alpha: 0.1),
           width: 1,
         ),
       ),
@@ -272,7 +272,7 @@ class PaymentReceiptScreen extends StatelessWidget {
           _buildReceiptRow('Customer', payment.customerName),
           _buildReceiptRow('Meter Number', payment.meterNumber),
           _buildReceiptRow('Meter Type', payment.meterType.displayName),
-          Divider(color: Colors.white.withOpacity(0.1), height: 32.h),
+          Divider(color: Colors.white.withValues(alpha: 0.1), height: 32.h),
           _buildReceiptRow('Amount', '₦${payment.amount.toStringAsFixed(2)}'),
           _buildReceiptRow('Service Fee', '₦${payment.serviceFee.toStringAsFixed(2)}'),
           _buildReceiptRow(
@@ -280,7 +280,7 @@ class PaymentReceiptScreen extends StatelessWidget {
             '₦${payment.totalAmount.toStringAsFixed(2)}',
             isHighlighted: true,
           ),
-          Divider(color: Colors.white.withOpacity(0.1), height: 32.h),
+          Divider(color: Colors.white.withValues(alpha: 0.1), height: 32.h),
           _buildReceiptRow('Reference', payment.referenceNumber),
           _buildReceiptRow('Payment Gateway', payment.paymentGateway.toUpperCase()),
           _buildReceiptRow('Date', dateFormat.format(payment.completedAt ?? payment.createdAt)),
@@ -308,7 +308,7 @@ class PaymentReceiptScreen extends StatelessWidget {
           Text(
             label,
             style: GoogleFonts.inter(
-              color: Colors.white.withOpacity(0.6),
+              color: Colors.white.withValues(alpha: 0.6),
               fontSize: 14.sp,
               fontWeight: FontWeight.w400,
             ),
@@ -317,7 +317,7 @@ class PaymentReceiptScreen extends StatelessWidget {
             child: Text(
               value,
               style: GoogleFonts.inter(
-                color: valueColor ?? (isHighlighted ? Colors.white : Colors.white.withOpacity(0.9)),
+                color: valueColor ?? (isHighlighted ? Colors.white : Colors.white.withValues(alpha: 0.9)),
                 fontSize: isHighlighted ? 18.sp : 14.sp,
                 fontWeight: isHighlighted ? FontWeight.w700 : FontWeight.w600,
               ),
@@ -368,10 +368,10 @@ class PaymentReceiptScreen extends StatelessWidget {
             width: double.infinity,
             padding: EdgeInsets.symmetric(vertical: 18.h),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.05),
+              color: Colors.white.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(16.r),
               border: Border.all(
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.white.withValues(alpha: 0.1),
                 width: 1,
               ),
             ),

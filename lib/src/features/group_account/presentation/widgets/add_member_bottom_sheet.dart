@@ -388,7 +388,7 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet>
                     gradient: LinearGradient(
                       colors: [
                         const Color.fromARGB(255, 78, 3, 208),
-                        const Color.fromARGB(255, 78, 3, 208).withOpacity(0.7),
+                        const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.7),
                       ],
                     ),
                     borderRadius: BorderRadius.circular(20.r),
@@ -550,7 +550,7 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet>
           end: Alignment.bottomRight,
           colors: [
             const Color.fromARGB(255, 78, 3, 208),
-            const Color.fromARGB(255, 78, 3, 208).withOpacity(0.8),
+            const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.8),
           ],
         ),
         borderRadius: BorderRadius.only(
@@ -563,7 +563,7 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet>
           Container(
             padding: EdgeInsets.all(10.w),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: Icon(
@@ -590,7 +590,7 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet>
                   'Invite someone to ${widget.group.name}',
                   style: GoogleFonts.inter(
                     fontSize: 14.sp,
-                    color: Colors.white.withOpacity(0.8),
+                    color: Colors.white.withValues(alpha: 0.8),
                   ),
                 ),
               ],
@@ -601,7 +601,7 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet>
             child: Container(
               padding: EdgeInsets.all(8.w),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
+                color: Colors.white.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(8.r),
               ),
               child: Icon(
@@ -646,19 +646,19 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet>
     
     switch (role) {
       case GroupMemberRole.admin:
-        backgroundColor = const Color(0xFFEF4444).withOpacity(0.1);
+        backgroundColor = const Color(0xFFEF4444).withValues(alpha: 0.1);
         borderColor = isSelected ? const Color(0xFFEF4444) : const Color(0xFF2D2D2D);
         description = 'Full control over group settings and members';
         icon = Icons.admin_panel_settings;
         break;
       case GroupMemberRole.moderator:
-        backgroundColor = const Color(0xFFF59E0B).withOpacity(0.1);
+        backgroundColor = const Color(0xFFF59E0B).withValues(alpha: 0.1);
         borderColor = isSelected ? const Color(0xFFF59E0B) : const Color(0xFF2D2D2D);
         description = 'Can manage contributions and moderate discussions';
         icon = Icons.shield;
         break;
       case GroupMemberRole.member:
-        backgroundColor = const Color(0xFF10B981).withOpacity(0.1);
+        backgroundColor = const Color(0xFF10B981).withValues(alpha: 0.1);
         borderColor = isSelected ? const Color(0xFF10B981) : const Color(0xFF2D2D2D);
         description = 'Can view group content and make contributions';
         icon = Icons.person;
