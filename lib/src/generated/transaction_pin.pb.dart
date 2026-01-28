@@ -1228,109 +1228,6 @@ class TransactionPinDetails extends $pb.GeneratedMessage {
   $2.Timestamp ensureLockedUntil() => $_ensure(8);
 }
 
-class PinConfig extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'PinConfig', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'auth'), createEmptyInstance: create)
-    ..a<$core.int>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'minLength', $pb.PbFieldType.O3)
-    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'maxLength', $pb.PbFieldType.O3)
-    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'maxAttempts', $pb.PbFieldType.O3)
-    ..a<$core.int>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lockoutDurationMinutes', $pb.PbFieldType.O3)
-    ..a<$core.int>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'tokenExpiryMinutes', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
-
-  PinConfig._() : super();
-  factory PinConfig({
-    $core.int? minLength,
-    $core.int? maxLength,
-    $core.int? maxAttempts,
-    $core.int? lockoutDurationMinutes,
-    $core.int? tokenExpiryMinutes,
-  }) {
-    final _result = create();
-    if (minLength != null) {
-      _result.minLength = minLength;
-    }
-    if (maxLength != null) {
-      _result.maxLength = maxLength;
-    }
-    if (maxAttempts != null) {
-      _result.maxAttempts = maxAttempts;
-    }
-    if (lockoutDurationMinutes != null) {
-      _result.lockoutDurationMinutes = lockoutDurationMinutes;
-    }
-    if (tokenExpiryMinutes != null) {
-      _result.tokenExpiryMinutes = tokenExpiryMinutes;
-    }
-    return _result;
-  }
-  factory PinConfig.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory PinConfig.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  PinConfig clone() => PinConfig()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  PinConfig copyWith(void Function(PinConfig) updates) => super.copyWith((message) => updates(message as PinConfig)) as PinConfig; // ignore: deprecated_member_use
-  $pb.BuilderInfo get info_ => _i;
-  @$core.pragma('dart2js:noInline')
-  static PinConfig create() => PinConfig._();
-  PinConfig createEmptyInstance() => create();
-  static $pb.PbList<PinConfig> createRepeated() => $pb.PbList<PinConfig>();
-  @$core.pragma('dart2js:noInline')
-  static PinConfig getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<PinConfig>(create);
-  static PinConfig? _defaultInstance;
-
-  @$pb.TagNumber(1)
-  $core.int get minLength => $_getIZ(0);
-  @$pb.TagNumber(1)
-  set minLength($core.int v) { $_setSignedInt32(0, v); }
-  @$pb.TagNumber(1)
-  $core.bool hasMinLength() => $_has(0);
-  @$pb.TagNumber(1)
-  void clearMinLength() => clearField(1);
-
-  @$pb.TagNumber(2)
-  $core.int get maxLength => $_getIZ(1);
-  @$pb.TagNumber(2)
-  set maxLength($core.int v) { $_setSignedInt32(1, v); }
-  @$pb.TagNumber(2)
-  $core.bool hasMaxLength() => $_has(1);
-  @$pb.TagNumber(2)
-  void clearMaxLength() => clearField(2);
-
-  @$pb.TagNumber(3)
-  $core.int get maxAttempts => $_getIZ(2);
-  @$pb.TagNumber(3)
-  set maxAttempts($core.int v) { $_setSignedInt32(2, v); }
-  @$pb.TagNumber(3)
-  $core.bool hasMaxAttempts() => $_has(2);
-  @$pb.TagNumber(3)
-  void clearMaxAttempts() => clearField(3);
-
-  @$pb.TagNumber(4)
-  $core.int get lockoutDurationMinutes => $_getIZ(3);
-  @$pb.TagNumber(4)
-  set lockoutDurationMinutes($core.int v) { $_setSignedInt32(3, v); }
-  @$pb.TagNumber(4)
-  $core.bool hasLockoutDurationMinutes() => $_has(3);
-  @$pb.TagNumber(4)
-  void clearLockoutDurationMinutes() => clearField(4);
-
-  @$pb.TagNumber(5)
-  $core.int get tokenExpiryMinutes => $_getIZ(4);
-  @$pb.TagNumber(5)
-  set tokenExpiryMinutes($core.int v) { $_setSignedInt32(4, v); }
-  @$pb.TagNumber(5)
-  $core.bool hasTokenExpiryMinutes() => $_has(4);
-  @$pb.TagNumber(5)
-  void clearTokenExpiryMinutes() => clearField(5);
-}
-
 class InitiatePinOTPRequest extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'InitiatePinOTPRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'auth'), createEmptyInstance: create)
     ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
@@ -1804,6 +1701,61 @@ class GetPinOTPChannelsRequest extends $pb.GeneratedMessage {
   void clearUserId() => clearField(1);
 }
 
+class GetPinOTPChannelsResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetPinOTPChannelsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'auth'), createEmptyInstance: create)
+    ..pc<OTPChannel>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'channels', $pb.PbFieldType.PM, subBuilder: OTPChannel.create)
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recommendedChannel')
+    ..hasRequiredFields = false
+  ;
+
+  GetPinOTPChannelsResponse._() : super();
+  factory GetPinOTPChannelsResponse({
+    $core.Iterable<OTPChannel>? channels,
+    $core.String? recommendedChannel,
+  }) {
+    final _result = create();
+    if (channels != null) {
+      _result.channels.addAll(channels);
+    }
+    if (recommendedChannel != null) {
+      _result.recommendedChannel = recommendedChannel;
+    }
+    return _result;
+  }
+  factory GetPinOTPChannelsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetPinOTPChannelsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetPinOTPChannelsResponse clone() => GetPinOTPChannelsResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetPinOTPChannelsResponse copyWith(void Function(GetPinOTPChannelsResponse) updates) => super.copyWith((message) => updates(message as GetPinOTPChannelsResponse)) as GetPinOTPChannelsResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GetPinOTPChannelsResponse create() => GetPinOTPChannelsResponse._();
+  GetPinOTPChannelsResponse createEmptyInstance() => create();
+  static $pb.PbList<GetPinOTPChannelsResponse> createRepeated() => $pb.PbList<GetPinOTPChannelsResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetPinOTPChannelsResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetPinOTPChannelsResponse>(create);
+  static GetPinOTPChannelsResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.List<OTPChannel> get channels => $_getList(0);
+
+  @$pb.TagNumber(2)
+  $core.String get recommendedChannel => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set recommendedChannel($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasRecommendedChannel() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearRecommendedChannel() => clearField(2);
+}
+
 class OTPChannel extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'OTPChannel', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'auth'), createEmptyInstance: create)
     ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'type')
@@ -1891,61 +1843,6 @@ class OTPChannel extends $pb.GeneratedMessage {
   $core.bool hasIsAvailable() => $_has(3);
   @$pb.TagNumber(4)
   void clearIsAvailable() => clearField(4);
-}
-
-class GetPinOTPChannelsResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetPinOTPChannelsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'auth'), createEmptyInstance: create)
-    ..pc<OTPChannel>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'channels', $pb.PbFieldType.PM, subBuilder: OTPChannel.create)
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recommendedChannel')
-    ..hasRequiredFields = false
-  ;
-
-  GetPinOTPChannelsResponse._() : super();
-  factory GetPinOTPChannelsResponse({
-    $core.Iterable<OTPChannel>? channels,
-    $core.String? recommendedChannel,
-  }) {
-    final _result = create();
-    if (channels != null) {
-      _result.channels.addAll(channels);
-    }
-    if (recommendedChannel != null) {
-      _result.recommendedChannel = recommendedChannel;
-    }
-    return _result;
-  }
-  factory GetPinOTPChannelsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetPinOTPChannelsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  GetPinOTPChannelsResponse clone() => GetPinOTPChannelsResponse()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  GetPinOTPChannelsResponse copyWith(void Function(GetPinOTPChannelsResponse) updates) => super.copyWith((message) => updates(message as GetPinOTPChannelsResponse)) as GetPinOTPChannelsResponse; // ignore: deprecated_member_use
-  $pb.BuilderInfo get info_ => _i;
-  @$core.pragma('dart2js:noInline')
-  static GetPinOTPChannelsResponse create() => GetPinOTPChannelsResponse._();
-  GetPinOTPChannelsResponse createEmptyInstance() => create();
-  static $pb.PbList<GetPinOTPChannelsResponse> createRepeated() => $pb.PbList<GetPinOTPChannelsResponse>();
-  @$core.pragma('dart2js:noInline')
-  static GetPinOTPChannelsResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetPinOTPChannelsResponse>(create);
-  static GetPinOTPChannelsResponse? _defaultInstance;
-
-  @$pb.TagNumber(1)
-  $core.List<OTPChannel> get channels => $_getList<OTPChannel>(0);
-
-  @$pb.TagNumber(2)
-  $core.String get recommendedChannel => $_getSZ(1);
-  @$pb.TagNumber(2)
-  set recommendedChannel($core.String v) { $_setString(1, v); }
-  @$pb.TagNumber(2)
-  $core.bool hasRecommendedChannel() => $_has(1);
-  @$pb.TagNumber(2)
-  void clearRecommendedChannel() => clearField(2);
 }
 
 class CompleteForgotPinRequest extends $pb.GeneratedMessage {
@@ -2124,5 +2021,108 @@ class CompleteForgotPinResponse extends $pb.GeneratedMessage {
   $core.bool hasRemainingAttempts() => $_has(2);
   @$pb.TagNumber(3)
   void clearRemainingAttempts() => clearField(3);
+}
+
+class PinConfig extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'PinConfig', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'auth'), createEmptyInstance: create)
+    ..a<$core.int>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'minLength', $pb.PbFieldType.O3)
+    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'maxLength', $pb.PbFieldType.O3)
+    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'maxAttempts', $pb.PbFieldType.O3)
+    ..a<$core.int>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lockoutDurationMinutes', $pb.PbFieldType.O3)
+    ..a<$core.int>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'tokenExpiryMinutes', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  PinConfig._() : super();
+  factory PinConfig({
+    $core.int? minLength,
+    $core.int? maxLength,
+    $core.int? maxAttempts,
+    $core.int? lockoutDurationMinutes,
+    $core.int? tokenExpiryMinutes,
+  }) {
+    final _result = create();
+    if (minLength != null) {
+      _result.minLength = minLength;
+    }
+    if (maxLength != null) {
+      _result.maxLength = maxLength;
+    }
+    if (maxAttempts != null) {
+      _result.maxAttempts = maxAttempts;
+    }
+    if (lockoutDurationMinutes != null) {
+      _result.lockoutDurationMinutes = lockoutDurationMinutes;
+    }
+    if (tokenExpiryMinutes != null) {
+      _result.tokenExpiryMinutes = tokenExpiryMinutes;
+    }
+    return _result;
+  }
+  factory PinConfig.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory PinConfig.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  PinConfig clone() => PinConfig()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  PinConfig copyWith(void Function(PinConfig) updates) => super.copyWith((message) => updates(message as PinConfig)) as PinConfig; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static PinConfig create() => PinConfig._();
+  PinConfig createEmptyInstance() => create();
+  static $pb.PbList<PinConfig> createRepeated() => $pb.PbList<PinConfig>();
+  @$core.pragma('dart2js:noInline')
+  static PinConfig getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<PinConfig>(create);
+  static PinConfig? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.int get minLength => $_getIZ(0);
+  @$pb.TagNumber(1)
+  set minLength($core.int v) { $_setSignedInt32(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasMinLength() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearMinLength() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.int get maxLength => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set maxLength($core.int v) { $_setSignedInt32(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasMaxLength() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMaxLength() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.int get maxAttempts => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set maxAttempts($core.int v) { $_setSignedInt32(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasMaxAttempts() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearMaxAttempts() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.int get lockoutDurationMinutes => $_getIZ(3);
+  @$pb.TagNumber(4)
+  set lockoutDurationMinutes($core.int v) { $_setSignedInt32(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasLockoutDurationMinutes() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearLockoutDurationMinutes() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.int get tokenExpiryMinutes => $_getIZ(4);
+  @$pb.TagNumber(5)
+  set tokenExpiryMinutes($core.int v) { $_setSignedInt32(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasTokenExpiryMinutes() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearTokenExpiryMinutes() => clearField(5);
 }
 

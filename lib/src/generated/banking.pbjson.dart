@@ -120,17 +120,38 @@ const InternalTransferRequest$json = const {
   '1': 'InternalTransferRequest',
   '2': const [
     const {'1': 'from_user_id', '3': 1, '4': 1, '5': 9, '10': 'fromUserId'},
-    const {'1': 'to_user_id', '3': 2, '4': 1, '5': 9, '10': 'toUserId'},
-    const {'1': 'amount', '3': 3, '4': 1, '5': 3, '10': 'amount'},
-    const {'1': 'currency', '3': 4, '4': 1, '5': 9, '10': 'currency'},
-    const {'1': 'narration', '3': 5, '4': 1, '5': 9, '10': 'narration'},
-    const {'1': 'reference', '3': 6, '4': 1, '5': 9, '10': 'reference'},
-    const {'1': 'idempotency_key', '3': 7, '4': 1, '5': 9, '10': 'idempotencyKey'},
+    const {'1': 'from_account_id', '3': 2, '4': 1, '5': 9, '10': 'fromAccountId'},
+    const {'1': 'to_user_id', '3': 3, '4': 1, '5': 9, '10': 'toUserId'},
+    const {'1': 'to_account_id', '3': 4, '4': 1, '5': 9, '10': 'toAccountId'},
+    const {'1': 'recipient_details', '3': 10, '4': 1, '5': 11, '6': '.banking.RecipientDetails', '10': 'recipientDetails'},
+    const {'1': 'amount', '3': 5, '4': 1, '5': 3, '10': 'amount'},
+    const {'1': 'currency', '3': 6, '4': 1, '5': 9, '10': 'currency'},
+    const {'1': 'narration', '3': 7, '4': 1, '5': 9, '10': 'narration'},
+    const {'1': 'reference', '3': 8, '4': 1, '5': 9, '10': 'reference'},
+    const {'1': 'idempotency_key', '3': 9, '4': 1, '5': 9, '10': 'idempotencyKey'},
   ],
 };
 
 /// Descriptor for `InternalTransferRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List internalTransferRequestDescriptor = $convert.base64Decode('ChdJbnRlcm5hbFRyYW5zZmVyUmVxdWVzdBIgCgxmcm9tX3VzZXJfaWQYASABKAlSCmZyb21Vc2VySWQSHAoKdG9fdXNlcl9pZBgCIAEoCVIIdG9Vc2VySWQSFgoGYW1vdW50GAMgASgDUgZhbW91bnQSGgoIY3VycmVuY3kYBCABKAlSCGN1cnJlbmN5EhwKCW5hcnJhdGlvbhgFIAEoCVIJbmFycmF0aW9uEhwKCXJlZmVyZW5jZRgGIAEoCVIJcmVmZXJlbmNlEicKD2lkZW1wb3RlbmN5X2tleRgHIAEoCVIOaWRlbXBvdGVuY3lLZXk=');
+final $typed_data.Uint8List internalTransferRequestDescriptor = $convert.base64Decode('ChdJbnRlcm5hbFRyYW5zZmVyUmVxdWVzdBIgCgxmcm9tX3VzZXJfaWQYASABKAlSCmZyb21Vc2VySWQSJgoPZnJvbV9hY2NvdW50X2lkGAIgASgJUg1mcm9tQWNjb3VudElkEhwKCnRvX3VzZXJfaWQYAyABKAlSCHRvVXNlcklkEiIKDXRvX2FjY291bnRfaWQYBCABKAlSC3RvQWNjb3VudElkEkYKEXJlY2lwaWVudF9kZXRhaWxzGAogASgLMhkuYmFua2luZy5SZWNpcGllbnREZXRhaWxzUhByZWNpcGllbnREZXRhaWxzEhYKBmFtb3VudBgFIAEoA1IGYW1vdW50EhoKCGN1cnJlbmN5GAYgASgJUghjdXJyZW5jeRIcCgluYXJyYXRpb24YByABKAlSCW5hcnJhdGlvbhIcCglyZWZlcmVuY2UYCCABKAlSCXJlZmVyZW5jZRInCg9pZGVtcG90ZW5jeV9rZXkYCSABKAlSDmlkZW1wb3RlbmN5S2V5');
+@$core.Deprecated('Use recipientDetailsDescriptor instead')
+const RecipientDetails$json = const {
+  '1': 'RecipientDetails',
+  '2': const [
+    const {'1': 'name', '3': 1, '4': 1, '5': 9, '10': 'name'},
+    const {'1': 'recipient_type', '3': 2, '4': 1, '5': 9, '10': 'recipientType'},
+    const {'1': 'recipient_source', '3': 3, '4': 1, '5': 9, '10': 'recipientSource'},
+    const {'1': 'username', '3': 4, '4': 1, '5': 9, '10': 'username'},
+    const {'1': 'user_id', '3': 5, '4': 1, '5': 9, '10': 'userId'},
+    const {'1': 'account_number', '3': 6, '4': 1, '5': 9, '10': 'accountNumber'},
+    const {'1': 'bank_code', '3': 7, '4': 1, '5': 9, '10': 'bankCode'},
+    const {'1': 'bank_name', '3': 8, '4': 1, '5': 9, '10': 'bankName'},
+    const {'1': 'phone_number', '3': 9, '4': 1, '5': 9, '10': 'phoneNumber'},
+  ],
+};
+
+/// Descriptor for `RecipientDetails`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List recipientDetailsDescriptor = $convert.base64Decode('ChBSZWNpcGllbnREZXRhaWxzEhIKBG5hbWUYASABKAlSBG5hbWUSJQoOcmVjaXBpZW50X3R5cGUYAiABKAlSDXJlY2lwaWVudFR5cGUSKQoQcmVjaXBpZW50X3NvdXJjZRgDIAEoCVIPcmVjaXBpZW50U291cmNlEhoKCHVzZXJuYW1lGAQgASgJUgh1c2VybmFtZRIXCgd1c2VyX2lkGAUgASgJUgZ1c2VySWQSJQoOYWNjb3VudF9udW1iZXIYBiABKAlSDWFjY291bnROdW1iZXISGwoJYmFua19jb2RlGAcgASgJUghiYW5rQ29kZRIbCgliYW5rX25hbWUYCCABKAlSCGJhbmtOYW1lEiEKDHBob25lX251bWJlchgJIAEoCVILcGhvbmVOdW1iZXI=');
 @$core.Deprecated('Use internationalTransferRequestDescriptor instead')
 const InternationalTransferRequest$json = const {
   '1': 'InternationalTransferRequest',

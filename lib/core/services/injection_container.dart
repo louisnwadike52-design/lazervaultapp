@@ -153,7 +153,7 @@ import 'package:lazervault/src/features/presentation/views/stocks/stocks_screen.
 import 'package:lazervault/src/features/presentation/views/upload_image_scren.dart';
 import 'package:lazervault/src/generated/withdraw.pbgrpc.dart';
 
-import 'package:lazervault/src/features/funds/data/datasources/banking_transfer_data_source.dart';
+import 'package:lazervault/src/features/funds/data/datasources/payments_transfer_data_source.dart';
 import 'package:lazervault/src/features/funds/cubit/transfer_cubit.dart';
 
 // Batch Transfer imports
@@ -1066,17 +1066,17 @@ Future<void> init() async {
 
   // ================== Feature: Funds (Transfer) ==================
 
-  // Data Sources - Banking Service (production-grade with Flutterwave/VFD)
-  serviceLocator.registerLazySingleton<IBankingTransferDataSource>(
-    () => BankingTransferDataSourceImpl(
-      serviceLocator<banking_grpc.BankingServiceClient>(),
+  // Data Sources - Payments Service (via Transfer Gateway 50076)
+  serviceLocator.registerLazySingleton<IPaymentsTransferDataSource>(
+    () => PaymentsTransferDataSourceImpl(
+      serviceLocator<payments_grpc.PaymentsServiceClient>(),
       serviceLocator<GrpcCallOptionsHelper>(),
     ),
   );
 
   // Blocs/Cubits
   serviceLocator.registerFactory(() => TransferCubit(
-    bankingTransferDataSource: serviceLocator<IBankingTransferDataSource>(),
+    paymentsTransferDataSource: serviceLocator<IPaymentsTransferDataSource>(),
   ));
 
 

@@ -62,10 +62,16 @@ final $typed_data.Uint8List accountSummaryDescriptor = $convert.base64Decode('Cg
 @$core.Deprecated('Use getUserAccountsRequestDescriptor instead')
 const GetUserAccountsRequest$json = const {
   '1': 'GetUserAccountsRequest',
+  '2': const [
+    const {'1': 'target_user_id', '3': 1, '4': 1, '5': 9, '9': 0, '10': 'targetUserId', '17': true},
+  ],
+  '8': const [
+    const {'1': '_target_user_id'},
+  ],
 };
 
 /// Descriptor for `GetUserAccountsRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getUserAccountsRequestDescriptor = $convert.base64Decode('ChZHZXRVc2VyQWNjb3VudHNSZXF1ZXN0');
+final $typed_data.Uint8List getUserAccountsRequestDescriptor = $convert.base64Decode('ChZHZXRVc2VyQWNjb3VudHNSZXF1ZXN0EikKDnRhcmdldF91c2VyX2lkGAEgASgJSABSDHRhcmdldFVzZXJJZIgBAUIRCg9fdGFyZ2V0X3VzZXJfaWQ=');
 @$core.Deprecated('Use getUserAccountsResponseDescriptor instead')
 const GetUserAccountsResponse$json = const {
   '1': 'GetUserAccountsResponse',

@@ -216,6 +216,14 @@ service BankingService {
 
     // ===== OPEN BANKING - LINKED ACCOUNTS =====
 
+    // Get list of Mono-supported institutions (banks) with auth methods
+    // This endpoint returns institutions that can be used with Mono Connect
+    rpc GetMonoInstitutions(GetMonoInstitutionsRequest) returns (MonoInstitutionsResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/open-banking/institutions"
+        };
+    }
+
     // Get Mono Connect widget configuration
     rpc GetConnectWidgetConfig(GetConnectWidgetConfigRequest) returns (ConnectWidgetConfigResponse) {
         option (google.api.http) = {
@@ -276,13 +284,6 @@ service BankingService {
         };
     }
 
-    // Get list of Mono-supported financial institutions
-    rpc GetMonoInstitutions(GetMonoInstitutionsRequest) returns (MonoInstitutionsResponse) {
-        option (google.api.http) = {
-            get: "/api/v1/open-banking/institutions"
-        };
-    }
-
     // ===== OPEN BANKING - DEPOSITS (Direct Debit) =====
 
     // Initiate a deposit via direct debit from linked account
@@ -319,6 +320,61 @@ service BankingService {
     rpc CalculateDepositFee(CalculateDepositFeeRequest) returns (CalculateDepositFeeResponse) {
         option (google.api.http) = {
             get: "/api/v1/deposits/calculate-fee"
+        };
+    }
+
+    // ===== DIRECT DEBIT MANDATES (Production-Ready) =====
+
+    // Create a direct debit mandate for a linked account
+    rpc CreateMandate(CreateMandateRequest) returns (MandateResponse) {
+        option (google.api.http) = {
+            post: "/api/v1/mandates"
+            body: "*"
+        };
+    }
+
+    // Get mandate status
+    rpc GetMandate(GetMandateRequest) returns (MandateResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/mandates/{mandate_id}"
+        };
+    }
+
+    // Get user's mandates
+    rpc GetUserMandates(GetUserMandatesRequest) returns (MandatesResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/users/{user_id}/mandates"
+        };
+    }
+
+    // Pause a mandate
+    rpc PauseMandate(PauseMandateRequest) returns (PauseMandateResponse) {
+        option (google.api.http) = {
+            post: "/api/v1/mandates/{mandate_id}/pause"
+            body: "*"
+        };
+    }
+
+    // Reinstate a paused mandate
+    rpc ReinstateMandate(ReinstateMandateRequest) returns (ReinstateMandateResponse) {
+        option (google.api.http) = {
+            post: "/api/v1/mandates/{mandate_id}/reinstate"
+            body: "*"
+        };
+    }
+
+    // Cancel a mandate
+    rpc CancelMandate(CancelMandateRequest) returns (CancelMandateResponse) {
+        option (google.api.http) = {
+            post: "/api/v1/mandates/{mandate_id}/cancel"
+            body: "*"
+        };
+    }
+
+    // Check balance before debit
+    rpc CheckMandateBalance(CheckMandateBalanceRequest) returns (CheckMandateBalanceResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/mandates/{mandate_id}/balance-check"
         };
     }
 
@@ -430,12 +486,37 @@ message DomesticTransferRequest {
 
 message InternalTransferRequest {
     string from_user_id = 1;
-    string to_user_id = 2;
-    int64 amount = 3;
-    string currency = 4;
-    string narration = 5;
-    string reference = 6;
-    string idempotency_key = 7;
+    string from_account_id = 2; // Source account ID (required - user selects which account to debit)
+    string to_user_id = 3;      // Optional: Recipient's user ID (for LazerVault users)
+    string to_account_id = 4;   // Optional: Destination account ID
+
+    // Recipient details (required when to_user_id is not set, or for creating recipient record)
+    RecipientDetails recipient_details = 10;
+
+    int64 amount = 5;
+    string currency = 6;
+    string narration = 7;
+    string reference = 8;
+    string idempotency_key = 9;
+}
+
+// Recipient details for on-the-fly recipient creation
+message RecipientDetails {
+    string name = 1;              // Recipient name (required)
+    string recipient_type = 2;    // "internal" (LazerVault user) or "external" (bank account)
+    string recipient_source = 3;   // "username", "bank", or "phone" - how recipient was added
+
+    // For internal recipients (LazerVault users)
+    string username = 4;           // LazerTag username
+    string user_id = 5;            // User ID (if known from username search)
+
+    // For external recipients (bank accounts)
+    string account_number = 6;     // Bank account number
+    string bank_code = 7;          // Bank sort code/routing number
+    string bank_name = 8;          // Bank name
+
+    // For phone recipients
+    string phone_number = 9;       // Phone number
 }
 
 message InternationalTransferRequest {
@@ -940,6 +1021,36 @@ message DailyReportResponse {
 // OPEN BANKING - LINKED ACCOUNTS MESSAGES
 // =====================================================
 
+// Get Mono Institutions
+message GetMonoInstitutionsRequest {
+    string scope = 1;           // Optional: filter by scope (e.g., "financial_data", "payments")
+    string country = 2;         // Optional: filter by country (default: "NG")
+}
+
+message MonoInstitutionsResponse {
+    bool success = 1;
+    string error_code = 2;
+    string error_message = 3;
+    repeated MonoInstitution institutions = 4;
+}
+
+message MonoInstitution {
+    string id = 1;                              // Mono institution ID (for pre-selection in Connect widget)
+    string name = 2;                            // Institution display name
+    string bank_code = 3;                       // Nigerian bank code (if applicable)
+    string icon = 4;                            // Institution logo URL
+    string type = 5;                            // e.g., "PERSONAL_BANKING"
+    string country = 6;                         // Country code
+    repeated MonoAuthMethod auth_methods = 7;    // Supported authentication methods
+    bool supports_mobile_banking = 8;           // Has mobile banking auth
+    bool supports_internet_banking = 9;         // Has internet banking auth
+}
+
+message MonoAuthMethod {
+    string type = 1;    // e.g., "mobile_banking", "internet_banking"
+    string name = 2;    // Display name
+}
+
 // Connect Widget Config
 message GetConnectWidgetConfigRequest {}
 
@@ -1265,31 +1376,158 @@ message ResolveAccountNameResponse {
 }
 
 // =====================================================
-// MONO INSTITUTIONS MESSAGES
+// DIRECT DEBIT MANDATE MESSAGES (Production-Ready)
 // =====================================================
 
-message GetMonoInstitutionsRequest {}
+// Mandate Types (Mono Direct Debit v3)
+// - e-mandate: User authorizes via bank portal (1-3 min, then 24h wait for activation)
+// - gsm: User authorizes via phone number linked to bank (instant, if supported)
+// - signed: Traditional paper mandate (5+ days)
 
-message MonoInstitutionsResponse {
+// Create Mandate Request
+message CreateMandateRequest {
+    string user_id = 1;
+    string linked_account_id = 2;     // The linked bank account to create mandate for
+    string mandate_type = 3;          // "e-mandate", "gsm", or "signed" (default: e-mandate)
+    int64 amount_limit = 4;           // Maximum amount per debit (kobo) - 0 for unlimited
+    int32 debit_limit = 5;            // Maximum number of debits (0 = unlimited)
+    string start_date = 6;            // Mandate start date (YYYY-MM-DD) - default: today
+    string end_date = 7;              // Mandate end date (YYYY-MM-DD) - default: 1 year
+    string description = 8;           // Description shown to user during authorization
+}
+
+// Mandate Response (single)
+message MandateResponse {
     bool success = 1;
     string error_code = 2;
     string error_message = 3;
-    repeated MonoInstitution institutions = 4;
+    DirectDebitMandate mandate = 4;
+
+    // Authorization flow fields (only set when mandate needs authorization)
+    bool needs_authorization = 5;     // True if user needs to authorize via URL
+    string authorization_url = 6;     // URL for user to complete authorization (e-mandate/gsm)
 }
 
-message MonoInstitution {
-    string id = 1;
-    string name = 2;
-    string bank_code = 3;
-    string icon = 4;
-    string type = 5;
-    string country = 6;
-    repeated MonoAuthMethod auth_methods = 7;
-    bool supports_mobile_banking = 8;
-    bool supports_internet_banking = 9;
+// Mandates Response (list)
+message MandatesResponse {
+    bool success = 1;
+    string error_code = 2;
+    string error_message = 3;
+    repeated DirectDebitMandate mandates = 4;
+    int32 total = 5;
 }
 
-message MonoAuthMethod {
-    string type = 1;
-    string name = 2;
+// Direct Debit Mandate Message
+message DirectDebitMandate {
+    string id = 1;                    // Internal mandate ID
+    string mono_mandate_id = 2;       // Mono's mandate ID
+    string user_id = 3;
+    string linked_account_id = 4;
+    string mono_customer_id = 5;      // Mono customer ID
+
+    // Bank account details
+    string bank_name = 6;
+    string bank_code = 7;
+    string account_number = 8;        // Masked: ****1234
+    string account_name = 9;
+
+    // Mandate configuration
+    string mandate_type = 10;         // e-mandate, gsm, signed
+    string status = 11;               // pending, awaiting_authorization, authorized,
+                                      // ready_to_debit, paused, cancelled, expired
+    int64 amount_limit = 12;          // Maximum per debit (kobo), 0 = unlimited
+    int32 debit_limit = 13;           // Maximum number of debits, 0 = unlimited
+    int32 debit_count = 14;           // Number of successful debits made
+    int64 total_debited = 15;         // Total amount debited (kobo)
+
+    // Validity period
+    google.protobuf.Timestamp start_date = 16;
+    google.protobuf.Timestamp end_date = 17;
+
+    // Timestamps
+    google.protobuf.Timestamp created_at = 18;
+    google.protobuf.Timestamp authorized_at = 19;
+    google.protobuf.Timestamp ready_at = 20;      // When mandate became ready to debit
+    google.protobuf.Timestamp last_debit_at = 21;
+    google.protobuf.Timestamp cancelled_at = 22;
+
+    // Reference
+    string reference = 23;            // Unique reference for this mandate
+    string description = 24;          // Description shown to user
+
+    // Flags
+    bool can_debit = 25;              // True if mandate is ready_to_debit and not expired
+    bool is_expired = 26;             // True if past end_date
+    int64 remaining_limit = 27;       // Remaining amount limit (if applicable)
+}
+
+// Get Mandate Request
+message GetMandateRequest {
+    string mandate_id = 1;
+    string user_id = 2;               // For authorization check
+}
+
+// Get User Mandates Request
+message GetUserMandatesRequest {
+    string user_id = 1;
+    bool active_only = 2;             // Only return active mandates
+    int32 limit = 3;
+    int32 offset = 4;
+}
+
+// Pause Mandate Request
+message PauseMandateRequest {
+    string mandate_id = 1;
+    string user_id = 2;
+    string reason = 3;                // Optional pause reason
+}
+
+message PauseMandateResponse {
+    bool success = 1;
+    string error_code = 2;
+    string error_message = 3;
+    DirectDebitMandate mandate = 4;
+}
+
+// Reinstate Mandate Request
+message ReinstateMandateRequest {
+    string mandate_id = 1;
+    string user_id = 2;
+}
+
+message ReinstateMandateResponse {
+    bool success = 1;
+    string error_code = 2;
+    string error_message = 3;
+    DirectDebitMandate mandate = 4;
+}
+
+// Cancel Mandate Request
+message CancelMandateRequest {
+    string mandate_id = 1;
+    string user_id = 2;
+    string reason = 3;                // Optional cancellation reason
+}
+
+message CancelMandateResponse {
+    bool success = 1;
+    string error_code = 2;
+    string error_message = 3;
+}
+
+// Check Mandate Balance Request (Balance inquiry before debit)
+message CheckMandateBalanceRequest {
+    string mandate_id = 1;
+    string user_id = 2;
+    int64 amount = 3;                 // Amount to check (kobo)
+}
+
+message CheckMandateBalanceResponse {
+    bool success = 1;
+    string error_code = 2;
+    string error_message = 3;
+    int64 available_balance = 4;      // Available balance (kobo)
+    bool sufficient_funds = 5;        // True if balance >= amount
+    string currency = 6;
+    google.protobuf.Timestamp checked_at = 7;
 }

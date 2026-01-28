@@ -2,7 +2,7 @@ import 'package:equatable/equatable.dart';
 import 'package:fixnum/fixnum.dart'; // For Int64
 
 class TransferEntity extends Equatable {
-  final Int64 transferId;
+  final String transferId;  // Changed to String for UUID support
   final String status;
   final Int64 amount; // Minor units
   final Int64 fee; // Minor units

@@ -632,14 +632,31 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
       return;
     }
 
-    // 7. Validate recipient exists
-    if (_recipient!.name.isEmpty) {
+    // 7. Validate recipient exists and has required information
+    if (_recipient == null ||
+        _recipient!.name.trim().isEmpty ||
+        _recipient!.accountNumber.trim().isEmpty) {
       Get.snackbar(
         'Invalid Recipient',
-        'Recipient information is missing or invalid.',
+        'Recipient information is missing or invalid. Please go back and select a recipient.',
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.red.withValues(alpha: 0.7),
         colorText: Colors.white,
+        duration: const Duration(seconds: 4),
+      );
+      return;
+    }
+
+    // Additional validation for external transfers
+    if (_recipient!.bankName != 'LazerVault' &&
+        (_recipient!.sortCode.trim().isEmpty || _recipient!.bankName.trim().isEmpty)) {
+      Get.snackbar(
+        'Invalid Recipient',
+        'Bank details are incomplete. Please verify the recipient\'s bank information.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.withValues(alpha: 0.7),
+        colorText: Colors.white,
+        duration: const Duration(seconds: 4),
       );
       return;
     }
@@ -956,89 +973,6 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
 
   // --- Cubit Interaction ---
 
-  // Updated to use AccountSummaryEntity from AccountCardsSummaryCubit state
-  void _handleTransferInitiation(AccountCardsSummaryState accountState) {
-    print("_handleTransferInitiation: Entered function.");
-    final authState = context.read<AuthenticationCubit>().state;
-    if (authState is! AuthenticationSuccess) {
-      print("_handleTransferInitiation: Error - Not authenticated.");
-      Get.snackbar('Error', 'Authentication required.',
-          snackPosition: SnackPosition.BOTTOM);
-      return;
-    }
-    final accessToken = authState.profile.session.accessToken;
-
-    // Validate selected card and get source account ID from cubit state
-    if (accountState is! AccountCardsSummaryLoaded ||
-        accountState.accountSummaries.isEmpty) {
-      print("_handleTransferInitiation: Error - Account data not loaded.");
-      Get.snackbar('Error', 'Account data not available.',
-          snackPosition: SnackPosition.BOTTOM);
-      return;
-    }
-    if (selectedCardIndex >= accountState.accountSummaries.length) {
-      print("_handleTransferInitiation: Error - Invalid card index.");
-      Get.snackbar('Error', 'Invalid card selected.',
-          snackPosition: SnackPosition.BOTTOM);
-      return;
-    }
-    final selectedAccount = accountState.accountSummaries[selectedCardIndex];
-    final fromAccountId = selectedAccount.id;
-
-    // Get user ID for banking service
-    final userId = authState.profile.user.id;
-
-    // Parse amount string (minor units)
-    int amountMinorUnits;
-    try {
-      if (amount.isEmpty) throw const FormatException('Amount is empty');
-      amountMinorUnits = int.parse(amount);
-      if (amountMinorUnits <= 0) {
-        Get.snackbar('Error', 'Amount must be greater than zero.',
-            snackPosition: SnackPosition.BOTTOM);
-        return;
-      }
-    } catch (e) {
-      Get.snackbar('Error', 'Invalid amount entered.',
-          snackPosition: SnackPosition.BOTTOM);
-      return;
-    }
-
-    final reference = _referenceController.text.trim();
-    final narration = selectedCategory != null
-        ? '$selectedCategory: ${reference.isNotEmpty ? reference : "Transfer"}'
-        : (reference.isNotEmpty ? reference : 'Transfer');
-
-    // Determine transfer type based on recipient
-    final isInternalTransfer = _recipient!.bankName == 'LazerVault';
-
-    if (isInternalTransfer) {
-      print("_handleTransferInitiation: Calling TransferCubit.initiateInternalTransfer...");
-      context.read<TransferCubit>().initiateInternalTransfer(
-            fromUserId: userId,
-            toUserId: _recipient!.id,
-            amount: amountMinorUnits,
-            currency: selectedAccount.currency,
-            narration: narration,
-          );
-      print("_handleTransferInitiation: Internal transfer initiated.");
-    } else {
-      print("_handleTransferInitiation: Calling TransferCubit.initiateDomesticTransfer...");
-      context.read<TransferCubit>().initiateDomesticTransfer(
-            userId: userId,
-            sourceAccountId: fromAccountId,
-            amount: amountMinorUnits,
-            destinationAccount: _recipient!.accountNumber,
-            destinationBankCode: _recipient!.sortCode,
-            destinationName: _recipient!.name,
-            currency: selectedAccount.currency,
-            narration: narration,
-            reference: reference.isNotEmpty ? reference : null,
-          );
-      print("_handleTransferInitiation: Domestic transfer initiated.");
-    }
-  }
-
   /// Execute transfer with verification token (for PIN-validated transactions)
   void _executeTransferWithPin({
     required AccountCardsSummaryState accountState,
@@ -1053,7 +987,6 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
           snackPosition: SnackPosition.BOTTOM);
       return;
     }
-    final accessToken = authState.profile.session.accessToken;
 
     // Validate selected card and get source account ID from cubit state
     if (accountState is! AccountCardsSummaryLoaded ||
@@ -1072,10 +1005,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
     final selectedAccount = accountState.accountSummaries[selectedCardIndex];
     final fromAccountId = selectedAccount.id;
 
-    // Get user ID for banking service
-    final userId = authState.profile.user.id;
-
-    // Parse amount string (minor units)
+    // Parse amount string (minor units) and convert to major units for API
     int amountMinorUnits;
     try {
       if (amount.isEmpty) throw const FormatException('Amount is empty');
@@ -1091,41 +1021,31 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
       return;
     }
 
+    // Convert minor units to major units for SendFundsRequest (e.g., 10050 -> 100.50)
+    double amountMajor = amountMinorUnits / 100.0;
+
     final reference = _referenceController.text.trim();
     final narration = selectedCategory != null
         ? '$selectedCategory: ${reference.isNotEmpty ? reference : "Transfer"}'
         : (reference.isNotEmpty ? reference : 'Transfer');
 
-    // Determine transfer type based on recipient
-    final isInternalTransfer = _recipient!.bankName == 'LazerVault';
+    // Get recipient account number
+    // For internal transfers: use accountNumber which contains LazerVault account number
+    // For external transfers: use accountNumber which is the external bank account number
+    final toAccountNumber = _recipient!.accountNumber;
 
-    if (isInternalTransfer) {
-      // Internal C2C transfer — recipient.id contains the target userId
-      print("_executeTransferWithPin: Calling TransferCubit.initiateInternalTransfer...");
-      context.read<TransferCubit>().initiateInternalTransfer(
-            fromUserId: userId,
-            toUserId: _recipient!.id,
-            amount: amountMinorUnits,
-            currency: selectedAccount.currency,
-            narration: narration,
-          );
-      print("_executeTransferWithPin: Internal transfer initiated.");
-    } else {
-      // Domestic transfer to external bank
-      print("_executeTransferWithPin: Calling TransferCubit.initiateDomesticTransfer...");
-      context.read<TransferCubit>().initiateDomesticTransfer(
-            userId: userId,
-            sourceAccountId: fromAccountId,
-            amount: amountMinorUnits,
-            destinationAccount: _recipient!.accountNumber,
-            destinationBankCode: _recipient!.sortCode,
-            destinationName: _recipient!.name,
-            currency: selectedAccount.currency,
-            narration: narration,
-            reference: reference.isNotEmpty ? reference : null,
-          );
-      print("_executeTransferWithPin: Domestic transfer initiated.");
-    }
+    // Unified call to sendFunds (works for both internal and external)
+    print("_executeTransferWithPin: Calling TransferCubit.sendFunds...");
+    print("_executeTransferWithPin: fromAccountId=$fromAccountId, toAccountNumber=$toAccountNumber, amount=$amountMajor");
+    context.read<TransferCubit>().sendFunds(
+      fromAccountId: fromAccountId,
+      toAccountNumber: toAccountNumber,
+      amount: amountMajor,
+      description: narration,
+      transactionId: transactionId,
+      verificationToken: verificationToken,
+    );
+    print("_executeTransferWithPin: Transfer initiated.");
   }
 
   // Confirmation Row Helper (Minor Adjustments)

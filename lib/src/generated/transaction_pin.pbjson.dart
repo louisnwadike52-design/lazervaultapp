@@ -180,6 +180,123 @@ const TransactionPinDetails$json = const {
 
 /// Descriptor for `TransactionPinDetails`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List transactionPinDetailsDescriptor = $convert.base64Decode('ChVUcmFuc2FjdGlvblBpbkRldGFpbHMSDgoCaWQYASABKAlSAmlkEhcKB3VzZXJfaWQYAiABKAlSBnVzZXJJZBIbCglpc19hY3RpdmUYAyABKAhSCGlzQWN0aXZlEjkKCmNyZWF0ZWRfYXQYBCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUgljcmVhdGVkQXQSOQoKdXBkYXRlZF9hdBgFIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXBSCXVwZGF0ZWRBdBI8CgxsYXN0X3VzZWRfYXQYBiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUgpsYXN0VXNlZEF0EicKD2ZhaWxlZF9hdHRlbXB0cxgHIAEoBVIOZmFpbGVkQXR0ZW1wdHMSGwoJaXNfbG9ja2VkGAggASgIUghpc0xvY2tlZBI9Cgxsb2NrZWRfdW50aWwYCSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUgtsb2NrZWRVbnRpbA==');
+@$core.Deprecated('Use initiatePinOTPRequestDescriptor instead')
+const InitiatePinOTPRequest$json = const {
+  '1': 'InitiatePinOTPRequest',
+  '2': const [
+    const {'1': 'user_id', '3': 1, '4': 1, '5': 9, '10': 'userId'},
+    const {'1': 'operation_type', '3': 2, '4': 1, '5': 9, '10': 'operationType'},
+    const {'1': 'channel', '3': 3, '4': 1, '5': 9, '10': 'channel'},
+    const {'1': 'device_id', '3': 4, '4': 1, '5': 9, '10': 'deviceId'},
+  ],
+};
+
+/// Descriptor for `InitiatePinOTPRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List initiatePinOTPRequestDescriptor = $convert.base64Decode('ChVJbml0aWF0ZVBpbk9UUFJlcXVlc3QSFwoHdXNlcl9pZBgBIAEoCVIGdXNlcklkEiUKDm9wZXJhdGlvbl90eXBlGAIgASgJUg1vcGVyYXRpb25UeXBlEhgKB2NoYW5uZWwYAyABKAlSB2NoYW5uZWwSGwoJZGV2aWNlX2lkGAQgASgJUghkZXZpY2VJZA==');
+@$core.Deprecated('Use initiatePinOTPResponseDescriptor instead')
+const InitiatePinOTPResponse$json = const {
+  '1': 'InitiatePinOTPResponse',
+  '2': const [
+    const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    const {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+    const {'1': 'channel', '3': 3, '4': 1, '5': 9, '10': 'channel'},
+    const {'1': 'masked_destination', '3': 4, '4': 1, '5': 9, '10': 'maskedDestination'},
+    const {'1': 'expires_in_seconds', '3': 5, '4': 1, '5': 5, '10': 'expiresInSeconds'},
+    const {'1': 'cooldown_seconds', '3': 6, '4': 1, '5': 5, '10': 'cooldownSeconds'},
+  ],
+};
+
+/// Descriptor for `InitiatePinOTPResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List initiatePinOTPResponseDescriptor = $convert.base64Decode('ChZJbml0aWF0ZVBpbk9UUFJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3MSGAoHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZRIYCgdjaGFubmVsGAMgASgJUgdjaGFubmVsEi0KEm1hc2tlZF9kZXN0aW5hdGlvbhgEIAEoCVIRbWFza2VkRGVzdGluYXRpb24SLAoSZXhwaXJlc19pbl9zZWNvbmRzGAUgASgFUhBleHBpcmVzSW5TZWNvbmRzEikKEGNvb2xkb3duX3NlY29uZHMYBiABKAVSD2Nvb2xkb3duU2Vjb25kcw==');
+@$core.Deprecated('Use verifyPinOTPRequestDescriptor instead')
+const VerifyPinOTPRequest$json = const {
+  '1': 'VerifyPinOTPRequest',
+  '2': const [
+    const {'1': 'user_id', '3': 1, '4': 1, '5': 9, '10': 'userId'},
+    const {'1': 'otp_code', '3': 2, '4': 1, '5': 9, '10': 'otpCode'},
+    const {'1': 'operation_type', '3': 3, '4': 1, '5': 9, '10': 'operationType'},
+    const {'1': 'current_pin', '3': 4, '4': 1, '5': 9, '10': 'currentPin'},
+    const {'1': 'new_pin', '3': 5, '4': 1, '5': 9, '10': 'newPin'},
+    const {'1': 'confirm_new_pin', '3': 6, '4': 1, '5': 9, '10': 'confirmNewPin'},
+    const {'1': 'device_id', '3': 7, '4': 1, '5': 9, '10': 'deviceId'},
+    const {'1': 'device_name', '3': 8, '4': 1, '5': 9, '10': 'deviceName'},
+  ],
+};
+
+/// Descriptor for `VerifyPinOTPRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List verifyPinOTPRequestDescriptor = $convert.base64Decode('ChNWZXJpZnlQaW5PVFBSZXF1ZXN0EhcKB3VzZXJfaWQYASABKAlSBnVzZXJJZBIZCghvdHBfY29kZRgCIAEoCVIHb3RwQ29kZRIlCg5vcGVyYXRpb25fdHlwZRgDIAEoCVINb3BlcmF0aW9uVHlwZRIfCgtjdXJyZW50X3BpbhgEIAEoCVIKY3VycmVudFBpbhIXCgduZXdfcGluGAUgASgJUgZuZXdQaW4SJgoPY29uZmlybV9uZXdfcGluGAYgASgJUg1jb25maXJtTmV3UGluEhsKCWRldmljZV9pZBgHIAEoCVIIZGV2aWNlSWQSHwoLZGV2aWNlX25hbWUYCCABKAlSCmRldmljZU5hbWU=');
+@$core.Deprecated('Use verifyPinOTPResponseDescriptor instead')
+const VerifyPinOTPResponse$json = const {
+  '1': 'VerifyPinOTPResponse',
+  '2': const [
+    const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    const {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+    const {'1': 'remaining_attempts', '3': 3, '4': 1, '5': 5, '10': 'remainingAttempts'},
+  ],
+};
+
+/// Descriptor for `VerifyPinOTPResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List verifyPinOTPResponseDescriptor = $convert.base64Decode('ChRWZXJpZnlQaW5PVFBSZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZXNzEhgKB21lc3NhZ2UYAiABKAlSB21lc3NhZ2USLQoScmVtYWluaW5nX2F0dGVtcHRzGAMgASgFUhFyZW1haW5pbmdBdHRlbXB0cw==');
+@$core.Deprecated('Use getPinOTPChannelsRequestDescriptor instead')
+const GetPinOTPChannelsRequest$json = const {
+  '1': 'GetPinOTPChannelsRequest',
+  '2': const [
+    const {'1': 'user_id', '3': 1, '4': 1, '5': 9, '10': 'userId'},
+  ],
+};
+
+/// Descriptor for `GetPinOTPChannelsRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getPinOTPChannelsRequestDescriptor = $convert.base64Decode('ChhHZXRQaW5PVFBDaGFubmVsc1JlcXVlc3QSFwoHdXNlcl9pZBgBIAEoCVIGdXNlcklk');
+@$core.Deprecated('Use getPinOTPChannelsResponseDescriptor instead')
+const GetPinOTPChannelsResponse$json = const {
+  '1': 'GetPinOTPChannelsResponse',
+  '2': const [
+    const {'1': 'channels', '3': 1, '4': 3, '5': 11, '6': '.auth.OTPChannel', '10': 'channels'},
+    const {'1': 'recommended_channel', '3': 2, '4': 1, '5': 9, '10': 'recommendedChannel'},
+  ],
+};
+
+/// Descriptor for `GetPinOTPChannelsResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getPinOTPChannelsResponseDescriptor = $convert.base64Decode('ChlHZXRQaW5PVFBDaGFubmVsc1Jlc3BvbnNlEiwKCGNoYW5uZWxzGAEgAygLMhAuYXV0aC5PVFBDaGFubmVsUghjaGFubmVscxIvChNyZWNvbW1lbmRlZF9jaGFubmVsGAIgASgJUhJyZWNvbW1lbmRlZENoYW5uZWw=');
+@$core.Deprecated('Use oTPChannelDescriptor instead')
+const OTPChannel$json = const {
+  '1': 'OTPChannel',
+  '2': const [
+    const {'1': 'type', '3': 1, '4': 1, '5': 9, '10': 'type'},
+    const {'1': 'masked_destination', '3': 2, '4': 1, '5': 9, '10': 'maskedDestination'},
+    const {'1': 'is_verified', '3': 3, '4': 1, '5': 8, '10': 'isVerified'},
+    const {'1': 'is_available', '3': 4, '4': 1, '5': 8, '10': 'isAvailable'},
+  ],
+};
+
+/// Descriptor for `OTPChannel`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List oTPChannelDescriptor = $convert.base64Decode('CgpPVFBDaGFubmVsEhIKBHR5cGUYASABKAlSBHR5cGUSLQoSbWFza2VkX2Rlc3RpbmF0aW9uGAIgASgJUhFtYXNrZWREZXN0aW5hdGlvbhIfCgtpc192ZXJpZmllZBgDIAEoCFIKaXNWZXJpZmllZBIhCgxpc19hdmFpbGFibGUYBCABKAhSC2lzQXZhaWxhYmxl');
+@$core.Deprecated('Use completeForgotPinRequestDescriptor instead')
+const CompleteForgotPinRequest$json = const {
+  '1': 'CompleteForgotPinRequest',
+  '2': const [
+    const {'1': 'user_id', '3': 1, '4': 1, '5': 9, '10': 'userId'},
+    const {'1': 'otp_code', '3': 2, '4': 1, '5': 9, '10': 'otpCode'},
+    const {'1': 'new_pin', '3': 3, '4': 1, '5': 9, '10': 'newPin'},
+    const {'1': 'confirm_new_pin', '3': 4, '4': 1, '5': 9, '10': 'confirmNewPin'},
+    const {'1': 'device_id', '3': 5, '4': 1, '5': 9, '10': 'deviceId'},
+  ],
+};
+
+/// Descriptor for `CompleteForgotPinRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List completeForgotPinRequestDescriptor = $convert.base64Decode('ChhDb21wbGV0ZUZvcmdvdFBpblJlcXVlc3QSFwoHdXNlcl9pZBgBIAEoCVIGdXNlcklkEhkKCG90cF9jb2RlGAIgASgJUgdvdHBDb2RlEhcKB25ld19waW4YAyABKAlSBm5ld1BpbhImCg9jb25maXJtX25ld19waW4YBCABKAlSDWNvbmZpcm1OZXdQaW4SGwoJZGV2aWNlX2lkGAUgASgJUghkZXZpY2VJZA==');
+@$core.Deprecated('Use completeForgotPinResponseDescriptor instead')
+const CompleteForgotPinResponse$json = const {
+  '1': 'CompleteForgotPinResponse',
+  '2': const [
+    const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    const {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+    const {'1': 'remaining_attempts', '3': 3, '4': 1, '5': 5, '10': 'remainingAttempts'},
+  ],
+};
+
+/// Descriptor for `CompleteForgotPinResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List completeForgotPinResponseDescriptor = $convert.base64Decode('ChlDb21wbGV0ZUZvcmdvdFBpblJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3MSGAoHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZRItChJyZW1haW5pbmdfYXR0ZW1wdHMYAyABKAVSEXJlbWFpbmluZ0F0dGVtcHRz');
 @$core.Deprecated('Use pinConfigDescriptor instead')
 const PinConfig$json = const {
   '1': 'PinConfig',
