@@ -35,12 +35,14 @@ class VoiceActivationManager {
     final isEnrolled = await isVoiceEnrolled(userId);
 
     if (!isEnrolled) {
+      if (!context.mounted) return false;
       // User needs to enroll first
       return _showEnrollmentPrompt(context, userId);
     }
 
     // User is enrolled, verify voice
     if (forceVerification) {
+      if (!context.mounted) return false;
       return _showVerificationScreen(context, userId, onSuccess);
     }
 
@@ -316,9 +318,9 @@ class VoiceActivationStatusBadge extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
+          color: color.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: color.withOpacity(0.3)),
+          border: Border.all(color: color.withValues(alpha: 0.3)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,

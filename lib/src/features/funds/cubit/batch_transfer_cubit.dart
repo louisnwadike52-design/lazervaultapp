@@ -50,7 +50,7 @@ class BatchTransferCubit extends Cubit<BatchTransferState> {
         (failure) {
           print("BatchTransferCubit: Emitting Failure - ${failure.message}");
           emit(BatchTransferFailure(
-              message: failure.message ?? 'An unknown error occurred'));
+              message: failure.message));
         },
         (batchTransferEntity) {
           print("BatchTransferCubit: Emitting Success - Response: $batchTransferEntity");
@@ -91,7 +91,7 @@ class BatchTransferCubit extends Cubit<BatchTransferState> {
         (failure) {
           print("BatchTransferCubit: Emitting History Failure - ${failure.message}");
           emit(BatchTransferFailure(
-              message: failure.message ?? 'An unknown error occurred'));
+              message: failure.message));
         },
         (historyList) {
           print("BatchTransferCubit: Emitting History Success - Response: $historyList");
@@ -136,7 +136,7 @@ class BatchTransferCubit extends Cubit<BatchTransferState> {
         (failure) {
           print("BatchTransferCubit: Emitting Status Failure - ${failure.message}");
           emit(BatchTransferFailure(
-              message: failure.message ?? 'An unknown error occurred'));
+              message: failure.message));
         },
         (batchTransferEntity) {
           print("BatchTransferCubit: Emitting Status Success - Response: $batchTransferEntity");

@@ -108,13 +108,13 @@ class _PortfolioDetailsScreenState extends State<PortfolioDetailsScreen>
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Color.fromARGB(255, 78, 3, 208).withOpacity(0.3),
-            Color.fromARGB(255, 20, 1, 39).withOpacity(0.2),
+            Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.3),
+            Color.fromARGB(255, 20, 1, 39).withValues(alpha: 0.2),
           ],
         ),
         border: Border(
           bottom: BorderSide(
-            color: Colors.white.withOpacity(0.1),
+            color: Colors.white.withValues(alpha: 0.1),
             width: 1,
           ),
         ),
@@ -200,7 +200,7 @@ class _PortfolioDetailsScreenState extends State<PortfolioDetailsScreen>
         borderRadius: BorderRadius.circular(24.r),
         boxShadow: [
           BoxShadow(
-            color: Color.fromARGB(255, 78, 3, 208).withOpacity(0.3),
+            color: Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.3),
             blurRadius: 20,
             offset: Offset(0, 8),
           ),
@@ -214,7 +214,7 @@ class _PortfolioDetailsScreenState extends State<PortfolioDetailsScreen>
               Container(
                 padding: EdgeInsets.all(12.w),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.1),
+                  color: Colors.white.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12.r),
                 ),
                 child: Icon(
@@ -227,7 +227,7 @@ class _PortfolioDetailsScreenState extends State<PortfolioDetailsScreen>
               Text(
                 'Total Portfolio Value',
                 style: GoogleFonts.poppins(
-                  color: Colors.white.withOpacity(0.8),
+                  color: Colors.white.withValues(alpha: 0.8),
                   fontSize: 16.sp,
                   fontWeight: FontWeight.w500,
                 ),
@@ -265,7 +265,7 @@ class _PortfolioDetailsScreenState extends State<PortfolioDetailsScreen>
               Text(
                 '(${isPositive ? '+' : ''}${summary.totalGainLossPercent.toStringAsFixed(2)}%)',
                 style: GoogleFonts.poppins(
-                  color: gainLossColor.withOpacity(0.8),
+                  color: gainLossColor.withValues(alpha: 0.8),
                   fontSize: 16.sp,
                   fontWeight: FontWeight.w500,
                 ),
@@ -276,7 +276,7 @@ class _PortfolioDetailsScreenState extends State<PortfolioDetailsScreen>
           Container(
             padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.05),
+              color: Colors.white.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: Row(
@@ -288,7 +288,7 @@ class _PortfolioDetailsScreenState extends State<PortfolioDetailsScreen>
                     Text(
                       'Total Invested',
                       style: GoogleFonts.poppins(
-                        color: Colors.white.withOpacity(0.6),
+                        color: Colors.white.withValues(alpha: 0.6),
                         fontSize: 12.sp,
                       ),
                     ),
@@ -309,7 +309,7 @@ class _PortfolioDetailsScreenState extends State<PortfolioDetailsScreen>
                     Text(
                       'Assets',
                       style: GoogleFonts.poppins(
-                        color: Colors.white.withOpacity(0.6),
+                        color: Colors.white.withValues(alpha: 0.6),
                         fontSize: 12.sp,
                       ),
                     ),
@@ -356,12 +356,12 @@ class _PortfolioDetailsScreenState extends State<PortfolioDetailsScreen>
               decoration: BoxDecoration(
                 color: isSelected
                     ? Color.fromARGB(255, 78, 3, 208)
-                    : Colors.white.withOpacity(0.05),
+                    : Colors.white.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(12.r),
                 border: Border.all(
                   color: isSelected
                       ? Color.fromARGB(255, 78, 3, 208)
-                      : Colors.white.withOpacity(0.1),
+                      : Colors.white.withValues(alpha: 0.1),
                   width: 1,
                 ),
               ),
@@ -386,10 +386,10 @@ class _PortfolioDetailsScreenState extends State<PortfolioDetailsScreen>
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.03),
+        color: Colors.white.withValues(alpha: 0.03),
         borderRadius: BorderRadius.circular(20.r),
         border: Border.all(
-          color: Colors.white.withOpacity(0.1),
+          color: Colors.white.withValues(alpha: 0.1),
           width: 1,
         ),
       ),
@@ -415,7 +415,7 @@ class _PortfolioDetailsScreenState extends State<PortfolioDetailsScreen>
                   horizontalInterval: 1,
                   getDrawingHorizontalLine: (value) {
                     return FlLine(
-                      color: Colors.white.withOpacity(0.05),
+                      color: Colors.white.withValues(alpha: 0.05),
                       strokeWidth: 1,
                     );
                   },
@@ -436,7 +436,7 @@ class _PortfolioDetailsScreenState extends State<PortfolioDetailsScreen>
                         return Text(
                           '${(value / 1000).toStringAsFixed(0)}K',
                           style: GoogleFonts.poppins(
-                            color: Colors.white.withOpacity(0.5),
+                            color: Colors.white.withValues(alpha: 0.5),
                             fontSize: 10.sp,
                           ),
                         );
@@ -456,7 +456,7 @@ class _PortfolioDetailsScreenState extends State<PortfolioDetailsScreen>
                             child: Text(
                               labels[value.toInt()],
                               style: GoogleFonts.poppins(
-                                color: Colors.white.withOpacity(0.5),
+                                color: Colors.white.withValues(alpha: 0.5),
                                 fontSize: 10.sp,
                               ),
                             ),
@@ -496,8 +496,8 @@ class _PortfolioDetailsScreenState extends State<PortfolioDetailsScreen>
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                         colors: [
-                          Color.fromARGB(255, 78, 3, 208).withOpacity(0.3),
-                          Color.fromARGB(255, 78, 3, 208).withOpacity(0.0),
+                          Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.3),
+                          Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.0),
                         ],
                       ),
                     ),
@@ -557,10 +557,10 @@ class _PortfolioDetailsScreenState extends State<PortfolioDetailsScreen>
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.03),
+        color: Colors.white.withValues(alpha: 0.03),
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(
-          color: Colors.white.withOpacity(0.1),
+          color: Colors.white.withValues(alpha: 0.1),
           width: 1,
         ),
       ),
@@ -574,7 +574,7 @@ class _PortfolioDetailsScreenState extends State<PortfolioDetailsScreen>
               Text(
                 title,
                 style: GoogleFonts.poppins(
-                  color: Colors.white.withOpacity(0.6),
+                  color: Colors.white.withValues(alpha: 0.6),
                   fontSize: 12.sp,
                   fontWeight: FontWeight.w500,
                 ),
@@ -582,7 +582,7 @@ class _PortfolioDetailsScreenState extends State<PortfolioDetailsScreen>
               Container(
                 padding: EdgeInsets.all(8.w),
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.2),
+                  color: color.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(8.r),
                 ),
                 child: Icon(
@@ -662,12 +662,12 @@ class _PortfolioDetailsScreenState extends State<PortfolioDetailsScreen>
                   decoration: BoxDecoration(
                     color: isSelected
                         ? Color.fromARGB(255, 78, 3, 208)
-                        : Colors.white.withOpacity(0.05),
+                        : Colors.white.withValues(alpha: 0.05),
                     borderRadius: BorderRadius.circular(12.r),
                     border: Border.all(
                       color: isSelected
                           ? Color.fromARGB(255, 78, 3, 208)
-                          : Colors.white.withOpacity(0.1),
+                          : Colors.white.withValues(alpha: 0.1),
                       width: 1,
                     ),
                   ),
@@ -686,8 +686,8 @@ class _PortfolioDetailsScreenState extends State<PortfolioDetailsScreen>
                         padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
                         decoration: BoxDecoration(
                           color: isSelected
-                              ? Colors.white.withOpacity(0.2)
-                              : Colors.white.withOpacity(0.1),
+                              ? Colors.white.withValues(alpha: 0.2)
+                              : Colors.white.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8.r),
                         ),
                         child: Text(
@@ -722,10 +722,10 @@ class _PortfolioDetailsScreenState extends State<PortfolioDetailsScreen>
       return Container(
         padding: EdgeInsets.all(40.w),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.03),
+          color: Colors.white.withValues(alpha: 0.03),
           borderRadius: BorderRadius.circular(16.r),
           border: Border.all(
-            color: Colors.white.withOpacity(0.1),
+            color: Colors.white.withValues(alpha: 0.1),
             width: 1,
           ),
         ),
@@ -734,14 +734,14 @@ class _PortfolioDetailsScreenState extends State<PortfolioDetailsScreen>
             children: [
               Icon(
                 Icons.account_balance_wallet_outlined,
-                color: Colors.white.withOpacity(0.3),
+                color: Colors.white.withValues(alpha: 0.3),
                 size: 48.sp,
               ),
               SizedBox(height: 16.h),
               Text(
                 'No assets in this category',
                 style: GoogleFonts.poppins(
-                  color: Colors.white.withOpacity(0.5),
+                  color: Colors.white.withValues(alpha: 0.5),
                   fontSize: 14.sp,
                 ),
               ),
@@ -769,10 +769,10 @@ class _PortfolioDetailsScreenState extends State<PortfolioDetailsScreen>
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.03),
+        color: Colors.white.withValues(alpha: 0.03),
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(
-          color: Colors.white.withOpacity(0.1),
+          color: Colors.white.withValues(alpha: 0.1),
           width: 1,
         ),
       ),
@@ -791,7 +791,7 @@ class _PortfolioDetailsScreenState extends State<PortfolioDetailsScreen>
                 Container(
                   padding: EdgeInsets.all(12.w),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.1),
+                    color: Colors.white.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12.r),
                   ),
                   child: asset.iconUrl != null && asset.iconUrl!.isNotEmpty
@@ -825,7 +825,7 @@ class _PortfolioDetailsScreenState extends State<PortfolioDetailsScreen>
                       Text(
                         '${asset.quantity.toStringAsFixed(4)} ${asset.symbol}',
                         style: GoogleFonts.poppins(
-                          color: Colors.white.withOpacity(0.6),
+                          color: Colors.white.withValues(alpha: 0.6),
                           fontSize: 13.sp,
                         ),
                       ),
@@ -833,7 +833,7 @@ class _PortfolioDetailsScreenState extends State<PortfolioDetailsScreen>
                       Container(
                         padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
                         decoration: BoxDecoration(
-                          color: _getAssetTypeColor(asset.assetType).withOpacity(0.2),
+                          color: _getAssetTypeColor(asset.assetType).withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(6.r),
                         ),
                         child: Text(
@@ -884,7 +884,7 @@ class _PortfolioDetailsScreenState extends State<PortfolioDetailsScreen>
                     Text(
                       '${isPositive ? '+' : ''}${asset.currency} ${asset.gainLoss.toStringAsFixed(2)}',
                       style: GoogleFonts.poppins(
-                        color: gainLossColor.withOpacity(0.8),
+                        color: gainLossColor.withValues(alpha: 0.8),
                         fontSize: 12.sp,
                       ),
                     ),
@@ -969,7 +969,7 @@ class _PortfolioDetailsScreenState extends State<PortfolioDetailsScreen>
           Text(
             'Loading portfolio...',
             style: GoogleFonts.poppins(
-              color: Colors.white.withOpacity(0.6),
+              color: Colors.white.withValues(alpha: 0.6),
               fontSize: 14.sp,
             ),
           ),
@@ -1004,7 +1004,7 @@ class _PortfolioDetailsScreenState extends State<PortfolioDetailsScreen>
               message,
               textAlign: TextAlign.center,
               style: GoogleFonts.poppins(
-                color: Colors.white.withOpacity(0.7),
+                color: Colors.white.withValues(alpha: 0.7),
                 fontSize: 14.sp,
               ),
             ),

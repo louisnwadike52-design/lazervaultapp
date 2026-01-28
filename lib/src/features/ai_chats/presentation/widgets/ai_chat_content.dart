@@ -180,7 +180,7 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
             height: 4.h,
             margin: EdgeInsets.symmetric(vertical: 12.h),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.3),
+              color: Colors.white.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(2.r),
             ),
           ),
@@ -206,7 +206,7 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
                         borderSide: BorderSide.none,
                       ),
                       filled: true,
-                      fillColor: Colors.white.withOpacity(0.1),
+                      fillColor: Colors.white.withValues(alpha: 0.1),
                     ),
                   ),
                 ),
@@ -252,7 +252,7 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
               height: 4.h,
               margin: EdgeInsets.only(bottom: 16.h),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.3),
+                color: Colors.white.withValues(alpha: 0.3),
                 borderRadius: BorderRadius.circular(2.r),
               ),
             ),
@@ -299,7 +299,7 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
       leading: Container(
         padding: EdgeInsets.all(8.w),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
+          color: color.withValues(alpha: 0.1),
           shape: BoxShape.circle,
         ),
         child: Icon(icon, color: color, size: 20.sp),
@@ -321,7 +321,7 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
           Container(
             padding: EdgeInsets.all(8.w),
             decoration: BoxDecoration(
-              color: Colors.blue.withOpacity(0.1),
+              color: Colors.blue.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(Icons.smart_toy_rounded, color: Colors.blue, size: 24.sp),
@@ -375,8 +375,8 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
       decoration: BoxDecoration(
-        color: Colors.blue.withOpacity(0.05),
-        border: Border(bottom: BorderSide(color: Colors.white.withOpacity(0.1))),
+        color: Colors.blue.withValues(alpha: 0.05),
+        border: Border(bottom: BorderSide(color: Colors.white.withValues(alpha: 0.1))),
       ),
       child: Row(
         children: [
@@ -447,7 +447,7 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
                 margin: EdgeInsets.only(top: message.image != null ? 8.h : 0),
                 padding: EdgeInsets.all(16.w),
                 decoration: BoxDecoration(
-                  color: isUser ? Colors.blue.withOpacity(0.2) : Colors.white.withOpacity(0.1),
+                  color: isUser ? Colors.blue.withValues(alpha: 0.2) : Colors.white.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.only(
                     topLeft: Radius.circular(16.r),
                     topRight: Radius.circular(16.r),
@@ -468,7 +468,7 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
                         // Add styles for other markdown elements (h1, code, etc.) if needed
                         code: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           fontFamily: 'monospace', 
-                          backgroundColor: Colors.black.withOpacity(0.2),
+                          backgroundColor: Colors.black.withValues(alpha: 0.2),
                           color: Colors.lightBlueAccent, 
                           fontSize: 13.sp
                         ),
@@ -482,7 +482,7 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
                       },
                     ),
                     SizedBox(height: 4.h),
-                    Text(_formatTime(message.timestamp), style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 10.sp)),
+                    Text(_formatTime(message.timestamp), style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 10.sp)),
                   ],
                 ),
               ),
@@ -502,7 +502,7 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
           Container(
             padding: EdgeInsets.all(8.w),
             decoration: BoxDecoration(
-              color: Colors.blue.withOpacity(0.1),
+              color: Colors.blue.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: Row(
@@ -517,7 +517,7 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
                       margin: EdgeInsets.symmetric(horizontal: 2.w),
                       height: 8.h,
                       width: 8.w,
-                      decoration: BoxDecoration(color: Colors.blue.withOpacity(opacity), shape: BoxShape.circle),
+                      decoration: BoxDecoration(color: Colors.blue.withValues(alpha: opacity), shape: BoxShape.circle),
                     );
                   },
                 );
@@ -535,7 +535,7 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: const Color(0xFF1E1E1E),
-        border: Border(top: BorderSide(color: Colors.white.withOpacity(0.1))),
+        border: Border(top: BorderSide(color: Colors.white.withValues(alpha: 0.1))),
       ),
       child: Column(
         children: [
@@ -556,9 +556,9 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
                       margin: EdgeInsets.only(right: 8.w),
                       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
                       decoration: BoxDecoration(
-                        color: Colors.blue.withOpacity(0.1),
+                        color: Colors.blue.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(20.r),
-                        border: Border.all(color: Colors.blue.withOpacity(0.3)),
+                        border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
                       ),
                       child: Text(suggestionText, style: TextStyle(color: Colors.blue[300], fontSize: 12.sp)),
                     ),
@@ -587,8 +587,8 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
       onTap: _handleImagePicker,
       child: Container(
         padding: EdgeInsets.all(10.w),
-        decoration: BoxDecoration(color: Colors.white.withOpacity(0.1), shape: BoxShape.circle),
-        child: Icon(Icons.add_photo_alternate_rounded, color: Colors.white.withOpacity(0.7), size: 20.sp),
+        decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.1), shape: BoxShape.circle),
+        child: Icon(Icons.add_photo_alternate_rounded, color: Colors.white.withValues(alpha: 0.7), size: 20.sp),
       ),
     );
   }
@@ -600,7 +600,7 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
       },
       child: Container(
         padding: EdgeInsets.all(10.w),
-        decoration: BoxDecoration(color: Colors.grey.withOpacity(0.1), shape: BoxShape.circle),
+        decoration: BoxDecoration(color: Colors.grey.withValues(alpha: 0.1), shape: BoxShape.circle),
         child: Icon(Icons.mic_off, color: Colors.grey, size: 20.sp),
       ),
     );
@@ -610,9 +610,9 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 16.w),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
+        color: Colors.white.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(24.r),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: TextField(
         controller: _messageController,
@@ -626,7 +626,7 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
         },
         decoration: InputDecoration(
           hintText: 'Type a message...',
-          hintStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
+          hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
           border: InputBorder.none,
         ),
         maxLines: null,
@@ -670,7 +670,7 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
           Get.snackbar(
             'Error', state.errorMessage,
             snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.red.withOpacity(0.8),
+            backgroundColor: Colors.red.withValues(alpha: 0.8),
             colorText: Colors.white
           );
         }

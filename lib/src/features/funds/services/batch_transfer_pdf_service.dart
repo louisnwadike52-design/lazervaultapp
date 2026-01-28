@@ -263,11 +263,11 @@ class BatchTransferPdfService {
   static Future<void> shareReceipt(BatchTransferEntity batchTransfer) async {
     try {
       final file = await generateBatchTransferReceipt(batchTransfer);
-      await Share.shareXFiles(
-        [XFile(file.path)],
+      await SharePlus.instance.share(ShareParams(
+        files: [XFile(file.path)],
         text: 'Batch Transfer Receipt - Transaction ID: ${batchTransfer.batchId}',
         subject: 'LazerVault Batch Transfer Receipt',
-      );
+      ));
     } catch (e) {
       throw Exception('Failed to share receipt: $e');
     }

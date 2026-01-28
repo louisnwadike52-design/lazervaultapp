@@ -86,7 +86,7 @@ class _MonthlySummaryState extends State<MonthlySummary> {
         borderRadius: BorderRadius.circular(24.r),
         boxShadow: [
           BoxShadow(
-            color: Color.fromARGB(255, 57, 2, 111).withOpacity(0.3),
+            color: Color.fromARGB(255, 57, 2, 111).withValues(alpha: 0.3),
             blurRadius: 20,
             offset: Offset(0, 8),
           ),
@@ -103,7 +103,7 @@ class _MonthlySummaryState extends State<MonthlySummary> {
             'Loading expenditure data...',
             style: TextStyle(
               fontSize: 14.sp,
-              color: Colors.white.withOpacity(0.7),
+              color: Colors.white.withValues(alpha: 0.7),
             ),
           ),
         ],
@@ -126,7 +126,7 @@ class _MonthlySummaryState extends State<MonthlySummary> {
         borderRadius: BorderRadius.circular(24.r),
         boxShadow: [
           BoxShadow(
-            color: Color.fromARGB(255, 57, 2, 111).withOpacity(0.3),
+            color: Color.fromARGB(255, 57, 2, 111).withValues(alpha: 0.3),
             blurRadius: 20,
             offset: Offset(0, 8),
           ),
@@ -155,14 +155,14 @@ class _MonthlySummaryState extends State<MonthlySummary> {
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 12.sp,
-              color: Colors.white.withOpacity(0.7),
+              color: Colors.white.withValues(alpha: 0.7),
             ),
           ),
           SizedBox(height: 16.h),
           ElevatedButton(
             onPressed: () => _loadDataForPeriod(_selectedPeriod),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white.withOpacity(0.2),
+              backgroundColor: Colors.white.withValues(alpha: 0.2),
               foregroundColor: Colors.white,
               padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
               shape: RoundedRectangleBorder(
@@ -191,7 +191,7 @@ class _MonthlySummaryState extends State<MonthlySummary> {
         borderRadius: BorderRadius.circular(24.r),
         boxShadow: [
           BoxShadow(
-            color: Color.fromARGB(255, 57, 2, 111).withOpacity(0.3),
+            color: Color.fromARGB(255, 57, 2, 111).withValues(alpha: 0.3),
             blurRadius: 20,
             offset: Offset(0, 8),
           ),
@@ -202,7 +202,7 @@ class _MonthlySummaryState extends State<MonthlySummary> {
         children: [
           Icon(
             Icons.insights_outlined,
-            color: Colors.white.withOpacity(0.5),
+            color: Colors.white.withValues(alpha: 0.5),
             size: 48.sp,
           ),
           SizedBox(height: 16.h),
@@ -210,7 +210,7 @@ class _MonthlySummaryState extends State<MonthlySummary> {
             'No expenditure data available',
             style: TextStyle(
               fontSize: 14.sp,
-              color: Colors.white.withOpacity(0.7),
+              color: Colors.white.withValues(alpha: 0.7),
             ),
           ),
         ],
@@ -249,7 +249,7 @@ class _MonthlySummaryState extends State<MonthlySummary> {
         borderRadius: BorderRadius.circular(24.r),
         boxShadow: [
           BoxShadow(
-            color: Color.fromARGB(255, 57, 2, 111).withOpacity(0.3),
+            color: Color.fromARGB(255, 57, 2, 111).withValues(alpha: 0.3),
             blurRadius: 20,
             offset: Offset(0, 8),
           ),
@@ -280,7 +280,7 @@ class _MonthlySummaryState extends State<MonthlySummary> {
                       _formatDateRange(state.startDate, state.endDate),
                       style: TextStyle(
                         fontSize: 14.sp,
-                        color: Colors.white.withOpacity(0.7),
+                        color: Colors.white.withValues(alpha: 0.7),
                         letterSpacing: 0.2,
                       ),
                     ),
@@ -290,7 +290,7 @@ class _MonthlySummaryState extends State<MonthlySummary> {
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.1),
+                  color: Colors.white.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20.r),
                 ),
                 child: Text(
@@ -315,7 +315,7 @@ class _MonthlySummaryState extends State<MonthlySummary> {
             height: 240.h,
             padding: EdgeInsets.all(4.w),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.05),
+              color: Colors.white.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(16.r),
             ),
             child: dailyTrend.isEmpty
@@ -346,7 +346,7 @@ class _MonthlySummaryState extends State<MonthlySummary> {
         borderRadius: BorderRadius.circular(24.r),
         boxShadow: [
           BoxShadow(
-            color: Color.fromARGB(255, 57, 2, 111).withOpacity(0.3),
+            color: Color.fromARGB(255, 57, 2, 111).withValues(alpha: 0.3),
             blurRadius: 20,
             offset: Offset(0, 8),
           ),
@@ -373,7 +373,7 @@ class _MonthlySummaryState extends State<MonthlySummary> {
           SizedBox(height: 40.h),
           Icon(
             Icons.receipt_long_outlined,
-            color: Colors.white.withOpacity(0.3),
+            color: Colors.white.withValues(alpha: 0.3),
             size: 64.sp,
           ),
           SizedBox(height: 16.h),
@@ -391,7 +391,7 @@ class _MonthlySummaryState extends State<MonthlySummary> {
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 12.sp,
-              color: Colors.white.withOpacity(0.6),
+              color: Colors.white.withValues(alpha: 0.6),
             ),
           ),
         ],
@@ -403,7 +403,7 @@ class _MonthlySummaryState extends State<MonthlySummary> {
     return Container(
       padding: EdgeInsets.all(4.w),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
+        color: Colors.white.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12.r),
       ),
       child: Row(
@@ -429,7 +429,7 @@ class _MonthlySummaryState extends State<MonthlySummary> {
       child: Container(
         padding: EdgeInsets.symmetric(vertical: 10.h),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.white.withOpacity(0.2) : Colors.transparent,
+          color: isSelected ? Colors.white.withValues(alpha: 0.2) : Colors.transparent,
           borderRadius: BorderRadius.circular(10.r),
         ),
         child: Text(
@@ -438,7 +438,7 @@ class _MonthlySummaryState extends State<MonthlySummary> {
           style: TextStyle(
             fontSize: 14.sp,
             fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-            color: isSelected ? Colors.white : Colors.white.withOpacity(0.6),
+            color: isSelected ? Colors.white : Colors.white.withValues(alpha: 0.6),
           ),
         ),
       ),
@@ -462,7 +462,7 @@ class _MonthlySummaryState extends State<MonthlySummary> {
           horizontalInterval: maxAmount > 0 ? maxAmount / 4 : 100,
           getDrawingHorizontalLine: (value) {
             return FlLine(
-              color: Colors.white.withOpacity(0.1),
+              color: Colors.white.withValues(alpha: 0.1),
               strokeWidth: 1,
             );
           },
@@ -490,7 +490,7 @@ class _MonthlySummaryState extends State<MonthlySummary> {
                   child: Text(
                     _formatBottomLabel(dailyTrend[index].date.toDateTime()),
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.7),
+                      color: Colors.white.withValues(alpha: 0.7),
                       fontSize: 10.sp,
                       fontWeight: FontWeight.w500,
                     ),
@@ -508,7 +508,7 @@ class _MonthlySummaryState extends State<MonthlySummary> {
                 return Text(
                   '£${value.toInt()}',
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.7),
+                    color: Colors.white.withValues(alpha: 0.7),
                     fontSize: 10.sp,
                     fontWeight: FontWeight.w500,
                   ),
@@ -529,7 +529,7 @@ class _MonthlySummaryState extends State<MonthlySummary> {
             gradient: LinearGradient(
               colors: [
                 Colors.white,
-                Colors.white.withOpacity(0.8),
+                Colors.white.withValues(alpha: 0.8),
               ],
             ),
             barWidth: 3,
@@ -551,8 +551,8 @@ class _MonthlySummaryState extends State<MonthlySummary> {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  Colors.white.withOpacity(0.2),
-                  Colors.white.withOpacity(0.05),
+                  Colors.white.withValues(alpha: 0.2),
+                  Colors.white.withValues(alpha: 0.05),
                 ],
               ),
             ),
@@ -569,7 +569,7 @@ class _MonthlySummaryState extends State<MonthlySummary> {
         children: [
           Icon(
             Icons.show_chart,
-            color: Colors.white.withOpacity(0.3),
+            color: Colors.white.withValues(alpha: 0.3),
             size: 48.sp,
           ),
           SizedBox(height: 12.h),
@@ -577,7 +577,7 @@ class _MonthlySummaryState extends State<MonthlySummary> {
             'No data to display',
             style: TextStyle(
               fontSize: 14.sp,
-              color: Colors.white.withOpacity(0.5),
+              color: Colors.white.withValues(alpha: 0.5),
             ),
           ),
         ],
@@ -596,7 +596,7 @@ class _MonthlySummaryState extends State<MonthlySummary> {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
+        color: Colors.white.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(16.r),
       ),
       child: Column(
@@ -612,7 +612,7 @@ class _MonthlySummaryState extends State<MonthlySummary> {
               Container(
                 width: 1,
                 height: 40.h,
-                color: Colors.white.withOpacity(0.2),
+                color: Colors.white.withValues(alpha: 0.2),
               ),
               _buildStatItem(
                 'Average',
@@ -623,7 +623,7 @@ class _MonthlySummaryState extends State<MonthlySummary> {
           ),
           if (topCategory != null) ...[
             SizedBox(height: 16.h),
-            Divider(color: Colors.white.withOpacity(0.2), height: 1),
+            Divider(color: Colors.white.withValues(alpha: 0.2), height: 1),
             SizedBox(height: 16.h),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -632,7 +632,7 @@ class _MonthlySummaryState extends State<MonthlySummary> {
                   children: [
                     Icon(
                       Icons.category_outlined,
-                      color: Colors.white.withOpacity(0.7),
+                      color: Colors.white.withValues(alpha: 0.7),
                       size: 20.sp,
                     ),
                     SizedBox(width: 8.w),
@@ -643,7 +643,7 @@ class _MonthlySummaryState extends State<MonthlySummary> {
                           'Top Category',
                           style: TextStyle(
                             fontSize: 12.sp,
-                            color: Colors.white.withOpacity(0.6),
+                            color: Colors.white.withValues(alpha: 0.6),
                           ),
                         ),
                         Text(
@@ -681,7 +681,7 @@ class _MonthlySummaryState extends State<MonthlySummary> {
         children: [
           Icon(
             icon,
-            color: Colors.white.withOpacity(0.7),
+            color: Colors.white.withValues(alpha: 0.7),
             size: 20.sp,
           ),
           SizedBox(width: 8.w),
@@ -692,7 +692,7 @@ class _MonthlySummaryState extends State<MonthlySummary> {
                 label,
                 style: TextStyle(
                   fontSize: 12.sp,
-                  color: Colors.white.withOpacity(0.6),
+                  color: Colors.white.withValues(alpha: 0.6),
                 ),
               ),
               Text(

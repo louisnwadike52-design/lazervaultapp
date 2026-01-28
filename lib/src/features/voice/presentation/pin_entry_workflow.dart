@@ -299,10 +299,11 @@ class _PINEntryScreenState extends State<PINEntryScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return WillPopScope(
-      onWillPop: () async {
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
         _cancel();
-        return false;
       },
       child: Scaffold(
         appBar: AppBar(
@@ -373,7 +374,7 @@ class _PINEntryScreenState extends State<PINEntryScreen> {
                     decoration: BoxDecoration(
                       color: _isBlocked
                           ? theme.colorScheme.errorContainer
-                          : theme.colorScheme.errorContainer.withOpacity(0.5),
+                          : theme.colorScheme.errorContainer.withValues(alpha: 0.5),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Row(

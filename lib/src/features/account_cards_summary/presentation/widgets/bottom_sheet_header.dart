@@ -11,7 +11,7 @@ class BottomSheetHeader extends StatelessWidget {
           Container(
             padding: EdgeInsets.all(10.w),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.1),
+              color: Colors.white.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: Icon(

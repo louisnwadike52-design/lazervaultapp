@@ -8,7 +8,7 @@ import 'package:lazervault/src/generated/transfer.pbgrpc.dart';
 
 abstract class ITransferRemoteDataSource {
   Future<InitiateTransferResponse> initiateTransfer({
-    required Int64 fromAccountId,
+    required String fromAccountId,
     required Int64 amount, // Minor units
     required String accessToken,
     Int64? toAccountId,
@@ -32,7 +32,7 @@ class TransferRemoteDataSourceImpl implements ITransferRemoteDataSource {
 
   @override
   Future<InitiateTransferResponse> initiateTransfer({
-    required Int64 fromAccountId,
+    required String fromAccountId,
     required Int64 amount, // Minor units
     required String accessToken,
     Int64? toAccountId,

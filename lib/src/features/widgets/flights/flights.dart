@@ -64,7 +64,7 @@ class _FlightsState extends State<Flights> {
                 Text(
                   'Find the best prices for your next trip',
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.7),
+                    color: Colors.white.withValues(alpha: 0.7),
                     fontSize: 14.sp,
                     letterSpacing: 0.2,
                   ),
@@ -81,7 +81,7 @@ class _FlightsState extends State<Flights> {
               borderRadius: BorderRadius.circular(20.r),
               boxShadow: [
                 BoxShadow(
-                  color: Color.fromARGB(255, 78, 3, 208).withOpacity(0.1),
+                  color: Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
                   blurRadius: 20,
                   offset: Offset(0, 8),
                 ),
@@ -116,7 +116,7 @@ class _FlightsState extends State<Flights> {
                     height: 40.w,
                     margin: EdgeInsets.symmetric(vertical: 8.h),
                     decoration: BoxDecoration(
-                      color: Color.fromARGB(255, 78, 3, 208).withOpacity(0.1),
+                      color: Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
                     child: IconButton(
@@ -539,7 +539,7 @@ class _FlightsState extends State<Flights> {
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
-            color: Color.fromARGB(255, 78, 3, 208).withOpacity(0.2),
+            color: Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
             blurRadius: 10,
             offset: Offset(0, 4),
           ),
@@ -551,7 +551,7 @@ class _FlightsState extends State<Flights> {
           Container(
             padding: EdgeInsets.all(12.w),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.15),
+              color: Colors.white.withValues(alpha: 0.15),
               shape: BoxShape.circle,
             ),
             child: Icon(
@@ -574,7 +574,7 @@ class _FlightsState extends State<Flights> {
           Text(
             country,
             style: TextStyle(
-              color: Colors.white.withOpacity(0.7),
+              color: Colors.white.withValues(alpha: 0.7),
               fontSize: 12.sp,
               letterSpacing: 0.2,
             ),
@@ -586,7 +586,7 @@ class _FlightsState extends State<Flights> {
               vertical: 4.h,
             ),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(20.r),
             ),
             child: Text(

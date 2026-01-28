@@ -42,8 +42,8 @@ class _ScanTypeCardState extends State<ScanTypeCard> {
           boxShadow: [
             BoxShadow(
               color: isPressed
-                  ? const Color.fromARGB(255, 78, 3, 208).withOpacity(0.2)
-                  : Colors.black.withOpacity(0.1),
+                  ? const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2)
+                  : Colors.black.withValues(alpha: 0.1),
               blurRadius: isPressed ? 15 : 8,
               offset: isPressed ? const Offset(0, 6) : const Offset(0, 4),
             ),
@@ -61,8 +61,8 @@ class _ScanTypeCardState extends State<ScanTypeCard> {
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    const Color.fromARGB(255, 78, 3, 208).withOpacity(0.2),
-                    const Color.fromARGB(255, 78, 3, 208).withOpacity(0.1),
+                    const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
+                    const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
                   ],
                 ),
                 shape: BoxShape.circle,

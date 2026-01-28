@@ -87,9 +87,7 @@ class CryptoRepositoryImpl implements CryptoRepository {
         totalValue: h.fiatValue,
         totalGainLoss: 0, // Not in proto
         totalGainLossPercentage: 0.0, // Not in proto
-        purchaseDate: h.acquiredAt != null
-            ? DateTime.fromMillisecondsSinceEpoch(h.acquiredAt.toDateTime().millisecondsSinceEpoch)
-            : DateTime.now(),
+        purchaseDate: DateTime.fromMillisecondsSinceEpoch(h.acquiredAt.toDateTime().millisecondsSinceEpoch),
         lastUpdated: DateTime.now(),
       )).toList();
     } catch (e) {

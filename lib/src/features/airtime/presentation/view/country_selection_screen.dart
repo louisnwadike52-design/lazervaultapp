@@ -144,7 +144,7 @@ class _CountrySelectionScreenState extends State<CountrySelectionScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.1),
+          color: Colors.white.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: Color(0xFF1F1F1F)),
         ),
@@ -251,7 +251,7 @@ class _CountrySelectionScreenState extends State<CountrySelectionScreen> {
         return Container(
           margin: const EdgeInsets.only(bottom: 8),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.05),
+            color: Colors.white.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
           BoxShadow(
@@ -268,7 +268,7 @@ class _CountrySelectionScreenState extends State<CountrySelectionScreen> {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Center(

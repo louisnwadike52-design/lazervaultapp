@@ -158,8 +158,8 @@ class _AiScanToPayScreenState extends State<AiScanToPayScreen> {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  const Color.fromARGB(255, 78, 3, 208).withOpacity(0.2),
-                  const Color.fromARGB(255, 78, 3, 208).withOpacity(0.1),
+                  const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
+                  const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
                 ],
               ),
               shape: BoxShape.circle,
@@ -256,13 +256,13 @@ class _AiScanToPayScreenState extends State<AiScanToPayScreen> {
                 end: Alignment.bottomRight,
                 colors: [
                   const Color.fromARGB(255, 78, 3, 208),
-                  const Color.fromARGB(255, 78, 3, 208).withOpacity(0.8),
+                  const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.8),
                 ],
               ),
               borderRadius: BorderRadius.circular(16.r),
               boxShadow: [
                 BoxShadow(
-                  color: const Color.fromARGB(255, 78, 3, 208).withOpacity(0.2),
+                  color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
                   blurRadius: 20,
                   offset: const Offset(0, 8),
                 ),
@@ -274,7 +274,7 @@ class _AiScanToPayScreenState extends State<AiScanToPayScreen> {
                   width: 50.w,
                   height: 50.w,
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
+                    color: Colors.white.withValues(alpha: 0.2),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
@@ -301,7 +301,7 @@ class _AiScanToPayScreenState extends State<AiScanToPayScreen> {
                         'Choose the type of document or code you want to scan',
                         style: GoogleFonts.inter(
                           fontSize: 12.sp,
-                          color: Colors.white.withOpacity(0.9),
+                          color: Colors.white.withValues(alpha: 0.9),
                         ),
                       ),
                     ],

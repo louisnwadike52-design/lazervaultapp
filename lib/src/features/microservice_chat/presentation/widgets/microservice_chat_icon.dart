@@ -33,7 +33,7 @@ class MicroserviceChatIcon extends StatelessWidget {
         height: 50,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: Colors.blue.withOpacity(0.1),
+          color: Colors.blue.withValues(alpha: 0.1),
           border: Border.all(
             color: iconColor ?? Colors.blue,
             width: 2,

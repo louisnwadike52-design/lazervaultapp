@@ -294,13 +294,13 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
           end: Alignment.bottomRight,
           colors: [
             const Color.fromARGB(255, 78, 3, 208),
-            const Color.fromARGB(255, 78, 3, 208).withOpacity(0.8),
+            const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.8),
           ],
         ),
         borderRadius: BorderRadius.circular(20.r),
         boxShadow: [
           BoxShadow(
-            color: const Color.fromARGB(255, 78, 3, 208).withOpacity(0.2),
+            color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -341,7 +341,7 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
                       'Total Progress',
                       style: GoogleFonts.inter(
                         fontSize: 14.sp,
-                        color: Colors.white.withOpacity(0.8),
+                        color: Colors.white.withValues(alpha: 0.8),
                       ),
                     ),
                     Text(
@@ -358,7 +358,7 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
                 Container(
                   height: 8.h,
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
+                    color: Colors.white.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(4.r),
                   ),
                   child: Stack(
@@ -393,7 +393,7 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
         children: [
           Icon(
             icon,
-            color: Colors.white.withOpacity(0.8),
+            color: Colors.white.withValues(alpha: 0.8),
             size: 24.sp,
           ),
           SizedBox(height: 8.h),
@@ -410,7 +410,7 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
             title,
             style: GoogleFonts.inter(
               fontSize: 12.sp,
-              color: Colors.white.withOpacity(0.8),
+              color: Colors.white.withValues(alpha: 0.8),
             ),
           ),
         ],
@@ -656,6 +656,7 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
         child: AddMemberBottomSheet(group: group),
       ),
     ).then((_) {
+      if (!mounted) return;
       // Reload group details after bottom sheet closes to ensure members list is updated
       context.read<GroupAccountCubit>().loadGroupDetails(widget.groupId);
     });
@@ -676,6 +677,7 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
         ),
       ),
     ).then((_) {
+      if (!mounted) return;
       // Reload group details after bottom sheet closes to ensure contributions list is updated
       context.read<GroupAccountCubit>().loadGroupDetails(widget.groupId);
     });

@@ -280,7 +280,7 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
                       onPressed: isLoading ? null : _createReminder,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF4E03D0),
-                        disabledBackgroundColor: const Color(0xFF4E03D0).withOpacity(0.5),
+                        disabledBackgroundColor: const Color(0xFF4E03D0).withValues(alpha: 0.5),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16.r),
                         ),
@@ -321,7 +321,7 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
       style: GoogleFonts.inter(
         fontSize: 14.sp,
         fontWeight: FontWeight.w600,
-        color: Colors.white.withOpacity(0.7),
+        color: Colors.white.withValues(alpha: 0.7),
       ),
     );
   }
@@ -347,7 +347,7 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
         hintText: hintText,
         hintStyle: GoogleFonts.inter(
           fontSize: 16.sp,
-          color: Colors.white.withOpacity(0.3),
+          color: Colors.white.withValues(alpha: 0.3),
         ),
         prefixText: prefixText,
         prefixStyle: GoogleFonts.inter(
@@ -356,14 +356,14 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
           fontWeight: FontWeight.w500,
         ),
         filled: true,
-        fillColor: Colors.white.withOpacity(0.05),
+        fillColor: Colors.white.withValues(alpha: 0.05),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16.r),
-          borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
+          borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16.r),
-          borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
+          borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16.r),
@@ -393,9 +393,9 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
       child: Container(
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.05),
+          color: Colors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(16.r),
-          border: Border.all(color: Colors.white.withOpacity(0.1)),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -408,7 +408,7 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
                   label,
                   style: GoogleFonts.inter(
                     fontSize: 12.sp,
-                    color: Colors.white.withOpacity(0.5),
+                    color: Colors.white.withValues(alpha: 0.5),
                   ),
                 ),
               ],
@@ -438,15 +438,15 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
             return Container(
               padding: EdgeInsets.all(16.w),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.05),
+                color: Colors.white.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(16.r),
-                border: Border.all(color: Colors.white.withOpacity(0.1)),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
               ),
               child: Text(
                 'No beneficiaries available',
                 style: GoogleFonts.inter(
                   fontSize: 14.sp,
-                  color: Colors.white.withOpacity(0.5),
+                  color: Colors.white.withValues(alpha: 0.5),
                 ),
               ),
             );
@@ -455,9 +455,9 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
           return Container(
             padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 4.h),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.05),
+              color: Colors.white.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(16.r),
-              border: Border.all(color: Colors.white.withOpacity(0.1)),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
             ),
             child: DropdownButtonHideUnderline(
               child: DropdownButton<BillBeneficiaryEntity>(
@@ -467,12 +467,12 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
                   'Select a beneficiary',
                   style: GoogleFonts.inter(
                     fontSize: 16.sp,
-                    color: Colors.white.withOpacity(0.3),
+                    color: Colors.white.withValues(alpha: 0.3),
                   ),
                 ),
                 icon: Icon(
                   Icons.keyboard_arrow_down,
-                  color: Colors.white.withOpacity(0.5),
+                  color: Colors.white.withValues(alpha: 0.5),
                 ),
                 dropdownColor: const Color(0xFF1A1A1A),
                 style: GoogleFonts.inter(
@@ -486,7 +486,7 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
                       'None',
                       style: GoogleFonts.inter(
                         fontSize: 16.sp,
-                        color: Colors.white.withOpacity(0.5),
+                        color: Colors.white.withValues(alpha: 0.5),
                       ),
                     ),
                   ),
@@ -498,7 +498,7 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
-                            beneficiary.nickname ?? beneficiary.meterNumber,
+                            beneficiary.nickname,
                             style: GoogleFonts.inter(
                               fontSize: 16.sp,
                               fontWeight: FontWeight.w500,
@@ -511,7 +511,7 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
                             beneficiary.meterNumber,
                             style: GoogleFonts.inter(
                               fontSize: 12.sp,
-                              color: Colors.white.withOpacity(0.5),
+                              color: Colors.white.withValues(alpha: 0.5),
                             ),
                           ),
                         ],
@@ -533,9 +533,9 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
         return Container(
           padding: EdgeInsets.all(16.w),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.05),
+            color: Colors.white.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(16.r),
-            border: Border.all(color: Colors.white.withOpacity(0.1)),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
           ),
           child: const Center(
             child: CircularProgressIndicator(
@@ -556,12 +556,12 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            const Color(0xFF4E03D0).withOpacity(0.1),
-            const Color(0xFF6B21E0).withOpacity(0.05),
+            const Color(0xFF4E03D0).withValues(alpha: 0.1),
+            const Color(0xFF6B21E0).withValues(alpha: 0.05),
           ],
         ),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: const Color(0xFF4E03D0).withOpacity(0.2)),
+        border: Border.all(color: const Color(0xFF4E03D0).withValues(alpha: 0.2)),
       ),
       child: Column(
         children: [
@@ -594,7 +594,7 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
                   });
                 },
                 activeThumbColor: const Color(0xFF4E03D0),
-                activeTrackColor: const Color(0xFF4E03D0).withOpacity(0.5),
+                activeTrackColor: const Color(0xFF4E03D0).withValues(alpha: 0.5),
               ),
             ],
           ),
@@ -615,7 +615,7 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
           'Repeat every:',
           style: GoogleFonts.inter(
             fontSize: 14.sp,
-            color: Colors.white.withOpacity(0.7),
+            color: Colors.white.withValues(alpha: 0.7),
           ),
         ),
         SizedBox(height: 12.h),
@@ -647,12 +647,12 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
           decoration: BoxDecoration(
             color: isSelected
                 ? const Color(0xFF4E03D0)
-                : Colors.white.withOpacity(0.05),
+                : Colors.white.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(12.r),
             border: Border.all(
               color: isSelected
                   ? const Color(0xFF4E03D0)
-                  : Colors.white.withOpacity(0.1),
+                  : Colors.white.withValues(alpha: 0.1),
             ),
           ),
           child: Center(
@@ -701,12 +701,12 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            const Color(0xFF4E03D0).withOpacity(0.15),
-            const Color(0xFF6B21E0).withOpacity(0.1),
+            const Color(0xFF4E03D0).withValues(alpha: 0.15),
+            const Color(0xFF6B21E0).withValues(alpha: 0.1),
           ],
         ),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: const Color(0xFF4E03D0).withOpacity(0.3)),
+        border: Border.all(color: const Color(0xFF4E03D0).withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -749,7 +749,7 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
             SizedBox(height: 8.h),
             _buildSummaryRow(
               'Beneficiary',
-              _selectedBeneficiary!.nickname ?? _selectedBeneficiary!.meterNumber,
+              _selectedBeneficiary!.nickname,
             ),
           ],
         ],
@@ -765,7 +765,7 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
           label,
           style: GoogleFonts.inter(
             fontSize: 14.sp,
-            color: Colors.white.withOpacity(0.6),
+            color: Colors.white.withValues(alpha: 0.6),
           ),
         ),
         Flexible(

@@ -279,7 +279,7 @@ class _RecipientInputScreenState extends State<RecipientInputScreen> {
               width: 40.w,
               height: 40.w,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12.r),
                 boxShadow: [
           BoxShadow(
@@ -319,7 +319,7 @@ class _RecipientInputScreenState extends State<RecipientInputScreen> {
                   'Who would you like to send airtime to?',
                   style: TextStyle(
                     fontSize: 14.sp,
-                    color: Colors.white.withOpacity(0.6),
+                    color: Colors.white.withValues(alpha: 0.6),
                     fontWeight: FontWeight.w400,
                   ),
                 ),
@@ -335,7 +335,7 @@ class _RecipientInputScreenState extends State<RecipientInputScreen> {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
@@ -377,7 +377,7 @@ class _RecipientInputScreenState extends State<RecipientInputScreen> {
                   'Detected Network',
                   style: TextStyle(
                     fontSize: 12.sp,
-                    color: Colors.white.withOpacity(0.6),
+                    color: Colors.white.withValues(alpha: 0.6),
                     fontWeight: FontWeight.w400,
                   ),
                 ),
@@ -420,7 +420,7 @@ class _RecipientInputScreenState extends State<RecipientInputScreen> {
         
         Container(
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.05),
+            color: Colors.white.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(16.r),
             boxShadow: [
           BoxShadow(
@@ -447,7 +447,7 @@ class _RecipientInputScreenState extends State<RecipientInputScreen> {
             decoration: InputDecoration(
               hintText: '08012345678',
               hintStyle: TextStyle(
-                color: Colors.white.withOpacity(0.4),
+                color: Colors.white.withValues(alpha: 0.4),
                 fontSize: 16.sp,
               ),
               prefixIcon: Container(
@@ -456,7 +456,7 @@ class _RecipientInputScreenState extends State<RecipientInputScreen> {
                   '+234',
                   style: TextStyle(
                     fontSize: 16.sp,
-                    color: Colors.white.withOpacity(0.6),
+                    color: Colors.white.withValues(alpha: 0.6),
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -490,7 +490,7 @@ class _RecipientInputScreenState extends State<RecipientInputScreen> {
         
         Container(
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.05),
+            color: Colors.white.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(16.r),
             boxShadow: [
           BoxShadow(
@@ -513,12 +513,12 @@ class _RecipientInputScreenState extends State<RecipientInputScreen> {
             decoration: InputDecoration(
               hintText: 'Enter recipient name',
               hintStyle: TextStyle(
-                color: Colors.white.withOpacity(0.4),
+                color: Colors.white.withValues(alpha: 0.4),
                 fontSize: 16.sp,
               ),
               prefixIcon: Icon(
                 Icons.person_outline,
-                color: Colors.white.withOpacity(0.4),
+                color: Colors.white.withValues(alpha: 0.4),
                 size: 20.sp,
               ),
               border: InputBorder.none,
@@ -553,7 +553,7 @@ class _RecipientInputScreenState extends State<RecipientInputScreen> {
           child: Container(
             padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.05),
+              color: Colors.white.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(16.r),
               boxShadow: [
           BoxShadow(
@@ -608,7 +608,7 @@ class _RecipientInputScreenState extends State<RecipientInputScreen> {
           style: ElevatedButton.styleFrom(
             backgroundColor: canProceed 
               ? Color(0xFF3B82F6) 
-              : Colors.white.withOpacity(0.1),
+              : Colors.white.withValues(alpha: 0.1),
             padding: EdgeInsets.symmetric(vertical: 16.h),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16.r),
@@ -645,7 +645,7 @@ class _RecipientInputScreenState extends State<RecipientInputScreen> {
                   fontWeight: FontWeight.w600,
                   color: canProceed 
                     ? Colors.white 
-                    : Colors.white.withOpacity(0.4),
+                    : Colors.white.withValues(alpha: 0.4),
                 ),
               ),
         ),
@@ -828,7 +828,7 @@ class _ContactSelectionBottomSheetState extends State<_ContactSelectionBottomShe
             width: 40.w,
             height: 4.h,
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.3),
+              color: Colors.white.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(2.r),
             ),
           ),
@@ -838,7 +838,7 @@ class _ContactSelectionBottomSheetState extends State<_ContactSelectionBottomShe
               Container(
                 padding: EdgeInsets.all(12.w),
                 decoration: BoxDecoration(
-                  color: Color(0xFF3B82F6).withOpacity(0.2),
+                  color: Color(0xFF3B82F6).withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12.r),
                   boxShadow: [
           BoxShadow(
@@ -872,7 +872,7 @@ class _ContactSelectionBottomSheetState extends State<_ContactSelectionBottomShe
                     Text(
                       'Choose a contact to send airtime to',
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.7),
+                        color: Colors.white.withValues(alpha: 0.7),
                         fontSize: 14.sp,
                       ),
                     ),
@@ -884,12 +884,12 @@ class _ContactSelectionBottomSheetState extends State<_ContactSelectionBottomShe
                 child: Container(
                   padding: EdgeInsets.all(8.w),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.1),
+                    color: Colors.white.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8.r),
                   ),
                   child: Icon(
                     Icons.close,
-                    color: Colors.white.withOpacity(0.7),
+                    color: Colors.white.withValues(alpha: 0.7),
                     size: 20.sp,
                   ),
                 ),
@@ -906,7 +906,7 @@ class _ContactSelectionBottomSheetState extends State<_ContactSelectionBottomShe
       margin: EdgeInsets.symmetric(horizontal: 24.w),
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
@@ -935,7 +935,7 @@ class _ContactSelectionBottomSheetState extends State<_ContactSelectionBottomShe
               decoration: InputDecoration(
                 hintText: 'Search contacts...',
                 hintStyle: TextStyle(
-                  color: Colors.white.withOpacity(0.5),
+                  color: Colors.white.withValues(alpha: 0.5),
                   fontSize: 16.sp,
                 ),
                 border: InputBorder.none,
@@ -950,7 +950,7 @@ class _ContactSelectionBottomSheetState extends State<_ContactSelectionBottomShe
               },
               child: Icon(
                 Icons.clear,
-                color: Colors.white.withOpacity(0.5),
+                color: Colors.white.withValues(alpha: 0.5),
                 size: 20.sp,
               ),
             ),
@@ -971,7 +971,7 @@ class _ContactSelectionBottomSheetState extends State<_ContactSelectionBottomShe
           Text(
             'Loading contacts...',
             style: TextStyle(
-              color: Colors.white.withOpacity(0.7),
+              color: Colors.white.withValues(alpha: 0.7),
               fontSize: 16.sp,
             ),
           ),
@@ -1003,13 +1003,13 @@ class _ContactSelectionBottomSheetState extends State<_ContactSelectionBottomShe
           Container(
             padding: EdgeInsets.all(20.w),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.05),
+              color: Colors.white.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(20.r),
             ),
             child: Icon(
               _searchQuery.isNotEmpty ? Icons.search_off : Icons.contacts_outlined,
               size: 48.sp,
-              color: Colors.white.withOpacity(0.5),
+              color: Colors.white.withValues(alpha: 0.5),
             ),
           ),
           SizedBox(height: 16.h),
@@ -1027,7 +1027,7 @@ class _ContactSelectionBottomSheetState extends State<_ContactSelectionBottomShe
                 ? 'Try searching with different keywords'
                 : 'Grant permission to access your contacts',
             style: TextStyle(
-              color: Colors.white.withOpacity(0.7),
+              color: Colors.white.withValues(alpha: 0.7),
               fontSize: 14.sp,
             ),
           ),
@@ -1047,7 +1047,7 @@ class _ContactSelectionBottomSheetState extends State<_ContactSelectionBottomShe
         margin: EdgeInsets.only(bottom: 12.h),
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.05),
+          color: Colors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(16.r),
           boxShadow: [
           BoxShadow(
@@ -1103,7 +1103,7 @@ class _ContactSelectionBottomSheetState extends State<_ContactSelectionBottomShe
                   Text(
                     contact['phone'] ?? '',
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.7),
+                      color: Colors.white.withValues(alpha: 0.7),
                       fontSize: 14.sp,
                     ),
                   ),

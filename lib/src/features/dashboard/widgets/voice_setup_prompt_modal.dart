@@ -61,8 +61,8 @@ class _VoiceSetupPromptModalState extends State<VoiceSetupPromptModal>
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async => widget.canDismiss,
+    return PopScope(
+      canPop: widget.canDismiss,
       child: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(

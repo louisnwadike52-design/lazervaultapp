@@ -202,7 +202,7 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
         Text(
           'Enter your details to verify your identity. This helps us keep your account secure.',
           style: theme.textTheme.bodyMedium?.copyWith(
-            color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7),
+            color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
           ),
         ),
       ],
@@ -304,7 +304,7 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: isSelected
-              ? theme.colorScheme.primary.withOpacity(0.1)
+              ? theme.colorScheme.primary.withValues(alpha: 0.1)
               : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
@@ -329,7 +329,7 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
             Text(
               description,
               style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.textTheme.bodySmall?.color?.withOpacity(0.7),
+                color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.7),
               ),
               textAlign: TextAlign.center,
             ),
@@ -547,10 +547,10 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: theme.colorScheme.primary.withOpacity(0.05),
+        color: theme.colorScheme.primary.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: theme.colorScheme.primary.withOpacity(0.2),
+          color: theme.colorScheme.primary.withValues(alpha: 0.2),
         ),
       ),
       child: Row(
@@ -629,7 +629,7 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
                 .textTheme
                 .bodyMedium
                 ?.color
-                ?.withOpacity(0.6),
+                ?.withValues(alpha: 0.6),
           ),
         ),
       ),

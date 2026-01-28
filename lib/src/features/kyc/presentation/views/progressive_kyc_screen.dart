@@ -99,7 +99,7 @@ class _ProgressiveKYCScreenState extends State<ProgressiveKYCScreen> {
           height: 80,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: theme.colorScheme.primary.withOpacity(0.1),
+            color: theme.colorScheme.primary.withValues(alpha: 0.1),
           ),
           child: Icon(
             Icons.verified_user,
@@ -118,7 +118,7 @@ class _ProgressiveKYCScreenState extends State<ProgressiveKYCScreen> {
         Text(
           'Complete your verification to unlock higher transaction limits and access all features.',
           style: theme.textTheme.bodyMedium?.copyWith(
-            color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7),
+            color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
           ),
         ),
       ],
@@ -132,7 +132,7 @@ class _ProgressiveKYCScreenState extends State<ProgressiveKYCScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: color, width: 1),
       ),
@@ -159,7 +159,7 @@ class _ProgressiveKYCScreenState extends State<ProgressiveKYCScreen> {
                 Text(
                   _getStatusMessage(profile),
                   style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7),
+                    color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
                   ),
                 ),
               ],
@@ -246,7 +246,7 @@ class _ProgressiveKYCScreenState extends State<ProgressiveKYCScreen> {
           height: 40,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: theme.colorScheme.primary.withOpacity(0.1),
+            color: theme.colorScheme.primary.withValues(alpha: 0.1),
           ),
           child: Icon(
             icon,
@@ -268,7 +268,7 @@ class _ProgressiveKYCScreenState extends State<ProgressiveKYCScreen> {
               Text(
                 description,
                 style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.textTheme.bodySmall?.color?.withOpacity(0.7),
+                  color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.7),
                 ),
               ),
             ],
@@ -299,7 +299,7 @@ class _ProgressiveKYCScreenState extends State<ProgressiveKYCScreen> {
         child: Text(
           'Skip for now',
           style: TextStyle(
-            color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.6),
+            color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.6),
           ),
         ),
       ),
@@ -310,7 +310,7 @@ class _ProgressiveKYCScreenState extends State<ProgressiveKYCScreen> {
     final theme = Theme.of(context);
     return Card(
       elevation: 2,
-      color: theme.colorScheme.primary.withOpacity(0.1),
+      color: theme.colorScheme.primary.withValues(alpha: 0.1),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
         side: BorderSide(color: theme.colorScheme.primary, width: 2),
@@ -392,7 +392,7 @@ class _ProgressiveKYCScreenState extends State<ProgressiveKYCScreen> {
         width: 48,
         height: 48,
         decoration: BoxDecoration(
-          color: statusColor.withOpacity(0.1),
+          color: statusColor.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Icon(
@@ -578,7 +578,7 @@ class _ProgressiveKYCScreenState extends State<ProgressiveKYCScreen> {
           height: 60,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: Colors.green.withOpacity(0.1),
+            color: Colors.green.withValues(alpha: 0.1),
           ),
           child: const Icon(
             Icons.check,
@@ -609,7 +609,7 @@ class _ProgressiveKYCScreenState extends State<ProgressiveKYCScreen> {
           height: 60,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: Colors.red.withOpacity(0.1),
+            color: Colors.red.withValues(alpha: 0.1),
           ),
           child: const Icon(
             Icons.error_outline,

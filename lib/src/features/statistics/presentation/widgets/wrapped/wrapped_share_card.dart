@@ -38,7 +38,7 @@ class WrappedShareCard extends StatelessWidget {
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF667eea).withOpacity(0.4),
+                  color: const Color(0xFF667eea).withValues(alpha: 0.4),
                   blurRadius: 20,
                   offset: const Offset(0, 8),
                 ),
@@ -65,7 +65,7 @@ class WrappedShareCard extends StatelessWidget {
           Text(
             'You spent \$${wrapped.summary?.totalSpent.toStringAsFixed(0) ?? '0'}, saved \$${wrapped.summary?.totalSaved.toStringAsFixed(0) ?? '0'}, and made ${wrapped.summary?.transactionCount ?? 0} transactions.',
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-              color: Colors.white.withOpacity(0.8),
+              color: Colors.white.withValues(alpha: 0.8),
             ),
             textAlign: TextAlign.center,
           ),
@@ -107,7 +107,7 @@ class WrappedShareCard extends StatelessWidget {
           Text(
             'Thank you for using LazerVault!',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: Colors.white.withOpacity(0.5),
+              color: Colors.white.withValues(alpha: 0.5),
             ),
           ),
           const SizedBox(height: 8),
@@ -159,7 +159,7 @@ class _ActionButton extends StatelessWidget {
         label: Text(label),
         style: OutlinedButton.styleFrom(
           foregroundColor: Colors.white,
-          side: BorderSide(color: Colors.white.withOpacity(0.3)),
+          side: BorderSide(color: Colors.white.withValues(alpha: 0.3)),
           padding: const EdgeInsets.symmetric(vertical: 16),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),

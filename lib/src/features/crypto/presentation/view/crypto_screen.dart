@@ -220,7 +220,7 @@ class _CryptoScreenState extends State<CryptoScreen>
                     Get.snackbar(
                       'Chat Support',
                       'Chat support feature coming soon!',
-                      backgroundColor: const Color(0xFF6C5CE7).withOpacity(0.2),
+                      backgroundColor: const Color(0xFF6C5CE7).withValues(alpha: 0.2),
                       colorText: Colors.white,
                     );
                   },
@@ -244,7 +244,7 @@ class _CryptoScreenState extends State<CryptoScreen>
                         Get.snackbar(
                           'Notifications',
                           'You have 3 new notifications',
-                          backgroundColor: const Color(0xFF6C5CE7).withOpacity(0.2),
+                          backgroundColor: const Color(0xFF6C5CE7).withValues(alpha: 0.2),
                           colorText: Colors.white,
                         );
                       },
@@ -306,7 +306,7 @@ class _CryptoScreenState extends State<CryptoScreen>
         borderRadius: BorderRadius.circular(24.r),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF6C5CE7).withOpacity(0.2),
+            color: const Color(0xFF6C5CE7).withValues(alpha: 0.2),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -318,7 +318,7 @@ class _CryptoScreenState extends State<CryptoScreen>
           Text(
             'Total Portfolio Value',
             style: TextStyle(
-              color: Colors.white.withOpacity(0.7),
+              color: Colors.white.withValues(alpha: 0.7),
               fontSize: 14.sp,
             ),
           ),
@@ -342,7 +342,7 @@ class _CryptoScreenState extends State<CryptoScreen>
                     vertical: 6.h,
                   ),
                   decoration: BoxDecoration(
-                    color: (isPositive ? Colors.green : Colors.red).withOpacity(0.2),
+                    color: (isPositive ? Colors.green : Colors.red).withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(20.r),
                   ),
                   child: Row(
@@ -433,7 +433,7 @@ class _CryptoScreenState extends State<CryptoScreen>
       child: Container(
         height: 48.h,
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
+          color: color.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(12.r),
         ),
         child: Row(
@@ -482,7 +482,7 @@ class _CryptoScreenState extends State<CryptoScreen>
         Text(
           label,
           style: TextStyle(
-            color: Colors.white.withOpacity(0.7),
+            color: Colors.white.withValues(alpha: 0.7),
           fontSize: 12.sp,
           ),
         ),
@@ -540,7 +540,7 @@ class _CryptoScreenState extends State<CryptoScreen>
     return Container(
       padding: EdgeInsets.all(12.w),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12.r),
         boxShadow: [
           BoxShadow(
@@ -682,7 +682,7 @@ class _CryptoScreenState extends State<CryptoScreen>
       child: Container(
         padding: EdgeInsets.all(12.w),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.05),
+          color: Colors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(12.r),
         ),
         child: Row(
@@ -807,7 +807,7 @@ class _CryptoScreenState extends State<CryptoScreen>
                   Icon(
                     Icons.receipt_long,
                     size: 48.sp,
-                    color: Colors.white.withOpacity(0.3),
+                    color: Colors.white.withValues(alpha: 0.3),
                   ),
                   SizedBox(height: 12.h),
                   Text(
@@ -815,7 +815,7 @@ class _CryptoScreenState extends State<CryptoScreen>
                     style: TextStyle(
                       fontSize: 16.sp,
                       fontWeight: FontWeight.w500,
-                      color: Colors.white.withOpacity(0.7),
+                      color: Colors.white.withValues(alpha: 0.7),
                     ),
                   ),
                   SizedBox(height: 4.h),
@@ -823,7 +823,7 @@ class _CryptoScreenState extends State<CryptoScreen>
                     'Your transaction history will appear here',
                     style: TextStyle(
                       fontSize: 12.sp,
-                      color: Colors.white.withOpacity(0.5),
+                      color: Colors.white.withValues(alpha: 0.5),
                     ),
                   ),
                 ],
@@ -843,7 +843,7 @@ class _CryptoScreenState extends State<CryptoScreen>
       child: Container(
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.05),
+          color: Colors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(12.r),
           boxShadow: [
           BoxShadow(
@@ -859,7 +859,7 @@ class _CryptoScreenState extends State<CryptoScreen>
             Container(
               padding: EdgeInsets.all(8.w),
               decoration: BoxDecoration(
-                color: _getTransactionTypeColorForHistory(transaction.type).withOpacity(0.2),
+                color: _getTransactionTypeColorForHistory(transaction.type).withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(8.r),
               ),
               child: Icon(
@@ -886,7 +886,7 @@ class _CryptoScreenState extends State<CryptoScreen>
                     _formatTransactionDateTime(transaction.timestamp),
                     style: TextStyle(
                       fontSize: 12.sp,
-                      color: Colors.white.withOpacity(0.6),
+                      color: Colors.white.withValues(alpha: 0.6),
                     ),
                   ),
                 ],
@@ -907,7 +907,7 @@ class _CryptoScreenState extends State<CryptoScreen>
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
                   decoration: BoxDecoration(
-                    color: _getTransactionStatusColor(transaction.status).withOpacity(0.2),
+                    color: _getTransactionStatusColor(transaction.status).withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(8.r),
                   ),
                   child: Text(
@@ -937,8 +937,8 @@ class _CryptoScreenState extends State<CryptoScreen>
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            const Color(0xFF6C5CE7).withOpacity(0.1),
-            const Color(0xFF6C5CE7).withOpacity(0.05),
+            const Color(0xFF6C5CE7).withValues(alpha: 0.1),
+            const Color(0xFF6C5CE7).withValues(alpha: 0.05),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -980,7 +980,7 @@ class _CryptoScreenState extends State<CryptoScreen>
           label,
           style: TextStyle(
             fontSize: 12.sp,
-            color: Colors.white.withOpacity(0.7),
+            color: Colors.white.withValues(alpha: 0.7),
           ),
         ),
       ],
@@ -1088,7 +1088,7 @@ class _CryptoScreenState extends State<CryptoScreen>
             label,
             style: TextStyle(
               fontSize: 14.sp,
-              color: Colors.white.withOpacity(0.7),
+              color: Colors.white.withValues(alpha: 0.7),
             ),
           ),
           Text(
@@ -1182,11 +1182,11 @@ class _CryptoScreenState extends State<CryptoScreen>
   Color _getTransactionStatusBorderColor(CryptoTransactionStatus status) {
     switch (status) {
       case CryptoTransactionStatus.completed:
-        return Colors.green.withOpacity(0.3);
+        return Colors.green.withValues(alpha: 0.3);
       case CryptoTransactionStatus.pending:
-        return Colors.orange.withOpacity(0.3);
+        return Colors.orange.withValues(alpha: 0.3);
       case CryptoTransactionStatus.failed:
-        return Colors.red.withOpacity(0.3);
+        return Colors.red.withValues(alpha: 0.3);
     }
   }
 
@@ -1264,7 +1264,7 @@ class _CryptoScreenState extends State<CryptoScreen>
             Container(
               padding: EdgeInsets.all(8.w),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.2),
+                color: color.withValues(alpha: 0.2),
                 shape: BoxShape.circle,
               ),
               child: Icon(icon, color: color, size: 24.sp),
@@ -1310,7 +1310,7 @@ class _CryptoScreenState extends State<CryptoScreen>
         Get.snackbar(
           'Coming Soon',
           '$serviceName feature is coming soon!',
-          backgroundColor: const Color(0xFF6C5CE7).withOpacity(0.2),
+          backgroundColor: const Color(0xFF6C5CE7).withValues(alpha: 0.2),
           colorText: Colors.white,
         );
     }
@@ -1359,7 +1359,7 @@ class _CryptoScreenState extends State<CryptoScreen>
                   vertical: 6.h,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.1),
+                  color: Colors.white.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20.r),
                 ),
                 child: Row(
@@ -1442,7 +1442,7 @@ class _CryptoScreenState extends State<CryptoScreen>
         borderRadius: BorderRadius.circular(20.r),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF6C5CE7).withOpacity(0.3),
+            color: const Color(0xFF6C5CE7).withValues(alpha: 0.3),
             blurRadius: 15,
             offset: const Offset(0, 8),
           ),
@@ -1470,7 +1470,7 @@ class _CryptoScreenState extends State<CryptoScreen>
                     'Spend your crypto anywhere',
             style: GoogleFonts.inter(
               fontSize: 14.sp,
-                      color: Colors.white.withOpacity(0.9),
+                      color: Colors.white.withValues(alpha: 0.9),
                     ),
                   ),
                 ],
@@ -1478,7 +1478,7 @@ class _CryptoScreenState extends State<CryptoScreen>
               Container(
                 padding: EdgeInsets.all(12.w),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12.r),
                 ),
                 child: Icon(
@@ -1500,7 +1500,7 @@ class _CryptoScreenState extends State<CryptoScreen>
                       '✓ Zero transaction fees',
                       style: GoogleFonts.inter(
                         fontSize: 12.sp,
-                        color: Colors.white.withOpacity(0.9),
+                        color: Colors.white.withValues(alpha: 0.9),
                       ),
                     ),
                     SizedBox(height: 4.h),
@@ -1508,7 +1508,7 @@ class _CryptoScreenState extends State<CryptoScreen>
                       '✓ Instant crypto conversion',
                       style: GoogleFonts.inter(
                         fontSize: 12.sp,
-                        color: Colors.white.withOpacity(0.9),
+                        color: Colors.white.withValues(alpha: 0.9),
                       ),
                     ),
                     SizedBox(height: 4.h),
@@ -1516,7 +1516,7 @@ class _CryptoScreenState extends State<CryptoScreen>
                       '✓ Global acceptance',
                       style: GoogleFonts.inter(
                         fontSize: 12.sp,
-                        color: Colors.white.withOpacity(0.9),
+                        color: Colors.white.withValues(alpha: 0.9),
                       ),
                     ),
                   ],
@@ -1692,7 +1692,7 @@ class _CryptoScreenState extends State<CryptoScreen>
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(
               fontSize: 14.sp,
-              color: Colors.white.withOpacity(0.6),
+              color: Colors.white.withValues(alpha: 0.6),
             ),
           ),
           SizedBox(height: 20.h),
@@ -1763,7 +1763,7 @@ class _CryptoScreenState extends State<CryptoScreen>
         Text(
           label,
           style: TextStyle(
-            color: Colors.white.withOpacity(0.7),
+            color: Colors.white.withValues(alpha: 0.7),
             fontSize: 12.sp,
           ),
         ),
@@ -1826,7 +1826,7 @@ class _CryptoScreenState extends State<CryptoScreen>
       child: Container(
         padding: EdgeInsets.all(12.w),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.05),
+          color: Colors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(16.r),
         ),
         child: Row(
@@ -1834,7 +1834,7 @@ class _CryptoScreenState extends State<CryptoScreen>
               Container(
               padding: EdgeInsets.all(8.w),
                 decoration: BoxDecoration(
-                color: iconColor.withOpacity(0.2),
+                color: iconColor.withValues(alpha: 0.2),
                 shape: BoxShape.circle,
                 ),
                 child: Icon(
@@ -1859,7 +1859,7 @@ class _CryptoScreenState extends State<CryptoScreen>
                     Text(
                     symbol,
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.7),
+                      color: Colors.white.withValues(alpha: 0.7),
                         fontSize: 12.sp,
                       ),
                     ),
@@ -1951,7 +1951,7 @@ class _CryptoScreenState extends State<CryptoScreen>
           Container(
             padding: EdgeInsets.all(8.w),
             decoration: BoxDecoration(
-                    color: color.withOpacity(0.2),
+                    color: color.withValues(alpha: 0.2),
                     shape: BoxShape.circle,
             ),
             child: Icon(
@@ -2104,7 +2104,7 @@ class _CryptoScreenState extends State<CryptoScreen>
             Container(
               padding: EdgeInsets.all(8.w),
               decoration: BoxDecoration(
-                color: const Color(0xFF6C5CE7).withOpacity(0.2),
+                color: const Color(0xFF6C5CE7).withValues(alpha: 0.2),
                 shape: BoxShape.circle,
               ),
               child: Icon(icon, color: const Color(0xFF6C5CE7), size: 20.sp),
@@ -2222,7 +2222,7 @@ class _CryptoScreenState extends State<CryptoScreen>
                       Get.snackbar(
                         'Profile',
                         'Profile management coming soon!',
-                        backgroundColor: const Color(0xFF6C5CE7).withOpacity(0.2),
+                        backgroundColor: const Color(0xFF6C5CE7).withValues(alpha: 0.2),
                         colorText: Colors.white,
                       );
                     },
@@ -2236,7 +2236,7 @@ class _CryptoScreenState extends State<CryptoScreen>
                       Get.snackbar(
                         'Settings',
                         'Settings coming soon!',
-                        backgroundColor: const Color(0xFF6C5CE7).withOpacity(0.2),
+                        backgroundColor: const Color(0xFF6C5CE7).withValues(alpha: 0.2),
                         colorText: Colors.white,
                       );
                     },
@@ -2250,7 +2250,7 @@ class _CryptoScreenState extends State<CryptoScreen>
                       Get.snackbar(
                         'Help',
                         'Help center coming soon!',
-                        backgroundColor: const Color(0xFF6C5CE7).withOpacity(0.2),
+                        backgroundColor: const Color(0xFF6C5CE7).withValues(alpha: 0.2),
                         colorText: Colors.white,
                       );
                     },
@@ -2290,7 +2290,7 @@ class _CryptoScreenState extends State<CryptoScreen>
             Container(
               padding: EdgeInsets.all(8.w),
               decoration: BoxDecoration(
-                color: const Color(0xFF6C5CE7).withOpacity(0.2),
+                color: const Color(0xFF6C5CE7).withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(8.r),
               ),
               child: Icon(icon, color: const Color(0xFF6C5CE7), size: 20.sp),
@@ -2312,7 +2312,7 @@ class _CryptoScreenState extends State<CryptoScreen>
                     subtitle,
                     style: GoogleFonts.inter(
                       fontSize: 12.sp,
-                      color: Colors.white.withOpacity(0.6),
+                      color: Colors.white.withValues(alpha: 0.6),
                     ),
                   ),
                 ],
@@ -2320,7 +2320,7 @@ class _CryptoScreenState extends State<CryptoScreen>
             ),
             Icon(
               Icons.arrow_forward_ios,
-              color: Colors.white.withOpacity(0.5),
+              color: Colors.white.withValues(alpha: 0.5),
               size: 16.sp,
             ),
           ],

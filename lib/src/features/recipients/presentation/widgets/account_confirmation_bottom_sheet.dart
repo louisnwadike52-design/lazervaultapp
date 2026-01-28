@@ -134,7 +134,7 @@ class AccountConfirmationBottomSheetState
               width: 48.w,
               height: 48.h,
               decoration: BoxDecoration(
-                color: const Color(0xFF10B981).withOpacity(0.1),
+                color: const Color(0xFF10B981).withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -199,7 +199,7 @@ class AccountConfirmationBottomSheetState
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF4E03D0).withOpacity(0.2),
+            color: const Color(0xFF4E03D0).withValues(alpha: 0.2),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -215,7 +215,7 @@ class AccountConfirmationBottomSheetState
                 width: 40.w,
                 height: 40.h,
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(8.r),
                 ),
                 child: Icon(
@@ -229,7 +229,7 @@ class AccountConfirmationBottomSheetState
                 child: Text(
                   widget.bankName,
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.9),
+                    color: Colors.white.withValues(alpha: 0.9),
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w500,
                   ),
@@ -243,7 +243,7 @@ class AccountConfirmationBottomSheetState
           // Divider
           Container(
             height: 1,
-            color: Colors.white.withOpacity(0.2),
+            color: Colors.white.withValues(alpha: 0.2),
           ),
 
           SizedBox(height: 20.h),
@@ -252,7 +252,7 @@ class AccountConfirmationBottomSheetState
           Text(
             'Account Holder',
             style: TextStyle(
-              color: Colors.white.withOpacity(0.7),
+              color: Colors.white.withValues(alpha: 0.7),
               fontSize: 12.sp,
               fontWeight: FontWeight.w500,
               letterSpacing: 0.5,
@@ -281,7 +281,7 @@ class AccountConfirmationBottomSheetState
                     Text(
                       'Account Number',
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.7),
+                        color: Colors.white.withValues(alpha: 0.7),
                         fontSize: 12.sp,
                       ),
                     ),
@@ -366,7 +366,7 @@ class AccountConfirmationBottomSheetState
               _isFavorite = value;
             });
           },
-          activeColor: const Color(0xFF4E03D0),
+          activeThumbColor: const Color(0xFF4E03D0),
         ),
       ],
     );
@@ -379,7 +379,7 @@ class AccountConfirmationBottomSheetState
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, -4),
           ),

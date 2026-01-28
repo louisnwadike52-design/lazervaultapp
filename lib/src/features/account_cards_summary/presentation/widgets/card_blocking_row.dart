@@ -32,7 +32,7 @@ class CardBlockingRow extends StatelessWidget {
             Text(
               'Card Status',
               style: TextStyle(
-                color: Colors.white.withOpacity(0.7),
+                color: Colors.white.withValues(alpha: 0.7),
                 fontSize: 14.sp,
               ),
             ),
@@ -42,7 +42,7 @@ class CardBlockingRow extends StatelessWidget {
                 vertical: 6.h,
               ),
               decoration: BoxDecoration(
-                color: statusColor.withOpacity(0.2), 
+                color: statusColor.withValues(alpha: 0.2), 
                 borderRadius: BorderRadius.circular(20.r),
               ),
               child: Text(
@@ -108,7 +108,7 @@ class CardBlockingRow extends StatelessWidget {
         child: Container(
           padding: EdgeInsets.all(16.w),
           decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
+            color: color.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12.r),
             boxShadow: [
           BoxShadow(
@@ -143,7 +143,7 @@ class CardBlockingRow extends StatelessWidget {
                     Text(
                       subtitle,
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.5),
+                        color: Colors.white.withValues(alpha: 0.5),
                         fontSize: 12.sp,
                       ),
                     ),
@@ -152,7 +152,7 @@ class CardBlockingRow extends StatelessWidget {
               ),
               Icon(
                 Icons.arrow_forward_ios_rounded,
-                color: Colors.white.withOpacity(0.5),
+                color: Colors.white.withValues(alpha: 0.5),
                 size: 16.sp,
               ),
             ],

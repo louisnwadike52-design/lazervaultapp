@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutter/scheduler.dart';
+
 import 'package:lazervault/src/core/services/analytics_service.dart';
 
 /// Error Boundary Widget
@@ -98,22 +98,22 @@ class ErrorCapturingWidget extends SingleChildRenderObjectWidget {
 
   @override
   RenderObject createRenderObject(BuildContext context) {
-    return _ErrorCapturingRenderObject(onError);
+    return ErrorCapturingRenderObject(onError);
   }
 
   @override
   void updateRenderObject(
     BuildContext context,
-    covariant _ErrorCapturingRenderObject renderObject,
+    covariant ErrorCapturingRenderObject renderObject,
   ) {
     renderObject.onError = onError;
   }
 }
 
-class _ErrorCapturingRenderObject extends RenderProxyBox {
+class ErrorCapturingRenderObject extends RenderProxyBox {
   void Function(Object error, StackTrace? stackTrace) onError;
 
-  _ErrorCapturingRenderObject(this.onError);
+  ErrorCapturingRenderObject(this.onError);
 
   @override
   void performLayout() {
@@ -153,7 +153,7 @@ class _DefaultErrorWidget extends StatelessWidget {
                   width: 80,
                   height: 80,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFEF4444).withOpacity(0.1),
+                    color: const Color(0xFFEF4444).withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(

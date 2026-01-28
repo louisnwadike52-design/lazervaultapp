@@ -48,7 +48,7 @@ class CrowdfundCard extends StatelessWidget {
                     color: const Color(0xFF0A0A0A),
                     borderRadius: BorderRadius.circular(6.r),
                     border: Border.all(
-                      color: const Color(0xFF4E03D0).withOpacity(0.3),
+                      color: const Color(0xFF4E03D0).withValues(alpha: 0.3),
                       width: 1,
                     ),
                   ),
@@ -73,7 +73,7 @@ class CrowdfundCard extends StatelessWidget {
                     CircleAvatar(
                       radius: 16.r,
                       backgroundColor:
-                          const Color(0xFF4E03D0).withOpacity(0.2),
+                          const Color(0xFF4E03D0).withValues(alpha: 0.2),
                       backgroundImage: crowdfund.creator.profilePicture != null
                           ? NetworkImage(crowdfund.creator.profilePicture!)
                           : null,
@@ -203,10 +203,10 @@ class CrowdfundCard extends StatelessWidget {
                 vertical: 4.h,
               ),
               decoration: BoxDecoration(
-                color: const Color(0xFF4E03D0).withOpacity(0.1),
+                color: const Color(0xFF4E03D0).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(6.r),
                 border: Border.all(
-                  color: const Color(0xFF4E03D0).withOpacity(0.3),
+                  color: const Color(0xFF4E03D0).withValues(alpha: 0.3),
                   width: 1,
                 ),
               ),
@@ -344,25 +344,25 @@ class CrowdfundCard extends StatelessWidget {
 
     switch (crowdfund.status) {
       case CrowdfundStatus.active:
-        backgroundColor = const Color(0xFF10B981).withOpacity(0.2);
+        backgroundColor = const Color(0xFF10B981).withValues(alpha: 0.2);
         textColor = const Color(0xFF10B981);
         statusText = 'Active';
         icon = Icons.check_circle;
         break;
       case CrowdfundStatus.completed:
-        backgroundColor = const Color(0xFF4E03D0).withOpacity(0.2);
+        backgroundColor = const Color(0xFF4E03D0).withValues(alpha: 0.2);
         textColor = const Color(0xFF4E03D0);
         statusText = 'Completed';
         icon = Icons.celebration;
         break;
       case CrowdfundStatus.paused:
-        backgroundColor = const Color(0xFFF59E0B).withOpacity(0.2);
+        backgroundColor = const Color(0xFFF59E0B).withValues(alpha: 0.2);
         textColor = const Color(0xFFF59E0B);
         statusText = 'Paused';
         icon = Icons.pause_circle;
         break;
       case CrowdfundStatus.cancelled:
-        backgroundColor = const Color(0xFFEF4444).withOpacity(0.2);
+        backgroundColor = const Color(0xFFEF4444).withValues(alpha: 0.2);
         textColor = const Color(0xFFEF4444);
         statusText = 'Cancelled';
         icon = Icons.cancel;

@@ -60,6 +60,7 @@ class _CreateTagScreenRedesignedState extends State<CreateTagScreenRedesigned> {
 
     try {
       final results = await context.read<TagPayCubit>().searchUsers(query);
+      if (!mounted) return;
       setState(() {
         _searchResults = results;
         _isSearching = false;
@@ -125,6 +126,7 @@ class _CreateTagScreenRedesignedState extends State<CreateTagScreenRedesigned> {
 
     // Trigger tag creation after navigation
     Future.delayed(const Duration(milliseconds: 500), () {
+      if (!mounted) return;
       context.read<TagPayCubit>().createTag(
             taggedUserTagPay: _selectedUser!.username,
             amount: amount,
@@ -321,7 +323,7 @@ class _CreateTagScreenRedesignedState extends State<CreateTagScreenRedesigned> {
               width: 40.w,
               height: 40.w,
               decoration: BoxDecoration(
-                color: const Color(0xFF3B82F6).withOpacity(0.2),
+                color: const Color(0xFF3B82F6).withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(20.r),
               ),
               child: Icon(
@@ -371,7 +373,7 @@ class _CreateTagScreenRedesignedState extends State<CreateTagScreenRedesigned> {
             width: 56.w,
             height: 56.w,
             decoration: BoxDecoration(
-              color: const Color(0xFF3B82F6).withOpacity(0.2),
+              color: const Color(0xFF3B82F6).withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(28.r),
             ),
             child: Icon(
@@ -449,7 +451,7 @@ class _CreateTagScreenRedesignedState extends State<CreateTagScreenRedesigned> {
                 padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
                 decoration: BoxDecoration(
                   color: _amountController.text == amount.toStringAsFixed(0)
-                    ? const Color(0xFF4E03D0).withOpacity(0.2)
+                    ? const Color(0xFF4E03D0).withValues(alpha: 0.2)
                     : const Color(0xFF1F1F1F),
                   border: Border.all(
                     color: _amountController.text == amount.toStringAsFixed(0)
@@ -569,7 +571,7 @@ class _CreateTagScreenRedesignedState extends State<CreateTagScreenRedesigned> {
             onPressed: isLoading ? null : _createTag,
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF3B82F6),
-              disabledBackgroundColor: const Color(0xFF3B82F6).withOpacity(0.5),
+              disabledBackgroundColor: const Color(0xFF3B82F6).withValues(alpha: 0.5),
               padding: EdgeInsets.symmetric(vertical: 16.h),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12.r),

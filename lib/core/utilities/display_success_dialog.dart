@@ -39,7 +39,7 @@ void displaySuccessDialog({
                 style: TextStyle(
                   fontSize: 16.sp,
                   fontWeight: FontWeight.bold,
-                  color: HexColor.fromHex("#262626"),
+                  color: HybridHexColor.fromHex("#262626"),
                 ),
               ),
               SizedBox(height: 8.0.h),
@@ -47,14 +47,14 @@ void displaySuccessDialog({
                 subtitle,
                 style: TextStyle(
                   fontSize: 14.sp,
-                  color: HexColor.fromHex("#A3A3A3"),
+                  color: HybridHexColor.fromHex("#A3A3A3"),
                 ),
               ),
               SizedBox(height: 16.0.h),
               ElevatedButton(
                 onPressed: onConfirm,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: HexColor.fromHex("#3784F9"),
+                  backgroundColor: HybridHexColor.fromHex("#3784F9"),
                   foregroundColor: Colors.white,
                 ),
                 child: Text(
@@ -68,7 +68,7 @@ void displaySuccessDialog({
                   dismissText,
                   style: TextStyle(
                     fontSize: 14.sp,
-                    color: HexColor.fromHex("#3784F9"),
+                    color: HybridHexColor.fromHex("#3784F9"),
                   ),
                 ),
               ),

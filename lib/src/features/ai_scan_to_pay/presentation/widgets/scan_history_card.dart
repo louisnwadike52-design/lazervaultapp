@@ -22,7 +22,7 @@ class ScanHistoryCard extends StatelessWidget {
         color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(16.r),        boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),
@@ -42,7 +42,7 @@ class ScanHistoryCard extends StatelessWidget {
                   width: 50.w,
                   height: 50.w,
                   decoration: BoxDecoration(
-                    color: _getStatusColor(session.status).withOpacity(0.2),
+                    color: _getStatusColor(session.status).withValues(alpha: 0.2),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
@@ -76,7 +76,7 @@ class ScanHistoryCard extends StatelessWidget {
                               vertical: 4.h,
                             ),
                             decoration: BoxDecoration(
-                              color: _getStatusColor(session.status).withOpacity(0.2),
+                              color: _getStatusColor(session.status).withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(8.r),
                             ),
                             child: Text(

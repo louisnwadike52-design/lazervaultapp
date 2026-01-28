@@ -28,7 +28,7 @@ class AvailableBalanceCard extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 20.sp,
                     fontWeight: FontWeight.w800,
-                    color: HexColor.fromHex("#262626"),
+                    color: HybridHexColor.fromHex("#262626"),
                   )),
               TimePeriodMenu()
             ],
@@ -41,12 +41,12 @@ class AvailableBalanceCard extends StatelessWidget {
               Text("Current Balance",
                   style: TextStyle(
                     fontSize: 16.sp,
-                    color: HexColor.fromHex("#A3A3A3"),
+                    color: HybridHexColor.fromHex("#A3A3A3"),
                   )),
               Text("Jun 06 - 12",
                   style: TextStyle(
                     fontSize: 16.sp,
-                    color: HexColor.fromHex("#A3A3A3"),
+                    color: HybridHexColor.fromHex("#A3A3A3"),
                   )),
             ],
           )

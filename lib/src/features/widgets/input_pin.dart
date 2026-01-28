@@ -56,7 +56,7 @@ class _InputPinState extends State<InputPin> with CodeAutoFill {
             height: 72.w,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: Colors.white.withOpacity(0.1),
+              color: Colors.white.withValues(alpha: 0.1),
             ),
             child: Icon(
               Icons.lock_outline_rounded,
@@ -81,7 +81,7 @@ class _InputPinState extends State<InputPin> with CodeAutoFill {
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 14.sp,
-              color: Colors.white.withOpacity(0.7),
+              color: Colors.white.withValues(alpha: 0.7),
               height: 1.5,
             ),
           ),
@@ -103,10 +103,10 @@ class _InputPinState extends State<InputPin> with CodeAutoFill {
                 borderRadius: BorderRadius.circular(24.r),
                 fieldHeight: 56.h,
                 fieldWidth: 56.w,
-                activeFillColor: Colors.white.withOpacity(0.15),
-                selectedFillColor: Colors.white.withOpacity(0.2),
-                inactiveFillColor: Colors.white.withOpacity(0.1),
-                activeColor: Colors.white.withOpacity(0.3),
+                activeFillColor: Colors.white.withValues(alpha: 0.15),
+                selectedFillColor: Colors.white.withValues(alpha: 0.2),
+                inactiveFillColor: Colors.white.withValues(alpha: 0.1),
+                activeColor: Colors.white.withValues(alpha: 0.3),
                 selectedColor: Colors.white,
                 inactiveColor: Colors.transparent,
               ),
@@ -127,14 +127,14 @@ class _InputPinState extends State<InputPin> with CodeAutoFill {
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  Colors.white.withOpacity(0.2),
-                  Colors.white.withOpacity(0.3),
+                  Colors.white.withValues(alpha: 0.2),
+                  Colors.white.withValues(alpha: 0.3),
                 ],
               ),
               borderRadius: BorderRadius.circular(28.r),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.black.withValues(alpha: 0.1),
                   blurRadius: 20,
                   offset: Offset(0, 10),
                 ),
@@ -157,7 +157,7 @@ class _InputPinState extends State<InputPin> with CodeAutoFill {
                     Get.snackbar(
                       'Invalid PIN',
                       'Please enter a valid 4-digit PIN',
-                      backgroundColor: Colors.white.withOpacity(0.1),
+                      backgroundColor: Colors.white.withValues(alpha: 0.1),
                       colorText: Colors.white,
                       snackPosition: SnackPosition.TOP,
                     );
@@ -195,7 +195,7 @@ class _InputPinState extends State<InputPin> with CodeAutoFill {
             child: Text(
               "Forgot PIN?",
               style: TextStyle(
-                color: Colors.white.withOpacity(0.7),
+                color: Colors.white.withValues(alpha: 0.7),
                 fontSize: 14.sp,
                 fontWeight: FontWeight.w500,
               ),

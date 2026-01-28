@@ -200,15 +200,15 @@ class _NotificationsBuilderState extends State<NotificationsBuilder> {
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      serviceColor.withOpacity(0.15),
-                      serviceColor.withOpacity(0.08),
+                      serviceColor.withValues(alpha: 0.15),
+                      serviceColor.withValues(alpha: 0.08),
                     ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
                   borderRadius: BorderRadius.circular(14.r),
                   border: Border.all(
-                    color: serviceColor.withOpacity(0.2),
+                    color: serviceColor.withValues(alpha: 0.2),
                     width: 1,
                   ),
                 ),

@@ -109,18 +109,18 @@ class _BatchTransferReceiptScreenState extends State<BatchTransferReceiptScreen>
       final file = File('${tempDir.path}/batch_transfer_receipt.pdf');
       await file.writeAsBytes(await pdf.save());
 
-      await Share.shareXFiles(
-        [XFile(file.path)],
+      await SharePlus.instance.share(ShareParams(
+        files: [XFile(file.path)],
         text: 'Batch Transfer Receipt - LazerVault',
         subject: 'Batch Transfer Receipt',
-      );
+      ));
     } catch (e) {
       // Fallback to text sharing if PDF sharing fails
       final shareText = _generateShareText();
-      await Share.share(
-        shareText,
+      await SharePlus.instance.share(ShareParams(
+        text: shareText,
         subject: 'Batch Transfer Receipt - LazerVault',
-      );
+      ));
     }
   }
 
@@ -255,7 +255,7 @@ class _BatchTransferReceiptScreenState extends State<BatchTransferReceiptScreen>
                           ),
                         ],
                       );
-                    }).toList(),
+                    }),
                   ],
                 )
               else
@@ -349,7 +349,7 @@ Thank you for using LazerVault!
   Widget build(BuildContext context) {
     return PopScope(
       canPop: false,
-      onPopInvoked: (didPop) {
+      onPopInvokedWithResult: (didPop, _) {
         if (!didPop) {
           _navigateToDashboard();
         }

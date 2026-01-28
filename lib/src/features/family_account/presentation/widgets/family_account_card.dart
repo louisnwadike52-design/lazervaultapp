@@ -35,20 +35,20 @@ class FamilyAccountCard extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            const Color(0xFF6C5CE7).withOpacity(0.15),
-            const Color(0xFFA29BFE).withOpacity(0.05),
+            const Color(0xFF6C5CE7).withValues(alpha: 0.15),
+            const Color(0xFFA29BFE).withValues(alpha: 0.05),
           ],
         ),
         borderRadius: BorderRadius.circular(20.r),
         border: isActive
             ? Border.all(
-                color: Colors.green.withOpacity(0.6),
+                color: Colors.green.withValues(alpha: 0.6),
                 width: 2,
               )
             : null,
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF6C5CE7).withOpacity(0.3),
+            color: const Color(0xFF6C5CE7).withValues(alpha: 0.3),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -88,7 +88,7 @@ class FamilyAccountCard extends StatelessWidget {
                   Text(
                     'Family & Friends',
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.9),
+                      color: Colors.white.withValues(alpha: 0.9),
                       fontSize: 14.sp,
                       fontWeight: FontWeight.w500,
                     ),
@@ -115,10 +115,10 @@ class FamilyAccountCard extends StatelessWidget {
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                 decoration: BoxDecoration(
-                  color: Colors.green.withOpacity(0.3),
+                  color: Colors.green.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(12.r),
                   border: Border.all(
-                    color: Colors.green.withOpacity(0.6),
+                    color: Colors.green.withValues(alpha: 0.6),
                     width: 1,
                   ),
                 ),
@@ -146,7 +146,7 @@ class FamilyAccountCard extends StatelessWidget {
             Container(
               padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
               decoration: BoxDecoration(
-                color: Colors.purple.withOpacity(0.2),
+                color: Colors.purple.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(20.r),
               ),
               child: Row(
@@ -182,7 +182,7 @@ class FamilyAccountCard extends StatelessWidget {
         Text(
           'Total Family Balance',
           style: TextStyle(
-            color: Colors.white.withOpacity(0.7),
+            color: Colors.white.withValues(alpha: 0.7),
             fontSize: 12.sp,
             fontWeight: FontWeight.w500,
           ),
@@ -205,10 +205,10 @@ class FamilyAccountCard extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(12.w),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.08),
+        color: Colors.white.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
-          color: Colors.white.withOpacity(0.1),
+          color: Colors.white.withValues(alpha: 0.1),
           width: 1,
         ),
       ),
@@ -219,14 +219,14 @@ class FamilyAccountCard extends StatelessWidget {
             children: [
               Icon(
                 Icons.person,
-                color: Colors.white.withOpacity(0.7),
+                color: Colors.white.withValues(alpha: 0.7),
                 size: 16.sp,
               ),
               SizedBox(width: 6.w),
               Text(
                 'Your Share',
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.7),
+                  color: Colors.white.withValues(alpha: 0.7),
                   fontSize: 11.sp,
                   fontWeight: FontWeight.w500,
                 ),
@@ -247,14 +247,14 @@ class FamilyAccountCard extends StatelessWidget {
             children: [
               Icon(
                 Icons.account_balance_wallet,
-                color: Colors.white.withOpacity(0.7),
+                color: Colors.white.withValues(alpha: 0.7),
                 size: 16.sp,
               ),
               SizedBox(width: 6.w),
               Text(
                 'Remaining',
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.7),
+                  color: Colors.white.withValues(alpha: 0.7),
                   fontSize: 11.sp,
                   fontWeight: FontWeight.w500,
                 ),
@@ -287,7 +287,7 @@ class FamilyAccountCard extends StatelessWidget {
             width: 40.w,
             height: 40.h,
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.1),
+              color: Colors.white.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(
@@ -325,10 +325,10 @@ class FamilyAccountCard extends StatelessWidget {
         child: Container(
           padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.15),
+            color: Colors.white.withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(20.r),
             border: Border.all(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withValues(alpha: 0.2),
               width: 1,
             ),
           ),
@@ -378,19 +378,19 @@ class FamilySetupCard extends StatelessWidget {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              const Color(0xFF6C5CE7).withOpacity(0.3),
-              const Color(0xFFA29BFE).withOpacity(0.15),
+              const Color(0xFF6C5CE7).withValues(alpha: 0.3),
+              const Color(0xFFA29BFE).withValues(alpha: 0.15),
             ],
           ),
           borderRadius: BorderRadius.circular(20.r),
           border: Border.all(
-            color: const Color(0xFF6C5CE7).withOpacity(0.5),
+            color: const Color(0xFF6C5CE7).withValues(alpha: 0.5),
             width: 2,
             style: BorderStyle.solid,
           ),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF6C5CE7).withOpacity(0.4),
+              color: const Color(0xFF6C5CE7).withValues(alpha: 0.4),
               blurRadius: 20,
               offset: const Offset(0, 10),
             ),
@@ -403,7 +403,7 @@ class FamilySetupCard extends StatelessWidget {
               width: 64.w,
               height: 64.h,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
+                color: Colors.white.withValues(alpha: 0.2),
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -425,7 +425,7 @@ class FamilySetupCard extends StatelessWidget {
             Text(
               'Share money with loved ones',
               style: TextStyle(
-                color: Colors.white.withOpacity(0.8),
+                color: Colors.white.withValues(alpha: 0.8),
                 fontSize: 13.sp,
               ),
             ),
@@ -437,7 +437,7 @@ class FamilySetupCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(24.r),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
+                    color: Colors.black.withValues(alpha: 0.2),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),

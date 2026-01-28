@@ -12,7 +12,7 @@ class WrappedCubit extends Cubit<WrappedState> {
   /// Load Financial Wrapped data
   /// TODO: Implement when proto types are available
   Future<void> loadWrapped({
-    WrappedPeriod period = WrappedPeriod.WRAPPED_PERIOD_YEARLY,
+    WrappedPeriod period = WrappedPeriod.wrappedPeriodYearly,
     int? year,
     int? month,
   }) async {
@@ -44,7 +44,7 @@ class WrappedCubit extends Cubit<WrappedState> {
   /// Load yearly wrapped for a specific year
   Future<void> loadYearlyWrapped({int? year}) async {
     await loadWrapped(
-      period: WrappedPeriod.WRAPPED_PERIOD_YEARLY,
+      period: WrappedPeriod.wrappedPeriodYearly,
       year: year,
     );
   }
@@ -55,7 +55,7 @@ class WrappedCubit extends Cubit<WrappedState> {
     required int month,
   }) async {
     await loadWrapped(
-      period: WrappedPeriod.WRAPPED_PERIOD_MONTHLY,
+      period: WrappedPeriod.wrappedPeriodMonthly,
       year: year,
       month: month,
     );
@@ -128,7 +128,7 @@ class WrappedCubit extends Cubit<WrappedState> {
 
   /// Retry loading after an error
   Future<void> retry({
-    WrappedPeriod period = WrappedPeriod.WRAPPED_PERIOD_YEARLY,
+    WrappedPeriod period = WrappedPeriod.wrappedPeriodYearly,
     int? year,
     int? month,
   }) async {

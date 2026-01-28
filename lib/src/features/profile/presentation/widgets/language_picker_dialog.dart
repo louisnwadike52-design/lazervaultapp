@@ -112,7 +112,7 @@ class _LanguagePickerDialogState extends State<LanguagePickerDialog> {
                       margin: EdgeInsets.only(bottom: 8.h),
                       decoration: BoxDecoration(
                         color: isSelected
-                            ? const Color(0xFF4E03D0).withOpacity(0.1)
+                            ? const Color(0xFF4E03D0).withValues(alpha: 0.1)
                             : Colors.grey.shade50,
                         borderRadius: BorderRadius.circular(12.r),
                         border: Border.all(

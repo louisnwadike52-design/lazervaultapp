@@ -145,7 +145,7 @@ class ReferralCubit extends Cubit<ReferralState> {
           'Join LazerVault using my referral code: $code and get ${currencySymbol}50 bonus! '
           'Download the app now: https://lazervault.com';
 
-      await Share.share(message);
+      await SharePlus.instance.share(ShareParams(text: message));
     } catch (e) {
       if (isClosed) return;
       emit(ReferralError('Failed to share code: $e'));

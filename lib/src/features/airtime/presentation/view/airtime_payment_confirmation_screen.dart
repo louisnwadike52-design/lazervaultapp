@@ -151,7 +151,7 @@ class _AirtimePaymentConfirmationScreenState extends State<AirtimePaymentConfirm
             color: isSuccess ? Color(0xFF10B981) : Color(0xFFEF4444),
             boxShadow: [
               BoxShadow(
-                color: (isSuccess ? Color(0xFF10B981) : Color(0xFFEF4444)).withOpacity(0.3),
+                color: (isSuccess ? Color(0xFF10B981) : Color(0xFFEF4444)).withValues(alpha: 0.3),
                 blurRadius: 20,
                 offset: Offset(0, 8),
               ),
@@ -186,7 +186,7 @@ class _AirtimePaymentConfirmationScreenState extends State<AirtimePaymentConfirm
             : errorMessage ?? 'Something went wrong with your payment',
           style: TextStyle(
             fontSize: 14.sp,
-            color: Colors.white.withOpacity(0.6),
+            color: Colors.white.withValues(alpha: 0.6),
             fontWeight: FontWeight.w400,
             height: 1.5,
           ),
@@ -205,7 +205,7 @@ class _AirtimePaymentConfirmationScreenState extends State<AirtimePaymentConfirm
         borderRadius: BorderRadius.circular(24.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 30,
             offset: Offset(0, 15),
           ),
@@ -215,7 +215,7 @@ class _AirtimePaymentConfirmationScreenState extends State<AirtimePaymentConfirm
         borderRadius: BorderRadius.circular(24.r),
         child: Container(
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.05),          ),
+            color: Colors.white.withValues(alpha: 0.05),          ),
           child: Column(
             children: [
               // Receipt header
@@ -284,7 +284,7 @@ class _AirtimePaymentConfirmationScreenState extends State<AirtimePaymentConfirm
                       transaction!.networkProvider.displayName,
                       style: TextStyle(
                         fontSize: 14.sp,
-                        color: Colors.white.withOpacity(0.8),
+                        color: Colors.white.withValues(alpha: 0.8),
                         fontWeight: FontWeight.w400,
                       ),
                     ),
@@ -335,7 +335,7 @@ class _AirtimePaymentConfirmationScreenState extends State<AirtimePaymentConfirm
             Container(
               padding: EdgeInsets.all(16.w),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.03),
+                color: Colors.white.withValues(alpha: 0.03),
                 borderRadius: BorderRadius.circular(12.r),
               ),
               child: Column(
@@ -353,7 +353,7 @@ class _AirtimePaymentConfirmationScreenState extends State<AirtimePaymentConfirm
                   SizedBox(height: 12.h),
                   Container(
                     height: 1,
-                    color: Colors.white.withOpacity(0.1),
+                    color: Colors.white.withValues(alpha: 0.1),
                   ),
                   SizedBox(height: 12.h),
                   _buildReceiptRow('Total Paid', '₦${transaction!.totalAmount.toStringAsFixed(0)}', 
@@ -371,10 +371,10 @@ class _AirtimePaymentConfirmationScreenState extends State<AirtimePaymentConfirm
     return Container(
       padding: EdgeInsets.all(24.w),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.02),
+        color: Colors.white.withValues(alpha: 0.02),
         border: Border(
           top: BorderSide(
-            color: Colors.white.withOpacity(0.1),
+            color: Colors.white.withValues(alpha: 0.1),
             width: 1,
           ),
         ),
@@ -386,7 +386,7 @@ class _AirtimePaymentConfirmationScreenState extends State<AirtimePaymentConfirm
             style: TextStyle(
               fontSize: 14.sp,
               fontWeight: FontWeight.w500,
-              color: Colors.white.withOpacity(0.8),
+              color: Colors.white.withValues(alpha: 0.8),
             ),
           ),
           SizedBox(height: 8.h),
@@ -394,7 +394,7 @@ class _AirtimePaymentConfirmationScreenState extends State<AirtimePaymentConfirm
             'Keep this receipt for your records',
             style: TextStyle(
               fontSize: 12.sp,
-              color: Colors.white.withOpacity(0.5),
+              color: Colors.white.withValues(alpha: 0.5),
               fontWeight: FontWeight.w400,
             ),
           ),
@@ -412,7 +412,7 @@ class _AirtimePaymentConfirmationScreenState extends State<AirtimePaymentConfirm
           style: TextStyle(
             fontSize: isTotal ? 16.sp : 14.sp,
             fontWeight: isTotal ? FontWeight.w600 : FontWeight.w400,
-            color: Colors.white.withOpacity(isTotal ? 1.0 : 0.6),
+            color: Colors.white.withValues(alpha: isTotal ? 1.0 : 0.6),
           ),
         ),
         Flexible(
@@ -421,7 +421,7 @@ class _AirtimePaymentConfirmationScreenState extends State<AirtimePaymentConfirm
             style: TextStyle(
               fontSize: isTotal ? 16.sp : 14.sp,
               fontWeight: isTotal ? FontWeight.w700 : FontWeight.w500,
-              color: valueColor ?? (isTotal ? Colors.white : Colors.white.withOpacity(0.8)),
+              color: valueColor ?? (isTotal ? Colors.white : Colors.white.withValues(alpha: 0.8)),
             ),
             textAlign: TextAlign.right,
           ),
@@ -434,7 +434,7 @@ class _AirtimePaymentConfirmationScreenState extends State<AirtimePaymentConfirm
     return Container(
       margin: EdgeInsets.symmetric(vertical: 12.h),
       height: 1,
-      color: Colors.white.withOpacity(0.1),
+      color: Colors.white.withValues(alpha: 0.1),
     );
   }
 
@@ -487,7 +487,7 @@ class _AirtimePaymentConfirmationScreenState extends State<AirtimePaymentConfirm
                     style: TextStyle(
                       fontSize: 14.sp,
                       fontWeight: FontWeight.w500,
-                      color: Colors.white.withOpacity(0.8),
+                      color: Colors.white.withValues(alpha: 0.8),
                     ),
                   ),
                 ),
@@ -510,7 +510,7 @@ class _AirtimePaymentConfirmationScreenState extends State<AirtimePaymentConfirm
                     style: TextStyle(
                       fontSize: 14.sp,
                       fontWeight: FontWeight.w500,
-                      color: Colors.white.withOpacity(0.8),
+                      color: Colors.white.withValues(alpha: 0.8),
                     ),
                   ),
                 ),

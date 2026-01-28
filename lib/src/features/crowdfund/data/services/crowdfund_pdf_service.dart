@@ -180,11 +180,11 @@ class CrowdfundPdfService {
     try {
       final file = await generateDonationReceipt(receipt, donation, crowdfund);
 
-      await Share.shareXFiles(
-        [XFile(file.path)],
+      await SharePlus.instance.share(ShareParams(
+        files: [XFile(file.path)],
         subject: 'Crowdfund Donation Receipt - ${receipt.receiptNumber}',
         text: 'Thank you for your donation to ${crowdfund.title}!',
-      );
+      ));
     } catch (e) {
       throw Exception('Failed to share receipt: $e');
     }

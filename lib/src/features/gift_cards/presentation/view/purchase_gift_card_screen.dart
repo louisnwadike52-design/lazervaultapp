@@ -162,7 +162,7 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
           children: [
             Container(
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12.r),
                 boxShadow: [
           BoxShadow(
@@ -209,7 +209,7 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
           color: Colors.grey[900],
           borderRadius: BorderRadius.circular(20.r),          boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.25),
+              color: Colors.black.withValues(alpha: 0.25),
               blurRadius: 16,
               offset: const Offset(0, 8),
             ),
@@ -225,7 +225,7 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
                 borderRadius: BorderRadius.circular(20.r),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.15),
+                    color: Colors.black.withValues(alpha: 0.15),
                     blurRadius: 12,
                     offset: const Offset(0, 6),
                   ),
@@ -299,7 +299,7 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
                         borderRadius: BorderRadius.circular(12.r),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF10B981).withOpacity(0.3),
+                            color: const Color(0xFF10B981).withValues(alpha: 0.3),
                             blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),
@@ -366,7 +366,7 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
                 color: isSelected ? null : Colors.grey[900],
                 borderRadius: BorderRadius.circular(16.r),                boxShadow: isSelected ? [
                   BoxShadow(
-                    color: Colors.blue.withOpacity(0.3),
+                    color: Colors.blue.withValues(alpha: 0.3),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),
@@ -406,13 +406,13 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
           style: GoogleFonts.inter(
             fontSize: 14.sp,
             fontWeight: FontWeight.w500,
-            color: Colors.white.withOpacity(0.7),
+            color: Colors.white.withValues(alpha: 0.7),
           ),
         ),
         SizedBox(height: 12.h),
         Container(
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.1),
+            color: Colors.white.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(16.r),
             boxShadow: [
           BoxShadow(
@@ -441,12 +441,12 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
             decoration: InputDecoration(
               hintText: 'Enter amount (\$)',
               hintStyle: GoogleFonts.inter(
-                color: Colors.white.withOpacity(0.5),
+                color: Colors.white.withValues(alpha: 0.5),
                 fontSize: 16.sp,
               ),
               prefixIcon: Icon(
                 Icons.attach_money_rounded,
-                color: Colors.white.withOpacity(0.6),
+                color: Colors.white.withValues(alpha: 0.6),
                 size: 24.sp,
               ),
               border: InputBorder.none,
@@ -540,7 +540,7 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
         color: isSelected ? null : Colors.grey[900],
         borderRadius: BorderRadius.circular(16.r),        boxShadow: isSelected ? [
           BoxShadow(
-            color: Colors.blue.withOpacity(0.3),
+            color: Colors.blue.withValues(alpha: 0.3),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -582,7 +582,7 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
     return Container(
       padding: EdgeInsets.all(24.w),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
+        color: Colors.white.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20.r),
         boxShadow: [
           BoxShadow(
@@ -672,13 +672,13 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
           style: GoogleFonts.inter(
             fontSize: 14.sp,
             fontWeight: FontWeight.w600,
-            color: Colors.white.withOpacity(0.9),
+            color: Colors.white.withValues(alpha: 0.9),
           ),
         ),
         SizedBox(height: 8.h),
         Container(
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.1),
+            color: Colors.white.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12.r),
             boxShadow: [
           BoxShadow(
@@ -700,12 +700,12 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
             decoration: InputDecoration(
               hintText: hint,
               hintStyle: GoogleFonts.inter(
-                color: Colors.white.withOpacity(0.5),
+                color: Colors.white.withValues(alpha: 0.5),
                 fontSize: 14.sp,
               ),
               prefixIcon: Icon(
                 icon,
-                color: Colors.white.withOpacity(0.6),
+                color: Colors.white.withValues(alpha: 0.6),
                 size: 20.sp,
               ),
               border: InputBorder.none,
@@ -730,8 +730,8 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Colors.white.withOpacity(0.15),
-            Colors.white.withOpacity(0.08),
+            Colors.white.withValues(alpha: 0.15),
+            Colors.white.withValues(alpha: 0.08),
           ],
         ),
         borderRadius: BorderRadius.circular(20.r),
@@ -770,7 +770,7 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
           SizedBox(height: 16.h),
           Container(
             height: 1.h,
-            color: Colors.white.withOpacity(0.2),
+            color: Colors.white.withValues(alpha: 0.2),
           ),
           SizedBox(height: 16.h),
           
@@ -793,7 +793,7 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
           style: GoogleFonts.inter(
             fontSize: isTotal ? 16.sp : 14.sp,
             fontWeight: isTotal ? FontWeight.w700 : FontWeight.w500,
-            color: isTotal ? Colors.white : Colors.white.withOpacity(0.8),
+            color: isTotal ? Colors.white : Colors.white.withValues(alpha: 0.8),
           ),
         ),
         Text(
@@ -805,7 +805,7 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
                 ? const Color(0xFF10B981)
                 : isTotal 
                     ? Colors.white 
-                    : Colors.white.withOpacity(0.9),
+                    : Colors.white.withValues(alpha: 0.9),
           ),
         ),
       ],
@@ -833,7 +833,7 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
             borderRadius: BorderRadius.circular(16.r),
             boxShadow: isValid ? [
               BoxShadow(
-                color: Colors.blue.withOpacity(0.4),
+                color: Colors.blue.withValues(alpha: 0.4),
                 blurRadius: 16,
                 offset: const Offset(0, 8),
               ),
@@ -971,7 +971,7 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
               'Your gift card has been purchased successfully.',
               style: GoogleFonts.inter(
                 fontSize: 16.sp,
-                color: Colors.white.withOpacity(0.8),
+                color: Colors.white.withValues(alpha: 0.8),
                 fontWeight: FontWeight.w400,
               ),
               textAlign: TextAlign.center,
@@ -1031,7 +1031,7 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
             Container(
               padding: EdgeInsets.all(20.w),
               decoration: BoxDecoration(
-                color: const Color(0xFFEF4444).withOpacity(0.2),
+                color: const Color(0xFFEF4444).withValues(alpha: 0.2),
                 shape: BoxShape.circle,
                 boxShadow: [
           BoxShadow(
@@ -1063,7 +1063,7 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
               message,
               style: GoogleFonts.inter(
                 fontSize: 16.sp,
-                color: Colors.white.withOpacity(0.8),
+                color: Colors.white.withValues(alpha: 0.8),
                 fontWeight: FontWeight.w400,
               ),
               textAlign: TextAlign.center,

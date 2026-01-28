@@ -4,9 +4,9 @@ import 'package:lazervault/core/error/failure.dart';
 import 'package:lazervault/src/features/funds/domain/entities/deposit_entity.dart';
 import '../repositories/i_deposit_repository.dart';
 
-abstract class UseCaseWithParams<Type, Params> {
+abstract class UseCaseWithParams<T, Params> {
   const UseCaseWithParams();
-  Future<Either<Failure, Type>> call(Params params);
+  Future<Either<Failure, T>> call(Params params);
 }
 
 class InitiateDepositUseCase extends UseCaseWithParams<DepositDetails, DepositParams> {
@@ -26,7 +26,7 @@ class InitiateDepositUseCase extends UseCaseWithParams<DepositDetails, DepositPa
 }
 
 class DepositParams extends Equatable {
-  final int targetAccountId;
+  final String targetAccountId;
   final double amount;
   final String currency;
   final String sourceBankName;

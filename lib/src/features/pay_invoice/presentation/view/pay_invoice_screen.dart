@@ -179,7 +179,7 @@ class _PayInvoiceScreenState extends State<PayInvoiceScreen>
                 borderRadius: BorderRadius.circular(22.r),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.08),
+                    color: Colors.black.withValues(alpha: 0.08),
                     blurRadius: 12,
                     offset: const Offset(0, 2),
                   ),
@@ -241,7 +241,7 @@ class _PayInvoiceScreenState extends State<PayInvoiceScreen>
             borderRadius: BorderRadius.circular(22.r),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.08),
+                color: Colors.black.withValues(alpha: 0.08),
                 blurRadius: 12,
                 offset: const Offset(0, 2),
               ),
@@ -296,7 +296,7 @@ class _PayInvoiceScreenState extends State<PayInvoiceScreen>
         borderRadius: BorderRadius.circular(12.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 12,
             offset: const Offset(0, 2),
           ),
@@ -365,7 +365,7 @@ class _PayInvoiceScreenState extends State<PayInvoiceScreen>
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 12,
             offset: const Offset(0, 2),
           ),
@@ -395,13 +395,13 @@ class _PayInvoiceScreenState extends State<PayInvoiceScreen>
             end: Alignment.bottomRight,
             colors: [
               InvoiceThemeColors.primaryPurple,
-              InvoiceThemeColors.primaryPurple.withOpacity(0.7),
+              InvoiceThemeColors.primaryPurple.withValues(alpha: 0.7),
             ],
           ),
           borderRadius: BorderRadius.circular(12.r),
           boxShadow: [
             BoxShadow(
-              color: InvoiceThemeColors.primaryPurple.withOpacity(0.3),
+              color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.3),
               blurRadius: 12,
               offset: const Offset(0, 2),
             ),
@@ -410,7 +410,7 @@ class _PayInvoiceScreenState extends State<PayInvoiceScreen>
         indicatorSize: TabBarIndicatorSize.tab,
         indicatorPadding: EdgeInsets.all(4.w),
         labelColor: Colors.white,
-        unselectedLabelColor: Colors.white.withOpacity(0.6),
+        unselectedLabelColor: Colors.white.withValues(alpha: 0.6),
         labelStyle: GoogleFonts.inter(
           fontSize: 13.sp,
           fontWeight: FontWeight.w700,
@@ -557,7 +557,7 @@ class _PayInvoiceScreenState extends State<PayInvoiceScreen>
               borderRadius: BorderRadius.circular(24.r),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.08),
+                  color: Colors.black.withValues(alpha: 0.08),
                   blurRadius: 12,
                   offset: const Offset(0, 2),
                 ),
@@ -619,7 +619,7 @@ class _PayInvoiceScreenState extends State<PayInvoiceScreen>
             height: 80.w,
             padding: EdgeInsets.all(20.w),
             decoration: BoxDecoration(
-              color: iconColor.withOpacity(0.1),
+              color: iconColor.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(40.r),
             ),
             child: Icon(

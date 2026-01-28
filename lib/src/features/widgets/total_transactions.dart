@@ -57,7 +57,7 @@ class _TotalTransactionsState extends State<TotalTransactions> {
           textAlign: TextAlign.start,
           style: TextStyle(
             fontWeight: FontWeight.bold,
-            color: HexColor.fromHex("#262626"),
+            color: HybridHexColor.fromHex("#262626"),
             fontSize: 18.sp,
           ),
         ),

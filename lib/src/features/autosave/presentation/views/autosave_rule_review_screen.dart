@@ -152,7 +152,7 @@ class _AutoSaveRuleReviewScreenState extends State<AutoSaveRuleReviewScreen>
               width: 40.w,
               height: 40.w,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12.r),
               ),
               child: Icon(
@@ -180,7 +180,7 @@ class _AutoSaveRuleReviewScreenState extends State<AutoSaveRuleReviewScreen>
                 Text(
                   'Please confirm your auto-save rule details',
                   style: GoogleFonts.inter(
-                    color: Colors.white.withOpacity(0.6),
+                    color: Colors.white.withValues(alpha: 0.6),
                     fontSize: 13.sp,
                     fontWeight: FontWeight.w400,
                   ),
@@ -291,7 +291,7 @@ class _AutoSaveRuleReviewScreenState extends State<AutoSaveRuleReviewScreen>
         border: Border.all(color: const Color(0xFF2D2D2D)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: Colors.black.withValues(alpha: 0.2),
             blurRadius: 15,
             offset: const Offset(0, 4),
           ),
@@ -305,7 +305,7 @@ class _AutoSaveRuleReviewScreenState extends State<AutoSaveRuleReviewScreen>
               Container(
                 padding: EdgeInsets.all(8.w),
                 decoration: BoxDecoration(
-                  color: const Color.fromARGB(255, 78, 3, 208).withOpacity(0.1),
+                  color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8.r),
                 ),
                 child: Icon(
@@ -371,7 +371,7 @@ class _AutoSaveRuleReviewScreenState extends State<AutoSaveRuleReviewScreen>
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            const Color(0xFF0A0A0A).withOpacity(0),
+            const Color(0xFF0A0A0A).withValues(alpha: 0),
             const Color(0xFF0A0A0A),
           ],
         ),
@@ -391,7 +391,7 @@ class _AutoSaveRuleReviewScreenState extends State<AutoSaveRuleReviewScreen>
             borderRadius: BorderRadius.circular(16.r),
             boxShadow: [
               BoxShadow(
-                color: const Color.fromARGB(255, 78, 3, 208).withOpacity(0.4),
+                color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.4),
                 blurRadius: 20,
                 offset: const Offset(0, 8),
               ),

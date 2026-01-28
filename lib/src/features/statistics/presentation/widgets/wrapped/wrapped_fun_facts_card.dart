@@ -39,11 +39,11 @@ class _FunFactItem extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.5),
+        color: Colors.white.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -83,8 +83,8 @@ class _FunFactItem extends StatelessWidget {
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  const Color(0xFFf093fb).withOpacity(0.3),
-                  const Color(0xFFf5576c).withOpacity(0.3),
+                  const Color(0xFFf093fb).withValues(alpha: 0.3),
+                  const Color(0xFFf5576c).withValues(alpha: 0.3),
                 ],
               ),
               borderRadius: BorderRadius.circular(12),

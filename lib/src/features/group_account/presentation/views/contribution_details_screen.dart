@@ -368,13 +368,13 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
           end: Alignment.bottomRight,
           colors: [
             const Color(0xFF6C5CE7),
-            const Color(0xFF6C5CE7).withOpacity(0.8),
+            const Color(0xFF6C5CE7).withValues(alpha: 0.8),
           ],
         ),
         borderRadius: BorderRadius.circular(20.r),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF6C5CE7).withOpacity(0.2),
+            color: const Color(0xFF6C5CE7).withValues(alpha: 0.2),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -391,7 +391,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                   contribution.description,
                   style: GoogleFonts.inter(
                     fontSize: 14.sp,
-                    color: Colors.white.withOpacity(0.8),
+                    color: Colors.white.withValues(alpha: 0.8),
                   ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
@@ -401,10 +401,10 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                 padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                 decoration: BoxDecoration(
                   color: isCompleted
-                      ? const Color(0xFF10B981).withOpacity(0.2)
+                      ? const Color(0xFF10B981).withValues(alpha: 0.2)
                       : isOverdue
-                          ? const Color(0xFFEF4444).withOpacity(0.2)
-                          : Colors.white.withOpacity(0.2),
+                          ? const Color(0xFFEF4444).withValues(alpha: 0.2)
+                          : Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12.r),                ),
                 child: Text(
                   isCompleted
@@ -436,7 +436,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                     'Raised',
                     style: GoogleFonts.inter(
                       fontSize: 12.sp,
-                      color: Colors.white.withOpacity(0.8),
+                      color: Colors.white.withValues(alpha: 0.8),
                     ),
                   ),
                   SizedBox(height: 4.h),
@@ -457,7 +457,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                     'Target',
                     style: GoogleFonts.inter(
                       fontSize: 12.sp,
-                      color: Colors.white.withOpacity(0.8),
+                      color: Colors.white.withValues(alpha: 0.8),
                     ),
                   ),
                   SizedBox(height: 4.h),
@@ -466,7 +466,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                     style: GoogleFonts.inter(
                       fontSize: 20.sp,
                       fontWeight: FontWeight.w600,
-                      color: Colors.white.withOpacity(0.8),
+                      color: Colors.white.withValues(alpha: 0.8),
                     ),
                   ),
                 ],
@@ -484,7 +484,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                     'Progress',
                     style: GoogleFonts.inter(
                       fontSize: 12.sp,
-                      color: Colors.white.withOpacity(0.8),
+                      color: Colors.white.withValues(alpha: 0.8),
                     ),
                   ),
                   Text(
@@ -501,7 +501,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
               Container(
                 height: 8.h,
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(4.r),
                 ),
                 child: Stack(
@@ -528,14 +528,14 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                 'Deadline: ${DateFormat('MMM dd, yyyy').format(contribution.deadline)}',
                 style: GoogleFonts.inter(
                   fontSize: 12.sp,
-                  color: Colors.white.withOpacity(0.8),
+                  color: Colors.white.withValues(alpha: 0.8),
                 ),
               ),
               Text(
                 '${contribution.payments.length} payment${contribution.payments.length == 1 ? '' : 's'}',
                 style: GoogleFonts.inter(
                   fontSize: 12.sp,
-                  color: Colors.white.withOpacity(0.8),
+                  color: Colors.white.withValues(alpha: 0.8),
                 ),
               ),
             ],
@@ -849,7 +849,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
           Container(
             padding: EdgeInsets.all(12.w),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8.r),
             ),
             child: Icon(
@@ -1002,13 +1002,13 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              const Color(0xFF2A2A3E).withOpacity(0.95),
-              const Color(0xFF1F1F35).withOpacity(0.98),
+              const Color(0xFF2A2A3E).withValues(alpha: 0.95),
+              const Color(0xFF1F1F35).withValues(alpha: 0.98),
             ],
           ),
           borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),          boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.3),
+              color: Colors.black.withValues(alpha: 0.3),
               blurRadius: 20,
               offset: const Offset(0, -8),
             ),
@@ -1062,7 +1062,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                   decoration: BoxDecoration(
-                    color: _getPaymentStatusColor(payment.status).withOpacity(0.2),
+                    color: _getPaymentStatusColor(payment.status).withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(8.r),
                     boxShadow: [
           BoxShadow(
@@ -1089,7 +1089,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                   child: Container(
                     padding: EdgeInsets.all(8.w),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.1),
+                      color: Colors.white.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8.r),
                     ),
                     child: Icon(
@@ -1119,7 +1119,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
             borderRadius: BorderRadius.circular(16.r),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF6C5CE7).withOpacity(0.3),
+                color: const Color(0xFF6C5CE7).withValues(alpha: 0.3),
                 blurRadius: 12,
                 offset: const Offset(0, 4),
               ),
@@ -1131,7 +1131,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                 'Payment Amount',
                 style: GoogleFonts.inter(
                   fontSize: 14.sp,
-                  color: Colors.white.withOpacity(0.9),
+                  color: Colors.white.withValues(alpha: 0.9),
                 ),
               ),
               SizedBox(height: 8.h),
@@ -1148,7 +1148,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                 'Paid by ${payment.userName}',
                 style: GoogleFonts.inter(
                   fontSize: 12.sp,
-                  color: Colors.white.withOpacity(0.8),
+                  color: Colors.white.withValues(alpha: 0.8),
                 ),
               ),
             ],
@@ -1165,7 +1165,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
         gradient: LinearGradient(
           colors: [
             Colors.transparent,
-            Colors.white.withOpacity(0.2),
+            Colors.white.withValues(alpha: 0.2),
             Colors.transparent,
           ],
         ),
@@ -1250,7 +1250,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
           width: double.infinity,
           padding: EdgeInsets.all(16.w),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.05),
+            color: Colors.white.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(12.r),
             boxShadow: [
           BoxShadow(
@@ -1268,7 +1268,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                   Container(
                     padding: EdgeInsets.all(8.w),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF10B981).withOpacity(0.2),
+                      color: const Color(0xFF10B981).withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(8.r),
                     ),
                     child: Icon(
@@ -1341,7 +1341,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
           width: double.infinity,
           padding: EdgeInsets.all(16.w),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.05),
+            color: Colors.white.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(12.r),
             boxShadow: [
           BoxShadow(
@@ -1360,7 +1360,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
               SizedBox(height: 12.h),
               Container(
                 height: 1.h,
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.white.withValues(alpha: 0.1),
               ),
               SizedBox(height: 12.h),
               _buildAmountRow(
@@ -1416,7 +1416,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
             style: OutlinedButton.styleFrom(
               foregroundColor: Colors.white,
               padding: EdgeInsets.symmetric(vertical: 16.h),
-              side: BorderSide(color: Colors.white.withOpacity(0.3)),
+              side: BorderSide(color: Colors.white.withValues(alpha: 0.3)),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12.r),
               ),
@@ -1534,10 +1534,10 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
       Navigator.pop(context);
       
       // Share the payment details
-      await Share.share(
-        shareText,
+      await SharePlus.instance.share(ShareParams(
+        text: shareText,
         subject: 'Payment Receipt - ${_currentContribution?.title ?? 'Contribution'}',
-      );
+      ));
       
       // Show success message
       if (mounted) {
@@ -1617,7 +1617,7 @@ Powered by LazerVault 🚀
       margin: EdgeInsets.only(bottom: 12.h),
       padding: EdgeInsets.all(12.w),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.03),
+        color: Colors.white.withValues(alpha: 0.03),
         borderRadius: BorderRadius.circular(8.r),
         boxShadow: [
           BoxShadow(
@@ -1669,7 +1669,7 @@ Powered by LazerVault 🚀
               child: Container(
                 padding: EdgeInsets.all(4.w),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.1),
+                  color: Colors.white.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(4.r),
                 ),
                 child: Icon(

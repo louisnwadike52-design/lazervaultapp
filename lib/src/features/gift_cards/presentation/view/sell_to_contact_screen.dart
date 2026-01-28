@@ -213,7 +213,7 @@ class _SellToContactScreenState extends State<SellToContactScreen> {
       width: 120.w,
       margin: EdgeInsets.only(right: 12.w),
       decoration: BoxDecoration(
-        color: isSelected ? Colors.blue.withOpacity(0.1) : Colors.grey[900],
+        color: isSelected ? Colors.blue.withValues(alpha: 0.1) : Colors.grey[900],
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(

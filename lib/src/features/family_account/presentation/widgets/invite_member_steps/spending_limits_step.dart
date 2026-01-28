@@ -107,7 +107,7 @@ class _SpendingLimitsStepState extends State<SpendingLimitsStep> {
             padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
               color: _noLimits
-                  ? const Color(0xFF6C5CE7).withOpacity(0.08)
+                  ? const Color(0xFF6C5CE7).withValues(alpha: 0.08)
                   : const Color(0xFFF8F8F8),
               borderRadius: BorderRadius.circular(16.r),
               border: Border.all(
@@ -123,8 +123,8 @@ class _SpendingLimitsStepState extends State<SpendingLimitsStep> {
                   height: 48.h,
                   decoration: BoxDecoration(
                     color: _noLimits
-                        ? const Color(0xFF6C5CE7).withOpacity(0.15)
-                        : const Color(0xFFE0E0E0).withOpacity(0.5),
+                        ? const Color(0xFF6C5CE7).withValues(alpha: 0.15)
+                        : const Color(0xFFE0E0E0).withValues(alpha: 0.5),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
@@ -168,7 +168,7 @@ class _SpendingLimitsStepState extends State<SpendingLimitsStep> {
                       _noLimits = value;
                     });
                   },
-                  activeColor: const Color(0xFF6C5CE7),
+                  activeThumbColor: const Color(0xFF6C5CE7),
                 ),
               ],
             ),
@@ -269,7 +269,7 @@ class _SpendingLimitsStepState extends State<SpendingLimitsStep> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      '${_allocationPercentageCap.toStringAsFixed(0)}',
+                      _allocationPercentageCap.toStringAsFixed(0),
                       style: TextStyle(
                         color: const Color(0xFF6C5CE7),
                         fontSize: 48.sp,
@@ -300,7 +300,7 @@ class _SpendingLimitsStepState extends State<SpendingLimitsStep> {
                     activeTrackColor: const Color(0xFF6C5CE7),
                     inactiveTrackColor: const Color(0xFFE0E0E0),
                     thumbColor: const Color(0xFF6C5CE7),
-                    overlayColor: const Color(0xFF6C5CE7).withOpacity(0.2),
+                    overlayColor: const Color(0xFF6C5CE7).withValues(alpha: 0.2),
                     trackHeight: 6.h,
                     thumbShape: RoundSliderThumbShape(enabledThumbRadius: 12.r),
                   ),
@@ -464,7 +464,7 @@ class _SpendingLimitsStepState extends State<SpendingLimitsStep> {
         borderRadius: BorderRadius.circular(28.r),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF6C5CE7).withOpacity(0.4),
+            color: const Color(0xFF6C5CE7).withValues(alpha: 0.4),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),

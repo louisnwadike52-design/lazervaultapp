@@ -35,13 +35,13 @@ class TransactionCard extends StatelessWidget {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Colors.white.withOpacity(0.08),
-              Colors.white.withOpacity(0.04),
+              Colors.white.withValues(alpha: 0.08),
+              Colors.white.withValues(alpha: 0.04),
             ],
           ),
           borderRadius: BorderRadius.circular(isCompact ? 12.r : 16.r),
           border: Border.all(
-            color: Colors.white.withOpacity(0.1),
+            color: Colors.white.withValues(alpha: 0.1),
             width: 1,
           ),
         ),
@@ -69,13 +69,13 @@ class TransactionCard extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            transaction.serviceColor.withOpacity(0.3),
-            transaction.serviceColor.withOpacity(0.1),
+            transaction.serviceColor.withValues(alpha: 0.3),
+            transaction.serviceColor.withValues(alpha: 0.1),
           ],
         ),
         borderRadius: BorderRadius.circular(isCompact ? 10.r : 12.r),
         border: Border.all(
-          color: transaction.serviceColor.withOpacity(0.3),
+          color: transaction.serviceColor.withValues(alpha: 0.3),
           width: 1,
         ),
       ),
@@ -109,7 +109,7 @@ class TransactionCard extends StatelessWidget {
             style: TextStyle(
               fontSize: 12.sp,
               fontWeight: FontWeight.w400,
-              color: Colors.white.withOpacity(0.6),
+              color: Colors.white.withValues(alpha: 0.6),
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -121,7 +121,7 @@ class TransactionCard extends StatelessWidget {
           style: TextStyle(
             fontSize: isCompact ? 10.sp : 11.sp,
             fontWeight: FontWeight.w400,
-            color: Colors.white.withOpacity(0.4),
+            color: Colors.white.withValues(alpha: 0.4),
           ),
         ),
       ],
@@ -153,10 +153,10 @@ class TransactionCard extends StatelessWidget {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
       decoration: BoxDecoration(
-        color: transaction.status.color.withOpacity(0.15),
+        color: transaction.status.color.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(6.r),
         border: Border.all(
-          color: transaction.status.color.withOpacity(0.3),
+          color: transaction.status.color.withValues(alpha: 0.3),
           width: 0.5,
         ),
       ),
@@ -218,7 +218,7 @@ class TransactionGroup extends StatelessWidget {
             style: TextStyle(
               fontSize: isCompact ? 13.sp : 14.sp,
               fontWeight: FontWeight.w600,
-              color: Colors.white.withOpacity(0.7),
+              color: Colors.white.withValues(alpha: 0.7),
               letterSpacing: 0.5,
             ),
           ),
@@ -269,7 +269,7 @@ class TransactionCardShimmer extends StatelessWidget {
       margin: EdgeInsets.only(bottom: isCompact ? 8.h : 12.h),
       padding: EdgeInsets.all(isCompact ? 12.w : 16.w),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(isCompact ? 12.r : 16.r),
       ),
       child: Row(
@@ -312,7 +312,7 @@ class TransactionCardShimmer extends StatelessWidget {
       width: width,
       height: height,
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
+        color: Colors.white.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(4.r),
       ),
     );

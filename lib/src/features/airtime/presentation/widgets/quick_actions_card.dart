@@ -11,10 +11,10 @@ class QuickActionsCard extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(20.r),        boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 20,
             offset: Offset(0, 10),
           ),
@@ -89,7 +89,7 @@ class QuickActionsCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(16.r),
           boxShadow: [
             BoxShadow(
-              color: gradient.colors.first.withOpacity(0.3),
+              color: gradient.colors.first.withValues(alpha: 0.3),
               blurRadius: 10,
               offset: Offset(0, 6),
             ),
@@ -129,7 +129,7 @@ class QuickActionsCard extends StatelessWidget {
               subtitle,
               style: TextStyle(
                 fontSize: 12.sp,
-                color: Colors.white.withOpacity(0.8),
+                color: Colors.white.withValues(alpha: 0.8),
                 fontWeight: FontWeight.w400,
               ),
             ),

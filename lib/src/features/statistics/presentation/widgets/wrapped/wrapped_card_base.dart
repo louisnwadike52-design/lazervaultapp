@@ -53,7 +53,7 @@ class WrappedCardBase extends StatelessWidget {
                       Text(
                         'Financial Wrapped',
                         style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          color: Colors.white.withOpacity(0.9),
+                          color: Colors.white.withValues(alpha: 0.9),
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -74,7 +74,7 @@ class WrappedCardBase extends StatelessWidget {
                     Text(
                       subtitle!,
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: Colors.white.withOpacity(0.8),
+                        color: Colors.white.withValues(alpha: 0.8),
                       ),
                     ),
                   ],

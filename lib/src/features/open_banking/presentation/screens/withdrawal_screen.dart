@@ -533,7 +533,7 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButtonFormField<Bank>(
-          value: _selectedBank,
+          initialValue: _selectedBank,
           isExpanded: true,
           decoration: InputDecoration(
             contentPadding: EdgeInsets.symmetric(horizontal: 16.w),
@@ -635,7 +635,7 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
               borderRadius: BorderRadius.circular(16.r),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withValues(alpha: 0.05),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
@@ -737,7 +737,7 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF6C5CE7),
                 foregroundColor: Colors.white,
-                disabledBackgroundColor: const Color(0xFF6C5CE7).withOpacity(0.6),
+                disabledBackgroundColor: const Color(0xFF6C5CE7).withValues(alpha: 0.6),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16.r),
                 ),

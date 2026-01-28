@@ -146,7 +146,7 @@ class _CountryPickerDialogState extends State<CountryPickerDialog> {
                       margin: EdgeInsets.only(bottom: 8.h),
                       decoration: BoxDecoration(
                         color: isSelected
-                            ? const Color(0xFF4E03D0).withOpacity(0.1)
+                            ? const Color(0xFF4E03D0).withValues(alpha: 0.1)
                             : Colors.grey.shade50,
                         borderRadius: BorderRadius.circular(12.r),
                         border: Border.all(
@@ -187,7 +187,7 @@ class _CountryPickerDialogState extends State<CountryPickerDialog> {
                                         fontSize: 13.sp,
                                         fontWeight: FontWeight.w400,
                                         color: isSelected
-                                            ? const Color(0xFF4E03D0).withOpacity(0.7)
+                                            ? const Color(0xFF4E03D0).withValues(alpha: 0.7)
                                             : const Color(0xFF6B7280),
                                       ),
                                     ),

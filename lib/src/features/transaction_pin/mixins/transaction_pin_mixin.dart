@@ -57,11 +57,22 @@ mixin TransactionPinMixin<T extends StatefulWidget> on State<T> {
     required Future<void> Function(String verificationToken) onPinValidated,
     String? title,
     String? message,
+    String? currencySymbol,
     int maxAttempts = 3,
   }) async {
     try {
       // Check if user has PIN set up
-      final hasPin = await transactionPinService.checkUserHasPin();
+      print('[TransactionPinMixin] Checking if user has PIN...');
+      bool hasPin = false;
+      try {
+        hasPin = await transactionPinService.checkUserHasPin();
+        print('[TransactionPinMixin] checkUserHasPin result: $hasPin');
+      } catch (e) {
+        print('[TransactionPinMixin] checkUserHasPin error: $e');
+        if (!mounted) return false;
+        _showErrorMessage(context, 'Failed to check PIN status. Please try again.');
+        return false;
+      }
 
       if (!hasPin) {
         // Prompt user to create PIN
@@ -90,9 +101,11 @@ mixin TransactionPinMixin<T extends StatefulWidget> on State<T> {
           message: message,
           amount: amount,
           currency: currency,
+          currencySymbol: currencySymbol,
           maxAttempts: maxAttempts,
           currentAttempt: currentAttempt,
           errorMessage: errorMessage,
+          onForgotPin: () => Get.toNamed(AppRoutes.forgotPin),
         );
 
         // Check if user cancelled
@@ -142,7 +155,10 @@ mixin TransactionPinMixin<T extends StatefulWidget> on State<T> {
       return false;
     } catch (e) {
       // Unexpected error
-      _showErrorMessage(context, e.toString());
+      print('[TransactionPinMixin] Unexpected error: $e');
+      if (mounted) {
+        _showErrorMessage(context, e.toString());
+      }
       return false;
     }
   }
@@ -187,12 +203,13 @@ mixin TransactionPinMixin<T extends StatefulWidget> on State<T> {
       );
 
       // Close loading dialog
+      if (!mounted) return TransactionPinVerificationResult(success: false, message: 'Widget disposed');
       Navigator.of(context).pop();
 
       return result;
     } catch (e) {
       // Close loading dialog
-      Navigator.of(context).pop();
+      if (mounted) Navigator.of(context).pop();
       rethrow;
     }
   }
@@ -225,6 +242,7 @@ mixin TransactionPinMixin<T extends StatefulWidget> on State<T> {
 
   /// Show message when user cancels PIN entry
   void _showCancellationMessage(BuildContext context) {
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Transaction cancelled'),
@@ -235,6 +253,7 @@ mixin TransactionPinMixin<T extends StatefulWidget> on State<T> {
 
   /// Show message when PIN is locked
   void _showPinLockedMessage(BuildContext context, DateTime lockedUntil) {
+    if (!mounted) return;
     final remainingTime = lockedUntil.difference(DateTime.now());
     final minutes = remainingTime.inMinutes;
     final seconds = remainingTime.inSeconds % 60;
@@ -258,6 +277,13 @@ mixin TransactionPinMixin<T extends StatefulWidget> on State<T> {
             onPressed: () => Navigator.of(context).pop(),
             child: const Text('OK'),
           ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              Get.toNamed(AppRoutes.forgotPin);
+            },
+            child: const Text('Forgot PIN?'),
+          ),
         ],
       ),
     );
@@ -265,6 +291,7 @@ mixin TransactionPinMixin<T extends StatefulWidget> on State<T> {
 
   /// Show message when attempts are exhausted
   void _showAttemptsExhaustedMessage(BuildContext context) {
+    if (!mounted) return;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -287,8 +314,7 @@ mixin TransactionPinMixin<T extends StatefulWidget> on State<T> {
           TextButton(
             onPressed: () {
               Navigator.of(context).pop();
-              // TODO: Navigate to forgot PIN screen
-              // Get.toNamed(() => ForgotPinScreen());
+              Get.toNamed(AppRoutes.forgotPin);
             },
             child: const Text('Forgot PIN?'),
           ),
@@ -299,6 +325,7 @@ mixin TransactionPinMixin<T extends StatefulWidget> on State<T> {
 
   /// Show error message
   void _showErrorMessage(BuildContext context, String message) {
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
@@ -310,6 +337,7 @@ mixin TransactionPinMixin<T extends StatefulWidget> on State<T> {
 
   /// Show payment execution error
   void _showPaymentError(BuildContext context, String error) {
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Payment failed: $error'),

@@ -55,14 +55,15 @@ class _StocksVoiceAgentButtonState extends State<StocksVoiceAgentButton>
       );
 
       // Connect to LiveKit room
-      _room = lk.Room();
-      await _room!.connect(
-        livekitUrl,
-        widget.accessToken ?? '',
+      _room = lk.Room(
         roomOptions: lk.RoomOptions(
           adaptiveStream: true,
           dynacast: true,
         ),
+      );
+      await _room!.connect(
+        livekitUrl,
+        widget.accessToken ?? '',
       );
 
       // Set up event listeners
@@ -196,14 +197,15 @@ class _StocksVoiceAgentControlState extends State<StocksVoiceAgentControl> {
     );
 
     try {
-      _room = lk.Room();
-      await _room!.connect(
-        livekitUrl,
-        widget.accessToken ?? '',
+      _room = lk.Room(
         roomOptions: lk.RoomOptions(
           adaptiveStream: true,
           dynacast: true,
         ),
+      );
+      await _room!.connect(
+        livekitUrl,
+        widget.accessToken ?? '',
       );
 
       setState(() => _isConnected = true);

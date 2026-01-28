@@ -491,11 +491,11 @@ class InvoicePdfService {
   static Future<void> shareInvoice(Invoice invoice) async {
     try {
       final file = await generateInvoicePdf(invoice);
-      await Share.shareXFiles(
-        [XFile(file.path)],
+      await SharePlus.instance.share(ShareParams(
+        files: [XFile(file.path)],
         text: 'Invoice ${invoice.title}',
         subject: 'Invoice #${invoice.id.substring(0, 8).toUpperCase()}',
-      );
+      ));
     } catch (e) {
       throw Exception('Failed to share invoice: $e');
     }

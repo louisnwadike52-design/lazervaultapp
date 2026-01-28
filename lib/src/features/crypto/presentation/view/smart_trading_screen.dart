@@ -121,7 +121,7 @@ class _SmartTradingScreenState extends State<SmartTradingScreen>
                   'AI-Powered Insights',
                   style: GoogleFonts.inter(
                     fontSize: 14.sp,
-                    color: Colors.white.withOpacity(0.7),
+                    color: Colors.white.withValues(alpha: 0.7),
                   ),
                 ),
               ],
@@ -130,7 +130,7 @@ class _SmartTradingScreenState extends State<SmartTradingScreen>
           Container(
             padding: EdgeInsets.all(8.w),
             decoration: BoxDecoration(
-              color: Colors.purple.withOpacity(0.2),
+              color: Colors.purple.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: Icon(
@@ -158,7 +158,7 @@ class _SmartTradingScreenState extends State<SmartTradingScreen>
           borderRadius: BorderRadius.circular(12.r),
         ),
         labelColor: Colors.white,
-        unselectedLabelColor: Colors.white.withOpacity(0.6),
+        unselectedLabelColor: Colors.white.withValues(alpha: 0.6),
         labelStyle: GoogleFonts.inter(
           fontSize: 14.sp,
           fontWeight: FontWeight.w600,
@@ -228,14 +228,14 @@ class _SmartTradingScreenState extends State<SmartTradingScreen>
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            Colors.purple.withOpacity(0.2),
+            Colors.purple.withValues(alpha: 0.2),
             const Color(0xFF1E2746),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(color: Colors.purple.withOpacity(0.3)),
+        border: Border.all(color: Colors.purple.withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -258,7 +258,7 @@ class _SmartTradingScreenState extends State<SmartTradingScreen>
           Container(
             padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
-              color: Colors.purple.withOpacity(0.1),
+              color: Colors.purple.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: Column(
@@ -277,7 +277,7 @@ class _SmartTradingScreenState extends State<SmartTradingScreen>
                   'Our AI models indicate a 78% probability of upward movement in the next 24 hours. Key factors include institutional buying pressure and positive market sentiment.',
                   style: GoogleFonts.inter(
                     fontSize: 14.sp,
-                    color: Colors.white.withOpacity(0.8),
+                    color: Colors.white.withValues(alpha: 0.8),
                     height: 1.4,
                   ),
                 ),
@@ -297,7 +297,7 @@ class _SmartTradingScreenState extends State<SmartTradingScreen>
       decoration: BoxDecoration(
         color: const Color(0xFF1E2746),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -330,7 +330,7 @@ class _SmartTradingScreenState extends State<SmartTradingScreen>
       decoration: BoxDecoration(
         color: const Color(0xFF1E2746),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -358,7 +358,7 @@ class _SmartTradingScreenState extends State<SmartTradingScreen>
       decoration: BoxDecoration(
         color: const Color(0xFF1E2746),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -392,7 +392,7 @@ class _SmartTradingScreenState extends State<SmartTradingScreen>
       decoration: BoxDecoration(
         color: const Color(0xFF1E2746),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -420,7 +420,7 @@ class _SmartTradingScreenState extends State<SmartTradingScreen>
       decoration: BoxDecoration(
         color: const Color(0xFF1E2746),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -439,7 +439,7 @@ class _SmartTradingScreenState extends State<SmartTradingScreen>
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                 decoration: BoxDecoration(
-                  color: Colors.green.withOpacity(0.2),
+                  color: Colors.green.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12.r),
                 ),
                 child: Text(
@@ -468,7 +468,7 @@ class _SmartTradingScreenState extends State<SmartTradingScreen>
       decoration: BoxDecoration(
         color: const Color(0xFF1E2746),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -515,7 +515,7 @@ class _SmartTradingScreenState extends State<SmartTradingScreen>
       decoration: BoxDecoration(
         color: const Color(0xFF1E2746),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -548,7 +548,7 @@ class _SmartTradingScreenState extends State<SmartTradingScreen>
       decoration: BoxDecoration(
         color: const Color(0xFF1E2746),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -576,7 +576,7 @@ class _SmartTradingScreenState extends State<SmartTradingScreen>
       decoration: BoxDecoration(
         color: const Color(0xFF1E2746),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -610,7 +610,7 @@ class _SmartTradingScreenState extends State<SmartTradingScreen>
               'AI Confidence',
               style: GoogleFonts.inter(
                 fontSize: 14.sp,
-                color: Colors.white.withOpacity(0.8),
+                color: Colors.white.withValues(alpha: 0.8),
               ),
             ),
             Text(
@@ -626,7 +626,7 @@ class _SmartTradingScreenState extends State<SmartTradingScreen>
         SizedBox(height: 8.h),
         LinearProgressIndicator(
           value: confidence / 100,
-          backgroundColor: Colors.white.withOpacity(0.1),
+          backgroundColor: Colors.white.withValues(alpha: 0.1),
           valueColor: AlwaysStoppedAnimation<Color>(Colors.purple),
         ),
       ],
@@ -649,7 +649,7 @@ class _SmartTradingScreenState extends State<SmartTradingScreen>
           title,
           style: GoogleFonts.inter(
             fontSize: 12.sp,
-            color: Colors.white.withOpacity(0.6),
+            color: Colors.white.withValues(alpha: 0.6),
           ),
         ),
         Text(
@@ -692,7 +692,7 @@ class _SmartTradingScreenState extends State<SmartTradingScreen>
                 timeframe,
                 style: GoogleFonts.inter(
                   fontSize: 12.sp,
-                  color: Colors.white.withOpacity(0.6),
+                  color: Colors.white.withValues(alpha: 0.6),
                 ),
               ),
             ],
@@ -712,13 +712,13 @@ class _SmartTradingScreenState extends State<SmartTradingScreen>
             metric,
             style: GoogleFonts.inter(
               fontSize: 14.sp,
-              color: Colors.white.withOpacity(0.8),
+              color: Colors.white.withValues(alpha: 0.8),
             ),
           ),
           Container(
             padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.2),
+              color: color.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(8.r),
             ),
             child: Text(
@@ -740,16 +740,16 @@ class _SmartTradingScreenState extends State<SmartTradingScreen>
       margin: EdgeInsets.only(bottom: 12.h),
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
           Container(
             padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.2),
+              color: color.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(8.r),
             ),
             child: Text(
@@ -778,7 +778,7 @@ class _SmartTradingScreenState extends State<SmartTradingScreen>
                   description,
                   style: GoogleFonts.inter(
                     fontSize: 12.sp,
-                    color: Colors.white.withOpacity(0.6),
+                    color: Colors.white.withValues(alpha: 0.6),
                   ),
                 ),
               ],
@@ -810,7 +810,7 @@ class _SmartTradingScreenState extends State<SmartTradingScreen>
                 time,
                 style: GoogleFonts.inter(
                   fontSize: 12.sp,
-                  color: Colors.white.withOpacity(0.6),
+                  color: Colors.white.withValues(alpha: 0.6),
                 ),
               ),
             ],
@@ -844,7 +844,7 @@ class _SmartTradingScreenState extends State<SmartTradingScreen>
           Container(
             padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.2),
+              color: color.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(8.r),
             ),
             child: Text(
@@ -877,7 +877,7 @@ class _SmartTradingScreenState extends State<SmartTradingScreen>
           title,
           style: GoogleFonts.inter(
             fontSize: 12.sp,
-            color: Colors.white.withOpacity(0.6),
+            color: Colors.white.withValues(alpha: 0.6),
           ),
         ),
       ],
@@ -894,7 +894,7 @@ class _SmartTradingScreenState extends State<SmartTradingScreen>
             title,
             style: GoogleFonts.inter(
               fontSize: 14.sp,
-              color: Colors.white.withOpacity(0.8),
+              color: Colors.white.withValues(alpha: 0.8),
             ),
           ),
           Text(
@@ -938,7 +938,7 @@ class _SmartTradingScreenState extends State<SmartTradingScreen>
                 strength,
                 style: GoogleFonts.inter(
                   fontSize: 12.sp,
-                  color: Colors.white.withOpacity(0.6),
+                  color: Colors.white.withValues(alpha: 0.6),
                 ),
               ),
             ],
@@ -963,9 +963,9 @@ class _SmartTradingScreenState extends State<SmartTradingScreen>
               style: GoogleFonts.inter(color: Colors.white),
               decoration: InputDecoration(
                 labelText: 'Alert Name',
-                labelStyle: GoogleFonts.inter(color: Colors.white.withOpacity(0.6)),
+                labelStyle: GoogleFonts.inter(color: Colors.white.withValues(alpha: 0.6)),
                 enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.white.withOpacity(0.3)),
+                  borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.3)),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderSide: BorderSide(color: Colors.purple),
@@ -978,9 +978,9 @@ class _SmartTradingScreenState extends State<SmartTradingScreen>
               style: GoogleFonts.inter(color: Colors.white),
               decoration: InputDecoration(
                 labelText: 'Alert Type',
-                labelStyle: GoogleFonts.inter(color: Colors.white.withOpacity(0.6)),
+                labelStyle: GoogleFonts.inter(color: Colors.white.withValues(alpha: 0.6)),
                 enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.white.withOpacity(0.3)),
+                  borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.3)),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderSide: BorderSide(color: Colors.purple),
@@ -1007,7 +1007,7 @@ class _SmartTradingScreenState extends State<SmartTradingScreen>
               Get.snackbar(
                 'Alert Created',
                 'Your AI alert has been set up successfully',
-                backgroundColor: Colors.purple.withOpacity(0.2),
+                backgroundColor: Colors.purple.withValues(alpha: 0.2),
                 colorText: Colors.white,
               );
             },

@@ -166,7 +166,7 @@ class _StatisticsState extends State<Statistics> {
                         borderRadius: BorderRadius.circular(24.r),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.15),
+                            color: Colors.black.withValues(alpha: 0.15),
                             blurRadius: 20,
                             offset: Offset(0, 10),
                           ),
@@ -235,7 +235,7 @@ class _StatisticsState extends State<Statistics> {
                         child: Container(
                           height: 40.h,
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.1),
+                            color: Colors.white.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(20.r),
                             boxShadow: [
           BoxShadow(
@@ -255,12 +255,12 @@ class _StatisticsState extends State<Statistics> {
                             decoration: InputDecoration(
                               hintText: 'Ask AI Assistant',
                               hintStyle: TextStyle(
-                                color: Colors.white.withOpacity(0.5),
+                                color: Colors.white.withValues(alpha: 0.5),
                                 fontSize: 14.sp,
                               ),
                               prefixIcon: Icon(
                                 Icons.chat_outlined,
-                                color: Colors.white.withOpacity(0.5),
+                                color: Colors.white.withValues(alpha: 0.5),
                                 size: 20.sp,
                               ),
                               border: InputBorder.none,
@@ -283,7 +283,7 @@ class _StatisticsState extends State<Statistics> {
                 width: 40.w,
                 height: 40.h,
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.1),
+                  color: Colors.white.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                   boxShadow: [
           BoxShadow(
@@ -321,9 +321,9 @@ class _StatisticsState extends State<Statistics> {
           fontSize: 12.sp,
         ),
       ),
-      backgroundColor: Colors.white.withOpacity(0.1),
+      backgroundColor: Colors.white.withValues(alpha: 0.1),
       side: BorderSide(
-        color: Colors.white.withOpacity(0.1),
+        color: Colors.white.withValues(alpha: 0.1),
       ),
       padding: EdgeInsets.symmetric(
         horizontal: 12.w,
@@ -357,7 +357,7 @@ class _StatisticsState extends State<Statistics> {
         Text(
           'Total spending',
           style: TextStyle(
-            color: Colors.white.withOpacity(0.7),
+            color: Colors.white.withValues(alpha: 0.7),
             fontSize: 16.sp,
           ),
         ),
@@ -407,7 +407,7 @@ class _StatisticsState extends State<Statistics> {
     return Container(
       padding: EdgeInsets.all(16.r),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
+        color: Colors.white.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
@@ -429,7 +429,7 @@ class _StatisticsState extends State<Statistics> {
                   Container(
                     padding: EdgeInsets.all(4.r),
                     decoration: BoxDecoration(
-                      color: color.withOpacity(0.2),
+                      color: color.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(8.r),
                     ),
                     child: Icon(icon, color: color, size: 16.r),
@@ -438,7 +438,7 @@ class _StatisticsState extends State<Statistics> {
                   Text(
                     label,
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.7),
+                      color: Colors.white.withValues(alpha: 0.7),
                       fontSize: 14.sp,
                     ),
                   ),
@@ -448,8 +448,8 @@ class _StatisticsState extends State<Statistics> {
                 padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                 decoration: BoxDecoration(
                   color: isPositive
-                      ? Colors.green.withOpacity(0.2)
-                      : Colors.red.withOpacity(0.2),
+                      ? Colors.green.withValues(alpha: 0.2)
+                      : Colors.red.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12.r),
                 ),
                 child: Text(
@@ -519,7 +519,7 @@ class _StatisticsState extends State<Statistics> {
       margin: EdgeInsets.all(16.r),
       padding: EdgeInsets.all(16.r),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
@@ -559,8 +559,8 @@ class _StatisticsState extends State<Statistics> {
                 show: true,
                 gradient: LinearGradient(
                   colors: [
-                    const Color(0xFF6C5CE7).withOpacity(0.3),
-                    const Color(0xFF8E5CE7).withOpacity(0.0),
+                    const Color(0xFF6C5CE7).withValues(alpha: 0.3),
+                    const Color(0xFF8E5CE7).withValues(alpha: 0.0),
                   ],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
@@ -584,7 +584,7 @@ class _StatisticsState extends State<Statistics> {
       margin: EdgeInsets.all(16.r),
       padding: EdgeInsets.all(16.r),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
@@ -772,7 +772,7 @@ class _StatisticsState extends State<Statistics> {
       margin: EdgeInsets.all(16.r),
       padding: EdgeInsets.all(16.r),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
@@ -898,9 +898,9 @@ class _StatisticsState extends State<Statistics> {
       margin: EdgeInsets.all(16.r),
       padding: EdgeInsets.all(16.r),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -959,7 +959,7 @@ class _StatisticsState extends State<Statistics> {
                   horizontalInterval: 2000,
                   getDrawingHorizontalLine: (value) {
                     return FlLine(
-                      color: Colors.white.withOpacity(0.1),
+                      color: Colors.white.withValues(alpha: 0.1),
                       strokeWidth: 1,
                     );
                   },
@@ -1007,9 +1007,9 @@ class _StatisticsState extends State<Statistics> {
       margin: EdgeInsets.all(16.r),
       padding: EdgeInsets.all(16.r),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1068,7 +1068,7 @@ class _StatisticsState extends State<Statistics> {
                   color: (isIncreased == isPositive
                           ? Colors.green
                           : Colors.red)[300]!
-                      .withOpacity(0.2),
+                      .withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(8.r),
                 ),
                 child: Icon(
@@ -1107,7 +1107,7 @@ class _StatisticsState extends State<Statistics> {
             decoration: BoxDecoration(
               color:
                   (isIncreased == isPositive ? Colors.green : Colors.red)[300]!
-                      .withOpacity(0.2),
+                      .withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: Text(
@@ -1139,7 +1139,7 @@ class _StatisticsState extends State<Statistics> {
                 decoration: BoxDecoration(
                   color: showIncome
                       ? AppColors.backgroundColor
-                      : Colors.white.withOpacity(0.05),
+                      : Colors.white.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(12.r),
                 ),
                 child: Text(
@@ -1164,7 +1164,7 @@ class _StatisticsState extends State<Statistics> {
                 decoration: BoxDecoration(
                   color: !showIncome
                       ? AppColors.backgroundColor
-                      : Colors.white.withOpacity(0.05),
+                      : Colors.white.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(12.r),
                 ),
                 child: Text(
@@ -1196,9 +1196,9 @@ class _StatisticsState extends State<Statistics> {
         margin: EdgeInsets.all(16.r),
         padding: EdgeInsets.all(16.r),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.05),
+          color: Colors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(16.r),
-          border: Border.all(color: Colors.white.withOpacity(0.1)),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
         ),
         child: Center(
           child: Text(
@@ -1213,9 +1213,9 @@ class _StatisticsState extends State<Statistics> {
       margin: EdgeInsets.all(16.r),
       padding: EdgeInsets.all(16.r),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1350,9 +1350,9 @@ class _StatisticsState extends State<Statistics> {
         margin: EdgeInsets.all(16.r),
         padding: EdgeInsets.all(16.r),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.05),
+          color: Colors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(16.r),
-          border: Border.all(color: Colors.white.withOpacity(0.1)),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
         ),
         child: Center(
           child: Text(
@@ -1369,9 +1369,9 @@ class _StatisticsState extends State<Statistics> {
       margin: EdgeInsets.all(16.r),
       padding: EdgeInsets.all(16.r),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1467,9 +1467,9 @@ class _StatisticsState extends State<Statistics> {
         margin: EdgeInsets.all(16.r),
         padding: EdgeInsets.all(16.r),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.05),
+          color: Colors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(16.r),
-          border: Border.all(color: Colors.white.withOpacity(0.1)),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
         ),
         child: Center(
           child: Text(
@@ -1484,9 +1484,9 @@ class _StatisticsState extends State<Statistics> {
       margin: EdgeInsets.all(16.r),
       padding: EdgeInsets.all(16.r),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1521,13 +1521,13 @@ class _StatisticsState extends State<Statistics> {
 
   Widget _buildBillItem(RecurringBill bill) {
     final icon = _getBillIcon(bill.category.name);
-    final statusColor = bill.status == 'overdue' ? Colors.red[300] : Colors.orange[300];
+    final statusColor = bill.status == BillStatus.BILL_STATUS_OVERDUE ? Colors.red[300] : Colors.orange[300];
 
     return Container(
       margin: EdgeInsets.only(bottom: 12.h),
       padding: EdgeInsets.all(12.r),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12.r),
       ),
       child: Row(
@@ -1535,7 +1535,7 @@ class _StatisticsState extends State<Statistics> {
           Container(
             padding: EdgeInsets.all(8.r),
             decoration: BoxDecoration(
-              color: AppColors.backgroundColor.withOpacity(0.3),
+              color: AppColors.backgroundColor.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(8.r),
             ),
             child: Icon(
@@ -1560,7 +1560,7 @@ class _StatisticsState extends State<Statistics> {
                 Text(
                   bill.daysUntilDue > 0
                       ? 'Due in ${bill.daysUntilDue} days'
-                      : bill.status == 'overdue'
+                      : bill.status == BillStatus.BILL_STATUS_OVERDUE
                           ? 'Overdue'
                           : 'Due today',
                   style: TextStyle(
@@ -1589,9 +1589,9 @@ class _StatisticsState extends State<Statistics> {
       margin: EdgeInsets.all(16.r),
       padding: EdgeInsets.all(16.r),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1688,7 +1688,7 @@ class _StatisticsState extends State<Statistics> {
       margin: EdgeInsets.only(bottom: 12.h),
       padding: EdgeInsets.all(12.r),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12.r),
       ),
       child: Row(
@@ -1697,7 +1697,7 @@ class _StatisticsState extends State<Statistics> {
           Container(
             padding: EdgeInsets.all(8.r),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.2),
+              color: color.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(8.r),
             ),
             child: Icon(
@@ -1754,7 +1754,7 @@ class _StatisticsState extends State<Statistics> {
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: Colors.black.withValues(alpha: 0.2),
             blurRadius: 10,
             offset: Offset(0, 5),
           ),
@@ -1780,7 +1780,7 @@ class _StatisticsState extends State<Statistics> {
                 },
                 icon: Icon(
                   Icons.close,
-                  color: Colors.white.withOpacity(0.7),
+                  color: Colors.white.withValues(alpha: 0.7),
                   size: 20.r,
                 ),
               ),
@@ -1864,7 +1864,7 @@ class _StatisticsState extends State<Statistics> {
       margin: EdgeInsets.only(bottom: 12.h),
       padding: EdgeInsets.all(12.r),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12.r),
       ),
       child: Row(
@@ -1872,7 +1872,7 @@ class _StatisticsState extends State<Statistics> {
           Container(
             padding: EdgeInsets.all(8.r),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.2),
+              color: color.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(8.r),
             ),
             child: Icon(
@@ -1989,9 +1989,9 @@ class _StatisticsState extends State<Statistics> {
       margin: EdgeInsets.all(16.r),
       padding: EdgeInsets.all(16.r),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -2077,7 +2077,7 @@ class _StatisticsState extends State<Statistics> {
                   Container(
                     padding: EdgeInsets.all(8.r),
                     decoration: BoxDecoration(
-                      color: color.withOpacity(0.2),
+                      color: color.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(8.r),
                     ),
                     child: Icon(
@@ -2140,7 +2140,7 @@ class _StatisticsState extends State<Statistics> {
                           width: 8.w,
                           height: 8.w,
                           decoration: BoxDecoration(
-                            color: color.withOpacity(0.5),
+                            color: color.withValues(alpha: 0.5),
                             shape: BoxShape.circle,
                           ),
                         ),
@@ -2222,9 +2222,9 @@ class _StatisticsState extends State<Statistics> {
         margin: EdgeInsets.all(16.r),
         padding: EdgeInsets.all(16.r),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.05),
+          color: Colors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(16.r),
-          border: Border.all(color: Colors.white.withOpacity(0.1)),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
         ),
         child: Center(
           child: Text(
@@ -2239,9 +2239,9 @@ class _StatisticsState extends State<Statistics> {
       margin: EdgeInsets.all(16.r),
       padding: EdgeInsets.all(16.r),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -2296,7 +2296,7 @@ class _StatisticsState extends State<Statistics> {
       margin: EdgeInsets.only(bottom: 12.h),
       padding: EdgeInsets.all(12.r),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12.r),
       ),
       child: Row(
@@ -2304,7 +2304,7 @@ class _StatisticsState extends State<Statistics> {
           Container(
             padding: EdgeInsets.all(8.r),
             decoration: BoxDecoration(
-              color: AppColors.backgroundColor.withOpacity(0.3),
+              color: AppColors.backgroundColor.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(8.r),
             ),
             child: Icon(icon, color: Colors.white, size: 20.r),
@@ -2337,7 +2337,7 @@ class _StatisticsState extends State<Statistics> {
             padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
             decoration: BoxDecoration(
               color: (isPositive ? Colors.green : Colors.red)[300]!
-                  .withOpacity(0.2),
+                  .withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: Text(
@@ -2365,9 +2365,9 @@ class _StatisticsState extends State<Statistics> {
         margin: EdgeInsets.all(16.r),
         padding: EdgeInsets.all(16.r),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.05),
+          color: Colors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(16.r),
-          border: Border.all(color: Colors.white.withOpacity(0.1)),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
         ),
         child: Center(
           child: Text(
@@ -2382,9 +2382,9 @@ class _StatisticsState extends State<Statistics> {
       margin: EdgeInsets.all(16.r),
       padding: EdgeInsets.all(16.r),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -2412,7 +2412,7 @@ class _StatisticsState extends State<Statistics> {
       margin: EdgeInsets.only(bottom: 12.h),
       padding: EdgeInsets.all(12.r),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12.r),
       ),
       child: Row(
@@ -2420,7 +2420,7 @@ class _StatisticsState extends State<Statistics> {
           Container(
             padding: EdgeInsets.all(8.r),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.2),
+              color: color.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(8.r),
             ),
             child: Icon(icon, color: color, size: 20.r),
@@ -2452,7 +2452,7 @@ class _StatisticsState extends State<Statistics> {
           Container(
             padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
             decoration: BoxDecoration(
-              color: Colors.green[300]!.withOpacity(0.2),
+              color: Colors.green[300]!.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: Text(

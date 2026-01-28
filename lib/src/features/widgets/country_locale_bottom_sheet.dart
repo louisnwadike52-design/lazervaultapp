@@ -79,7 +79,7 @@ class _CountryLocaleBottomSheetState extends State<CountryLocaleBottomSheet> {
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
+                color: Colors.black.withValues(alpha: 0.1),
                 blurRadius: 20,
                 offset: Offset(0, -4),
               ),
@@ -239,7 +239,7 @@ class _CountryLocaleBottomSheetState extends State<CountryLocaleBottomSheet> {
         padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 14.h),
         decoration: BoxDecoration(
           color: isSelected
-              ? const Color.fromARGB(255, 78, 3, 208).withOpacity(0.08)
+              ? const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.08)
               : Colors.grey[50],
           borderRadius: BorderRadius.circular(16.r),
           border: Border.all(
@@ -292,7 +292,7 @@ class _CountryLocaleBottomSheetState extends State<CountryLocaleBottomSheet> {
                           vertical: 3.h,
                         ),
                         decoration: BoxDecoration(
-                          color: const Color.fromARGB(255, 78, 3, 208).withOpacity(0.1),
+                          color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(6.r),
                         ),
                         child: Text(

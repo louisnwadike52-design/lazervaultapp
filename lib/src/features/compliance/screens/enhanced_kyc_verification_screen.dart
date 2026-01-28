@@ -210,7 +210,7 @@ class _EnhancedKYCVerificationScreenState
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, -5),
           ),
@@ -879,7 +879,7 @@ class _EnhancedKYCVerificationScreenState
           child: Container(
             padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
             decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.6),
+              color: Colors.black.withValues(alpha: 0.6),
               borderRadius: BorderRadius.circular(8.r),
             ),
             child: Text(
@@ -903,7 +903,7 @@ class _EnhancedKYCVerificationScreenState
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.black.withValues(alpha: 0.1),
                   blurRadius: 8,
                 ),
               ],
@@ -936,7 +936,7 @@ class _EnhancedKYCVerificationScreenState
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.7),
+                color: Colors.black.withValues(alpha: 0.7),
                 borderRadius: BorderRadius.circular(8.r),
               ),
               child: Row(
@@ -1182,7 +1182,7 @@ class _EnhancedKYCVerificationScreenState
               child: Container(
                 padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
                 decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.7),
+                  color: Colors.black.withValues(alpha: 0.7),
                   borderRadius: BorderRadius.circular(8.r),
                 ),
                 child: Row(
@@ -1379,7 +1379,7 @@ class _EnhancedKYCVerificationScreenState
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.7),
+                color: Colors.black.withValues(alpha: 0.7),
                 borderRadius: BorderRadius.circular(8.r),
               ),
               child: Text(
@@ -1928,9 +1928,6 @@ class _EnhancedKYCVerificationScreenState
       case IdentityDocumentType.saPassport:
         return user_pb.DocumentType.DOCUMENT_TYPE_PASSPORT;
 
-      // Default fallback
-      default:
-        return user_pb.DocumentType.DOCUMENT_TYPE_PASSPORT;
     }
   }
 

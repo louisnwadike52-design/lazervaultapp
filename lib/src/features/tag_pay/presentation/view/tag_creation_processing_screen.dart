@@ -141,7 +141,7 @@ class _TagCreationProcessingScreenState extends State<TagCreationProcessingScree
               width: 120.w,
               height: 120.w,
               decoration: BoxDecoration(
-                color: const Color(0xFF3B82F6).withOpacity(0.1),
+                color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Center(

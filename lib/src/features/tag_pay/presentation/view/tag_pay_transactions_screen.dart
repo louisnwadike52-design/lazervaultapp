@@ -211,8 +211,8 @@ class _TagPayTransactionsView extends StatelessWidget {
                 height: 48.w,
                 decoration: BoxDecoration(
                   color: isSent
-                      ? const Color(0xFFEF4444).withOpacity(0.1)
-                      : const Color(0xFF10B981).withOpacity(0.1),
+                      ? const Color(0xFFEF4444).withValues(alpha: 0.1)
+                      : const Color(0xFF10B981).withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
@@ -292,7 +292,7 @@ class _TagPayTransactionsView extends StatelessWidget {
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                 decoration: BoxDecoration(
-                  color: _getStatusColor(transaction.status).withOpacity(0.1),
+                  color: _getStatusColor(transaction.status).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(6.r),
                 ),
                 child: Text(

@@ -255,8 +255,8 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen> {
 
     if (taggedState is IncomingTaggedInvoicesLoaded) {
       receivedTotal = taggedState.invoices.length;
-      receivedPaid = taggedState.invoices.where((inv) => inv.paymentStatus == 'completed' || inv.paymentStatus == 'paid').length;
-      receivedPending = taggedState.invoices.where((inv) => inv.paymentStatus == 'pending').length;
+      receivedPaid = taggedState.invoices.where((inv) => inv.isPaid).length;
+      receivedPending = taggedState.invoices.where((inv) => inv.isPending).length;
       receivedAmount = taggedState.invoices.fold<double>(0.0, (sum, inv) => sum + inv.amount);
     }
 
@@ -280,7 +280,7 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen> {
         borderRadius: BorderRadius.circular(24.r),
         boxShadow: [
           BoxShadow(
-            color: InvoiceThemeColors.primaryPurple.withOpacity(0.3),
+            color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.3),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -306,7 +306,7 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen> {
           Text(
             'Sent & Received',
             style: GoogleFonts.inter(
-              color: InvoiceThemeColors.textWhite.withOpacity(0.8),
+              color: InvoiceThemeColors.textWhite.withValues(alpha: 0.8),
               fontSize: 13.sp,
               fontWeight: FontWeight.w400,
             ),
@@ -324,7 +324,7 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen> {
               Container(
                 width: 1,
                 height: 40.h,
-                color: InvoiceThemeColors.textWhite.withOpacity(0.2),
+                color: InvoiceThemeColors.textWhite.withValues(alpha: 0.2),
               ),
               _buildMetricItem(
                 label: 'Sent',
@@ -345,7 +345,7 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen> {
               Container(
                 width: 1,
                 height: 40.h,
-                color: InvoiceThemeColors.textWhite.withOpacity(0.2),
+                color: InvoiceThemeColors.textWhite.withValues(alpha: 0.2),
               ),
               _buildMetricItem(
                 label: 'Pending',
@@ -358,7 +358,7 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen> {
           Container(
             padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.1),
+              color: Colors.white.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: Row(
@@ -367,7 +367,7 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen> {
                 Text(
                   'Total Value',
                   style: GoogleFonts.inter(
-                    color: InvoiceThemeColors.textWhite.withOpacity(0.8),
+                    color: InvoiceThemeColors.textWhite.withValues(alpha: 0.8),
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w500,
                   ),
@@ -407,7 +407,7 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen> {
         Text(
           label,
           style: GoogleFonts.inter(
-            color: (color ?? InvoiceThemeColors.textWhite).withOpacity(0.8),
+            color: (color ?? InvoiceThemeColors.textWhite).withValues(alpha: 0.8),
             fontSize: 12.sp,
             fontWeight: FontWeight.w500,
           ),
@@ -489,7 +489,7 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen> {
             'Create invoices or pay received ones',
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(
-              color: InvoiceThemeColors.textWhite.withOpacity(0.8),
+              color: InvoiceThemeColors.textWhite.withValues(alpha: 0.8),
               fontSize: 14.sp,
               fontWeight: FontWeight.w400,
             ),
@@ -534,10 +534,10 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen> {
       child: Container(
         padding: EdgeInsets.all(20.w),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
+          color: color.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(16.r),
           border: Border.all(
-            color: color.withOpacity(0.3),
+            color: color.withValues(alpha: 0.3),
             width: 1,
           ),
           boxShadow: [
@@ -758,7 +758,7 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen> {
               width: 40.w,
               height: 40.w,
               decoration: BoxDecoration(
-                color: statusColor.withOpacity(0.1),
+                color: statusColor.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(20.r),
               ),
               child: Icon(
@@ -809,7 +809,7 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen> {
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
                   decoration: BoxDecoration(
-                    color: statusColor.withOpacity(0.1),
+                    color: statusColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8.r),
                   ),
                   child: Text(

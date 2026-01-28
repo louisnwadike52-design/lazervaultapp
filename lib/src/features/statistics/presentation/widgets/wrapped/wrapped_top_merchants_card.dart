@@ -47,10 +47,10 @@ class _MerchantItem extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(isFirst ? 0.3 : 0.15),
+        color: Colors.white.withValues(alpha: isFirst ? 0.3 : 0.15),
         borderRadius: BorderRadius.circular(16),
         border: isFirst
-            ? Border.all(color: Colors.white.withOpacity(0.5), width: 2)
+            ? Border.all(color: Colors.white.withValues(alpha: 0.5), width: 2)
             : null,
       ),
       child: Row(
@@ -59,7 +59,7 @@ class _MerchantItem extends StatelessWidget {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.3),
+              color: Colors.white.withValues(alpha: 0.3),
               shape: BoxShape.circle,
             ),
             child: Center(
@@ -93,13 +93,13 @@ class _MerchantItem extends StatelessWidget {
                     Icon(
                       Icons.location_on,
                       size: 14,
-                      color: Colors.white.withOpacity(0.7),
+                      color: Colors.white.withValues(alpha: 0.7),
                     ),
                     const SizedBox(width: 4),
                     Text(
                       '${merchant.visitCount} visits',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Colors.white.withOpacity(0.7),
+                        color: Colors.white.withValues(alpha: 0.7),
                       ),
                     ),
                     if (merchant.category.isNotEmpty) ...[
@@ -110,13 +110,13 @@ class _MerchantItem extends StatelessWidget {
                           vertical: 2,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
+                          color: Colors.white.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
                           merchant.category,
                           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Colors.white.withOpacity(0.9),
+                            color: Colors.white.withValues(alpha: 0.9),
                             fontSize: 10,
                           ),
                         ),
@@ -140,7 +140,7 @@ class _MerchantItem extends StatelessWidget {
               Text(
                 '${merchant.percentage.toStringAsFixed(1)}%',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Colors.white.withOpacity(0.7),
+                  color: Colors.white.withValues(alpha: 0.7),
                 ),
               ),
             ],

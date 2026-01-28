@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mono_connect/mono_connect.dart';
-import 'package:mono_connect/src/connect_web_view.dart';
 
 import '../../../../core/config/mono_config.dart';
 
@@ -183,7 +182,7 @@ void _launchCustomMonoBottomSheet(BuildContext context, ConnectConfiguration con
     useSafeArea: true,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
-    barrierColor: const Color(0xFF0D0D1A).withOpacity(0.85), // Dark themed overlay
+    barrierColor: const Color(0xFF0D0D1A).withValues(alpha: 0.85), // Dark themed overlay
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(
         top: Radius.circular(24),
@@ -197,13 +196,13 @@ void _launchCustomMonoBottomSheet(BuildContext context, ConnectConfiguration con
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF4E03D0).withOpacity(0.4),
+            color: const Color(0xFF4E03D0).withValues(alpha: 0.4),
             blurRadius: 30,
             spreadRadius: 2,
             offset: const Offset(0, -8),
           ),
           BoxShadow(
-            color: const Color(0xFF6C5CE7).withOpacity(0.2),
+            color: const Color(0xFF6C5CE7).withValues(alpha: 0.2),
             blurRadius: 60,
             spreadRadius: 0,
             offset: const Offset(0, -4),

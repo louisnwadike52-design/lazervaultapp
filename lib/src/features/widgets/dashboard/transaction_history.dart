@@ -217,21 +217,21 @@ class _TransactionHistoryState extends State<TransactionHistory> {
                               Color.fromARGB(255, 98, 37, 208),
                             ]
                           : [
-                              Color.fromARGB(255, 98, 37, 208).withOpacity(0.5),
-                              Color.fromARGB(255, 78, 3, 208).withOpacity(0.7),
+                              Color.fromARGB(255, 98, 37, 208).withValues(alpha: 0.5),
+                              Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.7),
                             ],
                     ),
                     borderRadius: BorderRadius.circular(24.r),
                     boxShadow: [
                       BoxShadow(
-                        color: Color.fromARGB(255, 78, 3, 208).withOpacity(0.2),
+                        color: Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
                         blurRadius: 20,
                         offset: Offset(0, 8),
                       ),
                     ],
                     border: isSelected
                         ? Border.all(
-                            color: Colors.white.withOpacity(0.2),
+                            color: Colors.white.withValues(alpha: 0.2),
                             width: 1,
                           )
                         : null,
@@ -260,7 +260,7 @@ class _TransactionHistoryState extends State<TransactionHistory> {
                               Text(
                                 'Available Balance',
                                 style: TextStyle(
-                                  color: Colors.white.withOpacity(0.7),
+                                  color: Colors.white.withValues(alpha: 0.7),
                                   fontSize: 14.sp,
                                 ),
                               ),
@@ -302,13 +302,13 @@ class _TransactionHistoryState extends State<TransactionHistory> {
                               vertical: 8.h,
                             ),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.1),
+                              color: Colors.white.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(12.r),
                             ),
                             child: Text(
                               card['number'],
                               style: TextStyle(
-                                color: Colors.white.withOpacity(0.8),
+                                color: Colors.white.withValues(alpha: 0.8),
                                 fontSize: 14.sp,
                                 letterSpacing: 2,
                               ),
@@ -345,7 +345,7 @@ class _TransactionHistoryState extends State<TransactionHistory> {
                   vertical: 8.h,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.1),
+                  color: Colors.white.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20.r),
                 ),
                 child: Row(
@@ -395,13 +395,13 @@ class _TransactionHistoryState extends State<TransactionHistory> {
                       Icon(
                         Icons.receipt_long_rounded,
                         size: 48.sp,
-                        color: Colors.white.withOpacity(0.2),
+                        color: Colors.white.withValues(alpha: 0.2),
                       ),
                       SizedBox(height: 16.h),
                       Text(
                         'No transactions yet',
                         style: TextStyle(
-                          color: Colors.white.withOpacity(0.5),
+                          color: Colors.white.withValues(alpha: 0.5),
                           fontSize: 16.sp,
                           fontWeight: FontWeight.w500,
                         ),
@@ -429,7 +429,7 @@ class _TransactionHistoryState extends State<TransactionHistory> {
                         child: Text(
                           formatTransactionDate(date),
                           style: TextStyle(
-                            color: Colors.white.withOpacity(0.7),
+                            color: Colors.white.withValues(alpha: 0.7),
                             fontSize: 14.sp,
                             fontWeight: FontWeight.w600,
                             letterSpacing: 0.5,
@@ -557,7 +557,7 @@ class TransactionItem extends StatelessWidget {
         padding: EdgeInsets.all(16.w),
         margin: EdgeInsets.only(bottom: 12.h),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.05),
+          color: Colors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(16.r),
           boxShadow: [
           BoxShadow(
@@ -573,7 +573,7 @@ class TransactionItem extends StatelessWidget {
             Container(
               padding: EdgeInsets.all(12.w),
               decoration: BoxDecoration(
-                color: categoryColor.withOpacity(0.1),
+                color: categoryColor.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12.r),
               ),
               child: Icon(
@@ -599,7 +599,7 @@ class TransactionItem extends StatelessWidget {
                   Text(
                     transaction['description'] ?? '',
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.5),
+                      color: Colors.white.withValues(alpha: 0.5),
                       fontSize: 13.sp,
                     ),
                   ),
@@ -626,7 +626,7 @@ class TransactionItem extends StatelessWidget {
                 Text(
                   DateFormat('h:mm a').format(transaction['date']),
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.5),
+                    color: Colors.white.withValues(alpha: 0.5),
                     fontSize: 12.sp,
                   ),
                 ),
@@ -681,7 +681,7 @@ class TransactionDetailsSheet extends StatelessWidget {
               width: 40.w,
               height: 4.h,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.3),
+                color: Colors.white.withValues(alpha: 0.3),
                 borderRadius: BorderRadius.circular(2.r),
               ),
             ),
@@ -702,7 +702,7 @@ class TransactionDetailsSheet extends StatelessWidget {
                         Container(
                           padding: EdgeInsets.all(12.w),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.1),
+                            color: Colors.white.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(16.r),
                           ),
                           child: Icon(
@@ -732,7 +732,7 @@ class TransactionDetailsSheet extends StatelessWidget {
                               DateFormat('MMM d, y • h:mm a')
                                   .format(transaction['date']),
                               style: TextStyle(
-                                color: Colors.white.withOpacity(0.7),
+                                color: Colors.white.withValues(alpha: 0.7),
                                 fontSize: 14.sp,
                               ),
                             ),
@@ -746,7 +746,7 @@ class TransactionDetailsSheet extends StatelessWidget {
                       margin: EdgeInsets.symmetric(vertical: 32.h),
                       padding: EdgeInsets.all(24.w),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.1),
+                        color: Colors.white.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(24.r),
                         boxShadow: [
           BoxShadow(
@@ -776,8 +776,8 @@ class TransactionDetailsSheet extends StatelessWidget {
                             ),
                             decoration: BoxDecoration(
                               color: transaction['type'] == 'credit'
-                                  ? Colors.green.withOpacity(0.2)
-                                  : Colors.red.withOpacity(0.2),
+                                  ? Colors.green.withValues(alpha: 0.2)
+                                  : Colors.red.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(12.r),
                             ),
                             child: Text(
@@ -828,7 +828,7 @@ class TransactionDetailsSheet extends StatelessWidget {
                           child: Container(
                             padding: EdgeInsets.symmetric(vertical: 16.h),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.1),
+                              color: Colors.white.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(16.r),
                               boxShadow: [
           BoxShadow(
@@ -881,7 +881,7 @@ class TransactionDetailsSheet extends StatelessWidget {
           Text(
             label,
             style: TextStyle(
-              color: Colors.white.withOpacity(0.7),
+              color: Colors.white.withValues(alpha: 0.7),
               fontSize: 14.sp,
             ),
           ),
@@ -934,7 +934,7 @@ class ReceiptPreviewSheet extends StatelessWidget {
               width: 40.w,
               height: 4.h,
               decoration: BoxDecoration(
-                color: Colors.grey.withOpacity(0.3),
+                color: Colors.grey.withValues(alpha: 0.3),
                 borderRadius: BorderRadius.circular(2.r),
               ),
             ),
@@ -970,7 +970,7 @@ class ReceiptPreviewSheet extends StatelessWidget {
                             shape: BoxShape.circle,
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.1),
+                                color: Colors.black.withValues(alpha: 0.1),
                                 blurRadius: 20,
                                 offset: Offset(0, 10),
                               ),

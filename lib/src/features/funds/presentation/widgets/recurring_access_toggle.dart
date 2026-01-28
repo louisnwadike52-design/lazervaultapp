@@ -19,12 +19,12 @@ class RecurringAccessToggle extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
           color: isRecurringEnabled
-              ? const Color(0xFF6C5CE7).withOpacity(0.5)
-              : Colors.white.withOpacity(0.1),
+              ? const Color(0xFF6C5CE7).withValues(alpha: 0.5)
+              : Colors.white.withValues(alpha: 0.1),
         ),
       ),
       child: Column(
@@ -40,7 +40,7 @@ class RecurringAccessToggle extends StatelessWidget {
                       width: 36.w,
                       height: 36.w,
                       decoration: BoxDecoration(
-                        color: const Color(0xFF6C5CE7).withOpacity(0.2),
+                        color: const Color(0xFF6C5CE7).withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(8.r),
                       ),
                       child: Icon(
@@ -68,7 +68,7 @@ class RecurringAccessToggle extends StatelessWidget {
                                 ? 'Authorize once for faster future deposits'
                                 : 'Authorize each deposit individually',
                             style: TextStyle(
-                              color: Colors.white.withOpacity(0.5),
+                              color: Colors.white.withValues(alpha: 0.5),
                               fontSize: 11.sp,
                             ),
                           ),
@@ -82,10 +82,10 @@ class RecurringAccessToggle extends StatelessWidget {
               Switch(
                 value: isRecurringEnabled,
                 onChanged: onToggle,
-                activeColor: const Color(0xFF6C5CE7),
-                activeTrackColor: const Color(0xFF6C5CE7).withOpacity(0.3),
-                inactiveThumbColor: Colors.white.withOpacity(0.6),
-                inactiveTrackColor: Colors.white.withOpacity(0.2),
+                activeThumbColor: const Color(0xFF6C5CE7),
+                activeTrackColor: const Color(0xFF6C5CE7).withValues(alpha: 0.3),
+                inactiveThumbColor: Colors.white.withValues(alpha: 0.6),
+                inactiveTrackColor: Colors.white.withValues(alpha: 0.2),
               ),
             ],
           ),
@@ -94,10 +94,10 @@ class RecurringAccessToggle extends StatelessWidget {
             Container(
               padding: EdgeInsets.all(10.w),
               decoration: BoxDecoration(
-                color: const Color(0xFFFFA502).withOpacity(0.1),
+                color: const Color(0xFFFFA502).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8.r),
                 border: Border.all(
-                  color: const Color(0xFFFFA502).withOpacity(0.3),
+                  color: const Color(0xFFFFA502).withValues(alpha: 0.3),
                 ),
               ),
               child: Row(

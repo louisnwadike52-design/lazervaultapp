@@ -85,7 +85,7 @@ class _DonorCardState extends State<DonorCard> {
                         vertical: 4.h,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF4E03D0).withOpacity(0.2),
+                        color: const Color(0xFF4E03D0).withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(6.r),
                       ),
                       child: Text(
@@ -122,7 +122,7 @@ class _DonorCardState extends State<DonorCard> {
 
     return CircleAvatar(
       radius: 24.r,
-      backgroundColor: const Color(0xFF4E03D0).withOpacity(0.2),
+      backgroundColor: const Color(0xFF4E03D0).withValues(alpha: 0.2),
       backgroundImage:
           donor.profilePicture != null ? NetworkImage(donor.profilePicture!) : null,
       child: donor.profilePicture == null

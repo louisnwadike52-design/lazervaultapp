@@ -199,7 +199,7 @@ class _AirtimeReviewScreenState extends State<AirtimeReviewScreen>
               width: 40.w,
               height: 40.w,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12.r),
                 boxShadow: [
           BoxShadow(
@@ -239,7 +239,7 @@ class _AirtimeReviewScreenState extends State<AirtimeReviewScreen>
                   'Please confirm your airtime purchase',
                   style: TextStyle(
                     fontSize: 14.sp,
-                    color: Colors.white.withOpacity(0.6),
+                    color: Colors.white.withValues(alpha: 0.6),
                     fontWeight: FontWeight.w400,
                   ),
                 ),
@@ -255,7 +255,7 @@ class _AirtimeReviewScreenState extends State<AirtimeReviewScreen>
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(20.r),
         boxShadow: [
           BoxShadow(
@@ -279,7 +279,7 @@ class _AirtimeReviewScreenState extends State<AirtimeReviewScreen>
                   borderRadius: BorderRadius.circular(16.r),
                   boxShadow: [
                     BoxShadow(
-                      color: _getProviderColor(networkProvider!.type).withOpacity(0.3),
+                      color: _getProviderColor(networkProvider!.type).withValues(alpha: 0.3),
                       blurRadius: 8,
                       offset: Offset(0, 4),
                     ),
@@ -316,7 +316,7 @@ class _AirtimeReviewScreenState extends State<AirtimeReviewScreen>
                       'Transaction Reference: REF_${DateTime.now().millisecondsSinceEpoch}',
                       style: TextStyle(
                         fontSize: 12.sp,
-                        color: Colors.white.withOpacity(0.6),
+                        color: Colors.white.withValues(alpha: 0.6),
                         fontWeight: FontWeight.w400,
                       ),
                     ),
@@ -333,7 +333,7 @@ class _AirtimeReviewScreenState extends State<AirtimeReviewScreen>
             width: double.infinity,
             padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.05),
+              color: Colors.white.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: Column(
@@ -342,7 +342,7 @@ class _AirtimeReviewScreenState extends State<AirtimeReviewScreen>
                   'Amount',
                   style: TextStyle(
                     fontSize: 14.sp,
-                    color: Colors.white.withOpacity(0.6),
+                    color: Colors.white.withValues(alpha: 0.6),
                     fontWeight: FontWeight.w400,
                   ),
                 ),
@@ -367,7 +367,7 @@ class _AirtimeReviewScreenState extends State<AirtimeReviewScreen>
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(20.r),
         boxShadow: [
           BoxShadow(
@@ -413,7 +413,7 @@ class _AirtimeReviewScreenState extends State<AirtimeReviewScreen>
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(20.r),
         boxShadow: [
           BoxShadow(
@@ -444,7 +444,7 @@ class _AirtimeReviewScreenState extends State<AirtimeReviewScreen>
           _buildBreakdownRow('Service Fee', fee ?? 0.0),
           
           SizedBox(height: 12.h),
-          Divider(color: Colors.white.withOpacity(0.1)),
+          Divider(color: Colors.white.withValues(alpha: 0.1)),
           SizedBox(height: 12.h),
           
           _buildBreakdownRow('Total Amount', totalAmount ?? amount!, isTotal: true),
@@ -461,7 +461,7 @@ class _AirtimeReviewScreenState extends State<AirtimeReviewScreen>
           label,
           style: TextStyle(
             fontSize: 14.sp,
-            color: Colors.white.withOpacity(0.6),
+            color: Colors.white.withValues(alpha: 0.6),
             fontWeight: FontWeight.w400,
           ),
         ),
@@ -485,7 +485,7 @@ class _AirtimeReviewScreenState extends State<AirtimeReviewScreen>
           label,
           style: TextStyle(
             fontSize: isTotal ? 16.sp : 14.sp,
-            color: isTotal ? Colors.white : Colors.white.withOpacity(0.6),
+            color: isTotal ? Colors.white : Colors.white.withValues(alpha: 0.6),
             fontWeight: isTotal ? FontWeight.w600 : FontWeight.w400,
           ),
         ),

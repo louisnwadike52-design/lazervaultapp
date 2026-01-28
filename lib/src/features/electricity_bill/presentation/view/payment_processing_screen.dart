@@ -86,8 +86,8 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
     final validationResult = args['validationResult'] as MeterValidationResult;
     final amount = args['amount'] as double;
 
-    return WillPopScope(
-      onWillPop: () async => false,
+    return PopScope(
+      canPop: false,
       child: Scaffold(
         backgroundColor: const Color(0xFF0A0A0A),
         body: Container(
@@ -128,7 +128,7 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
                   Get.snackbar(
                     'Payment Failed',
                     state.errorMessage,
-                    backgroundColor: Colors.red.withOpacity(0.9),
+                    backgroundColor: Colors.red.withValues(alpha: 0.9),
                     colorText: Colors.white,
                     duration: const Duration(seconds: 5),
                   );
@@ -147,7 +147,7 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
                   Get.snackbar(
                     'Error',
                     state.message,
-                    backgroundColor: Colors.red.withOpacity(0.9),
+                    backgroundColor: Colors.red.withValues(alpha: 0.9),
                     colorText: Colors.white,
                     duration: const Duration(seconds: 5),
                   );

@@ -53,7 +53,7 @@ class PriceOverlayIndicatorsPainter extends CustomPainter {
     if (priceHistory.length < period) return;
 
     final paint = Paint()
-      ..color = color.withOpacity(0.8)
+      ..color = color.withValues(alpha: 0.8)
       ..strokeWidth = 2.0
       ..style = PaintingStyle.stroke;
 
@@ -83,7 +83,7 @@ class PriceOverlayIndicatorsPainter extends CustomPainter {
     if (priceHistory.length < period) return;
 
     final paint = Paint()
-      ..color = color.withOpacity(0.8)
+      ..color = color.withValues(alpha: 0.8)
       ..strokeWidth = 2.0
       ..style = PaintingStyle.stroke;
 
@@ -116,17 +116,17 @@ class PriceOverlayIndicatorsPainter extends CustomPainter {
     final stdDev = _calculateStandardDeviation(20);
     
     final upperBandPaint = Paint()
-      ..color = Colors.purple.withOpacity(0.6)
+      ..color = Colors.purple.withValues(alpha: 0.6)
       ..strokeWidth = 1.5
       ..style = PaintingStyle.stroke;
     
     final lowerBandPaint = Paint()
-      ..color = Colors.purple.withOpacity(0.6)
+      ..color = Colors.purple.withValues(alpha: 0.6)
       ..strokeWidth = 1.5
       ..style = PaintingStyle.stroke;
     
     final fillPaint = Paint()
-      ..color = Colors.purple.withOpacity(0.1)
+      ..color = Colors.purple.withValues(alpha: 0.1)
       ..style = PaintingStyle.fill;
 
     final upperPath = Path();
@@ -178,7 +178,7 @@ class PriceOverlayIndicatorsPainter extends CustomPainter {
     final vwapValues = _calculateVWAP();
     
     final paint = Paint()
-      ..color = Colors.cyan.withOpacity(0.8)
+      ..color = Colors.cyan.withValues(alpha: 0.8)
       ..strokeWidth = 2.0
       ..style = PaintingStyle.stroke;
 

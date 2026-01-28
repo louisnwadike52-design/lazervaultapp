@@ -184,7 +184,7 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen> {
                         vertical: 6.h,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF4E03D0).withOpacity(0.2),
+                        color: const Color(0xFF4E03D0).withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(8.r),
                       ),
                       child: Text(
@@ -206,7 +206,7 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen> {
                         color: const Color(0xFF0A0A0A),
                         borderRadius: BorderRadius.circular(8.r),
                         border: Border.all(
-                          color: const Color(0xFF4E03D0).withOpacity(0.3),
+                          color: const Color(0xFF4E03D0).withValues(alpha: 0.3),
                         ),
                       ),
                       child: Text(
@@ -274,15 +274,15 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen> {
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
-                        const Color(0xFF4E03D0).withOpacity(0.1),
-                        const Color(0xFF6B21E0).withOpacity(0.05),
+                        const Color(0xFF4E03D0).withValues(alpha: 0.1),
+                        const Color(0xFF6B21E0).withValues(alpha: 0.05),
                       ],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
                     borderRadius: BorderRadius.circular(16.r),
                     border: Border.all(
-                      color: const Color(0xFF4E03D0).withOpacity(0.3),
+                      color: const Color(0xFF4E03D0).withValues(alpha: 0.3),
                     ),
                   ),
                   child: Column(
@@ -477,14 +477,14 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen> {
   }
 
   void _shareCrowdfund(Crowdfund crowdfund) {
-    Share.share(
-      'Support my crowdfunding campaign: ${crowdfund.title}\n\n'
+    SharePlus.instance.share(ShareParams(
+      text: 'Support my crowdfunding campaign: ${crowdfund.title}\n\n'
       'Code: ${crowdfund.crowdfundCode}\n'
       'Target: ${crowdfund.currency} ${crowdfund.targetAmount.toStringAsFixed(2)}\n'
       'Raised: ${crowdfund.currency} ${crowdfund.currentAmount.toStringAsFixed(2)}\n\n'
       'Help me reach my goal!',
       subject: crowdfund.title,
-    );
+    ));
   }
 
   void _copyCrowdfundCode(Crowdfund crowdfund) {

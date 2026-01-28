@@ -4,7 +4,7 @@ library;
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../cubit/open_banking_state.dart';
-import '../../data/errors/banking_errors.dart';
+
 
 /// Widget that displays banking errors with appropriate UI and actions
 class BankingErrorWidget extends StatelessWidget {
@@ -50,6 +50,11 @@ class BankingErrorWidget extends StatelessWidget {
       BankingErrorType.unauthorized => _UnauthorizedContent(
           error: error,
           onLogin: onLogin,
+        ),
+      BankingErrorType.needsMandate => _GeneralErrorContent(
+          error: error,
+          onRetry: null,
+          onDismiss: onDismiss,
         ),
       BankingErrorType.general => _GeneralErrorContent(
           error: error,
@@ -377,7 +382,7 @@ class _ErrorCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: iconColor.withOpacity(0.1),
+                color: iconColor.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(

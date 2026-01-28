@@ -36,7 +36,7 @@ class LinkBankButton extends StatelessWidget {
           backgroundColor: const Color(0xFF6C5CE7),
           foregroundColor: Colors.white,
           elevation: 2,
-          shadowColor: const Color(0xFF6C5CE7).withOpacity(0.4),
+          shadowColor: const Color(0xFF6C5CE7).withValues(alpha: 0.4),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16.r),
           ),

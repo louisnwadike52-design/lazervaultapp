@@ -36,7 +36,7 @@ class AccountSummaryRepositoryImpl implements IAccountSummaryRepository {
 
         // Add country code to metadata if provided
         if (country != null && country.isNotEmpty) {
-          final metadata = Map<String, String>.from(callOptions.metadata ?? {});
+          final metadata = Map<String, String>.from(callOptions.metadata);
           metadata['x-country-code'] = country;
 
           callOptions = CallOptions(

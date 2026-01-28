@@ -46,7 +46,7 @@ class WrappedSummaryCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(16),
             ),
             child: Row(
@@ -59,7 +59,7 @@ class WrappedSummaryCard extends StatelessWidget {
                 Container(
                   width: 1,
                   height: 40,
-                  color: Colors.white.withOpacity(0.3),
+                  color: Colors.white.withValues(alpha: 0.3),
                 ),
                 _MiniStat(
                   label: 'Transactions',
@@ -68,7 +68,7 @@ class WrappedSummaryCard extends StatelessWidget {
                 Container(
                   width: 1,
                   height: 40,
-                  color: Colors.white.withOpacity(0.3),
+                  color: Colors.white.withValues(alpha: 0.3),
                 ),
                 _MiniStat(
                   label: 'Avg. Transaction',
@@ -103,7 +103,7 @@ class _StatItem extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.2),
+            color: Colors.white.withValues(alpha: 0.2),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Icon(icon, color: color, size: 28),
@@ -116,7 +116,7 @@ class _StatItem extends StatelessWidget {
               Text(
                 label,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Colors.white.withOpacity(0.8),
+                  color: Colors.white.withValues(alpha: 0.8),
                 ),
               ),
               Text(
@@ -158,7 +158,7 @@ class _MiniStat extends StatelessWidget {
         Text(
           label,
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: Colors.white.withOpacity(0.7),
+            color: Colors.white.withValues(alpha: 0.7),
           ),
         ),
       ],

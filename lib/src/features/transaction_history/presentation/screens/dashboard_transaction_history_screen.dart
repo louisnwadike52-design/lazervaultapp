@@ -237,7 +237,7 @@ class _DashboardTransactionHistoryScreenState
               width: 40.w,
               height: 40.w,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12.r),
               ),
               child: Icon(
@@ -276,7 +276,7 @@ class _DashboardTransactionHistoryScreenState
                       subtitle,
                       style: TextStyle(
                         fontSize: 12.sp,
-                        color: Colors.white.withOpacity(0.6),
+                        color: Colors.white.withValues(alpha: 0.6),
                         fontWeight: FontWeight.w400,
                       ),
                     );
@@ -293,7 +293,7 @@ class _DashboardTransactionHistoryScreenState
               width: 40.w,
               height: 40.w,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12.r),
               ),
               child: Icon(
@@ -454,7 +454,7 @@ class _DashboardTransactionHistoryScreenState
               style: TextStyle(
                 fontSize: 14.sp,
                 fontWeight: FontWeight.w600,
-                color: Colors.white.withOpacity(0.7),
+                color: Colors.white.withValues(alpha: 0.7),
               ),
             ),
             SizedBox(height: 12.h),
@@ -476,7 +476,7 @@ class _DashboardTransactionHistoryScreenState
               style: TextStyle(
                 fontSize: 14.sp,
                 fontWeight: FontWeight.w600,
-                color: Colors.white.withOpacity(0.7),
+                color: Colors.white.withValues(alpha: 0.7),
               ),
             ),
             SizedBox(height: 12.h),
@@ -605,7 +605,7 @@ class TransactionDetailsSheet extends StatelessWidget {
                                 style: TextStyle(
                                   fontSize: 14.sp,
                                   fontWeight: FontWeight.w500,
-                                  color: Colors.white.withOpacity(0.7),
+                                  color: Colors.white.withValues(alpha: 0.7),
                                 ),
                               ),
                               SizedBox(height: 4.h),
@@ -766,7 +766,7 @@ class TransactionDetailsSheet extends StatelessWidget {
               label,
               style: TextStyle(
                 fontSize: 14.sp,
-                color: Colors.white.withOpacity(0.6),
+                color: Colors.white.withValues(alpha: 0.6),
               ),
             ),
           ),

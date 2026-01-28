@@ -27,7 +27,7 @@ class UniversalImageLoader extends StatelessWidget {
             fit: fit,
             imageBuilder: (context, imageProvider) => Container(
                   decoration: BoxDecoration(
-                    color: Theme.of(context).dialogBackgroundColor,
+                    color: Theme.of(context).dialogTheme.backgroundColor ?? Colors.white,
                     borderRadius: BorderRadius.circular(
                       8,
                     ),

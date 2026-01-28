@@ -4,9 +4,9 @@ import 'package:lazervault/core/error/failure.dart'; // Use the core failure
 import 'package:lazervault/src/features/funds/domain/entities/deposit_entity.dart';
 import 'package:lazervault/src/features/funds/domain/repositories/i_deposit_repository.dart';
 
-abstract class UseCaseWithParams<Type, Params> {
+abstract class UseCaseWithParams<T, Params> {
   const UseCaseWithParams();
-  Future<Either<Failure, Type>> call(Params params);
+  Future<Either<Failure, T>> call(Params params);
 }
 
 class InitiateDepositUseCase {

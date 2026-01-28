@@ -70,7 +70,7 @@ Future<DirectPayAuthResult> showDirectPayAuthorizationSheet({
     isScrollControlled: true,
     useSafeArea: true,
     backgroundColor: Colors.transparent,
-    barrierColor: const Color(0xFF1E3A5F).withOpacity(0.7),
+    barrierColor: const Color(0xFF1E3A5F).withValues(alpha: 0.7),
     isDismissible: false, // Prevent accidental dismiss during payment
     enableDrag: false,
     builder: (context) => _DirectPayAuthSheet(
@@ -308,7 +308,7 @@ class _DirectPayAuthSheetState extends State<_DirectPayAuthSheet> {
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),

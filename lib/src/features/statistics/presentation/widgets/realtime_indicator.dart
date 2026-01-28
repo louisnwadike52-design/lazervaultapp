@@ -20,13 +20,13 @@ class RealtimeIndicator extends StatelessWidget {
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
       decoration: BoxDecoration(
         color: isConnected
-            ? const Color(0xFF10B981).withOpacity(0.1)
-            : const Color(0xFF6B7280).withOpacity(0.1),
+            ? const Color(0xFF10B981).withValues(alpha: 0.1)
+            : const Color(0xFF6B7280).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
           color: isConnected
-              ? const Color(0xFF10B981).withOpacity(0.3)
-              : const Color(0xFF6B7280).withOpacity(0.3),
+              ? const Color(0xFF10B981).withValues(alpha: 0.3)
+              : const Color(0xFF6B7280).withValues(alpha: 0.3),
           width: 1,
         ),
       ),
@@ -44,7 +44,7 @@ class RealtimeIndicator extends StatelessWidget {
               boxShadow: isConnected
                   ? [
                       BoxShadow(
-                        color: const Color(0xFF10B981).withOpacity(0.5),
+                        color: const Color(0xFF10B981).withValues(alpha: 0.5),
                         blurRadius: 4,
                         spreadRadius: 1,
                       ),
@@ -80,9 +80,9 @@ class RealtimeIndicator extends StatelessWidget {
             value: isConnected,
             onChanged: (_) => onToggle(),
             activeThumbColor: const Color(0xFF10B981),
-            activeTrackColor: const Color(0xFF10B981).withOpacity(0.3),
+            activeTrackColor: const Color(0xFF10B981).withValues(alpha: 0.3),
             inactiveThumbColor: const Color(0xFF6B7280),
-            inactiveTrackColor: const Color(0xFF6B7280).withOpacity(0.3),
+            inactiveTrackColor: const Color(0xFF6B7280).withValues(alpha: 0.3),
           ),
         ],
       ),

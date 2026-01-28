@@ -78,7 +78,7 @@ class _SelectCountryState extends State<SelectCountry> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20.0.r)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: Colors.black.withValues(alpha: 0.2),
             blurRadius: 10,
             spreadRadius: 5,
             offset: const Offset(0, -5),
@@ -156,7 +156,7 @@ class _SelectCountryState extends State<SelectCountry> {
                 final isSelected = selectedCountries.contains(country);
                 return ListTile(
                   tileColor: isSelected
-                      ? Colors.white.withOpacity(0.2)
+                      ? Colors.white.withValues(alpha: 0.2)
                       : Colors.transparent,
                   leading:
                       Text(country["flag"]!, style: TextStyle(fontSize: 24.sp)),

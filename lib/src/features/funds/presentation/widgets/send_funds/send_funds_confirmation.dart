@@ -92,9 +92,9 @@ class _SendFundsConfirmationState extends State<SendFundsConfirmation> with Sing
     //                     height: 100.w,
     //                     decoration: BoxDecoration(
     //                       shape: BoxShape.circle,
-    //                       color: Color(0xFF6C3CE9).withOpacity(0.15),
+    //                       color: Color(0xFF6C3CE9).withValues(alpha: 0.15),
     //                       border: Border.all(
-    //                         color: Color(0xFF6C3CE9).withOpacity(0.3),
+    //                         color: Color(0xFF6C3CE9).withValues(alpha: 0.3),
     //                         width: 2,
     //                       ),
     //                     ),
@@ -115,7 +115,7 @@ class _SendFundsConfirmationState extends State<SendFundsConfirmation> with Sing
     //                         scale: _starScaleAnimation.value,
     //                         child: Icon(
     //                           Icons.star,
-    //                           color: Color(0xFFFFD700).withOpacity(0.7),
+    //                           color: Color(0xFFFFD700).withValues(alpha: 0.7),
     //                           size: 14,
     //                         ),
     //                       ),
@@ -147,7 +147,7 @@ class _SendFundsConfirmationState extends State<SendFundsConfirmation> with Sing
     //               'Transfers are reviewed which may\nresult in delays or funds being\nfrozen',
     //               textAlign: TextAlign.center,
     //               style: TextStyle(
-    //                 color: Colors.white.withOpacity(0.6),
+    //                 color: Colors.white.withValues(alpha: 0.6),
     //                 fontSize: 14.sp,
     //                 height: 1.5,
     //               ),
@@ -166,10 +166,10 @@ class _SendFundsConfirmationState extends State<SendFundsConfirmation> with Sing
     //             vertical: 12.h,
     //           ),
     //           decoration: BoxDecoration(
-    //             color: Colors.white.withOpacity(0.1),
+    //             color: Colors.white.withValues(alpha: 0.1),
     //             borderRadius: BorderRadius.circular(16),
     //             border: Border.all(
-    //               color: Colors.white.withOpacity(0.1),
+    //               color: Colors.white.withValues(alpha: 0.1),
     //             ),
     //           ),
     //           child: Text(
@@ -193,7 +193,7 @@ class _SendFundsConfirmationState extends State<SendFundsConfirmation> with Sing
     //           child: ElevatedButton(
     //             onPressed: () => Get.offAllNamed(AppRoutes.dashboard),
     //             style: ElevatedButton.styleFrom(
-    //               backgroundColor: Color(0xFF1ED69E).withOpacity(0.9),
+    //               backgroundColor: Color(0xFF1ED69E).withValues(alpha: 0.9),
     //               padding: EdgeInsets.symmetric(vertical: 16.h),
     //               shape: RoundedRectangleBorder(
     //                 borderRadius: BorderRadius.circular(12),

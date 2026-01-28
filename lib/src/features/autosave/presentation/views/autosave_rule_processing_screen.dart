@@ -145,7 +145,7 @@ class _AutoSaveRuleProcessingScreenState extends State<AutoSaveRuleProcessingScr
       },
       child: PopScope(
         canPop: false,
-        onPopInvoked: (didPop) {
+        onPopInvokedWithResult: (didPop, _) {
           if (!didPop) {
             _navigateToDashboard();
           }
@@ -205,7 +205,7 @@ class _AutoSaveRuleProcessingScreenState extends State<AutoSaveRuleProcessingScr
                 Text(
                   'Please wait while we set up your rule',
                   style: GoogleFonts.inter(
-                    color: Colors.white.withOpacity(0.6),
+                    color: Colors.white.withValues(alpha: 0.6),
                     fontSize: 13.sp,
                     fontWeight: FontWeight.w400,
                   ),
@@ -237,13 +237,13 @@ class _AutoSaveRuleProcessingScreenState extends State<AutoSaveRuleProcessingScr
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    const Color.fromARGB(255, 78, 3, 208).withOpacity(0.3),
-                    const Color.fromARGB(255, 98, 33, 224).withOpacity(0.3),
+                    const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.3),
+                    const Color.fromARGB(255, 98, 33, 224).withValues(alpha: 0.3),
                   ],
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color.fromARGB(255, 78, 3, 208).withOpacity(0.3),
+                    color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.3),
                     blurRadius: 40,
                     spreadRadius: 10,
                   ),
@@ -299,7 +299,7 @@ class _AutoSaveRuleProcessingScreenState extends State<AutoSaveRuleProcessingScr
             child: Text(
               'We\'re setting up your auto-save rule. This will only take a moment.',
               style: GoogleFonts.inter(
-                color: Colors.white.withOpacity(0.6),
+                color: Colors.white.withValues(alpha: 0.6),
                 fontSize: 14.sp,
                 fontWeight: FontWeight.w400,
                 height: 1.5,
@@ -328,7 +328,7 @@ class _AutoSaveRuleProcessingScreenState extends State<AutoSaveRuleProcessingScr
               height: 8.w,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color.fromARGB(255, 78, 3, 208).withOpacity(
+                color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 
                   0.3 + (0.7 * ((value + index * 0.3) % 1)),
                 ),
               ),

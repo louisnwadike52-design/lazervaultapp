@@ -17,6 +17,7 @@ import 'package:lazervault/core/types/electricity_bill_details.dart';
 import 'package:lazervault/core/types/recipient.dart' as core_recipient;
 import 'package:lazervault/core/types/transaction.dart';
 import 'package:lazervault/src/generated/auth.pbgrpc.dart' as auth_proto;
+import 'package:lazervault/src/features/transaction_pin/cubit/pin_management_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/email_verification_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/face_verification_cubit.dart';
@@ -152,11 +153,7 @@ import 'package:lazervault/src/features/presentation/views/stocks/stocks_screen.
 import 'package:lazervault/src/features/presentation/views/upload_image_scren.dart';
 import 'package:lazervault/src/generated/withdraw.pbgrpc.dart';
 
-import 'package:lazervault/src/features/funds/data/datasources/transfer_remote_data_source.dart';
 import 'package:lazervault/src/features/funds/data/datasources/banking_transfer_data_source.dart';
-import 'package:lazervault/src/features/funds/data/repositories/transfer_repository_impl.dart';
-import 'package:lazervault/src/features/funds/domain/repositories/i_transfer_repository.dart';
-import 'package:lazervault/src/features/funds/domain/usecases/initiate_transfer_usecase.dart';
 import 'package:lazervault/src/features/funds/cubit/transfer_cubit.dart';
 
 // Batch Transfer imports
@@ -477,6 +474,11 @@ Future<void> init() async {
     () => TransactionPinCubit(serviceLocator<ITransactionPinService>()),
   );
 
+  // Register PIN Management Cubit
+  serviceLocator.registerFactory<PinManagementCubit>(
+    () => PinManagementCubit(serviceLocator<ITransactionPinService>()),
+  );
+
   // Register FlutterSecureStorage
   serviceLocator.registerLazySingleton<FlutterSecureStorage>(
     () => const FlutterSecureStorage(),
@@ -491,7 +493,7 @@ Future<void> init() async {
         lineLength: 120,
         colors: true,
         printEmojis: true,
-        printTime: true,
+        dateTimeFormat: DateTimeFormat.onlyTimeAndSinceStart,
       ),
     ),
   );
@@ -803,6 +805,7 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton<IProfileRepository>(
       () => ProfileRepositoryImpl(
           userServiceClient: serviceLocator<user_grpc.UserServiceClient>(),
+          authServiceClient: serviceLocator<auth_proto.AuthServiceClient>(),
           callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
         ));
 
@@ -1063,14 +1066,6 @@ Future<void> init() async {
 
   // ================== Feature: Funds (Transfer) ==================
 
-  // Data Sources - Legacy (uses old monolithic gateway)
-  serviceLocator.registerLazySingleton<ITransferRemoteDataSource>(
-    () => TransferRemoteDataSourceImpl(
-      serviceLocator<TransferServiceClient>(),
-      serviceLocator<GrpcCallOptionsHelper>(),
-    ),
-  );
-
   // Data Sources - Banking Service (production-grade with Flutterwave/VFD)
   serviceLocator.registerLazySingleton<IBankingTransferDataSource>(
     () => BankingTransferDataSourceImpl(
@@ -1079,17 +1074,9 @@ Future<void> init() async {
     ),
   );
 
-  // Repositories
-  serviceLocator.registerLazySingleton<ITransferRepository>(
-    () => TransferRepositoryImpl(remoteDataSource: serviceLocator<ITransferRemoteDataSource>()),
-  );
-
-  // Use Cases
-  serviceLocator.registerLazySingleton(() => InitiateTransferUseCase(serviceLocator<ITransferRepository>()));
-
   // Blocs/Cubits
   serviceLocator.registerFactory(() => TransferCubit(
-    initiateTransferUseCase: serviceLocator<InitiateTransferUseCase>(),
+    bankingTransferDataSource: serviceLocator<IBankingTransferDataSource>(),
   ));
 
 

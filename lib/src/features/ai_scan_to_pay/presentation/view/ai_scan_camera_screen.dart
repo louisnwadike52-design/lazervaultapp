@@ -350,7 +350,7 @@ class _AiScanCameraScreenState extends State<AiScanCameraScreen>
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
                 decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.7),
+                  color: Colors.black.withValues(alpha: 0.7),
                   borderRadius: BorderRadius.circular(20.r),
                 ),
                 child: Row(
@@ -381,7 +381,7 @@ class _AiScanCameraScreenState extends State<AiScanCameraScreen>
                 margin: EdgeInsets.symmetric(horizontal: 32.w),
                 padding: EdgeInsets.all(12.w),
                 decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.6),
+                  color: Colors.black.withValues(alpha: 0.6),
                   borderRadius: BorderRadius.circular(12.r),
                 ),
                 child: Text(
@@ -450,7 +450,7 @@ class _AiScanCameraScreenState extends State<AiScanCameraScreen>
                         : const Color.fromARGB(255, 78, 3, 208),
                     shape: BoxShape.circle,                    boxShadow: [
                       BoxShadow(
-                        color: const Color.fromARGB(255, 78, 3, 208).withOpacity(0.3),
+                        color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.3),
                         blurRadius: 20,
                         offset: const Offset(0, 4),
                       ),
@@ -498,7 +498,7 @@ class _AiScanCameraScreenState extends State<AiScanCameraScreen>
         decoration: BoxDecoration(
           color: isActive
               ? const Color.fromARGB(255, 78, 3, 208)
-              : Colors.black.withOpacity(0.5),
+              : Colors.black.withValues(alpha: 0.5),
           shape: BoxShape.circle,
         ),
         child: Icon(
@@ -525,8 +525,8 @@ class _AiScanCameraScreenState extends State<AiScanCameraScreen>
             height: 60.w,
             decoration: BoxDecoration(
               color: onTap != null
-                  ? Colors.white.withOpacity(0.2)
-                  : Colors.white.withOpacity(0.1),
+                  ? Colors.white.withValues(alpha: 0.2)
+                  : Colors.white.withValues(alpha: 0.1),
               shape: BoxShape.circle,
               boxShadow: [
           BoxShadow(
@@ -539,7 +539,7 @@ class _AiScanCameraScreenState extends State<AiScanCameraScreen>
             ),
             child: Icon(
               icon,
-              color: onTap != null ? Colors.white : Colors.white.withOpacity(0.5),
+              color: onTap != null ? Colors.white : Colors.white.withValues(alpha: 0.5),
               size: 28.sp,
             ),
           ),
@@ -548,7 +548,7 @@ class _AiScanCameraScreenState extends State<AiScanCameraScreen>
             label,
             style: GoogleFonts.inter(
               fontSize: 12.sp,
-              color: onTap != null ? Colors.white : Colors.white.withOpacity(0.5),
+              color: onTap != null ? Colors.white : Colors.white.withValues(alpha: 0.5),
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -730,7 +730,7 @@ class CameraOverlayPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.black.withOpacity(0.5)
+      ..color = Colors.black.withValues(alpha: 0.5)
       ..style = PaintingStyle.fill;
 
     final borderPaint = Paint()

@@ -479,7 +479,9 @@ class BatchTransferDetailsBottomSheet extends StatelessWidget {
       );
 
       final filePath = await BatchTransferPdfService.downloadReceipt(transfer);
-      
+
+      if (!context.mounted) return;
+
       // Close loading dialog
       Navigator.of(context).pop();
       
@@ -492,9 +494,10 @@ class BatchTransferDetailsBottomSheet extends StatelessWidget {
         ),
       );
     } catch (e) {
+      if (!context.mounted) return;
       // Close loading dialog if open
       Navigator.of(context).pop();
-      
+
       // Show error message
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -541,13 +544,16 @@ class BatchTransferDetailsBottomSheet extends StatelessWidget {
       );
 
       await BatchTransferPdfService.shareReceipt(transfer);
-      
+
+      if (!context.mounted) return;
+
       // Close loading dialog
       Navigator.of(context).pop();
     } catch (e) {
+      if (!context.mounted) return;
       // Close loading dialog if open
       Navigator.of(context).pop();
-      
+
       // Show error message
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

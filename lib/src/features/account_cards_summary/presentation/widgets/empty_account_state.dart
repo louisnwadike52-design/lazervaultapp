@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:get/get.dart';
-import 'package:lazervault/core/types/app_routes.dart';
+
 
 /// Empty state widget displayed when a user has no virtual accounts
 /// This is shown to non-Nigeria users or users whose accounts are not yet created
@@ -37,13 +36,13 @@ class EmptyAccountState extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            const Color(0xFF6C5CE7).withOpacity(0.8),
-            const Color(0xFF4834D4).withOpacity(0.8),
+            const Color(0xFF6C5CE7).withValues(alpha: 0.8),
+            const Color(0xFF4834D4).withValues(alpha: 0.8),
           ],
         ),
         borderRadius: BorderRadius.circular(20.r),
         border: Border.all(
-          color: Colors.white.withOpacity(0.2),
+          color: Colors.white.withValues(alpha: 0.2),
           width: 1,
         ),
       ),
@@ -61,7 +60,7 @@ class EmptyAccountState extends StatelessWidget {
                 height: 120.w,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.white.withOpacity(0.06),
+                  color: Colors.white.withValues(alpha: 0.06),
                 ),
               ),
             ),
@@ -73,7 +72,7 @@ class EmptyAccountState extends StatelessWidget {
                 height: 100.w,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.white.withOpacity(0.04),
+                  color: Colors.white.withValues(alpha: 0.04),
                 ),
               ),
             ),
@@ -90,7 +89,7 @@ class EmptyAccountState extends StatelessWidget {
                     width: 48.w,
                     height: 48.w,
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.15),
+                      color: Colors.white.withValues(alpha: 0.15),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
@@ -129,7 +128,7 @@ class EmptyAccountState extends StatelessWidget {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.85),
+                      color: Colors.white.withValues(alpha: 0.85),
                       fontSize: 12.sp,
                       height: 1.3,
                     ),
@@ -267,7 +266,7 @@ class AccountLoadingState extends StatelessWidget {
             Text(
               'Loading your accounts...',
               style: TextStyle(
-                color: Colors.white.withOpacity(0.9),
+                color: Colors.white.withValues(alpha: 0.9),
                 fontSize: 14.sp,
                 fontWeight: FontWeight.w500,
               ),

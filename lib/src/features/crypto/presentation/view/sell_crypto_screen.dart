@@ -228,7 +228,7 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
                   'Convert your crypto to cash',
                   style: GoogleFonts.inter(
                     fontSize: 14.sp,
-                    color: Colors.white.withOpacity(0.7),
+                    color: Colors.white.withValues(alpha: 0.7),
                   ),
                 ),
               ],
@@ -237,7 +237,7 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
           Container(
             padding: EdgeInsets.all(8.w),
             decoration: BoxDecoration(
-              color: Colors.red.withOpacity(0.2),
+              color: Colors.red.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: Icon(
@@ -265,7 +265,7 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
         ),
         borderRadius: BorderRadius.circular(20.r),        boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -317,7 +317,7 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
                       height: 40.w,
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
-                          colors: [Colors.orange, Colors.orange.withOpacity(0.7)],
+                          colors: [Colors.orange, Colors.orange.withValues(alpha: 0.7)],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
@@ -346,7 +346,7 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
                             'Available: ${_selectedHolding!.quantity.toStringAsFixed(6)} ${_selectedHolding!.cryptoSymbol}',
                             style: GoogleFonts.inter(
                               fontSize: 12.sp,
-                              color: Colors.white.withOpacity(0.6),
+                              color: Colors.white.withValues(alpha: 0.6),
                             ),
                           ),
                         ],
@@ -391,7 +391,7 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
                   ] else ...[
                     Icon(
                       Icons.search,
-                      color: Colors.white.withOpacity(0.6),
+                      color: Colors.white.withValues(alpha: 0.6),
                       size: 20.sp,
                     ),
                     SizedBox(width: 12.w),
@@ -400,7 +400,7 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
                         'Choose holdings to sell',
                         style: GoogleFonts.inter(
                           fontSize: 16.sp,
-                          color: Colors.white.withOpacity(0.6),
+                          color: Colors.white.withValues(alpha: 0.6),
                         ),
                       ),
                     ),
@@ -433,7 +433,7 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
         ),
         borderRadius: BorderRadius.circular(20.r),        boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -471,8 +471,8 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
-                          Colors.red.withOpacity(0.3),
-                          Colors.red.withOpacity(0.1),
+                          Colors.red.withValues(alpha: 0.3),
+                          Colors.red.withValues(alpha: 0.1),
                         ],
                       ),
                       borderRadius: BorderRadius.circular(20.r),
@@ -551,7 +551,7 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
                           hintStyle: GoogleFonts.inter(
                             fontSize: 24.sp,
                             fontWeight: FontWeight.bold,
-                            color: Colors.white.withOpacity(0.3),
+                            color: Colors.white.withValues(alpha: 0.3),
                           ),
                           border: InputBorder.none,
                           contentPadding: EdgeInsets.zero,
@@ -568,7 +568,7 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
                       : '≈ ${_cryptoAmount.toStringAsFixed(6)} ${_selectedHolding!.cryptoSymbol.toUpperCase()}',
                     style: GoogleFonts.inter(
                       fontSize: 14.sp,
-                      color: Colors.white.withOpacity(0.6),
+                      color: Colors.white.withValues(alpha: 0.6),
                     ),
                   ),
                 ],
@@ -577,7 +577,7 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
                   Container(
                     padding: EdgeInsets.all(8.w),
                     decoration: BoxDecoration(
-                      color: Colors.red.withOpacity(0.1),
+                      color: Colors.red.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8.r),
                     ),
                     child: Text(
@@ -627,8 +627,8 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                Colors.red.withOpacity(0.1),
-                Colors.red.withOpacity(0.05),
+                Colors.red.withValues(alpha: 0.1),
+                Colors.red.withValues(alpha: 0.05),
               ],
             ),
             borderRadius: BorderRadius.circular(8.r),
@@ -667,7 +667,7 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            Colors.red.withOpacity(0.1),
+            Colors.red.withValues(alpha: 0.1),
             const Color(0xFF1E2746),
           ],
           begin: Alignment.topLeft,
@@ -675,7 +675,7 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
         ),
         borderRadius: BorderRadius.circular(20.r),        boxShadow: [
           BoxShadow(
-            color: Colors.red.withOpacity(0.1),
+            color: Colors.red.withValues(alpha: 0.1),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -717,7 +717,7 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
               gradient: LinearGradient(
                 colors: [
                   Colors.transparent,
-                  Colors.white.withOpacity(0.2),
+                  Colors.white.withValues(alpha: 0.2),
                   Colors.transparent,
                 ],
               ),
@@ -739,7 +739,7 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
           style: GoogleFonts.inter(
             fontSize: isTotal ? 16.sp : 14.sp,
             fontWeight: isTotal ? FontWeight.w600 : FontWeight.w500,
-            color: Colors.white.withOpacity(isTotal ? 1.0 : 0.8),
+            color: Colors.white.withValues(alpha: isTotal ? 1.0 : 0.8),
           ),
         ),
         Text(
@@ -768,7 +768,7 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
         ),
         borderRadius: BorderRadius.circular(20.r),        boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -816,7 +816,7 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
           label,
           style: GoogleFonts.inter(
             fontSize: 14.sp,
-            color: Colors.white.withOpacity(0.8),
+            color: Colors.white.withValues(alpha: 0.8),
           ),
         ),
         Text(
@@ -837,8 +837,8 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            Colors.orange.withOpacity(0.1),
-            Colors.orange.withOpacity(0.05),
+            Colors.orange.withValues(alpha: 0.1),
+            Colors.orange.withValues(alpha: 0.05),
           ],
         ),
         borderRadius: BorderRadius.circular(12.r),
@@ -865,7 +865,7 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
               'Selling cryptocurrency will convert your holdings to GBP. This action cannot be undone. Market prices are volatile and may change rapidly.',
               style: GoogleFonts.inter(
                 fontSize: 12.sp,
-                color: Colors.white.withOpacity(0.8),
+                color: Colors.white.withValues(alpha: 0.8),
                 height: 1.4,
               ),
             ),
@@ -900,21 +900,21 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
                 ? LinearGradient(
                     colors: [
                       Colors.red,
-                      Colors.red.withOpacity(0.8),
+                      Colors.red.withValues(alpha: 0.8),
                     ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   )
                 : LinearGradient(
                     colors: [
-                      Colors.grey.withOpacity(0.3),
-                      Colors.grey.withOpacity(0.1),
+                      Colors.grey.withValues(alpha: 0.3),
+                      Colors.grey.withValues(alpha: 0.1),
                     ],
                   ),
               borderRadius: BorderRadius.circular(16.r),
               boxShadow: isEnabled ? [
                 BoxShadow(
-                  color: Colors.red.withOpacity(0.3),
+                  color: Colors.red.withValues(alpha: 0.3),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
@@ -1016,8 +1016,8 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
                 style: GoogleFonts.inter(color: Colors.white),
                 decoration: InputDecoration(
                   hintText: 'Search your holdings...',
-                  hintStyle: GoogleFonts.inter(color: Colors.white.withOpacity(0.5)),
-                  prefixIcon: Icon(Icons.search, color: Colors.white.withOpacity(0.5)),
+                  hintStyle: GoogleFonts.inter(color: Colors.white.withValues(alpha: 0.5)),
+                  prefixIcon: Icon(Icons.search, color: Colors.white.withValues(alpha: 0.5)),
                   filled: true,
                   fillColor: const Color(0xFF1E2746),
                   border: OutlineInputBorder(
@@ -1059,7 +1059,7 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
         decoration: BoxDecoration(
           color: const Color(0xFF1E2746),
           borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(color: Colors.white.withOpacity(0.1)),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
         ),
         child: Row(
           children: [
@@ -1068,7 +1068,7 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
               height: 40.w,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [Colors.orange, Colors.orange.withOpacity(0.7)],
+                  colors: [Colors.orange, Colors.orange.withValues(alpha: 0.7)],
                 ),
                 borderRadius: BorderRadius.circular(20.r),
               ),
@@ -1095,7 +1095,7 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
                     '${holding.quantity.toStringAsFixed(6)} ${holding.cryptoSymbol.toUpperCase()}',
                     style: GoogleFonts.inter(
                       fontSize: 12.sp,
-                      color: Colors.white.withOpacity(0.6),
+                      color: Colors.white.withValues(alpha: 0.6),
                     ),
                   ),
                 ],

@@ -334,7 +334,7 @@ class _DebugSettingsScreenState extends State<DebugSettingsScreen> {
                         ],
                       ),
                     );
-                  }).toList(),
+                  }),
                 SizedBox(height: 32.h),
 
                 // Back to Dashboard
@@ -363,9 +363,9 @@ class _DebugSettingsScreenState extends State<DebugSettingsScreen> {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [

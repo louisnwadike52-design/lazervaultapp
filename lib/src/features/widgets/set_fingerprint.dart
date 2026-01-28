@@ -144,7 +144,7 @@ class _SetFingerPrintState extends State<SetFingerPrint>
                 Container(
                   padding: EdgeInsets.all(24.0),
                   decoration: BoxDecoration(
-                    color: HexColor.fromHex("#EBF3FE"),
+                    color: HybridHexColor.fromHex("#EBF3FE"),
                     borderRadius: BorderRadius.all(Radius.circular(8.0)),
                   ),
                   child: Text(
@@ -179,7 +179,7 @@ class _SetFingerPrintState extends State<SetFingerPrint>
                   onDismiss: () => Get.offAllNamed(AppRoutes.dashboard),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: HexColor.fromHex("#3784F9"),
+                  backgroundColor: HybridHexColor.fromHex("#3784F9"),
                   foregroundColor: Colors.white,
                 ),
                 child: Text(

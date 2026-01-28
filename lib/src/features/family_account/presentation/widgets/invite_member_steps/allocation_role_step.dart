@@ -241,7 +241,7 @@ class _AllocationRoleStepState extends State<AllocationRoleStep> {
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
           color: isSelected
-              ? const Color(0xFF6C5CE7).withOpacity(0.08)
+              ? const Color(0xFF6C5CE7).withValues(alpha: 0.08)
               : const Color(0xFFF8F8F8),
           borderRadius: BorderRadius.circular(16.r),
           border: Border.all(
@@ -261,8 +261,8 @@ class _AllocationRoleStepState extends State<AllocationRoleStep> {
                   height: 48.h,
                   decoration: BoxDecoration(
                     color: isSelected
-                        ? const Color(0xFF6C5CE7).withOpacity(0.15)
-                        : const Color(0xFFE0E0E0).withOpacity(0.5),
+                        ? const Color(0xFF6C5CE7).withValues(alpha: 0.15)
+                        : const Color(0xFFE0E0E0).withValues(alpha: 0.5),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
@@ -330,7 +330,7 @@ class _AllocationRoleStepState extends State<AllocationRoleStep> {
             if (isSelected) ...[
               SizedBox(height: 16.h),
               Divider(
-                color: const Color(0xFF6C5CE7).withOpacity(0.2),
+                color: const Color(0xFF6C5CE7).withValues(alpha: 0.2),
                 height: 1,
               ),
               SizedBox(height: 16.h),
@@ -374,7 +374,7 @@ class _AllocationRoleStepState extends State<AllocationRoleStep> {
         borderRadius: BorderRadius.circular(28.r),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF6C5CE7).withOpacity(0.4),
+            color: const Color(0xFF6C5CE7).withValues(alpha: 0.4),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),

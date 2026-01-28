@@ -271,7 +271,7 @@ class _ContactMethodStepState extends State<ContactMethodStep> {
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
           color: isSelected
-              ? const Color(0xFF6C5CE7).withOpacity(0.08)
+              ? const Color(0xFF6C5CE7).withValues(alpha: 0.08)
               : const Color(0xFFF8F8F8),
           borderRadius: BorderRadius.circular(16.r),
           border: Border.all(
@@ -288,8 +288,8 @@ class _ContactMethodStepState extends State<ContactMethodStep> {
               height: 48.h,
               decoration: BoxDecoration(
                 color: isSelected
-                    ? const Color(0xFF6C5CE7).withOpacity(0.15)
-                    : const Color(0xFFE0E0E0).withOpacity(0.5),
+                    ? const Color(0xFF6C5CE7).withValues(alpha: 0.15)
+                    : const Color(0xFFE0E0E0).withValues(alpha: 0.5),
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -369,7 +369,7 @@ class _ContactMethodStepState extends State<ContactMethodStep> {
         borderRadius: BorderRadius.circular(28.r),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF6C5CE7).withOpacity(0.4),
+            color: const Color(0xFF6C5CE7).withValues(alpha: 0.4),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),

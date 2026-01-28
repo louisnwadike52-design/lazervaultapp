@@ -137,7 +137,7 @@ class _VoiceActivationPromptScreenState
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.blue.withOpacity(0.3),
+                  color: Colors.blue.withValues(alpha: 0.3),
                   blurRadius: 30,
                   spreadRadius: 10,
                 ),
@@ -491,7 +491,7 @@ class _VoiceActivationPromptScreenState
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.green.withOpacity(0.3),
+                  color: Colors.green.withValues(alpha: 0.3),
                   blurRadius: 30,
                   spreadRadius: 10,
                 ),
@@ -629,7 +629,7 @@ class _VoiceActivationPromptScreenState
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, -5),
           ),

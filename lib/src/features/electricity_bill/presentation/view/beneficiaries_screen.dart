@@ -42,7 +42,7 @@ class _BeneficiariesScreenState extends State<BeneficiariesScreen> {
         content: Text(
           'Are you sure you want to delete ${beneficiary.displayName}?',
           style: GoogleFonts.inter(
-            color: Colors.white.withOpacity(0.8),
+            color: Colors.white.withValues(alpha: 0.8),
             fontSize: 14.sp,
             fontWeight: FontWeight.w400,
           ),
@@ -53,7 +53,7 @@ class _BeneficiariesScreenState extends State<BeneficiariesScreen> {
             child: Text(
               'Cancel',
               style: GoogleFonts.inter(
-                color: Colors.white.withOpacity(0.6),
+                color: Colors.white.withValues(alpha: 0.6),
                 fontSize: 14.sp,
                 fontWeight: FontWeight.w600,
               ),
@@ -109,7 +109,7 @@ class _BeneficiariesScreenState extends State<BeneficiariesScreen> {
                       Get.snackbar(
                         'Error',
                         state.message,
-                        backgroundColor: Colors.red.withOpacity(0.9),
+                        backgroundColor: Colors.red.withValues(alpha: 0.9),
                         colorText: Colors.white,
                       );
                     }
@@ -118,7 +118,7 @@ class _BeneficiariesScreenState extends State<BeneficiariesScreen> {
                       Get.snackbar(
                         'Success',
                         state.message,
-                        backgroundColor: Colors.green.withOpacity(0.9),
+                        backgroundColor: Colors.green.withValues(alpha: 0.9),
                         colorText: Colors.white,
                       );
                       context.read<BeneficiaryCubit>().getBeneficiaries();
@@ -128,7 +128,7 @@ class _BeneficiariesScreenState extends State<BeneficiariesScreen> {
                       Get.snackbar(
                         'Success',
                         state.message,
-                        backgroundColor: Colors.green.withOpacity(0.9),
+                        backgroundColor: Colors.green.withValues(alpha: 0.9),
                         colorText: Colors.white,
                       );
                       context.read<BeneficiaryCubit>().getBeneficiaries();
@@ -200,10 +200,10 @@ class _BeneficiariesScreenState extends State<BeneficiariesScreen> {
               width: 44.w,
               height: 44.w,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(22.r),
                 border: Border.all(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   width: 1,
                 ),
               ),
@@ -230,7 +230,7 @@ class _BeneficiariesScreenState extends State<BeneficiariesScreen> {
                 Text(
                   'Quick access to saved meters',
                   style: GoogleFonts.inter(
-                    color: Colors.white.withOpacity(0.6),
+                    color: Colors.white.withValues(alpha: 0.6),
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w400,
                   ),
@@ -255,15 +255,15 @@ class _BeneficiariesScreenState extends State<BeneficiariesScreen> {
               height: 120.w,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.white.withOpacity(0.05),
+                color: Colors.white.withValues(alpha: 0.05),
                 border: Border.all(
-                  color: Colors.white.withOpacity(0.1),
+                  color: Colors.white.withValues(alpha: 0.1),
                   width: 2,
                 ),
               ),
               child: Icon(
                 Icons.bookmark_border,
-                color: Colors.white.withOpacity(0.3),
+                color: Colors.white.withValues(alpha: 0.3),
                 size: 56.sp,
               ),
             ),
@@ -280,7 +280,7 @@ class _BeneficiariesScreenState extends State<BeneficiariesScreen> {
             Text(
               'Save frequently used meter numbers\nfor quick and easy payments',
               style: GoogleFonts.inter(
-                color: Colors.white.withOpacity(0.6),
+                color: Colors.white.withValues(alpha: 0.6),
                 fontSize: 14.sp,
                 fontWeight: FontWeight.w400,
               ),
@@ -303,12 +303,12 @@ class _BeneficiariesScreenState extends State<BeneficiariesScreen> {
       child: Container(
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.05),
+          color: Colors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(16.r),
           border: Border.all(
             color: beneficiary.isDefault
                 ? const Color(0xFF4E03D0)
-                : Colors.white.withOpacity(0.1),
+                : Colors.white.withValues(alpha: 0.1),
             width: beneficiary.isDefault ? 2 : 1,
           ),
         ),
@@ -321,7 +321,7 @@ class _BeneficiariesScreenState extends State<BeneficiariesScreen> {
                   width: 48.w,
                   height: 48.w,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF4E03D0).withOpacity(0.2),
+                    color: const Color(0xFF4E03D0).withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(12.r),
                   ),
                   child: Icon(
@@ -354,7 +354,7 @@ class _BeneficiariesScreenState extends State<BeneficiariesScreen> {
                               margin: EdgeInsets.only(left: 8.w),
                               padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF4E03D0).withOpacity(0.2),
+                                color: const Color(0xFF4E03D0).withValues(alpha: 0.2),
                                 borderRadius: BorderRadius.circular(8.r),
                               ),
                               child: Text(
@@ -372,7 +372,7 @@ class _BeneficiariesScreenState extends State<BeneficiariesScreen> {
                       Text(
                         beneficiary.customerName,
                         style: GoogleFonts.inter(
-                          color: Colors.white.withOpacity(0.6),
+                          color: Colors.white.withValues(alpha: 0.6),
                           fontSize: 14.sp,
                           fontWeight: FontWeight.w400,
                         ),
@@ -385,7 +385,7 @@ class _BeneficiariesScreenState extends State<BeneficiariesScreen> {
                 PopupMenuButton<String>(
                   icon: Icon(
                     Icons.more_vert,
-                    color: Colors.white.withOpacity(0.6),
+                    color: Colors.white.withValues(alpha: 0.6),
                     size: 20.sp,
                   ),
                   color: const Color(0xFF1A1A3E),
@@ -405,12 +405,12 @@ class _BeneficiariesScreenState extends State<BeneficiariesScreen> {
                         value: 'default',
                         child: Row(
                           children: [
-                            Icon(Icons.star, color: Colors.white.withOpacity(0.8), size: 18.sp),
+                            Icon(Icons.star, color: Colors.white.withValues(alpha: 0.8), size: 18.sp),
                             SizedBox(width: 12.w),
                             Text(
                               'Set as Default',
                               style: GoogleFonts.inter(
-                                color: Colors.white.withOpacity(0.8),
+                                color: Colors.white.withValues(alpha: 0.8),
                                 fontSize: 14.sp,
                               ),
                             ),
@@ -478,21 +478,21 @@ class _BeneficiariesScreenState extends State<BeneficiariesScreen> {
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.05),
+                  color: Colors.white.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(8.r),
                 ),
                 child: Row(
                   children: [
                     Icon(
                       Icons.access_time,
-                      color: Colors.white.withOpacity(0.6),
+                      color: Colors.white.withValues(alpha: 0.6),
                       size: 14.sp,
                     ),
                     SizedBox(width: 6.w),
                     Text(
                       'Last used: ${dateFormat.format(beneficiary.lastUsedAt!)}',
                       style: GoogleFonts.inter(
-                        color: Colors.white.withOpacity(0.6),
+                        color: Colors.white.withValues(alpha: 0.6),
                         fontSize: 12.sp,
                         fontWeight: FontWeight.w400,
                       ),
@@ -511,7 +511,7 @@ class _BeneficiariesScreenState extends State<BeneficiariesScreen> {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(8.r),
       ),
       child: Row(
@@ -519,7 +519,7 @@ class _BeneficiariesScreenState extends State<BeneficiariesScreen> {
         children: [
           Icon(
             icon,
-            color: Colors.white.withOpacity(0.6),
+            color: Colors.white.withValues(alpha: 0.6),
             size: 14.sp,
           ),
           SizedBox(width: 6.w),
@@ -527,7 +527,7 @@ class _BeneficiariesScreenState extends State<BeneficiariesScreen> {
             child: Text(
               text,
               style: GoogleFonts.inter(
-                color: Colors.white.withOpacity(0.6),
+                color: Colors.white.withValues(alpha: 0.6),
                 fontSize: 12.sp,
                 fontWeight: FontWeight.w400,
               ),

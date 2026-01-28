@@ -3,7 +3,7 @@ library;
 
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
+
 import 'dart:math';
 import 'package:http/http.dart' as http;
 import 'package:connectivity_plus/connectivity_plus.dart';
@@ -169,7 +169,7 @@ class ResilientBankingClient {
   Future<bool> hasConnectivity() async {
     try {
       final result = await Connectivity().checkConnectivity();
-      return result != ConnectivityResult.none;
+      return !result.contains(ConnectivityResult.none);
     } catch (_) {
       return true; // Assume connected if we can't check
     }

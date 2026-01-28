@@ -56,7 +56,7 @@ class _IncomeTabsState extends State<IncomeTabs> {
                     _activeTab == 0 ? Colors.blue : Colors.transparent,
                 foregroundColor: _activeTab == 0
                     ? Colors.white
-                    : HexColor.fromHex("#262626"),
+                    : HybridHexColor.fromHex("#262626"),
                 padding: const EdgeInsets.all(12.0),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8.0),
@@ -77,7 +77,7 @@ class _IncomeTabsState extends State<IncomeTabs> {
                     _activeTab == 1 ? Colors.blue : Colors.transparent,
                 foregroundColor: _activeTab == 1
                     ? Colors.white
-                    : HexColor.fromHex("#262626"),
+                    : HybridHexColor.fromHex("#262626"),
                 padding: const EdgeInsets.all(12.0),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8.0),

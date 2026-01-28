@@ -51,6 +51,30 @@ class TransactionPinServiceClient extends $grpc.Client {
       ($1.ValidateTransactionPinTokenRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
           $1.ValidateTransactionPinTokenResponse.fromBuffer(value));
+  static final _$initiatePinOTP = $grpc.ClientMethod<
+          $1.InitiatePinOTPRequest, $1.InitiatePinOTPResponse>(
+      '/auth.TransactionPinService/InitiatePinOTP',
+      ($1.InitiatePinOTPRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $1.InitiatePinOTPResponse.fromBuffer(value));
+  static final _$verifyPinOTP = $grpc.ClientMethod<
+          $1.VerifyPinOTPRequest, $1.VerifyPinOTPResponse>(
+      '/auth.TransactionPinService/VerifyPinOTP',
+      ($1.VerifyPinOTPRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $1.VerifyPinOTPResponse.fromBuffer(value));
+  static final _$getPinOTPChannels = $grpc.ClientMethod<
+          $1.GetPinOTPChannelsRequest, $1.GetPinOTPChannelsResponse>(
+      '/auth.TransactionPinService/GetPinOTPChannels',
+      ($1.GetPinOTPChannelsRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $1.GetPinOTPChannelsResponse.fromBuffer(value));
+  static final _$completeForgotPin = $grpc.ClientMethod<
+          $1.CompleteForgotPinRequest, $1.CompleteForgotPinResponse>(
+      '/auth.TransactionPinService/CompleteForgotPin',
+      ($1.CompleteForgotPinRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $1.CompleteForgotPinResponse.fromBuffer(value));
 
   TransactionPinServiceClient($grpc.ClientChannel channel,
       {$grpc.CallOptions? options,
@@ -92,6 +116,30 @@ class TransactionPinServiceClient extends $grpc.Client {
           {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$validateTransactionPinToken, request,
         options: options);
+  }
+
+  $grpc.ResponseFuture<$1.InitiatePinOTPResponse> initiatePinOTP(
+      $1.InitiatePinOTPRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$initiatePinOTP, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$1.VerifyPinOTPResponse> verifyPinOTP(
+      $1.VerifyPinOTPRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$verifyPinOTP, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$1.GetPinOTPChannelsResponse> getPinOTPChannels(
+      $1.GetPinOTPChannelsRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getPinOTPChannels, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$1.CompleteForgotPinResponse> completeForgotPin(
+      $1.CompleteForgotPinRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$completeForgotPin, request, options: options);
   }
 }
 
@@ -154,6 +202,42 @@ abstract class TransactionPinServiceBase extends $grpc.Service {
             $1.ValidateTransactionPinTokenRequest.fromBuffer(value),
         ($1.ValidateTransactionPinTokenResponse value) =>
             value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$1.InitiatePinOTPRequest,
+            $1.InitiatePinOTPResponse>(
+        'InitiatePinOTP',
+        initiatePinOTP_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $1.InitiatePinOTPRequest.fromBuffer(value),
+        ($1.InitiatePinOTPResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$1.VerifyPinOTPRequest,
+            $1.VerifyPinOTPResponse>(
+        'VerifyPinOTP',
+        verifyPinOTP_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $1.VerifyPinOTPRequest.fromBuffer(value),
+        ($1.VerifyPinOTPResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$1.GetPinOTPChannelsRequest,
+            $1.GetPinOTPChannelsResponse>(
+        'GetPinOTPChannels',
+        getPinOTPChannels_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $1.GetPinOTPChannelsRequest.fromBuffer(value),
+        ($1.GetPinOTPChannelsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$1.CompleteForgotPinRequest,
+            $1.CompleteForgotPinResponse>(
+        'CompleteForgotPin',
+        completeForgotPin_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $1.CompleteForgotPinRequest.fromBuffer(value),
+        ($1.CompleteForgotPinResponse value) => value.writeToBuffer()));
   }
 
   $async.Future<$1.CreateTransactionPinResponse> createTransactionPin_Pre(
@@ -192,6 +276,30 @@ abstract class TransactionPinServiceBase extends $grpc.Service {
     return validateTransactionPinToken(call, await request);
   }
 
+  $async.Future<$1.InitiatePinOTPResponse> initiatePinOTP_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$1.InitiatePinOTPRequest> request) async {
+    return initiatePinOTP(call, await request);
+  }
+
+  $async.Future<$1.VerifyPinOTPResponse> verifyPinOTP_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$1.VerifyPinOTPRequest> request) async {
+    return verifyPinOTP(call, await request);
+  }
+
+  $async.Future<$1.GetPinOTPChannelsResponse> getPinOTPChannels_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$1.GetPinOTPChannelsRequest> request) async {
+    return getPinOTPChannels(call, await request);
+  }
+
+  $async.Future<$1.CompleteForgotPinResponse> completeForgotPin_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$1.CompleteForgotPinRequest> request) async {
+    return completeForgotPin(call, await request);
+  }
+
   $async.Future<$1.CreateTransactionPinResponse> createTransactionPin(
       $grpc.ServiceCall call, $1.CreateTransactionPinRequest request);
   $async.Future<$1.VerifyTransactionPinResponse> verifyTransactionPin(
@@ -205,4 +313,12 @@ abstract class TransactionPinServiceBase extends $grpc.Service {
   $async.Future<$1.ValidateTransactionPinTokenResponse>
       validateTransactionPinToken($grpc.ServiceCall call,
           $1.ValidateTransactionPinTokenRequest request);
+  $async.Future<$1.InitiatePinOTPResponse> initiatePinOTP(
+      $grpc.ServiceCall call, $1.InitiatePinOTPRequest request);
+  $async.Future<$1.VerifyPinOTPResponse> verifyPinOTP(
+      $grpc.ServiceCall call, $1.VerifyPinOTPRequest request);
+  $async.Future<$1.GetPinOTPChannelsResponse> getPinOTPChannels(
+      $grpc.ServiceCall call, $1.GetPinOTPChannelsRequest request);
+  $async.Future<$1.CompleteForgotPinResponse> completeForgotPin(
+      $grpc.ServiceCall call, $1.CompleteForgotPinRequest request);
 }

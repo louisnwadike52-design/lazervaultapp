@@ -1,12 +1,12 @@
 import 'package:lazervault/core/typedefs.dart';
 import 'package:equatable/equatable.dart';
 
-abstract class UseCaseWithParams<Type, Params extends Equatable> {
+abstract class UseCaseWithParams<T, Params extends Equatable> {
   const UseCaseWithParams();
-  ResultFuture<Type> call(Params params);
+  ResultFuture<T> call(Params params);
 }
 
-abstract class UseCaseWithoutParams<Type> {
+abstract class UseCaseWithoutParams<T> {
   const UseCaseWithoutParams();
-  ResultFuture<Type> call();
+  ResultFuture<T> call();
 }

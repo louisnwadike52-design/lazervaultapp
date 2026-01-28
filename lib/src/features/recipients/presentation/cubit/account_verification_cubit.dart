@@ -1,6 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../data/datasources/recipient_verification_remote_datasource.dart';
-import '../../domain/entities/account_verification_result.dart';
 import 'account_verification_state.dart';
 import '../../../../../core/utilities/banks_data.dart';
 

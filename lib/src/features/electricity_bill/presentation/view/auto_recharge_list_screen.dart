@@ -49,7 +49,7 @@ class _AutoRechargeListScreenState extends State<AutoRechargeListScreen> {
         content: Text(
           'Are you sure you want to delete this auto-recharge for ${autoRecharge.customerName}?',
           style: GoogleFonts.inter(
-            color: Colors.white.withOpacity(0.8),
+            color: Colors.white.withValues(alpha: 0.8),
             fontSize: 14.sp,
             fontWeight: FontWeight.w400,
           ),
@@ -60,7 +60,7 @@ class _AutoRechargeListScreenState extends State<AutoRechargeListScreen> {
             child: Text(
               'Cancel',
               style: GoogleFonts.inter(
-                color: Colors.white.withOpacity(0.6),
+                color: Colors.white.withValues(alpha: 0.6),
                 fontSize: 14.sp,
                 fontWeight: FontWeight.w600,
               ),
@@ -119,7 +119,7 @@ class _AutoRechargeListScreenState extends State<AutoRechargeListScreen> {
                       Get.snackbar(
                         'Error',
                         state.message,
-                        backgroundColor: Colors.red.withOpacity(0.9),
+                        backgroundColor: Colors.red.withValues(alpha: 0.9),
                         colorText: Colors.white,
                       );
                     }
@@ -128,7 +128,7 @@ class _AutoRechargeListScreenState extends State<AutoRechargeListScreen> {
                       Get.snackbar(
                         'Success',
                         state.message,
-                        backgroundColor: Colors.green.withOpacity(0.9),
+                        backgroundColor: Colors.green.withValues(alpha: 0.9),
                         colorText: Colors.white,
                       );
                       context.read<AutoRechargeCubit>().getAutoRecharges();
@@ -138,7 +138,7 @@ class _AutoRechargeListScreenState extends State<AutoRechargeListScreen> {
                       Get.snackbar(
                         'Success',
                         state.message,
-                        backgroundColor: Colors.green.withOpacity(0.9),
+                        backgroundColor: Colors.green.withValues(alpha: 0.9),
                         colorText: Colors.white,
                       );
                       context.read<AutoRechargeCubit>().getAutoRecharges();
@@ -148,7 +148,7 @@ class _AutoRechargeListScreenState extends State<AutoRechargeListScreen> {
                       Get.snackbar(
                         'Success',
                         state.message,
-                        backgroundColor: Colors.green.withOpacity(0.9),
+                        backgroundColor: Colors.green.withValues(alpha: 0.9),
                         colorText: Colors.white,
                       );
                       context.read<AutoRechargeCubit>().getAutoRecharges();
@@ -158,7 +158,7 @@ class _AutoRechargeListScreenState extends State<AutoRechargeListScreen> {
                       Get.snackbar(
                         'Success',
                         state.message,
-                        backgroundColor: Colors.green.withOpacity(0.9),
+                        backgroundColor: Colors.green.withValues(alpha: 0.9),
                         colorText: Colors.white,
                       );
                       context.read<AutoRechargeCubit>().getAutoRecharges();
@@ -212,7 +212,7 @@ class _AutoRechargeListScreenState extends State<AutoRechargeListScreen> {
                               Text(
                                 'Inactive Auto-Recharges',
                                 style: GoogleFonts.inter(
-                                  color: Colors.white.withOpacity(0.6),
+                                  color: Colors.white.withValues(alpha: 0.6),
                                   fontSize: 18.sp,
                                   fontWeight: FontWeight.w700,
                                 ),
@@ -265,10 +265,10 @@ class _AutoRechargeListScreenState extends State<AutoRechargeListScreen> {
               width: 44.w,
               height: 44.w,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(22.r),
                 border: Border.all(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   width: 1,
                 ),
               ),
@@ -295,7 +295,7 @@ class _AutoRechargeListScreenState extends State<AutoRechargeListScreen> {
                 Text(
                   'Automated recurring payments',
                   style: GoogleFonts.inter(
-                    color: Colors.white.withOpacity(0.6),
+                    color: Colors.white.withValues(alpha: 0.6),
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w400,
                   ),
@@ -320,15 +320,15 @@ class _AutoRechargeListScreenState extends State<AutoRechargeListScreen> {
               height: 120.w,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.white.withOpacity(0.05),
+                color: Colors.white.withValues(alpha: 0.05),
                 border: Border.all(
-                  color: Colors.white.withOpacity(0.1),
+                  color: Colors.white.withValues(alpha: 0.1),
                   width: 2,
                 ),
               ),
               child: Icon(
                 Icons.autorenew,
-                color: Colors.white.withOpacity(0.3),
+                color: Colors.white.withValues(alpha: 0.3),
                 size: 56.sp,
               ),
             ),
@@ -345,7 +345,7 @@ class _AutoRechargeListScreenState extends State<AutoRechargeListScreen> {
             Text(
               'Set up automatic recurring payments\nfor your electricity bills',
               style: GoogleFonts.inter(
-                color: Colors.white.withOpacity(0.6),
+                color: Colors.white.withValues(alpha: 0.6),
                 fontSize: 14.sp,
                 fontWeight: FontWeight.w400,
               ),
@@ -363,12 +363,12 @@ class _AutoRechargeListScreenState extends State<AutoRechargeListScreen> {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(
           color: autoRecharge.isActive
               ? const Color(0xFF4E03D0)
-              : Colors.white.withOpacity(0.1),
+              : Colors.white.withValues(alpha: 0.1),
           width: autoRecharge.isActive ? 2 : 1,
         ),
       ),
@@ -381,7 +381,7 @@ class _AutoRechargeListScreenState extends State<AutoRechargeListScreen> {
                 width: 48.w,
                 height: 48.w,
                 decoration: BoxDecoration(
-                  color: _getStatusColor(autoRecharge.status).withOpacity(0.2),
+                  color: _getStatusColor(autoRecharge.status).withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12.r),
                 ),
                 child: Icon(
@@ -409,7 +409,7 @@ class _AutoRechargeListScreenState extends State<AutoRechargeListScreen> {
                     Text(
                       autoRecharge.providerName,
                       style: GoogleFonts.inter(
-                        color: Colors.white.withOpacity(0.6),
+                        color: Colors.white.withValues(alpha: 0.6),
                         fontSize: 14.sp,
                         fontWeight: FontWeight.w400,
                       ),
@@ -432,7 +432,7 @@ class _AutoRechargeListScreenState extends State<AutoRechargeListScreen> {
                   Container(
                     padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                     decoration: BoxDecoration(
-                      color: _getStatusColor(autoRecharge.status).withOpacity(0.2),
+                      color: _getStatusColor(autoRecharge.status).withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(8.r),
                     ),
                     child: Text(
@@ -476,7 +476,7 @@ class _AutoRechargeListScreenState extends State<AutoRechargeListScreen> {
             Container(
               padding: EdgeInsets.all(12.w),
               decoration: BoxDecoration(
-                color: const Color(0xFFEF5350).withOpacity(0.1),
+                color: const Color(0xFFEF5350).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8.r),
               ),
               child: Row(
@@ -512,8 +512,8 @@ class _AutoRechargeListScreenState extends State<AutoRechargeListScreen> {
                       padding: EdgeInsets.symmetric(vertical: 12.h),
                       decoration: BoxDecoration(
                         color: autoRecharge.isActive
-                            ? const Color(0xFFFFA726).withOpacity(0.2)
-                            : const Color(0xFF4E03D0).withOpacity(0.2),
+                            ? const Color(0xFFFFA726).withValues(alpha: 0.2)
+                            : const Color(0xFF4E03D0).withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(12.r),
                         border: Border.all(
                           color: autoRecharge.isActive
@@ -555,10 +555,10 @@ class _AutoRechargeListScreenState extends State<AutoRechargeListScreen> {
                   child: Container(
                     padding: EdgeInsets.symmetric(vertical: 12.h),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.05),
+                      color: Colors.white.withValues(alpha: 0.05),
                       borderRadius: BorderRadius.circular(12.r),
                       border: Border.all(
-                        color: Colors.white.withOpacity(0.2),
+                        color: Colors.white.withValues(alpha: 0.2),
                         width: 1,
                       ),
                     ),
@@ -567,14 +567,14 @@ class _AutoRechargeListScreenState extends State<AutoRechargeListScreen> {
                       children: [
                         Icon(
                           Icons.edit,
-                          color: Colors.white.withOpacity(0.8),
+                          color: Colors.white.withValues(alpha: 0.8),
                           size: 18.sp,
                         ),
                         SizedBox(width: 8.w),
                         Text(
                           'Edit',
                           style: GoogleFonts.inter(
-                            color: Colors.white.withOpacity(0.8),
+                            color: Colors.white.withValues(alpha: 0.8),
                             fontSize: 14.sp,
                             fontWeight: FontWeight.w600,
                           ),
@@ -591,7 +591,7 @@ class _AutoRechargeListScreenState extends State<AutoRechargeListScreen> {
                   width: 44.w,
                   height: 44.w,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFEF5350).withOpacity(0.2),
+                    color: const Color(0xFFEF5350).withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(12.r),
                     border: Border.all(
                       color: const Color(0xFFEF5350),
@@ -616,7 +616,7 @@ class _AutoRechargeListScreenState extends State<AutoRechargeListScreen> {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(8.r),
       ),
       child: Row(
@@ -624,7 +624,7 @@ class _AutoRechargeListScreenState extends State<AutoRechargeListScreen> {
         children: [
           Icon(
             icon,
-            color: Colors.white.withOpacity(0.6),
+            color: Colors.white.withValues(alpha: 0.6),
             size: 14.sp,
           ),
           SizedBox(width: 6.w),
@@ -632,7 +632,7 @@ class _AutoRechargeListScreenState extends State<AutoRechargeListScreen> {
             child: Text(
               text,
               style: GoogleFonts.inter(
-                color: Colors.white.withOpacity(0.6),
+                color: Colors.white.withValues(alpha: 0.6),
                 fontSize: 12.sp,
                 fontWeight: FontWeight.w400,
               ),

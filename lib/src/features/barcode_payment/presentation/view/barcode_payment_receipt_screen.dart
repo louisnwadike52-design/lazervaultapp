@@ -121,10 +121,10 @@ class _BarcodePaymentReceiptScreenState
               width: 44.w,
               height: 44.w,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(22.r),
                 border: Border.all(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   width: 1,
                 ),
               ),
@@ -156,7 +156,7 @@ class _BarcodePaymentReceiptScreenState
           ),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF10B981).withOpacity(0.4),
+              color: const Color(0xFF10B981).withValues(alpha: 0.4),
               blurRadius: 30,
               spreadRadius: 5,
             ),
@@ -188,7 +188,7 @@ class _BarcodePaymentReceiptScreenState
           Text(
             'Payment Successful',
             style: GoogleFonts.inter(
-              color: Colors.white.withOpacity(0.9),
+              color: Colors.white.withValues(alpha: 0.9),
               fontSize: 16.sp,
               fontWeight: FontWeight.w500,
             ),
@@ -211,30 +211,30 @@ class _BarcodePaymentReceiptScreenState
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(
-          color: Colors.white.withOpacity(0.1),
+          color: Colors.white.withValues(alpha: 0.1),
           width: 1,
         ),
       ),
       child: Column(
         children: [
           _buildDetailRow('Reference Number', transaction.referenceNumber),
-          Divider(color: Colors.white.withOpacity(0.1), height: 24.h),
+          Divider(color: Colors.white.withValues(alpha: 0.1), height: 24.h),
           _buildDetailRow('Recipient', transaction.recipientName),
-          Divider(color: Colors.white.withOpacity(0.1), height: 24.h),
+          Divider(color: Colors.white.withValues(alpha: 0.1), height: 24.h),
           _buildDetailRow('Username', '@${transaction.recipientUsername}'),
-          Divider(color: Colors.white.withOpacity(0.1), height: 24.h),
+          Divider(color: Colors.white.withValues(alpha: 0.1), height: 24.h),
           _buildDetailRow(
             'Date & Time',
             DateFormat('MMM dd, yyyy - hh:mm a').format(transaction.createdAt),
           ),
           if (transaction.description.isNotEmpty) ...[
-            Divider(color: Colors.white.withOpacity(0.1), height: 24.h),
+            Divider(color: Colors.white.withValues(alpha: 0.1), height: 24.h),
             _buildDetailRow('Description', transaction.description),
           ],
-          Divider(color: Colors.white.withOpacity(0.1), height: 24.h),
+          Divider(color: Colors.white.withValues(alpha: 0.1), height: 24.h),
           _buildDetailRow('Status', transaction.status.displayName),
         ],
       ),
@@ -249,7 +249,7 @@ class _BarcodePaymentReceiptScreenState
         Text(
           label,
           style: GoogleFonts.inter(
-            color: Colors.white.withOpacity(0.6),
+            color: Colors.white.withValues(alpha: 0.6),
             fontSize: 14.sp,
             fontWeight: FontWeight.w400,
           ),
@@ -309,7 +309,7 @@ class _BarcodePaymentReceiptScreenState
             onPressed: () => Get.offAllNamed(AppRoutes.dashboard),
             style: OutlinedButton.styleFrom(
               side: BorderSide(
-                color: Colors.white.withOpacity(0.3),
+                color: Colors.white.withValues(alpha: 0.3),
                 width: 1.5,
               ),
               padding: EdgeInsets.symmetric(vertical: 16.h),

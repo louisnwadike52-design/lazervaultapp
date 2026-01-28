@@ -102,10 +102,11 @@ Date: ${dateFormat.format(now)}
 🚀 Generated with Claude Code
 ''';
 
-    Share.share(
-      receiptText,
+    SharePlus.instance.share(ShareParams(
+      text: receiptText,
       subject: 'Withdrawal Receipt - $_transactionId',
-    ).then((_) {
+    )).then((_) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(

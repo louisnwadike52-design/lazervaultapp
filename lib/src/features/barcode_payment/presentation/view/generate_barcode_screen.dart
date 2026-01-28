@@ -177,10 +177,10 @@ class _GenerateBarcodeScreenState extends State<GenerateBarcodeScreen>
               width: 44.w,
               height: 44.w,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(22.r),
                 border: Border.all(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   width: 1,
                 ),
               ),
@@ -207,7 +207,7 @@ class _GenerateBarcodeScreenState extends State<GenerateBarcodeScreen>
                 Text(
                   'Create payment barcode',
                   style: GoogleFonts.inter(
-                    color: Colors.white.withOpacity(0.6),
+                    color: Colors.white.withValues(alpha: 0.6),
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w400,
                   ),
@@ -224,15 +224,15 @@ class _GenerateBarcodeScreenState extends State<GenerateBarcodeScreen>
     return Container(
       padding: EdgeInsets.all(24.w),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(20.r),
         border: Border.all(
-          color: Colors.white.withOpacity(0.1),
+          color: Colors.white.withValues(alpha: 0.1),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF4E03D0).withOpacity(0.1),
+            color: const Color(0xFF4E03D0).withValues(alpha: 0.1),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -264,7 +264,7 @@ class _GenerateBarcodeScreenState extends State<GenerateBarcodeScreen>
               Text(
                 'Amount',
                 style: GoogleFonts.inter(
-                  color: Colors.white.withOpacity(0.7),
+                  color: Colors.white.withValues(alpha: 0.7),
                   fontSize: 14.sp,
                   fontWeight: FontWeight.w500,
                 ),
@@ -295,7 +295,7 @@ class _GenerateBarcodeScreenState extends State<GenerateBarcodeScreen>
                   decoration: InputDecoration(
                     hintText: '0.00',
                     hintStyle: GoogleFonts.inter(
-                      color: Colors.white.withOpacity(0.2),
+                      color: Colors.white.withValues(alpha: 0.2),
                       fontSize: 32.sp,
                       fontWeight: FontWeight.w700,
                     ),
@@ -320,7 +320,7 @@ class _GenerateBarcodeScreenState extends State<GenerateBarcodeScreen>
         Text(
           'Quick Amounts',
           style: GoogleFonts.inter(
-            color: Colors.white.withOpacity(0.7),
+            color: Colors.white.withValues(alpha: 0.7),
             fontSize: 14.sp,
             fontWeight: FontWeight.w600,
           ),
@@ -344,19 +344,19 @@ class _GenerateBarcodeScreenState extends State<GenerateBarcodeScreen>
                           ],
                         )
                       : null,
-                  color: isSelected ? null : Colors.white.withOpacity(0.05),
+                  color: isSelected ? null : Colors.white.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(12.r),
                   border: Border.all(
                     color: isSelected
                         ? Colors.transparent
-                        : Colors.white.withOpacity(0.1),
+                        : Colors.white.withValues(alpha: 0.1),
                     width: 1,
                   ),
                 ),
                 child: Text(
                   amount,
                   style: GoogleFonts.inter(
-                    color: isSelected ? Colors.white : Colors.white.withOpacity(0.7),
+                    color: isSelected ? Colors.white : Colors.white.withValues(alpha: 0.7),
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w600,
                   ),
@@ -384,7 +384,7 @@ class _GenerateBarcodeScreenState extends State<GenerateBarcodeScreen>
             Text(
               'Validity Period',
               style: GoogleFonts.inter(
-                color: Colors.white.withOpacity(0.7),
+                color: Colors.white.withValues(alpha: 0.7),
                 fontSize: 14.sp,
                 fontWeight: FontWeight.w600,
               ),
@@ -410,19 +410,19 @@ class _GenerateBarcodeScreenState extends State<GenerateBarcodeScreen>
                           ],
                         )
                       : null,
-                  color: isSelected ? null : Colors.white.withOpacity(0.05),
+                  color: isSelected ? null : Colors.white.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(12.r),
                   border: Border.all(
                     color: isSelected
                         ? Colors.transparent
-                        : Colors.white.withOpacity(0.1),
+                        : Colors.white.withValues(alpha: 0.1),
                     width: 1,
                   ),
                 ),
                 child: Text(
                   '$minutes min',
                   style: GoogleFonts.inter(
-                    color: isSelected ? Colors.white : Colors.white.withOpacity(0.7),
+                    color: isSelected ? Colors.white : Colors.white.withValues(alpha: 0.7),
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w600,
                   ),
@@ -450,7 +450,7 @@ class _GenerateBarcodeScreenState extends State<GenerateBarcodeScreen>
             Text(
               'Description (Optional)',
               style: GoogleFonts.inter(
-                color: Colors.white.withOpacity(0.7),
+                color: Colors.white.withValues(alpha: 0.7),
                 fontSize: 14.sp,
                 fontWeight: FontWeight.w600,
               ),
@@ -461,10 +461,10 @@ class _GenerateBarcodeScreenState extends State<GenerateBarcodeScreen>
         Container(
           padding: EdgeInsets.all(16.w),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.05),
+            color: Colors.white.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(16.r),
             border: Border.all(
-              color: Colors.white.withOpacity(0.1),
+              color: Colors.white.withValues(alpha: 0.1),
               width: 1,
             ),
           ),
@@ -478,7 +478,7 @@ class _GenerateBarcodeScreenState extends State<GenerateBarcodeScreen>
             decoration: InputDecoration(
               hintText: 'What is this payment for?',
               hintStyle: GoogleFonts.inter(
-                color: Colors.white.withOpacity(0.3),
+                color: Colors.white.withValues(alpha: 0.3),
                 fontSize: 15.sp,
               ),
               border: InputBorder.none,
@@ -507,7 +507,7 @@ class _GenerateBarcodeScreenState extends State<GenerateBarcodeScreen>
             borderRadius: BorderRadius.circular(16.r),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF4E03D0).withOpacity(0.4),
+                color: const Color(0xFF4E03D0).withValues(alpha: 0.4),
                 blurRadius: 20,
                 offset: const Offset(0, 10),
               ),

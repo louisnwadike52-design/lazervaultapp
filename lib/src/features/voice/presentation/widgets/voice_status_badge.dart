@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import '../../../../../core/services/voice_biometrics_service.dart';
-import '../../../../../core/services/injection_container.dart';
 import '../screens/voice_registration_screen.dart';
 
 /// Voice Status Badge - Shows voice enrollment status and allows navigation to registration
@@ -111,7 +110,7 @@ class _VoiceStatusBadgeState extends State<VoiceStatusBadge> {
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 4,
               offset: const Offset(0, 2),
             ),

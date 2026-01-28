@@ -204,7 +204,7 @@ Widget _buildListTile(
   return ListTile(
     leading: RoundedCenteredImage(
       size: 48.0,
-      backgroundColor: HexColor.fromHex(config.color),
+      backgroundColor: HybridHexColor.fromHex(config.color),
       imagePath: config.imagePath,
     ),
     title: Text(config.title),

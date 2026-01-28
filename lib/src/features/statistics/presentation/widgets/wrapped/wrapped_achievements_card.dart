@@ -48,8 +48,8 @@ class _AchievementItem extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: isUnlocked
-            ? Colors.white.withOpacity(0.9)
-            : Colors.white.withOpacity(0.3),
+            ? Colors.white.withValues(alpha: 0.9)
+            : Colors.white.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(16),
         border: isUnlocked
             ? Border.all(color: tierColor, width: 3)
@@ -57,7 +57,7 @@ class _AchievementItem extends StatelessWidget {
         boxShadow: isUnlocked
             ? [
                 BoxShadow(
-                  color: tierColor.withOpacity(0.4),
+                  color: tierColor.withValues(alpha: 0.4),
                   blurRadius: 12,
                   offset: const Offset(0, 4),
                 ),
@@ -72,7 +72,7 @@ class _AchievementItem extends StatelessWidget {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: isUnlocked ? tierColor.withOpacity(0.2) : Colors.grey.withOpacity(0.2),
+              color: isUnlocked ? tierColor.withValues(alpha: 0.2) : Colors.grey.withValues(alpha: 0.2),
               shape: BoxShape.circle,
             ),
             child: Center(
@@ -102,7 +102,7 @@ class _AchievementItem extends StatelessWidget {
           if (!isUnlocked) ...[
             LinearProgressIndicator(
               value: achievement.progress / 100,
-              backgroundColor: Colors.grey.withOpacity(0.2),
+              backgroundColor: Colors.grey.withValues(alpha: 0.2),
               valueColor: AlwaysStoppedAnimation<Color>(tierColor),
             ),
             const SizedBox(height: 4),

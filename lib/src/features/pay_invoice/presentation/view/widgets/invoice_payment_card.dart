@@ -35,8 +35,8 @@ class InvoicePaymentCard extends StatelessWidget {
         boxShadow: [
           BoxShadow(
             color: isOverdue
-                ? InvoiceThemeColors.errorRed.withOpacity(0.15)
-                : Colors.black.withOpacity(0.1),
+                ? InvoiceThemeColors.errorRed.withValues(alpha: 0.15)
+                : Colors.black.withValues(alpha: 0.1),
             offset: const Offset(0, 2),
             blurRadius: 8,
           ),
@@ -76,7 +76,7 @@ class InvoicePaymentCard extends StatelessWidget {
             gradient: LinearGradient(
               colors: [
                 InvoiceThemeColors.primaryPurple,
-                InvoiceThemeColors.primaryPurple.withOpacity(0.7),
+                InvoiceThemeColors.primaryPurple.withValues(alpha: 0.7),
               ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
@@ -141,32 +141,32 @@ class InvoicePaymentCard extends StatelessWidget {
     switch (invoice.paymentStatus) {
       case PaymentStatus.pending:
         if (isOverdue) {
-          backgroundColor = InvoiceThemeColors.errorRed.withOpacity(0.2);
+          backgroundColor = InvoiceThemeColors.errorRed.withValues(alpha: 0.2);
           textColor = InvoiceThemeColors.errorRed;
           statusText = 'Overdue';
         } else {
-          backgroundColor = InvoiceThemeColors.warningOrange.withOpacity(0.2);
+          backgroundColor = InvoiceThemeColors.warningOrange.withValues(alpha: 0.2);
           textColor = InvoiceThemeColors.warningOrange;
           statusText = 'Pending';
         }
         break;
       case PaymentStatus.processing:
-        backgroundColor = InvoiceThemeColors.infoBlue.withOpacity(0.2);
+        backgroundColor = InvoiceThemeColors.infoBlue.withValues(alpha: 0.2);
         textColor = InvoiceThemeColors.infoBlue;
         statusText = 'Processing';
         break;
       case PaymentStatus.completed:
-        backgroundColor = InvoiceThemeColors.successGreen.withOpacity(0.2);
+        backgroundColor = InvoiceThemeColors.successGreen.withValues(alpha: 0.2);
         textColor = InvoiceThemeColors.successGreen;
         statusText = 'Paid';
         break;
       case PaymentStatus.failed:
-        backgroundColor = InvoiceThemeColors.errorRed.withOpacity(0.2);
+        backgroundColor = InvoiceThemeColors.errorRed.withValues(alpha: 0.2);
         textColor = InvoiceThemeColors.errorRed;
         statusText = 'Failed';
         break;
       case PaymentStatus.cancelled:
-        backgroundColor = InvoiceThemeColors.textGray500.withOpacity(0.2);
+        backgroundColor = InvoiceThemeColors.textGray500.withValues(alpha: 0.2);
         textColor = InvoiceThemeColors.textGray400;
         statusText = 'Cancelled';
         break;
@@ -289,7 +289,7 @@ class InvoicePaymentCard extends StatelessWidget {
       width: 28.w,
       height: 28.w,
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(14.r),
       ),
       child: Icon(
@@ -341,7 +341,7 @@ class InvoicePaymentCard extends StatelessWidget {
               gradient: LinearGradient(
                 colors: [
                   InvoiceThemeColors.primaryPurple,
-                  InvoiceThemeColors.primaryPurple.withOpacity(0.8),
+                  InvoiceThemeColors.primaryPurple.withValues(alpha: 0.8),
                 ],
                 begin: Alignment.centerLeft,
                 end: Alignment.centerRight,
@@ -349,7 +349,7 @@ class InvoicePaymentCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(19.r),
               boxShadow: [
                 BoxShadow(
-                  color: InvoiceThemeColors.primaryPurple.withOpacity(0.3),
+                  color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.3),
                   blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),
@@ -390,7 +390,7 @@ class InvoicePaymentCard extends StatelessWidget {
           Container(
             padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
             decoration: BoxDecoration(
-              color: InvoiceThemeColors.successGreen.withOpacity(0.1),
+              color: InvoiceThemeColors.successGreen.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(19.r),
             ),
             child: Row(

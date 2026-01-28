@@ -131,7 +131,7 @@ class _ContactPickerBottomSheetState extends State<ContactPickerBottomSheet> {
           end: Alignment.bottomRight,
           colors: [
             const Color.fromARGB(255, 78, 3, 208),
-            const Color.fromARGB(255, 78, 3, 208).withOpacity(0.8),
+            const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.8),
           ],
         ),
         borderRadius: BorderRadius.only(
@@ -144,7 +144,7 @@ class _ContactPickerBottomSheetState extends State<ContactPickerBottomSheet> {
           Container(
             padding: EdgeInsets.all(10.w),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: Icon(
@@ -171,7 +171,7 @@ class _ContactPickerBottomSheetState extends State<ContactPickerBottomSheet> {
                   'Choose from your contacts',
                   style: GoogleFonts.inter(
                     fontSize: 14.sp,
-                    color: Colors.white.withOpacity(0.8),
+                    color: Colors.white.withValues(alpha: 0.8),
                   ),
                 ),
               ],
@@ -182,7 +182,7 @@ class _ContactPickerBottomSheetState extends State<ContactPickerBottomSheet> {
             child: Container(
               padding: EdgeInsets.all(8.w),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
+                color: Colors.white.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(8.r),
               ),
               child: Icon(
@@ -313,7 +313,7 @@ class _ContactPickerBottomSheetState extends State<ContactPickerBottomSheet> {
                       end: Alignment.bottomRight,
                       colors: [
                         const Color.fromARGB(255, 78, 3, 208),
-                        const Color.fromARGB(255, 78, 3, 208).withOpacity(0.7),
+                        const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.7),
                       ],
                     ),
                     borderRadius: BorderRadius.circular(24.r),

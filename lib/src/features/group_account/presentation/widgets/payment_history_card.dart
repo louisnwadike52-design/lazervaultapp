@@ -32,7 +32,7 @@ class PaymentHistoryCard extends StatelessWidget {
               children: [
                 CircleAvatar(
                   radius: 18.r,
-                  backgroundColor: _getStatusColor(payment.status).withOpacity(0.2),
+                  backgroundColor: _getStatusColor(payment.status).withValues(alpha: 0.2),
                   child: Icon(
                     _getStatusIcon(payment.status),
                     color: _getStatusColor(payment.status),
@@ -78,7 +78,7 @@ class PaymentHistoryCard extends StatelessWidget {
                     Container(
                       padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                       decoration: BoxDecoration(
-                        color: _getStatusColor(payment.status).withOpacity(0.1),
+                        color: _getStatusColor(payment.status).withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(6.r),
                         boxShadow: [
           BoxShadow(

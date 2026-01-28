@@ -147,7 +147,7 @@ class _VoiceEnrollmentScreenState extends State<VoiceEnrollmentScreen>
                   height: 120.w,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: Theme.of(context).primaryColor.withOpacity(0.1),
+                    color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
                     border: Border.all(
                       color: Theme.of(context).primaryColor,
                       width: 3,
@@ -194,7 +194,7 @@ class _VoiceEnrollmentScreenState extends State<VoiceEnrollmentScreen>
               borderRadius: BorderRadius.circular(16.r),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withValues(alpha: 0.05),
                   blurRadius: 10,
                 ),
               ],
@@ -271,7 +271,7 @@ class _VoiceEnrollmentScreenState extends State<VoiceEnrollmentScreen>
                         border: Border.all(
                           color: Theme.of(context)
                               .primaryColor
-                              .withOpacity(0.3 - (index * 0.1)),
+                              .withValues(alpha: 0.3 - (index * 0.1)),
                           width: 2,
                         ),
                       ),
@@ -289,7 +289,7 @@ class _VoiceEnrollmentScreenState extends State<VoiceEnrollmentScreen>
                   color: Theme.of(context).primaryColor,
                   boxShadow: [
                     BoxShadow(
-                      color: Theme.of(context).primaryColor.withOpacity(0.3),
+                      color: Theme.of(context).primaryColor.withValues(alpha: 0.3),
                       blurRadius: 20,
                       spreadRadius: 5,
                     ),

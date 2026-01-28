@@ -156,7 +156,7 @@ class _BankDetailsReceiptScreenState extends State<BankDetailsReceiptScreen>
             margin: EdgeInsets.only(top: 8.h),
             padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
             decoration: BoxDecoration(
-              color: const Color(0xFF10B981).withOpacity(0.1),
+              color: const Color(0xFF10B981).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(16.r),
             ),
             child: Row(
@@ -215,7 +215,7 @@ class _BankDetailsReceiptScreenState extends State<BankDetailsReceiptScreen>
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF4E03D0).withOpacity(0.3),
+            color: const Color(0xFF4E03D0).withValues(alpha: 0.3),
             blurRadius: 20.r,
             offset: Offset(0, 10.h),
           ),
@@ -288,7 +288,7 @@ class _BankDetailsReceiptScreenState extends State<BankDetailsReceiptScreen>
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF59E0B).withOpacity(0.1),
+                    color: const Color(0xFFF59E0B).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(4.r),
                   ),
                   child: Text(
@@ -419,7 +419,7 @@ class _BankDetailsReceiptScreenState extends State<BankDetailsReceiptScreen>
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(6.r),
       ),
       child: Row(
@@ -521,10 +521,10 @@ ${receipt.description != null && receipt.description!.isNotEmpty ? 'Description:
 Powered by LazerVault
     ''';
 
-    Share.share(
-      shareText,
+    SharePlus.instance.share(ShareParams(
+      text: shareText,
       subject: 'LazerVault Payment Receipt',
-    );
+    ));
   }
 
   void _downloadReceipt() {

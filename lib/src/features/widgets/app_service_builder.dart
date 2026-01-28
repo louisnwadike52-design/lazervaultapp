@@ -79,7 +79,6 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
         Get.toNamed(AppRoutes.whatsappBanking);
         break;
       case AppServiceName.sendFunds:
-      default:
         Get.toNamed(AppRoutes.selectRecipient);
         break;
     }

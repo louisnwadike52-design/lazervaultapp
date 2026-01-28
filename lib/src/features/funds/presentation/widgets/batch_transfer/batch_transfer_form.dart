@@ -390,7 +390,7 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
                 Container(
                   padding: EdgeInsets.all(12.w),
                   decoration: BoxDecoration(
-                    color: Colors.blue[600]!.withOpacity(0.2),
+                    color: Colors.blue[600]!.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(12.r),
                   ),
                   child: Icon(
@@ -447,9 +447,9 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
             margin: EdgeInsets.symmetric(horizontal: 24.w),
             padding: EdgeInsets.symmetric(horizontal: 16.w),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.1),
+              color: Colors.white.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(16.r),
-              border: Border.all(color: Colors.white.withOpacity(0.2)),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
             ),
             child: TextField(
               controller: _searchController,
@@ -470,7 +470,7 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
            Container(
              margin: EdgeInsets.symmetric(horizontal: 24.w),
              decoration: BoxDecoration(
-               color: Colors.white.withOpacity(0.05),
+               color: Colors.white.withValues(alpha: 0.05),
                borderRadius: BorderRadius.circular(12.r),
              ),
              child: TabBar(
@@ -558,7 +558,7 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
             decoration: BoxDecoration(
               color: const Color(0xFF1A1A3E),
               border: Border(
-                top: BorderSide(color: Colors.white.withOpacity(0.1)),
+                top: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
               ),
             ),
             child: Row(
@@ -711,7 +711,7 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
                   child: Container(
                     padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                     decoration: BoxDecoration(
-                      color: Colors.blue[600]!.withOpacity(0.2),
+                      color: Colors.blue[600]!.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(16.r),
                     ),
                     child: Text(
@@ -830,17 +830,17 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
             padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
               color: isSelected 
-                ? Colors.blue[600]!.withOpacity(0.15)
+                ? Colors.blue[600]!.withValues(alpha: 0.15)
                 : isAlreadyAdded
-                  ? Colors.grey[800]!.withOpacity(0.3)
-                  : Colors.white.withOpacity(0.05),
+                  ? Colors.grey[800]!.withValues(alpha: 0.3)
+                  : Colors.white.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(16.r),
               border: Border.all(
                 color: isSelected 
                   ? Colors.blue[400]!
                   : isAlreadyAdded
                     ? Colors.grey[600]!
-                    : Colors.white.withOpacity(0.1),
+                    : Colors.white.withValues(alpha: 0.1),
                 width: isSelected ? 2 : 1,
               ),
             ),
@@ -940,7 +940,7 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.blue[600]!.withOpacity(0.4),
+                          color: Colors.blue[600]!.withValues(alpha: 0.4),
                           blurRadius: 8,
                           offset: Offset(0, 2),
                         ),
@@ -989,17 +989,17 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
             padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
               color: isSelected 
-                ? Colors.blue[600]!.withOpacity(0.15)
+                ? Colors.blue[600]!.withValues(alpha: 0.15)
                 : isAlreadyAdded
-                  ? Colors.grey[800]!.withOpacity(0.3)
-                  : Colors.white.withOpacity(0.05),
+                  ? Colors.grey[800]!.withValues(alpha: 0.3)
+                  : Colors.white.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(16.r),
               border: Border.all(
                 color: isSelected 
                   ? Colors.blue[400]!
                   : isAlreadyAdded
                     ? Colors.grey[600]!
-                    : Colors.white.withOpacity(0.1),
+                    : Colors.white.withValues(alpha: 0.1),
                 width: isSelected ? 2 : 1,
               ),
             ),
@@ -1113,7 +1113,7 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.blue[600]!.withOpacity(0.4),
+                          color: Colors.blue[600]!.withValues(alpha: 0.4),
                           blurRadius: 8,
                           offset: Offset(0, 2),
                         ),
@@ -1159,10 +1159,10 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
           child: Container(
             padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.05),
+              color: Colors.white.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(16.r),
               border: Border.all(
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.white.withValues(alpha: 0.1),
               ),
             ),
             child: Row(
@@ -1410,7 +1410,7 @@ class _BatchTransferFormState extends State<BatchTransferForm> with TickerProvid
             decoration: BoxDecoration(
               border: Border(
                 bottom: BorderSide(
-                  color: Colors.white.withOpacity(0.1),
+                  color: Colors.white.withValues(alpha: 0.1),
                   width: 1,
                 ),
               ),
@@ -1493,7 +1493,7 @@ class _BatchTransferFormState extends State<BatchTransferForm> with TickerProvid
                   borderRadius: BorderRadius.circular(16.r),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
+                      color: Colors.black.withValues(alpha: 0.1),
                       blurRadius: 4,
                       offset: Offset(0, 2),
                     ),
@@ -1524,7 +1524,7 @@ class _BatchTransferFormState extends State<BatchTransferForm> with TickerProvid
                       fontWeight: FontWeight.w700,
                     ),
                     filled: true,
-                    fillColor: Colors.white.withOpacity(0.08),
+                    fillColor: Colors.white.withValues(alpha: 0.08),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16.r),
                       borderSide: BorderSide.none,
@@ -1532,7 +1532,7 @@ class _BatchTransferFormState extends State<BatchTransferForm> with TickerProvid
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16.r),
                       borderSide: BorderSide(
-                        color: Colors.white.withOpacity(0.3),
+                        color: Colors.white.withValues(alpha: 0.3),
                         width: 1.5,
                       ),
                     ),
@@ -1559,7 +1559,7 @@ class _BatchTransferFormState extends State<BatchTransferForm> with TickerProvid
                   borderRadius: BorderRadius.circular(16.r),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
+                      color: Colors.black.withValues(alpha: 0.1),
                       blurRadius: 4,
                       offset: Offset(0, 2),
                     ),
@@ -1585,7 +1585,7 @@ class _BatchTransferFormState extends State<BatchTransferForm> with TickerProvid
                       fontSize: 14.sp,
                     ),
                     filled: true,
-                    fillColor: Colors.white.withOpacity(0.08),
+                    fillColor: Colors.white.withValues(alpha: 0.08),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16.r),
                       borderSide: BorderSide.none,
@@ -1593,7 +1593,7 @@ class _BatchTransferFormState extends State<BatchTransferForm> with TickerProvid
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16.r),
                       borderSide: BorderSide(
-                        color: Colors.white.withOpacity(0.3),
+                        color: Colors.white.withValues(alpha: 0.3),
                         width: 1.5,
                       ),
                     ),
@@ -1623,13 +1623,13 @@ class _BatchTransferFormState extends State<BatchTransferForm> with TickerProvid
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
-                          Colors.green[600]!.withOpacity(0.2),
-                          Colors.green[400]!.withOpacity(0.1),
+                          Colors.green[600]!.withValues(alpha: 0.2),
+                          Colors.green[400]!.withValues(alpha: 0.1),
                         ],
                       ),
                       borderRadius: BorderRadius.circular(16.r),
                       border: Border.all(
-                        color: Colors.green[400]!.withOpacity(0.4),
+                        color: Colors.green[400]!.withValues(alpha: 0.4),
                         width: 1.5,
                       ),
                     ),
@@ -1659,7 +1659,7 @@ class _BatchTransferFormState extends State<BatchTransferForm> with TickerProvid
                         SizedBox(height: 8.h),
                         Container(
                           height: 1,
-                          color: Colors.white.withOpacity(0.2),
+                          color: Colors.white.withValues(alpha: 0.2),
                         ),
                         SizedBox(height: 8.h),
                         Row(
@@ -2038,7 +2038,7 @@ class _BatchTransferFormState extends State<BatchTransferForm> with TickerProvid
                   Container(
                     padding: EdgeInsets.all(20.w),
                     decoration: BoxDecoration(
-                      color: Colors.blue[600]!.withOpacity(0.2),
+                      color: Colors.blue[600]!.withValues(alpha: 0.2),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
@@ -2175,8 +2175,8 @@ class _BatchTransferFormState extends State<BatchTransferForm> with TickerProvid
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            const Color(0xFF2A2A5A).withOpacity(0.9),
-            const Color(0xFF1E1E4A).withOpacity(0.95),
+            const Color(0xFF2A2A5A).withValues(alpha: 0.9),
+            const Color(0xFF1E1E4A).withValues(alpha: 0.95),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -2184,20 +2184,20 @@ class _BatchTransferFormState extends State<BatchTransferForm> with TickerProvid
         borderRadius: BorderRadius.circular(20.r),
         border: Border.all(
           color: recipientItem.isValid 
-            ? Colors.green.withOpacity(0.5) 
+            ? Colors.green.withValues(alpha: 0.5) 
             : recipientItem.amount == 0 
-              ? Colors.orange.withOpacity(0.5)
-              : Colors.red.withOpacity(0.5),
+              ? Colors.orange.withValues(alpha: 0.5)
+              : Colors.red.withValues(alpha: 0.5),
           width: 2,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.3),
+            color: Colors.black.withValues(alpha: 0.3),
             blurRadius: 12,
             offset: Offset(0, 6),
           ),
           BoxShadow(
-            color: (recipientItem.isValid ? Colors.green : Colors.orange).withOpacity(0.1),
+            color: (recipientItem.isValid ? Colors.green : Colors.orange).withValues(alpha: 0.1),
             blurRadius: 20,
             offset: Offset(0, 2),
           ),
@@ -2234,7 +2234,7 @@ class _BatchTransferFormState extends State<BatchTransferForm> with TickerProvid
                             shape: BoxShape.circle,
                             boxShadow: [
                               BoxShadow(
-                                color: (isLazerTag ? Colors.purple[600]! : Colors.blue[600]!).withOpacity(0.4),
+                                color: (isLazerTag ? Colors.purple[600]! : Colors.blue[600]!).withValues(alpha: 0.4),
                                 blurRadius: 12,
                                 offset: Offset(0, 4),
                               ),
@@ -2290,7 +2290,7 @@ class _BatchTransferFormState extends State<BatchTransferForm> with TickerProvid
                                         borderRadius: BorderRadius.circular(12.r),
                                         boxShadow: [
                                           BoxShadow(
-                                            color: Colors.purple[600]!.withOpacity(0.3),
+                                            color: Colors.purple[600]!.withValues(alpha: 0.3),
                                             blurRadius: 4,
                                             offset: Offset(0, 2),
                                           ),
@@ -2317,13 +2317,13 @@ class _BatchTransferFormState extends State<BatchTransferForm> with TickerProvid
                                     padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
                                     decoration: BoxDecoration(
                                       color: isLazerTag 
-                                        ? Colors.purple[600]!.withOpacity(0.3)
-                                        : Colors.blue[600]!.withOpacity(0.3),
+                                        ? Colors.purple[600]!.withValues(alpha: 0.3)
+                                        : Colors.blue[600]!.withValues(alpha: 0.3),
                                       borderRadius: BorderRadius.circular(10.r),
                                       border: Border.all(
                                         color: isLazerTag 
-                                          ? Colors.purple[400]!.withOpacity(0.6)
-                                          : Colors.blue[400]!.withOpacity(0.6),
+                                          ? Colors.purple[400]!.withValues(alpha: 0.6)
+                                          : Colors.blue[400]!.withValues(alpha: 0.6),
                                         width: 1,
                                       ),
                                     ),
@@ -2366,10 +2366,10 @@ class _BatchTransferFormState extends State<BatchTransferForm> with TickerProvid
                             child: Container(
                               padding: EdgeInsets.all(6.w),
                               decoration: BoxDecoration(
-                                color: Colors.red[600]!.withOpacity(0.2),
+                                color: Colors.red[600]!.withValues(alpha: 0.2),
                                 borderRadius: BorderRadius.circular(8.r),
                                 border: Border.all(
-                                  color: Colors.red[400]!.withOpacity(0.4),
+                                  color: Colors.red[400]!.withValues(alpha: 0.4),
                                   width: 1,
                                 ),
                               ),
@@ -2401,7 +2401,7 @@ class _BatchTransferFormState extends State<BatchTransferForm> with TickerProvid
                               borderRadius: BorderRadius.circular(14.r),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.green[600]!.withOpacity(0.4),
+                                  color: Colors.green[600]!.withValues(alpha: 0.4),
                                   blurRadius: 8,
                                   offset: Offset(0, 3),
                                 ),
@@ -2437,7 +2437,7 @@ class _BatchTransferFormState extends State<BatchTransferForm> with TickerProvid
                               borderRadius: BorderRadius.circular(14.r),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.orange[600]!.withOpacity(0.4),
+                                  color: Colors.orange[600]!.withValues(alpha: 0.4),
                                   blurRadius: 8,
                                   offset: Offset(0, 3),
                                 ),
@@ -2473,15 +2473,15 @@ class _BatchTransferFormState extends State<BatchTransferForm> with TickerProvid
                             child: Container(
                               padding: EdgeInsets.all(12.w),
                               decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.12),
+                                color: Colors.white.withValues(alpha: 0.12),
                                 borderRadius: BorderRadius.circular(12.r),
                                 border: Border.all(
-                                  color: Colors.white.withOpacity(0.25),
+                                  color: Colors.white.withValues(alpha: 0.25),
                                   width: 1,
                                 ),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.black.withOpacity(0.1),
+                                    color: Colors.black.withValues(alpha: 0.1),
                                     blurRadius: 4,
                                     offset: Offset(0, 2),
                                   ),
@@ -2514,7 +2514,7 @@ class _BatchTransferFormState extends State<BatchTransferForm> with TickerProvid
                   decoration: BoxDecoration(
                     border: Border(
                       top: BorderSide(
-                        color: Colors.white.withOpacity(0.2),
+                        color: Colors.white.withValues(alpha: 0.2),
                         width: 1.5,
                       ),
                     ),
@@ -2529,7 +2529,7 @@ class _BatchTransferFormState extends State<BatchTransferForm> with TickerProvid
                           borderRadius: BorderRadius.circular(16.r),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.15),
+                              color: Colors.black.withValues(alpha: 0.15),
                               blurRadius: 8,
                               offset: Offset(0, 4),
                             ),
@@ -2568,7 +2568,7 @@ class _BatchTransferFormState extends State<BatchTransferForm> with TickerProvid
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(16.r),
                               borderSide: BorderSide(
-                                color: Colors.white.withOpacity(0.3),
+                                color: Colors.white.withValues(alpha: 0.3),
                                 width: 1.5,
                               ),
                             ),
@@ -2595,7 +2595,7 @@ class _BatchTransferFormState extends State<BatchTransferForm> with TickerProvid
                           borderRadius: BorderRadius.circular(16.r),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.15),
+                              color: Colors.black.withValues(alpha: 0.15),
                               blurRadius: 8,
                               offset: Offset(0, 4),
                             ),
@@ -2629,7 +2629,7 @@ class _BatchTransferFormState extends State<BatchTransferForm> with TickerProvid
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(16.r),
                               borderSide: BorderSide(
-                                color: Colors.white.withOpacity(0.3),
+                                color: Colors.white.withValues(alpha: 0.3),
                                 width: 1.5,
                               ),
                             ),

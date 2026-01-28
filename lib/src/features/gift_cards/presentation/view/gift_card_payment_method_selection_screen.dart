@@ -161,7 +161,7 @@ class _GiftCardPaymentMethodSelectionScreenState
         ),
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(
-          color: Colors.white.withOpacity(0.1),
+          color: Colors.white.withValues(alpha: 0.1),
         ),
       ),
       child: Column(
@@ -210,7 +210,7 @@ class _GiftCardPaymentMethodSelectionScreenState
 
           SizedBox(height: 16.h),
 
-          Divider(color: Colors.white.withOpacity(0.1)),
+          Divider(color: Colors.white.withValues(alpha: 0.1)),
 
           SizedBox(height: 16.h),
 
@@ -227,7 +227,7 @@ class _GiftCardPaymentMethodSelectionScreenState
 
           SizedBox(height: 12.h),
 
-          Divider(color: Colors.white.withOpacity(0.1)),
+          Divider(color: Colors.white.withValues(alpha: 0.1)),
 
           SizedBox(height: 12.h),
 
@@ -259,10 +259,10 @@ class _GiftCardPaymentMethodSelectionScreenState
             Container(
               padding: EdgeInsets.all(12.w),
               decoration: BoxDecoration(
-                color: const Color(0xFF6366F1).withOpacity(0.1),
+                color: const Color(0xFF6366F1).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8.r),
                 border: Border.all(
-                  color: const Color(0xFF6366F1).withOpacity(0.3),
+                  color: const Color(0xFF6366F1).withValues(alpha: 0.3),
                 ),
               ),
               child: Row(
@@ -329,13 +329,13 @@ class _GiftCardPaymentMethodSelectionScreenState
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
           color: isSelected
-              ? method['color'].withOpacity(0.1)
-              : Colors.white.withOpacity(0.05),
+              ? method['color'].withValues(alpha: 0.1)
+              : Colors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(12.r),
           border: Border.all(
             color: isSelected
                 ? method['color']
-                : Colors.white.withOpacity(0.1),
+                : Colors.white.withValues(alpha: 0.1),
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -346,8 +346,8 @@ class _GiftCardPaymentMethodSelectionScreenState
               height: 48.w,
               decoration: BoxDecoration(
                 color: isSelected
-                    ? method['color'].withOpacity(0.2)
-                    : Colors.white.withOpacity(0.05),
+                    ? method['color'].withValues(alpha: 0.2)
+                    : Colors.white.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(12.r),
               ),
               child: Icon(
@@ -425,7 +425,7 @@ class _GiftCardPaymentMethodSelectionScreenState
         color: const Color(0xFF0A0A0A),
         border: Border(
           top: BorderSide(
-            color: Colors.white.withOpacity(0.1),
+            color: Colors.white.withValues(alpha: 0.1),
             width: 1,
           ),
         ),

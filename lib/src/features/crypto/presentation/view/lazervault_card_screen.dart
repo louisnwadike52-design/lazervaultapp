@@ -254,7 +254,7 @@ class _LazerVaultCardScreenState extends State<LazerVaultCardScreen>
                 borderRadius: BorderRadius.circular(20.r),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF6C5CE7).withOpacity(0.3),
+                    color: const Color(0xFF6C5CE7).withValues(alpha: 0.3),
                     blurRadius: 20,
                     offset: const Offset(0, 10),
                   ),
@@ -277,7 +277,7 @@ class _LazerVaultCardScreenState extends State<LazerVaultCardScreen>
                       Container(
                         padding: EdgeInsets.all(8.w),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
+                          color: Colors.white.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(8.r),
                         ),
                         child: Icon(
@@ -309,7 +309,7 @@ class _LazerVaultCardScreenState extends State<LazerVaultCardScreen>
                             'CARDHOLDER',
                             style: GoogleFonts.inter(
                               fontSize: 10.sp,
-                              color: Colors.white.withOpacity(0.8),
+                              color: Colors.white.withValues(alpha: 0.8),
                               letterSpacing: 1,
                             ),
                           ),
@@ -330,7 +330,7 @@ class _LazerVaultCardScreenState extends State<LazerVaultCardScreen>
                             'EXPIRES',
                             style: GoogleFonts.inter(
                               fontSize: 10.sp,
-                              color: Colors.white.withOpacity(0.8),
+                              color: Colors.white.withValues(alpha: 0.8),
                               letterSpacing: 1,
                             ),
                           ),
@@ -386,7 +386,7 @@ class _LazerVaultCardScreenState extends State<LazerVaultCardScreen>
             'Join millions of users who spend their crypto anywhere, anytime with zero fees.',
             style: GoogleFonts.inter(
               fontSize: 14.sp,
-              color: Colors.white.withOpacity(0.8),
+              color: Colors.white.withValues(alpha: 0.8),
               height: 1.5,
             ),
           ),
@@ -425,7 +425,7 @@ class _LazerVaultCardScreenState extends State<LazerVaultCardScreen>
         Container(
           padding: EdgeInsets.all(12.w),
           decoration: BoxDecoration(
-            color: const Color(0xFF6C5CE7).withOpacity(0.2),
+            color: const Color(0xFF6C5CE7).withValues(alpha: 0.2),
             borderRadius: BorderRadius.circular(12.r),
           ),
           child: Icon(
@@ -451,7 +451,7 @@ class _LazerVaultCardScreenState extends State<LazerVaultCardScreen>
                 description,
                 style: GoogleFonts.inter(
                   fontSize: 12.sp,
-                  color: Colors.white.withOpacity(0.7),
+                  color: Colors.white.withValues(alpha: 0.7),
                 ),
               ),
             ],
@@ -523,7 +523,7 @@ class _LazerVaultCardScreenState extends State<LazerVaultCardScreen>
             text,
             style: GoogleFonts.inter(
               fontSize: 14.sp,
-              color: Colors.white.withOpacity(0.8),
+              color: Colors.white.withValues(alpha: 0.8),
             ),
           ),
         ],
@@ -572,7 +572,7 @@ class _LazerVaultCardScreenState extends State<LazerVaultCardScreen>
           'Processing time: 5-7 business days',
           style: GoogleFonts.inter(
             fontSize: 12.sp,
-            color: Colors.white.withOpacity(0.6),
+            color: Colors.white.withValues(alpha: 0.6),
           ),
         ),
       ],
@@ -650,7 +650,7 @@ class _LazerVaultCardScreenState extends State<LazerVaultCardScreen>
           Container(
             padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.2),
+              color: color.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: Icon(
@@ -677,7 +677,7 @@ class _LazerVaultCardScreenState extends State<LazerVaultCardScreen>
                   description,
                   style: GoogleFonts.inter(
                     fontSize: 14.sp,
-                    color: Colors.white.withOpacity(0.8),
+                    color: Colors.white.withValues(alpha: 0.8),
                     height: 1.4,
                   ),
                 ),
@@ -785,7 +785,7 @@ class _LazerVaultCardScreenState extends State<LazerVaultCardScreen>
         children: [
           Icon(
             Icons.chevron_right,
-            color: Colors.white.withOpacity(0.6),
+            color: Colors.white.withValues(alpha: 0.6),
             size: 16.sp,
           ),
           SizedBox(width: 8.w),
@@ -794,7 +794,7 @@ class _LazerVaultCardScreenState extends State<LazerVaultCardScreen>
               text,
               style: GoogleFonts.inter(
                 fontSize: 14.sp,
-                color: Colors.white.withOpacity(0.8),
+                color: Colors.white.withValues(alpha: 0.8),
               ),
             ),
           ),
@@ -807,7 +807,7 @@ class _LazerVaultCardScreenState extends State<LazerVaultCardScreen>
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: Colors.red.withOpacity(0.1),
+        color: Colors.red.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
@@ -843,7 +843,7 @@ class _LazerVaultCardScreenState extends State<LazerVaultCardScreen>
             'If your card is lost or stolen, immediately freeze it in the app or call our emergency hotline:',
             style: GoogleFonts.inter(
               fontSize: 14.sp,
-              color: Colors.white.withOpacity(0.8),
+              color: Colors.white.withValues(alpha: 0.8),
             ),
           ),
           SizedBox(height: 12.h),
@@ -917,7 +917,7 @@ class _LazerVaultCardScreenState extends State<LazerVaultCardScreen>
                 textAlign: TextAlign.center,
                 style: GoogleFonts.inter(
                   fontSize: 14.sp,
-                  color: Colors.white.withOpacity(0.8),
+                  color: Colors.white.withValues(alpha: 0.8),
                 ),
               ),
               SizedBox(height: 24.h),
@@ -982,7 +982,7 @@ class _LazerVaultCardScreenState extends State<LazerVaultCardScreen>
                 textAlign: TextAlign.center,
                 style: GoogleFonts.inter(
                   fontSize: 14.sp,
-                  color: Colors.white.withOpacity(0.8),
+                  color: Colors.white.withValues(alpha: 0.8),
                 ),
               ),
               SizedBox(height: 24.h),

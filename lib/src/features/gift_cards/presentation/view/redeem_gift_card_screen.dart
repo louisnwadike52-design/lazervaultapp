@@ -145,7 +145,7 @@ class _RedeemGiftCardScreenState extends State<RedeemGiftCardScreen>
           children: [
             Container(
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12.r),
                 boxShadow: [
           BoxShadow(
@@ -195,13 +195,13 @@ class _RedeemGiftCardScreenState extends State<RedeemGiftCardScreen>
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Colors.white.withOpacity(0.15),
-              Colors.white.withOpacity(0.08),
+              Colors.white.withValues(alpha: 0.15),
+              Colors.white.withValues(alpha: 0.08),
             ],
           ),
           borderRadius: BorderRadius.circular(24.r),          boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.25),
+              color: Colors.black.withValues(alpha: 0.25),
               blurRadius: 20,
               offset: const Offset(0, 10),
             ),
@@ -217,7 +217,7 @@ class _RedeemGiftCardScreenState extends State<RedeemGiftCardScreen>
                 borderRadius: BorderRadius.circular(16.r),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.15),
+                    color: Colors.black.withValues(alpha: 0.15),
                     blurRadius: 8,
                     offset: const Offset(0, 4),
                   ),
@@ -268,13 +268,13 @@ class _RedeemGiftCardScreenState extends State<RedeemGiftCardScreen>
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Colors.white.withOpacity(0.12),
-            Colors.white.withOpacity(0.06),
+            Colors.white.withValues(alpha: 0.12),
+            Colors.white.withValues(alpha: 0.06),
           ],
         ),
         borderRadius: BorderRadius.circular(24.r),        boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: Colors.black.withValues(alpha: 0.2),
             blurRadius: 16,
             offset: const Offset(0, 8),
           ),
@@ -320,7 +320,7 @@ class _RedeemGiftCardScreenState extends State<RedeemGiftCardScreen>
                       'Point your camera at the QR code',
                       style: GoogleFonts.inter(
                         fontSize: 14.sp,
-                        color: Colors.white.withOpacity(0.8),
+                        color: Colors.white.withValues(alpha: 0.8),
                         fontWeight: FontWeight.w400,
                       ),
                     ),
@@ -350,7 +350,7 @@ class _RedeemGiftCardScreenState extends State<RedeemGiftCardScreen>
               boxShadow: [
                 BoxShadow(
                   color: (_isScanning ? const Color(0xFFEF4444) : Colors.blue)
-                      .withOpacity(0.3),
+                      .withValues(alpha: 0.3),
                   blurRadius: 12,
                   offset: const Offset(0, 4),
                 ),
@@ -385,7 +385,7 @@ class _RedeemGiftCardScreenState extends State<RedeemGiftCardScreen>
               width: double.infinity,
               height: 200.h,
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.4),
+                color: Colors.black.withValues(alpha: 0.4),
                 borderRadius: BorderRadius.circular(16.r),              ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -421,7 +421,7 @@ class _RedeemGiftCardScreenState extends State<RedeemGiftCardScreen>
                     'QR Scanner implementation pending',
                     style: GoogleFonts.inter(
                       fontSize: 12.sp,
-                      color: Colors.white.withOpacity(0.7),
+                      color: Colors.white.withValues(alpha: 0.7),
                       fontWeight: FontWeight.w400,
                     ),
                   ),
@@ -442,13 +442,13 @@ class _RedeemGiftCardScreenState extends State<RedeemGiftCardScreen>
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Colors.white.withOpacity(0.12),
-            Colors.white.withOpacity(0.06),
+            Colors.white.withValues(alpha: 0.12),
+            Colors.white.withValues(alpha: 0.06),
           ],
         ),
         borderRadius: BorderRadius.circular(24.r),        boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: Colors.black.withValues(alpha: 0.2),
             blurRadius: 16,
             offset: const Offset(0, 8),
           ),
@@ -494,7 +494,7 @@ class _RedeemGiftCardScreenState extends State<RedeemGiftCardScreen>
                       'Enter your gift card code manually',
                       style: GoogleFonts.inter(
                         fontSize: 14.sp,
-                        color: Colors.white.withOpacity(0.8),
+                        color: Colors.white.withValues(alpha: 0.8),
                         fontWeight: FontWeight.w400,
                       ),
                     ),
@@ -506,7 +506,7 @@ class _RedeemGiftCardScreenState extends State<RedeemGiftCardScreen>
           SizedBox(height: 20.h),
           Container(
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.1),
+              color: Colors.white.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(16.r),
               boxShadow: [
           BoxShadow(
@@ -527,12 +527,12 @@ class _RedeemGiftCardScreenState extends State<RedeemGiftCardScreen>
               decoration: InputDecoration(
                 hintText: 'Enter gift card code',
                 hintStyle: GoogleFonts.inter(
-                  color: Colors.white.withOpacity(0.5),
+                  color: Colors.white.withValues(alpha: 0.5),
                   fontSize: 16.sp,
                 ),
                 prefixIcon: Icon(
                   Icons.confirmation_number_rounded,
-                  color: Colors.white.withOpacity(0.6),
+                  color: Colors.white.withValues(alpha: 0.6),
                   size: 24.sp,
                 ),
                 border: InputBorder.none,
@@ -566,7 +566,7 @@ class _RedeemGiftCardScreenState extends State<RedeemGiftCardScreen>
             borderRadius: BorderRadius.circular(16.r),
             boxShadow: isValid ? [
               BoxShadow(
-                color: const Color(0xFF10B981).withOpacity(0.4),
+                color: const Color(0xFF10B981).withValues(alpha: 0.4),
                 blurRadius: 16,
                 offset: const Offset(0, 8),
               ),
@@ -737,7 +737,7 @@ class _RedeemGiftCardScreenState extends State<RedeemGiftCardScreen>
               'Your gift card has been successfully redeemed.',
               style: GoogleFonts.inter(
                 fontSize: 16.sp,
-                color: Colors.white.withOpacity(0.8),
+                color: Colors.white.withValues(alpha: 0.8),
                 fontWeight: FontWeight.w400,
               ),
               textAlign: TextAlign.center,
@@ -797,7 +797,7 @@ class _RedeemGiftCardScreenState extends State<RedeemGiftCardScreen>
             Container(
               padding: EdgeInsets.all(20.w),
               decoration: BoxDecoration(
-                color: const Color(0xFFEF4444).withOpacity(0.2),
+                color: const Color(0xFFEF4444).withValues(alpha: 0.2),
                 shape: BoxShape.circle,
                 boxShadow: [
           BoxShadow(
@@ -829,7 +829,7 @@ class _RedeemGiftCardScreenState extends State<RedeemGiftCardScreen>
               message,
               style: GoogleFonts.inter(
                 fontSize: 16.sp,
-                color: Colors.white.withOpacity(0.8),
+                color: Colors.white.withValues(alpha: 0.8),
                 fontWeight: FontWeight.w400,
               ),
               textAlign: TextAlign.center,

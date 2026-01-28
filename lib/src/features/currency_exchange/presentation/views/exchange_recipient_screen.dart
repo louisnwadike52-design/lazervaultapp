@@ -106,7 +106,7 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
                 Text(
                   'Sending ${controller.fromCurrency.value?.code} ${controller.amount.value.toStringAsFixed(2)}',
                   style: GoogleFonts.inter(
-                    color: Colors.white.withOpacity(0.8),
+                    color: Colors.white.withValues(alpha: 0.8),
                     fontSize: 12.sp,
                   ),
                 ),
@@ -128,7 +128,7 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
         border: Border.all(color: const Color(0xFF2D2D2D)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 12,
             offset: const Offset(0, 2),
           ),
@@ -290,9 +290,9 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
     return Container(
       margin: EdgeInsets.only(bottom: 12.h),
       decoration: BoxDecoration(
-        color: const Color(0xFF3B82F6).withOpacity(0.08),
+        color: const Color(0xFF3B82F6).withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: const Color(0xFF3B82F6).withOpacity(0.3), width: 1.5),
+        border: Border.all(color: const Color(0xFF3B82F6).withValues(alpha: 0.3), width: 1.5),
       ),
       child: Material(
         color: Colors.transparent,
@@ -310,7 +310,7 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
                   width: 50.w,
                   height: 50.w,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF3B82F6).withOpacity(0.15),
+                    color: const Color(0xFF3B82F6).withValues(alpha: 0.15),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
@@ -352,7 +352,7 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
         border: Border.all(color: const Color(0xFF2D2D2D)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 12,
             offset: const Offset(0, 2),
           ),

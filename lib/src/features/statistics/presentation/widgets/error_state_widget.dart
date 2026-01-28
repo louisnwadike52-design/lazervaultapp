@@ -27,7 +27,7 @@ class ErrorStateWidget extends StatelessWidget {
               width: 100.w,
               height: 100.h,
               decoration: BoxDecoration(
-                color: const Color(0xFFEF4444).withOpacity(0.1),
+                color: const Color(0xFFEF4444).withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -113,7 +113,7 @@ class ErrorStateWidget extends StatelessWidget {
                 color: const Color(0xFFFEE2E2), // Light red
                 borderRadius: BorderRadius.circular(12.r),
                 border: Border.all(
-                  color: const Color(0xFFEF4444).withOpacity(0.2),
+                  color: const Color(0xFFEF4444).withValues(alpha: 0.2),
                   width: 1,
                 ),
               ),

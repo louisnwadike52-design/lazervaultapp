@@ -17,10 +17,10 @@ class RecentTransactionsCard extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(20.r),        boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 20,
             offset: Offset(0, 10),
           ),
@@ -93,7 +93,7 @@ class RecentTransactionsCard extends StatelessWidget {
       child: Container(
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.03),
+          color: Colors.white.withValues(alpha: 0.03),
           borderRadius: BorderRadius.circular(12.r),
           boxShadow: [
           BoxShadow(
@@ -148,7 +148,7 @@ class RecentTransactionsCard extends StatelessWidget {
                     transaction.displayRecipientNumber,
                     style: TextStyle(
                       fontSize: 12.sp,
-                      color: Colors.white.withOpacity(0.6),
+                      color: Colors.white.withValues(alpha: 0.6),
                       fontWeight: FontWeight.w400,
                     ),
                   ),
@@ -159,7 +159,7 @@ class RecentTransactionsCard extends StatelessWidget {
                     DateFormat('MMM dd, yyyy • hh:mm a').format(transaction.createdAt),
                     style: TextStyle(
                       fontSize: 11.sp,
-                      color: Colors.white.withOpacity(0.5),
+                      color: Colors.white.withValues(alpha: 0.5),
                       fontWeight: FontWeight.w400,
                     ),
                   ),
@@ -185,7 +185,7 @@ class RecentTransactionsCard extends StatelessWidget {
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
                   decoration: BoxDecoration(
-                    color: _getStatusColor(transaction.status).withOpacity(0.2),
+                    color: _getStatusColor(transaction.status).withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(8.r),
                   ),
                   child: Text(
@@ -213,7 +213,7 @@ class RecentTransactionsCard extends StatelessWidget {
           Icon(
             Icons.history,
             size: 48.sp,
-            color: Colors.white.withOpacity(0.3),
+            color: Colors.white.withValues(alpha: 0.3),
           ),
           SizedBox(height: 12.h),
           Text(
@@ -221,7 +221,7 @@ class RecentTransactionsCard extends StatelessWidget {
             style: TextStyle(
               fontSize: 16.sp,
               fontWeight: FontWeight.w500,
-              color: Colors.white.withOpacity(0.6),
+              color: Colors.white.withValues(alpha: 0.6),
             ),
           ),
           SizedBox(height: 8.h),
@@ -229,7 +229,7 @@ class RecentTransactionsCard extends StatelessWidget {
             'Your airtime purchases will appear here',
             style: TextStyle(
               fontSize: 12.sp,
-              color: Colors.white.withOpacity(0.4),
+              color: Colors.white.withValues(alpha: 0.4),
               fontWeight: FontWeight.w400,
             ),
             textAlign: TextAlign.center,
@@ -247,14 +247,14 @@ class RecentTransactionsCard extends StatelessWidget {
           child: Container(
             height: 72.h,
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.03),
+              color: Colors.white.withValues(alpha: 0.03),
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: Center(
               child: CircularProgressIndicator(
                 strokeWidth: 2,
                 valueColor: AlwaysStoppedAnimation<Color>(
-                  Colors.white.withOpacity(0.3),
+                  Colors.white.withValues(alpha: 0.3),
                 ),
               ),
             ),

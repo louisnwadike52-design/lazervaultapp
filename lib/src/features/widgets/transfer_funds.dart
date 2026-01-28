@@ -115,7 +115,7 @@ class ReceiverInformation extends StatelessWidget {
               style: TextStyle(
                 fontSize: 18.0.sp,
                 fontWeight: FontWeight.w500,
-                color: HexColor.fromHex("#262626"),
+                color: HybridHexColor.fromHex("#262626"),
               ),
             ),
           ],
@@ -180,7 +180,7 @@ class SenderInformation extends StatelessWidget {
               style: TextStyle(
                 fontSize: 18.0.sp,
                 fontWeight: FontWeight.w500,
-                color: HexColor.fromHex("#262626"),
+                color: HybridHexColor.fromHex("#262626"),
               ),
             ),
           ],
@@ -203,7 +203,7 @@ class SenderInformation extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 14.0.sp,
                     fontWeight: FontWeight.w500,
-                    color: HexColor.fromHex("#3784F9"),
+                    color: HybridHexColor.fromHex("#3784F9"),
                   ),
                 ),
                 Text(
@@ -211,7 +211,7 @@ class SenderInformation extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 14.0.sp,
                     fontWeight: FontWeight.w500,
-                    color: HexColor.fromHex("#3784F9"),
+                    color: HybridHexColor.fromHex("#3784F9"),
                   ),
                 ),
               ],

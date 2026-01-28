@@ -35,7 +35,7 @@ class _MeterInputScreenState extends State<MeterInputScreen> {
       Get.snackbar(
         'Error',
         'Please enter your meter number',
-        backgroundColor: Colors.red.withOpacity(0.9),
+        backgroundColor: Colors.red.withValues(alpha: 0.9),
         colorText: Colors.white,
       );
       return;
@@ -96,7 +96,7 @@ class _MeterInputScreenState extends State<MeterInputScreen> {
                 Get.snackbar(
                   'Validation Failed',
                   state.message,
-                  backgroundColor: Colors.red.withOpacity(0.9),
+                  backgroundColor: Colors.red.withValues(alpha: 0.9),
                   colorText: Colors.white,
                 );
               }
@@ -105,7 +105,7 @@ class _MeterInputScreenState extends State<MeterInputScreen> {
                 Get.snackbar(
                   'Error',
                   state.message,
-                  backgroundColor: Colors.red.withOpacity(0.9),
+                  backgroundColor: Colors.red.withValues(alpha: 0.9),
                   colorText: Colors.white,
                 );
               }
@@ -151,10 +151,10 @@ class _MeterInputScreenState extends State<MeterInputScreen> {
               width: 44.w,
               height: 44.w,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(22.r),
                 border: Border.all(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   width: 1,
                 ),
               ),
@@ -181,7 +181,7 @@ class _MeterInputScreenState extends State<MeterInputScreen> {
                 Text(
                   provider.providerName,
                   style: GoogleFonts.inter(
-                    color: Colors.white.withOpacity(0.6),
+                    color: Colors.white.withValues(alpha: 0.6),
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w400,
                   ),
@@ -212,7 +212,7 @@ class _MeterInputScreenState extends State<MeterInputScreen> {
             width: 56.w,
             height: 56.w,
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: Icon(
@@ -237,7 +237,7 @@ class _MeterInputScreenState extends State<MeterInputScreen> {
                 Text(
                   provider.providerCode,
                   style: GoogleFonts.inter(
-                    color: Colors.white.withOpacity(0.8),
+                    color: Colors.white.withValues(alpha: 0.8),
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w400,
                   ),
@@ -299,13 +299,13 @@ class _MeterInputScreenState extends State<MeterInputScreen> {
         padding: EdgeInsets.symmetric(vertical: 20.h, horizontal: 16.w),
         decoration: BoxDecoration(
           color: isSelected
-              ? const Color(0xFF4E03D0).withOpacity(0.2)
-              : Colors.white.withOpacity(0.05),
+              ? const Color(0xFF4E03D0).withValues(alpha: 0.2)
+              : Colors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(16.r),
           border: Border.all(
             color: isSelected
                 ? const Color(0xFF4E03D0)
-                : Colors.white.withOpacity(0.1),
+                : Colors.white.withValues(alpha: 0.1),
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -313,14 +313,14 @@ class _MeterInputScreenState extends State<MeterInputScreen> {
           children: [
             Icon(
               icon,
-              color: isSelected ? const Color(0xFF4E03D0) : Colors.white.withOpacity(0.6),
+              color: isSelected ? const Color(0xFF4E03D0) : Colors.white.withValues(alpha: 0.6),
               size: 32.sp,
             ),
             SizedBox(height: 12.h),
             Text(
               label,
               style: GoogleFonts.inter(
-                color: isSelected ? Colors.white : Colors.white.withOpacity(0.6),
+                color: isSelected ? Colors.white : Colors.white.withValues(alpha: 0.6),
                 fontSize: 16.sp,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
               ),
@@ -347,10 +347,10 @@ class _MeterInputScreenState extends State<MeterInputScreen> {
         Container(
           padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.05),
+            color: Colors.white.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(12.r),
             border: Border.all(
-              color: Colors.white.withOpacity(0.1),
+              color: Colors.white.withValues(alpha: 0.1),
               width: 1,
             ),
           ),
@@ -365,13 +365,13 @@ class _MeterInputScreenState extends State<MeterInputScreen> {
             decoration: InputDecoration(
               hintText: 'Enter meter number',
               hintStyle: GoogleFonts.inter(
-                color: Colors.white.withOpacity(0.4),
+                color: Colors.white.withValues(alpha: 0.4),
                 fontSize: 18.sp,
               ),
               border: InputBorder.none,
               icon: Icon(
                 Icons.numbers,
-                color: Colors.white.withOpacity(0.4),
+                color: Colors.white.withValues(alpha: 0.4),
                 size: 24.sp,
               ),
             ),
@@ -396,7 +396,7 @@ class _MeterInputScreenState extends State<MeterInputScreen> {
                     const Color(0xFF6B21E0),
                   ],
                 ),
-          color: _isValidating ? Colors.white.withOpacity(0.1) : null,
+          color: _isValidating ? Colors.white.withValues(alpha: 0.1) : null,
           borderRadius: BorderRadius.circular(16.r),
         ),
         child: _isValidating

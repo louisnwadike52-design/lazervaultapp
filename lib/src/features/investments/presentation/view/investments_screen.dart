@@ -160,7 +160,7 @@ class _InvestmentsScreenState extends State<InvestmentsScreen>
             color: const Color(0xFF1E2746),
             borderRadius: BorderRadius.circular(12.r),            boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.3),
+                color: Colors.black.withValues(alpha: 0.3),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
@@ -203,7 +203,7 @@ class _InvestmentsScreenState extends State<InvestmentsScreen>
         borderRadius: BorderRadius.circular(20.r),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF2196F3).withOpacity(0.3),
+            color: const Color(0xFF2196F3).withValues(alpha: 0.3),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -217,7 +217,7 @@ class _InvestmentsScreenState extends State<InvestmentsScreen>
               Container(
                 padding: EdgeInsets.all(12.w),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12.r),
                 ),
                 child: Icon(
@@ -244,7 +244,7 @@ class _InvestmentsScreenState extends State<InvestmentsScreen>
                       'Choose from various investment options',
                       style: GoogleFonts.inter(
                         fontSize: 12.sp,
-                        color: Colors.white.withOpacity(0.8),
+                        color: Colors.white.withValues(alpha: 0.8),
                       ),
                     ),
                                     ServiceVoiceButton(
@@ -273,7 +273,7 @@ class _InvestmentsScreenState extends State<InvestmentsScreen>
       child: Container(
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.15),
+          color: Colors.white.withValues(alpha: 0.15),
           borderRadius: BorderRadius.circular(12.r),
           boxShadow: [
           BoxShadow(
@@ -289,7 +289,7 @@ class _InvestmentsScreenState extends State<InvestmentsScreen>
           children: [
             Icon(
               icon,
-              color: Colors.white.withOpacity(0.8),
+              color: Colors.white.withValues(alpha: 0.8),
               size: 16.sp,
             ),
             SizedBox(height: 8.h),
@@ -305,7 +305,7 @@ class _InvestmentsScreenState extends State<InvestmentsScreen>
               title,
               style: GoogleFonts.inter(
                 fontSize: 10.sp,
-                color: Colors.white.withOpacity(0.7),
+                color: Colors.white.withValues(alpha: 0.7),
               ),
             ),
           ],
@@ -371,12 +371,12 @@ class _InvestmentsScreenState extends State<InvestmentsScreen>
           color: const Color(0xFF1E2746),
           borderRadius: BorderRadius.circular(16.r),
           border: Border.all(
-            color: option.color.withOpacity(0.3),
+            color: option.color.withValues(alpha: 0.3),
             width: 1.5,
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.3),
+              color: Colors.black.withValues(alpha: 0.3),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),
@@ -391,7 +391,7 @@ class _InvestmentsScreenState extends State<InvestmentsScreen>
                 Container(
                   padding: EdgeInsets.all(10.w),
                   decoration: BoxDecoration(
-                    color: option.color.withOpacity(0.2),
+                    color: option.color.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(10.r),
                   ),
                   child: Icon(
@@ -404,7 +404,7 @@ class _InvestmentsScreenState extends State<InvestmentsScreen>
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 3.h),
                   decoration: BoxDecoration(
-                    color: Colors.amber.withOpacity(0.2),
+                    color: Colors.amber.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(8.r),
                   ),
                   child: Text(
@@ -433,7 +433,7 @@ class _InvestmentsScreenState extends State<InvestmentsScreen>
               option.subtitle,
               style: GoogleFonts.inter(
                 fontSize: 11.sp,
-                color: Colors.white.withOpacity(0.7),
+                color: Colors.white.withValues(alpha: 0.7),
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -493,7 +493,7 @@ class _InvestmentsScreenState extends State<InvestmentsScreen>
           color: const Color(0xFF1E2746),
           borderRadius: BorderRadius.circular(16.r),          boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.2),
+              color: Colors.black.withValues(alpha: 0.2),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -504,7 +504,7 @@ class _InvestmentsScreenState extends State<InvestmentsScreen>
             Container(
               padding: EdgeInsets.all(12.w),
               decoration: BoxDecoration(
-                color: option.color.withOpacity(0.2),
+                color: option.color.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(12.r),
               ),
               child: Icon(
@@ -546,7 +546,7 @@ class _InvestmentsScreenState extends State<InvestmentsScreen>
                     option.subtitle,
                     style: GoogleFonts.inter(
                       fontSize: 12.sp,
-                      color: Colors.white.withOpacity(0.7),
+                      color: Colors.white.withValues(alpha: 0.7),
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -556,7 +556,7 @@ class _InvestmentsScreenState extends State<InvestmentsScreen>
                     option.description,
                     style: GoogleFonts.inter(
                       fontSize: 11.sp,
-                      color: Colors.white.withOpacity(0.5),
+                      color: Colors.white.withValues(alpha: 0.5),
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
@@ -575,7 +575,7 @@ class _InvestmentsScreenState extends State<InvestmentsScreen>
             ),
             Icon(
               Icons.arrow_forward_ios,
-              color: Colors.white.withOpacity(0.4),
+              color: Colors.white.withValues(alpha: 0.4),
               size: 16.sp,
             ),
           ],
@@ -588,10 +588,10 @@ class _InvestmentsScreenState extends State<InvestmentsScreen>
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.2),
+        color: color.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(6.r),
         border: Border.all(
-          color: color.withOpacity(0.3),
+          color: color.withValues(alpha: 0.3),
           width: 0.5,
         ),
       ),
@@ -668,7 +668,7 @@ class _InvestmentsScreenState extends State<InvestmentsScreen>
                   textAlign: TextAlign.center,
                   style: GoogleFonts.inter(
                     fontSize: 14.sp,
-                    color: Colors.white.withOpacity(0.7),
+                    color: Colors.white.withValues(alpha: 0.7),
                   ),
                 ),
                 SizedBox(height: 20.h),

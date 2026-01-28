@@ -40,7 +40,7 @@ class CryptoCard extends StatelessWidget {
               width: 40.w,
               height: 40.w,
               decoration: BoxDecoration(
-                color: _getCryptoColor(crypto.symbol).withOpacity(0.2),
+                color: _getCryptoColor(crypto.symbol).withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(20.r),
               ),
               child: Icon(
@@ -74,7 +74,7 @@ class CryptoCard extends StatelessWidget {
                             vertical: 2.h,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.amber.withOpacity(0.2),
+                            color: Colors.amber.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(4.r),
                           ),
                           child: Text(
@@ -92,7 +92,7 @@ class CryptoCard extends StatelessWidget {
                     crypto.name,
                     style: GoogleFonts.inter(
                       fontSize: 12.sp,
-                      color: Colors.white.withOpacity(0.6),
+                      color: Colors.white.withValues(alpha: 0.6),
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,

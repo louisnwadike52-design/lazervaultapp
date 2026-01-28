@@ -81,7 +81,7 @@ class _AirtimeHistoryScreenState extends State<AirtimeHistoryScreen> {
               width: 40.w,
               height: 40.w,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12.r),
                 boxShadow: [
           BoxShadow(
@@ -121,7 +121,7 @@ class _AirtimeHistoryScreenState extends State<AirtimeHistoryScreen> {
                   'Your airtime purchase history',
                   style: TextStyle(
                     fontSize: 14.sp,
-                    color: Colors.white.withOpacity(0.6),
+                    color: Colors.white.withValues(alpha: 0.6),
                     fontWeight: FontWeight.w400,
                   ),
                 ),
@@ -136,7 +136,7 @@ class _AirtimeHistoryScreenState extends State<AirtimeHistoryScreen> {
               width: 40.w,
               height: 40.w,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12.r),
                 boxShadow: [
           BoxShadow(
@@ -190,7 +190,7 @@ class _AirtimeHistoryScreenState extends State<AirtimeHistoryScreen> {
       child: Container(
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.05),
+          color: Colors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(16.r),
           boxShadow: [
           BoxShadow(
@@ -247,7 +247,7 @@ class _AirtimeHistoryScreenState extends State<AirtimeHistoryScreen> {
                         transaction.displayRecipientNumber,
                         style: TextStyle(
                           fontSize: 12.sp,
-                          color: Colors.white.withOpacity(0.6),
+                          color: Colors.white.withValues(alpha: 0.6),
                           fontWeight: FontWeight.w400,
                         ),
                       ),
@@ -258,7 +258,7 @@ class _AirtimeHistoryScreenState extends State<AirtimeHistoryScreen> {
                           transaction.recipientName!,
                           style: TextStyle(
                             fontSize: 12.sp,
-                            color: Colors.white.withOpacity(0.6),
+                            color: Colors.white.withValues(alpha: 0.6),
                             fontWeight: FontWeight.w400,
                           ),
                         ),
@@ -285,7 +285,7 @@ class _AirtimeHistoryScreenState extends State<AirtimeHistoryScreen> {
                     Container(
                       padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
                       decoration: BoxDecoration(
-                        color: _getStatusColor(transaction.status).withOpacity(0.2),
+                        color: _getStatusColor(transaction.status).withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(8.r),
                       ),
                       child: Text(
@@ -312,7 +312,7 @@ class _AirtimeHistoryScreenState extends State<AirtimeHistoryScreen> {
                   DateFormat('MMM dd, yyyy • hh:mm a').format(transaction.createdAt),
                   style: TextStyle(
                     fontSize: 11.sp,
-                    color: Colors.white.withOpacity(0.5),
+                    color: Colors.white.withValues(alpha: 0.5),
                     fontWeight: FontWeight.w400,
                   ),
                 ),
@@ -322,7 +322,7 @@ class _AirtimeHistoryScreenState extends State<AirtimeHistoryScreen> {
                       transaction.transactionReference,
                       style: TextStyle(
                         fontSize: 11.sp,
-                        color: Colors.white.withOpacity(0.5),
+                        color: Colors.white.withValues(alpha: 0.5),
                         fontWeight: FontWeight.w400,
                       ),
                     ),
@@ -330,7 +330,7 @@ class _AirtimeHistoryScreenState extends State<AirtimeHistoryScreen> {
                     Icon(
                       Icons.more_vert,
                       size: 14.sp,
-                      color: Colors.white.withOpacity(0.3),
+                      color: Colors.white.withValues(alpha: 0.3),
                     ),
                   ],
                 ),
@@ -350,7 +350,7 @@ class _AirtimeHistoryScreenState extends State<AirtimeHistoryScreen> {
           Icon(
             Icons.history,
             size: 80.sp,
-            color: Colors.white.withOpacity(0.3),
+            color: Colors.white.withValues(alpha: 0.3),
           ),
           SizedBox(height: 24.h),
           Text(
@@ -366,7 +366,7 @@ class _AirtimeHistoryScreenState extends State<AirtimeHistoryScreen> {
             'Your airtime purchase history will appear here',
             style: TextStyle(
               fontSize: 14.sp,
-              color: Colors.white.withOpacity(0.6),
+              color: Colors.white.withValues(alpha: 0.6),
               fontWeight: FontWeight.w400,
             ),
             textAlign: TextAlign.center,
@@ -408,7 +408,7 @@ class _AirtimeHistoryScreenState extends State<AirtimeHistoryScreen> {
             'Loading transactions...',
             style: TextStyle(
               fontSize: 14.sp,
-              color: Colors.white.withOpacity(0.6),
+              color: Colors.white.withValues(alpha: 0.6),
             ),
           ),
         ],
@@ -424,7 +424,7 @@ class _AirtimeHistoryScreenState extends State<AirtimeHistoryScreen> {
           Icon(
             Icons.error_outline,
             size: 64.sp,
-            color: Colors.red.withOpacity(0.6),
+            color: Colors.red.withValues(alpha: 0.6),
           ),
           SizedBox(height: 16.h),
           Text(
@@ -440,7 +440,7 @@ class _AirtimeHistoryScreenState extends State<AirtimeHistoryScreen> {
             message,
             style: TextStyle(
               fontSize: 14.sp,
-              color: Colors.white.withOpacity(0.6),
+              color: Colors.white.withValues(alpha: 0.6),
             ),
             textAlign: TextAlign.center,
           ),
@@ -488,7 +488,7 @@ class _AirtimeHistoryScreenState extends State<AirtimeHistoryScreen> {
               width: 40.w,
               height: 4.h,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.3),
+                color: Colors.white.withValues(alpha: 0.3),
                 borderRadius: BorderRadius.circular(2.r),
               ),
             ),
@@ -507,7 +507,7 @@ class _AirtimeHistoryScreenState extends State<AirtimeHistoryScreen> {
               'Filter options coming soon...',
               style: TextStyle(
                 fontSize: 14.sp,
-                color: Colors.white.withOpacity(0.6),
+                color: Colors.white.withValues(alpha: 0.6),
               ),
             ),
             SizedBox(height: 20.h),
@@ -538,7 +538,7 @@ class _AirtimeHistoryScreenState extends State<AirtimeHistoryScreen> {
               width: 40.w,
               height: 4.h,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.3),
+                color: Colors.white.withValues(alpha: 0.3),
                 borderRadius: BorderRadius.circular(2.r),
               ),
             ),
@@ -582,7 +582,7 @@ class _AirtimeHistoryScreenState extends State<AirtimeHistoryScreen> {
                         transaction.displayRecipientNumber,
                         style: TextStyle(
                           fontSize: 12.sp,
-                          color: Colors.white.withOpacity(0.6),
+                          color: Colors.white.withValues(alpha: 0.6),
                         ),
                       ),
                     ],
@@ -641,17 +641,17 @@ class _AirtimeHistoryScreenState extends State<AirtimeHistoryScreen> {
                       Get.back(); // Close bottom sheet
                       Get.toNamed(AppRoutes.airtimeDetails, arguments: transaction.id);
                     },
-                    icon: Icon(Icons.receipt_long, color: Colors.white.withOpacity(0.8), size: 20.sp),
+                    icon: Icon(Icons.receipt_long, color: Colors.white.withValues(alpha: 0.8), size: 20.sp),
                     label: Text(
                       'View Details',
                       style: TextStyle(
                         fontSize: 16.sp,
                         fontWeight: FontWeight.w600,
-                        color: Colors.white.withOpacity(0.8),
+                        color: Colors.white.withValues(alpha: 0.8),
                       ),
                     ),
                     style: OutlinedButton.styleFrom(
-                      side: BorderSide(color: Colors.white.withOpacity(0.3)),
+                      side: BorderSide(color: Colors.white.withValues(alpha: 0.3)),
                       padding: EdgeInsets.symmetric(vertical: 16.h),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16.r),

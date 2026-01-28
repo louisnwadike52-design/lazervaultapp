@@ -569,8 +569,7 @@ class _TransactionCard extends StatelessWidget {
                       _detailRow('Description', transaction.description!),
                     if (transaction.category != null)
                       _detailRow('Category', transaction.category!),
-                    if (transaction.referenceNumber != null)
-                      _detailRow('Reference', transaction.referenceNumber!),
+                    _detailRow('Reference', transaction.referenceNumber),
                     _detailRow('Date', dateFormat.format(transaction.createdAt)),
                     _detailRow('Status', transaction.status.name),
                     _detailRow('Type', 'Contactless (NFC)'),

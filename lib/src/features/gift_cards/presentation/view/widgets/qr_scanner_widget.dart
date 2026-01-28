@@ -99,7 +99,7 @@ class _QRScannerWidgetState extends State<QRScannerWidget> {
           borderLength: 40.w,
           borderWidth: 8.w,
           cutOutSize: 280.w,
-          overlayColor: Colors.black.withOpacity(0.7),
+          overlayColor: Colors.black.withValues(alpha: 0.7),
         ),
       ),
     );
@@ -113,8 +113,8 @@ class _QRScannerWidgetState extends State<QRScannerWidget> {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            Colors.black.withOpacity(0.8),
-            Colors.black.withOpacity(0.0),
+            Colors.black.withValues(alpha: 0.8),
+            Colors.black.withValues(alpha: 0.0),
           ],
         ),
       ),
@@ -135,7 +135,7 @@ class _QRScannerWidgetState extends State<QRScannerWidget> {
                 'Position the QR code within the frame to scan',
             style: GoogleFonts.inter(
               fontSize: 14.sp,
-              color: Colors.white.withOpacity(0.8),
+              color: Colors.white.withValues(alpha: 0.8),
             ),
             textAlign: TextAlign.center,
           ),
@@ -152,8 +152,8 @@ class _QRScannerWidgetState extends State<QRScannerWidget> {
           begin: Alignment.bottomCenter,
           end: Alignment.topCenter,
           colors: [
-            Colors.black.withOpacity(0.8),
-            Colors.black.withOpacity(0.0),
+            Colors.black.withValues(alpha: 0.8),
+            Colors.black.withValues(alpha: 0.0),
           ],
         ),
       ),
@@ -202,13 +202,13 @@ class _QRScannerWidgetState extends State<QRScannerWidget> {
         padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
         decoration: BoxDecoration(
           color: isActive
-              ? const Color(0xFF6366F1).withOpacity(0.3)
-              : Colors.white.withOpacity(0.1),
+              ? const Color(0xFF6366F1).withValues(alpha: 0.3)
+              : Colors.white.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(12.r),
           border: Border.all(
             color: isActive
                 ? const Color(0xFF6366F1)
-                : Colors.white.withOpacity(0.2),
+                : Colors.white.withValues(alpha: 0.2),
             width: 2,
           ),
         ),

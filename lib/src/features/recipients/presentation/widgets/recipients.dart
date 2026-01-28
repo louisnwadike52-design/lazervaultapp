@@ -33,7 +33,7 @@ class _RecipientsState extends State<Recipients> {
   void _shareRecipient(RecipientModel recipient) {
     final shareText =
         'Check out this recipient:\nName: ${recipient.name}\nAccount Number: ${recipient.accountNumber}';
-    Share.share(shareText);
+    SharePlus.instance.share(ShareParams(text: shareText));
   }
 
   @override
@@ -54,7 +54,7 @@ class _RecipientsState extends State<Recipients> {
             borderRadius: BorderRadius.circular(16.r),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.03),
+                color: Colors.black.withValues(alpha: 0.03),
                 offset: Offset(0, 2),
                 blurRadius: 8,
                 spreadRadius: 0,

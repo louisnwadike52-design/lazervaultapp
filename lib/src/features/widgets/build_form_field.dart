@@ -191,7 +191,7 @@ class BuildFormFieldState extends State<BuildFormField> {
               style: TextStyle(
                 fontSize: 16.sp,
                 fontWeight: FontWeight.w500,
-                color: HexColor.fromHex("#262626"),
+                color: HybridHexColor.fromHex("#262626"),
               ),
             ),
           SizedBox(height: 8.0.h),

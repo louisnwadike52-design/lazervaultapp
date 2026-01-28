@@ -16,10 +16,10 @@ class NetworkProvidersCard extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(20.r),        boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 20,
             offset: Offset(0, 10),
           ),
@@ -154,7 +154,7 @@ class NetworkProvidersCard extends StatelessWidget {
       child: Container(
         padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 8.w),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.05),
+          color: Colors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(12.r),
           boxShadow: [
           BoxShadow(
@@ -206,7 +206,7 @@ class NetworkProvidersCard extends StatelessWidget {
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 1.h),
                 decoration: BoxDecoration(
-                  color: Color(0xFF10B981).withOpacity(0.2),
+                  color: Color(0xFF10B981).withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(4.r),
                 ),
                 child: Text(
@@ -234,14 +234,14 @@ class NetworkProvidersCard extends StatelessWidget {
             child: Container(
               height: 80.h,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.05),
+                color: Colors.white.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(12.r),
               ),
               child: Center(
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
                   valueColor: AlwaysStoppedAnimation<Color>(
-                    Colors.white.withOpacity(0.3),
+                    Colors.white.withValues(alpha: 0.3),
                   ),
                 ),
               ),
@@ -257,7 +257,7 @@ class NetworkProvidersCard extends StatelessWidget {
       height: 80.h,
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: Colors.red.withOpacity(0.1),
+        color: Colors.red.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12.r),
         boxShadow: [
           BoxShadow(

@@ -95,7 +95,7 @@ class _ReviewTransferFundsState extends State<ReviewTransferFunds> {
                   "Please enter your verification code sent to your phone number *********53",
                   style: TextStyle(
                     fontSize: 12.sp,
-                    color: HexColor.fromHex("#A3A3A3"),
+                    color: HybridHexColor.fromHex("#A3A3A3"),
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -112,7 +112,7 @@ class _ReviewTransferFundsState extends State<ReviewTransferFunds> {
                       "Didn't receive OTP?",
                       style: TextStyle(
                         fontSize: 12.sp,
-                        color: HexColor.fromHex("#A3A3A3"),
+                        color: HybridHexColor.fromHex("#A3A3A3"),
                       ),
                       textAlign: TextAlign.center,
                     ),

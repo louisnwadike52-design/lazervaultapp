@@ -54,7 +54,7 @@ class _CountryRateCardState extends State<CountryRateCard> {
                     Container(
                       padding: EdgeInsets.all(6.w),
                       decoration: BoxDecoration(
-                        color: Color.fromARGB(255, 78, 3, 208).withOpacity(0.1),
+                        color: Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(10.r),
                       ),
                       child: Text(
@@ -116,8 +116,8 @@ class _CountryRateCardState extends State<CountryRateCard> {
                           ),
                           decoration: BoxDecoration(
                             color: isPositive 
-                                ? Colors.green.withOpacity(0.1)
-                                : Colors.red.withOpacity(0.1),
+                                ? Colors.green.withValues(alpha: 0.1)
+                                : Colors.red.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(16.r),
                           ),
                           child: Row(
@@ -155,7 +155,7 @@ class _CountryRateCardState extends State<CountryRateCard> {
                     vertical: 4.h,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.03),
+                    color: Colors.black.withValues(alpha: 0.03),
                     borderRadius: BorderRadius.circular(8.r),
                   ),
                   child: Row(

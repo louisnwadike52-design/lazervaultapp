@@ -64,6 +64,8 @@ class _IDVerificationScreenState extends State<IDVerificationScreen> {
       backBytes = await _backImage!.readAsBytes();
     }
 
+    if (!mounted) return;
+
     context.read<IdentityCubit>().uploadIDDocument(
           documentType: _selectedDocumentType,
           frontImage: frontBytes,

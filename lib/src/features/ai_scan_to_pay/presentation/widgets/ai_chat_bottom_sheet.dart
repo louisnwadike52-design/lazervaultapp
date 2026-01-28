@@ -107,7 +107,7 @@ class _AiChatBottomSheetState extends State<AiChatBottomSheet> {
           end: Alignment.bottomRight,
           colors: [
             const Color.fromARGB(255, 78, 3, 208),
-            const Color.fromARGB(255, 78, 3, 208).withOpacity(0.8),
+            const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.8),
           ],
         ),
         borderRadius: BorderRadius.only(
@@ -122,7 +122,7 @@ class _AiChatBottomSheetState extends State<AiChatBottomSheet> {
             width: 40.w,
             height: 4.h,
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.3),
+              color: Colors.white.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(2.r),
             ),
           ),
@@ -135,7 +135,7 @@ class _AiChatBottomSheetState extends State<AiChatBottomSheet> {
                 width: 50.w,
                 height: 50.w,
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
@@ -163,7 +163,7 @@ class _AiChatBottomSheetState extends State<AiChatBottomSheet> {
                       style: GoogleFonts.inter(
                         fontSize: 12.sp,
                         color: widget.isTyping 
-                            ? Colors.white.withOpacity(0.8)
+                            ? Colors.white.withValues(alpha: 0.8)
                             : const Color(0xFF10B981),
                         fontWeight: FontWeight.w500,
                       ),
@@ -176,7 +176,7 @@ class _AiChatBottomSheetState extends State<AiChatBottomSheet> {
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(16.r),
                   boxShadow: [
           BoxShadow(
@@ -207,7 +207,7 @@ class _AiChatBottomSheetState extends State<AiChatBottomSheet> {
                 child: Container(
                   padding: EdgeInsets.all(8.w),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
+                    color: Colors.white.withValues(alpha: 0.2),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(

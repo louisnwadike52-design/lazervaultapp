@@ -57,14 +57,15 @@ class _InvoiceVoiceAgentButtonState extends State<InvoiceVoiceAgentButton>
 
       // Create room metadata with access token for authentication
       // Connect to LiveKit room
-      _room = lk.Room();
-      await _room!.connect(
-        livekitUrl,
-        widget.accessToken ?? '',
+      _room = lk.Room(
         roomOptions: lk.RoomOptions(
           adaptiveStream: true,
           dynacast: true,
         ),
+      );
+      await _room!.connect(
+        livekitUrl,
+        widget.accessToken ?? '',
       );
 
       // Set up event listeners
@@ -200,14 +201,15 @@ class _InvoiceVoiceAgentControlState extends State<InvoiceVoiceAgentControl> {
     );
 
     try {
-      _room = lk.Room();
-      await _room!.connect(
-        livekitUrl,
-        widget.accessToken ?? '',
+      _room = lk.Room(
         roomOptions: lk.RoomOptions(
           adaptiveStream: true,
           dynacast: true,
         ),
+      );
+      await _room!.connect(
+        livekitUrl,
+        widget.accessToken ?? '',
       );
 
       setState(() => _isConnected = true);

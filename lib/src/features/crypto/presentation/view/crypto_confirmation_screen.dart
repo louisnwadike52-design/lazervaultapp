@@ -258,7 +258,7 @@ class _CryptoConfirmationScreenState extends State<CryptoConfirmationScreen>
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            const Color(0xFF6C5CE7).withOpacity(0.1),
+            const Color(0xFF6C5CE7).withValues(alpha: 0.1),
             const Color(0xFF1E2746),
           ],
           begin: Alignment.topLeft,
@@ -282,7 +282,7 @@ class _CryptoConfirmationScreenState extends State<CryptoConfirmationScreen>
               Container(
                 padding: EdgeInsets.all(12.w),
                 decoration: BoxDecoration(
-                  color: _getTransactionTypeColor().withOpacity(0.2),
+                  color: _getTransactionTypeColor().withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12.r),
                 ),
                 child: Icon(
@@ -308,7 +308,7 @@ class _CryptoConfirmationScreenState extends State<CryptoConfirmationScreen>
                       widget.transactionDetails.cryptoName,
                       style: GoogleFonts.inter(
                         fontSize: 14.sp,
-                        color: Colors.white.withOpacity(0.7),
+                        color: Colors.white.withValues(alpha: 0.7),
                       ),
                     ),
                   ],
@@ -326,7 +326,7 @@ class _CryptoConfirmationScreenState extends State<CryptoConfirmationScreen>
           _buildSummaryRow('Network Fee', '£${widget.transactionDetails.networkFee.toStringAsFixed(2)}', ''),
           SizedBox(height: 12.h),
           _buildSummaryRow('LazerVault Fee', '£${widget.transactionDetails.tradingFee.toStringAsFixed(2)}', ''),
-          Divider(color: Colors.white.withOpacity(0.2), height: 24.h),
+          Divider(color: Colors.white.withValues(alpha: 0.2), height: 24.h),
           _buildSummaryRow('Total', '£${widget.transactionDetails.totalAmount.toStringAsFixed(2)}', '', isTotal: true),
         ],
       ),
@@ -365,7 +365,7 @@ class _CryptoConfirmationScreenState extends State<CryptoConfirmationScreen>
               Container(
                 padding: EdgeInsets.all(12.w),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF6C5CE7).withOpacity(0.2),
+                  color: const Color(0xFF6C5CE7).withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12.r),
                 ),
                 child: Icon(
@@ -391,7 +391,7 @@ class _CryptoConfirmationScreenState extends State<CryptoConfirmationScreen>
                       _getPaymentMethodDetails(),
                       style: GoogleFonts.inter(
                         fontSize: 14.sp,
-                        color: Colors.white.withOpacity(0.7),
+                        color: Colors.white.withValues(alpha: 0.7),
                       ),
                     ),
                   ],
@@ -471,7 +471,7 @@ class _CryptoConfirmationScreenState extends State<CryptoConfirmationScreen>
           text,
           style: GoogleFonts.inter(
             fontSize: 14.sp,
-            color: Colors.white.withOpacity(0.8),
+            color: Colors.white.withValues(alpha: 0.8),
           ),
         ),
       ],
@@ -482,7 +482,7 @@ class _CryptoConfirmationScreenState extends State<CryptoConfirmationScreen>
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: Colors.orange.withOpacity(0.1),
+        color: Colors.orange.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12.r),
         boxShadow: [
           BoxShadow(
@@ -519,7 +519,7 @@ class _CryptoConfirmationScreenState extends State<CryptoConfirmationScreen>
                   'Cryptocurrency transactions are irreversible. Please review all details carefully before confirming.',
                   style: GoogleFonts.inter(
                     fontSize: 12.sp,
-                    color: Colors.white.withOpacity(0.8),
+                    color: Colors.white.withValues(alpha: 0.8),
                     height: 1.4,
                   ),
                 ),
@@ -595,7 +595,7 @@ class _CryptoConfirmationScreenState extends State<CryptoConfirmationScreen>
             'Please do not close this screen',
             style: GoogleFonts.inter(
               fontSize: 16.sp,
-              color: Colors.white.withOpacity(0.7),
+              color: Colors.white.withValues(alpha: 0.7),
             ),
           ),
           SizedBox(height: 32.h),
@@ -637,7 +637,7 @@ class _CryptoConfirmationScreenState extends State<CryptoConfirmationScreen>
           text,
           style: GoogleFonts.inter(
             fontSize: 14.sp,
-            color: Colors.white.withOpacity(0.8),
+            color: Colors.white.withValues(alpha: 0.8),
           ),
         ),
       ],
@@ -652,7 +652,7 @@ class _CryptoConfirmationScreenState extends State<CryptoConfirmationScreen>
           Container(
             padding: EdgeInsets.all(40.w),
             decoration: BoxDecoration(
-              color: Colors.green.withOpacity(0.2),
+              color: Colors.green.withValues(alpha: 0.2),
               shape: BoxShape.circle,
             ),
             child: Icon(
@@ -676,7 +676,7 @@ class _CryptoConfirmationScreenState extends State<CryptoConfirmationScreen>
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(
               fontSize: 16.sp,
-              color: Colors.white.withOpacity(0.7),
+              color: Colors.white.withValues(alpha: 0.7),
             ),
           ),
           SizedBox(height: 32.h),
@@ -709,7 +709,7 @@ class _CryptoConfirmationScreenState extends State<CryptoConfirmationScreen>
           style: GoogleFonts.inter(
             fontSize: isTotal ? 16.sp : 14.sp,
             fontWeight: isTotal ? FontWeight.w600 : FontWeight.w500,
-            color: Colors.white.withOpacity(isTotal ? 1.0 : 0.8),
+            color: Colors.white.withValues(alpha: isTotal ? 1.0 : 0.8),
           ),
         ),
         Text(

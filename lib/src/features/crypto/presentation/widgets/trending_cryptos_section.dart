@@ -38,7 +38,7 @@ class TrendingCryptosSection extends StatelessWidget {
             children: [
               Icon(
                 Icons.trending_up,
-                color: Colors.white.withOpacity(0.5),
+                color: Colors.white.withValues(alpha: 0.5),
                 size: 32.sp,
               ),
               SizedBox(height: 8.h),
@@ -46,7 +46,7 @@ class TrendingCryptosSection extends StatelessWidget {
                 'No trending data available',
                 style: GoogleFonts.inter(
                   fontSize: 14.sp,
-                  color: Colors.white.withOpacity(0.6),
+                  color: Colors.white.withValues(alpha: 0.6),
                 ),
               ),
             ],
@@ -77,7 +77,7 @@ class TrendingCryptosSection extends StatelessWidget {
                   'Top gainers 24h',
                   style: GoogleFonts.inter(
                     fontSize: 12.sp,
-                    color: Colors.white.withOpacity(0.6),
+                    color: Colors.white.withValues(alpha: 0.6),
                   ),
                 ),
               ],
@@ -116,8 +116,8 @@ class TrendingCryptosSection extends StatelessWidget {
           borderRadius: BorderRadius.circular(16.r),          boxShadow: [
             BoxShadow(
               color: isPositive 
-                  ? Colors.green.withOpacity(0.1)
-                  : Colors.red.withOpacity(0.1),
+                  ? Colors.green.withValues(alpha: 0.1)
+                  : Colors.red.withValues(alpha: 0.1),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -132,7 +132,7 @@ class TrendingCryptosSection extends StatelessWidget {
                   width: 24.w,
                   height: 24.w,
                   decoration: BoxDecoration(
-                    color: _getCryptoColor(crypto.symbol).withOpacity(0.2),
+                    color: _getCryptoColor(crypto.symbol).withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(12.r),
                   ),
                   child: Center(
@@ -168,7 +168,7 @@ class TrendingCryptosSection extends StatelessWidget {
               '\$${crypto.currentPrice.toStringAsFixed(crypto.currentPrice < 1 ? 4 : 2)}',
               style: GoogleFonts.inter(
                 fontSize: 12.sp,
-                color: Colors.white.withOpacity(0.8),
+                color: Colors.white.withValues(alpha: 0.8),
               ),
             ),
             SizedBox(height: 8.h),
@@ -176,8 +176,8 @@ class TrendingCryptosSection extends StatelessWidget {
               padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
               decoration: BoxDecoration(
                 color: isPositive 
-                    ? Colors.green.withOpacity(0.2)
-                    : Colors.red.withOpacity(0.2),
+                    ? Colors.green.withValues(alpha: 0.2)
+                    : Colors.red.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(8.r),
               ),
               child: Text(

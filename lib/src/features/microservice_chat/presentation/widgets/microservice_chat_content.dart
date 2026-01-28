@@ -110,7 +110,7 @@ class _MicroserviceChatContentState extends State<MicroserviceChatContent> {
             Icon(
               Icons.smart_toy,
               size: 80,
-              color: Colors.blue.withOpacity(0.5),
+              color: Colors.blue.withValues(alpha: 0.5),
             ),
             const SizedBox(height: 16),
             Text(
@@ -163,7 +163,7 @@ class _MicroserviceChatContentState extends State<MicroserviceChatContent> {
             Container(
               margin: const EdgeInsets.only(right: 8),
               child: CircleAvatar(
-                backgroundColor: Colors.blue.withOpacity(0.2),
+                backgroundColor: Colors.blue.withValues(alpha: 0.2),
                 child: const Icon(Icons.smart_toy, color: Colors.blue, size: 20),
               ),
             ),
@@ -207,7 +207,7 @@ class _MicroserviceChatContentState extends State<MicroserviceChatContent> {
           if (isUser) ...[
             const SizedBox(width: 8),
             CircleAvatar(
-              backgroundColor: Colors.blue.withOpacity(0.2),
+              backgroundColor: Colors.blue.withValues(alpha: 0.2),
               child: const Icon(Icons.person, color: Colors.blue, size: 20),
             ),
           ],
@@ -224,7 +224,7 @@ class _MicroserviceChatContentState extends State<MicroserviceChatContent> {
           Container(
             margin: const EdgeInsets.only(right: 8),
             child: CircleAvatar(
-              backgroundColor: Colors.blue.withOpacity(0.2),
+              backgroundColor: Colors.blue.withValues(alpha: 0.2),
               child: const Icon(Icons.smart_toy, color: Colors.blue, size: 20),
             ),
           ),

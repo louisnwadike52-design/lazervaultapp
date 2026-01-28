@@ -565,12 +565,14 @@ class TagPayRepositoryGrpcImpl implements TagPayRepository {
           ..query = query
           ..limit = limit;
 
+        print('[TagPayRepository] searchUsers: query="$query", limit=$limit');
         final options = await callOptionsHelper.withAuth();
         final response = await authServiceClient.searchUsersByUsername(
           request,
           options: options,
         );
 
+        print('[TagPayRepository] searchUsers response: success=${response.success}, msg="${response.msg}", users=${response.users.length}');
         if (!response.success) {
           print('[TagPayRepository] User search failed: ${response.msg}');
           return [];

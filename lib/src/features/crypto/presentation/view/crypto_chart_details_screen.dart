@@ -574,7 +574,7 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
             end: Alignment.bottomCenter,
             colors: [
               Colors.transparent,
-              Colors.black.withOpacity(0.8),
+              Colors.black.withValues(alpha: 0.8),
               Colors.black,
             ],
           ),
@@ -635,7 +635,7 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 8.h),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.blue.withOpacity(0.2) : Colors.grey[800],
+          color: isSelected ? Colors.blue.withValues(alpha: 0.2) : Colors.grey[800],
           borderRadius: BorderRadius.circular(8.r),
           border: isSelected ? Border.all(color: Colors.blue, width: 1) : null,
         ),
@@ -812,7 +812,7 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
   }
 
   double _generateRealisticCryptoVolume(int index, int totalPoints) {
-    final baseVolume = widget.crypto.totalVolume ?? 1000000000; // Default 1B
+    final baseVolume = widget.crypto.totalVolume; // Default 1B
     
     // Crypto trading is 24/7, but still has patterns
     final timeOfDay = (index % 24) / 24.0;
@@ -1106,7 +1106,7 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
             minPrice: minPrice,
             candleWidth: _calculateOptimalCandleWidth(validPrices.length),
             showGrid: true,
-            gridColor: Colors.grey.withOpacity(0.1),
+            gridColor: Colors.grey.withValues(alpha: 0.1),
             bullishColor: _getCryptoColor(),
             bearishColor: const Color(0xFFEF5350),
           ),
@@ -1184,7 +1184,7 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
             horizontalInterval: (maxPrice - minPrice) / 8,
             getDrawingHorizontalLine: (value) {
               return FlLine(
-                color: Colors.grey.withOpacity(0.1),
+                color: Colors.grey.withValues(alpha: 0.1),
                 strokeWidth: 0.5,
               );
             },
@@ -1514,7 +1514,7 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
                     },
                     child: Container(
             decoration: BoxDecoration(
-                        color: isSelected ? _getCryptoColor().withOpacity(0.2) : Colors.grey[800],
+                        color: isSelected ? _getCryptoColor().withValues(alpha: 0.2) : Colors.grey[800],
               borderRadius: BorderRadius.circular(8.r),
               border: Border.all(
                           color: isSelected ? _getCryptoColor() : Colors.grey[600]!,
@@ -1710,7 +1710,7 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                 decoration: BoxDecoration(
-                                  color: (widget.crypto.priceChangePercentage24h >= 0 ? Colors.green : Colors.red).withOpacity(0.2),
+                                  color: (widget.crypto.priceChangePercentage24h >= 0 ? Colors.green : Colors.red).withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(6.r),
                 ),
                 child: Text(

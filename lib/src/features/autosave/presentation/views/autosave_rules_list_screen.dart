@@ -61,6 +61,7 @@ class _AutoSaveRulesListScreenState extends State<AutoSaveRulesListScreen> {
       AppRoutes.autoSaveDetails,
       arguments: rule,
     )?.then((_) {
+      if (!mounted) return;
       context.read<AutoSaveCubit>().getRulesWithCache(forceRefresh: true);
     });
   }

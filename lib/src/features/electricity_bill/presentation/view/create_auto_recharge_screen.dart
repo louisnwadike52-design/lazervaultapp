@@ -43,7 +43,7 @@ class _CreateAutoRechargeScreenState extends State<CreateAutoRechargeScreen> {
       Get.snackbar(
         'Error',
         'Please select a beneficiary',
-        backgroundColor: Colors.red.withOpacity(0.9),
+        backgroundColor: Colors.red.withValues(alpha: 0.9),
         colorText: Colors.white,
       );
       return;
@@ -54,7 +54,7 @@ class _CreateAutoRechargeScreenState extends State<CreateAutoRechargeScreen> {
       Get.snackbar(
         'Error',
         'Please enter an amount',
-        backgroundColor: Colors.red.withOpacity(0.9),
+        backgroundColor: Colors.red.withValues(alpha: 0.9),
         colorText: Colors.white,
       );
       return;
@@ -65,7 +65,7 @@ class _CreateAutoRechargeScreenState extends State<CreateAutoRechargeScreen> {
       Get.snackbar(
         'Error',
         'Please enter a valid amount',
-        backgroundColor: Colors.red.withOpacity(0.9),
+        backgroundColor: Colors.red.withValues(alpha: 0.9),
         colorText: Colors.white,
       );
       return;
@@ -108,7 +108,7 @@ class _CreateAutoRechargeScreenState extends State<CreateAutoRechargeScreen> {
                       Get.snackbar(
                         'Success',
                         state.message,
-                        backgroundColor: Colors.green.withOpacity(0.9),
+                        backgroundColor: Colors.green.withValues(alpha: 0.9),
                         colorText: Colors.white,
                       );
                       Get.back();
@@ -118,7 +118,7 @@ class _CreateAutoRechargeScreenState extends State<CreateAutoRechargeScreen> {
                       Get.snackbar(
                         'Error',
                         state.message,
-                        backgroundColor: Colors.red.withOpacity(0.9),
+                        backgroundColor: Colors.red.withValues(alpha: 0.9),
                         colorText: Colors.white,
                       );
                     }
@@ -166,10 +166,10 @@ class _CreateAutoRechargeScreenState extends State<CreateAutoRechargeScreen> {
               width: 44.w,
               height: 44.w,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(22.r),
                 border: Border.all(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   width: 1,
                 ),
               ),
@@ -196,7 +196,7 @@ class _CreateAutoRechargeScreenState extends State<CreateAutoRechargeScreen> {
                 Text(
                   'Set up automatic payments',
                   style: GoogleFonts.inter(
-                    color: Colors.white.withOpacity(0.6),
+                    color: Colors.white.withValues(alpha: 0.6),
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w400,
                   ),
@@ -217,10 +217,10 @@ class _CreateAutoRechargeScreenState extends State<CreateAutoRechargeScreen> {
             return Container(
               padding: EdgeInsets.all(20.w),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.05),
+                color: Colors.white.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(12.r),
                 border: Border.all(
-                  color: Colors.white.withOpacity(0.1),
+                  color: Colors.white.withValues(alpha: 0.1),
                   width: 1,
                 ),
               ),
@@ -228,14 +228,14 @@ class _CreateAutoRechargeScreenState extends State<CreateAutoRechargeScreen> {
                 children: [
                   Icon(
                     Icons.bookmark_border,
-                    color: Colors.white.withOpacity(0.3),
+                    color: Colors.white.withValues(alpha: 0.3),
                     size: 48.sp,
                   ),
                   SizedBox(height: 12.h),
                   Text(
                     'No beneficiaries found',
                     style: GoogleFonts.inter(
-                      color: Colors.white.withOpacity(0.6),
+                      color: Colors.white.withValues(alpha: 0.6),
                       fontSize: 14.sp,
                       fontWeight: FontWeight.w400,
                     ),
@@ -244,7 +244,7 @@ class _CreateAutoRechargeScreenState extends State<CreateAutoRechargeScreen> {
                   Text(
                     'Please add a beneficiary first',
                     style: GoogleFonts.inter(
-                      color: Colors.white.withOpacity(0.4),
+                      color: Colors.white.withValues(alpha: 0.4),
                       fontSize: 12.sp,
                       fontWeight: FontWeight.w400,
                     ),
@@ -269,10 +269,10 @@ class _CreateAutoRechargeScreenState extends State<CreateAutoRechargeScreen> {
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.05),
+                  color: Colors.white.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(12.r),
                   border: Border.all(
-                    color: Colors.white.withOpacity(0.1),
+                    color: Colors.white.withValues(alpha: 0.1),
                     width: 1,
                   ),
                 ),
@@ -282,7 +282,7 @@ class _CreateAutoRechargeScreenState extends State<CreateAutoRechargeScreen> {
                     hint: Text(
                       'Choose a beneficiary',
                       style: GoogleFonts.inter(
-                        color: Colors.white.withOpacity(0.5),
+                        color: Colors.white.withValues(alpha: 0.5),
                         fontSize: 14.sp,
                       ),
                     ),
@@ -290,7 +290,7 @@ class _CreateAutoRechargeScreenState extends State<CreateAutoRechargeScreen> {
                     dropdownColor: const Color(0xFF1A1A3E),
                     icon: Icon(
                       Icons.keyboard_arrow_down,
-                      color: Colors.white.withOpacity(0.6),
+                      color: Colors.white.withValues(alpha: 0.6),
                     ),
                     items: state.beneficiaries.map((beneficiary) {
                       return DropdownMenuItem(
@@ -317,10 +317,10 @@ class _CreateAutoRechargeScreenState extends State<CreateAutoRechargeScreen> {
                 Container(
                   padding: EdgeInsets.all(16.w),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF4E03D0).withOpacity(0.1),
+                    color: const Color(0xFF4E03D0).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12.r),
                     border: Border.all(
-                      color: const Color(0xFF4E03D0).withOpacity(0.3),
+                      color: const Color(0xFF4E03D0).withValues(alpha: 0.3),
                       width: 1,
                     ),
                   ),
@@ -352,14 +352,14 @@ class _CreateAutoRechargeScreenState extends State<CreateAutoRechargeScreen> {
                         children: [
                           Icon(
                             Icons.numbers,
-                            color: Colors.white.withOpacity(0.6),
+                            color: Colors.white.withValues(alpha: 0.6),
                             size: 14.sp,
                           ),
                           SizedBox(width: 8.w),
                           Text(
                             _selectedBeneficiary!.meterNumber,
                             style: GoogleFonts.inter(
-                              color: Colors.white.withOpacity(0.8),
+                              color: Colors.white.withValues(alpha: 0.8),
                               fontSize: 12.sp,
                               fontWeight: FontWeight.w400,
                             ),
@@ -368,7 +368,7 @@ class _CreateAutoRechargeScreenState extends State<CreateAutoRechargeScreen> {
                           Container(
                             padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF4E03D0).withOpacity(0.2),
+                              color: const Color(0xFF4E03D0).withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(6.r),
                             ),
                             child: Text(
@@ -413,10 +413,10 @@ class _CreateAutoRechargeScreenState extends State<CreateAutoRechargeScreen> {
         Container(
           padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.05),
+            color: Colors.white.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(12.r),
             border: Border.all(
-              color: Colors.white.withOpacity(0.1),
+              color: Colors.white.withValues(alpha: 0.1),
               width: 1,
             ),
           ),
@@ -431,7 +431,7 @@ class _CreateAutoRechargeScreenState extends State<CreateAutoRechargeScreen> {
             decoration: InputDecoration(
               hintText: '0.00',
               hintStyle: GoogleFonts.inter(
-                color: Colors.white.withOpacity(0.3),
+                color: Colors.white.withValues(alpha: 0.3),
                 fontSize: 24.sp,
               ),
               border: InputBorder.none,
@@ -495,11 +495,11 @@ class _CreateAutoRechargeScreenState extends State<CreateAutoRechargeScreen> {
         padding: EdgeInsets.symmetric(vertical: 16.h),
         decoration: BoxDecoration(
           color: isSelected
-              ? const Color(0xFF4E03D0).withOpacity(0.2)
-              : Colors.white.withOpacity(0.05),
+              ? const Color(0xFF4E03D0).withValues(alpha: 0.2)
+              : Colors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(12.r),
           border: Border.all(
-            color: isSelected ? const Color(0xFF4E03D0) : Colors.white.withOpacity(0.1),
+            color: isSelected ? const Color(0xFF4E03D0) : Colors.white.withValues(alpha: 0.1),
             width: 2,
           ),
         ),
@@ -507,14 +507,14 @@ class _CreateAutoRechargeScreenState extends State<CreateAutoRechargeScreen> {
           children: [
             Icon(
               icon,
-              color: isSelected ? const Color(0xFF4E03D0) : Colors.white.withOpacity(0.6),
+              color: isSelected ? const Color(0xFF4E03D0) : Colors.white.withValues(alpha: 0.6),
               size: 24.sp,
             ),
             SizedBox(height: 8.h),
             Text(
               label,
               style: GoogleFonts.inter(
-                color: isSelected ? const Color(0xFF4E03D0) : Colors.white.withOpacity(0.8),
+                color: isSelected ? const Color(0xFF4E03D0) : Colors.white.withValues(alpha: 0.8),
                 fontSize: 12.sp,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
               ),
@@ -557,18 +557,18 @@ class _CreateAutoRechargeScreenState extends State<CreateAutoRechargeScreen> {
                   padding: EdgeInsets.symmetric(vertical: 12.h),
                   decoration: BoxDecoration(
                     color: isSelected
-                        ? const Color(0xFF4E03D0).withOpacity(0.2)
-                        : Colors.white.withOpacity(0.05),
+                        ? const Color(0xFF4E03D0).withValues(alpha: 0.2)
+                        : Colors.white.withValues(alpha: 0.05),
                     borderRadius: BorderRadius.circular(8.r),
                     border: Border.all(
-                      color: isSelected ? const Color(0xFF4E03D0) : Colors.white.withOpacity(0.1),
+                      color: isSelected ? const Color(0xFF4E03D0) : Colors.white.withValues(alpha: 0.1),
                       width: 2,
                     ),
                   ),
                   child: Text(
                     days[index],
                     style: GoogleFonts.inter(
-                      color: isSelected ? const Color(0xFF4E03D0) : Colors.white.withOpacity(0.8),
+                      color: isSelected ? const Color(0xFF4E03D0) : Colors.white.withValues(alpha: 0.8),
                       fontSize: 10.sp,
                       fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
                     ),
@@ -599,10 +599,10 @@ class _CreateAutoRechargeScreenState extends State<CreateAutoRechargeScreen> {
         Container(
           padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.05),
+            color: Colors.white.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(12.r),
             border: Border.all(
-              color: Colors.white.withOpacity(0.1),
+              color: Colors.white.withValues(alpha: 0.1),
               width: 1,
             ),
           ),
@@ -613,7 +613,7 @@ class _CreateAutoRechargeScreenState extends State<CreateAutoRechargeScreen> {
               dropdownColor: const Color(0xFF1A1A3E),
               icon: Icon(
                 Icons.keyboard_arrow_down,
-                color: Colors.white.withOpacity(0.6),
+                color: Colors.white.withValues(alpha: 0.6),
               ),
               items: List.generate(28, (index) {
                 final day = index + 1;
@@ -674,10 +674,10 @@ class _CreateAutoRechargeScreenState extends State<CreateAutoRechargeScreen> {
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF4E03D0).withOpacity(0.1),
+        color: const Color(0xFF4E03D0).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(
-          color: const Color(0xFF4E03D0).withOpacity(0.3),
+          color: const Color(0xFF4E03D0).withValues(alpha: 0.3),
           width: 1,
         ),
       ),
@@ -706,7 +706,7 @@ class _CreateAutoRechargeScreenState extends State<CreateAutoRechargeScreen> {
           Text(
             'Your account will be automatically recharged:',
             style: GoogleFonts.inter(
-              color: Colors.white.withOpacity(0.8),
+              color: Colors.white.withValues(alpha: 0.8),
               fontSize: 13.sp,
               fontWeight: FontWeight.w400,
             ),

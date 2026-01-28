@@ -37,7 +37,7 @@ class CreatorProfileCard extends StatelessWidget {
               children: [
                 CircleAvatar(
                   radius: 32.r,
-                  backgroundColor: const Color(0xFF4E03D0).withOpacity(0.2),
+                  backgroundColor: const Color(0xFF4E03D0).withValues(alpha: 0.2),
                   backgroundImage: creator.profilePicture != null
                       ? NetworkImage(creator.profilePicture!)
                       : null,
@@ -116,7 +116,7 @@ class CreatorProfileCard extends StatelessWidget {
                         vertical: 4.h,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF10B981).withOpacity(0.2),
+                        color: const Color(0xFF10B981).withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(8.r),
                       ),
                       child: Row(

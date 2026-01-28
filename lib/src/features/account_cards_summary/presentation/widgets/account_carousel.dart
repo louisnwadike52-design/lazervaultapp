@@ -225,7 +225,7 @@ class _AccountCarouselState extends State<AccountCarousel> {
             borderRadius: BorderRadius.circular(20.r),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF6C5CE7).withOpacity(0.3),
+                color: const Color(0xFF6C5CE7).withValues(alpha: 0.3),
                 blurRadius: 20,
                 offset: const Offset(0, 8),
               ),
@@ -244,7 +244,7 @@ class _AccountCarouselState extends State<AccountCarousel> {
                     height: 120.w,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: Colors.white.withOpacity(0.08),
+                      color: Colors.white.withValues(alpha: 0.08),
                     ),
                   ),
                 ),
@@ -256,7 +256,7 @@ class _AccountCarouselState extends State<AccountCarousel> {
                     height: 80.w,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: Colors.white.withOpacity(0.05),
+                      color: Colors.white.withValues(alpha: 0.05),
                     ),
                   ),
                 ),
@@ -273,7 +273,7 @@ class _AccountCarouselState extends State<AccountCarousel> {
                             child: Text(
                               "${account.accountType} Account",
                               style: TextStyle(
-                                color: Colors.white.withOpacity(0.9),
+                                color: Colors.white.withValues(alpha: 0.9),
                                 fontSize: 16.sp,
                                 fontWeight: FontWeight.w600,
                               ),
@@ -286,8 +286,8 @@ class _AccountCarouselState extends State<AccountCarousel> {
                           ),
                           decoration: BoxDecoration(
                             color: isUp
-                                ? Colors.green.withOpacity(0.2)
-                                : Colors.red.withOpacity(0.2),
+                                ? Colors.green.withValues(alpha: 0.2)
+                                : Colors.red.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(20.r),
                           ),
                           child: Text(
@@ -306,7 +306,7 @@ class _AccountCarouselState extends State<AccountCarousel> {
                             width: 28.w,
                             height: 28.h,
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.15),
+                              color: Colors.white.withValues(alpha: 0.15),
                               shape: BoxShape.circle,
                             ),
                             child: Icon(
@@ -334,7 +334,7 @@ class _AccountCarouselState extends State<AccountCarousel> {
                         Text(
                           cardArguments['accountNumber'] as String,
                           style: TextStyle(
-                            color: Colors.white.withOpacity(0.7),
+                            color: Colors.white.withValues(alpha: 0.7),
                             fontSize: 14.sp,
                           ),
                         ),
@@ -380,7 +380,7 @@ class _AccountCarouselState extends State<AccountCarousel> {
         child: Container(
           padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.1),
+            color: Colors.white.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(20.r),
             boxShadow: [
           BoxShadow(
@@ -428,7 +428,7 @@ class _AccountCarouselState extends State<AccountCarousel> {
           decoration: BoxDecoration(
             color: _currentIndex == index
                 ? Colors.white
-                : Colors.white.withOpacity(0.3),
+                : Colors.white.withValues(alpha: 0.3),
             borderRadius: BorderRadius.circular(4.r),
           ),
         ),
@@ -483,7 +483,7 @@ class _AccountCarouselState extends State<AccountCarousel> {
           borderRadius: BorderRadius.circular(20.r),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF6C5CE7).withOpacity(0.3),
+              color: const Color(0xFF6C5CE7).withValues(alpha: 0.3),
               blurRadius: 20,
               offset: const Offset(0, 8),
             ),
@@ -502,7 +502,7 @@ class _AccountCarouselState extends State<AccountCarousel> {
                   height: 120.w,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: Colors.white.withOpacity(0.08),
+                    color: Colors.white.withValues(alpha: 0.08),
                   ),
                 ),
               ),
@@ -514,7 +514,7 @@ class _AccountCarouselState extends State<AccountCarousel> {
                   height: 100.w,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: Colors.white.withOpacity(0.05),
+                    color: Colors.white.withValues(alpha: 0.05),
                   ),
                 ),
               ),
@@ -538,7 +538,7 @@ class _AccountCarouselState extends State<AccountCarousel> {
                             Text(
                               'Family & Friends',
                               style: TextStyle(
-                                color: Colors.white.withOpacity(0.9),
+                                color: Colors.white.withValues(alpha: 0.9),
                                 fontSize: 16.sp,
                                 fontWeight: FontWeight.w600,
                               ),
@@ -548,7 +548,7 @@ class _AccountCarouselState extends State<AccountCarousel> {
                       Container(
                         padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
+                          color: Colors.white.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(20.r),
                         ),
                         child: Text(
@@ -576,7 +576,7 @@ class _AccountCarouselState extends State<AccountCarousel> {
                   Text(
                     'Money Together',
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.8),
+                      color: Colors.white.withValues(alpha: 0.8),
                       fontSize: 14.sp,
                       fontWeight: FontWeight.w500,
                     ),
@@ -639,7 +639,7 @@ class _AccountCarouselState extends State<AccountCarousel> {
             borderRadius: BorderRadius.circular(20.r),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF6C5CE7).withOpacity(0.3),
+                color: const Color(0xFF6C5CE7).withValues(alpha: 0.3),
                 blurRadius: 20,
                 offset: const Offset(0, 8),
               ),
@@ -658,7 +658,7 @@ class _AccountCarouselState extends State<AccountCarousel> {
                     height: 120.w,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: Colors.white.withOpacity(0.08),
+                      color: Colors.white.withValues(alpha: 0.08),
                     ),
                   ),
                 ),
@@ -670,7 +670,7 @@ class _AccountCarouselState extends State<AccountCarousel> {
                     height: 100.w,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: Colors.white.withOpacity(0.05),
+                      color: Colors.white.withValues(alpha: 0.05),
                     ),
                   ),
                 ),
@@ -694,7 +694,7 @@ class _AccountCarouselState extends State<AccountCarousel> {
                               Text(
                                 'Family & Friends',
                                 style: TextStyle(
-                                  color: Colors.white.withOpacity(0.9),
+                                  color: Colors.white.withValues(alpha: 0.9),
                                   fontSize: 16.sp,
                                   fontWeight: FontWeight.w600,
                                 ),
@@ -705,7 +705,7 @@ class _AccountCarouselState extends State<AccountCarousel> {
                           Container(
                             padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.2),
+                              color: Colors.white.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(20.r),
                             ),
                             child: Row(
@@ -743,7 +743,7 @@ class _AccountCarouselState extends State<AccountCarousel> {
                     Text(
                       'Total Family Balance',
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.7),
+                        color: Colors.white.withValues(alpha: 0.7),
                         fontSize: 11.sp,
                         fontWeight: FontWeight.w500,
                       ),
@@ -755,7 +755,7 @@ class _AccountCarouselState extends State<AccountCarousel> {
                         Text(
                           '•••• ${account.accountNumberLast4}',
                           style: TextStyle(
-                            color: Colors.white.withOpacity(0.7),
+                            color: Colors.white.withValues(alpha: 0.7),
                             fontSize: 12.sp,
                           ),
                         ),

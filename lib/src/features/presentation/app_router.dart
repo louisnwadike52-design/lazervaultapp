@@ -14,6 +14,8 @@ import 'package:lazervault/src/features/authentication/cubit/phone_verification_
 import 'package:lazervault/src/features/authentication/presentation/views/passcode_setup_screen.dart';
 import 'package:lazervault/src/features/authentication/presentation/views/change_passcode_screen.dart';
 import 'package:lazervault/src/features/transaction_pin/presentation/views/transaction_pin_setup_screen.dart';
+import 'package:lazervault/src/features/transaction_pin/presentation/views/pin_management_screen.dart';
+import 'package:lazervault/src/features/transaction_pin/presentation/views/forgot_pin_screen.dart';
 import 'package:lazervault/src/features/crypto/presentation/view/crypto_screen.dart';
 import 'package:lazervault/src/features/crypto/presentation/view/buy_crypto_screen.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/transfer_proof.dart';
@@ -580,6 +582,16 @@ class AppRouter {
       transition: Transition.rightToLeft,
     ),
     GetPage(
+      name: AppRoutes.pinManagement,
+      page: () => const PinManagementScreen(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.forgotPin,
+      page: () => const ForgotPinScreen(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
       name: AppRoutes.changePasscode,
       page: () => const ChangePasscodeScreen(),
       transition: Transition.rightToLeft,
@@ -771,7 +783,37 @@ class AppRouter {
     GetPage(
       name: AppRoutes.initiateSendFunds,
       page: () {
-        final recipient = Get.arguments as RecipientModel;
+        final args = Get.arguments;
+        RecipientModel recipient;
+        if (args is RecipientModel) {
+          recipient = args;
+        } else if (args is Map) {
+          if (args['recipient'] is RecipientModel) {
+            recipient = args['recipient'] as RecipientModel;
+          } else {
+            recipient = RecipientModel(
+              id: (args['id'] ?? '') as String,
+              name: (args['name'] ?? '') as String,
+              accountNumber: (args['accountNumber'] ?? '') as String,
+              bankName: (args['bankName'] ?? '') as String,
+              sortCode: (args['sortCode'] ?? '') as String,
+              isFavorite: (args['isFavorite'] ?? false) as bool,
+              countryCode: args['countryCode'] as String?,
+              email: args['email'] as String?,
+              phoneNumber: args['phoneNumber'] as String?,
+              currency: args['currency'] as String?,
+            );
+          }
+        } else {
+          recipient = RecipientModel(
+            id: '',
+            name: '',
+            accountNumber: '',
+            bankName: '',
+            sortCode: '',
+            isFavorite: false,
+          );
+        }
         return BlocProvider(
           create: (_) => serviceLocator<TransferCubit>(),
           child: serviceLocator<InitiateSendFundsScreen>(param1: recipient),

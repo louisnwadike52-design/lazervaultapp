@@ -109,10 +109,11 @@ Date: ${dateFormat.format(widget.order.createdAt)}
 🚀 Generated with Claude Code
 ''';
 
-    Share.share(
-      receiptText,
+    SharePlus.instance.share(ShareParams(
+      text: receiptText,
       subject: '${widget.stock.symbol} Trade Receipt - Order #${widget.order.id}',
-    ).then((_) {
+    )).then((_) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -125,6 +126,7 @@ Date: ${dateFormat.format(widget.order.createdAt)}
         ),
       );
     }).catchError((error) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(

@@ -63,7 +63,7 @@ class _ElectricityBillHomeScreenState extends State<ElectricityBillHomeScreen> {
                       Get.snackbar(
                         'Error',
                         state.message,
-                        backgroundColor: Colors.red.withOpacity(0.9),
+                        backgroundColor: Colors.red.withValues(alpha: 0.9),
                         colorText: Colors.white,
                       );
                     }
@@ -101,7 +101,7 @@ class _ElectricityBillHomeScreenState extends State<ElectricityBillHomeScreen> {
                       child: Text(
                         'No providers available',
                         style: GoogleFonts.inter(
-                          color: Colors.white.withOpacity(0.6),
+                          color: Colors.white.withValues(alpha: 0.6),
                           fontSize: 16.sp,
                         ),
                       ),
@@ -127,10 +127,10 @@ class _ElectricityBillHomeScreenState extends State<ElectricityBillHomeScreen> {
               width: 44.w,
               height: 44.w,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(22.r),
                 border: Border.all(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   width: 1,
                 ),
               ),
@@ -157,7 +157,7 @@ class _ElectricityBillHomeScreenState extends State<ElectricityBillHomeScreen> {
                 Text(
                   'Select your provider',
                   style: GoogleFonts.inter(
-                    color: Colors.white.withOpacity(0.6),
+                    color: Colors.white.withValues(alpha: 0.6),
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w400,
                   ),
@@ -196,10 +196,10 @@ class _ElectricityBillHomeScreenState extends State<ElectricityBillHomeScreen> {
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 16.w),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.05),
+          color: Colors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(12.r),
           border: Border.all(
-            color: Colors.white.withOpacity(0.1),
+            color: Colors.white.withValues(alpha: 0.1),
             width: 1,
           ),
         ),
@@ -212,13 +212,13 @@ class _ElectricityBillHomeScreenState extends State<ElectricityBillHomeScreen> {
           decoration: InputDecoration(
             hintText: 'Search providers...',
             hintStyle: GoogleFonts.inter(
-              color: Colors.white.withOpacity(0.4),
+              color: Colors.white.withValues(alpha: 0.4),
               fontSize: 16.sp,
             ),
             border: InputBorder.none,
             icon: Icon(
               Icons.search,
-              color: Colors.white.withOpacity(0.4),
+              color: Colors.white.withValues(alpha: 0.4),
               size: 20.sp,
             ),
           ),
@@ -272,10 +272,10 @@ class _ElectricityBillHomeScreenState extends State<ElectricityBillHomeScreen> {
       child: Container(
         padding: EdgeInsets.symmetric(vertical: 16.h, horizontal: 12.w),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.05),
+          color: Colors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(12.r),
           border: Border.all(
-            color: Colors.white.withOpacity(0.1),
+            color: Colors.white.withValues(alpha: 0.1),
             width: 1,
           ),
         ),
@@ -340,10 +340,10 @@ class _ElectricityBillHomeScreenState extends State<ElectricityBillHomeScreen> {
       child: Container(
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.05),
+          color: Colors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(16.r),
           border: Border.all(
-            color: Colors.white.withOpacity(0.1),
+            color: Colors.white.withValues(alpha: 0.1),
             width: 1,
           ),
         ),
@@ -353,7 +353,7 @@ class _ElectricityBillHomeScreenState extends State<ElectricityBillHomeScreen> {
               width: 56.w,
               height: 56.w,
               decoration: BoxDecoration(
-                color: const Color(0xFF4E03D0).withOpacity(0.2),
+                color: const Color(0xFF4E03D0).withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(12.r),
               ),
               child: Icon(
@@ -379,7 +379,7 @@ class _ElectricityBillHomeScreenState extends State<ElectricityBillHomeScreen> {
                   Text(
                     provider.providerCode,
                     style: GoogleFonts.inter(
-                      color: Colors.white.withOpacity(0.6),
+                      color: Colors.white.withValues(alpha: 0.6),
                       fontSize: 14.sp,
                       fontWeight: FontWeight.w400,
                     ),
@@ -400,7 +400,7 @@ class _ElectricityBillHomeScreenState extends State<ElectricityBillHomeScreen> {
             ),
             Icon(
               Icons.arrow_forward_ios,
-              color: Colors.white.withOpacity(0.4),
+              color: Colors.white.withValues(alpha: 0.4),
               size: 18.sp,
             ),
           ],

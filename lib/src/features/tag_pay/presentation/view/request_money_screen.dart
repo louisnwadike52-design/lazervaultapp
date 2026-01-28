@@ -277,7 +277,7 @@ class _RequestMoneyViewState extends State<_RequestMoneyView> {
         children: [
           CircleAvatar(
             radius: 30.r,
-            backgroundColor: Colors.white.withOpacity(0.2),
+            backgroundColor: Colors.white.withValues(alpha: 0.2),
             child: Text(
               state.tagPay.displayName.isNotEmpty
                   ? state.tagPay.displayName[0].toUpperCase()
@@ -306,7 +306,7 @@ class _RequestMoneyViewState extends State<_RequestMoneyView> {
                 Text(
                   state.tagPay.formattedTagPay,
                   style: GoogleFonts.inter(
-                    color: Colors.white.withOpacity(0.8),
+                    color: Colors.white.withValues(alpha: 0.8),
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w500,
                   ),

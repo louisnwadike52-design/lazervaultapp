@@ -37,7 +37,7 @@ class GroupCard extends StatelessWidget {
           border: Border.all(color: const Color(0xFF2D2D2D)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 10,
               offset: const Offset(0, 2),
             ),
@@ -58,7 +58,7 @@ class GroupCard extends StatelessWidget {
                     gradient: LinearGradient(
                       colors: [
                         const Color.fromARGB(255, 78, 3, 208),
-                        const Color.fromARGB(255, 78, 3, 208).withOpacity(0.7),
+                        const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.7),
                       ],
                     ),
                     borderRadius: BorderRadius.circular(12.r),
@@ -109,7 +109,7 @@ class GroupCard extends StatelessWidget {
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                   decoration: BoxDecoration(
-                    color: _getStatusColor(group.status).withOpacity(0.2),
+                    color: _getStatusColor(group.status).withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(8.r),                  ),
                   child: Text(
                     group.status.displayName,
@@ -248,7 +248,7 @@ class GroupCard extends StatelessWidget {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 6.h),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8.r),
         boxShadow: [
           BoxShadow(

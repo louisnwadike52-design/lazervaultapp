@@ -483,7 +483,7 @@ class _PendingRequestsViewState extends State<_PendingRequestsView> with SingleT
             children: [
               CircleAvatar(
                 radius: 24.r,
-                backgroundColor: const Color(0xFF3B82F6).withOpacity(0.1),
+                backgroundColor: const Color(0xFF3B82F6).withValues(alpha: 0.1),
                 child: Icon(
                   Icons.request_page,
                   color: const Color(0xFF3B82F6),

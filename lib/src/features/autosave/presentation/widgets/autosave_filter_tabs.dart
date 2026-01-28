@@ -71,7 +71,7 @@ class AutoSaveFilterTabs extends StatelessWidget {
                 padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
                 decoration: BoxDecoration(
                   color: isSelected
-                      ? Colors.white.withOpacity(0.2)
+                      ? Colors.white.withValues(alpha: 0.2)
                       : const Color(0xFF2D2D2D),
                   borderRadius: BorderRadius.circular(10.r),
                 ),

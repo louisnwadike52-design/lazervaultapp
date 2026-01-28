@@ -48,7 +48,7 @@ class _RequestFundsState extends State<RequestFunds> {
             children: [
               Container(
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.1),
+                  color: Colors.white.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: IconButton(
@@ -86,10 +86,10 @@ class _RequestFundsState extends State<RequestFunds> {
                   Container(
                     padding: EdgeInsets.all(16.w),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.08),
+                      color: Colors.white.withValues(alpha: 0.08),
                       borderRadius: BorderRadius.circular(16),                      boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.2),
+                          color: Colors.black.withValues(alpha: 0.2),
                           blurRadius: 10,
                           offset: Offset(0, 4),
                         ),
@@ -135,7 +135,7 @@ class _RequestFundsState extends State<RequestFunds> {
                             Text(
                               "3887498783",
                               style: TextStyle(
-                                color: Colors.white.withOpacity(0.6),
+                                color: Colors.white.withValues(alpha: 0.6),
                                 fontSize: 14.sp,
                               ),
                             ),
@@ -150,7 +150,7 @@ class _RequestFundsState extends State<RequestFunds> {
                   Text(
                     'Amount',
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.9),
+                      color: Colors.white.withValues(alpha: 0.9),
                       fontSize: 14.sp,
                       fontWeight: FontWeight.w500,
                     ),
@@ -158,7 +158,7 @@ class _RequestFundsState extends State<RequestFunds> {
                   SizedBox(height: 8.h),
                   Container(
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.08),
+                      color: Colors.white.withValues(alpha: 0.08),
                       borderRadius: BorderRadius.circular(12),
                       boxShadow: [
           BoxShadow(
@@ -181,10 +181,10 @@ class _RequestFundsState extends State<RequestFunds> {
                             decoration: BoxDecoration(
                               border: Border(
                                 right: BorderSide(
-                                  color: Colors.white.withOpacity(0.15),
+                                  color: Colors.white.withValues(alpha: 0.15),
                                 ),
                               ),
-                              color: Colors.white.withOpacity(0.05),
+                              color: Colors.white.withValues(alpha: 0.05),
                             ),
                             child: Row(
                               children: [
@@ -203,7 +203,7 @@ class _RequestFundsState extends State<RequestFunds> {
                                 ),
                                 Icon(
                                   Icons.arrow_drop_down,
-                                  color: Colors.white.withOpacity(0.7),
+                                  color: Colors.white.withValues(alpha: 0.7),
                                 ),
                               ],
                             ),
@@ -224,7 +224,7 @@ class _RequestFundsState extends State<RequestFunds> {
                               ),
                               hintText: 'Enter amount',
                               hintStyle: TextStyle(
-                                color: Colors.white.withOpacity(0.4),
+                                color: Colors.white.withValues(alpha: 0.4),
                               ),
                             ),
                             keyboardType: TextInputType.number,
@@ -241,8 +241,8 @@ class _RequestFundsState extends State<RequestFunds> {
                     hint: 'youremail@example.com',
                     controller: emailController,
                     icon: Icons.email_outlined,
-                    backgroundColor: Colors.white.withOpacity(0.08),
-                    borderColor: Colors.white.withOpacity(0.15),
+                    backgroundColor: Colors.white.withValues(alpha: 0.08),
+                    borderColor: Colors.white.withValues(alpha: 0.15),
                   ),
                   SizedBox(height: 24.h),
     
@@ -252,8 +252,8 @@ class _RequestFundsState extends State<RequestFunds> {
                     controller: notesController,
                     icon: Icons.note_outlined,
                     maxLines: 3,
-                    backgroundColor: Colors.white.withOpacity(0.08),
-                    borderColor: Colors.white.withOpacity(0.15),
+                    backgroundColor: Colors.white.withValues(alpha: 0.08),
+                    borderColor: Colors.white.withValues(alpha: 0.15),
                   ),
                 ],
               ),
@@ -278,14 +278,14 @@ class _RequestFundsState extends State<RequestFunds> {
                 onDismiss: () => Get.offAllNamed(AppRoutes.dashboard),
               ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Color(0xFF1ED69E).withOpacity(0.9),
+                backgroundColor: Color(0xFF1ED69E).withValues(alpha: 0.9),
                 foregroundColor: Colors.white,
                 padding: EdgeInsets.symmetric(vertical: 10.h),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(24),
                 ),
                 elevation: 4,
-                shadowColor: Color(0xFF1ED69E).withOpacity(0.3),
+                shadowColor: Color(0xFF1ED69E).withValues(alpha: 0.3),
               ),
               child: Text(
                 'Send Request',
@@ -318,7 +318,7 @@ class _RequestFundsState extends State<RequestFunds> {
         Text(
           label,
           style: TextStyle(
-            color: Colors.white.withOpacity(0.9),
+            color: Colors.white.withValues(alpha: 0.9),
             fontSize: 14.sp,
             fontWeight: FontWeight.w500,
           ),
@@ -326,7 +326,7 @@ class _RequestFundsState extends State<RequestFunds> {
         SizedBox(height: 8.h),
         Container(
           decoration: BoxDecoration(
-            color: backgroundColor ?? Colors.white.withOpacity(0.08),
+            color: backgroundColor ?? Colors.white.withValues(alpha: 0.08),
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
           BoxShadow(
@@ -350,11 +350,11 @@ class _RequestFundsState extends State<RequestFunds> {
               contentPadding: EdgeInsets.all(16.w),
               hintText: hint,
               hintStyle: TextStyle(
-                color: Colors.white.withOpacity(0.4),
+                color: Colors.white.withValues(alpha: 0.4),
               ),
               prefixIcon: Icon(
                 icon,
-                color: Colors.white.withOpacity(0.6),
+                color: Colors.white.withValues(alpha: 0.6),
                 size: 20,
               ),
             ),

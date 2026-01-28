@@ -18,7 +18,7 @@ import 'package:lazervault/src/generated/auth.pbgrpc.dart' hide VirtualAccountIn
 import 'package:lazervault/src/generated/auth.pbenum.dart' as auth_enum;
 import 'package:lazervault/src/generated/auth.pb.dart' as auth_req_resp;
 import 'package:lazervault/src/generated/user.pbgrpc.dart';
-import 'package:fixnum/fixnum.dart';
+
 // Import google_sign_in and sign_in_with_apple if implementing those methods
 // import 'package:google_sign_in/google_sign_in.dart';
 // import 'package:sign_in_with_apple/sign_in_with_apple.dart';

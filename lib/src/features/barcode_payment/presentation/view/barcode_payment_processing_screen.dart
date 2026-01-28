@@ -93,7 +93,7 @@ class _BarcodePaymentProcessingScreenState
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF4E03D0).withOpacity(0.4),
+                            color: const Color(0xFF4E03D0).withValues(alpha: 0.4),
                             blurRadius: 40,
                             spreadRadius: 10,
                           ),
@@ -120,7 +120,7 @@ class _BarcodePaymentProcessingScreenState
                     'Please wait while we process your payment...',
                     textAlign: TextAlign.center,
                     style: GoogleFonts.inter(
-                      color: Colors.white.withOpacity(0.6),
+                      color: Colors.white.withValues(alpha: 0.6),
                       fontSize: 16.sp,
                       fontWeight: FontWeight.w400,
                     ),

@@ -46,7 +46,7 @@ class PortfolioSummaryCard extends StatelessWidget {
           children: [
             Icon(
               Icons.account_balance_wallet_outlined,
-              color: Colors.white.withOpacity(0.6),
+              color: Colors.white.withValues(alpha: 0.6),
               size: 48.sp,
             ),
             SizedBox(height: 16.h),
@@ -64,7 +64,7 @@ class PortfolioSummaryCard extends StatelessWidget {
               textAlign: TextAlign.center,
               style: GoogleFonts.inter(
                 fontSize: 14.sp,
-                color: Colors.white.withOpacity(0.6),
+                color: Colors.white.withValues(alpha: 0.6),
               ),
             ),
           ],
@@ -87,7 +87,7 @@ class PortfolioSummaryCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF6C5CE7).withOpacity(0.3),
+            color: const Color(0xFF6C5CE7).withValues(alpha: 0.3),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -103,13 +103,13 @@ class PortfolioSummaryCard extends StatelessWidget {
                 'Portfolio Value',
                 style: GoogleFonts.inter(
                   fontSize: 14.sp,
-                  color: Colors.white.withOpacity(0.8),
+                  color: Colors.white.withValues(alpha: 0.8),
                 ),
               ),
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12.r),
                 ),
                 child: Text(
@@ -154,7 +154,7 @@ class PortfolioSummaryCard extends StatelessWidget {
                 '(${profitLossPercentage >= 0 ? '+' : ''}${profitLossPercentage.toStringAsFixed(2)}%)',
                 style: GoogleFonts.inter(
                   fontSize: 12.sp,
-                  color: Colors.white.withOpacity(0.8),
+                  color: Colors.white.withValues(alpha: 0.8),
                 ),
               ),
             ],
@@ -164,7 +164,7 @@ class PortfolioSummaryCard extends StatelessWidget {
             'Top Holdings',
             style: GoogleFonts.inter(
               fontSize: 14.sp,
-              color: Colors.white.withOpacity(0.8),
+              color: Colors.white.withValues(alpha: 0.8),
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -177,7 +177,7 @@ class PortfolioSummaryCard extends StatelessWidget {
                 '+${holdings.length - 3} more assets',
                 style: GoogleFonts.inter(
                   fontSize: 12.sp,
-                  color: Colors.white.withOpacity(0.6),
+                  color: Colors.white.withValues(alpha: 0.6),
                 ),
               ),
             ),
@@ -197,7 +197,7 @@ class PortfolioSummaryCard extends StatelessWidget {
             width: 24.w,
             height: 24.w,
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: Center(
@@ -228,7 +228,7 @@ class PortfolioSummaryCard extends StatelessWidget {
                   '${holding.quantity.toStringAsFixed(4)} coins',
                   style: GoogleFonts.inter(
                     fontSize: 10.sp,
-                    color: Colors.white.withOpacity(0.6),
+                    color: Colors.white.withValues(alpha: 0.6),
                   ),
                 ),
               ],
@@ -249,7 +249,7 @@ class PortfolioSummaryCard extends StatelessWidget {
                 '${percentage.toStringAsFixed(1)}%',
                 style: GoogleFonts.inter(
                   fontSize: 10.sp,
-                  color: Colors.white.withOpacity(0.6),
+                  color: Colors.white.withValues(alpha: 0.6),
                 ),
               ),
             ],

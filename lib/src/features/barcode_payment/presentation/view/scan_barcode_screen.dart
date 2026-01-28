@@ -99,7 +99,7 @@ class _ScanBarcodeScreenState extends State<ScanBarcodeScreen> {
   Widget _buildOverlay() {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.5),
+        color: Colors.black.withValues(alpha: 0.5),
       ),
       child: CustomPaint(
         painter: ScannerOverlayPainter(),
@@ -120,10 +120,10 @@ class _ScanBarcodeScreenState extends State<ScanBarcodeScreen> {
                 width: 44.w,
                 height: 44.w,
                 decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.6),
+                  color: Colors.black.withValues(alpha: 0.6),
                   borderRadius: BorderRadius.circular(22.r),
                   border: Border.all(
-                    color: Colors.white.withOpacity(0.3),
+                    color: Colors.white.withValues(alpha: 0.3),
                     width: 1,
                   ),
                 ),
@@ -151,10 +151,10 @@ class _ScanBarcodeScreenState extends State<ScanBarcodeScreen> {
                 width: 44.w,
                 height: 44.w,
                 decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.6),
+                  color: Colors.black.withValues(alpha: 0.6),
                   borderRadius: BorderRadius.circular(22.r),
                   border: Border.all(
-                    color: Colors.white.withOpacity(0.3),
+                    color: Colors.white.withValues(alpha: 0.3),
                     width: 1,
                   ),
                 ),
@@ -179,7 +179,7 @@ class _ScanBarcodeScreenState extends State<ScanBarcodeScreen> {
       child: Container(
         padding: EdgeInsets.all(20.w),
         decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.8),
+          color: Colors.black.withValues(alpha: 0.8),
           borderRadius: BorderRadius.circular(16.r),
           border: Border.all(
             color: const Color(0xFF4E03D0),
@@ -208,7 +208,7 @@ class _ScanBarcodeScreenState extends State<ScanBarcodeScreen> {
               'The barcode will be scanned automatically',
               textAlign: TextAlign.center,
               style: GoogleFonts.inter(
-                color: Colors.white.withOpacity(0.6),
+                color: Colors.white.withValues(alpha: 0.6),
                 fontSize: 14.sp,
                 fontWeight: FontWeight.w400,
               ),
@@ -240,7 +240,7 @@ class ScannerOverlayPainter extends CustomPainter {
 
     canvas.drawPath(
       backgroundPath,
-      Paint()..color = Colors.black.withOpacity(0.7),
+      Paint()..color = Colors.black.withValues(alpha: 0.7),
     );
 
     // Draw corner brackets

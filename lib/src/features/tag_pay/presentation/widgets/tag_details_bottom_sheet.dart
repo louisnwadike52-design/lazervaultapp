@@ -194,10 +194,10 @@ class TagDetailsBottomSheet extends StatelessWidget {
       Get.back();
 
       // Share PDF
-      await Share.shareXFiles(
-        [XFile(file.path)],
+      await SharePlus.instance.share(ShareParams(
+        files: [XFile(file.path)],
         subject: 'Tag Payment Details - ${tag.currency} ${tag.amount.toStringAsFixed(2)}',
-      );
+      ));
 
       Get.snackbar(
         'Success',
@@ -292,8 +292,8 @@ class TagDetailsBottomSheet extends StatelessWidget {
             padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
             decoration: BoxDecoration(
               color: isPaid
-                  ? const Color(0xFF10B981).withOpacity(0.1)
-                  : const Color(0xFFFB923C).withOpacity(0.1),
+                  ? const Color(0xFF10B981).withValues(alpha: 0.1)
+                  : const Color(0xFFFB923C).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8.r),
             ),
             child: Row(
@@ -367,7 +367,7 @@ class TagDetailsBottomSheet extends StatelessWidget {
               borderRadius: BorderRadius.circular(12.r),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF3B82F6).withOpacity(0.3),
+                  color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
                   blurRadius: 8,
                   offset: const Offset(0, 4),
                 ),

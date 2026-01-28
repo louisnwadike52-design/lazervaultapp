@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:get_it/get_it.dart';
-import 'package:fixnum/fixnum.dart';
 import 'package:intl/intl.dart';
 // For serviceLocator
 import 'package:lazervault/core/types/app_routes.dart';
@@ -98,13 +97,11 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
       // Get arguments and determine recipient details
       final args = Get.arguments;
 
-      if (args is Map) {
-        // NEW: Handle map arguments from add_recipient (temporary recipient)
+      if (args is Map<String, dynamic>) {
         _recipient = args['recipient'] as RecipientModel;
-        _isTemporary = args['isTemporary'] as bool? ?? false;
-        _shouldSaveOnSuccess = args['shouldSaveOnSuccess'] as bool? ?? false;
+        _isTemporary = args['isTemporary'] == true;
+        _shouldSaveOnSuccess = args['shouldSaveOnSuccess'] == true;
       } else if (args is RecipientModel) {
-        // OLD: Handle direct RecipientModel for saved recipients
         _recipient = args;
         _isTemporary = false;
         _shouldSaveOnSuccess = false;
@@ -334,8 +331,8 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                     ),
                     Text(
                       NumberFormat.currency(
-                              symbol: account.currency ?? '£', decimalDigits: 2)
-                          .format(account.balance ?? 0.0),
+                              symbol: account.currency, decimalDigits: 2)
+                          .format(account.balance),
                       style: TextStyle(
                         color: Colors.white70,
                         fontSize: 12,
@@ -621,7 +618,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
     // 6. CRITICAL: Validate sufficient balance (including estimated fee)
     double estimatedFee = transferAmountMajor * 0.005; // 0.5% fee
     double estimatedTotal = transferAmountMajor + estimatedFee;
-    double availableBalance = selectedAccount.balance ?? 0.0;
+    double availableBalance = selectedAccount.balance;
 
     if (estimatedTotal > availableBalance) {
       Get.snackbar(
@@ -663,7 +660,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
     double transferFee = transferAmountMajor * 0.005; // Example 0.5% fee
     double totalAmount = transferAmountMajor + transferFee;
     // Get source card details
-    String sourceCardType = selectedAccount.accountType ?? 'Card';
+    String sourceCardType = selectedAccount.accountType;
     String sourceLast4 = selectedAccount.accountNumberLast4;
     String sourceAccountInfo = '$sourceCardType •••• $sourceLast4';
 
@@ -832,7 +829,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                       // Use StatefulBuilder to manage the button loading state locally
                       StatefulBuilder(
                         builder:
-                            (BuildContext context, StateSetter setDialogState) {
+                            (BuildContext dialogCtx, StateSetter setDialogState) {
                           bool isDialogLoading =
                               _isConfirmingTransfer; // Use the main state or a local one if preferred
 
@@ -849,15 +846,25 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                                       // Calculate amounts for PIN validation
                                       double transferAmountMajor = double.parse(amount) / 100.0;
 
-                                      // Validate PIN before processing transfer
+                                      // Close the confirmation dialog before showing PIN modal
+                                      // to avoid using the dialog's deactivated context
+                                      Navigator.of(dialogCtx).pop();
+
+                                      if (!mounted) return;
+
+                                      // Validate PIN using the widget's context (not the dialog's)
+                                      final accountCurrency = accountState.accountSummaries[selectedCardIndex].currency;
+                                      final currSym = _getCurrencySymbol(accountCurrency);
+
                                       final success = await validateTransactionPin(
                                         context: context,
                                         transactionId: transactionId,
                                         transactionType: 'transfer',
                                         amount: transferAmountMajor,
-                                        currency: 'GBP',
+                                        currency: accountCurrency,
+                                        currencySymbol: currSym,
                                         title: 'Confirm Transfer',
-                                        message: 'Confirm transfer of £${transferAmountMajor.toStringAsFixed(2)} to ${_recipient!.name}?',
+                                        message: 'Confirm transfer of $currSym${transferAmountMajor.toStringAsFixed(2)} to ${_recipient!.name}?',
                                         onPinValidated: (verificationToken) async {
                                           // PIN is valid, proceed with transfer
                                           _executeTransferWithPin(
@@ -976,79 +983,60 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
       return;
     }
     final selectedAccount = accountState.accountSummaries[selectedCardIndex];
-    final fromAccountIdString = selectedAccount.id;
+    final fromAccountId = selectedAccount.id;
 
-    // Ensure fromAccountId can be parsed to int before creating Int64
-    int fromAccountIdInt;
-    try {
-      fromAccountIdInt = int.parse(fromAccountIdString);
-    } catch (e) {
-      print(
-          "_handleTransferInitiation: Error - Parsing fromAccountIdString: $e");
-      Get.snackbar('Error', 'Invalid source account ID format.',
-          snackPosition: SnackPosition.BOTTOM);
-      return;
-    }
-
-    // Get recipient ID - Ensure _recipient!.id is not null and can be parsed to int
-    int recipientIdInt; // Use non-nullable int
-    try {
-      final dynamic id = _recipient!.id; // Use dynamic type
-      if (id is String) {
-        recipientIdInt =
-            int.parse(id); // Use int.parse, will throw if invalid format
-      } else if (id is int) {
-        recipientIdInt = id; // Assign directly if it's already an int
-      } else {
-        // Handle unexpected type if necessary, or throw
-        print(
-            "_handleTransferInitiation: Error - Unexpected recipient ID type: $id");
-        throw const FormatException('Unexpected recipient ID type');
-      }
-    } catch (e) {
-      print("_handleTransferInitiation: Error - Parsing recipientId: $e");
-      Get.snackbar(
-          'Error', 'Recipient information missing or invalid: ${e.toString()}',
-          snackPosition: SnackPosition.BOTTOM);
-      return;
-    }
+    // Get user ID for banking service
+    final userId = authState.profile.user.id;
 
     // Parse amount string (minor units)
-    Int64 amountMinorUnits;
+    int amountMinorUnits;
     try {
       if (amount.isEmpty) throw const FormatException('Amount is empty');
-      // Use Int64.parseInt for string parsing
-      amountMinorUnits = Int64.parseInt(amount);
-      if (amountMinorUnits <= Int64.ZERO) {
-        // Compare with Int64.ZERO
-        print("_handleTransferInitiation: Error - Amount is zero or less.");
+      amountMinorUnits = int.parse(amount);
+      if (amountMinorUnits <= 0) {
         Get.snackbar('Error', 'Amount must be greater than zero.',
             snackPosition: SnackPosition.BOTTOM);
         return;
       }
     } catch (e) {
-      print("_handleTransferInitiation: Error - Parsing amount: $e");
       Get.snackbar('Error', 'Invalid amount entered.',
           snackPosition: SnackPosition.BOTTOM);
       return;
     }
 
-    final category = selectedCategory;
     final reference = _referenceController.text.trim();
+    final narration = selectedCategory != null
+        ? '$selectedCategory: ${reference.isNotEmpty ? reference : "Transfer"}'
+        : (reference.isNotEmpty ? reference : 'Transfer');
 
-    // Call the Cubit - Pass DateTime? directly
-    print(
-        "_handleTransferInitiation: Calling TransferCubit.initiateTransfer...");
-    context.read<TransferCubit>().initiateTransfer(
-          fromAccountId: Int64(fromAccountIdInt), // Use parsed Int64
-          amount: amountMinorUnits,
-          accessToken: accessToken,
-          recipientId: Int64(recipientIdInt), // Use parsed recipient ID
-          category: category,
-          reference: reference.isNotEmpty ? reference : null,
-          scheduledAt: scheduledDate, // Pass DateTime? directly
-        );
-    print("_handleTransferInitiation: Transfer initiation called.");
+    // Determine transfer type based on recipient
+    final isInternalTransfer = _recipient!.bankName == 'LazerVault';
+
+    if (isInternalTransfer) {
+      print("_handleTransferInitiation: Calling TransferCubit.initiateInternalTransfer...");
+      context.read<TransferCubit>().initiateInternalTransfer(
+            fromUserId: userId,
+            toUserId: _recipient!.id,
+            amount: amountMinorUnits,
+            currency: selectedAccount.currency,
+            narration: narration,
+          );
+      print("_handleTransferInitiation: Internal transfer initiated.");
+    } else {
+      print("_handleTransferInitiation: Calling TransferCubit.initiateDomesticTransfer...");
+      context.read<TransferCubit>().initiateDomesticTransfer(
+            userId: userId,
+            sourceAccountId: fromAccountId,
+            amount: amountMinorUnits,
+            destinationAccount: _recipient!.accountNumber,
+            destinationBankCode: _recipient!.sortCode,
+            destinationName: _recipient!.name,
+            currency: selectedAccount.currency,
+            narration: narration,
+            reference: reference.isNotEmpty ? reference : null,
+          );
+      print("_handleTransferInitiation: Domestic transfer initiated.");
+    }
   }
 
   /// Execute transfer with verification token (for PIN-validated transactions)
@@ -1082,77 +1070,62 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
       return;
     }
     final selectedAccount = accountState.accountSummaries[selectedCardIndex];
-    final fromAccountIdString = selectedAccount.id;
+    final fromAccountId = selectedAccount.id;
 
-    // Ensure fromAccountId can be parsed to int before creating Int64
-    int fromAccountIdInt;
-    try {
-      fromAccountIdInt = int.parse(fromAccountIdString);
-    } catch (e) {
-      print(
-          "_executeTransferWithPin: Error - Parsing fromAccountIdString: $e");
-      Get.snackbar('Error', 'Invalid source account ID format.',
-          snackPosition: SnackPosition.BOTTOM);
-      return;
-    }
-
-    // Get recipient ID - Ensure _recipient!.id is not null and can be parsed to int
-    int recipientIdInt;
-    try {
-      final dynamic id = _recipient!.id;
-      if (id is String) {
-        recipientIdInt = int.parse(id);
-      } else if (id is int) {
-        recipientIdInt = id;
-      } else {
-        print(
-            "_executeTransferWithPin: Error - Unexpected recipient ID type: $id");
-        throw const FormatException('Unexpected recipient ID type');
-      }
-    } catch (e) {
-      print("_executeTransferWithPin: Error - Parsing recipientId: $e");
-      Get.snackbar(
-          'Error', 'Recipient information missing or invalid: ${e.toString()}',
-          snackPosition: SnackPosition.BOTTOM);
-      return;
-    }
+    // Get user ID for banking service
+    final userId = authState.profile.user.id;
 
     // Parse amount string (minor units)
-    Int64 amountMinorUnits;
+    int amountMinorUnits;
     try {
       if (amount.isEmpty) throw const FormatException('Amount is empty');
-      amountMinorUnits = Int64.parseInt(amount);
-      if (amountMinorUnits <= Int64.ZERO) {
-        print("_executeTransferWithPin: Error - Amount is zero or less.");
+      amountMinorUnits = int.parse(amount);
+      if (amountMinorUnits <= 0) {
         Get.snackbar('Error', 'Amount must be greater than zero.',
             snackPosition: SnackPosition.BOTTOM);
         return;
       }
     } catch (e) {
-      print("_executeTransferWithPin: Error - Parsing amount: $e");
       Get.snackbar('Error', 'Invalid amount entered.',
           snackPosition: SnackPosition.BOTTOM);
       return;
     }
 
-    final category = selectedCategory;
     final reference = _referenceController.text.trim();
+    final narration = selectedCategory != null
+        ? '$selectedCategory: ${reference.isNotEmpty ? reference : "Transfer"}'
+        : (reference.isNotEmpty ? reference : 'Transfer');
 
-    // Call the Cubit with verification token
-    print(
-        "_executeTransferWithPin: Calling TransferCubit.initiateTransferWithToken...");
-    context.read<TransferCubit>().initiateTransferWithToken(
-          fromAccountId: Int64(fromAccountIdInt),
-          amount: amountMinorUnits,
-          accessToken: accessToken,
-          recipientId: Int64(recipientIdInt),
-          category: category,
-          reference: reference.isNotEmpty ? reference : null,
-          scheduledAt: scheduledDate,
-          transactionId: transactionId,
-          verificationToken: verificationToken,
-        );
-    print("_executeTransferWithPin: Transfer initiation with token called.");
+    // Determine transfer type based on recipient
+    final isInternalTransfer = _recipient!.bankName == 'LazerVault';
+
+    if (isInternalTransfer) {
+      // Internal C2C transfer — recipient.id contains the target userId
+      print("_executeTransferWithPin: Calling TransferCubit.initiateInternalTransfer...");
+      context.read<TransferCubit>().initiateInternalTransfer(
+            fromUserId: userId,
+            toUserId: _recipient!.id,
+            amount: amountMinorUnits,
+            currency: selectedAccount.currency,
+            narration: narration,
+          );
+      print("_executeTransferWithPin: Internal transfer initiated.");
+    } else {
+      // Domestic transfer to external bank
+      print("_executeTransferWithPin: Calling TransferCubit.initiateDomesticTransfer...");
+      context.read<TransferCubit>().initiateDomesticTransfer(
+            userId: userId,
+            sourceAccountId: fromAccountId,
+            amount: amountMinorUnits,
+            destinationAccount: _recipient!.accountNumber,
+            destinationBankCode: _recipient!.sortCode,
+            destinationName: _recipient!.name,
+            currency: selectedAccount.currency,
+            narration: narration,
+            reference: reference.isNotEmpty ? reference : null,
+          );
+      print("_executeTransferWithPin: Domestic transfer initiated.");
+    }
   }
 
   // Confirmation Row Helper (Minor Adjustments)
@@ -1290,7 +1263,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
             try {
               // Convert amount from response (minor units) if available, else use original input
               transferAmount =
-                  (transferState.response.amount ?? Int64.parseInt(amount))
+                  (transferState.response.amount)
                           .toDouble() /
                       100.0;
             } catch (_) {
@@ -1298,9 +1271,9 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
             }
             // Use fee/total from response if available
             double transferFee =
-                (transferState.response.fee ?? Int64(0)).toDouble() / 100.0;
+                (transferState.response.fee).toDouble() / 100.0;
             double totalAmount =
-                (transferState.response.totalAmount ?? Int64(0)).toDouble() /
+                (transferState.response.totalAmount).toDouble() /
                     100.0;
             // Fallback calculation if total is missing from response
             if (totalAmount == 0 && transferAmount > 0) {
@@ -1317,7 +1290,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                 selectedCardIndex < accountState.accountSummaries.length) {
               final selectedAccount =
                   accountState.accountSummaries[selectedCardIndex];
-              String sourceCardType = selectedAccount.accountType ?? 'Card';
+              String sourceCardType = selectedAccount.accountType;
               String sourceLast4 = selectedAccount.accountNumberLast4;
               sourceAccountInfo = '$sourceCardType •••• $sourceLast4';
             } else {
@@ -1339,15 +1312,13 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
               'sourceAccountInfo': sourceAccountInfo,
               // Use transferId from response (assuming it's Int64)
               'transferId':
-                  transferState.response.transferId.toString() ?? 'N/A',
-              'timestamp': transferState.response.createdAt ??
-                  DateTime.now(), // Use time from response if available
+                  transferState.response.transferId.toString(),
+              'timestamp': transferState.response.createdAt, // Use time from response
               'category': selectedCategory,
               'reference': _referenceController.text.trim().isNotEmpty
                   ? _referenceController.text.trim()
                   : null,
-              'status': transferState.response.status ??
-                  'Completed', // Or derive from response
+              'status': transferState.response.status, // Or derive from response
             };
             print(
                 'Listener: Transfer details prepared: $transferDetails'); // Debug print
@@ -1495,8 +1466,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                 accountState.accountSummaries.isNotEmpty &&
                 selectedCardIndex < accountState.accountSummaries.length) {
               maxAmount =
-                  accountState.accountSummaries[selectedCardIndex].balance ??
-                      0.0; // Example: use balance as max
+                  accountState.accountSummaries[selectedCardIndex].balance; // Example: use balance as max
             }
 
             return Scaffold(
@@ -1687,8 +1657,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                                               ? accountState
                                                       .accountSummaries[
                                                           selectedCardIndex]
-                                                      .currency ??
-                                                  'GBP'
+                                                      .currency
                                               : 'GBP',
                                           style: TextStyle(color: Colors.white),
                                         ),

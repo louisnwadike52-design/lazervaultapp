@@ -43,7 +43,7 @@ class AvatarWithDetails extends StatelessWidget {
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 14.0.sp,
-                      color: HexColor.fromHex("#A3A3A3"),
+                      color: HybridHexColor.fromHex("#A3A3A3"),
                       fontWeight: FontWeight.w500,
                     ),
                   ),

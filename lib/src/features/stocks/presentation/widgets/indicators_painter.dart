@@ -69,7 +69,7 @@ class IndicatorsPainter extends CustomPainter {
 
   void _drawErrorIndicator(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.red.withOpacity(0.5)
+      ..color = Colors.red.withValues(alpha: 0.5)
       ..style = PaintingStyle.fill;
     
     canvas.drawRect(
@@ -97,7 +97,7 @@ class IndicatorsPainter extends CustomPainter {
     if (priceHistory.length < period) return;
 
     final paint = Paint()
-      ..color = color.withOpacity(0.8)
+      ..color = color.withValues(alpha: 0.8)
       ..strokeWidth = 2.0
       ..style = PaintingStyle.stroke;
 
@@ -129,7 +129,7 @@ class IndicatorsPainter extends CustomPainter {
     if (priceHistory.length < period) return;
 
     final paint = Paint()
-      ..color = color.withOpacity(0.8)
+      ..color = color.withValues(alpha: 0.8)
       ..strokeWidth = 2.0
       ..style = PaintingStyle.stroke;
 
@@ -162,17 +162,17 @@ class IndicatorsPainter extends CustomPainter {
     final stdDev = _calculateStandardDeviation(20);
     
     final upperBandPaint = Paint()
-      ..color = Colors.purple.withOpacity(0.6)
+      ..color = Colors.purple.withValues(alpha: 0.6)
       ..strokeWidth = 1.5
       ..style = PaintingStyle.stroke;
     
     final lowerBandPaint = Paint()
-      ..color = Colors.purple.withOpacity(0.6)
+      ..color = Colors.purple.withValues(alpha: 0.6)
       ..strokeWidth = 1.5
       ..style = PaintingStyle.stroke;
     
     final fillPaint = Paint()
-      ..color = Colors.purple.withOpacity(0.1)
+      ..color = Colors.purple.withValues(alpha: 0.1)
       ..style = PaintingStyle.fill;
 
     final upperPath = Path();
@@ -230,7 +230,7 @@ class IndicatorsPainter extends CustomPainter {
     
     // Draw RSI background
     final bgPaint = Paint()
-      ..color = Colors.black.withOpacity(0.7)
+      ..color = Colors.black.withValues(alpha: 0.7)
       ..style = PaintingStyle.fill;
     
     canvas.drawRect(
@@ -240,7 +240,7 @@ class IndicatorsPainter extends CustomPainter {
 
     // Draw RSI levels (30, 50, 70)
     final levelPaint = Paint()
-      ..color = Colors.grey.withOpacity(0.3)
+      ..color = Colors.grey.withValues(alpha: 0.3)
       ..strokeWidth = 0.5;
 
     final oversoldY = rsiTop + (rsiHeight * 0.7); // 30 level
@@ -288,7 +288,7 @@ class IndicatorsPainter extends CustomPainter {
     
     // Draw MACD background
     final bgPaint = Paint()
-      ..color = Colors.black.withOpacity(0.7);
+      ..color = Colors.black.withValues(alpha: 0.7);
     
     canvas.drawRect(
       Rect.fromLTWH(0, macdTop, size.width, macdHeight),
@@ -297,7 +297,7 @@ class IndicatorsPainter extends CustomPainter {
 
     // Draw zero line
     final zeroLinePaint = Paint()
-      ..color = Colors.grey.withOpacity(0.5)
+      ..color = Colors.grey.withValues(alpha: 0.5)
       ..strokeWidth = 1.0;
     
     final zeroY = macdTop + (macdHeight / 2);
@@ -370,7 +370,7 @@ class IndicatorsPainter extends CustomPainter {
     final vwapValues = _calculateVWAP();
     
     final paint = Paint()
-      ..color = Colors.cyan.withOpacity(0.8)
+      ..color = Colors.cyan.withValues(alpha: 0.8)
       ..strokeWidth = 2.0
       ..style = PaintingStyle.stroke;
 
@@ -405,7 +405,7 @@ class IndicatorsPainter extends CustomPainter {
     
     // Draw background
     final bgPaint = Paint()
-      ..color = Colors.black.withOpacity(0.7);
+      ..color = Colors.black.withValues(alpha: 0.7);
     
     canvas.drawRect(
       Rect.fromLTWH(0, stochTop, size.width, stochHeight),
@@ -414,7 +414,7 @@ class IndicatorsPainter extends CustomPainter {
 
     // Draw overbought/oversold levels
     final levelPaint = Paint()
-      ..color = Colors.grey.withOpacity(0.3)
+      ..color = Colors.grey.withValues(alpha: 0.3)
       ..strokeWidth = 0.5;
 
     final overboughtY = stochTop + (stochHeight * 0.2); // 80 level
@@ -503,7 +503,7 @@ class IndicatorsPainter extends CustomPainter {
     
     // Draw background
     final bgPaint = Paint()
-      ..color = Colors.black.withOpacity(0.7);
+      ..color = Colors.black.withValues(alpha: 0.7);
     
     canvas.drawRect(
       Rect.fromLTWH(0, atrTop, size.width, atrHeight),
@@ -561,7 +561,7 @@ class IndicatorsPainter extends CustomPainter {
       
       final isUp = priceHistory[i].close >= priceHistory[i].open;
       final paint = Paint()
-        ..color = (isUp ? Colors.green : Colors.red).withOpacity(0.6);
+        ..color = (isUp ? Colors.green : Colors.red).withValues(alpha: 0.6);
       
       canvas.drawRect(
         Rect.fromLTWH(x - 1, volumeTop + volumeHeight - barHeight, 2, barHeight),

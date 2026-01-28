@@ -309,7 +309,7 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen> {
         size: 16,
       ),
       onDeleted: onDeleted,
-      backgroundColor: const Color(0xFF4E03D0).withOpacity(0.1),
+      backgroundColor: const Color(0xFF4E03D0).withValues(alpha: 0.1),
       side: const BorderSide(
         color: Color(0xFF4E03D0),
         width: 1,
@@ -369,7 +369,7 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen> {
                         _selectedCategory = selected ? category : null;
                       });
                     },
-                    selectedColor: const Color(0xFF4E03D0).withOpacity(0.3),
+                    selectedColor: const Color(0xFF4E03D0).withValues(alpha: 0.3),
                     checkmarkColor: const Color(0xFF4E03D0),
                     labelStyle: TextStyle(
                       color: isSelected
@@ -402,7 +402,7 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen> {
                         _selectedStatus = selected ? status : null;
                       });
                     },
-                    selectedColor: const Color(0xFF4E03D0).withOpacity(0.3),
+                    selectedColor: const Color(0xFF4E03D0).withValues(alpha: 0.3),
                     checkmarkColor: const Color(0xFF4E03D0),
                     labelStyle: TextStyle(
                       color: isSelected

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart'; // Import intl for date formatting
@@ -468,7 +467,7 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.blue.withOpacity(0.1) : Colors.white,
+          color: isSelected ? Colors.blue.withValues(alpha: 0.1) : Colors.white,
           borderRadius: BorderRadius.circular(12.r),
           border: Border.all(
             color: isSelected ? Colors.blue : (isSupported ? Colors.grey.shade300 : Colors.grey.shade200),
@@ -1230,7 +1229,7 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
     showDialog(
       context: context,
       barrierDismissible: true,
-      barrierColor: Colors.black.withOpacity(0.6),
+      barrierColor: Colors.black.withValues(alpha: 0.6),
       builder: (context) => Dialog(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(24.r),
@@ -1244,7 +1243,7 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
             borderRadius: BorderRadius.circular(24.r),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.15),
+                color: Colors.black.withValues(alpha: 0.15),
                 blurRadius: 24,
                 offset: const Offset(0, 8),
               ),
@@ -1276,7 +1275,7 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
                       width: 56.w,
                       height: 56.h,
                       decoration: BoxDecoration(
-                        color: const Color(0xFFFF9800).withOpacity(0.2),
+                        color: const Color(0xFFFF9800).withValues(alpha: 0.2),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
@@ -1325,7 +1324,7 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
                         color: const Color(0xFFF5F7FA),
                         borderRadius: BorderRadius.circular(16.r),
                         border: Border.all(
-                          color: const Color(0xFF6C63FF).withOpacity(0.2),
+                          color: const Color(0xFF6C63FF).withValues(alpha: 0.2),
                           width: 1,
                         ),
                       ),
@@ -1335,7 +1334,7 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
                             width: 40.w,
                             height: 40.h,
                             decoration: BoxDecoration(
-                              color: const Color(0xFF6C63FF).withOpacity(0.1),
+                              color: const Color(0xFF6C63FF).withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(10.r),
                             ),
                             child: Icon(
@@ -1378,7 +1377,7 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
                     Container(
                       padding: EdgeInsets.all(16.w),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFFFF4E5).withOpacity(0.5),
+                        color: const Color(0xFFFFF4E5).withValues(alpha: 0.5),
                         borderRadius: BorderRadius.circular(12.r),
                       ),
                       child: Row(
@@ -1448,7 +1447,7 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
                         style: OutlinedButton.styleFrom(
                           foregroundColor: const Color(0xFF6C63FF),
                           side: BorderSide(
-                            color: const Color(0xFF6C63FF).withOpacity(0.3),
+                            color: const Color(0xFF6C63FF).withValues(alpha: 0.3),
                             width: 1.5,
                           ),
                           elevation: 0,
