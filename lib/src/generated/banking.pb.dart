@@ -860,31 +860,43 @@ class DomesticTransferRequest extends $pb.GeneratedMessage {
 class InternalTransferRequest extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'InternalTransferRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'banking'), createEmptyInstance: create)
     ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'fromUserId')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'toUserId')
-    ..aInt64(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount')
-    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
-    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'narration')
-    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'reference')
-    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'idempotencyKey')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'fromAccountId')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'toUserId')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'toAccountId')
+    ..aInt64(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'narration')
+    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'reference')
+    ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'idempotencyKey')
+    ..aOM<RecipientDetails>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recipientDetails', subBuilder: RecipientDetails.create)
     ..hasRequiredFields = false
   ;
 
   InternalTransferRequest._() : super();
   factory InternalTransferRequest({
     $core.String? fromUserId,
+    $core.String? fromAccountId,
     $core.String? toUserId,
+    $core.String? toAccountId,
     $fixnum.Int64? amount,
     $core.String? currency,
     $core.String? narration,
     $core.String? reference,
     $core.String? idempotencyKey,
+    RecipientDetails? recipientDetails,
   }) {
     final _result = create();
     if (fromUserId != null) {
       _result.fromUserId = fromUserId;
     }
+    if (fromAccountId != null) {
+      _result.fromAccountId = fromAccountId;
+    }
     if (toUserId != null) {
       _result.toUserId = toUserId;
+    }
+    if (toAccountId != null) {
+      _result.toAccountId = toAccountId;
     }
     if (amount != null) {
       _result.amount = amount;
@@ -900,6 +912,9 @@ class InternalTransferRequest extends $pb.GeneratedMessage {
     }
     if (idempotencyKey != null) {
       _result.idempotencyKey = idempotencyKey;
+    }
+    if (recipientDetails != null) {
+      _result.recipientDetails = recipientDetails;
     }
     return _result;
   }
@@ -934,58 +949,246 @@ class InternalTransferRequest extends $pb.GeneratedMessage {
   void clearFromUserId() => clearField(1);
 
   @$pb.TagNumber(2)
-  $core.String get toUserId => $_getSZ(1);
+  $core.String get fromAccountId => $_getSZ(1);
   @$pb.TagNumber(2)
-  set toUserId($core.String v) { $_setString(1, v); }
+  set fromAccountId($core.String v) { $_setString(1, v); }
   @$pb.TagNumber(2)
-  $core.bool hasToUserId() => $_has(1);
+  $core.bool hasFromAccountId() => $_has(1);
   @$pb.TagNumber(2)
-  void clearToUserId() => clearField(2);
+  void clearFromAccountId() => clearField(2);
 
   @$pb.TagNumber(3)
-  $fixnum.Int64 get amount => $_getI64(2);
+  $core.String get toUserId => $_getSZ(2);
   @$pb.TagNumber(3)
-  set amount($fixnum.Int64 v) { $_setInt64(2, v); }
+  set toUserId($core.String v) { $_setString(2, v); }
   @$pb.TagNumber(3)
-  $core.bool hasAmount() => $_has(2);
+  $core.bool hasToUserId() => $_has(2);
   @$pb.TagNumber(3)
-  void clearAmount() => clearField(3);
+  void clearToUserId() => clearField(3);
 
   @$pb.TagNumber(4)
-  $core.String get currency => $_getSZ(3);
+  $core.String get toAccountId => $_getSZ(3);
   @$pb.TagNumber(4)
-  set currency($core.String v) { $_setString(3, v); }
+  set toAccountId($core.String v) { $_setString(3, v); }
   @$pb.TagNumber(4)
-  $core.bool hasCurrency() => $_has(3);
+  $core.bool hasToAccountId() => $_has(3);
   @$pb.TagNumber(4)
-  void clearCurrency() => clearField(4);
+  void clearToAccountId() => clearField(4);
 
   @$pb.TagNumber(5)
-  $core.String get narration => $_getSZ(4);
+  $fixnum.Int64 get amount => $_getI64(4);
   @$pb.TagNumber(5)
-  set narration($core.String v) { $_setString(4, v); }
+  set amount($fixnum.Int64 v) { $_setInt64(4, v); }
   @$pb.TagNumber(5)
-  $core.bool hasNarration() => $_has(4);
+  $core.bool hasAmount() => $_has(4);
   @$pb.TagNumber(5)
-  void clearNarration() => clearField(5);
+  void clearAmount() => clearField(5);
 
   @$pb.TagNumber(6)
-  $core.String get reference => $_getSZ(5);
+  $core.String get currency => $_getSZ(5);
   @$pb.TagNumber(6)
-  set reference($core.String v) { $_setString(5, v); }
+  set currency($core.String v) { $_setString(5, v); }
   @$pb.TagNumber(6)
-  $core.bool hasReference() => $_has(5);
+  $core.bool hasCurrency() => $_has(5);
   @$pb.TagNumber(6)
-  void clearReference() => clearField(6);
+  void clearCurrency() => clearField(6);
 
   @$pb.TagNumber(7)
-  $core.String get idempotencyKey => $_getSZ(6);
+  $core.String get narration => $_getSZ(6);
   @$pb.TagNumber(7)
-  set idempotencyKey($core.String v) { $_setString(6, v); }
+  set narration($core.String v) { $_setString(6, v); }
   @$pb.TagNumber(7)
-  $core.bool hasIdempotencyKey() => $_has(6);
+  $core.bool hasNarration() => $_has(6);
   @$pb.TagNumber(7)
-  void clearIdempotencyKey() => clearField(7);
+  void clearNarration() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.String get reference => $_getSZ(7);
+  @$pb.TagNumber(8)
+  set reference($core.String v) { $_setString(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasReference() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearReference() => clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.String get idempotencyKey => $_getSZ(8);
+  @$pb.TagNumber(9)
+  set idempotencyKey($core.String v) { $_setString(8, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasIdempotencyKey() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearIdempotencyKey() => clearField(9);
+
+  @$pb.TagNumber(10)
+  RecipientDetails get recipientDetails => $_getN(9);
+  @$pb.TagNumber(10)
+  set recipientDetails(RecipientDetails v) { setField(10, v); }
+  @$pb.TagNumber(10)
+  $core.bool hasRecipientDetails() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearRecipientDetails() => clearField(10);
+  @$pb.TagNumber(10)
+  RecipientDetails ensureRecipientDetails() => $_ensure(9);
+}
+
+class RecipientDetails extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'RecipientDetails', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'banking'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'name')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recipientType')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recipientSource')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'username')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accountNumber')
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'bankCode')
+    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'bankName')
+    ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'phoneNumber')
+    ..hasRequiredFields = false
+  ;
+
+  RecipientDetails._() : super();
+  factory RecipientDetails({
+    $core.String? name,
+    $core.String? recipientType,
+    $core.String? recipientSource,
+    $core.String? username,
+    $core.String? userId,
+    $core.String? accountNumber,
+    $core.String? bankCode,
+    $core.String? bankName,
+    $core.String? phoneNumber,
+  }) {
+    final _result = create();
+    if (name != null) {
+      _result.name = name;
+    }
+    if (recipientType != null) {
+      _result.recipientType = recipientType;
+    }
+    if (recipientSource != null) {
+      _result.recipientSource = recipientSource;
+    }
+    if (username != null) {
+      _result.username = username;
+    }
+    if (userId != null) {
+      _result.userId = userId;
+    }
+    if (accountNumber != null) {
+      _result.accountNumber = accountNumber;
+    }
+    if (bankCode != null) {
+      _result.bankCode = bankCode;
+    }
+    if (bankName != null) {
+      _result.bankName = bankName;
+    }
+    if (phoneNumber != null) {
+      _result.phoneNumber = phoneNumber;
+    }
+    return _result;
+  }
+  factory RecipientDetails.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory RecipientDetails.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  RecipientDetails clone() => RecipientDetails()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  RecipientDetails copyWith(void Function(RecipientDetails) updates) => super.copyWith((message) => updates(message as RecipientDetails)) as RecipientDetails; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static RecipientDetails create() => RecipientDetails._();
+  RecipientDetails createEmptyInstance() => create();
+  static $pb.PbList<RecipientDetails> createRepeated() => $pb.PbList<RecipientDetails>();
+  @$core.pragma('dart2js:noInline')
+  static RecipientDetails getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<RecipientDetails>(create);
+  static RecipientDetails? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get name => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set name($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasName() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearName() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get recipientType => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set recipientType($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasRecipientType() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearRecipientType() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get recipientSource => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set recipientSource($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasRecipientSource() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearRecipientSource() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get username => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set username($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasUsername() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearUsername() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get userId => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set userId($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasUserId() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearUserId() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get accountNumber => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set accountNumber($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasAccountNumber() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearAccountNumber() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.String get bankCode => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set bankCode($core.String v) { $_setString(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasBankCode() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearBankCode() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.String get bankName => $_getSZ(7);
+  @$pb.TagNumber(8)
+  set bankName($core.String v) { $_setString(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasBankName() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearBankName() => clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.String get phoneNumber => $_getSZ(8);
+  @$pb.TagNumber(9)
+  set phoneNumber($core.String v) { $_setString(8, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasPhoneNumber() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearPhoneNumber() => clearField(9);
 }
 
 class InternationalTransferRequest extends $pb.GeneratedMessage {

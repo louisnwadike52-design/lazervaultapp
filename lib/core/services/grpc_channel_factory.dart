@@ -59,10 +59,12 @@ class GrpcChannelFactory {
 
   /// Creates Transfer Gateway gRPC channel (Payments, Transfers)
   /// gRPC Port: 50076
+  /// This is the PRIMARY channel for Send Funds/Transfers (via Core-Payment-Service)
   static ClientChannel createTransferChannel() {
     final host = dotenv.env['TRANSFER_GRPC_HOST'] ?? '10.0.2.2';
     final port = int.parse(dotenv.env['TRANSFER_GRPC_PORT'] ?? '50076');
-    return _createChannel(host, port, 'Transfer Gateway');
+    print("💸 Creating Transfer/Payments Gateway Channel → $host:$port");
+    return _createChannel(host, port, 'Transfer Gateway (Payments)');
   }
 
   /// Creates Banking Gateway gRPC channel (Banking, Virtual Accounts, Bank Verification)

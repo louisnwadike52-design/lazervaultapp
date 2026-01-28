@@ -2,50 +2,44 @@ import 'package:bloc/bloc.dart';
 import 'package:fixnum/fixnum.dart';
 
 import 'package:lazervault/src/features/funds/cubit/transfer_state.dart';
-import 'package:lazervault/src/features/funds/data/datasources/banking_transfer_data_source.dart';
+import 'package:lazervault/src/features/funds/data/datasources/payments_transfer_data_source.dart';
 import 'package:lazervault/src/features/funds/domain/entities/transfer_entity.dart';
 
 class TransferCubit extends Cubit<TransferState> {
-  final IBankingTransferDataSource bankingTransferDataSource;
+  final IPaymentsTransferDataSource paymentsTransferDataSource;
 
-  TransferCubit({required this.bankingTransferDataSource})
+  TransferCubit({required this.paymentsTransferDataSource})
       : super(const TransferInitial());
 
-  /// Initiate a domestic bank transfer (to external bank account)
-  Future<void> initiateDomesticTransfer({
-    required String userId,
-    required String sourceAccountId,
-    required int amount, // minor units
-    required String destinationAccount,
-    required String destinationBankCode,
-    required String destinationName,
-    String? currency,
-    String? narration,
-    String? reference,
+  /// Unified send funds method (works for both internal and external transfers)
+  /// Uses Transfer Gateway (port 50076) -> Core-Payment-Service (port 50053)
+  Future<void> sendFunds({
+    required String fromAccountId,
+    required String toAccountNumber,
+    required double amount,             // Amount in major units (e.g., 100.50)
+    required String description,
+    required String transactionId,
+    required String verificationToken,
   }) async {
     if (isClosed) return;
     emit(const TransferLoading());
 
     try {
-      final result = await bankingTransferDataSource.initiateDomesticTransfer(
-        userId: userId,
-        sourceAccountId: sourceAccountId,
+      final result = await paymentsTransferDataSource.sendFunds(
+        fromAccountId: fromAccountId,
+        toAccountNumber: toAccountNumber,
         amount: amount,
-        destinationAccount: destinationAccount,
-        destinationBankCode: destinationBankCode,
-        destinationName: destinationName,
-        currency: currency,
-        narration: narration,
-        reference: reference,
+        description: description,
+        transactionId: transactionId,
+        verificationToken: verificationToken,
       );
 
       if (isClosed) return;
 
       if (result.success) {
-        emit(TransferSuccess(response: _toEntity(result, amount)));
+        emit(TransferSuccess(response: _toEntity(result)));
       } else {
-        emit(TransferFailure(
-            message: result.errorMessage ?? 'Transfer failed'));
+        emit(TransferFailure(message: result.errorMessage ?? 'Transfer failed'));
       }
     } catch (e) {
       if (isClosed) return;
@@ -53,48 +47,15 @@ class TransferCubit extends Cubit<TransferState> {
     }
   }
 
-  /// Initiate an internal C2C transfer between LazerVault users
-  Future<void> initiateInternalTransfer({
-    required String fromUserId,
-    required String toUserId,
-    required int amount, // minor units
-    String? currency,
-    String? narration,
-  }) async {
-    if (isClosed) return;
-    emit(const TransferLoading());
-
-    try {
-      final result = await bankingTransferDataSource.initiateInternalTransfer(
-        fromUserId: fromUserId,
-        toUserId: toUserId,
-        amount: amount,
-        currency: currency,
-        narration: narration,
-      );
-
-      if (isClosed) return;
-
-      if (result.success) {
-        emit(TransferSuccess(response: _toEntity(result, amount)));
-      } else {
-        emit(TransferFailure(
-            message: result.errorMessage ?? 'Transfer failed'));
-      }
-    } catch (e) {
-      if (isClosed) return;
-      emit(TransferFailure(message: 'Transfer failed: ${e.toString()}'));
-    }
-  }
-
-  /// Convert BankingTransferResult to TransferEntity for state
-  TransferEntity _toEntity(BankingTransferResult result, int amountMinor) {
+  /// Convert PaymentsTransferResult to TransferEntity for state
+  TransferEntity _toEntity(PaymentsTransferResult result) {
+    final amountMinor = result.amount ?? 0;
     return TransferEntity(
-      transferId: Int64.parseInt(result.transferId ?? '0'),
+      transferId: result.transferId ?? '',  // UUID string, not Int64
       status: result.status ?? 'pending',
-      amount: Int64(result.amount ?? amountMinor),
+      amount: Int64(amountMinor),
       fee: Int64(result.fee ?? 0),
-      totalAmount: Int64((result.amount ?? amountMinor) + (result.fee ?? 0)),
+      totalAmount: Int64(amountMinor + (result.fee ?? 0)),
       createdAt: result.createdAt ?? DateTime.now(),
     );
   }

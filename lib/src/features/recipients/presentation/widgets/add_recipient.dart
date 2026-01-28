@@ -811,6 +811,7 @@ class _AddRecipientState extends State<AddRecipient> {
   }
 
   /// Show the username search bottom sheet, then confirmation sheet
+  /// After confirming, proceed directly to the payment/amount screen
   void _showUsernameSearchSheet() async {
     final selectedUser = await UsernameSearchBottomSheet.show(context);
     if (!mounted) return;
@@ -823,18 +824,35 @@ class _AddRecipientState extends State<AddRecipient> {
 
     // Show confirmation bottom sheet
     bool confirmed = false;
+    bool isFavorite = false;
 
     await Get.bottomSheet(
-      UsernameRecipientConfirmationSheet(
-        user: selectedUser,
-        accountNumber: accountNumber ?? '@${selectedUser.username}',
-        onConfirm: () {
-          confirmed = true;
-          Get.back();
-        },
-        onCancel: () {
-          Get.back();
-        },
+      PopScope(
+        canPop: true,
+        child: StatefulBuilder(
+          builder: (context, setSheetState) {
+            return UsernameRecipientConfirmationSheet(
+              user: selectedUser,
+              accountNumber: accountNumber ?? '@${selectedUser.username}',
+              onConfirm: () {
+                setSheetState(() {
+                  confirmed = true;
+                  // Get the favorite state from the sheet before closing
+                  final sheetState = context
+                      .findAncestorStateOfType<
+                          UsernameRecipientConfirmationSheetState>();
+                  if (sheetState != null) {
+                    isFavorite = sheetState.isFavorite;
+                  }
+                });
+                Get.back();
+              },
+              onCancel: () {
+                Get.back();
+              },
+            );
+          },
+        ),
       ),
       isScrollControlled: true,
       enableDrag: true,
@@ -846,12 +864,49 @@ class _AddRecipientState extends State<AddRecipient> {
 
     if (!mounted) return;
     if (confirmed) {
-      setState(() {
-        _selectedUser = selectedUser;
-        _usernameController.text = selectedUser.username;
-      });
-
+      // Proceed directly to payment screen after confirmation
+      _proceedToPaymentWithUsernameRecipient(selectedUser, accountNumber, isFavorite);
     }
+  }
+
+  /// Proceed directly to payment screen with username recipient
+  /// without showing them on the form first
+  void _proceedToPaymentWithUsernameRecipient(
+      UserSearchResultEntity selectedUser,
+      String? accountNumber,
+      bool isFavorite) {
+    // Get active country from profile preferences
+    String? countryCode;
+    final profileState = context.read<ProfileCubit>().state;
+    if (profileState is ProfileLoaded) {
+      countryCode = profileState.preferences.activeCountry.isNotEmpty
+          ? profileState.preferences.activeCountry
+          : null;
+    }
+
+    // Create temporary recipient model — do NOT save to backend yet.
+    // Recipient will be saved after successful transfer + PIN verification.
+    final recipient = RecipientModel(
+      id: selectedUser.userId,
+      name: selectedUser.fullName,
+      accountNumber: accountNumber ?? '@${selectedUser.username}',
+      bankName: 'LazerVault',
+      sortCode: '',
+      isFavorite: isFavorite,
+      countryCode: countryCode,
+      currency: countryCode == 'NG' ? 'NGN' : 'GBP',
+      email: selectedUser.email.isNotEmpty ? selectedUser.email : null,
+    );
+
+    // Navigate directly to send funds with temporary recipient
+    Get.offNamed(
+      AppRoutes.initiateSendFunds,
+      arguments: {
+        'recipient': recipient,
+        'isTemporary': true,
+        'shouldSaveOnSuccess': isFavorite, // Only save if favorited
+      },
+    );
   }
 
   Widget _buildContactsForm() {

@@ -51,18 +51,18 @@ class TransactionPinServiceClient extends $grpc.Client {
       ($1.ValidateTransactionPinTokenRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
           $1.ValidateTransactionPinTokenResponse.fromBuffer(value));
-  static final _$initiatePinOTP = $grpc.ClientMethod<
-          $1.InitiatePinOTPRequest, $1.InitiatePinOTPResponse>(
-      '/auth.TransactionPinService/InitiatePinOTP',
-      ($1.InitiatePinOTPRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $1.InitiatePinOTPResponse.fromBuffer(value));
-  static final _$verifyPinOTP = $grpc.ClientMethod<
-          $1.VerifyPinOTPRequest, $1.VerifyPinOTPResponse>(
-      '/auth.TransactionPinService/VerifyPinOTP',
-      ($1.VerifyPinOTPRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $1.VerifyPinOTPResponse.fromBuffer(value));
+  static final _$initiatePinOTP =
+      $grpc.ClientMethod<$1.InitiatePinOTPRequest, $1.InitiatePinOTPResponse>(
+          '/auth.TransactionPinService/InitiatePinOTP',
+          ($1.InitiatePinOTPRequest value) => value.writeToBuffer(),
+          ($core.List<$core.int> value) =>
+              $1.InitiatePinOTPResponse.fromBuffer(value));
+  static final _$verifyPinOTP =
+      $grpc.ClientMethod<$1.VerifyPinOTPRequest, $1.VerifyPinOTPResponse>(
+          '/auth.TransactionPinService/VerifyPinOTP',
+          ($1.VerifyPinOTPRequest value) => value.writeToBuffer(),
+          ($core.List<$core.int> value) =>
+              $1.VerifyPinOTPResponse.fromBuffer(value));
   static final _$getPinOTPChannels = $grpc.ClientMethod<
           $1.GetPinOTPChannelsRequest, $1.GetPinOTPChannelsResponse>(
       '/auth.TransactionPinService/GetPinOTPChannels',
@@ -211,15 +211,15 @@ abstract class TransactionPinServiceBase extends $grpc.Service {
         ($core.List<$core.int> value) =>
             $1.InitiatePinOTPRequest.fromBuffer(value),
         ($1.InitiatePinOTPResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$1.VerifyPinOTPRequest,
-            $1.VerifyPinOTPResponse>(
-        'VerifyPinOTP',
-        verifyPinOTP_Pre,
-        false,
-        false,
-        ($core.List<$core.int> value) =>
-            $1.VerifyPinOTPRequest.fromBuffer(value),
-        ($1.VerifyPinOTPResponse value) => value.writeToBuffer()));
+    $addMethod(
+        $grpc.ServiceMethod<$1.VerifyPinOTPRequest, $1.VerifyPinOTPResponse>(
+            'VerifyPinOTP',
+            verifyPinOTP_Pre,
+            false,
+            false,
+            ($core.List<$core.int> value) =>
+                $1.VerifyPinOTPRequest.fromBuffer(value),
+            ($1.VerifyPinOTPResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$1.GetPinOTPChannelsRequest,
             $1.GetPinOTPChannelsResponse>(
         'GetPinOTPChannels',

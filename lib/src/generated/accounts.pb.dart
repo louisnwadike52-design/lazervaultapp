@@ -544,17 +544,16 @@ class GetUserAccountsRequest extends $pb.GeneratedMessage {
     ..hasRequiredFields = false
   ;
 
-  @$pb.TagNumber(1)
-  $core.String get targetUserId => $_getSZ(0);
-  @$pb.TagNumber(1)
-  set targetUserId($core.String v) { $_setString(0, v); }
-  @$pb.TagNumber(1)
-  $core.bool hasTargetUserId() => $_has(0);
-  @$pb.TagNumber(1)
-  void clearTargetUserId() => clearField(1);
-
   GetUserAccountsRequest._() : super();
-  factory GetUserAccountsRequest() => create();
+  factory GetUserAccountsRequest({
+    $core.String? targetUserId,
+  }) {
+    final _result = create();
+    if (targetUserId != null) {
+      _result.targetUserId = targetUserId;
+    }
+    return _result;
+  }
   factory GetUserAccountsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetUserAccountsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
@@ -575,6 +574,15 @@ class GetUserAccountsRequest extends $pb.GeneratedMessage {
   @$core.pragma('dart2js:noInline')
   static GetUserAccountsRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetUserAccountsRequest>(create);
   static GetUserAccountsRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get targetUserId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set targetUserId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasTargetUserId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearTargetUserId() => clearField(1);
 }
 
 class GetUserAccountsResponse extends $pb.GeneratedMessage {
