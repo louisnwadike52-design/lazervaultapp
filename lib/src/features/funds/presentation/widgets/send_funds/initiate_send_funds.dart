@@ -8,12 +8,14 @@ import 'package:intl/intl.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_state.dart';
+import 'package:lazervault/src/features/account_cards_summary/domain/entities/account_summary_entity.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/features/funds/cubit/transfer_cubit.dart';
 import 'package:lazervault/src/features/funds/cubit/transfer_state.dart';
 import 'package:lazervault/src/features/recipients/data/models/recipient_model.dart';
-import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_cubit.dart';
+import 'package:lazervault/src/features/recipients/domain/usecases/add_recipient_usecase.dart';
+import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/src/features/widgets/common/back_navigator.dart';
 import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
@@ -215,34 +217,40 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
           child: Text('Error loading accounts: ${accountState.message}',
               style: const TextStyle(color: Colors.red)));
     }
-    if (accountState is AccountCardsSummaryLoaded) {
-      final accounts = accountState.accountSummaries;
-      if (accounts.isEmpty) {
-        return const Center(
-            child: Text('No payment methods available.',
-                style: TextStyle(color: Colors.white70)));
-      }
-      // Ensure selectedCardIndex is valid
-      if (selectedCardIndex >= accounts.length) {
-        // Use post-frame callback to avoid setState during build
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted) {
-            // Check if the widget is still mounted
-            setState(() => selectedCardIndex = 0);
-          }
-        });
-        // Show a loading state temporarily while index resets
-        return const Center(
-            child: CircularProgressIndicator(color: Colors.white));
-      }
+    // Handle both AccountCardsSummaryLoaded and AccountBalanceUpdated states
+    // AccountBalanceUpdated is emitted when WebSocket receives a balance update
+    final summaries = switch (accountState) {
+      AccountCardsSummaryLoaded(:final accountSummaries) => accountSummaries,
+      AccountBalanceUpdated(:final accountSummaries) => accountSummaries,
+      _ => <AccountSummaryEntity>[],
+    };
 
-      return SizedBox(
-        height: 100.h,
-        child: ListView.builder(
-          scrollDirection: Axis.horizontal,
-          itemCount: accounts.length,
-          itemBuilder: (context, index) {
-            final account = accounts[index];
+    if (summaries.isEmpty) {
+      return const Center(
+          child: Text('No payment methods available.',
+              style: TextStyle(color: Colors.white70)));
+    }
+    // Ensure selectedCardIndex is valid
+    if (selectedCardIndex >= summaries.length) {
+      // Use post-frame callback to avoid setState during build
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          // Check if the widget is still mounted
+          setState(() => selectedCardIndex = 0);
+        }
+      });
+      // Show a loading state temporarily while index resets
+      return const Center(
+          child: CircularProgressIndicator(color: Colors.white));
+    }
+
+    return SizedBox(
+      height: 100.h,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: summaries.length,
+        itemBuilder: (context, index) {
+          final account = summaries[index];
             final isSelected = selectedCardIndex == index;
 
             // Determine account type display
@@ -331,7 +339,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                     ),
                     Text(
                       NumberFormat.currency(
-                              symbol: account.currency, decimalDigits: 2)
+                              symbol: _getCurrencySymbol(account.currency), decimalDigits: 2)
                           .format(account.balance),
                       style: TextStyle(
                         color: Colors.white70,
@@ -345,21 +353,19 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
           },
         ),
       );
-    }
-    // Default fallback
-    return const Center(
-        child: Text('Could not load accounts.',
-            style: TextStyle(color: Colors.white70)));
   }
 
   Widget _buildQuickAmounts(AccountCardsSummaryState accountState) {
     // Get currency symbol from selected account
     String currencySymbol = '₦'; // Default to Naira
-    if (accountState is AccountCardsSummaryLoaded &&
-        accountState.accountSummaries.isNotEmpty &&
-        selectedCardIndex < accountState.accountSummaries.length) {
-      currencySymbol = _getCurrencySymbol(
-          accountState.accountSummaries[selectedCardIndex].currency);
+    final summaries = switch (accountState) {
+      AccountCardsSummaryLoaded(:final accountSummaries) => accountSummaries,
+      AccountBalanceUpdated(:final accountSummaries) => accountSummaries,
+      _ => <AccountSummaryEntity>[],
+    };
+
+    if (summaries.isNotEmpty && selectedCardIndex < summaries.length) {
+      currencySymbol = _getCurrencySymbol(summaries[selectedCardIndex].currency);
     }
 
     return SizedBox(
@@ -563,8 +569,14 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
     }
 
     // 2. Validate account data is loaded
-    if (accountState is! AccountCardsSummaryLoaded ||
-        accountState.accountSummaries.isEmpty) {
+    // AccountBalanceUpdated also contains the updated account summaries from WebSocket
+    final summaries = switch (accountState) {
+      AccountCardsSummaryLoaded(:final accountSummaries) => accountSummaries,
+      AccountBalanceUpdated(:final accountSummaries) => accountSummaries,
+      _ => <AccountSummaryEntity>[],
+    };
+
+    if (summaries.isEmpty) {
       Get.snackbar(
         'Account Error',
         'Account data not loaded. Please try again.',
@@ -576,7 +588,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
     }
 
     // 3. Validate selected card index
-    if (selectedCardIndex >= accountState.accountSummaries.length) {
+    if (selectedCardIndex >= summaries.length) {
       Get.snackbar(
         'Invalid Card',
         'Please select a valid payment method.',
@@ -587,14 +599,14 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
       return;
     }
 
-    final selectedAccount = accountState.accountSummaries[selectedCardIndex];
+    final selectedAccount = summaries[selectedCardIndex];
     double transferAmountMajor = double.parse(amount) / 100.0;
 
-    // 4. Validate minimum transfer amount (e.g., £0.01)
+    // 4. Validate minimum transfer amount (e.g., 0.01)
     if (transferAmountMajor < 0.01) {
       Get.snackbar(
         'Amount Too Small',
-        'Minimum transfer amount is £0.01',
+        'Minimum transfer amount is ${_getCurrencySymbol(selectedAccount.currency)}0.01',
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.orange.withValues(alpha: 0.7),
         colorText: Colors.white,
@@ -602,12 +614,16 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
       return;
     }
 
-    // 5. Validate maximum transfer amount (e.g., £10,000 per transaction)
+    // Get currency symbol from selected account (needed for error messages)
+    final accountCurrency = selectedAccount.currency;
+    final currencySymbol = _getCurrencySymbol(accountCurrency);
+
+    // 5. Validate maximum transfer amount (e.g., ₦10,000 per transaction)
     const double maxTransferAmount = 10000.00;
     if (transferAmountMajor > maxTransferAmount) {
       Get.snackbar(
         'Amount Too Large',
-        'Maximum transfer amount is £${NumberFormat('#,###.00').format(maxTransferAmount)}',
+        'Maximum transfer amount is $currencySymbol${NumberFormat('#,###.00').format(maxTransferAmount)}',
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.orange.withValues(alpha: 0.7),
         colorText: Colors.white,
@@ -615,15 +631,32 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
       return;
     }
 
-    // 6. CRITICAL: Validate sufficient balance (including estimated fee)
-    double estimatedFee = transferAmountMajor * 0.005; // 0.5% fee
-    double estimatedTotal = transferAmountMajor + estimatedFee;
+    // 6. CRITICAL: Validate sufficient balance
+    // Note: Backend uses AvailableBalance for the CanDebit check, which is what
+    // the frontend receives as 'balance' field from AccountSummary.
     double availableBalance = selectedAccount.balance;
 
-    if (estimatedTotal > availableBalance) {
+    // For external transfers, estimate fee for pre-validation
+    // The exact fee will be fetched later, but we use a cached/estimated fee here
+    final bool isExternalTransfer = _recipient != null && _recipient!.bankName != 'LazerVault';
+    final transferCubitState = context.read<TransferCubit>().state;
+    double estimatedFee = 0.0;
+    if (isExternalTransfer && transferCubitState is TransferFeeLoaded) {
+      estimatedFee = transferCubitState.fee / 100.0;
+    }
+
+    final double totalRequired = transferAmountMajor + (isExternalTransfer ? estimatedFee : 0.0);
+
+    if (totalRequired > availableBalance) {
+      final String message;
+      if (isExternalTransfer && estimatedFee > 0) {
+        message = 'Insufficient balance. Amount ($currencySymbol${NumberFormat('#,###.00').format(transferAmountMajor)}) + Fee ($currencySymbol${NumberFormat('#,###.00').format(estimatedFee)}) = $currencySymbol${NumberFormat('#,###.00').format(totalRequired)} exceeds your balance of $currencySymbol${NumberFormat('#,###.00').format(availableBalance)}';
+      } else {
+        message = 'Your balance ($currencySymbol${NumberFormat('#,###.00').format(availableBalance)}) is insufficient for this transfer of $currencySymbol${NumberFormat('#,###.00').format(transferAmountMajor)}. Please top up your account or use a different account.';
+      }
       Get.snackbar(
         'Insufficient Funds',
-        'Your balance (£${NumberFormat('#,###.00').format(availableBalance)}) is insufficient. You need £${NumberFormat('#,###.00').format(estimatedTotal)} including fees.',
+        message,
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.red.withValues(alpha: 0.7),
         colorText: Colors.white,
@@ -673,18 +706,30 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
       return;
     }
 
-    // All validations passed - calculate final amounts for confirmation
-    double transferFee = transferAmountMajor * 0.005; // Example 0.5% fee
-    double totalAmount = transferAmountMajor + transferFee;
+    // Determine transfer type based on recipient
+    final bool isInternalTransfer = _recipient!.bankName == 'LazerVault';
+    final String transferType = isInternalTransfer ? 'internal' : 'domestic';
+
     // Get source card details
     String sourceCardType = selectedAccount.accountType;
     String sourceLast4 = selectedAccount.accountNumberLast4;
     String sourceAccountInfo = '$sourceCardType •••• $sourceLast4';
 
+    // Fetch real transfer fee before showing dialog
+    final transferCubit = context.read<TransferCubit>();
+    transferCubit.getTransferFee(
+      amountMinorUnits: int.parse(amount),
+      currency: accountCurrency,
+      transferType: transferType,
+      destinationBankCode: _recipient!.sortCode,
+    );
+
     showDialog(
       context: context,
       barrierColor: Colors.black.withValues(alpha: 0.85),
-      builder: (dialogContext) => Dialog(
+      builder: (dialogContext) => BlocProvider.value(
+        value: transferCubit,
+        child: Dialog(
         backgroundColor: Colors.transparent,
         insetPadding: EdgeInsets.symmetric(horizontal: 16.w),
         child: SingleChildScrollView(
@@ -779,23 +824,81 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                                 'Amount',
                                 '',
                                 NumberFormat.currency(
-                                        symbol: '£', decimalDigits: 2)
+                                        symbol: currencySymbol, decimalDigits: 2)
                                     .format(transferAmountMajor),
                               ),
-                              _buildConfirmationRow(
-                                'Transfer Fee',
-                                '',
-                                NumberFormat.currency(
-                                        symbol: '£', decimalDigits: 2)
-                                    .format(transferFee),
-                              ),
-                              _buildConfirmationRow(
-                                'Total',
-                                '',
-                                NumberFormat.currency(
-                                        symbol: '£', decimalDigits: 2)
-                                    .format(totalAmount),
-                                isTotal: true,
+                              // Fee row - uses BlocConsumer to show real fee
+                              BlocConsumer<TransferCubit, TransferState>(
+                                listener: (context, feeState) {
+                                  // Check if amount + fee exceeds balance for external transfers
+                                  if (feeState is TransferFeeLoaded && isExternalTransfer) {
+                                    final feeMajor = feeState.fee / 100.0;
+                                    final totalRequired = transferAmountMajor + feeMajor;
+                                    if (totalRequired > availableBalance) {
+                                      Get.snackbar(
+                                        'Insufficient Funds',
+                                        'Amount ($currencySymbol${NumberFormat('#,###.00').format(transferAmountMajor)}) + Fee ($currencySymbol${NumberFormat('#,###.00').format(feeMajor)}) = $currencySymbol${NumberFormat('#,###.00').format(totalRequired)} exceeds your balance of $currencySymbol${NumberFormat('#,###.00').format(availableBalance)}',
+                                        snackPosition: SnackPosition.BOTTOM,
+                                        backgroundColor: Colors.red.withValues(alpha: 0.7),
+                                        colorText: Colors.white,
+                                        duration: const Duration(seconds: 5),
+                                      );
+                                    }
+                                  }
+                                },
+                                builder: (context, feeState) {
+                                  if (feeState is TransferFeeLoading) {
+                                    return Padding(
+                                      padding: EdgeInsets.symmetric(vertical: 8.h),
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text('Transfer Fee',
+                                              style: TextStyle(color: Colors.white70, fontSize: 14.sp)),
+                                          SizedBox(
+                                            width: 16, height: 16,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2, color: Colors.white54),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  }
+                                  final int feeMinor;
+                                  final int totalMinor;
+                                  if (feeState is TransferFeeLoaded) {
+                                    feeMinor = feeState.fee;
+                                    totalMinor = feeState.totalAmount;
+                                  } else {
+                                    // Fallback: 0 fee
+                                    feeMinor = 0;
+                                    totalMinor = int.tryParse(amount) ?? 0;
+                                  }
+                                  final feeMajor = feeMinor / 100.0;
+                                  final totalMajor = totalMinor / 100.0;
+                                  final bool isFree = feeMinor == 0;
+                                  return Column(
+                                    children: [
+                                      _buildConfirmationRow(
+                                        'Transfer Fee',
+                                        '',
+                                        isFree
+                                            ? 'Free'
+                                            : NumberFormat.currency(
+                                                    symbol: currencySymbol, decimalDigits: 2)
+                                                .format(feeMajor),
+                                      ),
+                                      _buildConfirmationRow(
+                                        'Total',
+                                        '',
+                                        NumberFormat.currency(
+                                                symbol: currencySymbol, decimalDigits: 2)
+                                            .format(totalMajor),
+                                        isTotal: true,
+                                      ),
+                                    ],
+                                  );
+                                },
                               ),
                             ],
                           ),
@@ -870,14 +973,28 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                                       if (!mounted) return;
 
                                       // Validate PIN using the widget's context (not the dialog's)
-                                      final accountCurrency = accountState.accountSummaries[selectedCardIndex].currency;
+                                      final summaries = switch (accountState) {
+                                        AccountCardsSummaryLoaded(:final accountSummaries) => accountSummaries,
+                                        AccountBalanceUpdated(:final accountSummaries) => accountSummaries,
+                                        _ => <AccountSummaryEntity>[],
+                                      };
+                                      final accountCurrency = summaries.isNotEmpty && selectedCardIndex < summaries.length
+                                          ? summaries[selectedCardIndex].currency
+                                          : 'NGN';
                                       final currSym = _getCurrencySymbol(accountCurrency);
+
+                                      // Get fee info for PIN modal processing view
+                                      final lastFee = context.read<TransferCubit>().lastFeeLoaded;
+                                      final pinFee = (lastFee != null && lastFee.fee > 0) ? lastFee.fee / 100.0 : null;
+                                      final pinTotal = pinFee != null ? transferAmountMajor + pinFee : null;
 
                                       final success = await validateTransactionPin(
                                         context: context,
                                         transactionId: transactionId,
                                         transactionType: 'transfer',
                                         amount: transferAmountMajor,
+                                        fee: pinFee,
+                                        totalAmount: pinTotal,
                                         currency: accountCurrency,
                                         currencySymbol: currSym,
                                         title: 'Confirm Transfer',
@@ -968,6 +1085,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
           ),
         ),
       ),
+      ),
     );
   }
 
@@ -989,20 +1107,26 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
     }
 
     // Validate selected card and get source account ID from cubit state
-    if (accountState is! AccountCardsSummaryLoaded ||
-        accountState.accountSummaries.isEmpty) {
+    // AccountBalanceUpdated also contains the updated account summaries from WebSocket
+    final summaries = switch (accountState) {
+      AccountCardsSummaryLoaded(:final accountSummaries) => accountSummaries,
+      AccountBalanceUpdated(:final accountSummaries) => accountSummaries,
+      _ => <AccountSummaryEntity>[],
+    };
+
+    if (summaries.isEmpty) {
       print("_executeTransferWithPin: Error - Account data not loaded.");
       Get.snackbar('Error', 'Account data not available.',
           snackPosition: SnackPosition.BOTTOM);
       return;
     }
-    if (selectedCardIndex >= accountState.accountSummaries.length) {
+    if (selectedCardIndex >= summaries.length) {
       print("_executeTransferWithPin: Error - Invalid card index.");
       Get.snackbar('Error', 'Invalid card selected.',
           snackPosition: SnackPosition.BOTTOM);
       return;
     }
-    final selectedAccount = accountState.accountSummaries[selectedCardIndex];
+    final selectedAccount = summaries[selectedCardIndex];
     final fromAccountId = selectedAccount.id;
 
     // Parse amount string (minor units) and convert to major units for API
@@ -1140,48 +1264,63 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
         print("Listener: TransferState: $transferState");
         if (transferState is TransferSuccess) {
           print(
-              'Listener: Transfer Success received. State: $transferState'); // Debug print
-          // Ensure loading state is reset
+              'Listener: Transfer Success received. State: $transferState');
           if (_isConfirmingTransfer) {
-            print('Listener: Resetting confirm transfer flag.'); // Debug print
             setState(() {
               _isConfirmingTransfer = false;
             });
           }
 
-          // --- Save Recipient if Temporary ---
-          // IMPORTANT: Based on user requirement, ALL recipients should be saved after successful payment
-          // The isFavorite flag is preserved for filtering purposes in the recipients list
-          if (_isTemporary && _recipient != null) {
-            print("Listener: Saving temporary recipient to database...");
-            final authStateForSave = context.read<AuthenticationCubit>().state;
-            if (authStateForSave is AuthenticationSuccess) {
-              final accessToken = authStateForSave.profile.session.accessToken;
-              context.read<RecipientCubit>().addRecipient(
-                    recipient: _recipient!,
-                    accessToken: accessToken,
+          // --- Show success in PIN modal ---
+          pinModalKey.currentState?.setSuccess();
+
+          // --- Save Recipient After Successful Transfer ---
+          if (_recipient != null) {
+            final recipientId = _recipient!.id;
+            final parsedId = int.tryParse(recipientId);
+            final isAlreadySaved = parsedId != null && parsedId < 1000000000;
+            if (!isAlreadySaved) {
+              print("Listener: Saving new recipient to database (id: $recipientId)...");
+              final authStateForSave = context.read<AuthenticationCubit>().state;
+              if (authStateForSave is AuthenticationSuccess) {
+                final accessToken = authStateForSave.profile.session.accessToken;
+                final recipientToSave = _recipient!.copyWith(
+                  id: '0',
+                  countryCode: _recipient!.countryCode ?? 'NG',
+                  currency: _recipient!.currency ?? 'NGN',
+                );
+                final addRecipientUseCase = serviceLocator<AddRecipientUseCase>();
+                addRecipientUseCase(
+                  recipient: recipientToSave,
+                  accessToken: accessToken,
+                ).then((result) {
+                  result.fold(
+                    (failure) => print("Warning: Failed to save recipient: ${failure.message}"),
+                    (saved) => print("Listener: Recipient saved with id: ${saved.id}"),
                   );
-              print("Listener: Temporary recipient saved successfully.");
-            } else {
-              print(
-                  "Warning: Could not save recipient as user is not authenticated.");
+                });
+              }
             }
           }
           // --- End Save Recipient ---
 
           // --- Refresh Account Summaries ---
-          // DISABLED: WebSocket handles real-time balance updates
-          // The dashboard receives balance updates via BalanceWebSocketCubit
-          // and shows the 5-second animated counter automatically
-          print("Manual refresh skipped - WebSocket will handle balance update");
+          // Refresh immediately (no delay) since this widget will be disposed
+          // when navigating to the receipt. The cubit persists across navigation.
+          final refreshAuthState = context.read<AuthenticationCubit>().state;
+          if (refreshAuthState is AuthenticationSuccess) {
+            context.read<AccountCardsSummaryCubit>().fetchAccountSummaries(
+              userId: refreshAuthState.profile.user.id,
+              accessToken: refreshAuthState.profile.session.accessToken,
+            );
+            print("Balance refresh triggered after successful transfer");
+          }
           // --- End Refresh ---
 
           try {
-            print('Listener: Preparing transfer details...'); // Debug print
             // Prepare data for the proof screen
             double transferAmount = 0.0;
             try {
-              // Convert amount from response (minor units) if available, else use original input
               transferAmount =
                   (transferState.response.amount)
                           .toDouble() /
@@ -1189,33 +1328,36 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
             } catch (_) {
               print("Warning: Could not parse amount for proof screen.");
             }
-            // Use fee/total from response if available
             double transferFee =
                 (transferState.response.fee).toDouble() / 100.0;
             double totalAmount =
                 (transferState.response.totalAmount).toDouble() /
                     100.0;
-            // Fallback calculation if total is missing from response
+            if (transferFee == 0.0) {
+              final lastFeeState = context.read<TransferCubit>().lastFeeLoaded;
+              if (lastFeeState != null) {
+                transferFee = lastFeeState.fee / 100.0;
+              }
+            }
             if (totalAmount == 0 && transferAmount > 0) {
-              print(
-                  "Warning: Total amount missing from response, calculating locally.");
-              transferFee = transferAmount * 0.005; // Recalculate fee example
               totalAmount = transferAmount + transferFee;
             }
 
             String sourceAccountInfo = 'Unknown Card';
-            // Get source info from AccountCardsSummaryCubit state
-            if (accountState is AccountCardsSummaryLoaded &&
-                accountState.accountSummaries.isNotEmpty &&
-                selectedCardIndex < accountState.accountSummaries.length) {
+            String senderCurrency = 'NGN';
+            final summaries = switch (accountState) {
+              AccountCardsSummaryLoaded(:final accountSummaries) => accountSummaries,
+              AccountBalanceUpdated(:final accountSummaries) => accountSummaries,
+              _ => <AccountSummaryEntity>[],
+            };
+            if (summaries.isNotEmpty &&
+                selectedCardIndex < summaries.length) {
               final selectedAccount =
-                  accountState.accountSummaries[selectedCardIndex];
+                  summaries[selectedCardIndex];
               String sourceCardType = selectedAccount.accountType;
               String sourceLast4 = selectedAccount.accountNumberLast4;
               sourceAccountInfo = '$sourceCardType •••• $sourceLast4';
-            } else {
-              print(
-                  "Warning: Could not get source account info for proof screen.");
+              senderCurrency = selectedAccount.currency;
             }
 
             String recipientAccountMasked = _recipient!.accountNumber.length >
@@ -1230,50 +1372,49 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
               'recipientName': _recipient!.name,
               'recipientAccountMasked': recipientAccountMasked,
               'sourceAccountInfo': sourceAccountInfo,
-              // Use transferId from response (assuming it's Int64)
+              'currency': senderCurrency,
               'transferId':
                   transferState.response.transferId.toString(),
-              'timestamp': transferState.response.createdAt, // Use time from response
+              'timestamp': transferState.response.createdAt,
               'category': selectedCategory,
               'reference': _referenceController.text.trim().isNotEmpty
                   ? _referenceController.text.trim()
                   : null,
-              'status': transferState.response.status, // Or derive from response
+              'status': transferState.response.status,
+              'network': _recipient!.bankName == 'LazerVault'
+                  ? 'LazerVault Internal Transfer'
+                  : 'External Bank Transfer',
+              'transferType': _recipient!.bankName == 'LazerVault'
+                  ? 'Internal Transfer'
+                  : 'Domestic Transfer',
             };
             print(
-                'Listener: Transfer details prepared: $transferDetails'); // Debug print
+                'Listener: Transfer details prepared: $transferDetails');
 
-            Get.snackbar(
-              'Transfer Initiated',
-              'Status: ${transferState.response.status}',
-              snackPosition: SnackPosition.BOTTOM,
-              backgroundColor: Colors.green.withValues(alpha: 0.7),
-              colorText: Colors.white,
-              duration: const Duration(seconds: 3),
-            );
-
-            // Navigate to processing screen WITH details
-            Future.delayed(const Duration(seconds: 1), () {
-              print('Listener: Navigating to TransferProcessing...'); // Debug print
+            // Wait for success animation, then dismiss sheet and navigate to receipt
+            Future.delayed(const Duration(milliseconds: 1500), () {
               if (mounted) {
-                // Ensure widget is still mounted before navigating
-                Get.offAllNamed(AppRoutes.transferProcessing,
-                    arguments:
-                        transferDetails); // This should dismiss the dialog
+                // Pop the PIN bottom sheet
+                Navigator.of(context).pop();
+                // Navigate directly to receipt (skip processing screen)
+                Future.delayed(const Duration(milliseconds: 200), () {
+                  if (mounted) {
+                    Get.offAllNamed(AppRoutes.transferProof,
+                        arguments: transferDetails);
+                  }
+                });
               }
             });
           } catch (e, stackTrace) {
             print("Error inside TransferSuccess listener: $e\n$stackTrace");
-            // Optionally show an error message to the user here as well
             if (_isConfirmingTransfer) {
-              // Ensure loading state is reset even if listener errors occur
               setState(() {
                 _isConfirmingTransfer = false;
               });
             }
-            if (Get.isDialogOpen ?? false) {
-              // Close dialog if listener failed
-              Get.back();
+            // Close pin sheet if open
+            if (mounted) {
+              try { Navigator.of(context).pop(); } catch (_) {}
             }
             Get.snackbar(
               'Error',
@@ -1285,27 +1426,36 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
           }
         } else if (transferState is TransferFailure) {
           print(
-              'Listener: Transfer Failure received: ${transferState.message}'); // Debug print
-          // Ensure loading state is reset
+              'Listener: Transfer Failure received: ${transferState.message}');
           if (_isConfirmingTransfer) {
             setState(() {
               _isConfirmingTransfer = false;
             });
           }
 
-          // Close the confirmation dialog if it's open
-          if (Get.isDialogOpen ?? false) {
-            print('Listener: Closing dialog due to failure.'); // Debug print
-            Get.back();
+          // Show failure in PIN modal if open, otherwise show snackbar
+          final modalState = pinModalKey.currentState;
+          if (modalState != null) {
+            modalState.setFailed(transferState.message);
+            // Auto-close after showing failure
+            Future.delayed(const Duration(seconds: 2), () {
+              if (mounted) {
+                try { Navigator.of(context).pop(); } catch (_) {}
+              }
+            });
+          } else {
+            // Fallback: close any open dialog
+            if (Get.isDialogOpen ?? false) {
+              Get.back();
+            }
           }
 
-          // ENHANCED ERROR HANDLING - Provide specific feedback based on error type
+          // ENHANCED ERROR HANDLING
           String errorTitle = 'Transfer Failed';
           String errorMessage = transferState.message;
           Color errorColor = Colors.red.withValues(alpha: 0.7);
           Duration errorDuration = const Duration(seconds: 4);
 
-          // Parse error message to provide better UX
           final lowerMessage = transferState.message.toLowerCase();
 
           if (lowerMessage.contains('insufficient') || lowerMessage.contains('balance')) {
@@ -1345,7 +1495,6 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
             errorDuration = const Duration(seconds: 5);
           }
 
-          // Show enhanced error snackbar
           Get.snackbar(
             errorTitle,
             errorMessage,
@@ -1377,16 +1526,21 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
             final isAccountLoading =
                 accountState is AccountCardsSummaryLoading ||
                     accountState is AccountCardsSummaryInitial;
+            // AccountBalanceUpdated means we have data (from WebSocket), so don't treat as loading
             final isLoading =
                 isTransferLoading || isAccountLoading; // Combined loading state
 
             // Determine max amount (example logic, adjust as needed)
             double maxAmount = 0.0;
-            if (accountState is AccountCardsSummaryLoaded &&
-                accountState.accountSummaries.isNotEmpty &&
-                selectedCardIndex < accountState.accountSummaries.length) {
+            final summaries = switch (accountState) {
+              AccountCardsSummaryLoaded(:final accountSummaries) => accountSummaries,
+              AccountBalanceUpdated(:final accountSummaries) => accountSummaries,
+              _ => <AccountSummaryEntity>[],
+            };
+            if (summaries.isNotEmpty &&
+                selectedCardIndex < summaries.length) {
               maxAmount =
-                  accountState.accountSummaries[selectedCardIndex].balance; // Example: use balance as max
+                  summaries[selectedCardIndex].balance; // Example: use balance as max
             }
 
             return Scaffold(
@@ -1421,17 +1575,23 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                                         ),
                                         SizedBox(height: 4.h),
                                         // Show selected account type and number
-                                        if (accountState is AccountCardsSummaryLoaded &&
-                                            accountState.accountSummaries.isNotEmpty &&
-                                            selectedCardIndex < accountState.accountSummaries.length)
-                                          Row(
+                                        Builder(
+                                          builder: (context) {
+                                            final summaries = switch (accountState) {
+                                              AccountCardsSummaryLoaded(:final accountSummaries) => accountSummaries,
+                                              AccountBalanceUpdated(:final accountSummaries) => accountSummaries,
+                                              _ => <AccountSummaryEntity>[],
+                                            };
+                                            if (summaries.isNotEmpty &&
+                                                selectedCardIndex < summaries.length)
+                                              return Row(
                                             mainAxisAlignment: MainAxisAlignment.center,
                                             mainAxisSize: MainAxisSize.min,
                                             children: [
                                               // Account type badge
                                               Builder(
                                                 builder: (context) {
-                                                  final account = accountState.accountSummaries[selectedCardIndex];
+                                                  final account = summaries[selectedCardIndex];
                                                   String accountTypeDisplay = 'Personal';
                                                   Color accountTypeColor = Colors.blue;
 
@@ -1466,16 +1626,16 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                                               ),
                                               SizedBox(width: 6.w),
                                               Text(
-                                                '•••• ${accountState.accountSummaries[selectedCardIndex].accountNumberLast4}',
+                                                '•••• ${summaries[selectedCardIndex].accountNumberLast4}',
                                                 style: TextStyle(
                                                   color: Colors.white.withValues(alpha: 0.7),
                                                   fontSize: 12,
                                                 ),
                                               ),
                                             ],
-                                          )
+                                          );
                                         else
-                                          Text(
+                                          return Text(
                                             _recipient!.accountNumber.length > 4
                                                 ? '•••• ${_recipient!.accountNumber.substring(_recipient!.accountNumber.length - 4)}'
                                                 : _recipient!.accountNumber,
@@ -1483,11 +1643,12 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                                               color: Colors.white.withValues(alpha: 0.7),
                                               fontSize: 12,
                                             ),
-                                          ),
+                                          );
+                                          },
+                                        ),
                                       ],
-                                    ),
                                   ),
-                                ),
+                                )),
                                 Container(
                                   width: 40.w,
                                   height: 40.h,
@@ -1563,31 +1724,32 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                                           borderRadius:
                                               BorderRadius.circular(8),
                                         ),
-                                        // TODO: Make currency dynamic based on selected card
-                                        child: Text(
-                                          // Get currency from selected account or default
-                                          (accountState
-                                                      is AccountCardsSummaryLoaded &&
-                                                  accountState.accountSummaries
-                                                      .isNotEmpty &&
-                                                  selectedCardIndex <
-                                                      accountState
-                                                          .accountSummaries
-                                                          .length)
-                                              ? accountState
-                                                      .accountSummaries[
-                                                          selectedCardIndex]
-                                                      .currency
-                                              : 'GBP',
-                                          style: TextStyle(color: Colors.white),
+                                        // Get currency from selected account or default
+                                        child: Builder(
+                                          builder: (context) {
+                                            final summaries = switch (accountState) {
+                                              AccountCardsSummaryLoaded(:final accountSummaries) => accountSummaries,
+                                              AccountBalanceUpdated(:final accountSummaries) => accountSummaries,
+                                              _ => <AccountSummaryEntity>[],
+                                            };
+                                            final currency = summaries.isNotEmpty &&
+                                                    selectedCardIndex < summaries.length
+                                                ? summaries[selectedCardIndex].currency
+                                                : 'NGN';
+                                            return Text(
+                                              currency,
+                                              style: TextStyle(color: Colors.white),
+                                            );
+                                          },
                                         ),
                                       ),
                                       const SizedBox(width: 12),
-                                      // Editable amount field
+                                      // Editable amount field (read-only - use custom buttons)
                                       Expanded(
                                         child: TextField(
                                           controller: _amountController,
-                                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                          readOnly: true,
+                                          showCursor: false,
                                           style: const TextStyle(
                                             color: Colors.white,
                                             fontSize: 24,
@@ -1603,27 +1765,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                                             ),
                                             contentPadding: EdgeInsets.zero,
                                           ),
-                                          onChanged: (value) {
-                                            // Parse user input and convert to minor units
-                                            // Remove currency symbols and parse
-                                            String cleanValue = value.replaceAll(RegExp(r'[^0-9.]'), '');
-                                            if (cleanValue.isNotEmpty) {
-                                              try {
-                                                double majorUnits = double.parse(cleanValue);
-                                                // Convert to minor units
-                                                int minorUnits = (majorUnits * 100).round();
-                                                setState(() {
-                                                  amount = minorUnits.toString();
-                                                });
-                                              } catch (e) {
-                                                // Invalid input, ignore
-                                              }
-                                            } else {
-                                              setState(() {
-                                                amount = '';
-                                              });
-                                            }
-                                          },
+                                          // Remove onChanged since input is via custom buttons only
                                         ),
                                       ),
                                     ],
@@ -1633,12 +1775,16 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                                     child: Builder(
                                       builder: (context) {
                                         // Get currency symbol from selected account
+                                        final summaries = switch (accountState) {
+                                          AccountCardsSummaryLoaded(:final accountSummaries) => accountSummaries,
+                                          AccountBalanceUpdated(:final accountSummaries) => accountSummaries,
+                                          _ => <AccountSummaryEntity>[],
+                                        };
                                         String currencySymbol = '₦';
-                                        if (accountState is AccountCardsSummaryLoaded &&
-                                            accountState.accountSummaries.isNotEmpty &&
-                                            selectedCardIndex < accountState.accountSummaries.length) {
+                                        if (summaries.isNotEmpty &&
+                                            selectedCardIndex < summaries.length) {
                                           currencySymbol = _getCurrencySymbol(
-                                              accountState.accountSummaries[selectedCardIndex].currency);
+                                              summaries[selectedCardIndex].currency);
                                         }
                                         return Text(
                                           'Max $currencySymbol${NumberFormat('#,##0.00', 'en_US').format(maxAmount)}',
@@ -1741,39 +1887,45 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                             Row(
                               children: [
                                 Expanded(
-                                  child: ElevatedButton(
-                                    // Disable button if loading or amount is invalid/zero
-                                    onPressed: isLoading ||
-                                            amount.isEmpty ||
-                                            (int.tryParse(amount) ?? 0) == 0 ||
-                                            accountState
-                                                is! AccountCardsSummaryLoaded ||
-                                            accountState
-                                                .accountSummaries.isEmpty
-                                        ? null
-                                        : () => _showTransferConfirmation(
-                                            accountState), // Pass state
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: const Color(0xFF2962FF)
-                                          .withValues(alpha: 0.8),
-                                      padding: const EdgeInsets.symmetric(
-                                          vertical: 12.0),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      disabledBackgroundColor:
-                                          Colors.grey.withValues(alpha: 0.3),
-                                      disabledForegroundColor:
-                                          Colors.white.withValues(alpha: 0.5),
-                                    ),
-                                    child: const Text(
-                                      'Confirm Transfer',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
+                                  child: Builder(
+                                    builder: (context) {
+                                      final summaries = switch (accountState) {
+                                        AccountCardsSummaryLoaded(:final accountSummaries) => accountSummaries,
+                                        AccountBalanceUpdated(:final accountSummaries) => accountSummaries,
+                                        _ => <AccountSummaryEntity>[],
+                                      };
+                                      final canProceed = !isLoading &&
+                                          amount.isNotEmpty &&
+                                          (int.tryParse(amount) ?? 0) != 0 &&
+                                          summaries.isNotEmpty;
+                                      return ElevatedButton(
+                                        onPressed: canProceed
+                                            ? () => _showTransferConfirmation(
+                                                accountState)
+                                            : null,
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: const Color(0xFF2962FF)
+                                              .withValues(alpha: 0.8),
+                                          padding: const EdgeInsets.symmetric(
+                                              vertical: 12.0),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(12),
+                                          ),
+                                          disabledBackgroundColor:
+                                              Colors.grey.withValues(alpha: 0.3),
+                                          disabledForegroundColor:
+                                              Colors.white.withValues(alpha: 0.5),
+                                        ),
+                                        child: const Text(
+                                          'Confirm Transfer',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      );
+                                    },
                                   ),
                                 ),
                                 SizedBox(width: 12.w),

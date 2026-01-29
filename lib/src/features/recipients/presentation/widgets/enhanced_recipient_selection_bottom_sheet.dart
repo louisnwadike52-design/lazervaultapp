@@ -21,6 +21,7 @@ class LazertagUser {
   final String? avatar;
   final bool isOnline;
   final bool isVerified;
+  final String? currency;  // User's account currency for internal transfers
 
   const LazertagUser({
     required this.id,
@@ -30,6 +31,7 @@ class LazertagUser {
     this.avatar,
     this.isOnline = false,
     this.isVerified = false,
+    this.currency,  // Default to null (will be fetched or default to NGN)
   });
 }
 

@@ -10,5 +10,5 @@ abstract class IRecipientRepository {
     bool? favoritesOnly,
   });
   Future<Either<Failure, RecipientModel>> addRecipient({required RecipientModel recipient, required String accessToken});
-  Future<Either<Failure, void>> toggleFavorite({required String recipientId, required String accessToken});
+  Future<Either<Failure, void>> toggleFavorite({required String recipientId, required bool isFavorite, required String accessToken});
 } 

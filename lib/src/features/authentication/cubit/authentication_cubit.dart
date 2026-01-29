@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:lazervault/core/services/currency_sync_service.dart';
 import 'package:lazervault/core/services/signup_state_service.dart';
+import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
@@ -47,6 +48,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
   final CreateVirtualAccountUseCase? _createVirtualAccountUseCase;
   final FlutterSecureStorage _storage;
   final CurrencySyncService _currencySyncService;
+  final AccountManager _accountManager;
   final SignupStateService? _signupStateService;
 
   ProfileEntity? _currentProfile;
@@ -69,6 +71,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     CreateVirtualAccountUseCase? createVirtualAccount,
     FlutterSecureStorage? storage,
     required CurrencySyncService currencySyncService,
+    required AccountManager accountManager,
     SignupStateService? signupStateService,
   })  : _loginUseCase = login,
         _loginWithPasscodeUseCase = loginWithPasscode,
@@ -86,6 +89,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
         _createVirtualAccountUseCase = createVirtualAccount,
         _storage = storage ?? const FlutterSecureStorage(),
         _currencySyncService = currencySyncService,
+        _accountManager = accountManager,
         _signupStateService = signupStateService,
         super(AuthenticationInitial());
 
@@ -210,6 +214,8 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       await _storage.delete(key: 'user_first_name');
       await _storage.delete(key: 'user_last_name');
       await _storage.delete(key: 'user_avatar_url');
+      // Clear active account to prevent using stale account_id from previous user
+      _accountManager.clearActiveAccount();
       _currentProfile = null;
     } catch (e) {
       print('Error clearing session: $e');

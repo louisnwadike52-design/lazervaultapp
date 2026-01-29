@@ -5,6 +5,7 @@ import 'package:lazervault/core/error/failure.dart';
 import 'package:lazervault/src/features/recipients/data/models/recipient_model.dart';
 import 'package:lazervault/src/features/recipients/domain/repositories/i_recipient_repository.dart';
 import 'package:lazervault/src/generated/recipient.pbgrpc.dart' as grpc;
+import 'package:lazervault/src/generated/google/protobuf/wrappers.pb.dart';
 
 class RecipientRepositoryImpl implements IRecipientRepository {
   final grpc.RecipientServiceClient _client;
@@ -63,7 +64,7 @@ class RecipientRepositoryImpl implements IRecipientRepository {
           ..bankName = recipient.bankName
           ..sortCode = recipient.sortCode
           ..isFavorite = recipient.isFavorite
-          ..type = 'external'; // Default to external recipient
+          ..type = 'external';
 
         if (recipient.countryCode != null) {
           request.countryCode = recipient.countryCode!;
@@ -100,12 +101,13 @@ class RecipientRepositoryImpl implements IRecipientRepository {
 
   @override
   Future<Either<Failure, void>> toggleFavorite(
-      {required String recipientId, required String accessToken}) async {
+      {required String recipientId, required bool isFavorite, required String accessToken}) async {
     try {
       // Use executeWithTokenRotation for automatic token refresh on auth errors
       await _callOptionsHelper.executeWithTokenRotation(() async {
         final request = grpc.UpdateRecipientRequest()
-          ..recipientId = Int64.parseInt(recipientId);
+          ..recipientId = Int64.parseInt(recipientId)
+          ..isFavorite = BoolValue(value: isFavorite);
 
         final callOptions = await _callOptionsHelper.withAuth();
         return await _client.updateRecipient(

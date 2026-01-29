@@ -1,14 +1,20 @@
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:injectable/injectable.dart';
+import 'package:lazervault/core/services/account_manager.dart';
+import 'package:lazervault/core/services/locale_manager.dart';
 import '../domain/entities/account_summary_entity.dart';
 import '../domain/usecases/get_account_summaries_usecase.dart';
 import '../services/balance_websocket_service.dart';
 import 'account_cards_summary_state.dart';
 
 
+@injectable
 class AccountCardsSummaryCubit extends Cubit<AccountCardsSummaryState> {
   final GetAccountSummariesUseCase _getAccountSummariesUseCase;
   final BalanceWebSocketService? _wsService;
+  final AccountManager _accountManager;
+  final LocaleManager _localeManager;
   StreamSubscription<BalanceUpdateEvent>? _wsSubscription;
 
   // Keep track of current summaries for WebSocket updates
@@ -19,8 +25,12 @@ class AccountCardsSummaryCubit extends Cubit<AccountCardsSummaryState> {
 
   AccountCardsSummaryCubit(
     this._getAccountSummariesUseCase, {
+    required AccountManager accountManager,
+    required LocaleManager localeManager,
     BalanceWebSocketService? wsService,
   })  : _wsService = wsService,
+        _accountManager = accountManager,
+        _localeManager = localeManager,
         super(AccountCardsSummaryInitial()) {
     // Listen to WebSocket balance updates if service provided
     if (_wsService != null) {
@@ -122,8 +132,47 @@ class AccountCardsSummaryCubit extends Cubit<AccountCardsSummaryState> {
       (summaries) {
         _currentSummaries = summaries;
         emit(AccountCardsSummaryLoaded(summaries));
+
+        // Auto-select personal account matching current locale's currency
+        _autoSelectPersonalAccount(summaries);
       },
     );
+  }
+
+  /// Automatically select the personal account that matches the current locale's currency
+  void _autoSelectPersonalAccount(List<AccountSummaryEntity> summaries) {
+    if (summaries.isEmpty) return;
+
+    // Get current locale to determine expected currency
+    final currentLocale = _localeManager.currentLocale;
+    final expectedCurrency = _getCurrencyForLocale(currentLocale);
+
+    // Find personal account with matching currency
+    final personalAccount = summaries.firstWhere(
+      (acc) => acc.accountType.toLowerCase() == 'personal' && acc.currency == expectedCurrency,
+      orElse: () => summaries.first, // Fallback to first account if no personal match
+    );
+
+    _accountManager.setActiveAccount(personalAccount.id);
+    print('AccountCardsSummaryCubit: Auto-selected account ${personalAccount.accountNumber} (${personalAccount.accountType}) for locale $currentLocale ($expectedCurrency)');
+  }
+
+  /// Get currency code for locale (e.g., en-NG -> NGN, en-US -> USD)
+  String _getCurrencyForLocale(String locale) {
+    if (locale.contains('-')) {
+      final countryCode = locale.split('-')[1].toUpperCase();
+      // Map common country codes to currency codes
+      final currencyMap = {
+        'NG': 'NGN',
+        'US': 'USD',
+        'GB': 'GBP',
+        'EU': 'EUR',
+        'CA': 'CAD',
+        'AU': 'AUD',
+      };
+      return currencyMap[countryCode] ?? countryCode;
+    }
+    return 'USD'; // Default fallback
   }
 
   /// Connect WebSocket for real-time updates

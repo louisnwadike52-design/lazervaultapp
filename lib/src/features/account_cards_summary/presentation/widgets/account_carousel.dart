@@ -42,6 +42,10 @@ class _AccountCarouselState extends State<AccountCarousel> {
   // Track real-time balance updates per account
   final Map<String, double> _realtimeBalances = {};
 
+  // Pending balance updates to apply when dashboard becomes visible
+  final Map<String, double> _pendingBalanceUpdates = {};
+  bool _isCurrentRoute = true;
+
   // Helper to convert currency code to symbol
   String _getCurrencySymbol(String currency) {
     switch (currency.toUpperCase()) {
@@ -73,12 +77,28 @@ class _AccountCarouselState extends State<AccountCarousel> {
     super.initState();
     // Set the first account as active if none is selected
     _initializeActiveAccount();
+    // Check if there's a recent WebSocket balance update we missed
+    // (e.g., when navigating back to dashboard via Get.offAllNamed after a transfer)
+    // Only apply if the event is recent (within 30 seconds) to avoid stale updates
+    Future.delayed(const Duration(milliseconds: 800), () {
+      if (!mounted) return;
+      final wsState = context.read<BalanceWebSocketCubit>().state;
+      if (wsState.lastUpdate != null) {
+        final eventAge = DateTime.now().millisecondsSinceEpoch - wsState.lastUpdate!.timestamp;
+        // Only apply if event occurred within last 30 seconds (30000ms)
+        if (eventAge < 30000 && eventAge > 0) {
+          _handleBalanceUpdate(wsState.lastUpdate!);
+        } else {
+          debugPrint('AccountCarousel: Skipping stale WebSocket event (age: ${eventAge}ms)');
+        }
+      }
+    });
   }
 
   Future<void> _initializeActiveAccount() async {
     if (!_accountManager.hasActiveAccount && widget.accountSummaries.isNotEmpty) {
       // Set the first account as active by default
-      await _accountManager.setActiveAccount(widget.accountSummaries.first.id);
+      _accountManager.setActiveAccount(widget.accountSummaries.first.id);
     }
   }
 
@@ -91,10 +111,7 @@ class _AccountCarouselState extends State<AccountCarousel> {
     // Automatically set the visible account as active
     if (widget.accountSummaries.isNotEmpty && index < widget.accountSummaries.length) {
       final newAccountId = widget.accountSummaries[index].id;
-      _accountManager.setActiveAccount(newAccountId).catchError((e) {
-        // Silently fail - don't show snackbar on carousel swipe
-        print('Failed to update active account: $e');
-      });
+      _accountManager.setActiveAccount(newAccountId);
     }
   }
 
@@ -107,6 +124,13 @@ class _AccountCarouselState extends State<AccountCarousel> {
 
   @override
   Widget build(BuildContext context) {
+     // Apply any buffered balance updates now that we're building (visible)
+     if (_pendingBalanceUpdates.isNotEmpty) {
+       WidgetsBinding.instance.addPostFrameCallback((_) {
+         _applyPendingUpdates();
+       });
+     }
+
      if (widget.accountSummaries.isEmpty && !widget.showFamilySetupCard) {
         return SizedBox(
           height: 228.h,
@@ -154,14 +178,34 @@ class _AccountCarouselState extends State<AccountCarousel> {
     final accountId = event.accountId;
     final newBalance = event.newBalance;
 
-    // Update the real-time balance for this account
-    if (mounted) {
+    if (!mounted) return;
+
+    // Check if dashboard is the current visible route
+    final isVisible = ModalRoute.of(context)?.isCurrent ?? false;
+
+    if (isVisible) {
+      // Dashboard is visible — apply balance update immediately (triggers animation)
       setState(() {
         _realtimeBalances[accountId] = newBalance;
       });
+    } else {
+      // Dashboard is not visible — buffer the update for later
+      _pendingBalanceUpdates[accountId] = newBalance;
+      debugPrint('AccountCarousel: Buffered balance update for account $accountId (dashboard not visible)');
+    }
 
-      // Log the update for debugging
-      debugPrint('AccountCarousel: Real-time balance update for account $accountId: $newBalance (${event.eventType})');
+    // Log the update for debugging
+    debugPrint('AccountCarousel: Real-time balance update for account $accountId: $newBalance (${event.eventType})');
+  }
+
+  /// Apply any pending balance updates when dashboard becomes visible
+  void _applyPendingUpdates() {
+    if (_pendingBalanceUpdates.isNotEmpty && mounted) {
+      setState(() {
+        _realtimeBalances.addAll(_pendingBalanceUpdates);
+        _pendingBalanceUpdates.clear();
+      });
+      debugPrint('AccountCarousel: Applied pending balance updates');
     }
   }
 

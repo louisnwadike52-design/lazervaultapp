@@ -32,4 +32,47 @@ final class TransferFailure extends TransferState {
 
   @override
   List<Object?> get props => [message];
-} 
+}
+
+// Fee lookup states
+final class TransferFeeLoading extends TransferState {
+  const TransferFeeLoading();
+}
+
+final class TransferFeeLoaded extends TransferState {
+  final int fee; // Minor units (kobo)
+  final String currency;
+  final String feeType; // "flat" or "percentage"
+  final int totalAmount; // Minor units
+  final List<FeeBreakdownItem> breakdown;
+
+  const TransferFeeLoaded({
+    required this.fee,
+    required this.currency,
+    required this.feeType,
+    required this.totalAmount,
+    required this.breakdown,
+  });
+
+  @override
+  List<Object?> get props => [fee, currency, feeType, totalAmount, breakdown];
+}
+
+final class TransferFeeError extends TransferState {
+  final String message;
+
+  const TransferFeeError({required this.message});
+
+  @override
+  List<Object?> get props => [message];
+}
+
+class FeeBreakdownItem extends Equatable {
+  final String label;
+  final int amount; // Minor units
+
+  const FeeBreakdownItem({required this.label, required this.amount});
+
+  @override
+  List<Object?> get props => [label, amount];
+}

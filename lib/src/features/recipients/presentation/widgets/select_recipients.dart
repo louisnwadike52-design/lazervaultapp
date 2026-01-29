@@ -16,7 +16,6 @@ import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_
 import 'package:lazervault/src/features/recipients/presentation/cubit/account_verification_cubit.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/account_verification_state.dart';
 import 'package:lazervault/src/features/recipients/domain/entities/account_verification_result.dart';
-import 'package:lazervault/src/features/widgets/common/back_navigator.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/recipient_chips_builder.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/recipients.dart';
 import 'package:lazervault/src/features/recipients/data/models/recipient_model.dart';
@@ -120,7 +119,22 @@ class _SelectRecipientsState extends State<SelectRecipients> {
                         // Header with Back Button
                         Row(
                           children: [
-                            BackNavigator(),
+                            GestureDetector(
+                              onTap: () => Get.offAllNamed(AppRoutes.dashboard),
+                              child: Container(
+                                width: 40.w,
+                                height: 40.h,
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.2),
+                                  borderRadius: BorderRadius.circular(12.r),
+                                ),
+                                child: Icon(
+                                  Icons.arrow_back,
+                                  color: Colors.white,
+                                  size: 20.sp,
+                                ),
+                              ),
+                            ),
                             Expanded(
                               child: Text(
                                 'Select Recipient',
@@ -455,6 +469,7 @@ class _SelectRecipientsState extends State<SelectRecipients> {
           },
           onLazertagUserSelected: (user) {
             // Convert lazertag user to recipient and navigate
+            // Note: currency is not set here - the sender's account currency will be used for the receipt
             final recipient = RecipientModel(
               id: user.id,
               name: user.name,
@@ -462,6 +477,7 @@ class _SelectRecipientsState extends State<SelectRecipients> {
               bankName: 'LazerVault',
               sortCode: '',
               isFavorite: false,
+              // currency: null - sender's account currency will be used (dynamic based on locale)
             );
             Get.toNamed(AppRoutes.initiateSendFunds, arguments: recipient);
           },

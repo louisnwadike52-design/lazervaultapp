@@ -223,11 +223,13 @@ class _CompactAnimatedBalanceState extends State<CompactAnimatedBalance>
   @override
   Widget build(BuildContext context) {
     // Determine color based on animation state
-    Color textColor = widget.color ?? Colors.white;
+    final baseColor = widget.color ?? Colors.white;
+    Color textColor = baseColor;
     if (_isAnimating) {
+      // Use strong colors during animation: green for deposits, red for transfers
       textColor = _isIncreasing
-          ? Color.lerp(textColor, Colors.greenAccent, 0.5)!
-          : Color.lerp(textColor, Colors.redAccent, 0.5)!;
+          ? Colors.greenAccent
+          : const Color(0xFFFF6B6B); // Soft red for transfers
     }
 
     return AnimatedBuilder(

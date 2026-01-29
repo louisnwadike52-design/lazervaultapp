@@ -1,53 +1,32 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 import 'package:lazervault/src/features/transaction_pin/widgets/transaction_pin_modal.dart';
 
-/// Mixin to easily add transaction PIN validation to any payment flow
+/// Mixin to easily add transaction PIN validation to any payment flow.
 ///
-/// Usage:
-/// ```dart
-/// class _MyPaymentScreenState extends State<MyPaymentScreen>
-///     with TransactionPinMixin {
-///   @override
-///   Widget build(BuildContext context) {
-///     // Your UI
-///   }
-///
-///   Future<void> _processPayment() async {
-///     final success = await validateTransactionPin(
-///       context: context,
-///       transactionId: 'txn_123',
-///       transactionType: 'transfer',
-///       amount: 100.0,
-///       currency: 'USD',
-///       onPinValidated: (token) async {
-///         // Execute the actual payment with the token
-///         await executePayment(token);
-///       },
-///     );
-///
-///     if (!success) {
-///       // PIN validation failed or was cancelled
-///     }
-///   }
-/// }
-/// ```
+/// All loading states (verifying PIN, processing transfer, success) are shown
+/// inline within the PIN bottom sheet — no separate dialogs or overlay loaders.
 mixin TransactionPinMixin<T extends StatefulWidget> on State<T> {
   /// Get the transaction PIN service (must be provided by the mixed-in class)
   ITransactionPinService get transactionPinService;
 
-  /// Validate transaction PIN before executing a payment
+  /// GlobalKey to control the PIN modal state phases
+  final GlobalKey<TransactionPinModalState> _pinModalKey =
+      GlobalKey<TransactionPinModalState>();
+
+  /// Expose the pin modal key so callers can drive processing/success phases
+  GlobalKey<TransactionPinModalState> get pinModalKey => _pinModalKey;
+
+  /// Validate transaction PIN and execute the payment callback.
   ///
-  /// Returns true if PIN validation succeeded and callback was executed,
-  /// false if validation failed, was cancelled, or PIN is locked.
-  ///
-  /// Handles all edge cases:
-  /// - PIN not set up (prompts to create PIN)
-  /// - Incorrect PIN with retry logic
-  /// - PIN locked (shows lockout message)
-  /// - Network errors
+  /// The PIN bottom sheet remains open throughout the entire flow:
+  /// PIN entry → Verifying → onPinValidated callback → sheet stays open.
+  /// The caller is responsible for calling [pinModalKey.currentState?.setProcessing()]
+  /// and [pinModalKey.currentState?.setSuccess()] to advance phases,
+  /// and then popping the sheet when ready to navigate.
   Future<bool> validateTransactionPin({
     required BuildContext context,
     required String transactionId,
@@ -58,6 +37,8 @@ mixin TransactionPinMixin<T extends StatefulWidget> on State<T> {
     String? title,
     String? message,
     String? currencySymbol,
+    double? fee,
+    double? totalAmount,
     int maxAttempts = 3,
   }) async {
     try {
@@ -75,142 +56,149 @@ mixin TransactionPinMixin<T extends StatefulWidget> on State<T> {
       }
 
       if (!hasPin) {
-        // Prompt user to create PIN
         final shouldCreate = await _showCreatePinPrompt(context);
         if (!shouldCreate) return false;
-
-        // Navigate to create PIN screen
         await Get.toNamed(AppRoutes.transactionPinSetup);
-
-        // Check again if user created PIN
         final hasPinNow = await transactionPinService.checkUserHasPin();
         if (!hasPinNow) return false;
-
-        // If PIN was created, continue with the validation flow
       }
 
-      // Start PIN validation loop
+      // Start PIN validation loop using a mutable completer reference
+      // so the callback always resolves the current completer even after retries
       int currentAttempt = 1;
       String? errorMessage;
+      final completerRef = _MutableRef<Completer<String?>>(Completer<String?>());
 
-      while (currentAttempt <= maxAttempts) {
-        // Show PIN modal
-        final pin = await showTransactionPinModal(
-          context,
+      // Show PIN modal once — stays open for all phases including retries
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        isDismissible: false,
+        enableDrag: false,
+        backgroundColor: Colors.transparent,
+        builder: (sheetContext) => TransactionPinModal(
+          key: _pinModalKey,
           title: title,
           message: message,
           amount: amount,
+          fee: fee,
+          totalAmount: totalAmount,
           currency: currency,
           currencySymbol: currencySymbol,
           maxAttempts: maxAttempts,
           currentAttempt: currentAttempt,
           errorMessage: errorMessage,
-          onForgotPin: () => Get.toNamed(AppRoutes.forgotPin),
-        );
+          onPinSubmitted: (pin) {
+            if (!completerRef.value.isCompleted) {
+              completerRef.value.complete(pin);
+            }
+          },
+          onForgotPin: () {
+            if (!completerRef.value.isCompleted) {
+              completerRef.value.complete(null);
+            }
+            Get.toNamed(AppRoutes.forgotPin);
+          },
+          onCancel: () {
+            if (!completerRef.value.isCompleted) {
+              completerRef.value.complete(null);
+            }
+          },
+        ),
+      );
 
-        // Check if user cancelled
+      while (currentAttempt <= maxAttempts) {
+        // Wait for PIN input
+        final pin = await completerRef.value.future;
+
         if (pin == null) {
           _showCancellationMessage(context);
           return false;
         }
 
+        // Transition to verifying phase (inline in sheet)
+        _pinModalKey.currentState?.setVerifying();
+
         // Verify PIN
-        final result = await _verifyPinWithLoading(
-          context,
-          pin: pin,
-          transactionId: transactionId,
-          transactionType: transactionType,
-          amount: amount,
-          currency: currency,
-        );
+        try {
+          final result = await transactionPinService.verifyPin(
+            pin: pin,
+            transactionId: transactionId,
+            transactionType: transactionType,
+            amount: amount,
+            currency: currency,
+          );
 
-        // Handle verification result
-        if (result.success) {
-          // PIN is valid, execute the payment callback
-          try {
-            await onPinValidated(result.verificationToken!);
-            return true;
-          } catch (e) {
-            // Payment execution failed
-            _showPaymentError(context, e.toString());
+          if (result.success) {
+            // PIN valid → transition to processing phase
+            _pinModalKey.currentState?.setProcessing();
+
+            // Execute the payment callback
+            try {
+              await onPinValidated(result.verificationToken!);
+              return true;
+            } catch (e) {
+              _pinModalKey.currentState?.setFailed('Transfer failed: ${e.toString()}');
+              await Future.delayed(const Duration(seconds: 2));
+              if (mounted) {
+                try { Navigator.of(context).pop(); } catch (_) {}
+              }
+              return false;
+            }
+          } else if (result.isLocked) {
+            if (mounted) {
+              try { Navigator.of(context).pop(); } catch (_) {}
+            }
+            _showPinLockedMessage(context, result.lockedUntil!);
             return false;
-          }
-        } else if (result.isLocked) {
-          // PIN is locked
-          _showPinLockedMessage(context, result.lockedUntil!);
-          return false;
-        } else {
-          // Incorrect PIN
-          currentAttempt++;
-          errorMessage = result.message ?? 'Incorrect PIN';
+          } else {
+            // Wrong PIN — reset to PIN entry inline
+            currentAttempt++;
+            errorMessage = result.message ?? 'Incorrect PIN';
 
-          // Check if attempts exhausted
+            if (currentAttempt > maxAttempts) {
+              if (mounted) {
+                try { Navigator.of(context).pop(); } catch (_) {}
+              }
+              _showAttemptsExhaustedMessage(context);
+              return false;
+            }
+
+            // Create a fresh completer for the next attempt
+            completerRef.value = Completer<String?>();
+            _pinModalKey.currentState?.resetToEntry(
+              errorMessage: errorMessage,
+              currentAttempt: currentAttempt,
+            );
+          }
+        } catch (e) {
+          // Network error — allow retry
+          currentAttempt++;
+          errorMessage = 'Verification failed. Please try again.';
+
           if (currentAttempt > maxAttempts) {
+            if (mounted) {
+              try { Navigator.of(context).pop(); } catch (_) {}
+            }
             _showAttemptsExhaustedMessage(context);
             return false;
           }
+
+          completerRef.value = Completer<String?>();
+          _pinModalKey.currentState?.resetToEntry(
+            errorMessage: errorMessage,
+            currentAttempt: currentAttempt,
+          );
         }
       }
 
       return false;
     } catch (e) {
-      // Unexpected error
       print('[TransactionPinMixin] Unexpected error: $e');
       if (mounted) {
         _showErrorMessage(context, e.toString());
       }
       return false;
-    }
-  }
-
-  /// Verify PIN with loading indicator
-  Future<TransactionPinVerificationResult> _verifyPinWithLoading(
-    BuildContext context, {
-    required String pin,
-    required String transactionId,
-    required String transactionType,
-    required double amount,
-    required String currency,
-  }) async {
-    // Show loading dialog
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => const Center(
-        child: Card(
-          child: Padding(
-            padding: EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                CircularProgressIndicator(),
-                SizedBox(height: 16),
-                Text('Verifying PIN...'),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-
-    try {
-      final result = await transactionPinService.verifyPin(
-        pin: pin,
-        transactionId: transactionId,
-        transactionType: transactionType,
-        amount: amount,
-        currency: currency,
-      );
-
-      // Close loading dialog
-      if (!mounted) return TransactionPinVerificationResult(success: false, message: 'Widget disposed');
-      Navigator.of(context).pop();
-
-      return result;
-    } catch (e) {
-      // Close loading dialog
-      if (mounted) Navigator.of(context).pop();
-      rethrow;
     }
   }
 
@@ -348,8 +336,6 @@ mixin TransactionPinMixin<T extends StatefulWidget> on State<T> {
   }
 
   /// Validate PIN (simplified version without payment execution)
-  ///
-  /// Use this when you just need to validate the PIN without executing a payment
   Future<TransactionPinVerificationResult?> validatePinOnly({
     required BuildContext context,
     required String transactionId,
@@ -359,19 +345,16 @@ mixin TransactionPinMixin<T extends StatefulWidget> on State<T> {
     int maxAttempts = 3,
   }) async {
     try {
-      // Check if user has PIN set up
       final hasPin = await transactionPinService.checkUserHasPin();
       if (!hasPin) {
         _showErrorMessage(context, 'Please create a transaction PIN first');
         return null;
       }
 
-      // Start PIN validation loop
       int currentAttempt = 1;
       String? errorMessage;
 
       while (currentAttempt <= maxAttempts) {
-        // Show PIN modal
         final pin = await showTransactionPinModal(
           context,
           maxAttempts: maxAttempts,
@@ -379,36 +362,60 @@ mixin TransactionPinMixin<T extends StatefulWidget> on State<T> {
           errorMessage: errorMessage,
         );
 
-        // Check if user cancelled
         if (pin == null) {
           return null;
         }
 
-        // Verify PIN
-        final result = await _verifyPinWithLoading(
-          context,
-          pin: pin,
-          transactionId: transactionId,
-          transactionType: transactionType,
-          amount: amount,
-          currency: currency,
+        // Show loading inline
+        final pinModalKey = GlobalKey<TransactionPinModalState>();
+        // For validatePinOnly, use the simple loading dialog
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => const Center(
+            child: Card(
+              child: Padding(
+                padding: EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    CircularProgressIndicator(),
+                    SizedBox(height: 16),
+                    Text('Verifying PIN...'),
+                  ],
+                ),
+              ),
+            ),
+          ),
         );
 
-        // Handle verification result
-        if (result.success) {
-          return result;
-        } else if (result.isLocked) {
-          _showPinLockedMessage(context, result.lockedUntil!);
-          return result;
-        } else {
-          // Incorrect PIN
-          currentAttempt++;
-          errorMessage = result.message ?? 'Incorrect PIN';
+        try {
+          final result = await transactionPinService.verifyPin(
+            pin: pin,
+            transactionId: transactionId,
+            transactionType: transactionType,
+            amount: amount,
+            currency: currency,
+          );
 
-          if (currentAttempt > maxAttempts) {
-            _showAttemptsExhaustedMessage(context);
+          if (mounted) Navigator.of(context).pop();
+
+          if (result.success) {
             return result;
+          } else if (result.isLocked) {
+            _showPinLockedMessage(context, result.lockedUntil!);
+            return result;
+          } else {
+            currentAttempt++;
+            errorMessage = result.message ?? 'Incorrect PIN';
+            if (currentAttempt > maxAttempts) {
+              _showAttemptsExhaustedMessage(context);
+              return result;
+            }
           }
+        } catch (e) {
+          if (mounted) Navigator.of(context).pop();
+          rethrow;
         }
       }
 
@@ -418,4 +425,10 @@ mixin TransactionPinMixin<T extends StatefulWidget> on State<T> {
       return null;
     }
   }
+}
+
+/// Simple mutable reference wrapper so closures can share a changing value
+class _MutableRef<T> {
+  T value;
+  _MutableRef(this.value);
 }

@@ -3,7 +3,12 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/recipients/data/models/recipient_model.dart';
+import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_cubit.dart';
+import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_state.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class Recipients extends StatefulWidget {
   final List<RecipientModel> recipients;
@@ -28,6 +33,18 @@ class _RecipientsState extends State<Recipients> {
         selectedRecipients.add(recipient);
       }
     });
+  }
+
+  void _toggleFavorite(RecipientModel recipient) {
+    final authState = BlocProvider.of<AuthenticationCubit>(context, listen: false).state;
+    if (authState is AuthenticationSuccess) {
+      final accessToken = authState.profile.session.accessToken;
+      BlocProvider.of<RecipientCubit>(context, listen: false).toggleFavorite(
+        recipientId: recipient.id,
+        isFavorite: !recipient.isFavorite,
+        accessToken: accessToken,
+      );
+    }
   }
 
   void _shareRecipient(RecipientModel recipient) {
@@ -116,18 +133,18 @@ class _RecipientsState extends State<Recipients> {
                     Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        // Favorite Button
+                        // Favorite Button - toggles persisted favorite status
                         Material(
                           color: Colors.transparent,
                           child: InkWell(
                             borderRadius: BorderRadius.circular(20.r),
-                            onTap: () => _toggleSelection(recipient),
+                            onTap: () => _toggleFavorite(recipient),
                             child: Padding(
                               padding: EdgeInsets.all(8.w),
                               child: Icon(
-                                isSelected ? Icons.favorite : Icons.favorite_border,
-                                color: isSelected 
-                                    ? Color.fromARGB(255, 78, 3, 208)
+                                recipient.isFavorite ? Icons.favorite : Icons.favorite_border,
+                                color: recipient.isFavorite
+                                    ? Colors.amber[700]
                                     : Colors.grey[400],
                                 size: 22.w,
                               ),

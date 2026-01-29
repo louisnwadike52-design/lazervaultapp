@@ -8,7 +8,7 @@ class ToggleFavoriteUseCase {
   ToggleFavoriteUseCase(this._repository);
 
   Future<Either<Failure, void>> call(
-      {required String recipientId, required String accessToken}) async {
-    return await _repository.toggleFavorite(recipientId: recipientId, accessToken: accessToken);
+      {required String recipientId, required bool isFavorite, required String accessToken}) async {
+    return await _repository.toggleFavorite(recipientId: recipientId, isFavorite: isFavorite, accessToken: accessToken);
   }
 } 

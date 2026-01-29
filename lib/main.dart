@@ -126,7 +126,12 @@ void main() async {
 /// Helper function to determine the initial route based on authentication status
 /// IMPORTANT: Users must authenticate on every app restart for security
 Future<String> _determineInitialRoute() async {
-  const storage = FlutterSecureStorage();
+  const storage = FlutterSecureStorage(
+    aOptions: AndroidOptions(
+      encryptedSharedPreferences: true,
+      resetOnError: true,
+    ),
+  );
 
   try {
     // DEVELOPMENT: Check if we should force onboarding (for testing fresh install)

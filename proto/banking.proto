@@ -408,6 +408,13 @@ service BankingService {
             get: "/api/v1/withdrawals/calculate-fee"
         };
     }
+
+    // Get transfer fee (real-time fee lookup)
+    rpc GetTransferFee(GetTransferFeeRequest) returns (GetTransferFeeResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/transfers/fee"
+        };
+    }
 }
 
 // =====================================================
@@ -1530,4 +1537,31 @@ message CheckMandateBalanceResponse {
     bool sufficient_funds = 5;        // True if balance >= amount
     string currency = 6;
     google.protobuf.Timestamp checked_at = 7;
+}
+
+// =====================================================
+// TRANSFER FEE MESSAGES
+// =====================================================
+
+message GetTransferFeeRequest {
+    int64 amount = 1;                 // Amount in minor units (kobo)
+    string currency = 2;              // Currency code (NGN, GBP, USD)
+    string transfer_type = 3;         // "internal", "domestic", "international"
+    string destination_bank_code = 4; // Bank code for external transfers
+}
+
+message GetTransferFeeResponse {
+    bool success = 1;
+    string error_code = 2;
+    string error_message = 3;
+    int64 fee = 4;                    // Fee in minor units (kobo)
+    string currency = 5;
+    string fee_type = 6;              // "flat" or "percentage"
+    int64 total_amount = 7;           // amount + fee in minor units
+    repeated FeeItem breakdown = 8;   // Fee breakdown items
+}
+
+message FeeItem {
+    string label = 1;                 // e.g., "Transfer Fee", "VAT", "Stamp Duty"
+    int64 amount = 2;                 // Amount in minor units
 }

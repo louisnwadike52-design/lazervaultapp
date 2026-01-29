@@ -412,27 +412,16 @@ class _AccountSummarySlideContentState extends State<AccountSummarySlideContent>
   }
 
   Future<void> _selectAccount(String accountId) async {
-    try {
-      await _accountManager.setActiveAccount(accountId);
-      widget.onAccountChanged?.call();
-      if (mounted) {
-        Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Active account updated'),
-            duration: Duration(seconds: 2),
-          ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to update account: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+    _accountManager.setActiveAccount(accountId);
+    widget.onAccountChanged?.call();
+    if (mounted) {
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Active account updated'),
+          duration: Duration(seconds: 2),
+        ),
+      );
     }
   }
 
