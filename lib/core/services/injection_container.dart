@@ -481,7 +481,12 @@ Future<void> init() async {
 
   // Register FlutterSecureStorage
   serviceLocator.registerLazySingleton<FlutterSecureStorage>(
-    () => const FlutterSecureStorage(),
+    () => const FlutterSecureStorage(
+      aOptions: AndroidOptions(
+        encryptedSharedPreferences: true,
+        resetOnError: true,
+      ),
+    ),
   );
 
   // Register Logger
@@ -536,8 +541,9 @@ Future<void> init() async {
   );
 
   // Register AccountManager for centralized active account state management
+  // Note: Active account is NOT persisted - it's kept in memory only to prevent stale data
   serviceLocator.registerLazySingleton<AccountManager>(
-    () => AccountManager(serviceLocator<FlutterSecureStorage>()),
+    () => AccountManager(),
   );
 
   // Register gRPC Call Options Helper with LocaleManager and AccountManager
@@ -780,6 +786,7 @@ Future<void> init() async {
         createVirtualAccount: serviceLocator<CreateVirtualAccountUseCase>(),
         storage: serviceLocator<FlutterSecureStorage>(),
         currencySyncService: serviceLocator<CurrencySyncService>(),
+        accountManager: serviceLocator<AccountManager>(),
         signupStateService: serviceLocator<SignupStateService>(),
       ));
 
@@ -958,7 +965,11 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton(() => GetAccountSummariesUseCase(serviceLocator<IAccountSummaryRepository>()));
 
   // Blocs/Cubits
-  serviceLocator.registerLazySingleton(() => AccountCardsSummaryCubit(serviceLocator<GetAccountSummariesUseCase>()));
+  serviceLocator.registerFactory<AccountCardsSummaryCubit>(() => AccountCardsSummaryCubit(
+    serviceLocator<GetAccountSummariesUseCase>(),
+    accountManager: serviceLocator<AccountManager>(),
+    localeManager: serviceLocator<LocaleManager>(),
+  ));
 
   // WebSocket Balance Update Service
   serviceLocator.registerLazySingleton(() => BalanceWebSocketService());

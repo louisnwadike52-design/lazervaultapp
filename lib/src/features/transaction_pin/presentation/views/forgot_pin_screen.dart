@@ -158,6 +158,16 @@ class _ForgotPinScreenState extends State<ForgotPinScreen> {
 
   void _handleStateChange(PinManagementState state) {
     if (state is PinManagementReady) {
+      // Check if there are any available channels
+      final hasAvailableChannels = state.channels.any((ch) => ch.isAvailable);
+      if (!hasAvailableChannels) {
+        // No available channels - show error
+        setState(() {
+          _currentStep = 5; // Error step
+        });
+        _showSnackbar('No verified contact methods available. Please add a verified email or phone number.', isError: false);
+        return;
+      }
       setState(() {
         _currentStep = 1;
         if (state.recommendedChannel.isNotEmpty) {
@@ -183,11 +193,18 @@ class _ForgotPinScreenState extends State<ForgotPinScreen> {
         }
       });
     } else if (state is PinManagementError) {
-      String msg = state.message;
-      if (state.remainingAttempts != null) {
-        msg += ' (${state.remainingAttempts} attempts remaining)';
+      // If we're still on loading step (initialization failed), show error screen
+      if (_currentStep == 0) {
+        setState(() {
+          _currentStep = 5; // Error step
+        });
+      } else {
+        String msg = state.message;
+        if (state.remainingAttempts != null) {
+          msg += ' (${state.remainingAttempts} attempts remaining)';
+        }
+        _showSnackbar(msg);
       }
-      _showSnackbar(msg);
     }
   }
 
@@ -254,6 +271,8 @@ class _ForgotPinScreenState extends State<ForgotPinScreen> {
         return _buildNewPinStep(state);
       case 4:
         return _buildSuccessStep();
+      case 5:
+        return _buildErrorStep(state);
       default:
         return const SizedBox.shrink();
     }
@@ -798,6 +817,88 @@ class _ForgotPinScreenState extends State<ForgotPinScreen> {
           textAlign: TextAlign.center,
         ),
         SizedBox(height: 48.h),
+      ],
+    );
+  }
+
+  // ── Step 5: Error ──
+
+  Widget _buildErrorStep(PinManagementState state) {
+    String errorMessage = 'Unable to initialize PIN reset. Please try again.';
+    if (state is PinManagementError) {
+      errorMessage = state.message;
+    }
+
+    return Column(
+      children: [
+        SizedBox(height: 80.h),
+        Container(
+          width: 100.w,
+          height: 100.w,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: Colors.red.shade50,
+          ),
+          child: Icon(
+            Icons.error_outline,
+            color: Colors.red.shade600,
+            size: 60.sp,
+          ),
+        ),
+        SizedBox(height: 32.h),
+        Text(
+          'PIN Reset Unavailable',
+          style: GoogleFonts.inter(
+            fontSize: 22.sp,
+            fontWeight: FontWeight.w700,
+            color: Colors.black,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        SizedBox(height: 16.h),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 24.w),
+          child: Text(
+            errorMessage,
+            style: GoogleFonts.inter(
+              fontSize: 14.sp,
+              color: Colors.grey.shade600,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ),
+        SizedBox(height: 32.h),
+        SizedBox(
+          width: double.infinity,
+          height: 52.h,
+          child: ElevatedButton(
+            onPressed: () => Get.back(),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: _purpleAccent,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12.r),
+              ),
+              elevation: 0,
+            ),
+            child: Text(
+              'Go Back',
+              style: GoogleFonts.inter(
+                fontSize: 16.sp,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ),
+        SizedBox(height: 16.h),
+        Text(
+          'Contact support if you need help resetting your PIN',
+          style: GoogleFonts.inter(
+            fontSize: 12.sp,
+            color: Colors.grey.shade500,
+          ),
+          textAlign: TextAlign.center,
+        ),
       ],
     );
   }

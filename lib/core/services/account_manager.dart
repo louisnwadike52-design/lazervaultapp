@@ -1,40 +1,22 @@
 import 'dart:async';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:lazervault/src/features/card_settings/domain/entities/account_details_entity.dart';
 
 /// Centralized account manager that maintains app-wide active account state
 /// and notifies all listeners when the active account changes.
 ///
+/// IMPORTANT: Active account is kept in memory ONLY and NOT persisted.
+/// This ensures that stale account data from previous sessions is never used.
+/// The account must be re-selected by the user after each app launch/login.
+///
 /// This ensures that all gRPC calls include the x-account-id metadata
 /// for operations that require account context (payments, transfers, etc.)
 class AccountManager {
-  static const String _accountIdKey = 'active_account_id';
-  static const String _accountNumberKey = 'active_account_number';
-
-  final FlutterSecureStorage _storage;
-
   // Stream controller for reactive account updates
   final _accountIdController = BehaviorSubject<String?>.seeded(null);
   final _accountDetailsController = BehaviorSubject<AccountDetailsEntity?>.seeded(null);
 
-  AccountManager(this._storage) {
-    _initializeAccount();
-  }
-
-  /// Initialize active account from storage
-  Future<void> _initializeAccount() async {
-    try {
-      final storedAccountId = await _storage.read(key: _accountIdKey);
-
-      if (storedAccountId != null && storedAccountId.isNotEmpty) {
-        _accountIdController.add(storedAccountId);
-      }
-    } catch (e) {
-      // If storage fails, use null (no active account)
-      _accountIdController.add(null);
-    }
-  }
+  AccountManager();
 
   /// Get current active account ID (or null if none selected)
   String? get activeAccountId => _accountIdController.value;
@@ -55,57 +37,25 @@ class AccountManager {
   ///
   /// This should be called when the user selects an account from the account summary.
   /// The account details will be fetched separately and set via [setActiveAccountDetails].
-  Future<void> setActiveAccount(String accountId) async {
-    try {
-      // Save to storage
-      await _storage.write(key: _accountIdKey, value: accountId);
-
-      // Notify listeners
-      _accountIdController.add(accountId);
-    } catch (e) {
-      rethrow;
-    }
+  void setActiveAccount(String accountId) {
+    _accountIdController.add(accountId);
   }
 
   /// Set the active account with full details
   ///
   /// This updates both the account ID and the account details atomically.
   /// Use this when you have the full account details (e.g., after fetching from API).
-  Future<void> setActiveAccountDetails(AccountDetailsEntity account) async {
-    try {
-      // Save account ID to storage
-      await _storage.write(key: _accountIdKey, value: account.id);
-
-      // Save account number for quick display (optional)
-      if (account.accountNumber.isNotEmpty) {
-        await _storage.write(key: _accountNumberKey, value: account.accountNumber);
-      }
-
-      // Notify listeners
-      _accountIdController.add(account.id);
-      _accountDetailsController.add(account);
-    } catch (e) {
-      rethrow;
-    }
+  void setActiveAccountDetails(AccountDetailsEntity account) {
+    _accountIdController.add(account.id);
+    _accountDetailsController.add(account);
   }
 
   /// Clear the active account selection
   ///
   /// Use this when the user logs out or when account selection should be reset.
-  Future<void> clearActiveAccount() async {
-    try {
-      // Remove from storage
-      await Future.wait([
-        _storage.delete(key: _accountIdKey),
-        _storage.delete(key: _accountNumberKey),
-      ]);
-
-      // Notify listeners
-      _accountIdController.add(null);
-      _accountDetailsController.add(null);
-    } catch (e) {
-      rethrow;
-    }
+  void clearActiveAccount() {
+    _accountIdController.add(null);
+    _accountDetailsController.add(null);
   }
 
   /// Update account details without changing the active account ID
@@ -147,18 +97,12 @@ class AccountManager {
       return accountNumber;
     }
 
-    // Fallback to storage (for backward compatibility)
-    final storedAccountNumber = _storage.read(key: _accountNumberKey) as String?;
-    if (storedAccountNumber != null && storedAccountNumber.length >= 4) {
-      return '•••• ${storedAccountNumber.substring(storedAccountNumber.length - 4)}';
-    }
-
     return 'No Account Selected';
   }
 
   /// Reset to default state (no active account)
-  Future<void> resetToDefault() async {
-    await clearActiveAccount();
+  void resetToDefault() {
+    clearActiveAccount();
   }
 
   /// Clean up resources

@@ -415,6 +415,10 @@ class _TransferProcessingScreenState extends State<TransferProcessingScreen>
   }
 
   Widget _buildTransferDetailsCard(String recipientName, dynamic amount) {
+    // Get currency from transferDetails, default to NGN
+    final currency = transferDetails['currency'] as String? ?? 'NGN';
+    final currencySymbol = _getCurrencySymbol(currency);
+
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
@@ -433,13 +437,38 @@ class _TransferProcessingScreenState extends State<TransferProcessingScreen>
           ),
           SizedBox(height: 8.h),
           Text(
-            '\$${amount is double ? amount.toStringAsFixed(2) : amount}',
+            '$currencySymbol${amount is double ? amount.toStringAsFixed(2) : amount}',
             style: GoogleFonts.inter(
               color: Colors.white,
               fontSize: 32.sp,
               fontWeight: FontWeight.w700,
             ),
           ),
+          // Show fee and total if fee > 0
+          if (transferDetails['fee'] != null && (transferDetails['fee'] as double) > 0) ...[
+            SizedBox(height: 12.h),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  'Fee: $currencySymbol${(transferDetails['fee'] as double).toStringAsFixed(2)}',
+                  style: GoogleFonts.inter(
+                    color: Colors.grey[400],
+                    fontSize: 13.sp,
+                  ),
+                ),
+                SizedBox(width: 16.w),
+                Text(
+                  'Total: $currencySymbol${(transferDetails['totalAmount'] as double).toStringAsFixed(2)}',
+                  style: GoogleFonts.inter(
+                    color: Colors.white70,
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ],
           SizedBox(height: 8.h),
           Text(
             'to $recipientName',
@@ -451,6 +480,20 @@ class _TransferProcessingScreenState extends State<TransferProcessingScreen>
         ],
       ),
     );
+  }
+
+  String _getCurrencySymbol(String currency) {
+    switch (currency.toUpperCase()) {
+      case 'NGN':
+        return '₦';
+      case 'GBP':
+        return '£';
+      case 'EUR':
+        return '€';
+      case 'USD':
+      default:
+        return '\$';
+    }
   }
 
   Widget _buildProcessingSteps() {

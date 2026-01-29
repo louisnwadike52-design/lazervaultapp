@@ -72,13 +72,14 @@ class RecipientCubit extends Cubit<RecipientState> {
 
   Future<void> toggleFavorite({
     required String recipientId,
+    required bool isFavorite,
     required String accessToken,
   }) async {
     final previousState = state;
     if (previousState is RecipientLoaded) {
        final updatedRecipients = previousState.recipients.map((r) {
          if (r.id == recipientId) {
-           return r.copyWith(isFavorite: !r.isFavorite);
+           return r.copyWith(isFavorite: isFavorite);
          }
          return r;
        }).toList();
@@ -88,7 +89,7 @@ class RecipientCubit extends Cubit<RecipientState> {
 
     try {
       final result = await _toggleFavoriteUseCase(
-          recipientId: recipientId, accessToken: accessToken);
+          recipientId: recipientId, isFavorite: isFavorite, accessToken: accessToken);
       if (isClosed) return;
       result.fold(
         (failure) {

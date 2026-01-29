@@ -658,6 +658,8 @@ class _TransferProofState extends State<TransferProof>
 
   Widget _buildTransferSummary(double amount, String currency) {
     final currencySymbol = _getCurrencySymbol(currency);
+    final double fee = widget.transferDetails['fee'] as double? ?? 0.0;
+    final double totalAmount = widget.transferDetails['totalAmount'] as double? ?? amount;
 
     return Container(
       padding: EdgeInsets.all(12.w),
@@ -697,17 +699,27 @@ class _TransferProofState extends State<TransferProof>
             ],
           ),
           SizedBox(height: 8.h),
+          // Amount Sent
+          _buildSummaryLine('Amount Sent', '$currencySymbol${amount.toStringAsFixed(2)}'),
+          if (fee > 0) ...[
+            SizedBox(height: 4.h),
+            _buildSummaryLine('Transfer Fee', '$currencySymbol${fee.toStringAsFixed(2)}'),
+          ],
+          SizedBox(height: 6.h),
+          Divider(color: Colors.white.withValues(alpha: 0.2), height: 1),
+          SizedBox(height: 6.h),
+          // Total Debited
           Text(
-            '$currencySymbol${amount.toStringAsFixed(2)}',
+            '$currencySymbol${totalAmount.toStringAsFixed(2)}',
             style: GoogleFonts.inter(
               color: Colors.white,
               fontSize: 22.sp,
               fontWeight: FontWeight.w800,
             ),
           ),
-          SizedBox(height: 4.h),
+          SizedBox(height: 2.h),
           Text(
-            'Successfully transferred',
+            fee > 0 ? 'Total Debited' : 'Successfully transferred',
             style: GoogleFonts.inter(
               color: Colors.grey[400],
               fontSize: 10.sp,
@@ -716,6 +728,30 @@ class _TransferProofState extends State<TransferProof>
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildSummaryLine(String label, String value) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: GoogleFonts.inter(
+            color: Colors.white.withValues(alpha: 0.7),
+            fontSize: 12.sp,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        Text(
+          value,
+          style: GoogleFonts.inter(
+            color: Colors.white,
+            fontSize: 14.sp,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
     );
   }
 
