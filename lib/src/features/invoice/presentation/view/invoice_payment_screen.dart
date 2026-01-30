@@ -6,6 +6,9 @@ import 'package:get/get.dart';
 import '../../../../../core/theme/invoice_theme_colors.dart';
 import '../../domain/entities/invoice_entity.dart';
 import '../../../../../core/types/app_routes.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../cubit/invoice_cubit.dart';
+import '../cubit/invoice_state.dart';
 
 class InvoicePaymentScreen extends StatefulWidget {
   final Invoice invoice;
@@ -192,7 +195,7 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Invoice Service Payment',
+                  'Pay Invoice',
                   style: GoogleFonts.inter(
                     color: Colors.white,
                     fontSize: 24.sp,
@@ -201,7 +204,7 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
                 ),
                 SizedBox(height: 4.h),
                 Text(
-                  'Unlock premium invoice features',
+                  'Complete your payment securely',
                   style: GoogleFonts.inter(
                     color: const Color(0xFF9CA3AF),
                     fontSize: 14.sp,
@@ -214,15 +217,13 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
           Container(
             padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6)],
-              ),
+              color: Color(0xFF10B981).withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(20.r),
             ),
             child: Text(
-              'Premium',
+              'Secure',
               style: GoogleFonts.inter(
-                color: Colors.white,
+                color: Color(0xFF10B981),
                 fontSize: 12.sp,
                 fontWeight: FontWeight.w600,
               ),
@@ -832,7 +833,7 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
                         ),
                         SizedBox(width: 8.w),
                         Text(
-                          'Pay £${widget.serviceFee.toStringAsFixed(2)}',
+                          'Pay \$${widget.invoice.totalAmount.toStringAsFixed(2)}',
                           style: GoogleFonts.inter(
                             color: Colors.white,
                             fontSize: 16.sp,
@@ -851,15 +852,191 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
   void _processPayment() async {
     if (_selectedPaymentMethod.isEmpty) return;
 
+    // Show PIN entry bottom sheet
+    final pin = await _showPinEntrySheet();
+    if (pin == null || pin.length != 4) return;
+
     setState(() {
       _isProcessingPayment = true;
     });
 
-    // Simulate payment processing
-    await Future.delayed(Duration(seconds: 2));
+    try {
+      // Call the invoice cubit to mark as paid with PIN
+      final cubit = context.read<InvoiceCubit>();
+      await cubit.markAsPaid(
+        widget.invoice.id,
+        _getPaymentMethod(),
+        'PIN-verified',
+      );
 
-    // Show success dialog
-    _showPaymentSuccessDialog();
+      if (!mounted) return;
+      _showPaymentSuccessDialog();
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isProcessingPayment = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Payment failed: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  PaymentMethod _getPaymentMethod() {
+    if (_selectedPaymentMethod.startsWith('account_')) return PaymentMethod.bankTransfer;
+    if (_selectedPaymentMethod.startsWith('crypto_')) return PaymentMethod.crypto;
+    if (_selectedPaymentMethod == 'paypal') return PaymentMethod.paypal;
+    if (_selectedPaymentMethod == 'card') return PaymentMethod.card;
+    return PaymentMethod.bankTransfer;
+  }
+
+  Future<String?> _showPinEntrySheet() async {
+    String pin = '';
+    return showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            return Container(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+              ),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1E1E1E),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+              ),
+              child: Padding(
+                padding: EdgeInsets.all(24.w),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 40.w,
+                      height: 4.h,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[600],
+                        borderRadius: BorderRadius.circular(2.r),
+                      ),
+                    ),
+                    SizedBox(height: 24.h),
+                    Icon(
+                      Icons.lock_outline,
+                      color: const Color(0xFF3B82F6),
+                      size: 48.sp,
+                    ),
+                    SizedBox(height: 16.h),
+                    Text(
+                      'Enter Transaction PIN',
+                      style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 20.sp,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: 8.h),
+                    Text(
+                      'Enter your 4-digit PIN to confirm payment of \$${widget.invoice.totalAmount.toStringAsFixed(2)}',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.inter(
+                        color: const Color(0xFF9CA3AF),
+                        fontSize: 14.sp,
+                      ),
+                    ),
+                    SizedBox(height: 24.h),
+                    // PIN dots
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(4, (index) {
+                        final filled = index < pin.length;
+                        return Container(
+                          margin: EdgeInsets.symmetric(horizontal: 8.w),
+                          width: 16.w,
+                          height: 16.w,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: filled ? const Color(0xFF3B82F6) : Colors.transparent,
+                            border: Border.all(
+                              color: filled ? const Color(0xFF3B82F6) : Colors.grey[600]!,
+                              width: 2,
+                            ),
+                          ),
+                        );
+                      }),
+                    ),
+                    SizedBox(height: 32.h),
+                    // Number pad
+                    ..._buildNumberPad(pin, (newPin) {
+                      setSheetState(() => pin = newPin);
+                      if (newPin.length == 4) {
+                        Navigator.pop(context, newPin);
+                      }
+                    }),
+                    SizedBox(height: 16.h),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  List<Widget> _buildNumberPad(String currentPin, Function(String) onPinChanged) {
+    final rows = [
+      ['1', '2', '3'],
+      ['4', '5', '6'],
+      ['7', '8', '9'],
+      ['', '0', 'del'],
+    ];
+
+    return rows.map((row) {
+      return Padding(
+        padding: EdgeInsets.only(bottom: 12.h),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: row.map((key) {
+            if (key.isEmpty) return SizedBox(width: 72.w);
+            return GestureDetector(
+              onTap: () {
+                if (key == 'del') {
+                  if (currentPin.isNotEmpty) {
+                    onPinChanged(currentPin.substring(0, currentPin.length - 1));
+                  }
+                } else if (currentPin.length < 4) {
+                  onPinChanged(currentPin + key);
+                }
+              },
+              child: Container(
+                width: 72.w,
+                height: 56.h,
+                decoration: BoxDecoration(
+                  color: key == 'del' ? Colors.transparent : const Color(0xFF2D2D2D),
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                child: Center(
+                  child: key == 'del'
+                      ? Icon(Icons.backspace_outlined, color: Colors.white, size: 24.sp)
+                      : Text(
+                          key,
+                          style: GoogleFonts.inter(
+                            color: Colors.white,
+                            fontSize: 24.sp,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      );
+    }).toList();
   }
 
   void _showPaymentSuccessDialog() {
@@ -867,79 +1044,7 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
       _isProcessingPayment = false;
     });
 
-    Get.dialog(
-      Dialog(
-        backgroundColor: Colors.transparent,
-        child: Container(
-          padding: EdgeInsets.all(24.w),
-          decoration: BoxDecoration(
-            color: Color(0xFF1E1E1E),
-            borderRadius: BorderRadius.circular(20.r),
-            border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                padding: EdgeInsets.all(16.w),
-                decoration: BoxDecoration(
-                  color: Colors.green.withValues(alpha: 0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.check_circle,
-                  color: Colors.green,
-                  size: 48.sp,
-                ),
-              ),
-              SizedBox(height: 16.h),
-              Text(
-                'Payment Successful!',
-                style: GoogleFonts.inter(
-                  color: Colors.white,
-                  fontSize: 24.sp,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              SizedBox(height: 8.h),
-              Text(
-                'Your invoice premium features are now unlocked',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.inter(
-                  color: const Color(0xFF9CA3AF),
-                  fontSize: 14.sp,
-                ),
-              ),
-              SizedBox(height: 24.h),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Get.back(); // Close dialog
-                    Get.back(); // Go back to previous screen
-                    Get.toNamed(AppRoutes.invoicePreview, arguments: widget.invoice);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12.r),
-                    ),
-                  ),
-                  child: Text(
-                    'Continue to Invoice',
-                    style: GoogleFonts.inter(
-                      color: Colors.white,
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-      barrierDismissible: false,
-    );
+    // Navigate to processing screen instead of showing dialog
+    Get.offNamed(AppRoutes.invoiceProcessing, arguments: widget.invoice);
   }
 } 

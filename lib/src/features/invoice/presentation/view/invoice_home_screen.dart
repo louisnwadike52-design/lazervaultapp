@@ -12,7 +12,10 @@ import '../cubit/invoice_state.dart';
 import '../cubit/tagged_invoice_cubit.dart';
 import '../cubit/tagged_invoice_state.dart';
 import '../widgets/invoice_voice_agent_button.dart';
+import '../widgets/invoice_shimmer.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
+import 'package:get_it/get_it.dart';
+import '../../../../../core/services/locale_manager.dart';
 
 class InvoiceHomeScreen extends StatefulWidget {
   const InvoiceHomeScreen({super.key});
@@ -21,30 +24,104 @@ class InvoiceHomeScreen extends StatefulWidget {
   State<InvoiceHomeScreen> createState() => _InvoiceHomeScreenState();
 }
 
-class _InvoiceHomeScreenState extends State<InvoiceHomeScreen> {
-  // Note: Invoice data is pre-loaded in app router, no need to load in initState
+class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+  String _selectedFilter = 'All';
+
+  static const _filters = ['All', 'Pending', 'Paid', 'Overdue', 'Cancelled'];
+
+  String get _currencySymbol {
+    final currency = GetIt.I<LocaleManager>().currentCurrency;
+    switch (currency.toUpperCase()) {
+      case 'NGN':
+        return '\u20A6';
+      case 'GBP':
+        return '\u00A3';
+      case 'EUR':
+        return '\u20AC';
+      case 'ZAR':
+        return 'R';
+      case 'CAD':
+        return 'C\$';
+      case 'AUD':
+        return 'A\$';
+      case 'INR':
+        return '\u20B9';
+      case 'JPY':
+        return '\u00A5';
+      case 'USD':
+      default:
+        return '\$';
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+    _tabController.addListener(_onTabChanged);
+    _initializeData();
+  }
+
+  void _initializeData() {
+    // Set user ID on InvoiceCubit from auth state so it can load invoices
+    final authState = context.read<AuthenticationCubit>().state;
+    if (authState is AuthenticationSuccess) {
+      context.read<InvoiceCubit>().setUserId(authState.profile.userId);
+    }
+    // Load received tab data
+    context.read<TaggedInvoiceCubit>().loadIncomingInvoices();
+  }
+
+  @override
+  void dispose() {
+    _tabController.removeListener(_onTabChanged);
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  void _onTabChanged() {
+    if (_tabController.indexIsChanging) return;
+    setState(() => _selectedFilter = 'All');
+  }
+
+  void _onFilterSelected(String filter) {
+    setState(() => _selectedFilter = filter);
+    if (_tabController.index == 0) {
+      // Received tab
+      context.read<TaggedInvoiceCubit>().loadIncomingInvoices();
+    } else {
+      // Sent tab
+      final statusFilter = filter == 'All' ? null : [filter.toLowerCase()];
+      context.read<InvoiceCubit>().loadInvoices(statusFilter: statusFilter);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: InvoiceThemeColors.primaryBackground,
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => Get.toNamed(AppRoutes.createInvoice),
+        backgroundColor: InvoiceThemeColors.primaryPurple,
+        child: const Icon(Icons.add, color: Colors.white),
+      ),
       body: SafeArea(
         child: Column(
           children: [
             _buildHeader(context),
+            _buildStatsRow(context),
+            SizedBox(height: 16.h),
+            _buildTabBar(),
+            _buildFilterChips(),
             Expanded(
-              child: SingleChildScrollView(
-                padding: EdgeInsets.all(20.w),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    _buildMetricsCard(context),
-                    SizedBox(height: 24.h),
-                    _buildActionButtons(context),
-                    SizedBox(height: 32.h),
-                    _buildRecentActivity(context),
-                  ],
-                ),
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  _buildReceivedTab(),
+                  _buildCreatedTab(),
+                ],
               ),
             ),
           ],
@@ -55,7 +132,7 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen> {
 
   Widget _buildHeader(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(20.w),
+      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
       child: Row(
         children: [
           GestureDetector(
@@ -66,14 +143,6 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen> {
               decoration: BoxDecoration(
                 color: InvoiceThemeColors.secondaryBackground,
                 borderRadius: BorderRadius.circular(22.r),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.04),
-                    blurRadius: 6,
-                    offset: const Offset(0, 2),
-                    spreadRadius: 0,
-                  ),
-                ],
               ),
               child: Icon(
                 Icons.arrow_back_ios_new,
@@ -84,31 +153,15 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen> {
           ),
           SizedBox(width: 16.w),
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Invoices',
-                  style: GoogleFonts.inter(
-                    color: InvoiceThemeColors.textWhite,
-                    fontSize: 24.sp,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                SizedBox(height: 4.h),
-                Text(
-                  'Create, send & track payments',
-                  style: GoogleFonts.inter(
-                    color: InvoiceThemeColors.textGray400,
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w400,
-                  ),
-                ),
-              ],
+            child: Text(
+              'Invoices',
+              style: GoogleFonts.inter(
+                color: InvoiceThemeColors.textWhite,
+                fontSize: 24.sp,
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ),
-          SizedBox(width: 12.w),
-          // Chat Agent Icon
           MicroserviceChatIcon(
             serviceName: 'Invoices',
             sourceContext: 'invoices',
@@ -116,16 +169,13 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen> {
             iconColor: const Color(0xFF8B5CF6),
           ),
           SizedBox(width: 8.w),
-          // Voice Agent Button
           BlocBuilder<AuthenticationCubit, AuthenticationState>(
             builder: (context, authState) {
               final accessToken = authState is AuthenticationSuccess
                   ? authState.profile.session.accessToken
                   : null;
-
               return GestureDetector(
                 onTap: () {
-                  // Show the full voice control widget in a bottom sheet
                   showModalBottomSheet(
                     context: context,
                     isScrollControlled: true,
@@ -139,7 +189,6 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen> {
                       child: InvoiceVoiceAgentControl(
                         accessToken: accessToken,
                         onConnected: () {
-                          // Refresh invoices when connected
                           context.read<InvoiceCubit>().loadInvoices();
                           context.read<TaggedInvoiceCubit>().loadIncomingInvoices();
                         },
@@ -157,20 +206,8 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen> {
                       end: Alignment.bottomRight,
                     ),
                     borderRadius: BorderRadius.circular(22.r),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFF8B5CF6).withValues(alpha: 0.3),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                        spreadRadius: 0,
-                      ),
-                    ],
                   ),
-                  child: Icon(
-                    Icons.mic,
-                    color: Colors.white,
-                    size: 20.sp,
-                  ),
+                  child: Icon(Icons.mic, color: Colors.white, size: 20.sp),
                 ),
               );
             },
@@ -180,318 +217,120 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen> {
     );
   }
 
-  Widget _buildMetricsCard(BuildContext context) {
+  Widget _buildStatsRow(BuildContext context) {
     return BlocBuilder<InvoiceCubit, InvoiceState>(
       builder: (context, invoiceState) {
         return BlocBuilder<TaggedInvoiceCubit, TaggedInvoiceState>(
           builder: (context, taggedState) {
-            // Show loading if either is loading
-            if (invoiceState is InvoiceLoading || taggedState is TaggedInvoiceLoading) {
-              return _buildLoadingCard();
+            // Show shimmer if either cubit is loading
+            final isLoading = invoiceState is InvoiceLoading ||
+                taggedState is TaggedInvoiceLoading ||
+                (invoiceState is InvoiceInitial && taggedState is TaggedInvoiceInitial);
+            if (isLoading) {
+              return const InvoiceStatsShimmer();
             }
 
-            // Show error if either has error
-            if (invoiceState is InvoiceError) {
-              return _buildErrorCard(invoiceState.message);
-            }
-            if (taggedState is TaggedInvoiceError) {
-              return _buildErrorCard(taggedState.message);
+            double totalAmount = 0;
+            double overdueAmount = 0;
+            int pendingCount = 0;
+            int paidCount = 0;
+
+            if (invoiceState is InvoicesLoaded) {
+              final stats = invoiceState.statistics ?? {};
+              totalAmount += (stats['total_amount'] ?? 0.0) as double;
+              overdueAmount += invoiceState.invoices
+                  .where((inv) => inv.isOverdue)
+                  .fold<double>(0.0, (sum, inv) => sum + inv.amount);
+              pendingCount += (stats['pending_invoices'] ?? 0) as int;
+              paidCount += (stats['paid_invoices'] ?? 0) as int;
             }
 
-            // Combine metrics from both outgoing and incoming invoices
-            if (invoiceState is InvoicesLoaded || taggedState is IncomingTaggedInvoicesLoaded) {
-              return _buildCombinedMetricsContent(invoiceState, taggedState);
+            if (taggedState is IncomingTaggedInvoicesLoaded) {
+              totalAmount += taggedState.statistics.totalAmount;
+              overdueAmount += taggedState.statistics.overdueAmount;
+              pendingCount += taggedState.statistics.pendingInvoices;
+              paidCount += taggedState.statistics.paidInvoices;
             }
 
-            return _buildEmptyMetricsCard();
+            return Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20.w),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: _buildStatCard(
+                      label: 'Total',
+                      value: '$_currencySymbol${(totalAmount / 100).toStringAsFixed(0)}',
+                      color: InvoiceThemeColors.primaryPurple,
+                    ),
+                  ),
+                  SizedBox(width: 12.w),
+                  Expanded(
+                    child: _buildStatCard(
+                      label: 'Overdue',
+                      value: '$_currencySymbol${(overdueAmount / 100).toStringAsFixed(0)}',
+                      color: const Color(0xFFEF4444),
+                    ),
+                  ),
+                  SizedBox(width: 12.w),
+                  Expanded(
+                    child: _buildStatCard(
+                      label: 'Pending',
+                      value: pendingCount.toString(),
+                      color: const Color(0xFFFB923C),
+                    ),
+                  ),
+                  SizedBox(width: 12.w),
+                  Expanded(
+                    child: _buildStatCard(
+                      label: 'Paid',
+                      value: paidCount.toString(),
+                      color: const Color(0xFF10B981),
+                    ),
+                  ),
+                ],
+              ),
+            );
           },
         );
       },
     );
   }
 
-  Widget _buildLoadingCard() {
-    return Container(
-      padding: EdgeInsets.all(24.w),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            InvoiceThemeColors.primaryPurple,
-            InvoiceThemeColors.gradientPurple,
-          ],
-        ),
-        borderRadius: BorderRadius.circular(24.r),
-      ),
-      child: Center(
-        child: CircularProgressIndicator(
-          valueColor: AlwaysStoppedAnimation<Color>(InvoiceThemeColors.textWhite),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCombinedMetricsContent(InvoiceState invoiceState, TaggedInvoiceState taggedState) {
-    // Get outgoing invoice stats (invoices you created/sent)
-    int sentTotal = 0;
-    int sentPaid = 0;
-    int sentPending = 0;
-    double sentAmount = 0.0;
-
-    if (invoiceState is InvoicesLoaded) {
-      final stats = invoiceState.statistics ?? {};
-      sentTotal = stats['total_invoices'] ?? 0;
-      sentPaid = stats['paid_invoices'] ?? 0;
-      sentPending = stats['unpaid_invoices'] ?? 0;
-      sentAmount = (stats['total_amount'] ?? 0.0) as double;
-    }
-
-    // Get incoming invoice stats (invoices you received)
-    int receivedTotal = 0;
-    int receivedPaid = 0;
-    int receivedPending = 0;
-    double receivedAmount = 0.0;
-
-    if (taggedState is IncomingTaggedInvoicesLoaded) {
-      receivedTotal = taggedState.invoices.length;
-      receivedPaid = taggedState.invoices.where((inv) => inv.isPaid).length;
-      receivedPending = taggedState.invoices.where((inv) => inv.isPending).length;
-      receivedAmount = taggedState.invoices.fold<double>(0.0, (sum, inv) => sum + inv.amount);
-    }
-
-    // Combine totals
-    final totalInvoices = sentTotal + receivedTotal;
-    final totalPaid = sentPaid + receivedPaid;
-    final totalPending = sentPending + receivedPending;
-    final totalAmount = sentAmount + receivedAmount;
-
-    return Container(
-      padding: EdgeInsets.all(24.w),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            InvoiceThemeColors.primaryPurple,
-            InvoiceThemeColors.gradientPurple,
-          ],
-        ),
-        borderRadius: BorderRadius.circular(24.r),
-        boxShadow: [
-          BoxShadow(
-            color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.3),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Icon(
-            Icons.receipt_long,
-            size: 48.sp,
-            color: InvoiceThemeColors.textWhite,
-          ),
-          SizedBox(height: 16.h),
-          Text(
-            'Invoice Overview',
-            style: GoogleFonts.inter(
-              color: InvoiceThemeColors.textWhite,
-              fontSize: 20.sp,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          SizedBox(height: 8.h),
-          Text(
-            'Sent & Received',
-            style: GoogleFonts.inter(
-              color: InvoiceThemeColors.textWhite.withValues(alpha: 0.8),
-              fontSize: 13.sp,
-              fontWeight: FontWeight.w400,
-            ),
-          ),
-          SizedBox(height: 24.h),
-          // First row: Received and Sent totals
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildMetricItem(
-                label: 'Received',
-                value: receivedTotal.toString(),
-                color: const Color(0xFF10B981),
-              ),
-              Container(
-                width: 1,
-                height: 40.h,
-                color: InvoiceThemeColors.textWhite.withValues(alpha: 0.2),
-              ),
-              _buildMetricItem(
-                label: 'Sent',
-                value: sentTotal.toString(),
-                color: const Color(0xFFFB923C),
-              ),
-            ],
-          ),
-          SizedBox(height: 16.h),
-          // Second row: Paid and Pending totals
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildMetricItem(
-                label: 'Paid',
-                value: totalPaid.toString(),
-              ),
-              Container(
-                width: 1,
-                height: 40.h,
-                color: InvoiceThemeColors.textWhite.withValues(alpha: 0.2),
-              ),
-              _buildMetricItem(
-                label: 'Pending',
-                value: totalPending.toString(),
-              ),
-            ],
-          ),
-          SizedBox(height: 16.h),
-          // Total Value section
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12.r),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Total Value',
-                  style: GoogleFonts.inter(
-                    color: InvoiceThemeColors.textWhite.withValues(alpha: 0.8),
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                Text(
-                  '\$${(totalAmount / 100).toStringAsFixed(2)}',
-                  style: GoogleFonts.inter(
-                    color: InvoiceThemeColors.textWhite,
-                    fontSize: 18.sp,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMetricItem({
+  Widget _buildStatCard({
     required String label,
     required String value,
-    Color? color,
+    required Color color,
   }) {
-    return Column(
-      children: [
-        Text(
-          value,
-          style: GoogleFonts.inter(
-            color: color ?? InvoiceThemeColors.textWhite,
-            fontSize: 24.sp,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        SizedBox(height: 4.h),
-        Text(
-          label,
-          style: GoogleFonts.inter(
-            color: (color ?? InvoiceThemeColors.textWhite).withValues(alpha: 0.8),
-            fontSize: 12.sp,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildErrorCard(String message) {
     return Container(
-      padding: EdgeInsets.all(24.w),
+      padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 8.w),
       decoration: BoxDecoration(
-        color: InvoiceThemeColors.secondaryBackground,
-        borderRadius: BorderRadius.circular(24.r),
-      ),
-      child: Column(
-        children: [
-          Icon(
-            Icons.error_outline,
-            size: 48.sp,
-            color: const Color(0xFFEF4444),
-          ),
-          SizedBox(height: 16.h),
-          Text(
-            'Failed to Load',
-            style: GoogleFonts.inter(
-              color: InvoiceThemeColors.textWhite,
-              fontSize: 16.sp,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          SizedBox(height: 8.h),
-          Text(
-            message,
-            textAlign: TextAlign.center,
-            style: GoogleFonts.inter(
-              color: InvoiceThemeColors.textGray400,
-              fontSize: 13.sp,
-              fontWeight: FontWeight.w400,
-            ),
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12.r),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.2),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildEmptyMetricsCard() {
-    return Container(
-      padding: EdgeInsets.all(24.w),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            InvoiceThemeColors.primaryPurple,
-            InvoiceThemeColors.gradientPurple,
-          ],
-        ),
-        borderRadius: BorderRadius.circular(24.r),
-      ),
       child: Column(
         children: [
-          Icon(
-            Icons.receipt_long,
-            size: 48.sp,
-            color: InvoiceThemeColors.textWhite,
-          ),
-          SizedBox(height: 16.h),
           Text(
-            'Start Invoicing',
+            value,
             style: GoogleFonts.inter(
-              color: InvoiceThemeColors.textWhite,
-              fontSize: 20.sp,
+              color: color,
+              fontSize: 16.sp,
               fontWeight: FontWeight.w700,
             ),
           ),
-          SizedBox(height: 8.h),
+          SizedBox(height: 2.h),
           Text(
-            'Create invoices or pay received ones',
-            textAlign: TextAlign.center,
+            label,
             style: GoogleFonts.inter(
-              color: InvoiceThemeColors.textWhite.withValues(alpha: 0.8),
-              fontSize: 14.sp,
-              fontWeight: FontWeight.w400,
+              color: InvoiceThemeColors.textGray400,
+              fontSize: 11.sp,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ],
@@ -499,258 +338,214 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen> {
     );
   }
 
-  Widget _buildActionButtons(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: _buildActionButton(
-            icon: Icons.arrow_downward,
-            label: 'Received',
-            color: const Color(0xFF10B981),
-            onTap: () => Get.toNamed(AppRoutes.incomingTaggedInvoices),
-          ),
+  Widget _buildTabBar() {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 20.w),
+      decoration: BoxDecoration(
+        color: InvoiceThemeColors.secondaryBackground,
+        borderRadius: BorderRadius.circular(12.r),
+      ),
+      child: TabBar(
+        controller: _tabController,
+        indicator: BoxDecoration(
+          color: InvoiceThemeColors.primaryPurple,
+          borderRadius: BorderRadius.circular(12.r),
         ),
-        SizedBox(width: 16.w),
-        Expanded(
-          child: _buildActionButton(
-            icon: Icons.arrow_upward,
-            label: 'Sent',
-            color: const Color(0xFFFB923C),
-            onTap: () => Get.toNamed(AppRoutes.invoiceList),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildActionButton({
-    required IconData icon,
-    required String label,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: EdgeInsets.all(20.w),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(16.r),
-          border: Border.all(
-            color: color.withValues(alpha: 0.3),
-            width: 1,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
-              blurRadius: 6,
-              offset: const Offset(0, 2),
-              spreadRadius: 0,
-            ),
-          ],
-        ),
-        child: Column(
-          children: [
-            Icon(
-              icon,
-              size: 32.sp,
-              color: color,
-            ),
-            SizedBox(height: 12.h),
-            Text(
-              label,
-              textAlign: TextAlign.center,
-              style: GoogleFonts.inter(
-                color: InvoiceThemeColors.textWhite,
-                fontSize: 14.sp,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
+        indicatorSize: TabBarIndicatorSize.tab,
+        labelColor: Colors.white,
+        unselectedLabelColor: InvoiceThemeColors.textGray400,
+        labelStyle: GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.w600),
+        unselectedLabelStyle: GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.w500),
+        dividerColor: Colors.transparent,
+        tabs: const [
+          Tab(text: 'Received'),
+          Tab(text: 'Created'),
+        ],
       ),
     );
   }
 
-  Widget _buildRecentActivity(BuildContext context) {
+  Widget _buildFilterChips() {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+      child: Row(
+        children: _filters.map((filter) {
+          final isSelected = _selectedFilter == filter;
+          return Padding(
+            padding: EdgeInsets.only(right: 8.w),
+            child: GestureDetector(
+              onTap: () => _onFilterSelected(filter),
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? InvoiceThemeColors.primaryPurple
+                      : InvoiceThemeColors.secondaryBackground,
+                  borderRadius: BorderRadius.circular(20.r),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.15),
+                      blurRadius: 4,
+                      offset: const Offset(0, 1),
+                    ),
+                  ],
+                ),
+                child: Text(
+                  filter,
+                  style: GoogleFonts.inter(
+                    color: isSelected ? Colors.white : InvoiceThemeColors.textGray400,
+                    fontSize: 13.sp,
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                  ),
+                ),
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildReceivedTab() {
     return BlocBuilder<TaggedInvoiceCubit, TaggedInvoiceState>(
       builder: (context, state) {
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Recent Invoices',
-                  style: GoogleFonts.inter(
-                    color: InvoiceThemeColors.textWhite,
-                    fontSize: 18.sp,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                if (state is IncomingTaggedInvoicesLoaded && state.invoices.isNotEmpty)
-                  TextButton(
-                    onPressed: () => Get.toNamed(AppRoutes.invoiceList),
-                    child: Text(
-                      'View All',
-                      style: GoogleFonts.inter(
-                        color: InvoiceThemeColors.primaryPurple,
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-              ],
+        if (state is TaggedInvoiceLoading) {
+          return const InvoiceListShimmer();
+        }
+        if (state is TaggedInvoiceError) {
+          return _buildErrorState(
+            _friendlyErrorMessage(state.message),
+            () => context.read<TaggedInvoiceCubit>().loadIncomingInvoices(),
+          );
+        }
+        if (state is IncomingTaggedInvoicesLoaded) {
+          final invoices = _filterTaggedInvoices(state.invoices);
+          if (invoices.isEmpty && _selectedFilter != 'All') {
+            return _buildEmptyState(
+              'No ${_selectedFilter.toLowerCase()} invoices',
+              'Try a different filter or check back later',
+              icon: Icons.filter_list,
+            );
+          }
+          if (invoices.isEmpty) {
+            return _buildEmptyState(
+              'No received invoices',
+              'Invoices sent to you will appear here.\nAsk someone to tag you on an invoice!',
+              icon: Icons.inbox_outlined,
+            );
+          }
+          return RefreshIndicator(
+            onRefresh: () => context.read<TaggedInvoiceCubit>().refreshIncoming(),
+            color: InvoiceThemeColors.primaryPurple,
+            child: ListView.builder(
+              padding: EdgeInsets.symmetric(horizontal: 20.w),
+              itemCount: invoices.length,
+              itemBuilder: (context, index) {
+                final invoice = invoices[index];
+                return _buildTaggedInvoiceItem(invoice);
+              },
             ),
-            SizedBox(height: 16.h),
-
-            if (state is TaggedInvoiceLoading)
-              Center(
-                child: Padding(
-                  padding: EdgeInsets.all(32.h),
-                  child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(InvoiceThemeColors.primaryPurple),
-                  ),
-                ),
-              )
-            else if (state is TaggedInvoiceError)
-              _buildActivityError(state.message)
-            else if (state is IncomingTaggedInvoicesLoaded)
-              state.invoices.isEmpty
-                  ? _buildEmptyActivity()
-                  : Column(
-                      children: state.invoices.take(3).map((invoice) {
-                        return _buildInvoiceItem(invoice);
-                      }).toList(),
-                    )
-            else
-              _buildEmptyActivity(),
-          ],
-        );
+          );
+        }
+        // Initial state - trigger load
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!context.read<TaggedInvoiceCubit>().isClosed) {
+            context.read<TaggedInvoiceCubit>().loadIncomingInvoices();
+          }
+        });
+        return const InvoiceListShimmer();
       },
     );
   }
 
-  Widget _buildActivityError(String error) {
-    return Container(
-      padding: EdgeInsets.all(24.w),
-      decoration: BoxDecoration(
-        color: InvoiceThemeColors.secondaryBackground,
-        borderRadius: BorderRadius.circular(16.r),
-      ),
-      child: Column(
-        children: [
-          Icon(
-            Icons.error_outline,
-            size: 48.sp,
-            color: const Color(0xFFEF4444),
-          ),
-          SizedBox(height: 16.h),
-          Text(
-            'Failed to Load Invoices',
-            style: GoogleFonts.inter(
-              color: InvoiceThemeColors.textWhite,
-              fontSize: 16.sp,
-              fontWeight: FontWeight.w600,
+  Widget _buildCreatedTab() {
+    return BlocBuilder<InvoiceCubit, InvoiceState>(
+      builder: (context, state) {
+        if (state is InvoiceLoading) {
+          return const InvoiceListShimmer();
+        }
+        if (state is InvoiceError) {
+          return _buildErrorState(
+            _friendlyErrorMessage(state.message),
+            () => context.read<InvoiceCubit>().loadInvoices(),
+          );
+        }
+        if (state is InvoicesLoaded) {
+          final invoices = _filterInvoices(state.invoices);
+          if (invoices.isEmpty && _selectedFilter != 'All') {
+            return _buildEmptyState(
+              'No ${_selectedFilter.toLowerCase()} invoices',
+              'Try a different filter or check back later',
+              icon: Icons.filter_list,
+            );
+          }
+          if (invoices.isEmpty) {
+            return _buildEmptyState(
+              'No created invoices',
+              'Create your first invoice by tapping the + button below.',
+              icon: Icons.description_outlined,
+            );
+          }
+          return RefreshIndicator(
+            onRefresh: () => context.read<InvoiceCubit>().loadInvoices(),
+            color: InvoiceThemeColors.primaryPurple,
+            child: ListView.builder(
+              padding: EdgeInsets.symmetric(horizontal: 20.w),
+              itemCount: invoices.length,
+              itemBuilder: (context, index) {
+                final invoice = invoices[index];
+                return _buildSentInvoiceItem(invoice);
+              },
             ),
-          ),
-          SizedBox(height: 8.h),
-          Text(
-            error,
-            textAlign: TextAlign.center,
-            style: GoogleFonts.inter(
-              color: InvoiceThemeColors.textGray400,
-              fontSize: 13.sp,
-              fontWeight: FontWeight.w400,
-            ),
-          ),
-          SizedBox(height: 16.h),
-          ElevatedButton(
-            onPressed: () {
-              context.read<TaggedInvoiceCubit>().loadIncomingInvoices();
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: InvoiceThemeColors.primaryPurple,
-              padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12.r),
-              ),
-            ),
-            child: Text(
-              'Retry',
-              style: GoogleFonts.inter(
-                color: InvoiceThemeColors.textWhite,
-                fontSize: 14.sp,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
-      ),
+          );
+        }
+        // Initial/form state - show shimmer while loading
+        return const InvoiceListShimmer();
+      },
     );
   }
 
-  Widget _buildEmptyActivity() {
-    return Center(
-      child: Container(
-        padding: EdgeInsets.all(32.w),
-        decoration: BoxDecoration(
-          color: InvoiceThemeColors.secondaryBackground,
-          borderRadius: BorderRadius.circular(16.r),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.receipt_outlined,
-              size: 48.sp,
-              color: const Color(0xFF6B7280),
-            ),
-            SizedBox(height: 16.h),
-            Text(
-              'No Recent Invoices',
-              style: GoogleFonts.inter(
-                color: InvoiceThemeColors.textWhite,
-                fontSize: 16.sp,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            SizedBox(height: 8.h),
-            Text(
-              'Create your first invoice or check received ones',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.inter(
-                color: InvoiceThemeColors.textGray400,
-                fontSize: 13.sp,
-                fontWeight: FontWeight.w400,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+  List<dynamic> _filterTaggedInvoices(List<dynamic> invoices) {
+    if (_selectedFilter == 'All') return invoices;
+    return invoices.where((inv) {
+      final status = inv.statusText.toLowerCase();
+      return status == _selectedFilter.toLowerCase();
+    }).toList();
   }
 
-  Widget _buildInvoiceItem(dynamic invoice) {
-    final isPaid = invoice.status.toLowerCase() == 'paid';
-    final statusColor = isPaid ? const Color(0xFF10B981) : const Color(0xFFFB923C);
+  List<dynamic> _filterInvoices(List<dynamic> invoices) {
+    if (_selectedFilter == 'All') return invoices;
+    return invoices.where((inv) {
+      final status = inv.statusDisplayName.toLowerCase();
+      return status == _selectedFilter.toLowerCase();
+    }).toList();
+  }
+
+  Widget _buildTaggedInvoiceItem(dynamic invoice) {
+    final isPaid = invoice.isPaid;
+    final isOverdue = invoice.isOverdue;
+    final statusColor = isPaid
+        ? const Color(0xFF10B981)
+        : isOverdue
+            ? const Color(0xFFEF4444)
+            : const Color(0xFFFB923C);
 
     return GestureDetector(
-      onTap: () => Get.toNamed(
-        AppRoutes.invoiceDetails,
-        arguments: invoice.id,
-      ),
+      onTap: () => Get.toNamed(AppRoutes.invoiceDetails, arguments: invoice.invoiceId),
       child: Container(
         margin: EdgeInsets.only(bottom: 12.h),
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
-          color: InvoiceThemeColors.secondaryBackground,
+          color: const Color(0xFF1F1F1F),
           borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(
-            color: InvoiceThemeColors.borderColor,
-            width: 1,
-          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.25),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
         child: Row(
           children: [
@@ -762,7 +557,7 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen> {
                 borderRadius: BorderRadius.circular(20.r),
               ),
               child: Icon(
-                isPaid ? Icons.check_circle : Icons.pending,
+                isPaid ? Icons.check_circle : isOverdue ? Icons.warning : Icons.pending,
                 color: statusColor,
                 size: 20.sp,
               ),
@@ -773,23 +568,24 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    invoice.recipientName ?? 'Unknown',
+                    invoice.title,
                     style: GoogleFonts.inter(
                       color: InvoiceThemeColors.textWhite,
                       fontSize: 14.sp,
                       fontWeight: FontWeight.w600,
                     ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                   SizedBox(height: 4.h),
                   Text(
-                    invoice.createdAt != null
-                        ? _formatDate(invoice.createdAt!)
-                        : 'Date unknown',
+                    '${invoice.displayName} ${invoice.invoice?.dueDate != null ? " \u2022 Due ${_formatDate(invoice.invoice!.dueDate!)}" : ""}',
                     style: GoogleFonts.inter(
                       color: InvoiceThemeColors.textGray400,
                       fontSize: 12.sp,
-                      fontWeight: FontWeight.w400,
                     ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
@@ -798,7 +594,7 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen> {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  '\$${(invoice.amount / 100).toStringAsFixed(2)}',
+                  '$_currencySymbol${(invoice.amount / 100).toStringAsFixed(2)}',
                   style: GoogleFonts.inter(
                     color: InvoiceThemeColors.textWhite,
                     fontSize: 16.sp,
@@ -813,7 +609,7 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen> {
                     borderRadius: BorderRadius.circular(8.r),
                   ),
                   child: Text(
-                    invoice.status.toUpperCase(),
+                    invoice.statusText,
                     style: GoogleFonts.inter(
                       color: statusColor,
                       fontSize: 10.sp,
@@ -829,6 +625,231 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen> {
     );
   }
 
+  Widget _buildSentInvoiceItem(dynamic invoice) {
+    final isPaid = invoice.status.name == 'paid';
+    final isOverdue = invoice.isOverdue;
+    final statusColor = isPaid
+        ? const Color(0xFF10B981)
+        : isOverdue
+            ? const Color(0xFFEF4444)
+            : const Color(0xFFFB923C);
+
+    return GestureDetector(
+      onTap: () => Get.toNamed(AppRoutes.invoiceDetails, arguments: invoice.id),
+      child: Container(
+        margin: EdgeInsets.only(bottom: 12.h),
+        padding: EdgeInsets.all(16.w),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1F1F1F),
+          borderRadius: BorderRadius.circular(12.r),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.25),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 40.w,
+              height: 40.w,
+              decoration: BoxDecoration(
+                color: statusColor.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(20.r),
+              ),
+              child: Icon(
+                isPaid ? Icons.check_circle : isOverdue ? Icons.warning : Icons.pending,
+                color: statusColor,
+                size: 20.sp,
+              ),
+            ),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    invoice.title,
+                    style: GoogleFonts.inter(
+                      color: InvoiceThemeColors.textWhite,
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  SizedBox(height: 4.h),
+                  Text(
+                    '${invoice.toName ?? "Unknown"} ${invoice.dueDate != null ? " \u2022 Due ${_formatDate(invoice.dueDate!)}" : ""}',
+                    style: GoogleFonts.inter(
+                      color: InvoiceThemeColors.textGray400,
+                      fontSize: 12.sp,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  '$_currencySymbol${(invoice.amount / 100).toStringAsFixed(2)}',
+                  style: GoogleFonts.inter(
+                    color: InvoiceThemeColors.textWhite,
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                SizedBox(height: 4.h),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
+                  decoration: BoxDecoration(
+                    color: statusColor.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8.r),
+                  ),
+                  child: Text(
+                    invoice.statusDisplayName,
+                    style: GoogleFonts.inter(
+                      color: statusColor,
+                      fontSize: 10.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildErrorState(String message, VoidCallback onRetry) {
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.all(32.w),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 64.w,
+              height: 64.w,
+              decoration: BoxDecoration(
+                color: const Color(0xFFEF4444).withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(32.r),
+              ),
+              child: Icon(Icons.cloud_off_rounded, size: 32.sp, color: const Color(0xFFEF4444)),
+            ),
+            SizedBox(height: 20.h),
+            Text(
+              'Something went wrong',
+              style: GoogleFonts.inter(
+                color: InvoiceThemeColors.textWhite,
+                fontSize: 16.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            SizedBox(height: 8.h),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(
+                color: InvoiceThemeColors.textGray400,
+                fontSize: 13.sp,
+              ),
+            ),
+            SizedBox(height: 24.h),
+            SizedBox(
+              width: 140.w,
+              height: 44.h,
+              child: ElevatedButton.icon(
+                onPressed: onRetry,
+                icon: Icon(Icons.refresh, size: 18.sp),
+                label: Text('Try Again', style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w600,
+                )),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: InvoiceThemeColors.primaryPurple,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                  elevation: 0,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState(String title, String subtitle, {IconData icon = Icons.receipt_outlined}) {
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.all(32.w),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 72.w,
+              height: 72.w,
+              decoration: BoxDecoration(
+                color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(36.r),
+              ),
+              child: Icon(icon, size: 36.sp, color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.5)),
+            ),
+            SizedBox(height: 20.h),
+            Text(
+              title,
+              style: GoogleFonts.inter(
+                color: InvoiceThemeColors.textWhite,
+                fontSize: 16.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            SizedBox(height: 8.h),
+            Text(
+              subtitle,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(
+                color: InvoiceThemeColors.textGray400,
+                fontSize: 13.sp,
+                height: 1.5,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Convert raw gRPC/backend error messages to user-friendly text
+  String _friendlyErrorMessage(String rawMessage) {
+    final lower = rawMessage.toLowerCase();
+    if (lower.contains('unavailable') || lower.contains('connection')) {
+      return 'Unable to reach the server. Check your connection and try again.';
+    }
+    if (lower.contains('unauthenticated') || lower.contains('auth') || lower.contains('token')) {
+      return 'Your session has expired. Please log in again.';
+    }
+    if (lower.contains('timeout') || lower.contains('deadline')) {
+      return 'Request timed out. Please try again.';
+    }
+    if (lower.contains('unknown service') || lower.contains('unimplemented')) {
+      return 'This feature is temporarily unavailable. Please try again later.';
+    }
+    if (lower.contains('permission') || lower.contains('denied')) {
+      return 'You don\'t have permission to view these invoices.';
+    }
+    // Generic fallback - don't expose raw errors
+    return 'Failed to load invoices. Please try again.';
+  }
+
   String _formatDate(DateTime date) {
     final now = DateTime.now();
     final difference = now.difference(date);
@@ -837,8 +858,10 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen> {
       return 'Today';
     } else if (difference.inDays == 1) {
       return 'Yesterday';
+    } else if (difference.inDays < 0) {
+      return '${-difference.inDays}d left';
     } else if (difference.inDays < 7) {
-      return '${difference.inDays} days ago';
+      return '${difference.inDays}d ago';
     } else {
       return '${date.day}/${date.month}/${date.year}';
     }

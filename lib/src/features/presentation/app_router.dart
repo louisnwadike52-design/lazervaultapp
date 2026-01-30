@@ -127,6 +127,8 @@ import 'package:lazervault/src/features/invoice/presentation/view/outgoing_tagge
 import 'package:lazervault/src/features/invoice/presentation/cubit/tagged_invoice_cubit.dart';
 import 'package:lazervault/src/features/invoice/presentation/view/invoice_preview_screen.dart';
 import 'package:lazervault/src/features/invoice/presentation/view/invoice_payment_screen.dart';
+import 'package:lazervault/src/features/invoice/presentation/view/invoice_processing_screen.dart';
+import 'package:lazervault/src/features/invoice/presentation/view/invoice_receipt_screen.dart';
 import 'package:lazervault/src/features/pay_invoice/presentation/view/pay_invoice_screen.dart';
 import 'package:lazervault/src/features/pay_invoice/presentation/cubit/pay_invoice_cubit.dart';
 // AI Scan to Pay imports
@@ -499,6 +501,25 @@ class AppRouter {
       page: () {
         final invoice = Get.arguments as Invoice;
         return InvoicePaymentScreen(invoice: invoice);
+      },
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.invoiceProcessing,
+      page: () {
+        final invoice = Get.arguments as Invoice;
+        return InvoiceProcessingScreen(invoice: invoice);
+      },
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.invoiceReceipt,
+      page: () {
+        final invoice = Get.arguments as Invoice;
+        return BlocProvider(
+          create: (_) => serviceLocator<InvoiceCubit>(),
+          child: InvoiceReceiptScreen(invoice: invoice),
+        );
       },
       transition: Transition.rightToLeft,
     ),

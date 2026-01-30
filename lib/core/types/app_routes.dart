@@ -18,6 +18,8 @@ abstract class AppRoutes {
   static const String invoiceDetails = '/invoice/details';
   static const String invoicePreview = '/invoice/preview';
   static const String invoicePayment = '/invoice/payment';
+  static const String invoiceProcessing = '/invoice/processing';
+  static const String invoiceReceipt = '/invoice/receipt';
   static const String incomingTaggedInvoices = '/invoice/incoming-tagged';
   static const String outgoingTaggedInvoices = '/invoice/outgoing-tagged';
   static const String sendFunds = '/send-funds';
