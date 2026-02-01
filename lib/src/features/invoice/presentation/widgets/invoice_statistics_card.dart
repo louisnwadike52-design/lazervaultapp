@@ -1,4 +1,7 @@
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../core/theme/invoice_theme_colors.dart';
+import '../../../account_cards_summary/cubit/account_cards_summary_cubit.dart';
+import '../../../account_cards_summary/cubit/account_cards_summary_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -10,6 +13,31 @@ class InvoiceStatisticsCard extends StatelessWidget {
     super.key,
     required this.statistics,
   });
+
+  String _currencySymbolFrom(BuildContext context) {
+    try {
+      final state = context.read<AccountCardsSummaryCubit>().state;
+      if (state is AccountCardsSummaryLoaded && state.accountSummaries.isNotEmpty) {
+        return _getCurrencySymbol(state.accountSummaries.first.currency);
+      }
+    } catch (_) {}
+    return '\$';
+  }
+
+  String _getCurrencySymbol(String currency) {
+    switch (currency.toUpperCase()) {
+      case 'NGN': return '₦';
+      case 'GBP': return '£';
+      case 'EUR': return '€';
+      case 'ZAR': return 'R';
+      case 'CAD': return 'C\$';
+      case 'AUD': return 'A\$';
+      case 'INR': return '₹';
+      case 'JPY': return '¥';
+      case 'USD': return '\$';
+      default: return '₦';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,13 +60,13 @@ class InvoiceStatisticsCard extends StatelessWidget {
             ),
           ),
           SizedBox(height: 16.h),
-          _buildStatsGrid(),
+          _buildStatsGrid(context),
         ],
       ),
     );
   }
 
-  Widget _buildStatsGrid() {
+  Widget _buildStatsGrid(BuildContext context) {
     return Column(
       children: [
         Row(
@@ -132,7 +160,7 @@ class InvoiceStatisticsCard extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    '\$${(statistics['total_amount'] ?? 0.0).toStringAsFixed(2)}',
+                    '${_currencySymbolFrom(context)}${(statistics['total_amount'] ?? 0.0).toStringAsFixed(2)}',
                     style: GoogleFonts.inter(
                       color: Colors.white,
                       fontSize: 14.sp,

@@ -331,38 +331,39 @@ class _IncomingTaggedInvoicesScreenState
     final isPending = invoice.isPending;
     final isOverdue = invoice.isOverdue;
 
+    final statusColor = isOverdue
+        ? const Color(0xFFEF4444)
+        : isPending
+            ? const Color(0xFF3B82F6)
+            : const Color(0xFF10B981);
+    final creatorName = invoice.displayName;
+    final receiverName = invoice.invoice?.toName ?? 'You';
+
     return Container(
       margin: EdgeInsets.only(bottom: 16.h),
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
         color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-          color: isOverdue
-              ? const Color(0xFFEF4444)
-              : isPending
-                  ? const Color(0xFF3B82F6)
-                  : const Color(0xFF10B981),
-          width: 1,
-        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header: From who + status badge
+          // Header: title + status badge + amount
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
                 width: 44.w,
                 height: 44.w,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF374151),
-                  borderRadius: BorderRadius.circular(22.r),
+                  color: statusColor.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12.r),
                 ),
                 child: Icon(
-                  Icons.person,
-                  color: Colors.white,
-                  size: 24.sp,
+                  invoice.isPaid ? Icons.check_circle : isOverdue ? Icons.warning_rounded : Icons.receipt_long,
+                  color: statusColor,
+                  size: 22.sp,
                 ),
               ),
               SizedBox(width: 12.w),
@@ -371,131 +372,143 @@ class _IncomingTaggedInvoicesScreenState
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'From: ${invoice.displayName}',
+                      invoice.title,
                       style: GoogleFonts.inter(
                         color: Colors.white,
                         fontSize: 16.sp,
                         fontWeight: FontWeight.w600,
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    if (invoice.displayUsername.isNotEmpty)
-                      Text(
-                        '@${invoice.displayUsername}',
-                        style: GoogleFonts.inter(
-                          color: const Color(0xFF9CA3AF),
-                          fontSize: 14.sp,
-                          fontWeight: FontWeight.w400,
-                        ),
-                      ),
+                    SizedBox(height: 4.h),
+                    _buildStatusBadge(invoice),
                   ],
                 ),
               ),
-              _buildStatusBadge(invoice),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    invoice.formattedAmount,
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 20.sp,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
-          SizedBox(height: 16.h),
-          Divider(color: const Color(0xFF374151), height: 1),
-          SizedBox(height: 16.h),
-          // Invoice details
-          Text(
-            invoice.title,
-            style: GoogleFonts.inter(
-              color: Colors.white,
-              fontSize: 16.sp,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
           if (invoice.description.isNotEmpty) ...[
-            SizedBox(height: 8.h),
+            SizedBox(height: 10.h),
             Text(
               invoice.description,
               style: GoogleFonts.inter(
                 color: const Color(0xFF9CA3AF),
-                fontSize: 14.sp,
+                fontSize: 13.sp,
                 fontWeight: FontWeight.w400,
               ),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
           ],
-          SizedBox(height: 16.h),
-          // Amount and action button
+          SizedBox(height: 14.h),
+          Divider(color: const Color(0xFF2D2D2D), height: 1),
+          SizedBox(height: 14.h),
+          // Creator & Receiver row
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Amount',
-                    style: GoogleFonts.inter(
-                      color: const Color(0xFF9CA3AF),
-                      fontSize: 12.sp,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  SizedBox(height: 4.h),
-                  Text(
-                    invoice.formattedAmount,
-                    style: GoogleFonts.inter(
-                      color: Colors.white,
-                      fontSize: 24.sp,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ],
-              ),
-              if (isPending)
-                ElevatedButton(
-                  onPressed: () => _showPaymentDialog(invoice),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF3B82F6),
-                    foregroundColor: Colors.white,
-                    padding:
-                        EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12.r),
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.payment, size: 18.sp),
-                      SizedBox(width: 8.w),
-                      Text(
-                        'Quick Pay',
-                        style: GoogleFonts.inter(
-                          fontSize: 14.sp,
-                          fontWeight: FontWeight.w600,
-                        ),
+              Expanded(
+                child: Row(
+                  children: [
+                    Icon(Icons.arrow_upward_rounded, color: const Color(0xFFEF4444), size: 14.sp),
+                    SizedBox(width: 4.w),
+                    Text('From: ', style: GoogleFonts.inter(color: const Color(0xFF909090), fontSize: 12.sp, fontWeight: FontWeight.w500)),
+                    Flexible(
+                      child: Text(
+                        creatorName,
+                        style: GoogleFonts.inter(color: const Color(0xFFD0D0D0), fontSize: 12.sp, fontWeight: FontWeight.w600),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
+              ),
+              SizedBox(width: 8.w),
+              Expanded(
+                child: Row(
+                  children: [
+                    Icon(Icons.arrow_downward_rounded, color: const Color(0xFF10B981), size: 14.sp),
+                    SizedBox(width: 4.w),
+                    Text('To: ', style: GoogleFonts.inter(color: const Color(0xFF909090), fontSize: 12.sp, fontWeight: FontWeight.w500)),
+                    Flexible(
+                      child: Text(
+                        receiverName,
+                        style: GoogleFonts.inter(color: const Color(0xFFD0D0D0), fontSize: 12.sp, fontWeight: FontWeight.w600),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
+          // Due date row
           if (invoice.invoice?.dueDate != null) ...[
-            SizedBox(height: 12.h),
+            SizedBox(height: 10.h),
             Row(
               children: [
                 Icon(
-                  Icons.calendar_today_outlined,
-                  size: 14.sp,
-                  color: isOverdue
-                      ? const Color(0xFFEF4444)
-                      : const Color(0xFF9CA3AF),
+                  Icons.schedule,
+                  size: 13.sp,
+                  color: isOverdue ? const Color(0xFFEF4444) : const Color(0xFF909090),
                 ),
-                SizedBox(width: 6.w),
+                SizedBox(width: 4.w),
                 Text(
-                  'Due: ${_formatDate(invoice.invoice!.dueDate!)}',
+                  'Due ${_formatDate(invoice.invoice!.dueDate!)}',
                   style: GoogleFonts.inter(
-                    color: isOverdue
-                        ? const Color(0xFFEF4444)
-                        : const Color(0xFF9CA3AF),
-                    fontSize: 12.sp,
+                    color: isOverdue ? const Color(0xFFEF4444) : const Color(0xFFB0B0B0),
+                    fontSize: 11.sp,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
               ],
+            ),
+          ],
+          // Quick Pay button
+          if (isPending) ...[
+            SizedBox(height: 14.h),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => _showPaymentDialog(invoice),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF3B82F6),
+                  foregroundColor: Colors.white,
+                  padding: EdgeInsets.symmetric(vertical: 12.h),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.payment, size: 18.sp),
+                    SizedBox(width: 8.w),
+                    Text(
+                      'Quick Pay',
+                      style: GoogleFonts.inter(
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ],
         ],

@@ -13,7 +13,7 @@ abstract class InvoiceRepository {
 
   // Specific Operations
   Future<Invoice> sendInvoice(String invoiceId);
-  Future<Invoice> markInvoiceAsPaid(String invoiceId, PaymentMethod paymentMethod, String? paymentReference);
+  Future<Invoice> markInvoiceAsPaid(String invoiceId, PaymentMethod paymentMethod, String? paymentReference, {String? pin, String? verificationToken});
   Future<Invoice> cancelInvoice(String invoiceId);
   Future<String> generateQRCode(String invoiceId);
   Future<List<Invoice>> searchInvoices(String query);
@@ -24,6 +24,9 @@ abstract class InvoiceRepository {
   Future<String> generateInvoicePDF(String invoiceId);
   Future<void> shareInvoice(String invoiceId, List<String> recipients);
   
+  // Unlock invoice (pay service fee)
+  Future<Invoice> unlockInvoice(String invoiceId, {String? accountId, String? pin, String? verificationToken, String? transactionId, String? idempotencyKey});
+
   // Payment tracking
   Future<void> recordPayment(String invoiceId, double amount, PaymentMethod method, String reference);
   Future<List<Map<String, dynamic>>> getPaymentHistory(String invoiceId);

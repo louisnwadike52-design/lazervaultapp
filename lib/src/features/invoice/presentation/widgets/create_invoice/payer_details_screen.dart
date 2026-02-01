@@ -10,7 +10,14 @@ import '../../cubit/create_invoice_cubit.dart';
 ///
 /// Collects payer address, contact information, and optional logo/image
 class PayerDetailsScreen extends StatefulWidget {
-  const PayerDetailsScreen({super.key});
+  final bool showPhone;
+  final bool showAddress;
+
+  const PayerDetailsScreen({
+    super.key,
+    this.showPhone = false,
+    this.showAddress = false,
+  });
 
   @override
   State<PayerDetailsScreen> createState() => _PayerDetailsScreenState();
@@ -77,7 +84,12 @@ class _PayerDetailsScreenState extends State<PayerDetailsScreen>
     super.dispose();
   }
 
+  bool _isPickingImage = false;
+
   Future<void> _pickImage() async {
+    if (_isPickingImage) return;
+    _isPickingImage = true;
+    try {
     final XFile? image = await _imagePicker.pickImage(
       source: ImageSource.gallery,
       maxWidth: 1024,
@@ -89,13 +101,16 @@ class _PayerDetailsScreenState extends State<PayerDetailsScreen>
       final cubit = context.read<CreateInvoiceCubit>();
       cubit.updatePayerImage(File(image.path));
     }
+    } finally {
+      _isPickingImage = false;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return FadeTransition(
       opacity: _fadeAnimation,
-      child: SingleChildScrollView(
+      child: Padding(
         padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -126,7 +141,7 @@ class _PayerDetailsScreenState extends State<PayerDetailsScreen>
         ),
         SizedBox(height: 8.h),
         Text(
-          'Your business or personal information that will appear on the invoice',
+          'Details of the person or company who will pay this invoice',
           style: GoogleFonts.inter(
             fontSize: 14.sp,
             fontWeight: FontWeight.w400,
@@ -160,12 +175,15 @@ class _PayerDetailsScreenState extends State<PayerDetailsScreen>
               child: Container(
                 height: 140.h,
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.05),
+                  color: const Color(0xFF1F1F1F),
                   borderRadius: BorderRadius.circular(16.r),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.1),
-                    width: 1.5,
-                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
                 child: payerImage != null
                     ? Stack(
@@ -253,94 +271,107 @@ class _PayerDetailsScreenState extends State<PayerDetailsScreen>
         SizedBox(height: 16.h),
         _buildTextField(
           controller: _emailController,
-          label: 'Email Address *',
+          label: 'Email Address (Optional)',
           hint: 'your@email.com',
           icon: Icons.email,
           keyboardType: TextInputType.emailAddress,
           onChanged: (value) => cubit.updatePayerEmail(value),
         ),
-        SizedBox(height: 16.h),
-        _buildTextField(
-          controller: _phoneController,
-          label: 'Phone Number (Optional)',
-          hint: '+1 234 567 8900',
-          icon: Icons.phone,
-          keyboardType: TextInputType.phone,
-          onChanged: (value) => cubit.updatePayerPhone(value),
-        ),
-        SizedBox(height: 24.h),
+        SizedBox(height: 6.h),
         Text(
-          'Address (Optional)',
+          'If provided, an email with the invoice will be automatically sent to the payer',
           style: GoogleFonts.inter(
-            fontSize: 16.sp,
-            fontWeight: FontWeight.w600,
-            color: Colors.white,
+            fontSize: 12.sp,
+            fontWeight: FontWeight.w400,
+            color: Colors.grey[500],
           ),
         ),
-        SizedBox(height: 16.h),
-        _buildTextField(
-          controller: _address1Controller,
-          label: 'Street Address',
-          hint: '456 Business Blvd',
-          icon: Icons.location_on,
-          onChanged: (value) => cubit.updatePayerAddress1(value),
-        ),
-        SizedBox(height: 16.h),
-        _buildTextField(
-          controller: _address2Controller,
-          label: 'Address Line 2',
-          hint: 'Suite, Unit (optional)',
-          icon: Icons.location_city,
-          onChanged: (value) => cubit.updatePayerAddress2(value),
-        ),
-        SizedBox(height: 16.h),
-        Row(
-          children: [
-            Expanded(
-              child: _buildTextField(
-                controller: _cityController,
-                label: 'City',
-                hint: 'San Francisco',
-                icon: Icons.location_city,
-                onChanged: (value) => cubit.updatePayerCity(value),
-              ),
+        if (widget.showPhone) ...[
+          SizedBox(height: 16.h),
+          _buildTextField(
+            controller: _phoneController,
+            label: 'Phone Number (Optional)',
+            hint: '+1 234 567 8900',
+            icon: Icons.phone,
+            keyboardType: TextInputType.phone,
+            onChanged: (value) => cubit.updatePayerPhone(value),
+          ),
+        ],
+        if (widget.showAddress) ...[
+          SizedBox(height: 24.h),
+          Text(
+            'Address (Optional)',
+            style: GoogleFonts.inter(
+              fontSize: 16.sp,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
             ),
-            SizedBox(width: 12.w),
-            Expanded(
-              child: _buildTextField(
-                controller: _stateController,
-                label: 'State/Province',
-                hint: 'CA',
-                icon: Icons.map,
-                onChanged: (value) => cubit.updatePayerState(value),
+          ),
+          SizedBox(height: 16.h),
+          _buildTextField(
+            controller: _address1Controller,
+            label: 'Street Address',
+            hint: '456 Business Blvd',
+            icon: Icons.location_on,
+            onChanged: (value) => cubit.updatePayerAddress1(value),
+          ),
+          SizedBox(height: 16.h),
+          _buildTextField(
+            controller: _address2Controller,
+            label: 'Address Line 2',
+            hint: 'Suite, Unit (optional)',
+            icon: Icons.location_city,
+            onChanged: (value) => cubit.updatePayerAddress2(value),
+          ),
+          SizedBox(height: 16.h),
+          Row(
+            children: [
+              Expanded(
+                child: _buildTextField(
+                  controller: _cityController,
+                  label: 'City',
+                  hint: 'San Francisco',
+                  icon: Icons.location_city,
+                  onChanged: (value) => cubit.updatePayerCity(value),
+                ),
               ),
-            ),
-          ],
-        ),
-        SizedBox(height: 16.h),
-        Row(
-          children: [
-            Expanded(
-              child: _buildTextField(
-                controller: _postcodeController,
-                label: 'Postcode/ZIP',
-                hint: '94102',
-                icon: Icons.pin_drop,
-                onChanged: (value) => cubit.updatePayerPostcode(value),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: _buildTextField(
+                  controller: _stateController,
+                  label: 'State/Province',
+                  hint: 'CA',
+                  icon: Icons.map,
+                  onChanged: (value) => cubit.updatePayerState(value),
+                ),
               ),
-            ),
-            SizedBox(width: 12.w),
-            Expanded(
-              child: _buildTextField(
-                controller: _countryController,
-                label: 'Country',
-                hint: 'USA',
-                icon: Icons.public,
-                onChanged: (value) => cubit.updatePayerCountry(value),
+            ],
+          ),
+          SizedBox(height: 16.h),
+          Row(
+            children: [
+              Expanded(
+                child: _buildTextField(
+                  controller: _postcodeController,
+                  label: 'Postcode/ZIP',
+                  hint: '94102',
+                  icon: Icons.pin_drop,
+                  onChanged: (value) => cubit.updatePayerPostcode(value),
+                ),
               ),
-            ),
-          ],
-        ),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: _buildTextField(
+                  controller: _countryController,
+                  label: 'Country',
+                  hint: 'USA',
+                  icon: Icons.public,
+                  onChanged: (value) => cubit.updatePayerCountry(value),
+                ),
+              ),
+            ],
+          ),
+        ],
       ],
     );
   }
@@ -387,26 +418,20 @@ class _PayerDetailsScreenState extends State<PayerDetailsScreen>
               color: Colors.white.withValues(alpha: 0.5),
             ),
             filled: true,
-            fillColor: Colors.white.withValues(alpha: 0.05),
+            fillColor: Colors.white.withValues(alpha: 0.08),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r),
-              borderSide: BorderSide(
-                color: Colors.white.withValues(alpha: 0.1),
-                width: 1.5,
-              ),
+              borderSide: BorderSide.none,
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r),
-              borderSide: BorderSide(
-                color: Colors.white.withValues(alpha: 0.1),
-                width: 1.5,
-              ),
+              borderSide: BorderSide.none,
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r),
               borderSide: const BorderSide(
                 color: Color(0xFF3B82F6),
-                width: 2,
+                width: 1.5,
               ),
             ),
             contentPadding: EdgeInsets.symmetric(

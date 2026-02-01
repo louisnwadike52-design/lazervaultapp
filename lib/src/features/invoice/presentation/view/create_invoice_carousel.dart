@@ -2,11 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:get/get.dart';
 import '../cubit/create_invoice_cubit.dart';
 import '../cubit/create_invoice_state.dart';
 import '../cubit/invoice_cubit.dart';
+import '../cubit/invoice_state.dart';
 import '../../../authentication/cubit/authentication_cubit.dart';
 import '../../../authentication/cubit/authentication_state.dart';
+import '../../../account_cards_summary/cubit/account_cards_summary_cubit.dart';
+import '../../../account_cards_summary/cubit/account_cards_summary_state.dart';
 import '../../domain/entities/invoice_entity.dart';
 import '../widgets/create_invoice/invoice_type_basic_info_screen.dart';
 import '../widgets/create_invoice/recipient_details_screen.dart';
@@ -14,10 +18,14 @@ import '../widgets/create_invoice/payer_details_screen.dart';
 import '../widgets/create_invoice/items_amounts_screen.dart';
 import '../widgets/create_invoice/invoice_review_screen.dart';
 import '../../../../../core/theme/invoice_theme_colors.dart';
+import '../../../../../core/types/app_routes.dart';
 
 /// Main carousel controller for invoice creation
 ///
-/// Manages 5-screen flow with PageView, progress indicators, and validation
+/// Manages a progressive 3-screen flow:
+/// Screen 1: Type & Basic Info (required) + optional Recipient/Payer via chips
+/// Screen 2: Items & Amounts (required) + optional Tax/Discount/Notes via chips
+/// Screen 3: Review & Confirm
 class CreateInvoiceCarousel extends StatefulWidget {
   const CreateInvoiceCarousel({super.key});
 
@@ -38,15 +46,22 @@ class _CreateInvoiceCarouselState extends State<CreateInvoiceCarousel> {
     'Review & Confirm',
   ];
 
+  // Track which optional sections are visible
+  final Set<String> _visibleOptionalFields = {};
+  bool _showFieldChipsRecipient = false;
+  bool _showFieldChipsPayer = false;
+  bool _showFieldChipsItems = false;
+
   @override
   void initState() {
     super.initState();
     _pageController = PageController();
 
-    // Initialize form with user data
+    // Initialize form with user data and set user ID on InvoiceCubit
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final authState = context.read<AuthenticationCubit>().state;
       if (authState is AuthenticationSuccess) {
+        context.read<InvoiceCubit>().setUserId(authState.profile.user.id);
         context
             .read<CreateInvoiceCubit>()
             .initializeWithUserData(authState.profile.user);
@@ -67,24 +82,23 @@ class _CreateInvoiceCarouselState extends State<CreateInvoiceCarousel> {
     bool isValid = false;
     switch (_currentPage) {
       case 0:
-        isValid = cubit.validateScreen1();
+        isValid = cubit.validateScreen1(); // Basic info
         break;
       case 1:
-        isValid = cubit.validateScreen2();
+        isValid = cubit.validateScreen2(required: true); // Recipient
         break;
       case 2:
-        isValid = cubit.validateScreen3();
+        isValid = cubit.validateScreen3(required: true); // Payer
         break;
       case 3:
-        isValid = cubit.validateScreen4();
+        isValid = cubit.validateScreen4(); // Items
         break;
       case 4:
-        isValid = cubit.validateScreen5();
+        isValid = cubit.validateScreen5(); // Review
         break;
     }
 
     if (!isValid) {
-      // Show error message if validation failed
       if (cubit.state is CreateInvoiceValidationError) {
         final errorState = cubit.state as CreateInvoiceValidationError;
         _showErrorSnackBar(errorState.message);
@@ -110,7 +124,6 @@ class _CreateInvoiceCarouselState extends State<CreateInvoiceCarousel> {
         curve: Curves.easeInOut,
       );
     } else {
-      // First page - go back to list screen
       Navigator.of(context).pop();
     }
   }
@@ -124,16 +137,24 @@ class _CreateInvoiceCarouselState extends State<CreateInvoiceCarousel> {
 
     try {
       final cubit = context.read<CreateInvoiceCubit>();
-      final invoice = cubit.buildInvoice(authState.profile.user.id);
+      String accountCurrency = 'NGN';
+      try {
+        final acctState = context.read<AccountCardsSummaryCubit>().state;
+        if (acctState is AccountCardsSummaryLoaded && acctState.accountSummaries.isNotEmpty) {
+          accountCurrency = acctState.accountSummaries.first.currency;
+        }
+      } catch (_) {}
+      final invoice = cubit.buildInvoice(authState.profile.user.id, currency: accountCurrency);
 
-      // Create invoice via InvoiceCubit using individual parameters
-      await context.read<InvoiceCubit>().createInvoice(
+      final invoiceCubit = context.read<InvoiceCubit>();
+
+      await invoiceCubit.createInvoice(
         title: invoice.title,
         description: invoice.description,
         items: invoice.items,
         type: invoice.type,
-        toEmail: invoice.recipientDetails?.email,
-        toName: invoice.recipientDetails?.contactName,
+        toEmail: invoice.payerDetails?.email ?? invoice.recipientDetails?.email,
+        toName: invoice.payerDetails?.contactName ?? invoice.recipientDetails?.contactName,
         dueDate: invoice.dueDate,
         taxAmount: invoice.taxAmount,
         discountAmount: invoice.discountAmount,
@@ -167,33 +188,25 @@ class _CreateInvoiceCarouselState extends State<CreateInvoiceCarousel> {
                 country: invoice.payerDetails!.country,
               )
             : null,
+        currency: accountCurrency,
       );
 
       if (!mounted) return;
 
-      // Show success message
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Invoice created successfully!',
-            style: GoogleFonts.inter(
-              fontSize: 14.sp,
-              fontWeight: FontWeight.w500,
-              color: Colors.white,
-            ),
-          ),
-          backgroundColor: Colors.green.shade700,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8.r),
-          ),
-          margin: EdgeInsets.all(16.w),
-        ),
-      );
+      final currentState = invoiceCubit.state;
+      if (currentState is! InvoiceOperationSuccess || currentState.invoice == null) {
+        final errorMsg = currentState is InvoiceError
+            ? currentState.message
+            : 'Failed to create invoice';
+        _showErrorSnackBar(errorMsg);
+        return;
+      }
 
-      // Reset form and navigate back
+      final createdInvoice = currentState.invoice!;
+
       cubit.reset();
-      Navigator.of(context).pop();
+
+      Get.offNamed(AppRoutes.invoicePayment, arguments: createdInvoice);
     } catch (e) {
       _showErrorSnackBar('Failed to create invoice: ${e.toString()}');
     }
@@ -235,16 +248,195 @@ class _CreateInvoiceCarouselState extends State<CreateInvoiceCarousel> {
               onPageChanged: (page) {
                 setState(() => _currentPage = page);
               },
-              children: const [
-                InvoiceTypeBasicInfoScreen(),
-                RecipientDetailsScreen(),
-                PayerDetailsScreen(),
-                ItemsAmountsScreen(),
-                InvoiceReviewScreen(),
+              children: [
+                _buildBasicInfoScreen(),
+                _buildRecipientScreen(),
+                _buildPayerScreen(),
+                _buildItemsScreen(),
+                const InvoiceReviewScreen(),
               ],
             ),
           ),
           _buildNavigationButtons(),
+        ],
+      ),
+    );
+  }
+
+  /// Screen 1: Basic Info only
+  Widget _buildBasicInfoScreen() {
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          const InvoiceTypeBasicInfoScreen(),
+          SizedBox(height: 24.h),
+        ],
+      ),
+    );
+  }
+
+  /// Screen 2: Recipient Details (you — the invoice creator, prefilled)
+  Widget _buildRecipientScreen() {
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          RecipientDetailsScreen(
+            showPhone: _visibleOptionalFields.contains('recipientPhone'),
+            showAddress: _visibleOptionalFields.contains('recipientAddress'),
+          ),
+          _buildAddMoreFieldsWidget(
+            fields: [
+              if (!_visibleOptionalFields.contains('recipientPhone'))
+                _ChipField('recipientPhone', 'Phone', Icons.phone_outlined),
+              if (!_visibleOptionalFields.contains('recipientAddress'))
+                _ChipField('recipientAddress', 'Address', Icons.location_on_outlined),
+            ],
+            showChips: _showFieldChipsRecipient,
+            onToggle: () => setState(() => _showFieldChipsRecipient = !_showFieldChipsRecipient),
+          ),
+          SizedBox(height: 24.h),
+        ],
+      ),
+    );
+  }
+
+  /// Screen 3: Payer Details (the other person who will pay)
+  Widget _buildPayerScreen() {
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          PayerDetailsScreen(
+            showPhone: _visibleOptionalFields.contains('payerPhone'),
+            showAddress: _visibleOptionalFields.contains('payerAddress'),
+          ),
+          _buildAddMoreFieldsWidget(
+            fields: [
+              if (!_visibleOptionalFields.contains('payerPhone'))
+                _ChipField('payerPhone', 'Phone', Icons.phone_outlined),
+              if (!_visibleOptionalFields.contains('payerAddress'))
+                _ChipField('payerAddress', 'Address', Icons.location_on_outlined),
+            ],
+            showChips: _showFieldChipsPayer,
+            onToggle: () => setState(() => _showFieldChipsPayer = !_showFieldChipsPayer),
+          ),
+          SizedBox(height: 24.h),
+        ],
+      ),
+    );
+  }
+
+  /// Screen 4: Items + optional Tax/Discount/Notes sections
+  Widget _buildItemsScreen() {
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          ItemsAmountsScreen(
+            showTax: _visibleOptionalFields.contains('tax'),
+            showDiscount: _visibleOptionalFields.contains('discount'),
+            showNotes: _visibleOptionalFields.contains('notes'),
+          ),
+          _buildAddMoreFieldsWidget(
+            fields: [
+              if (!_visibleOptionalFields.contains('tax'))
+                _ChipField('tax', 'Tax', Icons.receipt_long_outlined),
+              if (!_visibleOptionalFields.contains('discount'))
+                _ChipField('discount', 'Discount', Icons.discount_outlined),
+              if (!_visibleOptionalFields.contains('notes'))
+                _ChipField('notes', 'Notes', Icons.note_alt_outlined),
+            ],
+            showChips: _showFieldChipsItems,
+            onToggle: () => setState(() => _showFieldChipsItems = !_showFieldChipsItems),
+          ),
+          SizedBox(height: 24.h),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAddMoreFieldsWidget({
+    required List<_ChipField> fields,
+    required bool showChips,
+    required VoidCallback onToggle,
+  }) {
+    if (fields.isEmpty) return const SizedBox.shrink();
+
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 20.w),
+      child: Column(
+        children: [
+          SizedBox(height: 16.h),
+          GestureDetector(
+            onTap: onToggle,
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1E293B),
+                borderRadius: BorderRadius.circular(12.r),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    showChips ? Icons.remove_circle_outline : Icons.add_circle_outline,
+                    color: const Color(0xFF60A5FA),
+                    size: 22.sp,
+                  ),
+                  SizedBox(width: 8.w),
+                  Text(
+                    showChips ? 'Hide options' : 'Add more fields',
+                    style: GoogleFonts.inter(
+                      color: const Color(0xFF60A5FA),
+                      fontSize: 15.sp,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          AnimatedCrossFade(
+            firstChild: const SizedBox.shrink(),
+            secondChild: Padding(
+              padding: EdgeInsets.only(top: 12.h),
+              child: Wrap(
+                spacing: 8.w,
+                runSpacing: 8.h,
+                children: fields.map((field) {
+                  return ActionChip(
+                    avatar: Icon(field.icon, size: 16.sp, color: const Color(0xFF60A5FA)),
+                    label: Text(
+                      field.label,
+                      style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    backgroundColor: const Color(0xFF1E293B),
+                    side: BorderSide.none,
+                    elevation: 4,
+                    shadowColor: Colors.black.withValues(alpha: 0.3),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
+                    padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                    onPressed: () {
+                      setState(() {
+                        _visibleOptionalFields.add(field.key);
+                      });
+                    },
+                  );
+                }).toList(),
+              ),
+            ),
+            crossFadeState: showChips ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+            duration: const Duration(milliseconds: 250),
+          ),
         ],
       ),
     );
@@ -291,7 +483,6 @@ class _CreateInvoiceCarouselState extends State<CreateInvoiceCarousel> {
       padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
       child: Column(
         children: [
-          // Linear progress bar
           Stack(
             children: [
               Container(
@@ -320,7 +511,6 @@ class _CreateInvoiceCarouselState extends State<CreateInvoiceCarousel> {
             ],
           ),
           SizedBox(height: 12.h),
-          // Dot indicators
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: List.generate(
@@ -351,12 +541,13 @@ class _CreateInvoiceCarouselState extends State<CreateInvoiceCarousel> {
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
         color: InvoiceThemeColors.primaryBackground,
-        border: Border(
-          top: BorderSide(
-            color: Colors.white.withValues(alpha: 0.1),
-            width: 1,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.4),
+            blurRadius: 10,
+            offset: const Offset(0, -2),
           ),
-        ),
+        ],
       ),
       child: SafeArea(
         child: Row(
@@ -368,12 +559,15 @@ class _CreateInvoiceCarouselState extends State<CreateInvoiceCarousel> {
                   child: Container(
                     padding: EdgeInsets.symmetric(vertical: 16.h),
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.05),
+                      color: const Color(0xFF1F1F1F),
                       borderRadius: BorderRadius.circular(12.r),
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.1),
-                        width: 1.5,
-                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.3),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
                     ),
                     child: Center(
                       child: Text(
@@ -390,18 +584,20 @@ class _CreateInvoiceCarouselState extends State<CreateInvoiceCarousel> {
               ),
             if (_currentPage > 0) SizedBox(width: 12.w),
             Expanded(
-              flex: _currentPage == 0 ? 1 : 1,
               child: GestureDetector(
                 onTap: _goToNextPage,
                 child: Container(
                   padding: EdgeInsets.symmetric(vertical: 16.h),
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
+                    color: const Color(0xFF3B82F6),
                     borderRadius: BorderRadius.circular(12.r),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
                   ),
                   child: Center(
                     child: Row(
@@ -434,4 +630,11 @@ class _CreateInvoiceCarouselState extends State<CreateInvoiceCarousel> {
       ),
     );
   }
+}
+
+class _ChipField {
+  final String key;
+  final String label;
+  final IconData icon;
+  const _ChipField(this.key, this.label, this.icon);
 }

@@ -352,6 +352,8 @@ class PayInvoiceRepositoryGrpcImpl implements PayInvoiceRepository {
         return PaymentStatus.pending;
       case invoice_entity.InvoiceStatus.paid:
         return PaymentStatus.completed;
+      case invoice_entity.InvoiceStatus.partiallyPaid:
+        return PaymentStatus.pending;
       case invoice_entity.InvoiceStatus.expired:
         return PaymentStatus.failed;
       case invoice_entity.InvoiceStatus.cancelled:

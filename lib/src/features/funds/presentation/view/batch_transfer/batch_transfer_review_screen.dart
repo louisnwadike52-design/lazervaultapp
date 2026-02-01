@@ -7,6 +7,7 @@ import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/funds/domain/entities/batch_transfer_entity.dart';
 import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
+import 'package:uuid/uuid.dart';
 
 class BatchTransferReviewScreen extends StatefulWidget {
   const BatchTransferReviewScreen({super.key});
@@ -69,7 +70,7 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
     );
 
     // Generate unique transaction ID
-    final transactionId = 'batch_transfer_${DateTime.now().millisecondsSinceEpoch}_${recipients.length}';
+    final transactionId = 'batch_transfer_${const Uuid().v4()}';
 
     // Validate PIN before processing batch transfer
     final success = await validateTransactionPin(

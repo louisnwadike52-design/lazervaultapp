@@ -659,14 +659,9 @@ class _DepositMethodSelectionScreenState extends State<DepositMethodSelectionScr
                       ? Colors.white.withValues(alpha: 0.02)
                       : Colors.white.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(16.r),
-              border: Border.all(
-                color: isSelected && isAvailable
-                    ? Colors.green.withValues(alpha: 0.5)
-                    : isUnavailable
-                        ? Colors.grey.withValues(alpha: 0.2)
-                        : Colors.white.withValues(alpha: 0.1),
-                width: isSelected && isAvailable ? 2 : 1,
-              ),
+              border: isSelected && isAvailable
+                  ? Border.all(color: Colors.green.withValues(alpha: 0.5), width: 2)
+                  : null,
               boxShadow: isSelected && isAvailable ? [
                 BoxShadow(
                   color: Colors.green.withValues(alpha: 0.2),
@@ -831,12 +826,9 @@ class _DepositMethodSelectionScreenState extends State<DepositMethodSelectionScr
                   : null,
               color: isSelected ? null : Colors.white.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(16.r),
-              border: Border.all(
-                color: isSelected
-                    ? Colors.green.withValues(alpha: 0.5)
-                    : Colors.white.withValues(alpha: 0.1),
-                width: isSelected ? 2 : 1,
-              ),
+              border: isSelected
+                  ? Border.all(color: Colors.green.withValues(alpha: 0.5), width: 2)
+                  : null,
               boxShadow: isSelected ? [
                 BoxShadow(
                   color: Colors.green.withValues(alpha: 0.2),

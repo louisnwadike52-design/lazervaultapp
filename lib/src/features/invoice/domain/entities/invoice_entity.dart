@@ -4,6 +4,7 @@ enum InvoiceStatus {
   draft,
   pending,
   paid,
+  partiallyPaid,
   expired,
   cancelled,
 }
@@ -217,6 +218,9 @@ class Invoice extends Equatable {
   final Map<String, dynamic>? metadata;
   final AddressDetails? recipientDetails;
   final AddressDetails? payerDetails;
+  final bool isUnlocked;
+  final String? unlockPaymentRef;
+  final List<TaggedUserInfo>? taggedUsers;
 
   const Invoice({
     required this.id,
@@ -245,6 +249,9 @@ class Invoice extends Equatable {
     this.metadata,
     this.recipientDetails,
     this.payerDetails,
+    this.isUnlocked = false,
+    this.unlockPaymentRef,
+    this.taggedUsers,
   });
 
   @override
@@ -275,6 +282,9 @@ class Invoice extends Equatable {
         metadata,
         recipientDetails,
         payerDetails,
+        isUnlocked,
+        unlockPaymentRef,
+        taggedUsers,
       ];
 
   Invoice copyWith({
@@ -304,6 +314,9 @@ class Invoice extends Equatable {
     Map<String, dynamic>? metadata,
     AddressDetails? recipientDetails,
     AddressDetails? payerDetails,
+    bool? isUnlocked,
+    String? unlockPaymentRef,
+    List<TaggedUserInfo>? taggedUsers,
   }) {
     return Invoice(
       id: id ?? this.id,
@@ -332,13 +345,32 @@ class Invoice extends Equatable {
       metadata: metadata ?? this.metadata,
       recipientDetails: recipientDetails ?? this.recipientDetails,
       payerDetails: payerDetails ?? this.payerDetails,
+      isUnlocked: isUnlocked ?? this.isUnlocked,
+      unlockPaymentRef: unlockPaymentRef ?? this.unlockPaymentRef,
+      taggedUsers: taggedUsers ?? this.taggedUsers,
     );
   }
 
   bool get isOverdue {
-    if (dueDate == null || status == InvoiceStatus.paid) return false;
+    if (dueDate == null || status == InvoiceStatus.paid || status == InvoiceStatus.partiallyPaid) return false;
     return DateTime.now().isAfter(dueDate!);
   }
+
+  bool get isPartiallyPaid => status == InvoiceStatus.partiallyPaid;
+
+  int get paidUsersCount =>
+      taggedUsers?.where((u) => u.status == 'paid').length ?? 0;
+
+  int get unpaidUsersCount =>
+      (taggedUsers?.length ?? 0) - paidUsersCount;
+
+  double get paidAmount =>
+      taggedUsers
+          ?.where((u) => u.status == 'paid')
+          .fold<double>(0.0, (sum, _) => sum + (totalAmount / (taggedUsers?.length ?? 1))) ??
+      0.0;
+
+  double get unpaidAmount => totalAmount - paidAmount;
 
   bool get canBePaid {
     return status == InvoiceStatus.pending && !isOverdue;
@@ -356,6 +388,8 @@ class Invoice extends Equatable {
         return 'Pending';
       case InvoiceStatus.paid:
         return 'Paid';
+      case InvoiceStatus.partiallyPaid:
+        return 'Partially Paid';
       case InvoiceStatus.expired:
         return 'Expired';
       case InvoiceStatus.cancelled:
@@ -373,6 +407,56 @@ class Invoice extends Equatable {
         return 'Quote';
     }
   }
+}
+
+class TaggedUserInfo extends Equatable {
+  final String userId;
+  final String username;
+  final String firstName;
+  final String lastName;
+  final String? profilePicture;
+  final String status; // "pending", "viewed", "paid"
+  final String tagType; // "platform", "email", "phone"
+  final String? tagValue; // email address or phone number for external tags
+  final DateTime? taggedAt;
+  final DateTime? viewedAt;
+  final DateTime? paidAt;
+
+  const TaggedUserInfo({
+    required this.userId,
+    required this.username,
+    required this.firstName,
+    required this.lastName,
+    this.profilePicture,
+    this.status = 'pending',
+    this.tagType = 'platform',
+    this.tagValue,
+    this.taggedAt,
+    this.viewedAt,
+    this.paidAt,
+  });
+
+  bool get isPlatformUser => tagType == 'platform';
+  bool get isExternalTag => tagType == 'email' || tagType == 'phone';
+
+  String get displayName {
+    if (firstName.isNotEmpty || lastName.isNotEmpty) {
+      return '$firstName $lastName'.trim();
+    }
+    if (username.isNotEmpty) return username;
+    return tagValue ?? 'Unknown';
+  }
+
+  String get tagMethodLabel {
+    switch (tagType) {
+      case 'email': return 'Via Email';
+      case 'phone': return 'Via SMS';
+      default: return 'On Platform';
+    }
+  }
+
+  @override
+  List<Object?> get props => [userId, username, firstName, lastName, profilePicture, status, tagType, tagValue, taggedAt, viewedAt, paidAt];
 }
 
 class InvoiceItem extends Equatable {

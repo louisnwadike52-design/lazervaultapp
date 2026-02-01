@@ -1146,22 +1146,24 @@ const UserLookupResult$json = const {
     const {'1': 'last_name', '3': 4, '4': 1, '5': 9, '10': 'lastName'},
     const {'1': 'profile_picture', '3': 5, '4': 1, '5': 9, '10': 'profilePicture'},
     const {'1': 'is_lazervault_user', '3': 6, '4': 1, '5': 8, '10': 'isLazervaultUser'},
+    const {'1': 'phone_number', '3': 7, '4': 1, '5': 9, '10': 'phoneNumber'},
   ],
 };
 
 /// Descriptor for `UserLookupResult`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List userLookupResultDescriptor = $convert.base64Decode('ChBVc2VyTG9va3VwUmVzdWx0EhcKB3VzZXJfaWQYASABKAlSBnVzZXJJZBIaCgh1c2VybmFtZRgCIAEoCVIIdXNlcm5hbWUSHQoKZmlyc3RfbmFtZRgDIAEoCVIJZmlyc3ROYW1lEhsKCWxhc3RfbmFtZRgEIAEoCVIIbGFzdE5hbWUSJwoPcHJvZmlsZV9waWN0dXJlGAUgASgJUg5wcm9maWxlUGljdHVyZRIsChJpc19sYXplcnZhdWx0X3VzZXIYBiABKAhSEGlzTGF6ZXJ2YXVsdFVzZXI=');
+final $typed_data.Uint8List userLookupResultDescriptor = $convert.base64Decode('ChBVc2VyTG9va3VwUmVzdWx0EhcKB3VzZXJfaWQYASABKAlSBnVzZXJJZBIaCgh1c2VybmFtZRgCIAEoCVIIdXNlcm5hbWUSHQoKZmlyc3RfbmFtZRgDIAEoCVIJZmlyc3ROYW1lEhsKCWxhc3RfbmFtZRgEIAEoCVIIbGFzdE5hbWUSJwoPcHJvZmlsZV9waWN0dXJlGAUgASgJUg5wcm9maWxlUGljdHVyZRIsChJpc19sYXplcnZhdWx0X3VzZXIYBiABKAhSEGlzTGF6ZXJ2YXVsdFVzZXISIQoMcGhvbmVfbnVtYmVyGAcgASgJUgtwaG9uZU51bWJlcg==');
 @$core.Deprecated('Use searchUsersByUsernameRequestDescriptor instead')
 const SearchUsersByUsernameRequest$json = const {
   '1': 'SearchUsersByUsernameRequest',
   '2': const [
     const {'1': 'query', '3': 1, '4': 1, '5': 9, '10': 'query'},
     const {'1': 'limit', '3': 2, '4': 1, '5': 5, '10': 'limit'},
+    const {'1': 'search_type', '3': 3, '4': 1, '5': 9, '10': 'searchType'},
   ],
 };
 
 /// Descriptor for `SearchUsersByUsernameRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List searchUsersByUsernameRequestDescriptor = $convert.base64Decode('ChxTZWFyY2hVc2Vyc0J5VXNlcm5hbWVSZXF1ZXN0EhQKBXF1ZXJ5GAEgASgJUgVxdWVyeRIUCgVsaW1pdBgCIAEoBVIFbGltaXQ=');
+final $typed_data.Uint8List searchUsersByUsernameRequestDescriptor = $convert.base64Decode('ChxTZWFyY2hVc2Vyc0J5VXNlcm5hbWVSZXF1ZXN0EhQKBXF1ZXJ5GAEgASgJUgVxdWVyeRIUCgVsaW1pdBgCIAEoBVIFbGltaXQSHwoLc2VhcmNoX3R5cGUYAyABKAlSCnNlYXJjaFR5cGU=');
 @$core.Deprecated('Use searchUsersByUsernameResponseDescriptor instead')
 const SearchUsersByUsernameResponse$json = const {
   '1': 'SearchUsersByUsernameResponse',

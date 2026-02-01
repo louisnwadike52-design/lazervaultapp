@@ -30,11 +30,15 @@ abstract class TaggedInvoiceRepository {
   /// Mark a tagged invoice as viewed
   Future<void> markAsViewed(String invoiceId);
 
-  /// Pay a tagged invoice quickly from account balance (one-click payment)
+  /// Pay a tagged invoice from account balance with security verification
   /// Returns the transaction details
   Future<Map<String, dynamic>> payTaggedInvoice({
     required String invoiceId,
     required String sourceAccountId,
+    required String pin,
+    required String verificationToken,
+    required String transactionId,
+    required String idempotencyKey,
   });
 
   /// Get overdue tagged invoices (incoming only)

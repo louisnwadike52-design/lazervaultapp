@@ -291,7 +291,7 @@ import 'package:lazervault/src/features/invoice/data/repositories/invoice_reposi
 import 'package:lazervault/src/features/invoice/domain/repositories/invoice_repository.dart';
 import 'package:lazervault/src/features/invoice/presentation/cubit/invoice_cubit.dart';
 import 'package:lazervault/src/features/invoice/presentation/view/invoice_list_screen.dart';
-import 'package:lazervault/src/features/invoice/presentation/view/create_invoice_screen.dart';
+import 'package:lazervault/src/features/invoice/presentation/view/create_invoice_carousel.dart';
 import 'package:lazervault/src/features/invoice/presentation/view/invoice_details_screen.dart';
 import 'package:lazervault/src/features/pay_invoice/presentation/view/pay_invoice_screen.dart';
 import 'package:lazervault/src/features/pay_invoice/presentation/cubit/pay_invoice_cubit.dart';
@@ -560,7 +560,7 @@ Future<void> init() async {
   // ===== MULTI-GATEWAY ARCHITECTURE =====
   // Register independent gateway channels for optimal API organization:
   // 1. Core Gateway (50070) - Auth, Accounts, Users, Support, Referrals, Notifications
-  // 2. Commerce Gateway (50071) - Utility Payments, GiftCards, Invoices
+  // 2. Commerce Gateway (50071) - Utility Payments, GiftCards, Statistics
   // 3. Investment Gateway (50072) - Stocks, Crypto, Portfolio, Analytics
   // 4. Transfer Gateway (50076) - Payments, Transfers
   // 5. Banking Gateway (50077) - Banking, Virtual Accounts, Bank Verification
@@ -572,7 +572,7 @@ Future<void> init() async {
     instanceName: 'coreChannel',
   );
 
-  // Commerce Gateway Channel - For utility payments, giftcards, invoices
+  // Commerce Gateway Channel - For utility payments, giftcards, statistics
   serviceLocator.registerLazySingleton<ClientChannel>(
     () => GrpcChannelFactory.createCommerceChannel(),
     instanceName: 'commerceChannel',
@@ -965,14 +965,15 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton(() => GetAccountSummariesUseCase(serviceLocator<IAccountSummaryRepository>()));
 
   // Blocs/Cubits
+  // WebSocket Balance Update Service (register before cubit that depends on it)
+  serviceLocator.registerLazySingleton(() => BalanceWebSocketService());
+
   serviceLocator.registerFactory<AccountCardsSummaryCubit>(() => AccountCardsSummaryCubit(
     serviceLocator<GetAccountSummariesUseCase>(),
     accountManager: serviceLocator<AccountManager>(),
     localeManager: serviceLocator<LocaleManager>(),
+    wsService: serviceLocator<BalanceWebSocketService>(),
   ));
-
-  // WebSocket Balance Update Service
-  serviceLocator.registerLazySingleton(() => BalanceWebSocketService());
   serviceLocator.registerLazySingleton(() => BalanceWebSocketCubit(serviceLocator<BalanceWebSocketService>()));
   serviceLocator.registerLazySingleton(() => BankingWebSocketService());
 
@@ -1332,11 +1333,24 @@ Future<void> init() async {
   ));
 
   // ================== Feature: Invoice ==================
+  // Invoice services now route through Banking Gateway (50077) instead of Commerce Gateway (50071)
+
+  // Create a dedicated GrpcClient for invoice services using the Banking Gateway channel
+  final invoiceGrpcClient = GrpcClient(
+    channel: serviceLocator<ClientChannel>(instanceName: 'bankingChannel'),
+    secureStorage: serviceLocator<FlutterSecureStorage>(),
+    callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
+  );
+  await invoiceGrpcClient.initialize();
+  serviceLocator.registerLazySingleton<GrpcClient>(
+    () => invoiceGrpcClient,
+    instanceName: 'invoiceGrpcClient',
+  );
 
   // Repositories - Using gRPC implementation for backend integration
   serviceLocator.registerLazySingleton<InvoiceRepository>(
     () => InvoiceRepositoryGrpcImpl(
-      grpcClient: serviceLocator<GrpcClient>(),
+      grpcClient: serviceLocator<GrpcClient>(instanceName: 'invoiceGrpcClient'),
       currentUserId: '', // User ID is extracted from auth token in grpcClient.callOptions
     ),
   );
@@ -1349,10 +1363,10 @@ Future<void> init() async {
 
   // ================== Feature: Tagged Invoice ==================
 
-  // Repositories - Using gRPC implementation for backend integration
+  // Repositories - Using gRPC implementation via Banking Gateway
   serviceLocator.registerLazySingleton<TaggedInvoiceRepository>(
     () => TaggedInvoiceRepositoryGrpcImpl(
-      grpcClient: serviceLocator<GrpcClient>(),
+      grpcClient: serviceLocator<GrpcClient>(instanceName: 'invoiceGrpcClient'),
     ),
   );
 
@@ -1483,7 +1497,7 @@ Future<void> init() async {
       ..registerFactory(() => SelectRecipientScreen())
       ..registerFactory(() => AddRecipientScreen())
       ..registerFactory(() => InvoiceListScreen())
-      ..registerFactory(() => CreateInvoiceScreen())
+      ..registerFactory(() => const CreateInvoiceCarousel())
       ..registerFactory(() => PayInvoiceScreen())
       ..registerFactoryParam<InvoiceDetailsScreen, String, void>(
           (invoiceId, _) => InvoiceDetailsScreen(invoiceId: invoiceId))
@@ -1813,7 +1827,7 @@ Future<void> init() async {
 
   // ================== Feature: Statistics ==================
 
-  // GrpcClient (for statistics and invoices) - Uses Commerce Gateway (50071)
+  // GrpcClient (for statistics, giftcards, etc.) - Uses Commerce Gateway (50071)
   // Now with automatic token rotation support via GrpcCallOptionsHelper
   final grpcClient = GrpcClient(
     channel: serviceLocator<ClientChannel>(instanceName: 'commerceChannel'),

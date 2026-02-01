@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import '../../../../account_cards_summary/cubit/account_cards_summary_cubit.dart';
+import '../../../../account_cards_summary/cubit/account_cards_summary_state.dart';
 import '../../cubit/create_invoice_cubit.dart';
 
 /// Screen 5: Review & Confirm
@@ -19,6 +21,33 @@ class _InvoiceReviewScreenState extends State<InvoiceReviewScreen>
     with TickerProviderStateMixin {
   late AnimationController _fadeController;
   late Animation<double> _fadeAnimation;
+  final ScrollController _scrollController = ScrollController();
+  bool _showScrollIndicator = false;
+
+  String get _currencySymbol {
+    try {
+      final state = context.read<AccountCardsSummaryCubit>().state;
+      if (state is AccountCardsSummaryLoaded && state.accountSummaries.isNotEmpty) {
+        return _getCurrencySymbol(state.accountSummaries.first.currency);
+      }
+    } catch (_) {}
+    return '\$';
+  }
+
+  String _getCurrencySymbol(String currency) {
+    switch (currency.toUpperCase()) {
+      case 'NGN': return '₦';
+      case 'GBP': return '£';
+      case 'EUR': return '€';
+      case 'ZAR': return 'R';
+      case 'CAD': return 'C\$';
+      case 'AUD': return 'A\$';
+      case 'INR': return '₹';
+      case 'JPY': return '¥';
+      case 'USD': return '\$';
+      default: return '₦';
+    }
+  }
 
   @override
   void initState() {
@@ -33,11 +62,44 @@ class _InvoiceReviewScreenState extends State<InvoiceReviewScreen>
     );
 
     _fadeController.forward();
+
+    _scrollController.addListener(_onScroll);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _checkScrollable());
+  }
+
+  void _onScroll() {
+    final isAtBottom = _scrollController.offset >=
+        _scrollController.position.maxScrollExtent - 20;
+    if (_showScrollIndicator == isAtBottom) {
+      setState(() {
+        _showScrollIndicator = !isAtBottom;
+      });
+    }
+  }
+
+  void _checkScrollable() {
+    if (!_scrollController.hasClients) return;
+    final isScrollable =
+        _scrollController.position.maxScrollExtent > 0;
+    if (isScrollable && !_showScrollIndicator) {
+      setState(() {
+        _showScrollIndicator = true;
+      });
+    }
+  }
+
+  void _scrollToBottom() {
+    _scrollController.animateTo(
+      _scrollController.position.maxScrollExtent,
+      duration: const Duration(milliseconds: 400),
+      curve: Curves.easeOut,
+    );
   }
 
   @override
   void dispose() {
     _fadeController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -49,29 +111,65 @@ class _InvoiceReviewScreenState extends State<InvoiceReviewScreen>
         builder: (context, state) {
           final cubit = context.read<CreateInvoiceCubit>();
 
-          return SingleChildScrollView(
-            padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildHeader(),
-                SizedBox(height: 32.h),
-                _buildBasicInfoCard(cubit),
-                SizedBox(height: 16.h),
-                _buildRecipientCard(cubit),
-                SizedBox(height: 16.h),
-                _buildPayerCard(cubit),
-                SizedBox(height: 16.h),
-                _buildItemsCard(cubit),
-                SizedBox(height: 16.h),
-                _buildTotalCard(cubit),
-                if (cubit.notes.isNotEmpty) ...[
-                  SizedBox(height: 16.h),
-                  _buildNotesCard(cubit),
-                ],
-                SizedBox(height: 24.h),
-              ],
-            ),
+          return Stack(
+            children: [
+              SingleChildScrollView(
+                controller: _scrollController,
+                padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildHeader(),
+                    SizedBox(height: 32.h),
+                    _buildBasicInfoCard(cubit),
+                    SizedBox(height: 16.h),
+                    _buildRecipientCard(cubit),
+                    SizedBox(height: 16.h),
+                    _buildPayerCard(cubit),
+                    SizedBox(height: 16.h),
+                    _buildItemsCard(cubit),
+                    SizedBox(height: 16.h),
+                    _buildTotalCard(cubit),
+                    if (cubit.notes.isNotEmpty) ...[
+                      SizedBox(height: 16.h),
+                      _buildNotesCard(cubit),
+                    ],
+                    SizedBox(height: 24.h),
+                  ],
+                ),
+              ),
+              if (_showScrollIndicator)
+                Positioned(
+                  bottom: 16.h,
+                  left: 0,
+                  right: 0,
+                  child: Center(
+                    child: GestureDetector(
+                      onTap: _scrollToBottom,
+                      child: Container(
+                        width: 40.w,
+                        height: 40.w,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF3B82F6).withValues(alpha: 0.9),
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.3),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Icon(
+                          Icons.keyboard_arrow_down,
+                          color: Colors.white,
+                          size: 24.sp,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
           );
         },
       ),
@@ -112,12 +210,15 @@ class _InvoiceReviewScreenState extends State<InvoiceReviewScreen>
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
-          width: 1.5,
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.3),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -157,12 +258,15 @@ class _InvoiceReviewScreenState extends State<InvoiceReviewScreen>
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
-          width: 1.5,
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.3),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -216,12 +320,15 @@ class _InvoiceReviewScreenState extends State<InvoiceReviewScreen>
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
-          width: 1.5,
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.3),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -235,7 +342,7 @@ class _InvoiceReviewScreenState extends State<InvoiceReviewScreen>
               ),
               SizedBox(width: 12.w),
               Text(
-                'Payer (You)',
+                'Payer',
                 style: GoogleFonts.inter(
                   fontSize: 18.sp,
                   fontWeight: FontWeight.w700,
@@ -261,8 +368,10 @@ class _InvoiceReviewScreenState extends State<InvoiceReviewScreen>
             _buildInfoRow('Company', cubit.payerCompany),
           if (cubit.payerCompany.isNotEmpty) SizedBox(height: 12.h),
           _buildInfoRow('Contact', cubit.payerContact),
-          SizedBox(height: 12.h),
-          _buildInfoRow('Email', cubit.payerEmail),
+          if (cubit.payerEmail.isNotEmpty) ...[
+            SizedBox(height: 12.h),
+            _buildInfoRow('Email', cubit.payerEmail),
+          ],
           if (cubit.payerPhone.isNotEmpty) ...[
             SizedBox(height: 12.h),
             _buildInfoRow('Phone', cubit.payerPhone),
@@ -287,12 +396,15 @@ class _InvoiceReviewScreenState extends State<InvoiceReviewScreen>
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
-          width: 1.5,
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.3),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -353,7 +465,7 @@ class _InvoiceReviewScreenState extends State<InvoiceReviewScreen>
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          '${item.quantity} × \$${item.unitPrice.toStringAsFixed(2)}',
+                          '${item.quantity} × $_currencySymbol${item.unitPrice.toStringAsFixed(2)}',
                           style: GoogleFonts.inter(
                             fontSize: 13.sp,
                             fontWeight: FontWeight.w500,
@@ -361,7 +473,7 @@ class _InvoiceReviewScreenState extends State<InvoiceReviewScreen>
                           ),
                         ),
                         Text(
-                          '\$${total.toStringAsFixed(2)}',
+                          '$_currencySymbol${total.toStringAsFixed(2)}',
                           style: GoogleFonts.inter(
                             fontSize: 14.sp,
                             fontWeight: FontWeight.w700,
@@ -417,7 +529,7 @@ class _InvoiceReviewScreenState extends State<InvoiceReviewScreen>
                 ),
               ),
               Text(
-                '\$${cubit.total.toStringAsFixed(2)}',
+                '$_currencySymbol${cubit.total.toStringAsFixed(2)}',
                 style: GoogleFonts.inter(
                   fontSize: 24.sp,
                   fontWeight: FontWeight.w700,
@@ -435,12 +547,15 @@ class _InvoiceReviewScreenState extends State<InvoiceReviewScreen>
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
-          width: 1.5,
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.3),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -519,7 +634,7 @@ class _InvoiceReviewScreenState extends State<InvoiceReviewScreen>
           ),
         ),
         Text(
-          '\$${amount.toStringAsFixed(2)}',
+          '$_currencySymbol${amount.toStringAsFixed(2)}',
           style: GoogleFonts.inter(
             fontSize: 15.sp,
             fontWeight: FontWeight.w600,

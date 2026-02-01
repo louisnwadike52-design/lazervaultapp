@@ -64,7 +64,7 @@ class RecipientRepositoryImpl implements IRecipientRepository {
 
   @override
   Future<Either<Failure, void>> toggleFavorite(
-      {required String recipientId, required String accessToken}) async {
+      {required String recipientId, required bool isFavorite, required String accessToken}) async {
     try {
       final request = grpc.UpdateRecipientRequest()
         ..recipientId = Int64.parseInt(recipientId);

@@ -715,6 +715,8 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
         return 'Pending';
       case InvoiceStatus.paid:
         return 'Paid';
+      case InvoiceStatus.partiallyPaid:
+        return 'Partially Paid';
       case InvoiceStatus.expired:
         return 'Expired';
       case InvoiceStatus.cancelled:

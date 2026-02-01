@@ -19,6 +19,7 @@ import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/src/features/widgets/common/back_navigator.dart';
 import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
+import 'package:uuid/uuid.dart';
 
 class InitiateSendFunds extends StatefulWidget {
   final RecipientModel? recipient;
@@ -961,7 +962,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                                   : () async {
                                       print("Dialog Button: Pressed!");
                                       // Generate unique transaction ID
-                                      final transactionId = 'transfer_${DateTime.now().millisecondsSinceEpoch}_${_recipient!.id}';
+                                      final transactionId = 'transfer_${const Uuid().v4()}';
 
                                       // Calculate amounts for PIN validation
                                       double transferAmountMajor = double.parse(amount) / 100.0;
@@ -1467,10 +1468,14 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
             errorMessage = 'Unable to connect to server. Please check your internet connection and try again.';
             errorColor = Colors.orange.withValues(alpha: 0.7);
             errorDuration = const Duration(seconds: 5);
-          } else if (lowerMessage.contains('auth') || lowerMessage.contains('token') || lowerMessage.contains('unauthorized')) {
+          } else if ((lowerMessage.contains('auth') || lowerMessage.contains('token') || lowerMessage.contains('unauthorized')) && !lowerMessage.contains('authorization key') && !lowerMessage.contains('provider') && !lowerMessage.contains('flutterwave')) {
             errorTitle = 'Session Expired';
             errorMessage = 'Your session has expired. Please log in again.';
             errorDuration = const Duration(seconds: 6);
+          } else if (lowerMessage.contains('authorization key') || lowerMessage.contains('provider') || lowerMessage.contains('flutterwave error')) {
+            errorTitle = 'Transfer Failed';
+            errorMessage = 'The payment provider encountered an error. Please try again later or contact support.';
+            errorDuration = const Duration(seconds: 5);
           } else if (lowerMessage.contains('recipient') || lowerMessage.contains('not found')) {
             errorTitle = 'Recipient Not Found';
             errorMessage = 'The recipient could not be found. Please verify the recipient details.';

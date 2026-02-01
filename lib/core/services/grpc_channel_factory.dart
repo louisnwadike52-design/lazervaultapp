@@ -5,10 +5,10 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 ///
 /// LazerVault uses independent API gateways with dual servers (HTTP + gRPC):
 /// 1. Core Gateway - gRPC: 50070, HTTP: 7878 (Auth, Accounts, Users, Support, Referrals)
-/// 2. Commerce Gateway - gRPC: 50071, HTTP: 8080 (Utility Payments, GiftCards, Invoices)
+/// 2. Commerce Gateway - gRPC: 50071, HTTP: 8080 (Utility Payments, GiftCards)
 /// 3. Investment Gateway - gRPC: 50072, HTTP: 9090 (Stocks, Crypto, Portfolio, Analytics)
 /// 4. Transfer Gateway - gRPC: 50076 (Payments, Transfers)
-/// 5. Banking Gateway - gRPC: 50077 (Banking, Virtual Accounts, Bank Verification)
+/// 5. Banking Gateway - gRPC: 50077 (Banking, Virtual Accounts, Bank Verification, Invoices)
 /// 6. Products Gateway - gRPC: 50078 (Group Accounts, AutoSave, Crowdfund)
 class GrpcChannelFactory {
   /// Creates Core Gateway gRPC channel (Auth, Accounts, Users, Deposits, Withdrawals, etc.)

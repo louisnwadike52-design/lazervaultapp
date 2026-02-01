@@ -170,7 +170,14 @@ class _TransferProcessingScreenState extends State<TransferProcessingScreen>
           _completeTransfer();
           break;
         case 'failed':
-          _handleTransferFailure(event.narration ?? 'Transfer failed');
+          _handleTransferFailure(
+            event.narration ?? 'Transfer failed. Your funds have been returned to your account.',
+          );
+          break;
+        case 'reversed':
+          _handleTransferFailure(
+            'Transfer was reversed by the bank. Your funds have been returned to your account.',
+          );
           break;
       }
     }
@@ -178,6 +185,14 @@ class _TransferProcessingScreenState extends State<TransferProcessingScreen>
 
   /// Simulate processing steps (fallback when WebSocket doesn't send updates)
   void _startProcessingSimulation() {
+    // Check initial status from API response
+    final apiStatus = (transferDetails['status'] as String?)?.toLowerCase();
+
+    // For "pending" status (non-blocking external transfer), start at processing step
+    if (apiStatus == 'pending' || apiStatus == 'processing') {
+      _updateStatus(TransferProcessingStatus.processing, 'Transfer submitted, processing with bank...');
+    }
+
     // Set a timeout - if no real update received, simulate progress
     _timeoutTimer = Timer(const Duration(seconds: 1), () {
       if (_currentStatus == TransferProcessingStatus.initiated && mounted) {
@@ -193,14 +208,23 @@ class _TransferProcessingScreenState extends State<TransferProcessingScreen>
     });
 
     // If no real completion received, complete after delay
-    Future.delayed(const Duration(milliseconds: 3500), () {
+    // For pending/processing external transfers, wait longer for webhook
+    final completionDelay = (apiStatus == 'pending' || apiStatus == 'processing')
+        ? const Duration(seconds: 8)
+        : const Duration(milliseconds: 3500);
+
+    Future.delayed(completionDelay, () {
       if (!_isCompleted && mounted) {
-        // Check if transfer was already successful from the API response
         final status = transferDetails['status'] as String?;
         if (status?.toLowerCase() == 'completed' ||
             status?.toLowerCase() == 'success' ||
             transferDetails['transferId'] != null) {
           _updateStatus(TransferProcessingStatus.completed, 'Transfer successful!');
+          _completeTransfer();
+        } else if (status?.toLowerCase() == 'pending' || status?.toLowerCase() == 'processing') {
+          // External transfer still pending - show completion with note
+          // The webhook will update the actual status via WebSocket
+          _updateStatus(TransferProcessingStatus.completed, 'Transfer submitted successfully!');
           _completeTransfer();
         }
       }

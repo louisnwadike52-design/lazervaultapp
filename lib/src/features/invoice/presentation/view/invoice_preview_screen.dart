@@ -5,13 +5,16 @@ import 'package:get/get.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:path_provider/path_provider.dart';
+import 'dart:async';
 import 'dart:io';
 import 'dart:ui' as ui;
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:file_picker/file_picker.dart';
 
 import '../../../../../core/theme/invoice_theme_colors.dart';
+import '../../../../../core/types/app_routes.dart';
 import '../../domain/entities/invoice_entity.dart';
 import '../../domain/repositories/invoice_repository.dart';
 import '../../services/invoice_pdf_service.dart';
@@ -19,14 +22,57 @@ import '../../services/invoice_qr_service.dart';
 import '../../../../../core/services/injection_container.dart';
 import '../../../contacts/data/repositories/contact_sync_repository.dart';
 import '../../../authentication/cubit/authentication_cubit.dart';
+import '../../../profile/cubit/profile_cubit.dart';
 
-class InvoicePreviewScreen extends StatelessWidget {
+String _getCurrencySymbolFromCode(String code) {
+  switch (code.toUpperCase()) {
+    case 'NGN': return '₦';
+    case 'GBP': return '£';
+    case 'EUR': return '€';
+    case 'ZAR': return 'R';
+    case 'CAD': return 'C\$';
+    case 'AUD': return 'A\$';
+    case 'INR': return '₹';
+    case 'JPY': return '¥';
+    case 'USD': return '\$';
+    default: return '₦';
+  }
+}
+
+class InvoicePreviewScreen extends StatefulWidget {
   final Invoice invoice;
+  final bool showTaggedUsers;
 
   const InvoicePreviewScreen({
     super.key,
     required this.invoice,
+    this.showTaggedUsers = true,
   });
+
+  @override
+  State<InvoicePreviewScreen> createState() => _InvoicePreviewScreenState();
+}
+
+class _InvoicePreviewScreenState extends State<InvoicePreviewScreen> {
+  late Invoice invoice;
+
+  @override
+  void initState() {
+    super.initState();
+    invoice = widget.invoice;
+  }
+
+  Future<void> _refreshInvoice() async {
+    try {
+      final repo = serviceLocator<InvoiceRepository>();
+      final updated = await repo.getInvoiceById(invoice.id);
+      if (updated != null && mounted) {
+        setState(() {
+          invoice = updated;
+        });
+      }
+    } catch (_) {}
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +85,11 @@ class InvoicePreviewScreen extends StatelessWidget {
             Expanded(
               child: SingleChildScrollView(
                 padding: EdgeInsets.symmetric(horizontal: 20.w),
-                child: _buildInvoicePreview(),
+                child: Column(
+                  children: [
+                    _buildInvoicePreview(),
+                  ],
+                ),
               ),
             ),
             _buildActions(context),
@@ -96,22 +146,33 @@ class InvoicePreviewScreen extends StatelessWidget {
               ],
             ),
           ),
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-            decoration: BoxDecoration(
-              color: InvoiceThemeColors.successGreen.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(20.r),
-              border: Border.all(color: InvoiceThemeColors.successGreen),
-            ),
-            child: Text(
-              invoice.statusDisplayName,
-              style: GoogleFonts.inter(
-                color: InvoiceThemeColors.successGreen,
-                fontSize: 12.sp,
-                fontWeight: FontWeight.w600,
+          Builder(builder: (context) {
+            final statusColor = invoice.isPartiallyPaid
+                ? const Color(0xFFF59E0B)
+                : invoice.status == InvoiceStatus.paid
+                    ? InvoiceThemeColors.successGreen
+                    : invoice.status == InvoiceStatus.pending
+                        ? const Color(0xFFFB923C)
+                        : invoice.status == InvoiceStatus.cancelled || invoice.status == InvoiceStatus.expired
+                            ? const Color(0xFFEF4444)
+                            : InvoiceThemeColors.successGreen;
+            return Container(
+              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+              decoration: BoxDecoration(
+                color: statusColor.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(20.r),
+                border: Border.all(color: statusColor),
               ),
-            ),
-          ),
+              child: Text(
+                invoice.statusDisplayName,
+                style: GoogleFonts.inter(
+                  color: statusColor,
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            );
+          }),
         ],
       ),
     );
@@ -147,6 +208,95 @@ class InvoicePreviewScreen extends StatelessWidget {
             SizedBox(height: 32.h),
             _buildNotesSection(),
           ],
+          if (widget.showTaggedUsers && invoice.isPartiallyPaid && invoice.taggedUsers != null && invoice.taggedUsers!.isNotEmpty) ...[
+            SizedBox(height: 32.h),
+            _buildPreviewPaymentProgress(),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPreviewPaymentProgress() {
+    final users = invoice.taggedUsers!;
+    final total = users.length;
+    final paid = invoice.paidUsersCount;
+    final progress = total > 0 ? paid / total : 0.0;
+    final currencySymbol = _getCurrencySymbolFromCode(invoice.currency);
+    final paidUsers = users.where((u) => u.status == 'paid').toList();
+    final unpaidUsers = users.where((u) => u.status != 'paid').toList();
+
+    return Container(
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFEF3C7),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: const Color(0xFFF59E0B).withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.pie_chart, color: const Color(0xFFF59E0B), size: 18.sp),
+              SizedBox(width: 8.w),
+              Text(
+                'Payment Progress',
+                style: GoogleFonts.inter(
+                  color: const Color(0xFF92400E),
+                  fontSize: 15.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 12.h),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                '$currencySymbol${invoice.paidAmount.toStringAsFixed(2)} of $currencySymbol${invoice.totalAmount.toStringAsFixed(2)}',
+                style: GoogleFonts.inter(color: const Color(0xFF92400E), fontSize: 13.sp, fontWeight: FontWeight.w600),
+              ),
+              Text(
+                '$paid / $total paid',
+                style: GoogleFonts.inter(color: const Color(0xFF92400E), fontSize: 13.sp, fontWeight: FontWeight.w500),
+              ),
+            ],
+          ),
+          SizedBox(height: 8.h),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4.r),
+            child: LinearProgressIndicator(
+              value: progress,
+              backgroundColor: const Color(0xFFF59E0B).withValues(alpha: 0.2),
+              valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFF59E0B)),
+              minHeight: 8.h,
+            ),
+          ),
+          SizedBox(height: 12.h),
+          // Paid users
+          ...paidUsers.map((user) => Padding(
+            padding: EdgeInsets.only(bottom: 4.h),
+            child: Row(
+              children: [
+                Icon(Icons.check_circle, color: const Color(0xFF10B981), size: 13.sp),
+                SizedBox(width: 6.w),
+                Text(user.displayName, style: GoogleFonts.inter(color: const Color(0xFF111827), fontSize: 12.sp)),
+              ],
+            ),
+          )),
+          // Unpaid users
+          ...unpaidUsers.map((user) => Padding(
+            padding: EdgeInsets.only(bottom: 4.h),
+            child: Row(
+              children: [
+                Icon(Icons.radio_button_unchecked, color: const Color(0xFFFB923C), size: 13.sp),
+                SizedBox(width: 6.w),
+                Text(user.displayName, style: GoogleFonts.inter(color: const Color(0xFF6B7280), fontSize: 12.sp)),
+              ],
+            ),
+          )),
         ],
       ),
     );
@@ -356,9 +506,6 @@ class InvoicePreviewScreen extends StatelessWidget {
             child: _buildDetailItem('Type', invoice.typeDisplayName),
           ),
           Expanded(
-            child: _buildDetailItem('Status', invoice.statusDisplayName),
-          ),
-          Expanded(
             child: _buildDetailItem('Currency', invoice.currency),
           ),
         ],
@@ -523,7 +670,7 @@ class InvoicePreviewScreen extends StatelessWidget {
                       ),
                       Expanded(
                         child: Text(
-                          '\$${item.unitPrice.toStringAsFixed(2)}',
+                          '${_getCurrencySymbolFromCode(invoice.currency)}${item.unitPrice.toStringAsFixed(2)}',
                           style: GoogleFonts.inter(
                             color: const Color(0xFF111827),
                             fontSize: 14.sp,
@@ -534,7 +681,7 @@ class InvoicePreviewScreen extends StatelessWidget {
                       ),
                       Expanded(
                         child: Text(
-                          '\$${item.totalPrice.toStringAsFixed(2)}',
+                          '${_getCurrencySymbolFromCode(invoice.currency)}${item.totalPrice.toStringAsFixed(2)}',
                           style: GoogleFonts.inter(
                             color: const Color(0xFF111827),
                             fontSize: 14.sp,
@@ -580,7 +727,7 @@ class InvoicePreviewScreen extends StatelessWidget {
                 ),
               ),
               Text(
-                '\$${invoice.totalAmount.toStringAsFixed(2)}',
+                '${_getCurrencySymbolFromCode(invoice.currency)}${invoice.totalAmount.toStringAsFixed(2)}',
                 style: GoogleFonts.inter(
                   color: InvoiceThemeColors.infoBlue,
                   fontSize: 24.sp,
@@ -609,7 +756,7 @@ class InvoicePreviewScreen extends StatelessWidget {
             ),
           ),
           Text(
-            amount < 0 ? '-\$${(-amount).toStringAsFixed(2)}' : '\$${amount.toStringAsFixed(2)}',
+            amount < 0 ? '-${_getCurrencySymbolFromCode(invoice.currency)}${(-amount).toStringAsFixed(2)}' : '${_getCurrencySymbolFromCode(invoice.currency)}${amount.toStringAsFixed(2)}',
             style: GoogleFonts.inter(
               color: const Color(0xFF111827),
               fontSize: 16.sp,
@@ -667,26 +814,85 @@ class InvoicePreviewScreen extends StatelessWidget {
       ),
       child: Column(
         children: [
-          // Tag User button row
+          // View Payment Receipt CTA for paid invoices
+          if (invoice.status == InvoiceStatus.paid && invoice.paymentReference != null)
+            Container(
+              width: double.infinity,
+              height: 48.h,
+              margin: EdgeInsets.only(bottom: 12.h),
+              child: ElevatedButton.icon(
+                onPressed: () => Get.toNamed(AppRoutes.invoicePaymentReceipt, arguments: {
+                  'invoice_id': invoice.id,
+                  'payment_reference': invoice.paymentReference,
+                  'amount': invoice.totalAmount > 0 ? invoice.totalAmount : invoice.amount,
+                  'currency': invoice.currency,
+                  'status': 'completed',
+                }),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF10B981).withValues(alpha: 0.15),
+                  shadowColor: Colors.transparent,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                ),
+                icon: Icon(Icons.receipt_long, color: const Color(0xFF10B981), size: 20.sp),
+                label: Text(
+                  'View Payment Receipt',
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF10B981),
+                    fontSize: 15.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+          // Tagged users CTA + Tag User button (only for creator view)
+          if (widget.showTaggedUsers && invoice.taggedUsers != null && invoice.taggedUsers!.isNotEmpty)
+            GestureDetector(
+              onTap: () => _showTaggedUsersDetailSheet(context),
+              child: Container(
+                width: double.infinity,
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                margin: EdgeInsets.only(bottom: 12.h),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.people, color: Colors.white.withValues(alpha: 0.9), size: 20.sp),
+                    SizedBox(width: 10.w),
+                    Text(
+                      '${invoice.taggedUsers!.length} Tagged User${invoice.taggedUsers!.length == 1 ? '' : 's'}',
+                      style: GoogleFonts.inter(
+                        color: Colors.white.withValues(alpha: 0.9),
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const Spacer(),
+                    Text(
+                      'View',
+                      style: GoogleFonts.inter(
+                        color: Colors.white.withValues(alpha: 0.7),
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    SizedBox(width: 2.w),
+                    Icon(Icons.chevron_right, color: Colors.white.withValues(alpha: 0.7), size: 18.sp),
+                  ],
+                ),
+              ),
+            ),
+          if (widget.showTaggedUsers)
           Container(
             width: double.infinity,
             height: 52.h,
-            decoration: BoxDecoration(
-              color: Colors.transparent,
-              borderRadius: BorderRadius.circular(12.r),
-              boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
-            ),
             child: ElevatedButton.icon(
               onPressed: () => _showTagUserBottomSheet(context),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.transparent,
+                backgroundColor: Colors.white.withValues(alpha: 0.1),
                 shadowColor: Colors.transparent,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12.r),
@@ -694,13 +900,13 @@ class InvoicePreviewScreen extends StatelessWidget {
               ),
               icon: Icon(
                 Icons.person_add_outlined,
-                color: InvoiceThemeColors.successGreen,
+                color: Colors.white.withValues(alpha: 0.9),
                 size: 20.sp,
               ),
               label: Text(
                 'Tag User for Payment',
                 style: GoogleFonts.inter(
-                  color: InvoiceThemeColors.successGreen,
+                  color: Colors.white.withValues(alpha: 0.9),
                   fontSize: 16.sp,
                   fontWeight: FontWeight.w600,
                 ),
@@ -709,133 +915,62 @@ class InvoicePreviewScreen extends StatelessWidget {
           ),
           SizedBox(height: 16.w),
           
-          // QR Code, Download, and Share buttons row
+          // QR Code, Download, and Share icon-only buttons row
           Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Invoice QR button - transparent with orange border
-              Expanded(
-                child: Container(
-                  height: 52.h,
-                  decoration: BoxDecoration(
-                    color: Colors.transparent,
-                    borderRadius: BorderRadius.circular(12.r),
-                    boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
-                  ),
-                  child: ElevatedButton.icon(
-                    onPressed: () => _showQRCode(context, 'invoice'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.transparent,
-                      shadowColor: Colors.transparent,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12.r),
-                      ),
-                    ),
-                    icon: Icon(
-                      Icons.qr_code,
-                      color: const Color(0xFFEA580C),
-                      size: 18.sp,
-                    ),
-                    label: Text(
-                      'QR Code',
-                      style: GoogleFonts.inter(
-                        color: const Color(0xFFEA580C),
-                        fontSize: 12.sp,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+              // QR Code button
+              Container(
+                width: 52.w,
+                height: 52.w,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEA580C).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(16.r),
+                ),
+                child: IconButton(
+                  onPressed: () => _showQRCode(context, 'invoice'),
+                  icon: Icon(
+                    Icons.qr_code,
+                    color: const Color(0xFFEA580C),
+                    size: 22.sp,
                   ),
                 ),
               ),
-              SizedBox(width: 8.w),
-              
+              SizedBox(width: 16.w),
+
               // Download button
-              Expanded(
-                child: Container(
-                  height: 52.h,
-                  decoration: BoxDecoration(
-                    color: Colors.transparent,
-                    borderRadius: BorderRadius.circular(12.r),
-                    boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
-                  ),
-                  child: ElevatedButton.icon(
-                    onPressed: () => _downloadInvoice(context),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.transparent,
-                      shadowColor: Colors.transparent,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12.r),
-                      ),
-                    ),
-                    icon: Icon(
-                      Icons.download_outlined,
-                      color: const Color(0xFF8B5CF6),
-                      size: 18.sp,
-                    ),
-                    label: Text(
-                      'Download',
-                      style: GoogleFonts.inter(
-                        color: const Color(0xFF8B5CF6),
-                        fontSize: 12.sp,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+              Container(
+                width: 52.w,
+                height: 52.w,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF8B5CF6).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(16.r),
+                ),
+                child: IconButton(
+                  onPressed: () => _downloadInvoice(context),
+                  icon: Icon(
+                    Icons.download_outlined,
+                    color: const Color(0xFF8B5CF6),
+                    size: 22.sp,
                   ),
                 ),
               ),
-              SizedBox(width: 8.w),
-              
+              SizedBox(width: 16.w),
+
               // Share button
-              Expanded(
-                child: Container(
-                  height: 52.h,
-                  decoration: BoxDecoration(
-                    color: Colors.transparent,
-                    borderRadius: BorderRadius.circular(12.r),
-                    boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
-                  ),
-                  child: ElevatedButton.icon(
-                    onPressed: () => _shareInvoice(context),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.transparent,
-                      shadowColor: Colors.transparent,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12.r),
-                      ),
-                    ),
-                    icon: Icon(
-                      Icons.share_outlined,
-                      color: InvoiceThemeColors.infoBlue,
-                      size: 18.sp,
-                    ),
-                    label: Text(
-                      'Share',
-                      style: GoogleFonts.inter(
-                        color: InvoiceThemeColors.infoBlue,
-                        fontSize: 12.sp,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+              Container(
+                width: 52.w,
+                height: 52.w,
+                decoration: BoxDecoration(
+                  color: InvoiceThemeColors.infoBlue.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(16.r),
+                ),
+                child: IconButton(
+                  onPressed: () => _shareInvoice(context),
+                  icon: Icon(
+                    Icons.share_outlined,
+                    color: InvoiceThemeColors.infoBlue,
+                    size: 22.sp,
                   ),
                 ),
               ),
@@ -846,13 +981,252 @@ class InvoicePreviewScreen extends StatelessWidget {
     );
   }
 
-  void _showTagUserBottomSheet(BuildContext context) {
+  void _showTaggedUsersDetailSheet(BuildContext context) {
+    final users = invoice.taggedUsers!;
     showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) => Container(
+        constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.65),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF8F9FA),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              margin: EdgeInsets.only(top: 12.h),
+              width: 40.w,
+              height: 4.h,
+              decoration: BoxDecoration(
+                color: const Color(0xFFD1D5DB),
+                borderRadius: BorderRadius.circular(2.r),
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.all(20.w),
+              child: Row(
+                children: [
+                  Icon(Icons.people, color: InvoiceThemeColors.primaryPurple, size: 20.sp),
+                  SizedBox(width: 10.w),
+                  Text(
+                    'Tagged Users (${users.length})',
+                    style: GoogleFonts.inter(color: const Color(0xFF111827), fontSize: 16.sp, fontWeight: FontWeight.w600),
+                  ),
+                  const Spacer(),
+                  GestureDetector(
+                    onTap: () => Navigator.pop(ctx),
+                    child: Icon(Icons.close, color: const Color(0xFF6B7280), size: 20.sp),
+                  ),
+                ],
+              ),
+            ),
+            Divider(color: const Color(0xFFE5E7EB), height: 1),
+            Flexible(
+              child: ListView.builder(
+                shrinkWrap: true,
+                padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
+                itemCount: users.length,
+                itemBuilder: (context, index) {
+                  final user = users[index];
+                  final statusColor = user.status == 'paid'
+                      ? const Color(0xFF10B981)
+                      : user.status == 'viewed'
+                          ? const Color(0xFFFB923C)
+                          : const Color(0xFF6B7280);
+                  final statusLabel = user.status == 'paid' ? 'Paid' : user.status == 'viewed' ? 'Viewed' : 'Pending';
+                  final typeColor = user.isPlatformUser
+                      ? InvoiceThemeColors.primaryPurple
+                      : user.tagType == 'email'
+                          ? const Color(0xFF3B82F6)
+                          : const Color(0xFF10B981);
+
+                  return GestureDetector(
+                    onTap: user.isPlatformUser ? () {
+                      Navigator.pop(ctx);
+                      _showUserProfileModal(context, user);
+                    } : null,
+                    child: Container(
+                      margin: EdgeInsets.only(bottom: 8.h),
+                      padding: EdgeInsets.all(14.w),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12.r),
+                        boxShadow: [
+                          BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 4, offset: const Offset(0, 1)),
+                        ],
+                      ),
+                      child: Column(
+                        children: [
+                          Row(
+                            children: [
+                              CircleAvatar(
+                                radius: 20.r,
+                                backgroundColor: typeColor.withValues(alpha: 0.1),
+                                backgroundImage: user.profilePicture != null ? NetworkImage(user.profilePicture!) : null,
+                                child: user.profilePicture == null
+                                    ? user.isPlatformUser
+                                        ? Text(user.displayName.isNotEmpty ? user.displayName[0].toUpperCase() : '?',
+                                            style: GoogleFonts.inter(color: typeColor, fontSize: 16.sp, fontWeight: FontWeight.w700))
+                                        : Icon(user.tagType == 'email' ? Icons.email_outlined : Icons.sms_outlined, color: typeColor, size: 18.sp)
+                                    : null,
+                              ),
+                              SizedBox(width: 12.w),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Flexible(child: Text(user.displayName, style: GoogleFonts.inter(color: const Color(0xFF111827), fontSize: 14.sp, fontWeight: FontWeight.w600), overflow: TextOverflow.ellipsis)),
+                                        if (user.isPlatformUser) ...[
+                                          SizedBox(width: 4.w),
+                                          Icon(Icons.open_in_new, color: InvoiceThemeColors.primaryPurple, size: 12.sp),
+                                        ],
+                                      ],
+                                    ),
+                                    SizedBox(height: 2.h),
+                                    Row(
+                                      children: [
+                                        Container(
+                                          padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                                          decoration: BoxDecoration(color: typeColor.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(4.r)),
+                                          child: Text(user.tagMethodLabel, style: GoogleFonts.inter(color: typeColor, fontSize: 10.sp, fontWeight: FontWeight.w600)),
+                                        ),
+                                        if (user.username.isNotEmpty) ...[
+                                          SizedBox(width: 6.w),
+                                          Flexible(child: Text('@${user.username}', style: GoogleFonts.inter(color: const Color(0xFF6B7280), fontSize: 12.sp), overflow: TextOverflow.ellipsis)),
+                                        ],
+                                        if (user.tagValue != null && user.tagValue!.isNotEmpty) ...[
+                                          SizedBox(width: 6.w),
+                                          Flexible(child: Text(user.tagValue!, style: GoogleFonts.inter(color: const Color(0xFF6B7280), fontSize: 12.sp), overflow: TextOverflow.ellipsis)),
+                                        ],
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Container(
+                                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                                decoration: BoxDecoration(color: statusColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8.r)),
+                                child: Text(statusLabel, style: GoogleFonts.inter(color: statusColor, fontSize: 11.sp, fontWeight: FontWeight.w600)),
+                              ),
+                            ],
+                          ),
+                          if (user.taggedAt != null) ...[
+                            SizedBox(height: 8.h),
+                            Row(
+                              children: [
+                                SizedBox(width: 52.w),
+                                Icon(Icons.schedule, color: const Color(0xFF9CA3AF), size: 12.sp),
+                                SizedBox(width: 4.w),
+                                Text(_formatRelativeDate(user.taggedAt!), style: GoogleFonts.inter(color: const Color(0xFF9CA3AF), fontSize: 11.sp)),
+                                if (user.paidAt != null) ...[
+                                  SizedBox(width: 12.w),
+                                  Icon(Icons.check_circle_outline, color: const Color(0xFF10B981), size: 12.sp),
+                                  SizedBox(width: 4.w),
+                                  Text('Paid ${_formatRelativeDate(user.paidAt!)}', style: GoogleFonts.inter(color: const Color(0xFF10B981), fontSize: 11.sp)),
+                                ] else if (user.viewedAt != null) ...[
+                                  SizedBox(width: 12.w),
+                                  Icon(Icons.visibility_outlined, color: const Color(0xFFFB923C), size: 12.sp),
+                                  SizedBox(width: 4.w),
+                                  Text('Viewed ${_formatRelativeDate(user.viewedAt!)}', style: GoogleFonts.inter(color: const Color(0xFFFB923C), fontSize: 11.sp)),
+                                ],
+                              ],
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showUserProfileModal(BuildContext context, TaggedUserInfo user) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
+        child: Padding(
+          padding: EdgeInsets.all(24.w),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircleAvatar(
+                radius: 40.r,
+                backgroundColor: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.1),
+                backgroundImage: user.profilePicture != null ? NetworkImage(user.profilePicture!) : null,
+                child: user.profilePicture == null
+                    ? Text(user.displayName.isNotEmpty ? user.displayName[0].toUpperCase() : '?',
+                        style: GoogleFonts.inter(color: InvoiceThemeColors.primaryPurple, fontSize: 32.sp, fontWeight: FontWeight.w700))
+                    : null,
+              ),
+              SizedBox(height: 16.h),
+              Text(user.displayName, style: GoogleFonts.inter(color: const Color(0xFF111827), fontSize: 20.sp, fontWeight: FontWeight.w700), textAlign: TextAlign.center),
+              if (user.username.isNotEmpty) ...[
+                SizedBox(height: 4.h),
+                Text('@${user.username}', style: GoogleFonts.inter(color: const Color(0xFF6B7280), fontSize: 14.sp, fontWeight: FontWeight.w500)),
+              ],
+              SizedBox(height: 16.h),
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                decoration: BoxDecoration(color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(20.r)),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.verified, color: InvoiceThemeColors.primaryPurple, size: 14.sp),
+                    SizedBox(width: 4.w),
+                    Text('LazerVault User', style: GoogleFonts.inter(color: InvoiceThemeColors.primaryPurple, fontSize: 12.sp, fontWeight: FontWeight.w600)),
+                  ],
+                ),
+              ),
+              SizedBox(height: 20.h),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: InvoiceThemeColors.primaryPurple,
+                    foregroundColor: Colors.white,
+                    padding: EdgeInsets.symmetric(vertical: 12.h),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                  ),
+                  child: Text('Close', style: GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.w600)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  String _formatRelativeDate(DateTime date) {
+    final diff = DateTime.now().difference(date);
+    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
+    if (diff.inHours < 24) return '${diff.inHours}h ago';
+    if (diff.inDays < 7) return '${diff.inDays}d ago';
+    return '${date.day}/${date.month}/${date.year}';
+  }
+
+  void _showTagUserBottomSheet(BuildContext context) async {
+    await showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => _TagUserBottomSheet(invoice: invoice),
     );
+    // Refresh invoice to get updated tagged users
+    _refreshInvoice();
   }
 
   void _downloadInvoice(BuildContext context) async {
@@ -878,18 +1252,35 @@ class InvoicePreviewScreen extends StatelessWidget {
           backgroundColor: InvoiceThemeColors.infoBlue,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
           behavior: SnackBarBehavior.floating,
-          duration: Duration(seconds: 2),
+          duration: Duration(seconds: 10),
         ),
       );
 
-      await InvoicePdfService.downloadInvoice(invoice);
-      
-      // Hide loading and show success
+      // Generate the PDF file
+      final pdfFile = await InvoicePdfService.generateInvoicePdf(invoice);
+
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
+
+      // Let user pick save location
+      final fileName = 'invoice_${invoice.id.substring(0, 8)}.pdf';
+      final result = await FilePicker.platform.saveFile(
+        dialogTitle: 'Save Invoice PDF',
+        fileName: fileName,
+        type: FileType.custom,
+        allowedExtensions: ['pdf'],
+      );
+
+      if (result == null) return; // User cancelled
+
+      // Copy file to chosen location
+      final savedFile = File(result);
+      await pdfFile.copy(savedFile.path);
+
+      if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Invoice PDF downloaded successfully!'),
+          content: Text('Invoice PDF saved successfully'),
           backgroundColor: InvoiceThemeColors.successGreen,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
           behavior: SnackBarBehavior.floating,
@@ -1075,7 +1466,7 @@ class InvoicePreviewScreen extends StatelessWidget {
                         textAlign: TextAlign.center,
                       ),
                       Text(
-                        '\$${invoice.totalAmount.toStringAsFixed(2)}',
+                        '${_getCurrencySymbolFromCode(invoice.currency)}${invoice.totalAmount.toStringAsFixed(2)}',
                         style: GoogleFonts.inter(
                           color: Colors.black87,
                           fontSize: 12.sp,
@@ -1130,7 +1521,7 @@ class InvoicePreviewScreen extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          '\$${invoice.totalAmount.toStringAsFixed(2)}',
+                          '${_getCurrencySymbolFromCode(invoice.currency)}${invoice.totalAmount.toStringAsFixed(2)}',
                           style: GoogleFonts.inter(
                             color: accentColor,
                             fontSize: 14.sp,
@@ -1255,7 +1646,7 @@ class InvoicePreviewScreen extends StatelessWidget {
       // Share the QR code image
       await SharePlus.instance.share(ShareParams(
         files: [XFile(file.path)],
-        text: '$title - ${invoice.title}\nAmount: \$${invoice.totalAmount.toStringAsFixed(2)}\nGenerated by LazerVault',
+        text: '$title - ${invoice.title}\nAmount: ${_getCurrencySymbolFromCode(invoice.currency)}${invoice.totalAmount.toStringAsFixed(2)}',
         subject: '$title - ${invoice.title}',
       ));
 
@@ -1308,6 +1699,7 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
   final Set<String> _selectedUserIds = {};
   final Set<String> _selectedEmails = {};
   final Set<String> _selectedPhones = {};
+  Set<String> _alreadyTaggedUserIds = {};
 
   List<InvoiceUser> _searchResults = [];
   List<Map<String, dynamic>> _contacts = [];
@@ -1315,6 +1707,7 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
   bool _loadingSearch = false;
   bool _loadingContacts = false;
   int _currentTab = 0;
+  Timer? _debounceTimer;
 
   @override
   void initState() {
@@ -1327,19 +1720,25 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
       setState(() {
         _currentTab = _tabController.index;
         if (_currentTab == 2) {
-          _loadContacts();
+          _requestContactsPermission();
         }
       });
     });
+
+    // Fetch already-tagged user IDs to prevent double-tagging
+    _fetchAlreadyTaggedUsers();
 
     // Add search listener with debounce
     _searchController.addListener(_onSearchChanged);
   }
 
   void _onSearchChanged() {
+    _debounceTimer?.cancel();
     final query = _searchController.text.trim();
     if (query.length >= 2) {
-      _searchUsers(query);
+      _debounceTimer = Timer(const Duration(milliseconds: 500), () {
+        _searchUsers(query);
+      });
     } else {
       setState(() {
         _searchResults = [];
@@ -1347,8 +1746,33 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
     }
   }
 
+  Future<void> _fetchAlreadyTaggedUsers() async {
+    try {
+      final result = await _invoiceRepository.getInvoiceById(widget.invoice.id);
+      if (result != null && result.taggedUsers != null) {
+        setState(() {
+          _alreadyTaggedUserIds = result.taggedUsers!
+              .map((u) => u.userId)
+              .where((id) => id.isNotEmpty)
+              .toSet();
+        });
+      }
+    } catch (e) {
+      // Also try from the widget's invoice if it has tagged users
+      if (widget.invoice.taggedUsers != null) {
+        setState(() {
+          _alreadyTaggedUserIds = widget.invoice.taggedUsers!
+              .map((u) => u.userId)
+              .where((id) => id.isNotEmpty)
+              .toSet();
+        });
+      }
+    }
+  }
+
   @override
   void dispose() {
+    _debounceTimer?.cancel();
     _searchController.dispose();
     _phoneController.dispose();
     _emailController.dispose();
@@ -1410,8 +1834,8 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      InvoiceThemeColors.successGreen.withValues(alpha: 0.2),
-                      const Color(0xFF059669).withValues(alpha: 0.2),
+                      InvoiceThemeColors.infoBlue.withValues(alpha: 0.2),
+                      const Color(0xFF1D4ED8).withValues(alpha: 0.2),
                     ],
                   ),
                   borderRadius: BorderRadius.circular(12.r),
@@ -1426,7 +1850,7 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
                 ),
                 child: Icon(
                   Icons.group_add,
-                  color: InvoiceThemeColors.successGreen,
+                  color: InvoiceThemeColors.infoBlue,
                   size: 24.sp,
                 ),
               ),
@@ -1476,7 +1900,7 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
             Container(
               padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
               decoration: BoxDecoration(
-                color: InvoiceThemeColors.successGreen.withValues(alpha: 0.1),
+                color: InvoiceThemeColors.infoBlue.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(20.r),
                 boxShadow: [
           BoxShadow(
@@ -1490,7 +1914,7 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
               child: Text(
                 '${_selectedUserIds.length} user${_selectedUserIds.length == 1 ? '' : 's'} selected',
                 style: GoogleFonts.inter(
-                  color: InvoiceThemeColors.successGreen,
+                  color: InvoiceThemeColors.infoBlue,
                   fontSize: 14.sp,
                   fontWeight: FontWeight.w600,
                 ),
@@ -1522,8 +1946,8 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
         indicator: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              InvoiceThemeColors.successGreen,
-              const Color(0xFF059669),
+              InvoiceThemeColors.infoBlue,
+              const Color(0xFF1D4ED8),
             ],
           ),
           borderRadius: BorderRadius.circular(10.r),
@@ -1615,7 +2039,7 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
                 ),
                 prefixIcon: Icon(
                   Icons.search,
-                  color: InvoiceThemeColors.successGreen,
+                  color: InvoiceThemeColors.infoBlue,
                   size: 20.sp,
                 ),
                 border: InputBorder.none,
@@ -1669,8 +2093,10 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
   }
 
   Widget _buildUserTile(InvoiceUser user, bool isSelected) {
+    final isAlreadyTagged = _alreadyTaggedUserIds.contains(user.id);
+
     return GestureDetector(
-      onTap: () {
+      onTap: isAlreadyTagged ? null : () {
         HapticFeedback.lightImpact();
         setState(() {
           if (isSelected) {
@@ -1684,16 +2110,12 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
         margin: EdgeInsets.only(bottom: 12.h),
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
-          color: isSelected 
-              ? InvoiceThemeColors.successGreen.withValues(alpha: 0.1)
-              : Colors.white.withValues(alpha: 0.05),
+          color: isAlreadyTagged
+              ? Colors.white.withValues(alpha: 0.03)
+              : isSelected
+                  ? InvoiceThemeColors.infoBlue.withValues(alpha: 0.1)
+                  : Colors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(16.r),
-          border: Border.all(
-            color: isSelected 
-                ? InvoiceThemeColors.successGreen 
-                : Colors.white.withValues(alpha: 0.1),
-            width: isSelected ? 2 : 1,
-          ),
         ),
         child: Row(
           children: [
@@ -1722,8 +2144,8 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [
-                            InvoiceThemeColors.successGreen,
-                            const Color(0xFF059669),
+                            InvoiceThemeColors.infoBlue,
+                            const Color(0xFF1D4ED8),
                           ],
                         ),
                         shape: BoxShape.circle,
@@ -1801,7 +2223,7 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
             offset: Offset(0, 2),
           ),
         ],
-        
+
                           ),
                           child: Text(
                             'Online',
@@ -1834,32 +2256,48 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
               ),
             ),
             
-            // Selection indicator
-            Container(
-              width: 24.w,
-              height: 24.w,
-              decoration: BoxDecoration(
-                color: isSelected 
-                    ? InvoiceThemeColors.successGreen 
-                    : Colors.transparent,
-                borderRadius: BorderRadius.circular(6.r),
-                boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+            // Selection indicator or Already Tagged badge
+            if (isAlreadyTagged)
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8.r),
+                ),
+                child: Text(
+                  'Tagged',
+                  style: GoogleFonts.inter(
+                    color: Colors.white.withValues(alpha: 0.4),
+                    fontSize: 10.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              )
+            else
+              Container(
+                width: 24.w,
+                height: 24.w,
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? InvoiceThemeColors.infoBlue
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(6.r),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.08),
+                      blurRadius: 6,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: isSelected
+                    ? Icon(
+                        Icons.check,
+                        color: Colors.white,
+                        size: 16.sp,
+                      )
+                    : null,
               ),
-              child: isSelected
-                  ? Icon(
-                      Icons.check,
-                      color: Colors.white,
-                      size: 16.sp,
-                    )
-                  : null,
-            ),
           ],
         ),
       ),
@@ -1917,14 +2355,14 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  InvoiceThemeColors.successGreen,
-                  const Color(0xFF059669),
+                  InvoiceThemeColors.infoBlue,
+                  const Color(0xFF1D4ED8),
                 ],
               ),
               borderRadius: BorderRadius.circular(12.r),
               boxShadow: [
                 BoxShadow(
-                  color: InvoiceThemeColors.successGreen.withValues(alpha: 0.3),
+                  color: InvoiceThemeColors.infoBlue.withValues(alpha: 0.3),
                   offset: const Offset(0, 4),
                   blurRadius: 12,
                 ),
@@ -2019,40 +2457,6 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
                   ],
                 ),
               ),
-              Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      InvoiceThemeColors.infoBlue,
-                      const Color(0xFF1D4ED8),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(8.r),
-                ),
-                child: ElevatedButton.icon(
-                  onPressed: _requestContactsPermission,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.transparent,
-                    shadowColor: Colors.transparent,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8.r),
-                    ),
-                  ),
-                  icon: Icon(
-                    Icons.contacts,
-                    color: Colors.white,
-                    size: 16.sp,
-                  ),
-                  label: Text(
-                    'Load',
-                    style: GoogleFonts.inter(
-                      color: Colors.white,
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ),
             ],
           ),
           SizedBox(height: 20.h),
@@ -2118,7 +2522,7 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
               ),
               prefixIcon: Icon(
                 icon,
-                color: InvoiceThemeColors.successGreen,
+                color: InvoiceThemeColors.infoBlue,
                 size: 20.sp,
               ),
               border: InputBorder.none,
@@ -2217,7 +2621,7 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(InvoiceThemeColors.successGreen),
+            valueColor: AlwaysStoppedAnimation<Color>(InvoiceThemeColors.infoBlue),
           ),
           SizedBox(height: 16.h),
           Text(
@@ -2319,15 +2723,9 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
           color: isSelected 
-              ? InvoiceThemeColors.successGreen.withValues(alpha: 0.1)
+              ? InvoiceThemeColors.infoBlue.withValues(alpha: 0.1)
               : Colors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(16.r),
-          border: Border.all(
-            color: isSelected 
-                ? InvoiceThemeColors.successGreen 
-                : Colors.white.withValues(alpha: 0.1),
-            width: isSelected ? 2 : 1,
-          ),
         ),
         child: Row(
           children: [
@@ -2387,10 +2785,6 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
                 decoration: BoxDecoration(
                   color: InvoiceThemeColors.infoBlue.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(6.r),
-                  border: Border.all(
-                    color: InvoiceThemeColors.infoBlue,
-                    width: 1,
-                  ),
                 ),
                 child: Text(
                   'Invite',
@@ -2408,7 +2802,7 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
               height: 24.w,
               decoration: BoxDecoration(
                 color: isSelected
-                    ? InvoiceThemeColors.successGreen
+                    ? InvoiceThemeColors.infoBlue
                     : Colors.transparent,
                 borderRadius: BorderRadius.circular(6.r),
                 boxShadow: [
@@ -2478,13 +2872,13 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: _selectedUserIds.isNotEmpty
-                        ? [InvoiceThemeColors.successGreen, const Color(0xFF059669)]
+                        ? [InvoiceThemeColors.infoBlue, const Color(0xFF1D4ED8)]
                         : [Colors.grey.shade700, Colors.grey.shade800],
                   ),
                   borderRadius: BorderRadius.circular(12.r),
                   boxShadow: _selectedUserIds.isNotEmpty ? [
                     BoxShadow(
-                      color: InvoiceThemeColors.successGreen.withValues(alpha: 0.3),
+                      color: InvoiceThemeColors.infoBlue.withValues(alpha: 0.3),
                       offset: const Offset(0, 4),
                       blurRadius: 12,
                     ),
@@ -2585,9 +2979,17 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
     });
 
     try {
-      final results = await _invoiceRepository.searchUsers(query, limit: 20);
+      final profileCubit = serviceLocator<ProfileCubit>();
+      final results = await profileCubit.searchUsers(query, limit: 20);
       setState(() {
-        _searchResults = results;
+        _searchResults = results.map((user) => InvoiceUser(
+          id: user.userId,
+          name: user.fullName,
+          email: user.email,
+          username: user.username,
+          phone: '',
+          isOnline: false,
+        )).toList();
       });
     } catch (e) {
       _showErrorSnackbar('Failed to search users');

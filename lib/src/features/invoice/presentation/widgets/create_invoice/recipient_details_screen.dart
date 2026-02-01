@@ -8,7 +8,14 @@ import '../../cubit/create_invoice_cubit.dart';
 ///
 /// Collects recipient address and contact information
 class RecipientDetailsScreen extends StatefulWidget {
-  const RecipientDetailsScreen({super.key});
+  final bool showPhone;
+  final bool showAddress;
+
+  const RecipientDetailsScreen({
+    super.key,
+    this.showPhone = false,
+    this.showAddress = false,
+  });
 
   @override
   State<RecipientDetailsScreen> createState() => _RecipientDetailsScreenState();
@@ -78,7 +85,7 @@ class _RecipientDetailsScreenState extends State<RecipientDetailsScreen>
   Widget build(BuildContext context) {
     return FadeTransition(
       opacity: _fadeAnimation,
-      child: SingleChildScrollView(
+      child: Padding(
         padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -107,7 +114,7 @@ class _RecipientDetailsScreenState extends State<RecipientDetailsScreen>
         ),
         SizedBox(height: 8.h),
         Text(
-          'Enter the details of the person or company receiving this invoice',
+          'Your business or personal information as the invoice creator',
           style: GoogleFonts.inter(
             fontSize: 14.sp,
             fontWeight: FontWeight.w400,
@@ -148,88 +155,92 @@ class _RecipientDetailsScreenState extends State<RecipientDetailsScreen>
           keyboardType: TextInputType.emailAddress,
           onChanged: (value) => cubit.updateRecipientEmail(value),
         ),
-        SizedBox(height: 16.h),
-        _buildTextField(
-          controller: _phoneController,
-          label: 'Phone Number (Optional)',
-          hint: '+1 234 567 8900',
-          icon: Icons.phone,
-          keyboardType: TextInputType.phone,
-          onChanged: (value) => cubit.updateRecipientPhone(value),
-        ),
-        SizedBox(height: 24.h),
-        Text(
-          'Address (Optional)',
-          style: GoogleFonts.inter(
-            fontSize: 16.sp,
-            fontWeight: FontWeight.w600,
-            color: Colors.white,
+        if (widget.showPhone) ...[
+          SizedBox(height: 16.h),
+          _buildTextField(
+            controller: _phoneController,
+            label: 'Phone Number (Optional)',
+            hint: '+1 234 567 8900',
+            icon: Icons.phone,
+            keyboardType: TextInputType.phone,
+            onChanged: (value) => cubit.updateRecipientPhone(value),
           ),
-        ),
-        SizedBox(height: 16.h),
-        _buildTextField(
-          controller: _address1Controller,
-          label: 'Street Address',
-          hint: '123 Main Street',
-          icon: Icons.location_on,
-          onChanged: (value) => cubit.updateRecipientAddress1(value),
-        ),
-        SizedBox(height: 16.h),
-        _buildTextField(
-          controller: _address2Controller,
-          label: 'Address Line 2',
-          hint: 'Apt, Suite, Floor (optional)',
-          icon: Icons.location_city,
-          onChanged: (value) => cubit.updateRecipientAddress2(value),
-        ),
-        SizedBox(height: 16.h),
-        Row(
-          children: [
-            Expanded(
-              child: _buildTextField(
-                controller: _cityController,
-                label: 'City',
-                hint: 'New York',
-                icon: Icons.location_city,
-                onChanged: (value) => cubit.updateRecipientCity(value),
-              ),
+        ],
+        if (widget.showAddress) ...[
+          SizedBox(height: 24.h),
+          Text(
+            'Address (Optional)',
+            style: GoogleFonts.inter(
+              fontSize: 16.sp,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
             ),
-            SizedBox(width: 12.w),
-            Expanded(
-              child: _buildTextField(
-                controller: _stateController,
-                label: 'State/Province',
-                hint: 'NY',
-                icon: Icons.map,
-                onChanged: (value) => cubit.updateRecipientState(value),
+          ),
+          SizedBox(height: 16.h),
+          _buildTextField(
+            controller: _address1Controller,
+            label: 'Street Address',
+            hint: '123 Main Street',
+            icon: Icons.location_on,
+            onChanged: (value) => cubit.updateRecipientAddress1(value),
+          ),
+          SizedBox(height: 16.h),
+          _buildTextField(
+            controller: _address2Controller,
+            label: 'Address Line 2',
+            hint: 'Apt, Suite, Floor (optional)',
+            icon: Icons.location_city,
+            onChanged: (value) => cubit.updateRecipientAddress2(value),
+          ),
+          SizedBox(height: 16.h),
+          Row(
+            children: [
+              Expanded(
+                child: _buildTextField(
+                  controller: _cityController,
+                  label: 'City',
+                  hint: 'New York',
+                  icon: Icons.location_city,
+                  onChanged: (value) => cubit.updateRecipientCity(value),
+                ),
+              ),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: _buildTextField(
+                  controller: _stateController,
+                  label: 'State/Province',
+                  hint: 'NY',
+                  icon: Icons.map,
+                  onChanged: (value) => cubit.updateRecipientState(value),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 16.h),
+          Row(
+            children: [
+              Expanded(
+                child: _buildTextField(
+                  controller: _postcodeController,
+                  label: 'Postcode/ZIP',
+                  hint: '10001',
+                  icon: Icons.pin_drop,
+                  onChanged: (value) => cubit.updateRecipientPostcode(value),
+                ),
+              ),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: _buildTextField(
+                  controller: _countryController,
+                  label: 'Country',
+                  hint: 'USA',
+                  icon: Icons.public,
+                  onChanged: (value) => cubit.updateRecipientCountry(value),
               ),
             ),
           ],
         ),
-        SizedBox(height: 16.h),
-        Row(
-          children: [
-            Expanded(
-              child: _buildTextField(
-                controller: _postcodeController,
-                label: 'Postcode/ZIP',
-                hint: '10001',
-                icon: Icons.pin_drop,
-                onChanged: (value) => cubit.updateRecipientPostcode(value),
-              ),
-            ),
-            SizedBox(width: 12.w),
-            Expanded(
-              child: _buildTextField(
-                controller: _countryController,
-                label: 'Country',
-                hint: 'USA',
-                icon: Icons.public,
-                onChanged: (value) => cubit.updateRecipientCountry(value),
-              ),
-            ),
-          ],
-        ),
+        ],
       ],
     );
   }
@@ -276,26 +287,20 @@ class _RecipientDetailsScreenState extends State<RecipientDetailsScreen>
               color: Colors.white.withValues(alpha: 0.5),
             ),
             filled: true,
-            fillColor: Colors.white.withValues(alpha: 0.05),
+            fillColor: Colors.white.withValues(alpha: 0.08),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r),
-              borderSide: BorderSide(
-                color: Colors.white.withValues(alpha: 0.1),
-                width: 1.5,
-              ),
+              borderSide: BorderSide.none,
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r),
-              borderSide: BorderSide(
-                color: Colors.white.withValues(alpha: 0.1),
-                width: 1.5,
-              ),
+              borderSide: BorderSide.none,
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r),
               borderSide: const BorderSide(
                 color: Color(0xFF3B82F6),
-                width: 2,
+                width: 1.5,
               ),
             ),
             contentPadding: EdgeInsets.symmetric(

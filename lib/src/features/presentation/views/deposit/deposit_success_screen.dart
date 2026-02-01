@@ -232,7 +232,6 @@ class _DepositSuccessScreenState extends State<DepositSuccessScreen>
           ],
         ),
         borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
       ),
       child: Column(
         children: [

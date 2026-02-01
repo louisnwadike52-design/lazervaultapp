@@ -111,4 +111,42 @@ class InvoiceFormState extends InvoiceState {
       isValid: isValid ?? this.isValid,
     );
   }
-} 
+}
+
+class InvoicePaymentProcessing extends InvoiceState {
+  final String invoiceId;
+
+  const InvoicePaymentProcessing({required this.invoiceId});
+
+  @override
+  List<Object?> get props => [invoiceId];
+}
+
+class InvoicePaymentSuccess extends InvoiceState {
+  final String message;
+  final Invoice? invoice;
+
+  const InvoicePaymentSuccess({required this.message, this.invoice});
+
+  @override
+  List<Object?> get props => [message, invoice];
+}
+
+class InvoiceUnlockProcessing extends InvoiceState {
+  final String invoiceId;
+
+  const InvoiceUnlockProcessing({required this.invoiceId});
+
+  @override
+  List<Object?> get props => [invoiceId];
+}
+
+class InvoiceUnlockSuccess extends InvoiceState {
+  final String message;
+  final Invoice? invoice;
+
+  const InvoiceUnlockSuccess({required this.message, this.invoice});
+
+  @override
+  List<Object?> get props => [message, invoice];
+}

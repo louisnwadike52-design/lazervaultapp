@@ -6598,6 +6598,7 @@ class UserLookupResult extends $pb.GeneratedMessage {
     ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastName')
     ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'profilePicture')
     ..aOB(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isLazervaultUser')
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'phoneNumber')
     ..hasRequiredFields = false
   ;
 
@@ -6609,6 +6610,7 @@ class UserLookupResult extends $pb.GeneratedMessage {
     $core.String? lastName,
     $core.String? profilePicture,
     $core.bool? isLazervaultUser,
+    $core.String? phoneNumber,
   }) {
     final _result = create();
     if (userId != null) {
@@ -6628,6 +6630,9 @@ class UserLookupResult extends $pb.GeneratedMessage {
     }
     if (isLazervaultUser != null) {
       _result.isLazervaultUser = isLazervaultUser;
+    }
+    if (phoneNumber != null) {
+      _result.phoneNumber = phoneNumber;
     }
     return _result;
   }
@@ -6705,12 +6710,22 @@ class UserLookupResult extends $pb.GeneratedMessage {
   $core.bool hasIsLazervaultUser() => $_has(5);
   @$pb.TagNumber(6)
   void clearIsLazervaultUser() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.String get phoneNumber => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set phoneNumber($core.String v) { $_setString(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasPhoneNumber() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearPhoneNumber() => clearField(7);
 }
 
 class SearchUsersByUsernameRequest extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'SearchUsersByUsernameRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'auth'), createEmptyInstance: create)
     ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'query')
     ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'limit', $pb.PbFieldType.O3)
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'searchType')
     ..hasRequiredFields = false
   ;
 
@@ -6718,6 +6733,7 @@ class SearchUsersByUsernameRequest extends $pb.GeneratedMessage {
   factory SearchUsersByUsernameRequest({
     $core.String? query,
     $core.int? limit,
+    $core.String? searchType,
   }) {
     final _result = create();
     if (query != null) {
@@ -6725,6 +6741,9 @@ class SearchUsersByUsernameRequest extends $pb.GeneratedMessage {
     }
     if (limit != null) {
       _result.limit = limit;
+    }
+    if (searchType != null) {
+      _result.searchType = searchType;
     }
     return _result;
   }
@@ -6766,6 +6785,15 @@ class SearchUsersByUsernameRequest extends $pb.GeneratedMessage {
   $core.bool hasLimit() => $_has(1);
   @$pb.TagNumber(2)
   void clearLimit() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get searchType => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set searchType($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasSearchType() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearSearchType() => clearField(3);
 }
 
 class SearchUsersByUsernameResponse extends $pb.GeneratedMessage {

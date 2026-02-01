@@ -342,10 +342,6 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
           ],
         ),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-          color: const Color(0xFF4E03D0).withValues(alpha: 0.3),
-          width: 1,
-        ),
       ),
       child: Row(
         children: [
@@ -419,9 +415,6 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(16.r),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.1),
-            ),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -497,9 +490,6 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
               end: Alignment.bottomRight,
             ),
             borderRadius: BorderRadius.circular(16.r),
-            border: Border.all(
-              color: const Color(0xFF6C5CE7).withValues(alpha: 0.3),
-            ),
           ),
           child: Column(
             children: [
@@ -659,9 +649,6 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(12.r),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.1),
-            ),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1338,12 +1325,9 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
                     ? bank['color'].withValues(alpha: 0.2)
                     : Colors.white.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(8.r),
-                border: Border.all(
-                  color: isSelected
-                      ? bank['color']
-                      : Colors.white.withValues(alpha: 0.1),
-                  width: isSelected ? 2 : 1,
-                ),
+                border: isSelected
+                    ? Border.all(color: bank['color'], width: 2)
+                    : null,
               ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -1994,9 +1978,6 @@ class _BankSearchBottomSheetState extends State<_BankSearchBottomSheet> {
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(12.r),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.1),
-              ),
             ),
             child: TextField(
               controller: _searchController,
@@ -2098,12 +2079,9 @@ class _BankSearchBottomSheetState extends State<_BankSearchBottomSheet> {
                                   ? bank['color'].withValues(alpha: 0.1)
                                   : Colors.white.withValues(alpha: 0.05),
                               borderRadius: BorderRadius.circular(16.r),
-                              border: Border.all(
-                                color: isSelected
-                                    ? bank['color']
-                                    : Colors.white.withValues(alpha: 0.1),
-                                width: isSelected ? 2 : 1,
-                              ),
+                              border: isSelected
+                                  ? Border.all(color: bank['color'], width: 2)
+                                  : null,
                             ),
                             child: Row(
                               children: [
