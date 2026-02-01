@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../../account_cards_summary/cubit/account_cards_summary_cubit.dart';
+import '../../../../account_cards_summary/cubit/account_cards_summary_state.dart';
 import '../../../domain/entities/invoice_entity.dart';
 import '../../cubit/create_invoice_cubit.dart';
 
@@ -10,7 +12,16 @@ import '../../cubit/create_invoice_cubit.dart';
 ///
 /// Manage invoice line items, tax, and discount
 class ItemsAmountsScreen extends StatefulWidget {
-  const ItemsAmountsScreen({super.key});
+  final bool showTax;
+  final bool showDiscount;
+  final bool showNotes;
+
+  const ItemsAmountsScreen({
+    super.key,
+    this.showTax = true,
+    this.showDiscount = true,
+    this.showNotes = true,
+  });
 
   @override
   State<ItemsAmountsScreen> createState() => _ItemsAmountsScreenState();
@@ -24,6 +35,31 @@ class _ItemsAmountsScreenState extends State<ItemsAmountsScreen>
   late TextEditingController _taxController;
   late TextEditingController _discountController;
   late TextEditingController _notesController;
+
+  String get _currencySymbol {
+    try {
+      final state = context.read<AccountCardsSummaryCubit>().state;
+      if (state is AccountCardsSummaryLoaded && state.accountSummaries.isNotEmpty) {
+        return _getCurrencySymbol(state.accountSummaries.first.currency);
+      }
+    } catch (_) {}
+    return '\$';
+  }
+
+  String _getCurrencySymbol(String currency) {
+    switch (currency.toUpperCase()) {
+      case 'NGN': return '₦';
+      case 'GBP': return '£';
+      case 'EUR': return '€';
+      case 'ZAR': return 'R';
+      case 'CAD': return 'C\$';
+      case 'AUD': return 'A\$';
+      case 'INR': return '₹';
+      case 'JPY': return '¥';
+      case 'USD': return '\$';
+      default: return '₦';
+    }
+  }
 
   @override
   void initState() {
@@ -63,7 +99,7 @@ class _ItemsAmountsScreenState extends State<ItemsAmountsScreen>
   Widget build(BuildContext context) {
     return FadeTransition(
       opacity: _fadeAnimation,
-      child: SingleChildScrollView(
+      child: Padding(
         padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -73,14 +109,32 @@ class _ItemsAmountsScreenState extends State<ItemsAmountsScreen>
             _buildItemsList(),
             SizedBox(height: 24.h),
             _buildAddItemButton(),
-            SizedBox(height: 32.h),
-            _buildAmountsSection(),
-            SizedBox(height: 32.h),
-            _buildNotesSection(),
+            if (widget.showTax || widget.showDiscount) ...[
+              SizedBox(height: 32.h),
+              _buildAmountsSection(),
+            ] else ...[
+              // Always show subtotal/total summary even without tax/discount fields
+              SizedBox(height: 24.h),
+              _buildSimpleSummary(),
+            ],
+            if (widget.showNotes) ...[
+              SizedBox(height: 32.h),
+              _buildNotesSection(),
+            ],
             SizedBox(height: 24.h),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildSimpleSummary() {
+    return BlocBuilder<CreateInvoiceCubit, dynamic>(
+      builder: (context, state) {
+        final cubit = context.read<CreateInvoiceCubit>();
+        return _buildSummaryRow('Total', cubit.subtotal,
+            isTotal: true, color: const Color(0xFF3B82F6));
+      },
     );
   }
 
@@ -119,12 +173,15 @@ class _ItemsAmountsScreenState extends State<ItemsAmountsScreen>
           return Container(
             padding: EdgeInsets.all(32.w),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.05),
+              color: const Color(0xFF1F1F1F),
               borderRadius: BorderRadius.circular(16.r),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.1),
-                width: 1.5,
-              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.3),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
             child: Column(
               children: [
@@ -178,12 +235,15 @@ class _ItemsAmountsScreenState extends State<ItemsAmountsScreen>
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
-          width: 1.5,
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.3),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Row(
         children: [
@@ -214,7 +274,7 @@ class _ItemsAmountsScreenState extends State<ItemsAmountsScreen>
                 Row(
                   children: [
                     Text(
-                      '${item.quantity} × \$${item.unitPrice.toStringAsFixed(2)}',
+                      '${item.quantity} × $_currencySymbol${item.unitPrice.toStringAsFixed(2)}',
                       style: GoogleFonts.inter(
                         fontSize: 13.sp,
                         fontWeight: FontWeight.w500,
@@ -223,7 +283,7 @@ class _ItemsAmountsScreenState extends State<ItemsAmountsScreen>
                     ),
                     SizedBox(width: 12.w),
                     Text(
-                      '= \$${total.toStringAsFixed(2)}',
+                      '= $_currencySymbol${total.toStringAsFixed(2)}',
                       style: GoogleFonts.inter(
                         fontSize: 14.sp,
                         fontWeight: FontWeight.w700,
@@ -264,30 +324,53 @@ class _ItemsAmountsScreenState extends State<ItemsAmountsScreen>
     return GestureDetector(
       onTap: _showAddItemDialog,
       child: Container(
-        padding: EdgeInsets.symmetric(vertical: 16.h),
+        width: double.infinity,
+        padding: EdgeInsets.symmetric(vertical: 24.h, horizontal: 20.w),
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(12.r),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.add,
-              color: Colors.white,
-              size: 20.sp,
+          color: const Color(0xFF1F1F1F),
+          borderRadius: BorderRadius.circular(16.r),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.3),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
             ),
-            SizedBox(width: 8.w),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Container(
+              width: 52.w,
+              height: 52.w,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6)],
+                ),
+                borderRadius: BorderRadius.circular(14.r),
+              ),
+              child: Icon(
+                Icons.add_shopping_cart_rounded,
+                color: Colors.white,
+                size: 26.sp,
+              ),
+            ),
+            SizedBox(height: 12.h),
             Text(
               'Add Item',
               style: GoogleFonts.inter(
                 fontSize: 16.sp,
                 fontWeight: FontWeight.w700,
                 color: Colors.white,
+              ),
+            ),
+            SizedBox(height: 4.h),
+            Text(
+              'Tap to add a product or service',
+              style: GoogleFonts.inter(
+                fontSize: 13.sp,
+                fontWeight: FontWeight.w400,
+                color: Colors.grey[500],
               ),
             ),
           ],
@@ -396,33 +479,27 @@ class _ItemsAmountsScreenState extends State<ItemsAmountsScreen>
               fontWeight: FontWeight.w400,
               color: Colors.grey[600],
             ),
-            prefixText: '\$ ',
+            prefixText: '$_currencySymbol ',
             prefixStyle: GoogleFonts.inter(
               fontSize: 15.sp,
               fontWeight: FontWeight.w500,
               color: Colors.white,
             ),
             filled: true,
-            fillColor: Colors.white.withValues(alpha: 0.05),
+            fillColor: Colors.white.withValues(alpha: 0.08),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r),
-              borderSide: BorderSide(
-                color: Colors.white.withValues(alpha: 0.1),
-                width: 1.5,
-              ),
+              borderSide: BorderSide.none,
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r),
-              borderSide: BorderSide(
-                color: Colors.white.withValues(alpha: 0.1),
-                width: 1.5,
-              ),
+              borderSide: BorderSide.none,
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r),
               borderSide: const BorderSide(
                 color: Color(0xFF3B82F6),
-                width: 2,
+                width: 1.5,
               ),
             ),
             contentPadding: EdgeInsets.symmetric(
@@ -449,7 +526,7 @@ class _ItemsAmountsScreenState extends State<ItemsAmountsScreen>
           ),
         ),
         Text(
-          '\$${amount.toStringAsFixed(2)}',
+          '$_currencySymbol${amount.toStringAsFixed(2)}',
           style: GoogleFonts.inter(
             fontSize: isTotal ? 18.sp : 14.sp,
             fontWeight: isTotal ? FontWeight.w700 : FontWeight.w600,
@@ -492,26 +569,20 @@ class _ItemsAmountsScreenState extends State<ItemsAmountsScreen>
               color: Colors.grey[600],
             ),
             filled: true,
-            fillColor: Colors.white.withValues(alpha: 0.05),
+            fillColor: Colors.white.withValues(alpha: 0.08),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r),
-              borderSide: BorderSide(
-                color: Colors.white.withValues(alpha: 0.1),
-                width: 1.5,
-              ),
+              borderSide: BorderSide.none,
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r),
-              borderSide: BorderSide(
-                color: Colors.white.withValues(alpha: 0.1),
-                width: 1.5,
-              ),
+              borderSide: BorderSide.none,
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r),
               borderSide: const BorderSide(
                 color: Color(0xFF3B82F6),
-                width: 2,
+                width: 1.5,
               ),
             ),
             contentPadding: EdgeInsets.symmetric(
@@ -530,98 +601,150 @@ class _ItemsAmountsScreenState extends State<ItemsAmountsScreen>
     final quantityController = TextEditingController(text: '1');
     final priceController = TextEditingController();
 
-    showDialog(
+    showModalBottomSheet(
       context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          backgroundColor: const Color(0xFF1A1A1A),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16.r),
+      isScrollControlled: true,
+      backgroundColor: const Color(0xFF1A1A1A),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+      ),
+      builder: (sheetContext) {
+        return Padding(
+          padding: EdgeInsets.only(
+            left: 20.w,
+            right: 20.w,
+            top: 20.h,
+            bottom: MediaQuery.of(sheetContext).viewInsets.bottom + 20.h,
           ),
-          title: Text(
-            'Add Item',
-            style: GoogleFonts.inter(
-              fontSize: 18.sp,
-              fontWeight: FontWeight.w700,
-              color: Colors.white,
-            ),
-          ),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _buildDialogTextField(nameController, 'Item Name *'),
-                SizedBox(height: 12.h),
-                _buildDialogTextField(descriptionController, 'Description (Optional)'),
-                SizedBox(height: 12.h),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildDialogTextField(
-                        quantityController,
-                        'Quantity *',
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                      ),
-                    ),
-                    SizedBox(width: 12.w),
-                    Expanded(
-                      child: _buildDialogTextField(
-                        priceController,
-                        'Unit Price *',
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                        prefix: '\$ ',
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              child: Text(
-                'Cancel',
-                style: GoogleFonts.inter(
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.grey[400],
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40.w,
+                  height: 4.h,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[600],
+                    borderRadius: BorderRadius.circular(2.r),
+                  ),
                 ),
               ),
-            ),
-            TextButton(
-              onPressed: () {
-                final name = nameController.text.trim();
-                final description = descriptionController.text.trim();
-                final quantity = double.tryParse(quantityController.text) ?? 0;
-                final price = double.tryParse(priceController.text) ?? 0;
-
-                if (name.isEmpty || quantity <= 0 || price <= 0) {
-                  return;
-                }
-
-                final item = InvoiceItem(
-                  id: DateTime.now().millisecondsSinceEpoch.toString(),
-                  name: name,
-                  description: description.isEmpty ? null : description,
-                  quantity: quantity,
-                  unitPrice: price,
-                  totalPrice: quantity * price,
-                );
-
-                context.read<CreateInvoiceCubit>().addItem(item);
-                Navigator.of(dialogContext).pop();
-              },
-              child: Text(
-                'Add',
+              SizedBox(height: 16.h),
+              Text(
+                'Add Item',
                 style: GoogleFonts.inter(
-                  fontSize: 14.sp,
+                  fontSize: 18.sp,
                   fontWeight: FontWeight.w700,
-                  color: const Color(0xFF3B82F6),
+                  color: Colors.white,
                 ),
               ),
-            ),
-          ],
+              SizedBox(height: 20.h),
+              _buildDialogTextField(nameController, 'Item Name *'),
+              SizedBox(height: 12.h),
+              _buildDialogTextField(descriptionController, 'Description (Optional)'),
+              SizedBox(height: 12.h),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildDialogTextField(
+                      quantityController,
+                      'Quantity *',
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
+                      ],
+                    ),
+                  ),
+                  SizedBox(width: 12.w),
+                  Expanded(
+                    child: _buildDialogTextField(
+                      priceController,
+                      'Unit Price *',
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      prefix: '$_currencySymbol ',
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 20.h),
+              Row(
+                children: [
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () => Navigator.of(sheetContext).pop(),
+                      child: Container(
+                        padding: EdgeInsets.symmetric(vertical: 14.h),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.08),
+                          borderRadius: BorderRadius.circular(12.r),
+                        ),
+                        child: Center(
+                          child: Text(
+                            'Cancel',
+                            style: GoogleFonts.inter(
+                              fontSize: 15.sp,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.grey[400],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 12.w),
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        final name = nameController.text.trim();
+                        final description = descriptionController.text.trim();
+                        final quantity = double.tryParse(quantityController.text) ?? 0;
+                        final price = double.tryParse(priceController.text) ?? 0;
+
+                        if (name.isEmpty || quantity <= 0 || price <= 0) {
+                          return;
+                        }
+
+                        final item = InvoiceItem(
+                          id: DateTime.now().millisecondsSinceEpoch.toString(),
+                          name: name,
+                          description: description.isEmpty ? null : description,
+                          quantity: quantity,
+                          unitPrice: price,
+                          totalPrice: quantity * price,
+                        );
+
+                        context.read<CreateInvoiceCubit>().addItem(item);
+                        Navigator.of(sheetContext).pop();
+                      },
+                      child: Container(
+                        padding: EdgeInsets.symmetric(vertical: 14.h),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6)],
+                          ),
+                          borderRadius: BorderRadius.circular(12.r),
+                        ),
+                        child: Center(
+                          child: Text(
+                            'Add',
+                            style: GoogleFonts.inter(
+                              fontSize: 15.sp,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         );
       },
     );
@@ -633,98 +756,150 @@ class _ItemsAmountsScreenState extends State<ItemsAmountsScreen>
     final quantityController = TextEditingController(text: item.quantity.toString());
     final priceController = TextEditingController(text: item.unitPrice.toString());
 
-    showDialog(
+    showModalBottomSheet(
       context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          backgroundColor: const Color(0xFF1A1A1A),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16.r),
+      isScrollControlled: true,
+      backgroundColor: const Color(0xFF1A1A1A),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+      ),
+      builder: (sheetContext) {
+        return Padding(
+          padding: EdgeInsets.only(
+            left: 20.w,
+            right: 20.w,
+            top: 20.h,
+            bottom: MediaQuery.of(sheetContext).viewInsets.bottom + 20.h,
           ),
-          title: Text(
-            'Edit Item',
-            style: GoogleFonts.inter(
-              fontSize: 18.sp,
-              fontWeight: FontWeight.w700,
-              color: Colors.white,
-            ),
-          ),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _buildDialogTextField(nameController, 'Item Name *'),
-                SizedBox(height: 12.h),
-                _buildDialogTextField(descriptionController, 'Description (Optional)'),
-                SizedBox(height: 12.h),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildDialogTextField(
-                        quantityController,
-                        'Quantity *',
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                      ),
-                    ),
-                    SizedBox(width: 12.w),
-                    Expanded(
-                      child: _buildDialogTextField(
-                        priceController,
-                        'Unit Price *',
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                        prefix: '\$ ',
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              child: Text(
-                'Cancel',
-                style: GoogleFonts.inter(
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.grey[400],
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40.w,
+                  height: 4.h,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[600],
+                    borderRadius: BorderRadius.circular(2.r),
+                  ),
                 ),
               ),
-            ),
-            TextButton(
-              onPressed: () {
-                final name = nameController.text.trim();
-                final description = descriptionController.text.trim();
-                final quantity = double.tryParse(quantityController.text) ?? 0;
-                final price = double.tryParse(priceController.text) ?? 0;
-
-                if (name.isEmpty || quantity <= 0 || price <= 0) {
-                  return;
-                }
-
-                final updatedItem = InvoiceItem(
-                  id: item.id,
-                  name: name,
-                  description: description.isEmpty ? null : description,
-                  quantity: quantity,
-                  unitPrice: price,
-                  totalPrice: quantity * price,
-                );
-
-                context.read<CreateInvoiceCubit>().updateItem(index, updatedItem);
-                Navigator.of(dialogContext).pop();
-              },
-              child: Text(
-                'Save',
+              SizedBox(height: 16.h),
+              Text(
+                'Edit Item',
                 style: GoogleFonts.inter(
-                  fontSize: 14.sp,
+                  fontSize: 18.sp,
                   fontWeight: FontWeight.w700,
-                  color: const Color(0xFF3B82F6),
+                  color: Colors.white,
                 ),
               ),
-            ),
-          ],
+              SizedBox(height: 20.h),
+              _buildDialogTextField(nameController, 'Item Name *'),
+              SizedBox(height: 12.h),
+              _buildDialogTextField(descriptionController, 'Description (Optional)'),
+              SizedBox(height: 12.h),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildDialogTextField(
+                      quantityController,
+                      'Quantity *',
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
+                      ],
+                    ),
+                  ),
+                  SizedBox(width: 12.w),
+                  Expanded(
+                    child: _buildDialogTextField(
+                      priceController,
+                      'Unit Price *',
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      prefix: '$_currencySymbol ',
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 20.h),
+              Row(
+                children: [
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () => Navigator.of(sheetContext).pop(),
+                      child: Container(
+                        padding: EdgeInsets.symmetric(vertical: 14.h),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.08),
+                          borderRadius: BorderRadius.circular(12.r),
+                        ),
+                        child: Center(
+                          child: Text(
+                            'Cancel',
+                            style: GoogleFonts.inter(
+                              fontSize: 15.sp,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.grey[400],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 12.w),
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        final name = nameController.text.trim();
+                        final description = descriptionController.text.trim();
+                        final quantity = double.tryParse(quantityController.text) ?? 0;
+                        final price = double.tryParse(priceController.text) ?? 0;
+
+                        if (name.isEmpty || quantity <= 0 || price <= 0) {
+                          return;
+                        }
+
+                        final updatedItem = InvoiceItem(
+                          id: item.id,
+                          name: name,
+                          description: description.isEmpty ? null : description,
+                          quantity: quantity,
+                          unitPrice: price,
+                          totalPrice: quantity * price,
+                        );
+
+                        context.read<CreateInvoiceCubit>().updateItem(index, updatedItem);
+                        Navigator.of(sheetContext).pop();
+                      },
+                      child: Container(
+                        padding: EdgeInsets.symmetric(vertical: 14.h),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6)],
+                          ),
+                          borderRadius: BorderRadius.circular(12.r),
+                        ),
+                        child: Center(
+                          child: Text(
+                            'Save',
+                            style: GoogleFonts.inter(
+                              fontSize: 15.sp,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         );
       },
     );
@@ -735,10 +910,12 @@ class _ItemsAmountsScreenState extends State<ItemsAmountsScreen>
     String label, {
     TextInputType? keyboardType,
     String? prefix,
+    List<TextInputFormatter>? inputFormatters,
   }) {
     return TextField(
       controller: controller,
       keyboardType: keyboardType,
+      inputFormatters: inputFormatters,
       style: GoogleFonts.inter(
         fontSize: 15.sp,
         fontWeight: FontWeight.w500,
@@ -758,26 +935,20 @@ class _ItemsAmountsScreenState extends State<ItemsAmountsScreen>
           color: Colors.white,
         ),
         filled: true,
-        fillColor: Colors.white.withValues(alpha: 0.05),
+        fillColor: Colors.white.withValues(alpha: 0.08),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.r),
-          borderSide: BorderSide(
-            color: Colors.white.withValues(alpha: 0.1),
-            width: 1.5,
-          ),
+          borderSide: BorderSide.none,
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.r),
-          borderSide: BorderSide(
-            color: Colors.white.withValues(alpha: 0.1),
-            width: 1.5,
-          ),
+          borderSide: BorderSide.none,
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.r),
           borderSide: const BorderSide(
             color: Color(0xFF3B82F6),
-            width: 2,
+            width: 1.5,
           ),
         ),
       ),

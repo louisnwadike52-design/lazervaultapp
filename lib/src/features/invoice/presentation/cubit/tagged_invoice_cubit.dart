@@ -174,8 +174,15 @@ class TaggedInvoiceCubit extends Cubit<TaggedInvoiceState> {
     await loadOutgoingInvoices(page: 1, statusFilter: currentFilter);
   }
 
-  /// Pay a tagged invoice (one-click payment from account balance)
-  Future<void> payInvoice(String invoiceId, String accountId) async {
+  /// Pay a tagged invoice with full security verification
+  Future<void> payInvoice(
+    String invoiceId,
+    String accountId, {
+    required String pin,
+    required String verificationToken,
+    required String transactionId,
+    required String idempotencyKey,
+  }) async {
     try {
       if (isClosed) return;
       emit(TaggedInvoicePaymentProcessing(
@@ -186,6 +193,10 @@ class TaggedInvoiceCubit extends Cubit<TaggedInvoiceState> {
       final transaction = await repository.payTaggedInvoice(
         invoiceId: invoiceId,
         sourceAccountId: accountId,
+        pin: pin,
+        verificationToken: verificationToken,
+        transactionId: transactionId,
+        idempotencyKey: idempotencyKey,
       );
       if (isClosed) return;
 
@@ -194,8 +205,8 @@ class TaggedInvoiceCubit extends Cubit<TaggedInvoiceState> {
         message: transaction['message'] as String? ?? 'Payment successful!',
       ));
 
-      // Auto-refresh incoming invoices after successful payment
-      await Future.delayed(const Duration(seconds: 2));
+      // Optimistically refresh incoming invoices after successful payment
+      await Future.delayed(const Duration(seconds: 1));
       if (isClosed) return;
       await refreshIncoming();
     } catch (e) {

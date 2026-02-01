@@ -1,12 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
+import 'package:get_it/get_it.dart';
+import 'package:uuid/uuid.dart';
 import 'package:lazervault/src/features/invoice/domain/entities/tagged_invoice_entity.dart';
 import 'package:lazervault/src/features/invoice/presentation/cubit/tagged_invoice_cubit.dart';
+import 'package:lazervault/src/features/invoice/presentation/cubit/tagged_invoice_state.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_state.dart';
+import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
+import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
+import 'package:lazervault/core/types/app_routes.dart';
 
 class PayTaggedInvoiceDialog extends StatefulWidget {
   final TaggedInvoice invoice;
@@ -20,50 +29,74 @@ class PayTaggedInvoiceDialog extends StatefulWidget {
   State<PayTaggedInvoiceDialog> createState() => _PayTaggedInvoiceDialogState();
 }
 
-class _PayTaggedInvoiceDialogState extends State<PayTaggedInvoiceDialog> {
+class _PayTaggedInvoiceDialogState extends State<PayTaggedInvoiceDialog>
+    with TransactionPinMixin {
+  @override
+  ITransactionPinService get transactionPinService =>
+      GetIt.I<ITransactionPinService>();
+
   String? _selectedAccountId;
   bool _isProcessing = false;
-
-  @override
-  void initState() {
-    super.initState();
-    // Accounts should already be loaded from the main app
-    // If not loaded, parent widget should handle fetching
-  }
 
   double get _processingFee => widget.invoice.amount * 0.005; // 0.5% fee
   double get _totalAmount => widget.invoice.amount + _processingFee;
 
   @override
   Widget build(BuildContext context) {
-    return Dialog(
-      backgroundColor: Colors.transparent,
-      child: Container(
-        constraints: BoxConstraints(maxHeight: 600.h),
-        decoration: BoxDecoration(
-          color: const Color(0xFF1F1F1F),
-          borderRadius: BorderRadius.circular(24.r),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _buildHeader(),
-            Flexible(
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    _buildInvoiceSummary(),
-                    _buildDivider(),
-                    _buildAccountSelector(),
-                    _buildDivider(),
-                    _buildPaymentSummary(),
-                  ],
+    return BlocListener<TaggedInvoiceCubit, TaggedInvoiceState>(
+      listener: (context, state) {
+        if (state is TaggedInvoicePaymentSuccess) {
+          // Refresh dashboard balance
+          final authState = context.read<AuthenticationCubit>().state;
+          if (authState is AuthenticationSuccess) {
+            context.read<AccountCardsSummaryCubit>().fetchAccountSummaries(
+              userId: authState.profile.userId,
+            );
+          }
+          Get.back(); // Close dialog
+          Get.toNamed(
+            AppRoutes.invoicePaymentReceipt,
+            arguments: {...state.transaction, 'fromPaymentFlow': true},
+          );
+        } else if (state is TaggedInvoiceError) {
+          setState(() => _isProcessing = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.message),
+              backgroundColor: const Color(0xFFEF4444),
+            ),
+          );
+        }
+      },
+      child: Dialog(
+        backgroundColor: Colors.transparent,
+        child: Container(
+          constraints: BoxConstraints(maxHeight: 600.h),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1F1F1F),
+            borderRadius: BorderRadius.circular(24.r),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildHeader(),
+              Flexible(
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _buildInvoiceSummary(),
+                      _buildDivider(),
+                      _buildAccountSelector(),
+                      _buildDivider(),
+                      _buildPaymentSummary(),
+                    ],
+                  ),
                 ),
               ),
-            ),
-            _buildActionButtons(),
-          ],
+              _buildActionButtons(),
+            ],
+          ),
         ),
       ),
     );
@@ -93,7 +126,7 @@ class _PayTaggedInvoiceDialogState extends State<PayTaggedInvoiceDialog> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Quick Pay Invoice',
+                  'Pay Invoice Items',
                   style: GoogleFonts.inter(
                     color: Colors.white,
                     fontSize: 20.sp,
@@ -102,7 +135,7 @@ class _PayTaggedInvoiceDialogState extends State<PayTaggedInvoiceDialog> {
                 ),
                 SizedBox(height: 4.h),
                 Text(
-                  'Pay from your account balance',
+                  'Pay invoice creator for items',
                   style: GoogleFonts.inter(
                     color: const Color(0xFF9CA3AF),
                     fontSize: 14.sp,
@@ -132,7 +165,7 @@ class _PayTaggedInvoiceDialogState extends State<PayTaggedInvoiceDialog> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Invoice Details',
+            'INVOICE DETAILS',
             style: GoogleFonts.inter(
               color: const Color(0xFF9CA3AF),
               fontSize: 12.sp,
@@ -494,22 +527,38 @@ class _PayTaggedInvoiceDialogState extends State<PayTaggedInvoiceDialog> {
   Future<void> _processPayment() async {
     if (_selectedAccountId == null) return;
 
+    HapticFeedback.mediumImpact();
+
+    // Generate transaction ID and idempotency key
+    final idPrefix = widget.invoice.invoiceId.length >= 8
+        ? widget.invoice.invoiceId.substring(0, 8)
+        : widget.invoice.invoiceId;
+    final transactionId = 'INV-PAY-$idPrefix';
+    final idempotencyKey = const Uuid().v4();
+
+    // Validate PIN via TransactionPinMixin
+    final pinResult = await validatePinOnly(
+      context: context,
+      transactionId: transactionId,
+      transactionType: 'invoice_item_payment',
+      amount: _totalAmount,
+      currency: widget.invoice.currency,
+    );
+
+    if (pinResult == null || !pinResult.success) return;
+
     setState(() {
       _isProcessing = true;
     });
 
-    try {
-      await context.read<TaggedInvoiceCubit>().payInvoice(
-            widget.invoice.invoiceId,
-            _selectedAccountId!,
-          );
-
-      // Close dialog
-      Get.back();
-    } catch (e) {
-      setState(() {
-        _isProcessing = false;
-      });
-    }
+    // Call cubit with all security params
+    await context.read<TaggedInvoiceCubit>().payInvoice(
+          widget.invoice.invoiceId,
+          _selectedAccountId!,
+          pin: '',
+          verificationToken: pinResult.verificationToken ?? '',
+          transactionId: transactionId,
+          idempotencyKey: idempotencyKey,
+        );
   }
 }

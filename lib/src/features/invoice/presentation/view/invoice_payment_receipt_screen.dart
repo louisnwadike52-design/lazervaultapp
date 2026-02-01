@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
 import 'package:get_it/get_it.dart';
 import 'package:intl/intl.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:lazervault/core/types/app_routes.dart';
-import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:path_provider/path_provider.dart';
@@ -13,17 +11,24 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'dart:io';
 import 'dart:typed_data';
+import '../../../../../core/types/app_routes.dart';
+import '../../../../../core/services/locale_manager.dart';
 
-class TransferProof extends StatefulWidget {
-  final Map<String, dynamic> transferDetails;
-  const TransferProof({super.key, required this.transferDetails});
+class InvoicePaymentReceiptScreen extends StatefulWidget {
+  final Map<String, dynamic> transaction;
+
+  const InvoicePaymentReceiptScreen({
+    super.key,
+    required this.transaction,
+  });
 
   @override
-  State<TransferProof> createState() => _TransferProofState();
+  State<InvoicePaymentReceiptScreen> createState() =>
+      _InvoicePaymentReceiptScreenState();
 }
 
-class _TransferProofState extends State<TransferProof>
-    with SingleTickerProviderStateMixin {
+class _InvoicePaymentReceiptScreenState
+    extends State<InvoicePaymentReceiptScreen> with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   final ScreenshotController _screenshotController = ScreenshotController();
@@ -48,25 +53,28 @@ class _TransferProofState extends State<TransferProof>
     super.dispose();
   }
 
-  double get _amount => widget.transferDetails['amount'] as double? ?? 0.0;
-  double get _fee => widget.transferDetails['fee'] as double? ?? 0.0;
-  double get _totalAmount => widget.transferDetails['totalAmount'] as double? ?? _amount;
+  String get _transactionId =>
+      widget.transaction['transaction_id']?.toString() ?? 'N/A';
+  String get _invoiceId =>
+      widget.transaction['invoice_id']?.toString() ?? 'N/A';
+  double get _amount =>
+      (widget.transaction['amount'] as num?)?.toDouble() ?? 0.0;
   String get _currency {
-    final txCurrency = widget.transferDetails['currency'] as String?;
+    // Use currency from transaction data, fall back to user's active currency
+    final txCurrency = widget.transaction['currency'] as String?;
     if (txCurrency != null && txCurrency.isNotEmpty && txCurrency != 'USD') {
       return txCurrency;
     }
     return _localeManager.currentCurrency;
   }
-  String get _recipientName => widget.transferDetails['recipientName'] as String? ?? 'Recipient';
-  String get _recipientAccount => widget.transferDetails['recipientAccountMasked'] as String? ?? 'N/A';
-  String get _sourceAccount => widget.transferDetails['sourceAccountInfo'] as String? ?? 'N/A';
-  String get _transferId => widget.transferDetails['transferId']?.toString() ?? 'N/A';
-  DateTime get _timestamp => widget.transferDetails['timestamp'] as DateTime? ?? DateTime.now();
-  String get _status => widget.transferDetails['status'] as String? ?? 'completed';
-  String get _network => widget.transferDetails['network'] as String? ?? 'Internal Transfer';
-  String get _transferType => widget.transferDetails['transferType'] as String? ?? 'Peer-to-Peer Transfer';
-  String get _processingTime => widget.transferDetails['processingTime'] as String? ?? 'Instant';
+  double get _newBalance =>
+      (widget.transaction['new_balance'] as num?)?.toDouble() ?? 0.0;
+  String get _message =>
+      widget.transaction['message'] as String? ?? 'Your payment has been processed successfully';
+  bool get _isPartial =>
+      widget.transaction['is_partial'] == true;
+  double get _totalAmount =>
+      (widget.transaction['total_amount'] as num?)?.toDouble() ?? _amount;
 
   String get _currencySymbol {
     switch (_currency.toUpperCase()) {
@@ -89,7 +97,7 @@ class _TransferProofState extends State<TransferProof>
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          onPressed: () => Get.offAllNamed(AppRoutes.dashboard),
+          onPressed: _navigateBack,
           icon: Icon(Icons.close, color: const Color(0xFF1A1A1A), size: 24.sp),
         ),
       ),
@@ -136,45 +144,48 @@ class _TransferProofState extends State<TransferProof>
         ),
         SizedBox(height: 16.h),
         Text(
-          'Transfer Sent',
+          _isPartial ? 'Partial Payment Sent' : 'Payment Sent',
           style: GoogleFonts.inter(
             color: const Color(0xFF1A1A1A),
             fontSize: 20.sp,
             fontWeight: FontWeight.w700,
           ),
         ),
-        SizedBox(height: 4.h),
-        Text(
-          'to $_recipientName',
-          style: GoogleFonts.inter(
-            color: const Color(0xFF6B7280),
-            fontSize: 14.sp,
-          ),
-        ),
         SizedBox(height: 8.h),
         Text(
-          '$_currencySymbol${NumberFormat('#,##0.00').format(_totalAmount)}',
+          '$_currencySymbol${NumberFormat('#,##0.00').format(_amount)}',
           style: GoogleFonts.inter(
             color: const Color(0xFF1A1A1A),
             fontSize: 32.sp,
             fontWeight: FontWeight.w800,
           ),
         ),
-        if (_fee > 0) ...[
+        if (_isPartial) ...[
           SizedBox(height: 4.h),
           Text(
-            'Includes $_currencySymbol${NumberFormat('#,##0.00').format(_fee)} fee',
+            'of $_currencySymbol${NumberFormat('#,##0.00').format(_totalAmount)} total',
             style: GoogleFonts.inter(
-              color: const Color(0xFF9CA3AF),
-              fontSize: 13.sp,
+              color: const Color(0xFF6B7280),
+              fontSize: 14.sp,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ],
+        SizedBox(height: 4.h),
+        Text(
+          _message,
+          style: GoogleFonts.inter(
+            color: const Color(0xFF9CA3AF),
+            fontSize: 13.sp,
+          ),
+          textAlign: TextAlign.center,
+        ),
       ],
     );
   }
 
   Widget _buildReceiptCard() {
+    final now = DateTime.now();
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 20.w),
       decoration: BoxDecoration(
@@ -183,37 +194,29 @@ class _TransferProofState extends State<TransferProof>
       ),
       child: Column(
         children: [
-          _buildRow('Status', _status.toUpperCase(), isStatus: true),
+          _buildReceiptRow('Status', 'Completed', isStatus: true),
           _divider(),
-          _buildRow('Type', _transferType),
+          _buildReceiptRow('Type', _isPartial ? 'Partial Invoice Payment' : 'Invoice Payment'),
           _divider(),
-          _buildRow('Amount', '$_currencySymbol${NumberFormat('#,##0.00').format(_amount)}'),
-          if (_fee > 0) ...[
+          _buildReceiptRow('Amount', '$_currencySymbol${NumberFormat('#,##0.00').format(_amount)}'),
+          _divider(),
+          _buildReceiptRow('Currency', _currency.toUpperCase()),
+          _divider(),
+          _buildReceiptRow('Date', DateFormat('d MMM yyyy, HH:mm').format(now)),
+          _divider(),
+          _buildReceiptRow('Invoice ID', _invoiceId, isMonospace: true),
+          _divider(),
+          _buildReceiptRow('Reference', _transactionId, isMonospace: true),
+          if (_newBalance > 0) ...[
             _divider(),
-            _buildRow('Fee', '$_currencySymbol${NumberFormat('#,##0.00').format(_fee)}'),
+            _buildReceiptRow('New Balance', '$_currencySymbol${NumberFormat('#,##0.00').format(_newBalance)}'),
           ],
-          _divider(),
-          _buildRow('Recipient', _recipientName),
-          _divider(),
-          _buildRow('Recipient Account', _recipientAccount, isMonospace: true),
-          _divider(),
-          _buildRow('Source Account', _sourceAccount, isMonospace: true),
-          _divider(),
-          _buildRow('Currency', _currency.toUpperCase()),
-          _divider(),
-          _buildRow('Date', DateFormat('d MMM yyyy, HH:mm').format(_timestamp)),
-          _divider(),
-          _buildRow('Transfer ID', _transferId, isMonospace: true),
-          _divider(),
-          _buildRow('Network', _network),
-          _divider(),
-          _buildRow('Processing', _processingTime),
         ],
       ),
     );
   }
 
-  Widget _buildRow(String label, String value, {bool isStatus = false, bool isMonospace = false}) {
+  Widget _buildReceiptRow(String label, String value, {bool isStatus = false, bool isMonospace = false}) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
       child: Row(
@@ -301,50 +304,26 @@ class _TransferProofState extends State<TransferProof>
               ),
             ],
           ),
-          SizedBox(height: 12.h),
-          Row(
-            children: [
-              Expanded(
-                child: TextButton(
-                  onPressed: () => Get.offAllNamed(AppRoutes.selectRecipient),
-                  style: TextButton.styleFrom(
-                    padding: EdgeInsets.symmetric(vertical: 14.h),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12.r),
-                      side: const BorderSide(color: Color(0xFFE5E7EB)),
-                    ),
-                  ),
-                  child: Text(
-                    'New Transfer',
-                    style: GoogleFonts.inter(
-                      color: const Color(0xFF1A1A1A),
-                      fontSize: 15.sp,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+          SizedBox(height: 16.h),
+          SizedBox(
+            width: double.infinity,
+            child: TextButton(
+              onPressed: _navigateBack,
+              style: TextButton.styleFrom(
+                padding: EdgeInsets.symmetric(vertical: 14.h),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12.r),
                 ),
               ),
-              SizedBox(width: 12.w),
-              Expanded(
-                child: TextButton(
-                  onPressed: () => Get.offAllNamed(AppRoutes.dashboard),
-                  style: TextButton.styleFrom(
-                    padding: EdgeInsets.symmetric(vertical: 14.h),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12.r),
-                    ),
-                  ),
-                  child: Text(
-                    'Done',
-                    style: GoogleFonts.inter(
-                      color: const Color(0xFF6B7280),
-                      fontSize: 15.sp,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+              child: Text(
+                'Done',
+                style: GoogleFonts.inter(
+                  color: const Color(0xFF6B7280),
+                  fontSize: 15.sp,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
-            ],
+            ),
           ),
         ],
       ),
@@ -384,6 +363,15 @@ class _TransferProofState extends State<TransferProof>
     );
   }
 
+  void _navigateBack() {
+    final fromPaymentFlow = widget.transaction['fromPaymentFlow'] == true;
+    if (fromPaymentFlow) {
+      Get.offAllNamed(AppRoutes.invoice);
+    } else {
+      Get.back();
+    }
+  }
+
   Future<void> _downloadReceipt() async {
     try {
       PermissionStatus status;
@@ -401,11 +389,14 @@ class _TransferProofState extends State<TransferProof>
       }
 
       if (status.isDenied || status.isPermanentlyDenied) {
-        _showSnackbar('Storage permission is required', isError: true);
+        _showSnackbar('Storage permission is required to save the receipt',
+            isError: true);
         return;
       }
 
-      final Uint8List? imageBytes = await _screenshotController.capture(pixelRatio: 3.0);
+      final Uint8List? imageBytes = await _screenshotController.capture(
+        pixelRatio: 3.0,
+      );
       if (imageBytes == null) {
         _showSnackbar('Failed to capture receipt', isError: true);
         return;
@@ -425,17 +416,19 @@ class _TransferProofState extends State<TransferProof>
         return;
       }
 
-      final lazerVaultDir = Directory('${directory.path}/LazerVault/Receipts');
+      final lazerVaultDir =
+          Directory('${directory.path}/LazerVault/Receipts');
       if (!await lazerVaultDir.exists()) {
         await lazerVaultDir.create(recursive: true);
       }
 
-      final fileName = 'Transfer_Receipt_${_transferId}_${DateTime.now().millisecondsSinceEpoch}.png';
+      final fileName =
+          'Invoice_Receipt_${_transactionId}_${DateTime.now().millisecondsSinceEpoch}.png';
       final filePath = '${lazerVaultDir.path}/$fileName';
       final file = File(filePath);
       await file.writeAsBytes(imageBytes);
 
-      _showSnackbar('Receipt saved successfully');
+      _showSnackbar('Receipt saved to $filePath');
     } catch (e) {
       _showSnackbar('Error saving receipt: $e', isError: true);
     }
@@ -443,21 +436,24 @@ class _TransferProofState extends State<TransferProof>
 
   Future<void> _shareReceipt() async {
     try {
-      final Uint8List? imageBytes = await _screenshotController.capture(pixelRatio: 3.0);
+      final Uint8List? imageBytes = await _screenshotController.capture(
+        pixelRatio: 3.0,
+      );
       if (imageBytes == null) {
         _showSnackbar('Failed to capture receipt', isError: true);
         return;
       }
 
       final tempDir = await getTemporaryDirectory();
-      final fileName = 'Transfer_Receipt_${_transferId}_${DateTime.now().millisecondsSinceEpoch}.png';
+      final fileName =
+          'Invoice_Receipt_${_transactionId}_${DateTime.now().millisecondsSinceEpoch}.png';
       final filePath = '${tempDir.path}/$fileName';
       final file = File(filePath);
       await file.writeAsBytes(imageBytes);
 
       await Share.shareXFiles(
         [XFile(filePath)],
-        text: 'LazerVault Transfer Receipt - $_transferId',
+        text: 'LazerVault Invoice Payment Receipt - $_transactionId',
       );
     } catch (e) {
       _showSnackbar('Error sharing receipt: $e', isError: true);
@@ -467,7 +463,10 @@ class _TransferProofState extends State<TransferProof>
   void _showSnackbar(String message, {bool isError = false}) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message, style: GoogleFonts.inter(fontSize: 13.sp)),
+        content: Text(
+          message,
+          style: GoogleFonts.inter(fontSize: 13.sp),
+        ),
         backgroundColor: isError ? const Color(0xFFEF4444) : const Color(0xFF3B82F6),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),

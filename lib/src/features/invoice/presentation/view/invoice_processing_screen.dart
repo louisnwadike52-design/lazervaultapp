@@ -29,6 +29,22 @@ class _InvoiceProcessingScreenState extends State<InvoiceProcessingScreen>
     with TickerProviderStateMixin {
   late AnimationController _processingController;
   late AnimationController _fadeController;
+
+  String get _currencySymbol {
+    switch (widget.invoice.currency.toUpperCase()) {
+      case 'NGN': return '₦';
+      case 'GBP': return '£';
+      case 'EUR': return '€';
+      case 'ZAR': return 'R';
+      case 'CAD': return 'C\$';
+      case 'AUD': return 'A\$';
+      case 'INR': return '₹';
+      case 'JPY': return '¥';
+      case 'USD': return '\$';
+      default: return '₦';
+    }
+  }
+
   late AnimationController _pulseController;
   late Animation<double> _rotationAnimation;
   late Animation<double> _fadeAnimation;
@@ -146,7 +162,7 @@ class _InvoiceProcessingScreenState extends State<InvoiceProcessingScreen>
     Future.delayed(const Duration(milliseconds: 800), () {
       if (mounted) {
         Get.offNamed(
-          AppRoutes.invoiceReceipt,
+          AppRoutes.invoicePreview,
           arguments: widget.invoice,
         );
       }
@@ -312,7 +328,7 @@ class _InvoiceProcessingScreenState extends State<InvoiceProcessingScreen>
       child: Column(
         children: [
           Text(
-            'Invoice Payment',
+            'Service Fee Payment',
             style: GoogleFonts.inter(
               color: Colors.grey[400],
               fontSize: 14.sp,
@@ -320,7 +336,7 @@ class _InvoiceProcessingScreenState extends State<InvoiceProcessingScreen>
           ),
           SizedBox(height: 8.h),
           Text(
-            '\$${widget.invoice.totalAmount.toStringAsFixed(2)}',
+            '${_currencySymbol}99.99',
             style: GoogleFonts.inter(
               color: Colors.white,
               fontSize: 32.sp,

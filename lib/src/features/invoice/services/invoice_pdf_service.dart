@@ -2,11 +2,25 @@ import 'dart:io';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:path_provider/path_provider.dart';
-import 'package:printing/printing.dart';
 import 'package:share_plus/share_plus.dart';
 import '../domain/entities/invoice_entity.dart';
 
 class InvoicePdfService {
+  static String _currencySymbolFor(String code) {
+    switch (code.toUpperCase()) {
+      case 'NGN': return '₦';
+      case 'GBP': return '£';
+      case 'EUR': return '€';
+      case 'ZAR': return 'R';
+      case 'CAD': return 'C\$';
+      case 'AUD': return 'A\$';
+      case 'INR': return '₹';
+      case 'JPY': return '¥';
+      case 'USD': return '\$';
+      default: return '₦';
+    }
+  }
+
   static Future<File> generateInvoicePdf(Invoice invoice) async {
     final pdf = pw.Document();
 
@@ -30,7 +44,6 @@ class InvoicePdfService {
               _buildNotesSection(invoice),
             ],
             pw.SizedBox(height: 32),
-            _buildFooter(),
           ];
         },
       ),
@@ -214,7 +227,6 @@ class InvoicePdfService {
       child: pw.Row(
         children: [
           pw.Expanded(child: _buildDetailItem('Type', invoice.typeDisplayName)),
-          pw.Expanded(child: _buildDetailItem('Status', invoice.statusDisplayName)),
           pw.Expanded(child: _buildDetailItem('Currency', invoice.currency)),
         ],
       ),
@@ -334,14 +346,14 @@ class InvoicePdfService {
                 pw.Padding(
                   padding: const pw.EdgeInsets.all(12),
                   child: pw.Text(
-                    '\$${item.unitPrice.toStringAsFixed(2)}',
+                    '${_currencySymbolFor(invoice.currency)}${item.unitPrice.toStringAsFixed(2)}',
                     textAlign: pw.TextAlign.right,
                   ),
                 ),
                 pw.Padding(
                   padding: const pw.EdgeInsets.all(12),
                   child: pw.Text(
-                    '\$${item.totalPrice.toStringAsFixed(2)}',
+                    '${_currencySymbolFor(invoice.currency)}${item.totalPrice.toStringAsFixed(2)}',
                     style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
                     textAlign: pw.TextAlign.right,
                   ),
@@ -358,9 +370,9 @@ class InvoicePdfService {
     return pw.Column(
       children: [
         if (invoice.taxAmount != null && invoice.taxAmount! > 0)
-          _buildTotalRow('Tax', invoice.taxAmount!),
+          _buildTotalRow('Tax', invoice.taxAmount!, currencyCode: invoice.currency),
         if (invoice.discountAmount != null && invoice.discountAmount! > 0)
-          _buildTotalRow('Discount', -invoice.discountAmount!),
+          _buildTotalRow('Discount', -invoice.discountAmount!, currencyCode: invoice.currency),
         pw.Container(
           padding: const pw.EdgeInsets.symmetric(vertical: 16),
           decoration: const pw.BoxDecoration(
@@ -379,7 +391,7 @@ class InvoicePdfService {
                 ),
               ),
               pw.Text(
-                '\$${invoice.totalAmount.toStringAsFixed(2)}',
+                '${_currencySymbolFor(invoice.currency)}${invoice.totalAmount.toStringAsFixed(2)}',
                 style: pw.TextStyle(
                   fontSize: 24,
                   fontWeight: pw.FontWeight.bold,
@@ -393,7 +405,7 @@ class InvoicePdfService {
     );
   }
 
-  static pw.Widget _buildTotalRow(String label, double amount) {
+  static pw.Widget _buildTotalRow(String label, double amount, {String currencyCode = 'NGN'}) {
     return pw.Padding(
       padding: const pw.EdgeInsets.symmetric(vertical: 8),
       child: pw.Row(
@@ -407,7 +419,7 @@ class InvoicePdfService {
             ),
           ),
           pw.Text(
-            amount < 0 ? '-\$${(-amount).toStringAsFixed(2)}' : '\$${amount.toStringAsFixed(2)}',
+            amount < 0 ? '-${_currencySymbolFor(currencyCode)}${(-amount).toStringAsFixed(2)}' : '${_currencySymbolFor(currencyCode)}${amount.toStringAsFixed(2)}',
             style: pw.TextStyle(
               fontSize: 16,
               fontWeight: pw.FontWeight.bold,
@@ -476,13 +488,32 @@ class InvoicePdfService {
     return '${date.day}/${date.month}/${date.year}';
   }
 
-  static Future<void> downloadInvoice(Invoice invoice) async {
+  static Future<String> downloadInvoice(Invoice invoice) async {
     try {
       final file = await generateInvoicePdf(invoice);
-      await Printing.sharePdf(
-        bytes: await file.readAsBytes(),
-        filename: 'invoice_${invoice.id.substring(0, 8)}.pdf',
-      );
+
+      // Get appropriate directory based on platform
+      Directory? directory;
+      if (Platform.isAndroid) {
+        directory = Directory('/storage/emulated/0/Download');
+        if (!await directory.exists()) {
+          directory = await getExternalStorageDirectory();
+        }
+      } else if (Platform.isIOS) {
+        directory = await getApplicationDocumentsDirectory();
+      } else {
+        directory = await getDownloadsDirectory();
+      }
+
+      if (directory == null) {
+        throw Exception('Could not access downloads directory');
+      }
+
+      final fileName = 'invoice_${invoice.id.substring(0, 8)}.pdf';
+      final savedFile = File('${directory.path}/$fileName');
+      await file.copy(savedFile.path);
+
+      return savedFile.path;
     } catch (e) {
       throw Exception('Failed to download invoice: $e');
     }

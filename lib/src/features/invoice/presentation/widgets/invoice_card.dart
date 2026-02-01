@@ -226,6 +226,8 @@ class InvoiceCard extends StatelessWidget {
         return Colors.orange;
       case InvoiceStatus.paid:
         return Colors.green;
+      case InvoiceStatus.partiallyPaid:
+        return const Color(0xFFF59E0B);
       case InvoiceStatus.expired:
         return Colors.red;
       case InvoiceStatus.cancelled:

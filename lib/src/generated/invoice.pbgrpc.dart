@@ -56,6 +56,49 @@ class InvoiceServiceClient extends $grpc.Client {
       ($0.UpdateInvoiceStatusRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
           $0.UpdateInvoiceStatusResponse.fromBuffer(value));
+  static final _$tagUsersToInvoice = $grpc.ClientMethod<
+          $0.TagUsersToInvoiceRequest, $0.TagUsersToInvoiceResponse>(
+      '/invoice.InvoiceService/TagUsersToInvoice',
+      ($0.TagUsersToInvoiceRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $0.TagUsersToInvoiceResponse.fromBuffer(value));
+  static final _$getInvoicesTaggedToUser = $grpc.ClientMethod<
+          $0.GetInvoicesTaggedToUserRequest,
+          $0.GetInvoicesTaggedToUserResponse>(
+      '/invoice.InvoiceService/GetInvoicesTaggedToUser',
+      ($0.GetInvoicesTaggedToUserRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $0.GetInvoicesTaggedToUserResponse.fromBuffer(value));
+  static final _$getSentInvoices =
+      $grpc.ClientMethod<$0.GetSentInvoicesRequest, $0.GetSentInvoicesResponse>(
+          '/invoice.InvoiceService/GetSentInvoices',
+          ($0.GetSentInvoicesRequest value) => value.writeToBuffer(),
+          ($core.List<$core.int> value) =>
+              $0.GetSentInvoicesResponse.fromBuffer(value));
+  static final _$updateInvoice =
+      $grpc.ClientMethod<$0.UpdateInvoiceRequest, $0.UpdateInvoiceResponse>(
+          '/invoice.InvoiceService/UpdateInvoice',
+          ($0.UpdateInvoiceRequest value) => value.writeToBuffer(),
+          ($core.List<$core.int> value) =>
+              $0.UpdateInvoiceResponse.fromBuffer(value));
+  static final _$deleteInvoice =
+      $grpc.ClientMethod<$0.DeleteInvoiceRequest, $0.DeleteInvoiceResponse>(
+          '/invoice.InvoiceService/DeleteInvoice',
+          ($0.DeleteInvoiceRequest value) => value.writeToBuffer(),
+          ($core.List<$core.int> value) =>
+              $0.DeleteInvoiceResponse.fromBuffer(value));
+  static final _$getInvoiceStatistics = $grpc.ClientMethod<
+          $0.GetInvoiceStatisticsRequest, $0.GetInvoiceStatisticsResponse>(
+      '/invoice.InvoiceService/GetInvoiceStatistics',
+      ($0.GetInvoiceStatisticsRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $0.GetInvoiceStatisticsResponse.fromBuffer(value));
+  static final _$unlockInvoice =
+      $grpc.ClientMethod<$0.UnlockInvoiceRequest, $0.UnlockInvoiceResponse>(
+          '/invoice.InvoiceService/UnlockInvoice',
+          ($0.UnlockInvoiceRequest value) => value.writeToBuffer(),
+          ($core.List<$core.int> value) =>
+              $0.UnlockInvoiceResponse.fromBuffer(value));
 
   InvoiceServiceClient($grpc.ClientChannel channel,
       {$grpc.CallOptions? options,
@@ -102,6 +145,49 @@ class InvoiceServiceClient extends $grpc.Client {
       $0.UpdateInvoiceStatusRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$updateInvoiceStatus, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.TagUsersToInvoiceResponse> tagUsersToInvoice(
+      $0.TagUsersToInvoiceRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$tagUsersToInvoice, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetInvoicesTaggedToUserResponse>
+      getInvoicesTaggedToUser($0.GetInvoicesTaggedToUserRequest request,
+          {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getInvoicesTaggedToUser, request,
+        options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetSentInvoicesResponse> getSentInvoices(
+      $0.GetSentInvoicesRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getSentInvoices, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.UpdateInvoiceResponse> updateInvoice(
+      $0.UpdateInvoiceRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$updateInvoice, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.DeleteInvoiceResponse> deleteInvoice(
+      $0.DeleteInvoiceRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$deleteInvoice, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetInvoiceStatisticsResponse> getInvoiceStatistics(
+      $0.GetInvoiceStatisticsRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getInvoiceStatistics, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.UnlockInvoiceResponse> unlockInvoice(
+      $0.UnlockInvoiceRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$unlockInvoice, request, options: options);
   }
 }
 
@@ -168,6 +254,69 @@ abstract class InvoiceServiceBase extends $grpc.Service {
         ($core.List<$core.int> value) =>
             $0.UpdateInvoiceStatusRequest.fromBuffer(value),
         ($0.UpdateInvoiceStatusResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.TagUsersToInvoiceRequest,
+            $0.TagUsersToInvoiceResponse>(
+        'TagUsersToInvoice',
+        tagUsersToInvoice_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.TagUsersToInvoiceRequest.fromBuffer(value),
+        ($0.TagUsersToInvoiceResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetInvoicesTaggedToUserRequest,
+            $0.GetInvoicesTaggedToUserResponse>(
+        'GetInvoicesTaggedToUser',
+        getInvoicesTaggedToUser_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.GetInvoicesTaggedToUserRequest.fromBuffer(value),
+        ($0.GetInvoicesTaggedToUserResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetSentInvoicesRequest,
+            $0.GetSentInvoicesResponse>(
+        'GetSentInvoices',
+        getSentInvoices_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.GetSentInvoicesRequest.fromBuffer(value),
+        ($0.GetSentInvoicesResponse value) => value.writeToBuffer()));
+    $addMethod(
+        $grpc.ServiceMethod<$0.UpdateInvoiceRequest, $0.UpdateInvoiceResponse>(
+            'UpdateInvoice',
+            updateInvoice_Pre,
+            false,
+            false,
+            ($core.List<$core.int> value) =>
+                $0.UpdateInvoiceRequest.fromBuffer(value),
+            ($0.UpdateInvoiceResponse value) => value.writeToBuffer()));
+    $addMethod(
+        $grpc.ServiceMethod<$0.DeleteInvoiceRequest, $0.DeleteInvoiceResponse>(
+            'DeleteInvoice',
+            deleteInvoice_Pre,
+            false,
+            false,
+            ($core.List<$core.int> value) =>
+                $0.DeleteInvoiceRequest.fromBuffer(value),
+            ($0.DeleteInvoiceResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetInvoiceStatisticsRequest,
+            $0.GetInvoiceStatisticsResponse>(
+        'GetInvoiceStatistics',
+        getInvoiceStatistics_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.GetInvoiceStatisticsRequest.fromBuffer(value),
+        ($0.GetInvoiceStatisticsResponse value) => value.writeToBuffer()));
+    $addMethod(
+        $grpc.ServiceMethod<$0.UnlockInvoiceRequest, $0.UnlockInvoiceResponse>(
+            'UnlockInvoice',
+            unlockInvoice_Pre,
+            false,
+            false,
+            ($core.List<$core.int> value) =>
+                $0.UnlockInvoiceRequest.fromBuffer(value),
+            ($0.UnlockInvoiceResponse value) => value.writeToBuffer()));
   }
 
   $async.Future<$0.CreateInvoiceResponse> createInvoice_Pre(
@@ -209,6 +358,48 @@ abstract class InvoiceServiceBase extends $grpc.Service {
     return updateInvoiceStatus(call, await request);
   }
 
+  $async.Future<$0.TagUsersToInvoiceResponse> tagUsersToInvoice_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$0.TagUsersToInvoiceRequest> request) async {
+    return tagUsersToInvoice(call, await request);
+  }
+
+  $async.Future<$0.GetInvoicesTaggedToUserResponse> getInvoicesTaggedToUser_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$0.GetInvoicesTaggedToUserRequest> request) async {
+    return getInvoicesTaggedToUser(call, await request);
+  }
+
+  $async.Future<$0.GetSentInvoicesResponse> getSentInvoices_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$0.GetSentInvoicesRequest> request) async {
+    return getSentInvoices(call, await request);
+  }
+
+  $async.Future<$0.UpdateInvoiceResponse> updateInvoice_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$0.UpdateInvoiceRequest> request) async {
+    return updateInvoice(call, await request);
+  }
+
+  $async.Future<$0.DeleteInvoiceResponse> deleteInvoice_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$0.DeleteInvoiceRequest> request) async {
+    return deleteInvoice(call, await request);
+  }
+
+  $async.Future<$0.GetInvoiceStatisticsResponse> getInvoiceStatistics_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$0.GetInvoiceStatisticsRequest> request) async {
+    return getInvoiceStatistics(call, await request);
+  }
+
+  $async.Future<$0.UnlockInvoiceResponse> unlockInvoice_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$0.UnlockInvoiceRequest> request) async {
+    return unlockInvoice(call, await request);
+  }
+
   $async.Future<$0.CreateInvoiceResponse> createInvoice(
       $grpc.ServiceCall call, $0.CreateInvoiceRequest request);
   $async.Future<$0.GetInvoicesResponse> getInvoices(
@@ -223,4 +414,18 @@ abstract class InvoiceServiceBase extends $grpc.Service {
       $grpc.ServiceCall call, $0.SendInvoiceReminderRequest request);
   $async.Future<$0.UpdateInvoiceStatusResponse> updateInvoiceStatus(
       $grpc.ServiceCall call, $0.UpdateInvoiceStatusRequest request);
+  $async.Future<$0.TagUsersToInvoiceResponse> tagUsersToInvoice(
+      $grpc.ServiceCall call, $0.TagUsersToInvoiceRequest request);
+  $async.Future<$0.GetInvoicesTaggedToUserResponse> getInvoicesTaggedToUser(
+      $grpc.ServiceCall call, $0.GetInvoicesTaggedToUserRequest request);
+  $async.Future<$0.GetSentInvoicesResponse> getSentInvoices(
+      $grpc.ServiceCall call, $0.GetSentInvoicesRequest request);
+  $async.Future<$0.UpdateInvoiceResponse> updateInvoice(
+      $grpc.ServiceCall call, $0.UpdateInvoiceRequest request);
+  $async.Future<$0.DeleteInvoiceResponse> deleteInvoice(
+      $grpc.ServiceCall call, $0.DeleteInvoiceRequest request);
+  $async.Future<$0.GetInvoiceStatisticsResponse> getInvoiceStatistics(
+      $grpc.ServiceCall call, $0.GetInvoiceStatisticsRequest request);
+  $async.Future<$0.UnlockInvoiceResponse> unlockInvoice(
+      $grpc.ServiceCall call, $0.UnlockInvoiceRequest request);
 }

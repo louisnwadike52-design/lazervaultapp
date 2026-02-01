@@ -384,9 +384,6 @@ class _DepositScreenState extends State<DepositScreen> {
       decoration: BoxDecoration(
         color: const Color(0xFF6C5CE7).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(
-          color: const Color(0xFF6C5CE7).withValues(alpha: 0.3),
-        ),
       ),
       child: Row(
         children: [
@@ -437,7 +434,6 @@ class _DepositScreenState extends State<DepositScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: Colors.grey[300]!),
       ),
       child: Column(
         children: [
@@ -487,7 +483,6 @@ class _DepositScreenState extends State<DepositScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: Colors.grey[200]!),
       ),
       child: Column(
         children: [

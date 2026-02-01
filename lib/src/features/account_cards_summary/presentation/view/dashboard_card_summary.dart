@@ -14,6 +14,7 @@ import '../widgets/dashboard_header.dart';
 import '../widgets/account_carousel.dart';
 import '../widgets/card_details_bottom_sheet.dart';
 import '../widgets/empty_account_state.dart';
+import 'package:lazervault/core/shared_widgets/lv_snackbar.dart';
 
 // Wrapper Widget to Provide the Cubit
 class DashboardCardSummary extends StatelessWidget {
@@ -89,16 +90,9 @@ class _DashboardCardSummaryViewState extends State<_DashboardCardSummaryView> {
     final userId = authState.profile.user.id;
     final accessToken = authState.profile.session.accessToken;
 
-    // Check if data is already loaded FOR THE SAME USER - skip fetch if so
+    // Always fetch fresh data on dashboard init to ensure balance is current
+    // (e.g., after invoice payment, transfer, etc.)
     final cubit = context.read<AccountCardsSummaryCubit>();
-    final currentState = cubit.state;
-    if (currentState is AccountCardsSummaryLoaded) {
-      // Only skip if accounts are loaded for the SAME user
-      if (cubit.currentUserId == userId && currentState.accountSummaries.isNotEmpty) {
-        debugPrint('_DashboardCardSummaryView: Accounts already loaded for user $userId, skipping fetch (WebSocket handles updates)');
-        return;
-      }
-    }
 
       // Get active country from ProfileCubit
       final profileState = context.read<ProfileCubit>().state;
@@ -178,9 +172,30 @@ class _DashboardCardSummaryViewState extends State<_DashboardCardSummaryView> {
             if (wsState.lastUpdate != null) {
               final event = wsState.lastUpdate!;
               debugPrint('_DashboardCardSummaryView: WebSocket balance update - ${event.eventType}: ${event.newBalance} ${event.currency}');
-              // REMOVED: No server refresh after WebSocket update
-              // The animated counter in AccountCarousel handles visual updates
-              // WebSocket is the authoritative source for balance changes
+              // Show snackbar for transfer events when user is on dashboard
+              if (event.eventType == 'transfer_out' || event.eventType == 'transfer') {
+                if (event.status == 'completed') {
+                  LVSnackbar.showSuccess(
+                    title: 'Transfer Completed',
+                    message: event.amount != null
+                        ? 'Transfer of ${event.currency} ${event.amount!.toStringAsFixed(2)} successful'
+                        : 'Your transfer was successful',
+                  );
+                } else if (event.status == 'failed') {
+                  LVSnackbar.showError(
+                    title: 'Transfer Failed',
+                    message: 'Transfer could not be completed. Funds returned to your account.',
+                    duration: const Duration(seconds: 5),
+                  );
+                }
+              } else if (event.eventType == 'transfer_in' || event.eventType == 'deposit') {
+                LVSnackbar.showSuccess(
+                  title: 'Funds Received',
+                  message: event.amount != null
+                      ? '${event.currency} ${event.amount!.toStringAsFixed(2)} received'
+                      : 'New funds received',
+                );
+              }
             }
           },
         ),
@@ -259,9 +274,12 @@ class _DashboardCardSummaryViewState extends State<_DashboardCardSummaryView> {
                               style: const TextStyle(color: Colors.red))),
                     );
                   }
-                  if (state is AccountCardsSummaryLoaded) {
+                  if (state is AccountCardsSummaryLoaded || state is AccountBalanceUpdated) {
+                    final accountSummaries = state is AccountCardsSummaryLoaded
+                        ? state.accountSummaries
+                        : (state as AccountBalanceUpdated).accountSummaries;
                     // Check if user has no accounts (non-Nigeria or accounts not yet created)
-                    if (state.accountSummaries.isEmpty) {
+                    if (accountSummaries.isEmpty) {
                       final isNigeriaUser = EmptyAccountState.isCountrySupported(countryCode);
                       return Padding(
                         padding: EdgeInsets.symmetric(horizontal: 4.w),
@@ -288,7 +306,7 @@ class _DashboardCardSummaryViewState extends State<_DashboardCardSummaryView> {
                     }
 
                     // Check if there's a family account in the summaries
-                    final hasFamilyAccount = state.accountSummaries.any(
+                    final hasFamilyAccount = accountSummaries.any(
                       (account) => account.isFamilyAccount,
                     );
 
@@ -297,7 +315,7 @@ class _DashboardCardSummaryViewState extends State<_DashboardCardSummaryView> {
                     final isNigeriaUser = EmptyAccountState.isCountrySupported(countryCode);
 
                     return AccountCarousel(
-                      accountSummaries: state.accountSummaries,
+                      accountSummaries: accountSummaries,
                       onShowDetails: _showCardDetailsSheet,
                       showFamilySetupCard: !hasFamilyAccount, // Show setup card for all users without family account
                     );

@@ -67,7 +67,8 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
           ..dueDate = invoice.dueDate?.toUtc().toIso8601String() ?? DateTime.now().add(Duration(days: 30)).toUtc().toIso8601String()
           ..tax = invoice.taxAmount ?? 0.0
           ..discount = invoice.discountAmount ?? 0.0
-          ..notes = invoice.notes ?? '';
+          ..notes = invoice.notes ?? ''
+          ..payerEmail = invoice.payerDetails?.email ?? '';
 
         // Add invoice items
         if (invoice.items.isNotEmpty) {
@@ -91,7 +92,19 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
 
   @override
   Future<Invoice> sendInvoice(String invoiceId) async {
-    throw UnimplementedError('sendInvoice not yet available in backend API');
+    return retryWithBackoff(
+      operation: () async {
+        final request = pb.UpdateInvoiceStatusRequest()
+          ..invoiceId = invoiceId
+          ..status = 'pending';
+        final options = await grpcClient.callOptions;
+        final response = await grpcClient.invoiceClient.updateInvoiceStatus(
+          request,
+          options: options,
+        );
+        return _fromProto(response.invoice);
+      },
+    );
   }
 
   @override
@@ -143,33 +156,118 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
 
   @override
   Future<Invoice> updateInvoice(Invoice invoice) async {
-    throw UnimplementedError('updateInvoice not yet available in backend API');
+    return retryWithBackoff(
+      operation: () async {
+        final request = pb.UpdateInvoiceRequest()
+          ..invoiceId = invoice.id
+          ..description = invoice.description
+          ..amount = invoice.amount
+          ..notes = invoice.notes ?? '';
+
+        if (invoice.dueDate != null) {
+          request.dueDate = invoice.dueDate!.toUtc().toIso8601String();
+        }
+        if (invoice.items.isNotEmpty) {
+          request.items.addAll(invoice.items.map((item) => pb.InvoiceItem()
+            ..description = '${item.name}: ${item.description ?? ''}'
+            ..quantity = item.quantity.toInt()
+            ..unitPrice = item.unitPrice
+            ..total = item.totalPrice));
+        }
+
+        final options = await grpcClient.callOptions;
+        final response = await grpcClient.invoiceClient.updateInvoice(
+          request,
+          options: options,
+        );
+        return _fromProto(response.invoice);
+      },
+    );
   }
 
   @override
   Future<void> deleteInvoice(String id) async {
-    throw UnimplementedError('deleteInvoice not yet available in backend API');
+    return retryWithBackoff(
+      operation: () async {
+        final request = pb.DeleteInvoiceRequest()..invoiceId = id;
+        final options = await grpcClient.callOptions;
+        await grpcClient.invoiceClient.deleteInvoice(
+          request,
+          options: options,
+        );
+      },
+    );
   }
 
   @override
   Future<List<Invoice>> getInvoicesTaggedToUser(String userId) async {
-    // For now, get all invoices and filter by recipient ID
-    final allInvoices = await getAllInvoices();
-    return allInvoices.where((inv) => inv.toUserId == userId).toList();
+    return retryWithBackoff(
+      operation: () async {
+        final request = pb.GetInvoicesTaggedToUserRequest()
+          ..limit = 100
+          ..offset = 0;
+        final options = await grpcClient.callOptions;
+        final response = await grpcClient.invoiceClient.getInvoicesTaggedToUser(
+          request,
+          options: options,
+        );
+        return response.invoices.map((inv) => _fromProto(inv)).toList();
+      },
+    );
   }
 
   @override
-  Future<Invoice> markInvoiceAsPaid(String invoiceId, PaymentMethod paymentMethod, String? paymentReference) async {
+  Future<Invoice> markInvoiceAsPaid(String invoiceId, PaymentMethod paymentMethod, String? paymentReference, {String? pin, String? verificationToken}) async {
     return retryWithBackoff(
       operation: () async {
-        // Use payInvoice RPC which takes invoiceId, accountId, and pin
         final request = pb.PayInvoiceRequest()
           ..invoiceId = invoiceId
-          ..accountId = currentUserId
-          ..pin = ''; // PIN would come from user input
+          ..accountId = currentUserId;
+
+        if (pin != null && pin.isNotEmpty) {
+          request.pin = pin;
+        }
+        if (verificationToken != null && verificationToken.isNotEmpty) {
+          request.verificationToken = verificationToken;
+        }
+        if (paymentReference != null && paymentReference.isNotEmpty) {
+          request.idempotencyKey = paymentReference;
+        }
 
         final options = await grpcClient.callOptions;
         final response = await grpcClient.invoiceClient.payInvoice(
+          request,
+          options: options,
+        );
+
+        return _fromProto(response.invoice);
+      },
+    );
+  }
+
+  @override
+  Future<Invoice> unlockInvoice(String invoiceId, {String? accountId, String? pin, String? verificationToken, String? transactionId, String? idempotencyKey}) async {
+    return retryWithBackoff(
+      operation: () async {
+        final request = pb.UnlockInvoiceRequest()
+          ..invoiceId = invoiceId
+          ..accountId = accountId ?? currentUserId;
+
+        if (pin != null && pin.isNotEmpty) {
+          request.pin = pin;
+        }
+        if (verificationToken != null && verificationToken.isNotEmpty) {
+          request.verificationToken = verificationToken;
+        }
+        if (transactionId != null && transactionId.isNotEmpty) {
+          request.transactionId = transactionId;
+        }
+        if (idempotencyKey != null && idempotencyKey.isNotEmpty) {
+          request.idempotencyKey = idempotencyKey;
+        }
+
+        final options = await grpcClient.callOptions;
+        final response = await grpcClient.invoiceClient.unlockInvoice(
           request,
           options: options,
         );
@@ -228,33 +326,52 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
 
   @override
   Future<Map<String, dynamic>> getInvoiceStatistics(String userId) async {
-    // Get all SENT invoices (created by this user)
-    final invoices = await getInvoicesByUserId(userId);
+    return retryWithBackoff(
+      operation: () async {
+        final request = pb.GetInvoiceStatisticsRequest();
+        final options = await grpcClient.callOptions;
 
-    // Calculate statistics for sent invoices only
-    final paidInvoices = invoices.where((inv) => inv.status == InvoiceStatus.paid).toList();
-    final pendingInvoices = invoices.where((inv) => inv.status == InvoiceStatus.pending).toList();
-    final overdueInvoices = invoices.where((inv) => inv.isOverdue && inv.status != InvoiceStatus.paid).toList();
-    final unpaidInvoices = invoices.where((inv) => inv.status != InvoiceStatus.paid).toList();
+        try {
+          final response = await grpcClient.invoiceClient.getInvoiceStatistics(
+            request,
+            options: options,
+          );
 
-    final totalAmount = invoices.fold<double>(0, (sum, inv) => sum + inv.amount);
-    final totalPaid = paidInvoices.fold<double>(0, (sum, inv) => sum + inv.amount);
-    final totalUnpaid = unpaidInvoices.fold<double>(0, (sum, inv) => sum + inv.amount);
+          final stats = response.statistics;
+          return {
+            'total_invoices': stats.totalSent + stats.totalReceived,
+            'paid_invoices': stats.totalPaid,
+            'pending_invoices': stats.totalPending,
+            'overdue_invoices': stats.totalOverdue,
+            'unpaid_invoices': stats.totalPending,
+            'total_amount': stats.totalAmountSent + stats.totalAmountReceived,
+            'total_paid': stats.totalAmountPaid,
+            'total_unpaid': stats.totalAmountPending,
+            'collection_rate': stats.collectionRate,
+          };
+        } catch (_) {
+          // Fallback to client-side calculation if backend RPC not available
+          final invoices = await getInvoicesByUserId(userId);
+          final paidInvoices = invoices.where((inv) => inv.status == InvoiceStatus.paid).toList();
+          final unpaidInvoices = invoices.where((inv) => inv.status != InvoiceStatus.paid).toList();
+          final totalAmount = invoices.fold<double>(0, (sum, inv) => sum + inv.amount);
+          final totalPaid = paidInvoices.fold<double>(0, (sum, inv) => sum + inv.amount);
+          final totalUnpaid = unpaidInvoices.fold<double>(0, (sum, inv) => sum + inv.amount);
 
-    // Calculate collection rate (percentage of paid amount vs total amount)
-    final collectionRate = totalAmount > 0 ? (totalPaid / totalAmount) * 100 : 0.0;
-
-    return {
-      'total_invoices': invoices.length,
-      'paid_invoices': paidInvoices.length,
-      'pending_invoices': pendingInvoices.length,
-      'overdue_invoices': overdueInvoices.length,
-      'unpaid_invoices': unpaidInvoices.length,
-      'total_amount': totalAmount,
-      'total_paid': totalPaid,
-      'total_unpaid': totalUnpaid,
-      'collection_rate': collectionRate,
-    };
+          return {
+            'total_invoices': invoices.length,
+            'paid_invoices': paidInvoices.length,
+            'pending_invoices': invoices.where((inv) => inv.status == InvoiceStatus.pending).length,
+            'overdue_invoices': invoices.where((inv) => inv.isOverdue && inv.status != InvoiceStatus.paid).length,
+            'unpaid_invoices': unpaidInvoices.length,
+            'total_amount': totalAmount,
+            'total_paid': totalPaid,
+            'total_unpaid': totalUnpaid,
+            'collection_rate': totalAmount > 0 ? (totalPaid / totalAmount) * 100 : 0.0,
+          };
+        }
+      },
+    );
   }
 
   @override
@@ -279,12 +396,35 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
 
   @override
   Future<TagUsersResponse> tagUsersToInvoice(String invoiceId, List<String> userIds, List<String> emails, List<String> phoneNumbers) async {
-    throw UnimplementedError('tagUsersToInvoice not yet available in backend API');
+    return retryWithBackoff(
+      operation: () async {
+        final request = pb.TagUsersToInvoiceRequest()
+          ..invoiceId = invoiceId;
+        request.userIds.addAll(userIds);
+
+        final options = await grpcClient.callOptions;
+        final response = await grpcClient.invoiceClient.tagUsersToInvoice(
+          request,
+          options: options,
+        );
+
+        return TagUsersResponse(
+          success: response.usersTagged > 0,
+          taggedUserIds: userIds,
+          invitedEmails: emails,
+          invitedPhones: phoneNumbers,
+          message: response.message,
+        );
+      },
+    );
   }
 
   @override
   Future<List<InvoiceUser>> searchUsers(String query, {int limit = 20}) async {
-    throw UnimplementedError('searchUsers not yet available in backend API');
+    // User search is handled via auth-service through the invoice-service backend
+    // The backend's TagUsersToInvoice validates user IDs via auth-service
+    // For user search UI, use the profile cubit's searchUsers which calls auth-service directly
+    throw UnimplementedError('Use ProfileCubit.searchUsers for user search');
   }
 
   // Helper: Convert protobuf to entity
@@ -315,9 +455,20 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
 
     // Parse status from string
     final statusStr = proto.status.toLowerCase();
-    final status = statusStr == 'paid' || statusStr == 'completed'
-        ? InvoiceStatus.paid
-        : InvoiceStatus.pending;
+    final InvoiceStatus status;
+    if (statusStr == 'paid' || statusStr == 'completed') {
+      status = InvoiceStatus.paid;
+    } else if (statusStr == 'partially_paid' || statusStr == 'partiallypaid') {
+      status = InvoiceStatus.partiallyPaid;
+    } else if (statusStr == 'cancelled' || statusStr == 'canceled') {
+      status = InvoiceStatus.cancelled;
+    } else if (statusStr == 'expired') {
+      status = InvoiceStatus.expired;
+    } else if (statusStr == 'draft') {
+      status = InvoiceStatus.draft;
+    } else {
+      status = InvoiceStatus.pending;
+    }
 
     // Calculate total amount from proto fields
     final totalAmount = proto.totalAmount > 0 ? proto.totalAmount : proto.amount;
@@ -328,7 +479,7 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
       description: proto.description.isNotEmpty ? proto.description : '',
       amount: proto.amount,
       currency: proto.currency.isNotEmpty ? proto.currency : 'USD',
-      status: status,
+      status: _deriveStatusWithPartiallyPaid(status, proto.taggedUsers),
       type: InvoiceType.invoice,
       createdAt: proto.createdAt.isNotEmpty ? DateTime.parse(proto.createdAt) : DateTime.now(),
       dueDate: proto.dueDate.isNotEmpty ? DateTime.parse(proto.dueDate) : null,
@@ -345,7 +496,36 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
       paymentMethod: null, // Not available in current proto
       recipientDetails: null, // Not available in current proto
       payerDetails: null, // Not available in current proto
+      isUnlocked: proto.isUnlocked,
+      unlockPaymentRef: proto.unlockPaymentRef.isNotEmpty ? proto.unlockPaymentRef : null,
+      taggedUsers: proto.taggedUsers.isNotEmpty
+          ? proto.taggedUsers.map((tu) => TaggedUserInfo(
+              userId: tu.userId,
+              username: tu.username,
+              firstName: tu.firstName,
+              lastName: tu.lastName,
+              profilePicture: tu.profilePicture.isNotEmpty ? tu.profilePicture : null,
+              status: tu.status.isNotEmpty ? tu.status : 'pending',
+              taggedAt: tu.taggedAt.isNotEmpty ? DateTime.tryParse(tu.taggedAt) : null,
+              viewedAt: tu.viewedAt.isNotEmpty ? DateTime.tryParse(tu.viewedAt) : null,
+              paidAt: tu.paidAt.isNotEmpty ? DateTime.tryParse(tu.paidAt) : null,
+            )).toList()
+          : null,
     );
+  }
+
+  // Derive partiallyPaid status from tagged users when backend reports pending
+  // but some (not all) tagged users have paid
+  InvoiceStatus _deriveStatusWithPartiallyPaid(
+      InvoiceStatus backendStatus, List<pb.TaggedUser> taggedUsers) {
+    if (taggedUsers.isEmpty) return backendStatus;
+    // Only derive from pending invoices - if backend says paid, trust it
+    if (backendStatus != InvoiceStatus.pending) return backendStatus;
+    final paidCount = taggedUsers.where((u) => u.status.toLowerCase() == 'paid').length;
+    if (paidCount > 0 && paidCount < taggedUsers.length) {
+      return InvoiceStatus.partiallyPaid;
+    }
+    return backendStatus;
   }
 
   // Helper: Extract name from description

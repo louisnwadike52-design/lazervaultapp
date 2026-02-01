@@ -128,7 +128,8 @@ import 'package:lazervault/src/features/invoice/presentation/cubit/tagged_invoic
 import 'package:lazervault/src/features/invoice/presentation/view/invoice_preview_screen.dart';
 import 'package:lazervault/src/features/invoice/presentation/view/invoice_payment_screen.dart';
 import 'package:lazervault/src/features/invoice/presentation/view/invoice_processing_screen.dart';
-import 'package:lazervault/src/features/invoice/presentation/view/invoice_receipt_screen.dart';
+import 'package:lazervault/src/features/invoice/presentation/view/invoice_item_payment_screen.dart';
+import 'package:lazervault/src/features/invoice/presentation/view/invoice_payment_receipt_screen.dart';
 import 'package:lazervault/src/features/pay_invoice/presentation/view/pay_invoice_screen.dart';
 import 'package:lazervault/src/features/pay_invoice/presentation/cubit/pay_invoice_cubit.dart';
 // AI Scan to Pay imports
@@ -480,10 +481,21 @@ class AppRouter {
     GetPage(
       name: AppRoutes.invoiceDetails,
       page: () {
-        final invoiceId = Get.arguments as String;
+        final args = Get.arguments;
+        String invoiceId;
+        bool isFromReceivedTab = true;
+        if (args is Map<String, dynamic>) {
+          invoiceId = args['invoiceId'] as String;
+          isFromReceivedTab = args['isFromReceivedTab'] as bool? ?? true;
+        } else {
+          invoiceId = args as String;
+        }
         return BlocProvider(
           create: (_) => serviceLocator<InvoiceCubit>(),
-          child: serviceLocator<InvoiceDetailsScreen>(param1: invoiceId),
+          child: InvoiceDetailsScreen(
+            invoiceId: invoiceId,
+            isFromReceivedTab: isFromReceivedTab,
+          ),
         );
       },
       transition: Transition.rightToLeft,
@@ -491,8 +503,14 @@ class AppRouter {
     GetPage(
       name: AppRoutes.invoicePreview,
       page: () {
-        final invoice = Get.arguments as Invoice;
-        return InvoicePreviewScreen(invoice: invoice);
+        final args = Get.arguments;
+        if (args is Map<String, dynamic>) {
+          return InvoicePreviewScreen(
+            invoice: args['invoice'] as Invoice,
+            showTaggedUsers: args['showTaggedUsers'] as bool? ?? true,
+          );
+        }
+        return InvoicePreviewScreen(invoice: args as Invoice);
       },
       transition: Transition.rightToLeft,
     ),
@@ -500,7 +518,13 @@ class AppRouter {
       name: AppRoutes.invoicePayment,
       page: () {
         final invoice = Get.arguments as Invoice;
-        return InvoicePaymentScreen(invoice: invoice);
+        return MultiBlocProvider(
+          providers: [
+            BlocProvider(create: (_) => serviceLocator<InvoiceCubit>()),
+            BlocProvider(create: (_) => serviceLocator<AccountCardsSummaryCubit>()),
+          ],
+          child: InvoicePaymentScreen(invoice: invoice),
+        );
       },
       transition: Transition.rightToLeft,
     ),
@@ -513,13 +537,24 @@ class AppRouter {
       transition: Transition.rightToLeft,
     ),
     GetPage(
-      name: AppRoutes.invoiceReceipt,
+      name: AppRoutes.invoiceItemPayment,
       page: () {
         final invoice = Get.arguments as Invoice;
-        return BlocProvider(
-          create: (_) => serviceLocator<InvoiceCubit>(),
-          child: InvoiceReceiptScreen(invoice: invoice),
+        return MultiBlocProvider(
+          providers: [
+            BlocProvider(create: (_) => serviceLocator<TaggedInvoiceCubit>()),
+            BlocProvider(create: (_) => serviceLocator<AccountCardsSummaryCubit>()),
+          ],
+          child: InvoiceItemPaymentScreen(invoice: invoice),
         );
+      },
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.invoicePaymentReceipt,
+      page: () {
+        final transaction = Get.arguments as Map<String, dynamic>;
+        return InvoicePaymentReceiptScreen(transaction: transaction);
       },
       transition: Transition.rightToLeft,
     ),

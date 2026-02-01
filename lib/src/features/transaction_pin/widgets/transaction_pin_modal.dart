@@ -284,7 +284,7 @@ class TransactionPinModalState extends State<TransactionPinModal>
               textAlign: TextAlign.center,
             ),
 
-          // Amount display
+          // Amount display (shows total including fee)
           if (widget.amount != null) ...[
             SizedBox(height: 16.h),
             Container(
@@ -298,7 +298,7 @@ class TransactionPinModalState extends State<TransactionPinModal>
               child: Column(
                 children: [
                   Text(
-                    'Amount',
+                    widget.fee != null && widget.fee! > 0 ? 'Total Amount' : 'Amount',
                     style: GoogleFonts.inter(
                       fontSize: 12.sp,
                       color: Colors.grey.shade500,
@@ -306,13 +306,23 @@ class TransactionPinModalState extends State<TransactionPinModal>
                   ),
                   SizedBox(height: 4.h),
                   Text(
-                    '$_displaySymbol${widget.amount!.toStringAsFixed(2)}',
+                    '$_displaySymbol${(widget.totalAmount ?? (widget.amount! + (widget.fee ?? 0))).toStringAsFixed(2)}',
                     style: GoogleFonts.inter(
                       fontSize: 24.sp,
                       fontWeight: FontWeight.w700,
                       color: const Color(0xFF4E03D0),
                     ),
                   ),
+                  if (widget.fee != null && widget.fee! > 0) ...[
+                    SizedBox(height: 4.h),
+                    Text(
+                      '${widget.amount!.toStringAsFixed(2)} + ${widget.fee!.toStringAsFixed(2)} fee',
+                      style: GoogleFonts.inter(
+                        fontSize: 11.sp,
+                        color: Colors.grey.shade500,
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),

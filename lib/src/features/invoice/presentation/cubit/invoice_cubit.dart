@@ -174,6 +174,7 @@ class InvoiceCubit extends Cubit<InvoiceState> {
     bool sendImmediately = false,
     AddressDetails? recipientDetails,
     AddressDetails? payerDetails,
+    String currency = 'NGN',
   }) async {
     // Store current form state to restore if error occurs
     final previousFormState = state is InvoiceFormState ? state as InvoiceFormState : null;
@@ -199,7 +200,7 @@ class InvoiceCubit extends Cubit<InvoiceState> {
         title: title,
         description: description,
         amount: subtotal,
-        currency: 'USD',
+        currency: currency,
         status: sendImmediately ? InvoiceStatus.pending : InvoiceStatus.draft,
         type: type,
         createdAt: DateTime.now(),
@@ -224,7 +225,7 @@ class InvoiceCubit extends Cubit<InvoiceState> {
         invoice: createdInvoice,
       ));
 
-      // Reload invoices to update the list
+      // Reload invoice list so home screen reflects the new invoice
       await loadInvoices();
     } catch (e) {
       if (isClosed) return;
@@ -283,20 +284,50 @@ class InvoiceCubit extends Cubit<InvoiceState> {
   }
 
   // Mark invoice as paid
-  Future<void> markAsPaid(String invoiceId, PaymentMethod paymentMethod, [String? reference]) async {
+  Future<void> markAsPaid(String invoiceId, PaymentMethod paymentMethod, [String? reference, String? pin, String? verificationToken]) async {
     try {
-      final updatedInvoice = await repository.markInvoiceAsPaid(invoiceId, paymentMethod, reference);
+      final updatedInvoice = await repository.markInvoiceAsPaid(
+        invoiceId,
+        paymentMethod,
+        reference,
+        pin: pin,
+        verificationToken: verificationToken,
+      );
       if (isClosed) return;
 
       emit(InvoiceOperationSuccess(
         message: 'Invoice marked as paid successfully',
         invoice: updatedInvoice,
       ));
-
-      await loadInvoices();
     } catch (e) {
       if (isClosed) return;
       emit(InvoiceError(message: 'Failed to mark invoice as paid: ${e.toString()}'));
+    }
+  }
+
+  // Unlock invoice (pay service fee)
+  Future<void> unlockInvoice(String invoiceId, {String? accountId, String? verificationToken, String? transactionId}) async {
+    try {
+      if (isClosed) return;
+      emit(InvoiceUnlockProcessing(invoiceId: invoiceId));
+
+      final idempotencyKey = 'unlock-${invoiceId}-${const Uuid().v4().substring(0, 8)}';
+      final invoice = await repository.unlockInvoice(
+        invoiceId,
+        accountId: accountId,
+        verificationToken: verificationToken,
+        transactionId: transactionId,
+        idempotencyKey: idempotencyKey,
+      );
+      if (isClosed) return;
+
+      emit(InvoiceUnlockSuccess(
+        message: 'Invoice unlocked successfully',
+        invoice: invoice,
+      ));
+    } catch (e) {
+      if (isClosed) return;
+      emit(InvoiceError(message: 'Failed to unlock invoice: ${e.toString()}'));
     }
   }
 
@@ -391,6 +422,130 @@ class InvoiceCubit extends Cubit<InvoiceState> {
     } catch (e) {
       if (isClosed) return;
       emit(InvoiceError(message: 'Failed to load overdue invoices: ${e.toString()}'));
+    }
+  }
+
+  // Tag users to an invoice
+  Future<void> tagUsers(String invoiceId, List<String> userIds) async {
+    try {
+      if (isClosed) return;
+      emit(InvoiceLoading());
+
+      final result = await repository.tagUsersToInvoice(invoiceId, userIds, [], []);
+      if (isClosed) return;
+
+      emit(InvoiceOperationSuccess(
+        message: result.message,
+      ));
+
+      await loadInvoices();
+    } catch (e) {
+      if (isClosed) return;
+      emit(InvoiceError(message: 'Failed to tag users: ${e.toString()}'));
+    }
+  }
+
+  // Load sent invoices (created by current user)
+  Future<void> loadSentInvoices({List<String>? statusFilter}) async {
+    await loadInvoices(statusFilter: statusFilter);
+  }
+
+  // Load invoice statistics
+  Future<Map<String, dynamic>> getStatistics() async {
+    try {
+      if (currentUserId == null) return {};
+      return await repository.getInvoiceStatistics(currentUserId!);
+    } catch (e) {
+      return {
+        'total_invoices': 0,
+        'paid_invoices': 0,
+        'unpaid_invoices': 0,
+        'total_amount': 0.0,
+        'total_paid': 0.0,
+        'total_unpaid': 0.0,
+      };
+    }
+  }
+
+  // Create invoice and tag users
+  Future<void> createInvoiceWithTags({
+    required String title,
+    required String description,
+    required List<InvoiceItem> items,
+    required InvoiceType type,
+    List<String> taggedUserIds = const [],
+    String? toEmail,
+    String? toName,
+    DateTime? dueDate,
+    double? taxAmount,
+    double? discountAmount,
+    String? notes,
+    bool sendImmediately = false,
+    AddressDetails? recipientDetails,
+    AddressDetails? payerDetails,
+    String currency = 'NGN',
+  }) async {
+    try {
+      if (currentUserId == null) {
+        if (isClosed) return;
+        emit(const InvoiceError(message: 'User not authenticated. Please log in.'));
+        return;
+      }
+
+      if (isClosed) return;
+      emit(InvoiceLoading());
+
+      final subtotal = items.fold<double>(0, (sum, item) => sum + item.totalPrice);
+      final finalTaxAmount = taxAmount ?? 0;
+      final finalDiscountAmount = discountAmount ?? 0;
+      final totalAmount = subtotal + finalTaxAmount - finalDiscountAmount;
+
+      final invoice = Invoice(
+        id: '',
+        title: title,
+        description: description,
+        amount: subtotal,
+        currency: currency,
+        status: sendImmediately ? InvoiceStatus.pending : InvoiceStatus.draft,
+        type: type,
+        createdAt: DateTime.now(),
+        dueDate: dueDate,
+        fromUserId: currentUserId!,
+        toEmail: toEmail,
+        toName: toName,
+        items: items,
+        taxAmount: finalTaxAmount,
+        discountAmount: finalDiscountAmount,
+        totalAmount: totalAmount,
+        notes: notes,
+        recipientDetails: recipientDetails,
+        payerDetails: payerDetails,
+      );
+
+      final createdInvoice = await repository.createInvoice(invoice);
+      if (isClosed) return;
+
+      // Tag users if any were selected
+      if (taggedUserIds.isNotEmpty && createdInvoice.id.isNotEmpty) {
+        try {
+          await repository.tagUsersToInvoice(createdInvoice.id, taggedUserIds, [], []);
+        } catch (e) {
+          // Tagging failed but invoice was created - notify but don't fail
+          print('Warning: Failed to tag users: $e');
+        }
+      }
+
+      if (isClosed) return;
+      emit(InvoiceOperationSuccess(
+        message: sendImmediately ? 'Invoice created and sent successfully' : 'Invoice created as draft',
+        invoice: createdInvoice,
+      ));
+
+      // Reload invoice list so home screen reflects the new invoice
+      await loadInvoices();
+    } catch (e) {
+      if (isClosed) return;
+      emit(InvoiceError(message: 'Failed to create invoice: ${e.toString()}'));
     }
   }
 
