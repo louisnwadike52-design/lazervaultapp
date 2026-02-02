@@ -49,6 +49,8 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
   final TextEditingController _referenceController = TextEditingController();
   final TextEditingController _amountController = TextEditingController();
   bool _isConfirmingTransfer = false; // State for dialog loading
+  bool _autoShowConfirm = false;
+  bool _autoConfirmTriggered = false;
 
   // Mock card data - Replace with actual data source
   // Added 'id' for sourceAccountId
@@ -104,6 +106,14 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
         _recipient = args['recipient'] as RecipientModel;
         _isTemporary = args['isTemporary'] == true;
         _shouldSaveOnSuccess = args['shouldSaveOnSuccess'] == true;
+
+        // Prefill from recipient transaction history
+        final prefillAmount = args['prefillAmount'] as int?;
+        if (prefillAmount != null && prefillAmount > 0) {
+          amount = prefillAmount.toString();
+          _amountController.text = _formatAmount();
+        }
+        _autoShowConfirm = args['autoShowConfirm'] == true;
       } else if (args is RecipientModel) {
         _recipient = args;
         _isTemporary = false;
@@ -139,6 +149,19 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
     } else {
       print(
           "InitiateSendFunds: Accounts already loaded or loading ($currentState), skipping fetch.");
+
+      // Auto-show confirm if accounts already loaded and prefill is set
+      if (_autoShowConfirm &&
+          !_autoConfirmTriggered &&
+          amount.isNotEmpty &&
+          _recipient != null &&
+          (currentState is AccountCardsSummaryLoaded ||
+              currentState is AccountBalanceUpdated)) {
+        _autoConfirmTriggered = true;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _showTransferConfirmation(currentState);
+        });
+      }
     }
   }
 
@@ -1521,6 +1544,19 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
             // Add listener to observe state changes for AccountCardsSummaryCubit
             print(
                 "InitiateSendFunds AccountSummary Listener: Received state -> $accountState");
+
+            // Auto-show confirm when prefilled from transaction history
+            if (_autoShowConfirm &&
+                !_autoConfirmTriggered &&
+                amount.isNotEmpty &&
+                _recipient != null &&
+                (accountState is AccountCardsSummaryLoaded ||
+                    accountState is AccountBalanceUpdated)) {
+              _autoConfirmTriggered = true;
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                _showTransferConfirmation(accountState);
+              });
+            }
           },
           builder: (context, accountState) {
             final isAccountLoading =

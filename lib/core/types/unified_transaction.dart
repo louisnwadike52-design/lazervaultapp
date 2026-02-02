@@ -97,6 +97,8 @@ class UnifiedTransaction extends Equatable {
   final TransactionFlow flow;
   final String? transactionReference;
   final Map<String, dynamic>? metadata;
+  final String? counterpartyName;
+  final String? counterpartyAccount;
 
   const UnifiedTransaction({
     required this.id,
@@ -110,6 +112,8 @@ class UnifiedTransaction extends Equatable {
     required this.flow,
     this.transactionReference,
     this.metadata,
+    this.counterpartyName,
+    this.counterpartyAccount,
   });
 
   /// Format amount with currency symbol and flow indicator
@@ -140,6 +144,8 @@ class UnifiedTransaction extends Equatable {
         flow,
         transactionReference,
         metadata,
+        counterpartyName,
+        counterpartyAccount,
       ];
 
   /// Convert to JSON
@@ -156,6 +162,8 @@ class UnifiedTransaction extends Equatable {
       'flow': flow.name,
       'transactionReference': transactionReference,
       'metadata': metadata,
+      'counterpartyName': counterpartyName,
+      'counterpartyAccount': counterpartyAccount,
     };
   }
 
@@ -180,6 +188,8 @@ class UnifiedTransaction extends Equatable {
       ),
       transactionReference: json['transactionReference'] as String?,
       metadata: json['metadata'] as Map<String, dynamic>?,
+      counterpartyName: json['counterpartyName'] as String?,
+      counterpartyAccount: json['counterpartyAccount'] as String?,
     );
   }
 
@@ -264,6 +274,8 @@ class UnifiedTransaction extends Equatable {
     TransactionFlow? flow,
     String? transactionReference,
     Map<String, dynamic>? metadata,
+    String? counterpartyName,
+    String? counterpartyAccount,
   }) {
     return UnifiedTransaction(
       id: id ?? this.id,
@@ -277,6 +289,8 @@ class UnifiedTransaction extends Equatable {
       flow: flow ?? this.flow,
       transactionReference: transactionReference ?? this.transactionReference,
       metadata: metadata ?? this.metadata,
+      counterpartyName: counterpartyName ?? this.counterpartyName,
+      counterpartyAccount: counterpartyAccount ?? this.counterpartyAccount,
     );
   }
 }

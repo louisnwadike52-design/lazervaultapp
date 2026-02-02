@@ -9,6 +9,9 @@ import 'package:lazervault/src/features/authentication/cubit/authentication_cubi
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
+import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_transaction_history_cubit.dart';
+import 'package:lazervault/src/features/recipients/presentation/widgets/recipient_transaction_history_modal.dart';
 
 class Recipients extends StatefulWidget {
   final List<RecipientModel> recipients;
@@ -598,6 +601,23 @@ class _RecipientsState extends State<Recipients> {
                       ),
                     ),
 
+                    // Transaction History Button
+                    Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(20.r),
+                        onTap: () => _openTransactionHistory(context, recipient),
+                        child: Padding(
+                          padding: EdgeInsets.all(8.w),
+                          child: Icon(
+                            Icons.history,
+                            color: const Color(0xFF4E03D0),
+                            size: 22.w,
+                          ),
+                        ),
+                      ),
+                    ),
+
                     // More Options Button
                     Material(
                       color: Colors.transparent,
@@ -621,6 +641,28 @@ class _RecipientsState extends State<Recipients> {
           ),
         );
       },
+    );
+  }
+
+  void _openTransactionHistory(BuildContext context, RecipientModel recipient) {
+    if (recipient.accountNumber.isEmpty) {
+      Get.snackbar(
+        'No Account Number',
+        'This recipient has no account number to search transactions for.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.orange.withValues(alpha: 0.7),
+        colorText: Colors.white,
+      );
+      return;
+    }
+
+    Get.bottomSheet(
+      BlocProvider(
+        create: (_) => GetIt.I<RecipientTransactionHistoryCubit>(),
+        child: RecipientTransactionHistoryModal(recipient: recipient),
+      ),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
     );
   }
 
