@@ -5,7 +5,7 @@ import 'package:lazervault/core/types/transaction.dart';
 import 'package:lazervault/src/features/authentication/domain/entities/user.dart';
 import 'package:lazervault/src/features/presentation/views/change_pin_screen.dart';
 import 'package:lazervault/src/features/presentation/views/cb_currency_exchange/cb_currency_exchange_screen.dart';
-import 'package:lazervault/src/features/presentation/views/dashboard/transaction_history_screen.dart';
+import 'package:lazervault/src/features/transaction_history/presentation/screens/dashboard_transaction_history_screen.dart';
 import 'package:lazervault/src/features/presentation/views/languages_screen.dart';
 import 'package:lazervault/src/features/presentation/views/lifestyle/lifestyle_screen.dart';
 import 'package:lazervault/src/features/presentation/views/my_account_screen.dart';
@@ -129,7 +129,7 @@ class Screen {
           transaction: param2 as TransferTransaction,
         );
       case ScreenName.transactionHistory:
-        return const TransactionHistoryScreen();
+        return const DashboardTransactionHistoryScreen();
       case ScreenName.aiChat:
           return const AiChats();
       case ScreenName.currencyExchange:

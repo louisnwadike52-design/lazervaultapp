@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import '../../cubit/create_invoice_cubit.dart';
+import '../../utils/phone_validator.dart';
 
 /// Screen 3: Payer Details
 ///
@@ -288,14 +290,7 @@ class _PayerDetailsScreenState extends State<PayerDetailsScreen>
         ),
         if (widget.showPhone) ...[
           SizedBox(height: 16.h),
-          _buildTextField(
-            controller: _phoneController,
-            label: 'Phone Number (Optional)',
-            hint: '+1 234 567 8900',
-            icon: Icons.phone,
-            keyboardType: TextInputType.phone,
-            onChanged: (value) => cubit.updatePayerPhone(value),
-          ),
+          _buildPhoneField(cubit),
         ],
         if (widget.showAddress) ...[
           SizedBox(height: 24.h),
@@ -372,6 +367,84 @@ class _PayerDetailsScreenState extends State<PayerDetailsScreen>
             ],
           ),
         ],
+      ],
+    );
+  }
+
+  Widget _buildPhoneField(CreateInvoiceCubit cubit) {
+    final country = cubit.invoiceCountry;
+    final maxLen = PhoneValidator.getMaxLength(country);
+    final hint = PhoneValidator.getHintText(country);
+    final phone = cubit.payerPhone;
+    final error = phone.isNotEmpty && country.isNotEmpty
+        ? PhoneValidator.validate(phone, country)
+        : null;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Phone Number (Optional)',
+          style: GoogleFonts.inter(
+            fontSize: 14.sp,
+            fontWeight: FontWeight.w500,
+            color: Colors.grey[400],
+          ),
+        ),
+        SizedBox(height: 8.h),
+        TextField(
+          controller: _phoneController,
+          keyboardType: TextInputType.phone,
+          inputFormatters: [
+            FilteringTextInputFormatter.digitsOnly,
+            LengthLimitingTextInputFormatter(maxLen),
+          ],
+          onChanged: (value) => cubit.updatePayerPhone(value),
+          style: GoogleFonts.inter(
+            fontSize: 15.sp,
+            fontWeight: FontWeight.w500,
+            color: Colors.white,
+          ),
+          decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: GoogleFonts.inter(
+              fontSize: 15.sp,
+              fontWeight: FontWeight.w400,
+              color: Colors.grey[600],
+            ),
+            prefixIcon: Icon(
+              Icons.phone,
+              size: 20.sp,
+              color: Colors.white.withValues(alpha: 0.5),
+            ),
+            errorText: error,
+            errorStyle: GoogleFonts.inter(
+              fontSize: 12.sp,
+              color: Colors.red.shade400,
+            ),
+            filled: true,
+            fillColor: Colors.white.withValues(alpha: 0.08),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12.r),
+              borderSide: BorderSide.none,
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12.r),
+              borderSide: BorderSide.none,
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12.r),
+              borderSide: const BorderSide(
+                color: Color(0xFF3B82F6),
+                width: 1.5,
+              ),
+            ),
+            contentPadding: EdgeInsets.symmetric(
+              horizontal: 16.w,
+              vertical: 14.h,
+            ),
+          ),
+        ),
       ],
     );
   }

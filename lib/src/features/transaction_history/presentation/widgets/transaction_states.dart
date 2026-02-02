@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lazervault/src/features/transaction_history/presentation/widgets/transaction_card.dart';
 
-/// Empty state widget for transaction history
+/// Empty state — minimal dark theme
 class TransactionEmptyState extends StatelessWidget {
   final String? message;
   final IconData? icon;
@@ -19,44 +20,39 @@ class TransactionEmptyState extends StatelessWidget {
     return Center(
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: EdgeInsets.symmetric(horizontal: 32.w),
+        padding: EdgeInsets.symmetric(horizontal: 40.w),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
-              padding: EdgeInsets.all(24.w),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                icon ?? Icons.receipt_long_rounded,
-                size: 48.sp,
-                color: Colors.white.withValues(alpha: 0.6),
-              ),
+            Icon(
+              icon ?? Icons.receipt_long_rounded,
+              size: 48.sp,
+              color: const Color(0xFF8E8E93),
             ),
-            SizedBox(height: 24.h),
+            SizedBox(height: 16.h),
             Text(
-              message ?? 'No Transactions Yet',
+              message ?? 'No transactions yet',
               style: TextStyle(
-                fontSize: 20.sp,
-                fontWeight: FontWeight.w700,
+                fontSize: 16.sp,
+                fontWeight: FontWeight.w500,
                 color: Colors.white,
+                fontFamily: 'Inter',
               ),
               textAlign: TextAlign.center,
             ),
-            SizedBox(height: 8.h),
+            SizedBox(height: 4.h),
             Text(
-              'Your transaction history will appear here',
+              'Your transactions will appear here',
               style: TextStyle(
                 fontSize: 14.sp,
                 fontWeight: FontWeight.w400,
-                color: Colors.white.withValues(alpha: 0.6),
+                color: const Color(0xFF8E8E93),
+                fontFamily: 'Inter',
               ),
               textAlign: TextAlign.center,
             ),
             if (action != null) ...[
-              SizedBox(height: 24.h),
+              SizedBox(height: 20.h),
               action!,
             ],
           ],
@@ -66,7 +62,7 @@ class TransactionEmptyState extends StatelessWidget {
   }
 }
 
-/// Error state widget for transaction history
+/// Error state — minimal with retry
 class TransactionErrorState extends StatelessWidget {
   final String message;
   final VoidCallback? onRetry;
@@ -82,57 +78,55 @@ class TransactionErrorState extends StatelessWidget {
     return Center(
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: EdgeInsets.symmetric(horizontal: 32.w),
+        padding: EdgeInsets.symmetric(horizontal: 40.w),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
-              padding: EdgeInsets.all(24.w),
-              decoration: BoxDecoration(
-                color: Colors.red.withValues(alpha: 0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                Icons.error_outline_rounded,
-                size: 48.sp,
-                color: Colors.red.withValues(alpha: 0.7),
-              ),
+            Icon(
+              Icons.error_outline_rounded,
+              size: 48.sp,
+              color: const Color(0xFFEF4444),
             ),
-            SizedBox(height: 24.h),
+            SizedBox(height: 16.h),
             Text(
               'Something went wrong',
               style: TextStyle(
-                fontSize: 20.sp,
-                fontWeight: FontWeight.w700,
+                fontSize: 16.sp,
+                fontWeight: FontWeight.w500,
                 color: Colors.white,
+                fontFamily: 'Inter',
               ),
               textAlign: TextAlign.center,
             ),
-            SizedBox(height: 12.h),
+            SizedBox(height: 4.h),
             Text(
               message,
               style: TextStyle(
                 fontSize: 14.sp,
                 fontWeight: FontWeight.w400,
-                color: Colors.white.withValues(alpha: 0.6),
+                color: const Color(0xFF8E8E93),
+                fontFamily: 'Inter',
               ),
               textAlign: TextAlign.center,
             ),
             if (onRetry != null) ...[
-              SizedBox(height: 24.h),
-              ElevatedButton.icon(
-                onPressed: onRetry,
-                icon: Icon(Icons.refresh_rounded, size: 18.sp),
-                label: Text(
-                  'Retry',
-                  style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.w600),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white.withValues(alpha: 0.1),
-                  foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 14.h),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12.r),
+              SizedBox(height: 20.h),
+              GestureDetector(
+                onTap: onRetry,
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 10.h),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1F1F1F),
+                    borderRadius: BorderRadius.circular(20.r),
+                  ),
+                  child: Text(
+                    'Retry',
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.white,
+                      fontFamily: 'Inter',
+                    ),
                   ),
                 ),
               ),
@@ -144,100 +138,16 @@ class TransactionErrorState extends StatelessWidget {
   }
 }
 
-/// Loading state widget for transaction history
-class TransactionLoadingState extends StatelessWidget {
-  final String? message;
-
-  const TransactionLoadingState({
-    super.key,
-    this.message,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(
-              Colors.white.withValues(alpha: 0.7),
-            ),
-          ),
-          if (message != null) ...[
-            SizedBox(height: 16.h),
-            Text(
-              message!,
-              style: TextStyle(
-                fontSize: 14.sp,
-                fontWeight: FontWeight.w400,
-                color: Colors.white.withValues(alpha: 0.6),
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-/// Initial/placeholder loading widget
+/// Loading state — shimmer placeholders
 class TransactionInitialLoading extends StatelessWidget {
   const TransactionInitialLoading({super.key});
 
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
-      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
-      itemCount: 5,
-      itemBuilder: (context, index) => Padding(
-        padding: EdgeInsets.only(bottom: 12.h),
-        child: Container(
-          padding: EdgeInsets.all(16.w),
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.05),
-            borderRadius: BorderRadius.circular(16.r),
-          ),
-          child: Row(
-            children: [
-              _buildShimmerBox(48.w, 48.w),
-              SizedBox(width: 16.w),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildShimmerBox(120.w, 16.sp),
-                    SizedBox(height: 8.h),
-                    _buildShimmerBox(80.w, 12.sp),
-                    SizedBox(height: 6.h),
-                    _buildShimmerBox(100.w, 11.sp),
-                  ],
-                ),
-              ),
-              SizedBox(width: 12.w),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  _buildShimmerBox(80.w, 16.sp),
-                  SizedBox(height: 6.h),
-                  _buildShimmerBox(60.w, 10.sp),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildShimmerBox(double width, double height) {
-    return Container(
-      width: width,
-      height: height,
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(4.r),
-      ),
+      padding: EdgeInsets.symmetric(vertical: 8.h),
+      itemCount: 8,
+      itemBuilder: (context, index) => const TransactionCardShimmer(),
     );
   }
 }

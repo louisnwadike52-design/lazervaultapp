@@ -28,6 +28,7 @@ class UsernameRecipientConfirmationSheetState
     extends State<UsernameRecipientConfirmationSheet>
     with SingleTickerProviderStateMixin {
   bool _isFavorite = false;
+  String? _alias;
   late AnimationController _animationController;
   late Animation<double> _scaleAnimation;
 
@@ -52,6 +53,9 @@ class UsernameRecipientConfirmationSheetState
   }
 
   bool get isFavorite => _isFavorite;
+
+  /// Get alias.
+  String? get alias => _alias;
 
   @override
   Widget build(BuildContext context) {
@@ -81,6 +85,7 @@ class UsernameRecipientConfirmationSheetState
                   _buildInfoBox(),
                   SizedBox(height: 16.h),
                   _buildFavoriteToggle(),
+                  _buildAliasInput(),
                   SizedBox(height: 100.h),
                 ],
               ),
@@ -314,6 +319,29 @@ class UsernameRecipientConfirmationSheetState
               ),
             ],
           ),
+
+          // Alias display
+          if (_alias != null && _alias!.isNotEmpty) ...[
+            SizedBox(height: 12.h),
+            Row(
+              children: [
+                Icon(
+                  Icons.label_outline,
+                  color: Colors.white.withValues(alpha: 0.9),
+                  size: 16.sp,
+                ),
+                SizedBox(width: 8.w),
+                Text(
+                  'Alias: $_alias',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.9),
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ],
         ],
       ),
     );
@@ -383,6 +411,74 @@ class UsernameRecipientConfirmationSheetState
           activeThumbColor: const Color(0xFF4E03D0),
         ),
       ],
+    );
+  }
+
+  Widget _buildAliasInput() {
+    if (!_isFavorite) return const SizedBox.shrink();
+    return Padding(
+      padding: EdgeInsets.only(top: 16.h),
+      child: Container(
+        padding: EdgeInsets.all(16.w),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF9FAFB),
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(
+            color: const Color(0xFFE5E7EB),
+            width: 1,
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Set Alias (optional)',
+              style: TextStyle(
+                color: const Color(0xFF374151),
+                fontSize: 13.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            SizedBox(height: 8.h),
+            TextFormField(
+              maxLength: 50,
+              decoration: InputDecoration(
+                hintText: 'e.g. Mom, Coffee Shop',
+                hintStyle: TextStyle(
+                  color: const Color(0xFF9CA3AF),
+                  fontSize: 14.sp,
+                ),
+                counterStyle: TextStyle(
+                  color: const Color(0xFF9CA3AF),
+                  fontSize: 11.sp,
+                ),
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 12.w,
+                  vertical: 10.h,
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8.r),
+                  borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8.r),
+                  borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8.r),
+                  borderSide: const BorderSide(color: Color(0xFF4E03D0)),
+                ),
+              ),
+              onChanged: (value) {
+                setState(() {
+                  final trimmed = value.trim();
+                  _alias = trimmed.isEmpty ? null : trimmed;
+                });
+              },
+            ),
+          ],
+        ),
+      ),
     );
   }
 

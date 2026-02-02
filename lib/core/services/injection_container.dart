@@ -78,6 +78,8 @@ import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_
 import 'package:lazervault/src/features/recipients/domain/usecases/add_recipient_usecase.dart';
 import 'package:lazervault/src/features/recipients/domain/usecases/get_recipients_usecase.dart';
 import 'package:lazervault/src/features/recipients/domain/usecases/toggle_favorite_usecase.dart';
+import 'package:lazervault/src/features/recipients/domain/usecases/update_alias_usecase.dart';
+import 'package:lazervault/src/features/recipients/domain/usecases/delete_recipient_usecase.dart';
 import 'package:lazervault/src/features/funds/cubit/deposit_cubit.dart';
 import 'package:lazervault/src/features/funds/data/repositories/withdrawal_repository_impl.dart';
 import 'package:lazervault/src/features/funds/domain/repositories/i_withdrawal_repository.dart';
@@ -136,7 +138,6 @@ import 'package:lazervault/src/features/presentation/views/profile_settings_scre
 import 'package:lazervault/src/features/presentation/views/review_electricity_bills_screen.dart';
 import 'package:lazervault/src/features/presentation/views/camera_scan_screen.dart';
 import 'package:lazervault/src/features/presentation/views/dashboard/dashboard_screen.dart';
-import 'package:lazervault/src/features/presentation/views/dashboard/transaction_history_screen.dart';
 import 'package:lazervault/src/features/presentation/views/input_pin_screen.dart';
 import 'package:lazervault/src/features/presentation/views/new_card_screen.dart';
 import 'package:lazervault/src/features/presentation/views/pay_electricity_bill_screen.dart';
@@ -437,9 +438,14 @@ import 'package:lazervault/src/features/cards/presentation/cubit/card_cubit.dart
 // End Auto-Save Imports
 
 // Transaction History Imports
-// import 'package:lazervault/core/grpc/transaction_history_grpc_client.dart';
 import 'package:lazervault/src/core/grpc/accounts_grpc_client.dart';
+import 'package:lazervault/core/types/unified_transaction.dart';
+import 'package:lazervault/src/features/transaction_history/data/datasources/transaction_history_cache_datasource.dart';
+import 'package:lazervault/src/features/transaction_history/data/repository/transaction_history_repository_grpc.dart';
+import 'package:lazervault/src/features/transaction_history/domain/repository/transaction_history_repository.dart';
+import 'package:lazervault/src/features/transaction_history/presentation/cubit/transaction_history_cubit.dart';
 import 'package:lazervault/src/features/transaction_history/presentation/screens/dashboard_transaction_history_screen.dart';
+import 'package:lazervault/src/features/transaction_history/presentation/screens/service_transaction_history_screen.dart';
 // End Transaction History Imports
 
 final serviceLocator = GetIt.instance;
@@ -1014,12 +1020,16 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton(() => GetRecipientsUseCase(serviceLocator<IRecipientRepository>()));
   serviceLocator.registerLazySingleton(() => AddRecipientUseCase(serviceLocator<IRecipientRepository>()));
   serviceLocator.registerLazySingleton(() => ToggleFavoriteUseCase(serviceLocator<IRecipientRepository>()));
+  serviceLocator.registerLazySingleton(() => UpdateAliasUseCase(serviceLocator<IRecipientRepository>()));
+  serviceLocator.registerLazySingleton(() => DeleteRecipientUseCase(serviceLocator<IRecipientRepository>()));
 
   // Blocs/Cubits
   serviceLocator.registerFactory(() => RecipientCubit(
     getRecipientsUseCase: serviceLocator<GetRecipientsUseCase>(),
     addRecipientUseCase: serviceLocator<AddRecipientUseCase>(),
     toggleFavoriteUseCase: serviceLocator<ToggleFavoriteUseCase>(),
+    updateAliasUseCase: serviceLocator<UpdateAliasUseCase>(),
+    deleteRecipientUseCase: serviceLocator<DeleteRecipientUseCase>(),
   ));
 
 
@@ -1520,7 +1530,6 @@ Future<void> init() async {
       ..registerFactory(() => FacialBiometricVerificationScreen())
       ..registerFactory(() => FaceScanScreen())
       ..registerFactory(() => FacialLoginScreen())
-      ..registerFactory(() => TransactionHistoryScreen())
       ..registerFactory(() => FlightsScreen())
       ..registerFactory(() => StocksScreen())
       ..registerFactory(() => CBCurrencyExchangeScreen())
@@ -2001,16 +2010,6 @@ Future<void> init() async {
 
   // ================== Feature: Transaction History ==================
 
-  // gRPC Client - Connects to Transaction History Service (port 9091)
-  // TODO: Fix TransactionHistoryGrpcClient implementation and enable
-  // serviceLocator.registerLazySingleton<TransactionHistoryGrpcClient>(
-  //   () => TransactionHistoryGrpcClient(
-  //     host: dotenv.env['GRPC_HOST'] ?? 'localhost',
-  //     port: int.tryParse(dotenv.env['GRPC_PORT'] ?? '9091') ?? 9091,
-  //     authToken: dotenv.env['GRPC_AUTH_TOKEN'],
-  //   ),
-  // );
-
   // gRPC Client - Connects to Accounts Service on Core Gateway
   // Uses the Core Gateway channel for authenticated calls
   serviceLocator.registerLazySingleton<AccountsGrpcClient>(
@@ -2032,30 +2031,29 @@ Future<void> init() async {
   );
 
   // Cache Data Source - SQLite for offline support
-  // TODO: Enable when TransactionHistoryGrpcClient is fixed
-  // serviceLocator.registerLazySingleton<TransactionHistoryCacheDataSource>(
-  //   () => TransactionHistoryCacheDataSource(),
-  // );
+  serviceLocator.registerLazySingleton<TransactionHistoryCacheDataSource>(
+    () => TransactionHistoryCacheDataSource(),
+  );
 
   // Repository - gRPC-based implementation with local caching
   // Uses AccountsGrpcClient to communicate with accounts microservice
-  // serviceLocator.registerLazySingleton<TransactionHistoryRepository>(
-  //   () => TransactionHistoryRepositoryGrpc(
-  //     grpcClient: serviceLocator<AccountsGrpcClient>(),
-  //     accountManager: serviceLocator<AccountManager>(),
-  //   ),
-  // );
+  serviceLocator.registerLazySingleton<TransactionHistoryRepository>(
+    () => TransactionHistoryRepositoryGrpc(
+      grpcClient: serviceLocator<AccountsGrpcClient>(),
+      accountManager: serviceLocator<AccountManager>(),
+    ),
+  );
 
   // Blocs/Cubits
-  // serviceLocator.registerFactory(() => TransactionHistoryCubit(
-  //   repository: serviceLocator<TransactionHistoryRepository>(),
-  // ));
+  serviceLocator.registerFactory(() => TransactionHistoryCubit(
+    repository: serviceLocator<TransactionHistoryRepository>(),
+  ));
 
   // Screens
   serviceLocator.registerFactory(() => DashboardTransactionHistoryScreen());
-  // serviceLocator.registerFactoryParam<ServiceTransactionHistoryScreen, TransactionServiceType, void>(
-  //   (serviceType, _) => ServiceTransactionHistoryScreen(serviceType: serviceType),
-  // );
+  serviceLocator.registerFactoryParam<ServiceTransactionHistoryScreen, TransactionServiceType, void>(
+    (serviceType, _) => ServiceTransactionHistoryScreen(serviceType: serviceType),
+  );
 
   print("Dependency Injection Initialized with Hierarchical Order");
 }

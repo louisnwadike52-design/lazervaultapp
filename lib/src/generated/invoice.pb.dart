@@ -36,6 +36,8 @@ class Invoice extends $pb.GeneratedMessage {
     ..aOB(23, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isUnlocked')
     ..aOS(24, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'unlockPaymentRef')
     ..aOS(25, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'payerEmail')
+    ..aOS(26, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'payerLogoUrl')
+    ..aOS(27, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recipientLogoUrl')
     ..hasRequiredFields = false
   ;
 
@@ -66,6 +68,8 @@ class Invoice extends $pb.GeneratedMessage {
     $core.bool? isUnlocked,
     $core.String? unlockPaymentRef,
     $core.String? payerEmail,
+    $core.String? payerLogoUrl,
+    $core.String? recipientLogoUrl,
   }) {
     final _result = create();
     if (id != null) {
@@ -142,6 +146,12 @@ class Invoice extends $pb.GeneratedMessage {
     }
     if (payerEmail != null) {
       _result.payerEmail = payerEmail;
+    }
+    if (payerLogoUrl != null) {
+      _result.payerLogoUrl = payerLogoUrl;
+    }
+    if (recipientLogoUrl != null) {
+      _result.recipientLogoUrl = recipientLogoUrl;
     }
     return _result;
   }
@@ -378,6 +388,24 @@ class Invoice extends $pb.GeneratedMessage {
   $core.bool hasPayerEmail() => $_has(24);
   @$pb.TagNumber(25)
   void clearPayerEmail() => clearField(25);
+
+  @$pb.TagNumber(26)
+  $core.String get payerLogoUrl => $_getSZ(25);
+  @$pb.TagNumber(26)
+  set payerLogoUrl($core.String v) { $_setString(25, v); }
+  @$pb.TagNumber(26)
+  $core.bool hasPayerLogoUrl() => $_has(25);
+  @$pb.TagNumber(26)
+  void clearPayerLogoUrl() => clearField(26);
+
+  @$pb.TagNumber(27)
+  $core.String get recipientLogoUrl => $_getSZ(26);
+  @$pb.TagNumber(27)
+  set recipientLogoUrl($core.String v) { $_setString(26, v); }
+  @$pb.TagNumber(27)
+  $core.bool hasRecipientLogoUrl() => $_has(26);
+  @$pb.TagNumber(27)
+  void clearRecipientLogoUrl() => clearField(27);
 }
 
 class InvoiceItem extends $pb.GeneratedMessage {
@@ -830,6 +858,9 @@ class CreateInvoiceRequest extends $pb.GeneratedMessage {
     ..pPS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'taggedUserIds')
     ..aOS(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'idempotencyKey')
     ..aOS(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'payerEmail')
+    ..aOS(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
+    ..aOS(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'payerLogoUrl')
+    ..aOS(16, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recipientLogoUrl')
     ..hasRequiredFields = false
   ;
 
@@ -848,6 +879,9 @@ class CreateInvoiceRequest extends $pb.GeneratedMessage {
     $core.Iterable<$core.String>? taggedUserIds,
     $core.String? idempotencyKey,
     $core.String? payerEmail,
+    $core.String? currency,
+    $core.String? payerLogoUrl,
+    $core.String? recipientLogoUrl,
   }) {
     final _result = create();
     if (accountId != null) {
@@ -888,6 +922,15 @@ class CreateInvoiceRequest extends $pb.GeneratedMessage {
     }
     if (payerEmail != null) {
       _result.payerEmail = payerEmail;
+    }
+    if (currency != null) {
+      _result.currency = currency;
+    }
+    if (payerLogoUrl != null) {
+      _result.payerLogoUrl = payerLogoUrl;
+    }
+    if (recipientLogoUrl != null) {
+      _result.recipientLogoUrl = recipientLogoUrl;
     }
     return _result;
   }
@@ -1016,6 +1059,33 @@ class CreateInvoiceRequest extends $pb.GeneratedMessage {
   $core.bool hasPayerEmail() => $_has(12);
   @$pb.TagNumber(13)
   void clearPayerEmail() => clearField(13);
+
+  @$pb.TagNumber(14)
+  $core.String get currency => $_getSZ(13);
+  @$pb.TagNumber(14)
+  set currency($core.String v) { $_setString(13, v); }
+  @$pb.TagNumber(14)
+  $core.bool hasCurrency() => $_has(13);
+  @$pb.TagNumber(14)
+  void clearCurrency() => clearField(14);
+
+  @$pb.TagNumber(15)
+  $core.String get payerLogoUrl => $_getSZ(14);
+  @$pb.TagNumber(15)
+  set payerLogoUrl($core.String v) { $_setString(14, v); }
+  @$pb.TagNumber(15)
+  $core.bool hasPayerLogoUrl() => $_has(14);
+  @$pb.TagNumber(15)
+  void clearPayerLogoUrl() => clearField(15);
+
+  @$pb.TagNumber(16)
+  $core.String get recipientLogoUrl => $_getSZ(15);
+  @$pb.TagNumber(16)
+  set recipientLogoUrl($core.String v) { $_setString(15, v); }
+  @$pb.TagNumber(16)
+  $core.bool hasRecipientLogoUrl() => $_has(15);
+  @$pb.TagNumber(16)
+  void clearRecipientLogoUrl() => clearField(16);
 }
 
 class CreateInvoiceResponse extends $pb.GeneratedMessage {
@@ -1081,6 +1151,123 @@ class CreateInvoiceResponse extends $pb.GeneratedMessage {
   void clearMessage() => clearField(2);
 }
 
+class PaginationInfo extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'PaginationInfo', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'invoice'), createEmptyInstance: create)
+    ..a<$core.int>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currentPage', $pb.PbFieldType.O3)
+    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pageSize', $pb.PbFieldType.O3)
+    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalCount', $pb.PbFieldType.O3)
+    ..a<$core.int>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalPages', $pb.PbFieldType.O3)
+    ..aOB(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'hasNext')
+    ..aOB(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'hasPrevious')
+    ..hasRequiredFields = false
+  ;
+
+  PaginationInfo._() : super();
+  factory PaginationInfo({
+    $core.int? currentPage,
+    $core.int? pageSize,
+    $core.int? totalCount,
+    $core.int? totalPages,
+    $core.bool? hasNext,
+    $core.bool? hasPrevious,
+  }) {
+    final _result = create();
+    if (currentPage != null) {
+      _result.currentPage = currentPage;
+    }
+    if (pageSize != null) {
+      _result.pageSize = pageSize;
+    }
+    if (totalCount != null) {
+      _result.totalCount = totalCount;
+    }
+    if (totalPages != null) {
+      _result.totalPages = totalPages;
+    }
+    if (hasNext != null) {
+      _result.hasNext = hasNext;
+    }
+    if (hasPrevious != null) {
+      _result.hasPrevious = hasPrevious;
+    }
+    return _result;
+  }
+  factory PaginationInfo.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory PaginationInfo.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  PaginationInfo clone() => PaginationInfo()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  PaginationInfo copyWith(void Function(PaginationInfo) updates) => super.copyWith((message) => updates(message as PaginationInfo)) as PaginationInfo; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static PaginationInfo create() => PaginationInfo._();
+  PaginationInfo createEmptyInstance() => create();
+  static $pb.PbList<PaginationInfo> createRepeated() => $pb.PbList<PaginationInfo>();
+  @$core.pragma('dart2js:noInline')
+  static PaginationInfo getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<PaginationInfo>(create);
+  static PaginationInfo? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.int get currentPage => $_getIZ(0);
+  @$pb.TagNumber(1)
+  set currentPage($core.int v) { $_setSignedInt32(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasCurrentPage() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearCurrentPage() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.int get pageSize => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set pageSize($core.int v) { $_setSignedInt32(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasPageSize() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearPageSize() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.int get totalCount => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set totalCount($core.int v) { $_setSignedInt32(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasTotalCount() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearTotalCount() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.int get totalPages => $_getIZ(3);
+  @$pb.TagNumber(4)
+  set totalPages($core.int v) { $_setSignedInt32(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasTotalPages() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearTotalPages() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.bool get hasNext => $_getBF(4);
+  @$pb.TagNumber(5)
+  set hasNext($core.bool v) { $_setBool(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasHasNext() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearHasNext() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.bool get hasPrevious => $_getBF(5);
+  @$pb.TagNumber(6)
+  set hasPrevious($core.bool v) { $_setBool(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasHasPrevious() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearHasPrevious() => clearField(6);
+}
+
 class GetInvoicesRequest extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetInvoicesRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'invoice'), createEmptyInstance: create)
     ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accountId')
@@ -1089,6 +1276,8 @@ class GetInvoicesRequest extends $pb.GeneratedMessage {
     ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'endDate')
     ..a<$core.int>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'limit', $pb.PbFieldType.O3)
     ..a<$core.int>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'offset', $pb.PbFieldType.O3)
+    ..a<$core.int>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'page', $pb.PbFieldType.O3)
+    ..a<$core.int>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pageSize', $pb.PbFieldType.O3)
     ..hasRequiredFields = false
   ;
 
@@ -1100,6 +1289,8 @@ class GetInvoicesRequest extends $pb.GeneratedMessage {
     $core.String? endDate,
     $core.int? limit,
     $core.int? offset,
+    $core.int? page,
+    $core.int? pageSize,
   }) {
     final _result = create();
     if (accountId != null) {
@@ -1119,6 +1310,12 @@ class GetInvoicesRequest extends $pb.GeneratedMessage {
     }
     if (offset != null) {
       _result.offset = offset;
+    }
+    if (page != null) {
+      _result.page = page;
+    }
+    if (pageSize != null) {
+      _result.pageSize = pageSize;
     }
     return _result;
   }
@@ -1196,6 +1393,24 @@ class GetInvoicesRequest extends $pb.GeneratedMessage {
   $core.bool hasOffset() => $_has(5);
   @$pb.TagNumber(6)
   void clearOffset() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.int get page => $_getIZ(6);
+  @$pb.TagNumber(7)
+  set page($core.int v) { $_setSignedInt32(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasPage() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearPage() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.int get pageSize => $_getIZ(7);
+  @$pb.TagNumber(8)
+  set pageSize($core.int v) { $_setSignedInt32(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasPageSize() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearPageSize() => clearField(8);
 }
 
 class GetInvoicesResponse extends $pb.GeneratedMessage {
@@ -1204,6 +1419,7 @@ class GetInvoicesResponse extends $pb.GeneratedMessage {
     ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'total', $pb.PbFieldType.O3)
     ..a<$core.double>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalAmountPending', $pb.PbFieldType.OD)
     ..a<$core.double>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalAmountPaid', $pb.PbFieldType.OD)
+    ..aOM<PaginationInfo>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pagination', subBuilder: PaginationInfo.create)
     ..hasRequiredFields = false
   ;
 
@@ -1213,6 +1429,7 @@ class GetInvoicesResponse extends $pb.GeneratedMessage {
     $core.int? total,
     $core.double? totalAmountPending,
     $core.double? totalAmountPaid,
+    PaginationInfo? pagination,
   }) {
     final _result = create();
     if (invoices != null) {
@@ -1226,6 +1443,9 @@ class GetInvoicesResponse extends $pb.GeneratedMessage {
     }
     if (totalAmountPaid != null) {
       _result.totalAmountPaid = totalAmountPaid;
+    }
+    if (pagination != null) {
+      _result.pagination = pagination;
     }
     return _result;
   }
@@ -1279,6 +1499,17 @@ class GetInvoicesResponse extends $pb.GeneratedMessage {
   $core.bool hasTotalAmountPaid() => $_has(3);
   @$pb.TagNumber(4)
   void clearTotalAmountPaid() => clearField(4);
+
+  @$pb.TagNumber(5)
+  PaginationInfo get pagination => $_getN(4);
+  @$pb.TagNumber(5)
+  set pagination(PaginationInfo v) { setField(5, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasPagination() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearPagination() => clearField(5);
+  @$pb.TagNumber(5)
+  PaginationInfo ensurePagination() => $_ensure(4);
 }
 
 class GetInvoiceRequest extends $pb.GeneratedMessage {
@@ -2078,6 +2309,9 @@ class GetInvoicesTaggedToUserRequest extends $pb.GeneratedMessage {
     ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status')
     ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'limit', $pb.PbFieldType.O3)
     ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'offset', $pb.PbFieldType.O3)
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
+    ..a<$core.int>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'page', $pb.PbFieldType.O3)
+    ..a<$core.int>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pageSize', $pb.PbFieldType.O3)
     ..hasRequiredFields = false
   ;
 
@@ -2086,6 +2320,9 @@ class GetInvoicesTaggedToUserRequest extends $pb.GeneratedMessage {
     $core.String? status,
     $core.int? limit,
     $core.int? offset,
+    $core.String? currency,
+    $core.int? page,
+    $core.int? pageSize,
   }) {
     final _result = create();
     if (status != null) {
@@ -2096,6 +2333,15 @@ class GetInvoicesTaggedToUserRequest extends $pb.GeneratedMessage {
     }
     if (offset != null) {
       _result.offset = offset;
+    }
+    if (currency != null) {
+      _result.currency = currency;
+    }
+    if (page != null) {
+      _result.page = page;
+    }
+    if (pageSize != null) {
+      _result.pageSize = pageSize;
     }
     return _result;
   }
@@ -2146,6 +2392,33 @@ class GetInvoicesTaggedToUserRequest extends $pb.GeneratedMessage {
   $core.bool hasOffset() => $_has(2);
   @$pb.TagNumber(3)
   void clearOffset() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get currency => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set currency($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasCurrency() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearCurrency() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.int get page => $_getIZ(4);
+  @$pb.TagNumber(5)
+  set page($core.int v) { $_setSignedInt32(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasPage() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearPage() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.int get pageSize => $_getIZ(5);
+  @$pb.TagNumber(6)
+  set pageSize($core.int v) { $_setSignedInt32(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasPageSize() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearPageSize() => clearField(6);
 }
 
 class GetInvoicesTaggedToUserResponse extends $pb.GeneratedMessage {
@@ -2154,6 +2427,7 @@ class GetInvoicesTaggedToUserResponse extends $pb.GeneratedMessage {
     ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'total', $pb.PbFieldType.O3)
     ..a<$core.double>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalAmountPending', $pb.PbFieldType.OD)
     ..a<$core.double>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalAmountPaid', $pb.PbFieldType.OD)
+    ..aOM<PaginationInfo>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pagination', subBuilder: PaginationInfo.create)
     ..hasRequiredFields = false
   ;
 
@@ -2163,6 +2437,7 @@ class GetInvoicesTaggedToUserResponse extends $pb.GeneratedMessage {
     $core.int? total,
     $core.double? totalAmountPending,
     $core.double? totalAmountPaid,
+    PaginationInfo? pagination,
   }) {
     final _result = create();
     if (invoices != null) {
@@ -2176,6 +2451,9 @@ class GetInvoicesTaggedToUserResponse extends $pb.GeneratedMessage {
     }
     if (totalAmountPaid != null) {
       _result.totalAmountPaid = totalAmountPaid;
+    }
+    if (pagination != null) {
+      _result.pagination = pagination;
     }
     return _result;
   }
@@ -2229,6 +2507,17 @@ class GetInvoicesTaggedToUserResponse extends $pb.GeneratedMessage {
   $core.bool hasTotalAmountPaid() => $_has(3);
   @$pb.TagNumber(4)
   void clearTotalAmountPaid() => clearField(4);
+
+  @$pb.TagNumber(5)
+  PaginationInfo get pagination => $_getN(4);
+  @$pb.TagNumber(5)
+  set pagination(PaginationInfo v) { setField(5, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasPagination() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearPagination() => clearField(5);
+  @$pb.TagNumber(5)
+  PaginationInfo ensurePagination() => $_ensure(4);
 }
 
 class GetSentInvoicesRequest extends $pb.GeneratedMessage {
@@ -2236,6 +2525,8 @@ class GetSentInvoicesRequest extends $pb.GeneratedMessage {
     ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status')
     ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'limit', $pb.PbFieldType.O3)
     ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'offset', $pb.PbFieldType.O3)
+    ..a<$core.int>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'page', $pb.PbFieldType.O3)
+    ..a<$core.int>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pageSize', $pb.PbFieldType.O3)
     ..hasRequiredFields = false
   ;
 
@@ -2244,6 +2535,8 @@ class GetSentInvoicesRequest extends $pb.GeneratedMessage {
     $core.String? status,
     $core.int? limit,
     $core.int? offset,
+    $core.int? page,
+    $core.int? pageSize,
   }) {
     final _result = create();
     if (status != null) {
@@ -2254,6 +2547,12 @@ class GetSentInvoicesRequest extends $pb.GeneratedMessage {
     }
     if (offset != null) {
       _result.offset = offset;
+    }
+    if (page != null) {
+      _result.page = page;
+    }
+    if (pageSize != null) {
+      _result.pageSize = pageSize;
     }
     return _result;
   }
@@ -2304,6 +2603,24 @@ class GetSentInvoicesRequest extends $pb.GeneratedMessage {
   $core.bool hasOffset() => $_has(2);
   @$pb.TagNumber(3)
   void clearOffset() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.int get page => $_getIZ(3);
+  @$pb.TagNumber(4)
+  set page($core.int v) { $_setSignedInt32(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasPage() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearPage() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.int get pageSize => $_getIZ(4);
+  @$pb.TagNumber(5)
+  set pageSize($core.int v) { $_setSignedInt32(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasPageSize() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearPageSize() => clearField(5);
 }
 
 class GetSentInvoicesResponse extends $pb.GeneratedMessage {
@@ -2312,6 +2629,7 @@ class GetSentInvoicesResponse extends $pb.GeneratedMessage {
     ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'total', $pb.PbFieldType.O3)
     ..a<$core.double>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalAmountPending', $pb.PbFieldType.OD)
     ..a<$core.double>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalAmountPaid', $pb.PbFieldType.OD)
+    ..aOM<PaginationInfo>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pagination', subBuilder: PaginationInfo.create)
     ..hasRequiredFields = false
   ;
 
@@ -2321,6 +2639,7 @@ class GetSentInvoicesResponse extends $pb.GeneratedMessage {
     $core.int? total,
     $core.double? totalAmountPending,
     $core.double? totalAmountPaid,
+    PaginationInfo? pagination,
   }) {
     final _result = create();
     if (invoices != null) {
@@ -2334,6 +2653,9 @@ class GetSentInvoicesResponse extends $pb.GeneratedMessage {
     }
     if (totalAmountPaid != null) {
       _result.totalAmountPaid = totalAmountPaid;
+    }
+    if (pagination != null) {
+      _result.pagination = pagination;
     }
     return _result;
   }
@@ -2387,6 +2709,17 @@ class GetSentInvoicesResponse extends $pb.GeneratedMessage {
   $core.bool hasTotalAmountPaid() => $_has(3);
   @$pb.TagNumber(4)
   void clearTotalAmountPaid() => clearField(4);
+
+  @$pb.TagNumber(5)
+  PaginationInfo get pagination => $_getN(4);
+  @$pb.TagNumber(5)
+  set pagination(PaginationInfo v) { setField(5, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasPagination() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearPagination() => clearField(5);
+  @$pb.TagNumber(5)
+  PaginationInfo ensurePagination() => $_ensure(4);
 }
 
 class UpdateInvoiceRequest extends $pb.GeneratedMessage {
@@ -3011,5 +3344,127 @@ class UnlockInvoiceResponse extends $pb.GeneratedMessage {
   $core.bool hasMessage() => $_has(3);
   @$pb.TagNumber(4)
   void clearMessage() => clearField(4);
+}
+
+class UploadInvoiceImageRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UploadInvoiceImageRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'invoice'), createEmptyInstance: create)
+    ..a<$core.List<$core.int>>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'imageData', $pb.PbFieldType.OY)
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'fileName')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'contentType')
+    ..hasRequiredFields = false
+  ;
+
+  UploadInvoiceImageRequest._() : super();
+  factory UploadInvoiceImageRequest({
+    $core.List<$core.int>? imageData,
+    $core.String? fileName,
+    $core.String? contentType,
+  }) {
+    final _result = create();
+    if (imageData != null) {
+      _result.imageData = imageData;
+    }
+    if (fileName != null) {
+      _result.fileName = fileName;
+    }
+    if (contentType != null) {
+      _result.contentType = contentType;
+    }
+    return _result;
+  }
+  factory UploadInvoiceImageRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory UploadInvoiceImageRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  UploadInvoiceImageRequest clone() => UploadInvoiceImageRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  UploadInvoiceImageRequest copyWith(void Function(UploadInvoiceImageRequest) updates) => super.copyWith((message) => updates(message as UploadInvoiceImageRequest)) as UploadInvoiceImageRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static UploadInvoiceImageRequest create() => UploadInvoiceImageRequest._();
+  UploadInvoiceImageRequest createEmptyInstance() => create();
+  static $pb.PbList<UploadInvoiceImageRequest> createRepeated() => $pb.PbList<UploadInvoiceImageRequest>();
+  @$core.pragma('dart2js:noInline')
+  static UploadInvoiceImageRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<UploadInvoiceImageRequest>(create);
+  static UploadInvoiceImageRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.List<$core.int> get imageData => $_getN(0);
+  @$pb.TagNumber(1)
+  set imageData($core.List<$core.int> v) { $_setBytes(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasImageData() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearImageData() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get fileName => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set fileName($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasFileName() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearFileName() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get contentType => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set contentType($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasContentType() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearContentType() => clearField(3);
+}
+
+class UploadInvoiceImageResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UploadInvoiceImageResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'invoice'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'imageUrl')
+    ..hasRequiredFields = false
+  ;
+
+  UploadInvoiceImageResponse._() : super();
+  factory UploadInvoiceImageResponse({
+    $core.String? imageUrl,
+  }) {
+    final _result = create();
+    if (imageUrl != null) {
+      _result.imageUrl = imageUrl;
+    }
+    return _result;
+  }
+  factory UploadInvoiceImageResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory UploadInvoiceImageResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  UploadInvoiceImageResponse clone() => UploadInvoiceImageResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  UploadInvoiceImageResponse copyWith(void Function(UploadInvoiceImageResponse) updates) => super.copyWith((message) => updates(message as UploadInvoiceImageResponse)) as UploadInvoiceImageResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static UploadInvoiceImageResponse create() => UploadInvoiceImageResponse._();
+  UploadInvoiceImageResponse createEmptyInstance() => create();
+  static $pb.PbList<UploadInvoiceImageResponse> createRepeated() => $pb.PbList<UploadInvoiceImageResponse>();
+  @$core.pragma('dart2js:noInline')
+  static UploadInvoiceImageResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<UploadInvoiceImageResponse>(create);
+  static UploadInvoiceImageResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get imageUrl => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set imageUrl($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasImageUrl() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearImageUrl() => clearField(1);
 }
 

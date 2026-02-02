@@ -307,72 +307,90 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'INVOICE',
-              style: GoogleFonts.inter(
-                color: InvoiceThemeColors.infoBlue,
-                fontSize: 32.sp,
-                fontWeight: FontWeight.w900,
-                letterSpacing: 2,
-              ),
-            ),
-            SizedBox(height: 8.h),
-            Text(
-              invoice.title,
-              style: GoogleFonts.inter(
-                color: const Color(0xFF111827),
-                fontSize: 20.sp,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            if (invoice.description.isNotEmpty) ...[
-              SizedBox(height: 4.h),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
               Text(
-                invoice.description,
+                'INVOICE',
                 style: GoogleFonts.inter(
-                  color: const Color(0xFF6B7280),
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.w400,
+                  color: InvoiceThemeColors.infoBlue,
+                  fontSize: 32.sp,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 2,
                 ),
               ),
+              SizedBox(height: 8.h),
+              Text(
+                invoice.title,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.inter(
+                  color: const Color(0xFF111827),
+                  fontSize: 20.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              if (invoice.description.isNotEmpty) ...[
+                SizedBox(height: 4.h),
+                Text(
+                  invoice.description,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF6B7280),
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+              ],
             ],
-          ],
+          ),
         ),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Text(
-              'Invoice #${invoice.id.substring(0, 8).toUpperCase()}',
-              style: GoogleFonts.inter(
-                color: const Color(0xFF111827),
-                fontSize: 16.sp,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            SizedBox(height: 8.h),
-            Text(
-              'Date: ${_formatDate(invoice.createdAt)}',
-              style: GoogleFonts.inter(
-                color: const Color(0xFF6B7280),
-                fontSize: 14.sp,
-                fontWeight: FontWeight.w400,
-              ),
-            ),
-            if (invoice.dueDate != null) ...[
-              SizedBox(height: 4.h),
-              Text(
-                'Due: ${_formatDate(invoice.dueDate!)}',
-                style: GoogleFonts.inter(
-                  color: const Color(0xFF6B7280),
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.w400,
+        SizedBox(width: 12.w),
+        Flexible(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  'Invoice #${invoice.id.substring(0, 8).toUpperCase()}',
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF111827),
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
+              SizedBox(height: 8.h),
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  'Date: ${_formatDate(invoice.createdAt)}',
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF6B7280),
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+              ),
+              if (invoice.dueDate != null) ...[
+                SizedBox(height: 4.h),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    'Due: ${_formatDate(invoice.dueDate!)}',
+                    style: GoogleFonts.inter(
+                      color: const Color(0xFF6B7280),
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                ),
+              ],
             ],
-          ],
+          ),
         ),
       ],
     );
@@ -406,6 +424,7 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen> {
                 details: invoice.payerDetails,
                 fallbackName: fromName ?? 'Your Business',
                 fallbackEmail: fromEmail,
+                logoUrl: invoice.payerLogoUrl,
               ),
             ),
             SizedBox(width: 24.w),
@@ -415,6 +434,7 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen> {
                 details: invoice.recipientDetails,
                 fallbackName: invoice.toName ?? 'Client',
                 fallbackEmail: invoice.toEmail,
+                logoUrl: invoice.recipientLogoUrl,
               ),
             ),
           ],
@@ -428,6 +448,7 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen> {
     AddressDetails? details,
     String? fallbackName,
     String? fallbackEmail,
+    String? logoUrl,
   }) {
     final info = <String>[];
     
@@ -466,6 +487,19 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen> {
             ),
           ),
           SizedBox(height: 12.h),
+          if (logoUrl != null && logoUrl.isNotEmpty) ...[
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8.r),
+              child: Image.network(
+                logoUrl,
+                width: 40.w,
+                height: 40.w,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+              ),
+            ),
+            SizedBox(height: 8.h),
+          ],
           ...info.map((line) => Padding(
             padding: EdgeInsets.only(bottom: 4.h),
             child: Text(

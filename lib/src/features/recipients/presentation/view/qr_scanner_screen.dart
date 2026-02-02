@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:get_it/get_it.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:lazervault/core/services/account_manager.dart';
 import 'dart:convert';
 
 /// QR Code Scanner Screen for scanning recipient QR codes
@@ -51,47 +53,137 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
 
   void _processQRCode(String code) {
     try {
-      // Expected QR code format:
-      // {
-      //   "type": "lazervault_recipient",
-      //   "recipientId": "123",
-      //   "username": "@johndoe",
-      //   "name": "John Doe",
-      //   "version": "1.0"
-      // }
-
       final data = json.decode(code);
+      final type = data['type'] as String?;
 
-      if (data['type'] != 'lazervault_recipient') {
-        _showError('Invalid QR Code', 'This QR code is not a LazerVault recipient code.');
-        return;
+      if (type == 'lazervault_pay') {
+        // v2 signed payment QR - extract token and validate
+        _handlePaymentQR(data);
+      } else if (type == 'lazervault_recipient') {
+        // v1 static recipient QR
+        _handleRecipientQR(data);
+      } else {
+        _showError('Invalid QR Code', 'This QR code is not a LazerVault code.');
       }
-
-      // Validate required fields
-      if (data['recipientId'] == null || data['username'] == null) {
-        _showError('Invalid QR Code', 'QR code is missing required recipient information.');
-        return;
-      }
-
-      // Success - return recipient data
-      Get.back(result: {
-        'recipientId': data['recipientId'].toString(),
-        'username': data['username'],
-        'name': data['name'] ?? data['username'],
-        'scannedAt': DateTime.now().toIso8601String(),
-      });
-
-      Get.snackbar(
-        'Success',
-        'Recipient scanned successfully!',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.green.withValues(alpha: 0.8),
-        colorText: Colors.white,
-        icon: Icon(Icons.check_circle, color: Colors.white),
-        duration: Duration(seconds: 2),
-      );
     } catch (e) {
       _showError('Invalid Format', 'Could not read QR code. Please try again.');
+    }
+  }
+
+  String? _getCurrentUserId() {
+    try {
+      final accountManager = GetIt.I<AccountManager>();
+      return accountManager.activeAccountDetails?.id;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  void _handleRecipientQR(Map<String, dynamic> data) {
+    if (data['recipientId'] == null || data['username'] == null) {
+      _showError('Invalid QR Code', 'QR code is missing required recipient information.');
+      return;
+    }
+
+    // Self-scan prevention
+    final currentUserId = _getCurrentUserId();
+    if (currentUserId != null && data['recipientId'].toString() == currentUserId) {
+      _showError('Cannot Pay Yourself', 'You cannot scan your own QR code.');
+      return;
+    }
+
+    Get.back(result: {
+      'recipientId': data['recipientId'].toString(),
+      'username': data['username'],
+      'name': data['name'] ?? data['username'],
+      'scannedAt': DateTime.now().toIso8601String(),
+    });
+
+    Get.snackbar(
+      'Success',
+      'Recipient scanned successfully!',
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: Colors.green.withValues(alpha: 0.8),
+      colorText: Colors.white,
+      icon: Icon(Icons.check_circle, color: Colors.white),
+      duration: Duration(seconds: 2),
+    );
+  }
+
+  void _handlePaymentQR(Map<String, dynamic> data) {
+    // v2 format: {"type":"lazervault_pay","token":"...","v":"2.0"}
+    // For now, extract embedded data from the token payload
+    // Once backend QR validation RPC is ready, call validateQRToken here
+    final token = data['token'] as String?;
+    if (token == null || token.isEmpty) {
+      _showError('Invalid QR Code', 'Payment QR code is malformed.');
+      return;
+    }
+
+    // Decode the JWT-like token payload (base64 middle segment)
+    try {
+      final parts = token.split('.');
+      if (parts.length >= 2) {
+        // Pad base64 if needed
+        String payload = parts[1];
+        while (payload.length % 4 != 0) {
+          payload += '=';
+        }
+        final decoded = json.decode(
+          String.fromCharCodes(base64Url.decode(payload)),
+        );
+
+        // Self-scan prevention
+        final currentUserId = _getCurrentUserId();
+        if (currentUserId != null && decoded['user_id']?.toString() == currentUserId) {
+          _showError('Cannot Pay Yourself', 'You cannot scan your own QR code.');
+          return;
+        }
+
+        final result = <String, dynamic>{
+          'recipientId': decoded['user_id']?.toString() ?? '',
+          'username': decoded['username'] ?? '',
+          'name': decoded['name'] ?? decoded['username'] ?? '',
+          'scannedAt': DateTime.now().toIso8601String(),
+          'qr_version': '2.0',
+        };
+
+        // Include amount if present (dynamic QR)
+        if (decoded['amount'] != null && decoded['amount'] != 0) {
+          result['amount'] = decoded['amount'];
+          result['currency'] = decoded['currency'] ?? 'NGN';
+        }
+
+        // Check expiry
+        if (decoded['exp'] != null) {
+          final expiry = DateTime.fromMillisecondsSinceEpoch(
+            (decoded['exp'] as num).toInt() * 1000,
+          );
+          if (DateTime.now().isAfter(expiry)) {
+            _showError('Expired QR Code', 'This payment QR code has expired. Ask the recipient to generate a new one.');
+            return;
+          }
+        }
+
+        Get.back(result: result);
+
+        final amountInfo = result['amount'] != null
+            ? ' for ${result['currency']} ${result['amount']}'
+            : '';
+        Get.snackbar(
+          'Payment QR Scanned',
+          'Ready to send to ${result['name']}$amountInfo',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.green.withValues(alpha: 0.8),
+          colorText: Colors.white,
+          icon: Icon(Icons.check_circle, color: Colors.white),
+          duration: Duration(seconds: 2),
+        );
+      } else {
+        _showError('Invalid QR Code', 'Payment QR code format is invalid.');
+      }
+    } catch (e) {
+      _showError('Invalid QR Code', 'Could not decode payment QR code.');
     }
   }
 

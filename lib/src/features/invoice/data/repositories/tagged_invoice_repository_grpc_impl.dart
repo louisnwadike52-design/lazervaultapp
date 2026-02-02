@@ -20,15 +20,20 @@ class TaggedInvoiceRepositoryGrpcImpl implements TaggedInvoiceRepository {
     int page = 1,
     int limit = 20,
     InvoicePaymentStatus? statusFilter,
+    String? currency,
   }) async {
     return retryWithBackoff(
       operation: () async {
         final request = pb.GetInvoicesTaggedToUserRequest()
-          ..limit = limit
-          ..offset = (page - 1) * limit;
+          ..page = page
+          ..pageSize = limit;
 
         if (statusFilter != null) {
           request.status = _paymentStatusToString(statusFilter);
+        }
+
+        if (currency != null && currency.isNotEmpty) {
+          request.currency = currency;
         }
 
         final options = await grpcClient.callOptions;
@@ -38,6 +43,48 @@ class TaggedInvoiceRepositoryGrpcImpl implements TaggedInvoiceRepository {
         );
 
         return response.invoices.map((inv) => _invoiceToTaggedInvoice(inv, isIncoming: true)).toList();
+      },
+    );
+  }
+
+  /// Get incoming tagged invoices with full pagination metadata
+  Future<TaggedInvoicePaginatedResult> getIncomingTaggedInvoicesPaginated({
+    int page = 1,
+    int pageSize = 20,
+    InvoicePaymentStatus? statusFilter,
+    String? currency,
+  }) async {
+    return retryWithBackoff(
+      operation: () async {
+        final request = pb.GetInvoicesTaggedToUserRequest()
+          ..page = page
+          ..pageSize = pageSize;
+
+        if (statusFilter != null) {
+          request.status = _paymentStatusToString(statusFilter);
+        }
+        if (currency != null && currency.isNotEmpty) {
+          request.currency = currency;
+        }
+
+        final options = await grpcClient.callOptions;
+        final response = await grpcClient.invoiceClient.getInvoicesTaggedToUser(
+          request,
+          options: options,
+        );
+
+        final invoices = response.invoices.map((inv) => _invoiceToTaggedInvoice(inv, isIncoming: true)).toList();
+        final pagination = response.pagination;
+
+        return TaggedInvoicePaginatedResult(
+          invoices: invoices,
+          currentPage: pagination.currentPage,
+          pageSize: pagination.pageSize,
+          totalCount: pagination.totalCount,
+          totalPages: pagination.totalPages,
+          hasNext: pagination.hasNext,
+          hasPrevious: pagination.hasPrevious,
+        );
       },
     );
   }

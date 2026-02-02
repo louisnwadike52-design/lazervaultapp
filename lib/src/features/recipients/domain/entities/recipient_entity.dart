@@ -12,6 +12,8 @@ class RecipientEntity {
   final String? currency;
   final String? swiftCode;
   final String? iban;
+  final String? alias;
+  final String? type;
 
   RecipientEntity({
     required this.id,
@@ -27,6 +29,8 @@ class RecipientEntity {
     this.currency,
     this.swiftCode,
     this.iban,
+    this.alias,
+    this.type,
   });
 
   RecipientEntity copyWith({
@@ -43,6 +47,8 @@ class RecipientEntity {
     String? currency,
     String? swiftCode,
     String? iban,
+    String? alias,
+    String? type,
   }) {
     return RecipientEntity(
       id: id ?? this.id,
@@ -58,6 +64,8 @@ class RecipientEntity {
       currency: currency ?? this.currency,
       swiftCode: swiftCode ?? this.swiftCode,
       iban: iban ?? this.iban,
+      alias: alias ?? this.alias,
+      type: type ?? this.type,
     );
   }
 
@@ -76,6 +84,8 @@ class RecipientEntity {
       'currency': currency,
       'swiftCode': swiftCode,
       'iban': iban,
+      'alias': alias,
+      'type': type,
     };
   }
 
@@ -94,6 +104,8 @@ class RecipientEntity {
       currency: json['currency'] as String?,
       swiftCode: json['swiftCode'] as String?,
       iban: json['iban'] as String?,
+      alias: json['alias'] as String?,
+      type: json['type'] as String?,
     );
   }
 
@@ -113,7 +125,9 @@ class RecipientEntity {
         other.phoneNumber == phoneNumber &&
         other.currency == currency &&
         other.swiftCode == swiftCode &&
-        other.iban == iban;
+        other.iban == iban &&
+        other.alias == alias &&
+        other.type == type;
   }
 
   @override
@@ -130,6 +144,8 @@ class RecipientEntity {
         phoneNumber.hashCode ^
         currency.hashCode ^
         swiftCode.hashCode ^
-        iban.hashCode;
+        iban.hashCode ^
+        alias.hashCode ^
+        type.hashCode;
   }
 } 

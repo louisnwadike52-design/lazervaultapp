@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:get_it/get_it.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/src/features/recipients/data/models/recipient_model.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_cubit.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_state.dart';
@@ -23,6 +25,8 @@ class SplitBillsScreen extends StatefulWidget {
 }
 
 class _SplitBillsScreenState extends State<SplitBillsScreen> {
+  static const int _maxParticipants = 20;
+
   final TextEditingController _totalAmountController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
 
@@ -33,6 +37,24 @@ class _SplitBillsScreenState extends State<SplitBillsScreen> {
 
   bool _includeMyself = true;
   double _myShare = 0.0;
+
+  String get _currency {
+    final acctDetails = GetIt.I<AccountManager>().activeAccountDetails;
+    return acctDetails?.currency ?? 'NGN';
+  }
+
+  String get _currencySymbol {
+    switch (_currency.toUpperCase()) {
+      case 'NGN': return '\u20a6';
+      case 'GBP': return '\u00a3';
+      case 'EUR': return '\u20ac';
+      case 'USD': return '\$';
+      case 'ZAR': return 'R';
+      case 'CAD': return 'C\$';
+      case 'AUD': return 'A\$';
+      default: return '\u20a6';
+    }
+  }
 
   @override
   void initState() {
@@ -73,11 +95,21 @@ class _SplitBillsScreenState extends State<SplitBillsScreen> {
 
     switch (_splitMethod) {
       case SplitMethod.equal:
-        final equalShare = _totalAmount / _totalParticipants;
+        // Use cent-level precision to avoid rounding errors
+        final totalCents = (_totalAmount * 100).round();
+        final baseCents = totalCents ~/ _totalParticipants;
+        var remainderCents = totalCents - (baseCents * _totalParticipants);
         setState(() {
-          _myShare = _includeMyself ? equalShare : 0.0;
-          for (var participant in _selectedParticipants) {
-            _customAmounts[participant.id] = equalShare;
+          if (_includeMyself) {
+            // First share (myself) gets the remainder
+            _myShare = (baseCents + remainderCents) / 100.0;
+            remainderCents = 0;
+          } else {
+            _myShare = 0.0;
+          }
+          for (var i = 0; i < _selectedParticipants.length; i++) {
+            final extra = (i == 0 && remainderCents > 0) ? remainderCents : 0;
+            _customAmounts[_selectedParticipants[i].id] = (baseCents + extra) / 100.0;
           }
         });
         break;
@@ -107,10 +139,19 @@ class _SplitBillsScreenState extends State<SplitBillsScreen> {
   }
 
   void _addParticipant(RecipientModel recipient) {
+    if (_selectedParticipants.length >= _maxParticipants) {
+      Get.snackbar(
+        'Limit Reached',
+        'Maximum $_maxParticipants participants allowed',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.orange.withValues(alpha: 0.7),
+        colorText: Colors.white,
+      );
+      return;
+    }
     if (!_selectedParticipants.any((p) => p.id == recipient.id)) {
       setState(() {
         _selectedParticipants.add(recipient);
-        // Initialize with equal split
         if (_totalAmount > 0) {
           _customAmounts[recipient.id] = _totalAmount / (_selectedParticipants.length + (_includeMyself ? 1 : 0));
         }
@@ -158,7 +199,7 @@ class _SplitBillsScreenState extends State<SplitBillsScreen> {
     if ((totalSplits - _totalAmount).abs() > 0.01) { // Allow 1 cent tolerance
       Get.snackbar(
         'Split Error',
-        'Total splits (£${NumberFormat('#,##0.00').format(totalSplits)}) do not equal total amount (£${NumberFormat('#,##0.00').format(_totalAmount)})',
+        'Total splits ($_currencySymbol${NumberFormat('#,##0.00').format(totalSplits)}) do not equal total amount ($_currencySymbol${NumberFormat('#,##0.00').format(_totalAmount)})',
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.red.withValues(alpha: 0.7),
         colorText: Colors.white,
@@ -167,17 +208,27 @@ class _SplitBillsScreenState extends State<SplitBillsScreen> {
       return;
     }
 
+    // Convert amounts to minor units (kobo/cents) for batch transfer
+    final amountsInMinorUnits = _customAmounts.map(
+      (key, value) => MapEntry(key, (value * 100).round()),
+    );
+
     // Navigate to confirmation screen with split details
     Get.toNamed(
       AppRoutes.batchTransfer,
       arguments: {
         'participants': _selectedParticipants,
-        'amounts': _customAmounts,
+        'amounts': amountsInMinorUnits,
+        'amounts_display': _customAmounts,
         'totalAmount': _totalAmount,
+        'totalAmountMinorUnits': (_totalAmount * 100).round(),
         'description': _descriptionController.text.isEmpty
             ? 'Split Bill'
             : _descriptionController.text,
         'myShare': _myShare,
+        'split_type': _splitMethod.name,
+        'currency': _currency,
+        'currencySymbol': _currencySymbol,
       },
     );
   }
@@ -242,7 +293,7 @@ class _SplitBillsScreenState extends State<SplitBillsScreen> {
                           hintStyle: TextStyle(
                             color: Colors.white.withValues(alpha: 0.5),
                           ),
-                          prefixText: '£',
+                          prefixText: _currencySymbol,
                           prefixStyle: TextStyle(
                             color: Colors.white,
                             fontSize: 32.sp,
@@ -341,7 +392,7 @@ class _SplitBillsScreenState extends State<SplitBillsScreen> {
                                 ),
                                 if (_includeMyself && _myShare > 0)
                                   Text(
-                                    'My share: £${NumberFormat('#,##0.00').format(_myShare)}',
+                                    'My share: $_currencySymbol${NumberFormat('#,##0.00').format(_myShare)}',
                                     style: TextStyle(
                                       fontSize: 12.sp,
                                       color: Colors.grey[600],
@@ -456,7 +507,7 @@ class _SplitBillsScreenState extends State<SplitBillsScreen> {
                             children: [
                               Text('Total Amount:', style: TextStyle(fontSize: 14.sp)),
                               Text(
-                                '£${NumberFormat('#,##0.00').format(_totalAmount)}',
+                                '$_currencySymbol${NumberFormat('#,##0.00').format(_totalAmount)}',
                                 style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.bold),
                               ),
                             ],
@@ -481,7 +532,7 @@ class _SplitBillsScreenState extends State<SplitBillsScreen> {
                                   children: [
                                     Text('Per Person:', style: TextStyle(fontSize: 14.sp)),
                                     Text(
-                                      '£${NumberFormat('#,##0.00').format(_totalAmount / _totalParticipants)}',
+                                      '$_currencySymbol${NumberFormat('#,##0.00').format(_totalAmount / _totalParticipants)}',
                                       style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.bold),
                                     ),
                                   ],
@@ -627,7 +678,7 @@ class _SplitBillsScreenState extends State<SplitBillsScreen> {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
-                '£${NumberFormat('#,##0.00').format(amount)}',
+                '$_currencySymbol${NumberFormat('#,##0.00').format(amount)}',
                 style: TextStyle(
                   color: Colors.green[700],
                   fontSize: 14.sp,
@@ -643,7 +694,7 @@ class _SplitBillsScreenState extends State<SplitBillsScreen> {
                 textAlign: TextAlign.right,
                 decoration: InputDecoration(
                   hintText: '0.00',
-                  prefixText: '£',
+                  prefixText: _currencySymbol,
                   isDense: true,
                   contentPadding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 8.h),
                   border: OutlineInputBorder(

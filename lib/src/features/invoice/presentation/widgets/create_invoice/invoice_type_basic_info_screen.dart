@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '../../../domain/entities/invoice_entity.dart';
 import '../../cubit/create_invoice_cubit.dart';
+import '../../../../../../core/services/locale_manager.dart';
 
 /// Screen 1: Invoice Type & Basic Information
 ///
@@ -238,6 +239,8 @@ class _InvoiceTypeBasicInfoScreenState
             ),
             SizedBox(height: 16.h),
             _buildDueDateField(cubit),
+            SizedBox(height: 16.h),
+            _buildCurrencyField(cubit),
           ],
         );
       },
@@ -371,6 +374,153 @@ class _InvoiceTypeBasicInfoScreenState
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildCurrencyField(CreateInvoiceCubit cubit) {
+    final countries = CountryLocales.all;
+    final selectedCountry = cubit.invoiceCountry;
+
+    // Find currently selected country or default to first
+    CountryLocale? current;
+    if (selectedCountry.isNotEmpty) {
+      current = CountryLocales.findByCountryCode(selectedCountry);
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Invoice Currency',
+          style: GoogleFonts.inter(
+            fontSize: 14.sp,
+            fontWeight: FontWeight.w500,
+            color: Colors.grey[400],
+          ),
+        ),
+        SizedBox(height: 8.h),
+        GestureDetector(
+          onTap: () => _showCurrencyPicker(context, cubit, countries),
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1F1F1F),
+              borderRadius: BorderRadius.circular(12.r),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.3),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.language,
+                  size: 20.sp,
+                  color: Colors.white.withValues(alpha: 0.6),
+                ),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: Text(
+                    current != null
+                        ? '${current.flag} ${current.countryName} (${current.currency})'
+                        : 'Select currency',
+                    style: GoogleFonts.inter(
+                      fontSize: 15.sp,
+                      fontWeight: FontWeight.w500,
+                      color: current != null ? Colors.white : Colors.grey[600],
+                    ),
+                  ),
+                ),
+                Icon(
+                  Icons.keyboard_arrow_down,
+                  size: 20.sp,
+                  color: Colors.grey[400],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _showCurrencyPicker(
+    BuildContext context,
+    CreateInvoiceCubit cubit,
+    List<CountryLocale> countries,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF1A1A1A),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+      ),
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(height: 12.h),
+              Container(
+                width: 40.w,
+                height: 4.h,
+                decoration: BoxDecoration(
+                  color: Colors.grey[600],
+                  borderRadius: BorderRadius.circular(2.r),
+                ),
+              ),
+              SizedBox(height: 16.h),
+              Text(
+                'Select Invoice Currency',
+                style: GoogleFonts.inter(
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                ),
+              ),
+              SizedBox(height: 16.h),
+              ...countries.map((country) {
+                final isSelected = cubit.invoiceCountry == country.countryCode;
+                return ListTile(
+                  leading: Text(
+                    country.flag,
+                    style: TextStyle(fontSize: 24.sp),
+                  ),
+                  title: Text(
+                    country.countryName,
+                    style: GoogleFonts.inter(
+                      fontSize: 15.sp,
+                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                      color: Colors.white,
+                    ),
+                  ),
+                  trailing: Text(
+                    country.currency,
+                    style: GoogleFonts.inter(
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600,
+                      color: isSelected
+                          ? const Color(0xFF3B82F6)
+                          : Colors.grey[400],
+                    ),
+                  ),
+                  selected: isSelected,
+                  selectedTileColor: Colors.white.withValues(alpha: 0.05),
+                  onTap: () {
+                    cubit.updateInvoiceCountry(country.countryCode);
+                    cubit.updateInvoiceCurrency(country.currency);
+                    Navigator.of(sheetContext).pop();
+                  },
+                );
+              }),
+              SizedBox(height: 16.h),
+            ],
+          ),
+        );
+      },
     );
   }
 

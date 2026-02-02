@@ -36,11 +36,14 @@ const Invoice$json = const {
     const {'1': 'tagged_users', '3': 22, '4': 3, '5': 11, '6': '.invoice.TaggedUser', '10': 'taggedUsers'},
     const {'1': 'is_unlocked', '3': 23, '4': 1, '5': 8, '10': 'isUnlocked'},
     const {'1': 'unlock_payment_ref', '3': 24, '4': 1, '5': 9, '10': 'unlockPaymentRef'},
+    const {'1': 'payer_email', '3': 25, '4': 1, '5': 9, '10': 'payerEmail'},
+    const {'1': 'payer_logo_url', '3': 26, '4': 1, '5': 9, '10': 'payerLogoUrl'},
+    const {'1': 'recipient_logo_url', '3': 27, '4': 1, '5': 9, '10': 'recipientLogoUrl'},
   ],
 };
 
 /// Descriptor for `Invoice`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List invoiceDescriptor = $convert.base64Decode('CgdJbnZvaWNlEg4KAmlkGAEgASgJUgJpZBIXCgd1c2VyX2lkGAIgASgJUgZ1c2VySWQSHQoKYWNjb3VudF9pZBgDIAEoCVIJYWNjb3VudElkEiUKDmludm9pY2VfbnVtYmVyGAQgASgJUg1pbnZvaWNlTnVtYmVyEicKD3JlY2lwaWVudF9lbWFpbBgFIAEoCVIOcmVjaXBpZW50RW1haWwSJQoOcmVjaXBpZW50X25hbWUYBiABKAlSDXJlY2lwaWVudE5hbWUSFgoGYW1vdW50GAcgASgBUgZhbW91bnQSGgoIY3VycmVuY3kYCCABKAlSCGN1cnJlbmN5EhYKBnN0YXR1cxgJIAEoCVIGc3RhdHVzEiAKC2Rlc2NyaXB0aW9uGAogASgJUgtkZXNjcmlwdGlvbhIZCghkdWVfZGF0ZRgLIAEoCVIHZHVlRGF0ZRIqCgVpdGVtcxgMIAMoCzIULmludm9pY2UuSW52b2ljZUl0ZW1SBWl0ZW1zEhAKA3RheBgNIAEoAVIDdGF4EhoKCGRpc2NvdW50GA4gASgBUghkaXNjb3VudBIhCgx0b3RhbF9hbW91bnQYDyABKAFSC3RvdGFsQW1vdW50EisKEXBheW1lbnRfcmVmZXJlbmNlGBAgASgJUhBwYXltZW50UmVmZXJlbmNlEhcKB3BhaWRfYXQYESABKAlSBnBhaWRBdBIUCgVub3RlcxgSIAEoCVIFbm90ZXMSGgoIbWV0YWRhdGEYEyABKAlSCG1ldGFkYXRhEh0KCmNyZWF0ZWRfYXQYFCABKAlSCWNyZWF0ZWRBdBIdCgp1cGRhdGVkX2F0GBUgASgJUgl1cGRhdGVkQXQSNgoMdGFnZ2VkX3VzZXJzGBYgAygLMhMuaW52b2ljZS5UYWdnZWRVc2VyUgt0YWdnZWRVc2VycxIfCgtpc191bmxvY2tlZBgXIAEoCFIKaXNVbmxvY2tlZBIsChJ1bmxvY2tfcGF5bWVudF9yZWYYGCABKAlSEHVubG9ja1BheW1lbnRSZWY=');
+final $typed_data.Uint8List invoiceDescriptor = $convert.base64Decode('CgdJbnZvaWNlEg4KAmlkGAEgASgJUgJpZBIXCgd1c2VyX2lkGAIgASgJUgZ1c2VySWQSHQoKYWNjb3VudF9pZBgDIAEoCVIJYWNjb3VudElkEiUKDmludm9pY2VfbnVtYmVyGAQgASgJUg1pbnZvaWNlTnVtYmVyEicKD3JlY2lwaWVudF9lbWFpbBgFIAEoCVIOcmVjaXBpZW50RW1haWwSJQoOcmVjaXBpZW50X25hbWUYBiABKAlSDXJlY2lwaWVudE5hbWUSFgoGYW1vdW50GAcgASgBUgZhbW91bnQSGgoIY3VycmVuY3kYCCABKAlSCGN1cnJlbmN5EhYKBnN0YXR1cxgJIAEoCVIGc3RhdHVzEiAKC2Rlc2NyaXB0aW9uGAogASgJUgtkZXNjcmlwdGlvbhIZCghkdWVfZGF0ZRgLIAEoCVIHZHVlRGF0ZRIqCgVpdGVtcxgMIAMoCzIULmludm9pY2UuSW52b2ljZUl0ZW1SBWl0ZW1zEhAKA3RheBgNIAEoAVIDdGF4EhoKCGRpc2NvdW50GA4gASgBUghkaXNjb3VudBIhCgx0b3RhbF9hbW91bnQYDyABKAFSC3RvdGFsQW1vdW50EisKEXBheW1lbnRfcmVmZXJlbmNlGBAgASgJUhBwYXltZW50UmVmZXJlbmNlEhcKB3BhaWRfYXQYESABKAlSBnBhaWRBdBIUCgVub3RlcxgSIAEoCVIFbm90ZXMSGgoIbWV0YWRhdGEYEyABKAlSCG1ldGFkYXRhEh0KCmNyZWF0ZWRfYXQYFCABKAlSCWNyZWF0ZWRBdBIdCgp1cGRhdGVkX2F0GBUgASgJUgl1cGRhdGVkQXQSNgoMdGFnZ2VkX3VzZXJzGBYgAygLMhMuaW52b2ljZS5UYWdnZWRVc2VyUgt0YWdnZWRVc2VycxIfCgtpc191bmxvY2tlZBgXIAEoCFIKaXNVbmxvY2tlZBIsChJ1bmxvY2tfcGF5bWVudF9yZWYYGCABKAlSEHVubG9ja1BheW1lbnRSZWYSHwoLcGF5ZXJfZW1haWwYGSABKAlSCnBheWVyRW1haWwSJAoOcGF5ZXJfbG9nb191cmwYGiABKAlSDHBheWVyTG9nb1VybBIsChJyZWNpcGllbnRfbG9nb191cmwYGyABKAlSEHJlY2lwaWVudExvZ29Vcmw=');
 @$core.Deprecated('Use invoiceItemDescriptor instead')
 const InvoiceItem$json = const {
   '1': 'InvoiceItem',
@@ -108,11 +111,15 @@ const CreateInvoiceRequest$json = const {
     const {'1': 'notes', '3': 10, '4': 1, '5': 9, '10': 'notes'},
     const {'1': 'tagged_user_ids', '3': 11, '4': 3, '5': 9, '10': 'taggedUserIds'},
     const {'1': 'idempotency_key', '3': 12, '4': 1, '5': 9, '10': 'idempotencyKey'},
+    const {'1': 'payer_email', '3': 13, '4': 1, '5': 9, '10': 'payerEmail'},
+    const {'1': 'currency', '3': 14, '4': 1, '5': 9, '10': 'currency'},
+    const {'1': 'payer_logo_url', '3': 15, '4': 1, '5': 9, '10': 'payerLogoUrl'},
+    const {'1': 'recipient_logo_url', '3': 16, '4': 1, '5': 9, '10': 'recipientLogoUrl'},
   ],
 };
 
 /// Descriptor for `CreateInvoiceRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List createInvoiceRequestDescriptor = $convert.base64Decode('ChRDcmVhdGVJbnZvaWNlUmVxdWVzdBIdCgphY2NvdW50X2lkGAEgASgJUglhY2NvdW50SWQSJwoPcmVjaXBpZW50X2VtYWlsGAIgASgJUg5yZWNpcGllbnRFbWFpbBIlCg5yZWNpcGllbnRfbmFtZRgDIAEoCVINcmVjaXBpZW50TmFtZRIWCgZhbW91bnQYBCABKAFSBmFtb3VudBIgCgtkZXNjcmlwdGlvbhgFIAEoCVILZGVzY3JpcHRpb24SGQoIZHVlX2RhdGUYBiABKAlSB2R1ZURhdGUSKgoFaXRlbXMYByADKAsyFC5pbnZvaWNlLkludm9pY2VJdGVtUgVpdGVtcxIQCgN0YXgYCCABKAFSA3RheBIaCghkaXNjb3VudBgJIAEoAVIIZGlzY291bnQSFAoFbm90ZXMYCiABKAlSBW5vdGVzEiYKD3RhZ2dlZF91c2VyX2lkcxgLIAMoCVINdGFnZ2VkVXNlcklkcxInCg9pZGVtcG90ZW5jeV9rZXkYDCABKAlSDmlkZW1wb3RlbmN5S2V5');
+final $typed_data.Uint8List createInvoiceRequestDescriptor = $convert.base64Decode('ChRDcmVhdGVJbnZvaWNlUmVxdWVzdBIdCgphY2NvdW50X2lkGAEgASgJUglhY2NvdW50SWQSJwoPcmVjaXBpZW50X2VtYWlsGAIgASgJUg5yZWNpcGllbnRFbWFpbBIlCg5yZWNpcGllbnRfbmFtZRgDIAEoCVINcmVjaXBpZW50TmFtZRIWCgZhbW91bnQYBCABKAFSBmFtb3VudBIgCgtkZXNjcmlwdGlvbhgFIAEoCVILZGVzY3JpcHRpb24SGQoIZHVlX2RhdGUYBiABKAlSB2R1ZURhdGUSKgoFaXRlbXMYByADKAsyFC5pbnZvaWNlLkludm9pY2VJdGVtUgVpdGVtcxIQCgN0YXgYCCABKAFSA3RheBIaCghkaXNjb3VudBgJIAEoAVIIZGlzY291bnQSFAoFbm90ZXMYCiABKAlSBW5vdGVzEiYKD3RhZ2dlZF91c2VyX2lkcxgLIAMoCVINdGFnZ2VkVXNlcklkcxInCg9pZGVtcG90ZW5jeV9rZXkYDCABKAlSDmlkZW1wb3RlbmN5S2V5Eh8KC3BheWVyX2VtYWlsGA0gASgJUgpwYXllckVtYWlsEhoKCGN1cnJlbmN5GA4gASgJUghjdXJyZW5jeRIkCg5wYXllcl9sb2dvX3VybBgPIAEoCVIMcGF5ZXJMb2dvVXJsEiwKEnJlY2lwaWVudF9sb2dvX3VybBgQIAEoCVIQcmVjaXBpZW50TG9nb1VybA==');
 @$core.Deprecated('Use createInvoiceResponseDescriptor instead')
 const CreateInvoiceResponse$json = const {
   '1': 'CreateInvoiceResponse',
@@ -124,6 +131,21 @@ const CreateInvoiceResponse$json = const {
 
 /// Descriptor for `CreateInvoiceResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List createInvoiceResponseDescriptor = $convert.base64Decode('ChVDcmVhdGVJbnZvaWNlUmVzcG9uc2USKgoHaW52b2ljZRgBIAEoCzIQLmludm9pY2UuSW52b2ljZVIHaW52b2ljZRIYCgdtZXNzYWdlGAIgASgJUgdtZXNzYWdl');
+@$core.Deprecated('Use paginationInfoDescriptor instead')
+const PaginationInfo$json = const {
+  '1': 'PaginationInfo',
+  '2': const [
+    const {'1': 'current_page', '3': 1, '4': 1, '5': 5, '10': 'currentPage'},
+    const {'1': 'page_size', '3': 2, '4': 1, '5': 5, '10': 'pageSize'},
+    const {'1': 'total_count', '3': 3, '4': 1, '5': 5, '10': 'totalCount'},
+    const {'1': 'total_pages', '3': 4, '4': 1, '5': 5, '10': 'totalPages'},
+    const {'1': 'has_next', '3': 5, '4': 1, '5': 8, '10': 'hasNext'},
+    const {'1': 'has_previous', '3': 6, '4': 1, '5': 8, '10': 'hasPrevious'},
+  ],
+};
+
+/// Descriptor for `PaginationInfo`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List paginationInfoDescriptor = $convert.base64Decode('Cg5QYWdpbmF0aW9uSW5mbxIhCgxjdXJyZW50X3BhZ2UYASABKAVSC2N1cnJlbnRQYWdlEhsKCXBhZ2Vfc2l6ZRgCIAEoBVIIcGFnZVNpemUSHwoLdG90YWxfY291bnQYAyABKAVSCnRvdGFsQ291bnQSHwoLdG90YWxfcGFnZXMYBCABKAVSCnRvdGFsUGFnZXMSGQoIaGFzX25leHQYBSABKAhSB2hhc05leHQSIQoMaGFzX3ByZXZpb3VzGAYgASgIUgtoYXNQcmV2aW91cw==');
 @$core.Deprecated('Use getInvoicesRequestDescriptor instead')
 const GetInvoicesRequest$json = const {
   '1': 'GetInvoicesRequest',
@@ -134,11 +156,13 @@ const GetInvoicesRequest$json = const {
     const {'1': 'end_date', '3': 4, '4': 1, '5': 9, '10': 'endDate'},
     const {'1': 'limit', '3': 5, '4': 1, '5': 5, '10': 'limit'},
     const {'1': 'offset', '3': 6, '4': 1, '5': 5, '10': 'offset'},
+    const {'1': 'page', '3': 7, '4': 1, '5': 5, '10': 'page'},
+    const {'1': 'page_size', '3': 8, '4': 1, '5': 5, '10': 'pageSize'},
   ],
 };
 
 /// Descriptor for `GetInvoicesRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getInvoicesRequestDescriptor = $convert.base64Decode('ChJHZXRJbnZvaWNlc1JlcXVlc3QSHQoKYWNjb3VudF9pZBgBIAEoCVIJYWNjb3VudElkEhYKBnN0YXR1cxgCIAEoCVIGc3RhdHVzEh0KCnN0YXJ0X2RhdGUYAyABKAlSCXN0YXJ0RGF0ZRIZCghlbmRfZGF0ZRgEIAEoCVIHZW5kRGF0ZRIUCgVsaW1pdBgFIAEoBVIFbGltaXQSFgoGb2Zmc2V0GAYgASgFUgZvZmZzZXQ=');
+final $typed_data.Uint8List getInvoicesRequestDescriptor = $convert.base64Decode('ChJHZXRJbnZvaWNlc1JlcXVlc3QSHQoKYWNjb3VudF9pZBgBIAEoCVIJYWNjb3VudElkEhYKBnN0YXR1cxgCIAEoCVIGc3RhdHVzEh0KCnN0YXJ0X2RhdGUYAyABKAlSCXN0YXJ0RGF0ZRIZCghlbmRfZGF0ZRgEIAEoCVIHZW5kRGF0ZRIUCgVsaW1pdBgFIAEoBVIFbGltaXQSFgoGb2Zmc2V0GAYgASgFUgZvZmZzZXQSEgoEcGFnZRgHIAEoBVIEcGFnZRIbCglwYWdlX3NpemUYCCABKAVSCHBhZ2VTaXpl');
 @$core.Deprecated('Use getInvoicesResponseDescriptor instead')
 const GetInvoicesResponse$json = const {
   '1': 'GetInvoicesResponse',
@@ -147,11 +171,12 @@ const GetInvoicesResponse$json = const {
     const {'1': 'total', '3': 2, '4': 1, '5': 5, '10': 'total'},
     const {'1': 'total_amount_pending', '3': 3, '4': 1, '5': 1, '10': 'totalAmountPending'},
     const {'1': 'total_amount_paid', '3': 4, '4': 1, '5': 1, '10': 'totalAmountPaid'},
+    const {'1': 'pagination', '3': 5, '4': 1, '5': 11, '6': '.invoice.PaginationInfo', '10': 'pagination'},
   ],
 };
 
 /// Descriptor for `GetInvoicesResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getInvoicesResponseDescriptor = $convert.base64Decode('ChNHZXRJbnZvaWNlc1Jlc3BvbnNlEiwKCGludm9pY2VzGAEgAygLMhAuaW52b2ljZS5JbnZvaWNlUghpbnZvaWNlcxIUCgV0b3RhbBgCIAEoBVIFdG90YWwSMAoUdG90YWxfYW1vdW50X3BlbmRpbmcYAyABKAFSEnRvdGFsQW1vdW50UGVuZGluZxIqChF0b3RhbF9hbW91bnRfcGFpZBgEIAEoAVIPdG90YWxBbW91bnRQYWlk');
+final $typed_data.Uint8List getInvoicesResponseDescriptor = $convert.base64Decode('ChNHZXRJbnZvaWNlc1Jlc3BvbnNlEiwKCGludm9pY2VzGAEgAygLMhAuaW52b2ljZS5JbnZvaWNlUghpbnZvaWNlcxIUCgV0b3RhbBgCIAEoBVIFdG90YWwSMAoUdG90YWxfYW1vdW50X3BlbmRpbmcYAyABKAFSEnRvdGFsQW1vdW50UGVuZGluZxIqChF0b3RhbF9hbW91bnRfcGFpZBgEIAEoAVIPdG90YWxBbW91bnRQYWlkEjcKCnBhZ2luYXRpb24YBSABKAsyFy5pbnZvaWNlLlBhZ2luYXRpb25JbmZvUgpwYWdpbmF0aW9u');
 @$core.Deprecated('Use getInvoiceRequestDescriptor instead')
 const GetInvoiceRequest$json = const {
   '1': 'GetInvoiceRequest',
@@ -295,11 +320,14 @@ const GetInvoicesTaggedToUserRequest$json = const {
     const {'1': 'status', '3': 1, '4': 1, '5': 9, '10': 'status'},
     const {'1': 'limit', '3': 2, '4': 1, '5': 5, '10': 'limit'},
     const {'1': 'offset', '3': 3, '4': 1, '5': 5, '10': 'offset'},
+    const {'1': 'currency', '3': 4, '4': 1, '5': 9, '10': 'currency'},
+    const {'1': 'page', '3': 5, '4': 1, '5': 5, '10': 'page'},
+    const {'1': 'page_size', '3': 6, '4': 1, '5': 5, '10': 'pageSize'},
   ],
 };
 
 /// Descriptor for `GetInvoicesTaggedToUserRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getInvoicesTaggedToUserRequestDescriptor = $convert.base64Decode('Ch5HZXRJbnZvaWNlc1RhZ2dlZFRvVXNlclJlcXVlc3QSFgoGc3RhdHVzGAEgASgJUgZzdGF0dXMSFAoFbGltaXQYAiABKAVSBWxpbWl0EhYKBm9mZnNldBgDIAEoBVIGb2Zmc2V0');
+final $typed_data.Uint8List getInvoicesTaggedToUserRequestDescriptor = $convert.base64Decode('Ch5HZXRJbnZvaWNlc1RhZ2dlZFRvVXNlclJlcXVlc3QSFgoGc3RhdHVzGAEgASgJUgZzdGF0dXMSFAoFbGltaXQYAiABKAVSBWxpbWl0EhYKBm9mZnNldBgDIAEoBVIGb2Zmc2V0EhoKCGN1cnJlbmN5GAQgASgJUghjdXJyZW5jeRISCgRwYWdlGAUgASgFUgRwYWdlEhsKCXBhZ2Vfc2l6ZRgGIAEoBVIIcGFnZVNpemU=');
 @$core.Deprecated('Use getInvoicesTaggedToUserResponseDescriptor instead')
 const GetInvoicesTaggedToUserResponse$json = const {
   '1': 'GetInvoicesTaggedToUserResponse',
@@ -308,11 +336,12 @@ const GetInvoicesTaggedToUserResponse$json = const {
     const {'1': 'total', '3': 2, '4': 1, '5': 5, '10': 'total'},
     const {'1': 'total_amount_pending', '3': 3, '4': 1, '5': 1, '10': 'totalAmountPending'},
     const {'1': 'total_amount_paid', '3': 4, '4': 1, '5': 1, '10': 'totalAmountPaid'},
+    const {'1': 'pagination', '3': 5, '4': 1, '5': 11, '6': '.invoice.PaginationInfo', '10': 'pagination'},
   ],
 };
 
 /// Descriptor for `GetInvoicesTaggedToUserResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getInvoicesTaggedToUserResponseDescriptor = $convert.base64Decode('Ch9HZXRJbnZvaWNlc1RhZ2dlZFRvVXNlclJlc3BvbnNlEiwKCGludm9pY2VzGAEgAygLMhAuaW52b2ljZS5JbnZvaWNlUghpbnZvaWNlcxIUCgV0b3RhbBgCIAEoBVIFdG90YWwSMAoUdG90YWxfYW1vdW50X3BlbmRpbmcYAyABKAFSEnRvdGFsQW1vdW50UGVuZGluZxIqChF0b3RhbF9hbW91bnRfcGFpZBgEIAEoAVIPdG90YWxBbW91bnRQYWlk');
+final $typed_data.Uint8List getInvoicesTaggedToUserResponseDescriptor = $convert.base64Decode('Ch9HZXRJbnZvaWNlc1RhZ2dlZFRvVXNlclJlc3BvbnNlEiwKCGludm9pY2VzGAEgAygLMhAuaW52b2ljZS5JbnZvaWNlUghpbnZvaWNlcxIUCgV0b3RhbBgCIAEoBVIFdG90YWwSMAoUdG90YWxfYW1vdW50X3BlbmRpbmcYAyABKAFSEnRvdGFsQW1vdW50UGVuZGluZxIqChF0b3RhbF9hbW91bnRfcGFpZBgEIAEoAVIPdG90YWxBbW91bnRQYWlkEjcKCnBhZ2luYXRpb24YBSABKAsyFy5pbnZvaWNlLlBhZ2luYXRpb25JbmZvUgpwYWdpbmF0aW9u');
 @$core.Deprecated('Use getSentInvoicesRequestDescriptor instead')
 const GetSentInvoicesRequest$json = const {
   '1': 'GetSentInvoicesRequest',
@@ -320,11 +349,13 @@ const GetSentInvoicesRequest$json = const {
     const {'1': 'status', '3': 1, '4': 1, '5': 9, '10': 'status'},
     const {'1': 'limit', '3': 2, '4': 1, '5': 5, '10': 'limit'},
     const {'1': 'offset', '3': 3, '4': 1, '5': 5, '10': 'offset'},
+    const {'1': 'page', '3': 4, '4': 1, '5': 5, '10': 'page'},
+    const {'1': 'page_size', '3': 5, '4': 1, '5': 5, '10': 'pageSize'},
   ],
 };
 
 /// Descriptor for `GetSentInvoicesRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getSentInvoicesRequestDescriptor = $convert.base64Decode('ChZHZXRTZW50SW52b2ljZXNSZXF1ZXN0EhYKBnN0YXR1cxgBIAEoCVIGc3RhdHVzEhQKBWxpbWl0GAIgASgFUgVsaW1pdBIWCgZvZmZzZXQYAyABKAVSBm9mZnNldA==');
+final $typed_data.Uint8List getSentInvoicesRequestDescriptor = $convert.base64Decode('ChZHZXRTZW50SW52b2ljZXNSZXF1ZXN0EhYKBnN0YXR1cxgBIAEoCVIGc3RhdHVzEhQKBWxpbWl0GAIgASgFUgVsaW1pdBIWCgZvZmZzZXQYAyABKAVSBm9mZnNldBISCgRwYWdlGAQgASgFUgRwYWdlEhsKCXBhZ2Vfc2l6ZRgFIAEoBVIIcGFnZVNpemU=');
 @$core.Deprecated('Use getSentInvoicesResponseDescriptor instead')
 const GetSentInvoicesResponse$json = const {
   '1': 'GetSentInvoicesResponse',
@@ -333,11 +364,12 @@ const GetSentInvoicesResponse$json = const {
     const {'1': 'total', '3': 2, '4': 1, '5': 5, '10': 'total'},
     const {'1': 'total_amount_pending', '3': 3, '4': 1, '5': 1, '10': 'totalAmountPending'},
     const {'1': 'total_amount_paid', '3': 4, '4': 1, '5': 1, '10': 'totalAmountPaid'},
+    const {'1': 'pagination', '3': 5, '4': 1, '5': 11, '6': '.invoice.PaginationInfo', '10': 'pagination'},
   ],
 };
 
 /// Descriptor for `GetSentInvoicesResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getSentInvoicesResponseDescriptor = $convert.base64Decode('ChdHZXRTZW50SW52b2ljZXNSZXNwb25zZRIsCghpbnZvaWNlcxgBIAMoCzIQLmludm9pY2UuSW52b2ljZVIIaW52b2ljZXMSFAoFdG90YWwYAiABKAVSBXRvdGFsEjAKFHRvdGFsX2Ftb3VudF9wZW5kaW5nGAMgASgBUhJ0b3RhbEFtb3VudFBlbmRpbmcSKgoRdG90YWxfYW1vdW50X3BhaWQYBCABKAFSD3RvdGFsQW1vdW50UGFpZA==');
+final $typed_data.Uint8List getSentInvoicesResponseDescriptor = $convert.base64Decode('ChdHZXRTZW50SW52b2ljZXNSZXNwb25zZRIsCghpbnZvaWNlcxgBIAMoCzIQLmludm9pY2UuSW52b2ljZVIIaW52b2ljZXMSFAoFdG90YWwYAiABKAVSBXRvdGFsEjAKFHRvdGFsX2Ftb3VudF9wZW5kaW5nGAMgASgBUhJ0b3RhbEFtb3VudFBlbmRpbmcSKgoRdG90YWxfYW1vdW50X3BhaWQYBCABKAFSD3RvdGFsQW1vdW50UGFpZBI3CgpwYWdpbmF0aW9uGAUgASgLMhcuaW52b2ljZS5QYWdpbmF0aW9uSW5mb1IKcGFnaW5hdGlvbg==');
 @$core.Deprecated('Use updateInvoiceRequestDescriptor instead')
 const UpdateInvoiceRequest$json = const {
   '1': 'UpdateInvoiceRequest',
@@ -434,3 +466,25 @@ const UnlockInvoiceResponse$json = const {
 
 /// Descriptor for `UnlockInvoiceResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List unlockInvoiceResponseDescriptor = $convert.base64Decode('ChVVbmxvY2tJbnZvaWNlUmVzcG9uc2USKgoHaW52b2ljZRgBIAEoCzIQLmludm9pY2UuSW52b2ljZVIHaW52b2ljZRIfCgtuZXdfYmFsYW5jZRgCIAEoAVIKbmV3QmFsYW5jZRIsChJ1bmxvY2tfcGF5bWVudF9yZWYYAyABKAlSEHVubG9ja1BheW1lbnRSZWYSGAoHbWVzc2FnZRgEIAEoCVIHbWVzc2FnZQ==');
+@$core.Deprecated('Use uploadInvoiceImageRequestDescriptor instead')
+const UploadInvoiceImageRequest$json = const {
+  '1': 'UploadInvoiceImageRequest',
+  '2': const [
+    const {'1': 'image_data', '3': 1, '4': 1, '5': 12, '10': 'imageData'},
+    const {'1': 'file_name', '3': 2, '4': 1, '5': 9, '10': 'fileName'},
+    const {'1': 'content_type', '3': 3, '4': 1, '5': 9, '10': 'contentType'},
+  ],
+};
+
+/// Descriptor for `UploadInvoiceImageRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List uploadInvoiceImageRequestDescriptor = $convert.base64Decode('ChlVcGxvYWRJbnZvaWNlSW1hZ2VSZXF1ZXN0Eh0KCmltYWdlX2RhdGEYASABKAxSCWltYWdlRGF0YRIbCglmaWxlX25hbWUYAiABKAlSCGZpbGVOYW1lEiEKDGNvbnRlbnRfdHlwZRgDIAEoCVILY29udGVudFR5cGU=');
+@$core.Deprecated('Use uploadInvoiceImageResponseDescriptor instead')
+const UploadInvoiceImageResponse$json = const {
+  '1': 'UploadInvoiceImageResponse',
+  '2': const [
+    const {'1': 'image_url', '3': 1, '4': 1, '5': 9, '10': 'imageUrl'},
+  ],
+};
+
+/// Descriptor for `UploadInvoiceImageResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List uploadInvoiceImageResponseDescriptor = $convert.base64Decode('ChpVcGxvYWRJbnZvaWNlSW1hZ2VSZXNwb25zZRIbCglpbWFnZV91cmwYASABKAlSCGltYWdlVXJs');

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:lazervault/core/types/unified_transaction.dart';
@@ -230,7 +232,7 @@ class TransactionHistoryCacheDataSource {
       'status': tx.status.index,
       'flow': tx.flow.index,
       'transaction_reference': tx.transactionReference,
-      'metadata': tx.metadata?.toString(),
+      'metadata': tx.metadata != null ? jsonEncode(tx.metadata) : null,
       'user_id': userId,
       'cached_at': cachedAt,
       'expires_at': expiresAt,
@@ -247,9 +249,12 @@ class TransactionHistoryCacheDataSource {
     Map<String, dynamic>? metadata;
     if (map['metadata'] != null && map['metadata'] is String) {
       try {
-        // metadata = jsonDecode(map['metadata']);
-      } catch (e) {
-        metadata = {};
+        final decoded = jsonDecode(map['metadata'] as String);
+        if (decoded is Map) {
+          metadata = Map<String, dynamic>.from(decoded);
+        }
+      } catch (_) {
+        // Malformed JSON, skip metadata
       }
     }
 

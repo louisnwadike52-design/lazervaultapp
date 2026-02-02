@@ -4,9 +4,11 @@ import 'package:get/get.dart';
 import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/src/features/funds/domain/entities/batch_transfer_entity.dart';
 import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
+import 'package:get_it/get_it.dart';
 import 'package:uuid/uuid.dart';
 
 class BatchTransferReviewScreen extends StatefulWidget {
@@ -28,12 +30,35 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
   Map<String, dynamic> transferData = {};
   Map<String, String> recipientNames = {};
   final bool _isProcessing = false;
+  late String _currency;
+  late String _currencySymbol;
+
+  String _getCurrencySymbol(String currency) {
+    switch (currency) {
+      case 'NGN': return '\u20a6';
+      case 'GBP': return '£';
+      case 'USD': return '\$';
+      case 'EUR': return '€';
+      case 'GHS': return 'GH\u20b5';
+      case 'KES': return 'KSh';
+      case 'ZAR': return 'R';
+      default: return currency;
+    }
+  }
 
   @override
   void initState() {
     super.initState();
     transferData = Get.arguments as Map<String, dynamic>? ?? {};
     recipientNames = (transferData['recipientNames'] as Map<dynamic, dynamic>?)?.cast<String, String>() ?? {};
+
+    // Get currency from arguments, fallback to account manager
+    final accountManager = GetIt.I<AccountManager>();
+    _currency = transferData['currency'] as String? ??
+        accountManager.activeAccountDetails?.currency ?? 'NGN';
+    _currencySymbol = transferData['currencySymbol'] as String? ??
+        _getCurrencySymbol(_currency);
+
     _setupAnimations();
   }
 
@@ -78,9 +103,9 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
       transactionId: transactionId,
       transactionType: 'batch_transfer',
       amount: totalAmount,
-      currency: 'GBP',
+      currency: _currency,
       title: 'Confirm Batch Transfer',
-      message: 'Confirm batch transfer of £${totalAmount.toStringAsFixed(2)} to ${recipients.length} ${recipients.length == 1 ? 'recipient' : 'recipients'}?',
+      message: 'Confirm batch transfer of $_currencySymbol${totalAmount.toStringAsFixed(2)} to ${recipients.length} ${recipients.length == 1 ? 'recipient' : 'recipients'}?',
       onPinValidated: (verificationToken) async {
         // PIN is valid, proceed with batch transfer
         _executeBatchTransferWithToken(transactionId, verificationToken);
@@ -95,9 +120,11 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
 
   /// Execute batch transfer with verification token
   void _executeBatchTransferWithToken(String transactionId, String verificationToken) {
-    // Add verification token to transfer data
+    // Add verification token and currency to transfer data
     transferData['transactionId'] = transactionId;
     transferData['verificationToken'] = verificationToken;
+    transferData['currency'] = _currency;
+    transferData['currencySymbol'] = _currencySymbol;
 
     // Navigate to processing screen with all transfer data
     Get.offNamed(
@@ -332,7 +359,7 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
                 ),
                 SizedBox(height: 4.h),
                 Text(
-                  '£${totalAmount.toStringAsFixed(2)}',
+                  '$_currencySymbol${totalAmount.toStringAsFixed(2)}',
                   style: GoogleFonts.inter(
                     fontSize: 32.sp,
                     fontWeight: FontWeight.w700,
@@ -485,7 +512,7 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
             ),
           ),
           Text(
-            '£${amount.toStringAsFixed(2)}',
+            '$_currencySymbol${amount.toStringAsFixed(2)}',
             style: GoogleFonts.inter(
               color: Colors.white,
               fontSize: 16.sp,
@@ -572,7 +599,7 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
           ),
         ),
         Text(
-          '£${amount.toStringAsFixed(2)}',
+          '$_currencySymbol${amount.toStringAsFixed(2)}',
           style: GoogleFonts.inter(
             fontSize: isTotal ? 16.sp : 14.sp,
             color: Colors.white,

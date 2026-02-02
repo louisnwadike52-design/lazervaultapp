@@ -15,6 +15,8 @@ class RecipientModel {
   final String? currency;
   final String? swiftCode;
   final String? iban;
+  final String? alias;
+  final String? type;
 
   const RecipientModel({
     required this.id,
@@ -30,6 +32,8 @@ class RecipientModel {
     this.currency,
     this.swiftCode,
     this.iban,
+    this.alias,
+    this.type,
   });
 
   factory RecipientModel.fromProto(proto.Recipient recipient) {
@@ -46,6 +50,8 @@ class RecipientModel {
       currency: recipient.currency.isNotEmpty ? recipient.currency : null,
       swiftCode: recipient.swiftCode.isNotEmpty ? recipient.swiftCode : null,
       iban: recipient.iban.isNotEmpty ? recipient.iban : null,
+      alias: recipient.alias.isNotEmpty ? recipient.alias : null,
+      type: recipient.type.isNotEmpty ? recipient.type : null,
     );
   }
 
@@ -62,7 +68,9 @@ class RecipientModel {
       ..phoneNumber = phoneNumber ?? ''
       ..currency = currency ?? ''
       ..swiftCode = swiftCode ?? ''
-      ..iban = iban ?? '';
+      ..iban = iban ?? ''
+      ..alias = alias ?? ''
+      ..type = type ?? '';
   }
 
   RecipientModel copyWith({
@@ -79,6 +87,8 @@ class RecipientModel {
     String? currency,
     String? swiftCode,
     String? iban,
+    String? alias,
+    String? type,
   }) {
     return RecipientModel(
       id: id ?? this.id,
@@ -94,6 +104,8 @@ class RecipientModel {
       currency: currency ?? this.currency,
       swiftCode: swiftCode ?? this.swiftCode,
       iban: iban ?? this.iban,
+      alias: alias ?? this.alias,
+      type: type ?? this.type,
     );
   }
 } 

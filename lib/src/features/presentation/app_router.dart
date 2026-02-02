@@ -45,7 +45,6 @@ import 'package:lazervault/src/features/presentation/views/deposit/deposit_revie
 import 'package:lazervault/src/features/presentation/views/deposit/deposit_success_screen.dart';
 import 'package:lazervault/src/features/presentation/views/change_pin_screen.dart';
 import 'package:lazervault/src/features/presentation/views/create_new_password_screen.dart';
-import 'package:lazervault/src/features/presentation/views/dashboard/transaction_history_screen.dart';
 import 'package:lazervault/src/features/presentation/views/enable_biometric_access_screen.dart';
 import 'package:lazervault/src/features/presentation/views/face_scan_screen.dart';
 import 'package:lazervault/src/features/authentication/presentation/views/facial_login_screen.dart';
@@ -887,7 +886,10 @@ class AppRouter {
     ),
     GetPage(
       name: AppRoutes.transactionHistory,
-      page: () => serviceLocator<TransactionHistoryScreen>(),
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<TransactionHistoryCubit>(),
+        child: const DashboardTransactionHistoryScreen(),
+      ),
       transition: Transition.rightToLeft,
     ),
     // New Transaction History Routes (Redesigned)
@@ -1567,7 +1569,10 @@ class AppRouter {
     ),
     GetPage(
       name: AppRoutes.batchTransferProcessing,
-      page: () => const BatchTransferProcessingScreen(),
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<BatchTransferCubit>(),
+        child: const BatchTransferProcessingScreen(),
+      ),
       transition: Transition.rightToLeft,
     ),
     GetPage(
