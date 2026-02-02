@@ -15,14 +15,28 @@ class InvoiceLoading extends InvoiceState {}
 class InvoicesLoaded extends InvoiceState {
   final List<Invoice> invoices;
   final Map<String, dynamic>? statistics;
+  final int currentPage;
+  final int totalPages;
+  final int totalCount;
+  final int pageSize;
+  final bool hasNext;
+  final bool hasPrevious;
+  final String? currentFilter;
 
   const InvoicesLoaded({
     required this.invoices,
     this.statistics,
+    this.currentPage = 1,
+    this.totalPages = 1,
+    this.totalCount = 0,
+    this.pageSize = 20,
+    this.hasNext = false,
+    this.hasPrevious = false,
+    this.currentFilter,
   });
 
   @override
-  List<Object?> get props => [invoices, statistics];
+  List<Object?> get props => [invoices, statistics, currentPage, totalPages, totalCount, pageSize, hasNext, hasPrevious, currentFilter];
 }
 
 class InvoiceDetailsLoaded extends InvoiceState {

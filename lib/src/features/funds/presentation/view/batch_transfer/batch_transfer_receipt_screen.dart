@@ -131,7 +131,7 @@ class _BatchTransferReceiptScreenState extends State<BatchTransferReceiptScreen>
     final batchId = batchTransferDetails['batchId']?.toString() ?? 'BTX${DateTime.now().millisecondsSinceEpoch}';
     final totalAmount = (batchTransferDetails['totalAmount'] as num?)?.toDouble() ?? 0.0;
     final totalFee = (batchTransferDetails['totalFee'] as num?)?.toDouble() ?? 0.0;
-    final currency = batchTransferDetails['currency'] as String? ?? 'GBP';
+    final currency = batchTransferDetails['currency'] as String? ?? 'NGN';
     final timestamp = batchTransferDetails['timestamp'] as DateTime? ?? DateTime.now();
     final status = batchTransferDetails['status'] as String? ?? 'Completed';
     final transfers = batchTransferDetails['transfers'] as List<dynamic>? ?? [];
@@ -318,7 +318,7 @@ class _BatchTransferReceiptScreenState extends State<BatchTransferReceiptScreen>
     final batchId = batchTransferDetails['batchId']?.toString() ?? 'BTX${DateTime.now().millisecondsSinceEpoch}';
     final totalAmount = (batchTransferDetails['totalAmount'] as num?)?.toDouble() ?? 0.0;
     final totalFee = (batchTransferDetails['totalFee'] as num?)?.toDouble() ?? 0.0;
-    final currency = batchTransferDetails['currency'] as String? ?? 'GBP';
+    final currency = batchTransferDetails['currency'] as String? ?? 'NGN';
     final timestamp = batchTransferDetails['timestamp'] as DateTime? ?? DateTime.now();
     final status = batchTransferDetails['status'] as String? ?? 'Completed';
     final recipientCount = batchTransferDetails['recipientCount'] as int? ?? 0;
@@ -546,7 +546,7 @@ Thank you for using LazerVault!
     final batchId = batchTransferDetails['batchId']?.toString() ?? 'BTX${DateTime.now().millisecondsSinceEpoch}';
     final totalAmount = (batchTransferDetails['totalAmount'] as num?)?.toDouble() ?? 0.0;
     final totalFee = (batchTransferDetails['totalFee'] as num?)?.toDouble() ?? 0.0;
-    final currency = batchTransferDetails['currency'] as String? ?? 'GBP';
+    final currency = batchTransferDetails['currency'] as String? ?? 'NGN';
     final recipientCount = batchTransferDetails['recipientCount'] as int? ?? 0;
     final timestamp = batchTransferDetails['timestamp'] as DateTime? ?? DateTime.now();
     final status = batchTransferDetails['status'] as String? ?? 'Completed';
@@ -638,7 +638,7 @@ Thank you for using LazerVault!
   Widget _buildTransferResults() {
     // Extract transfer results from batchTransferDetails
     final transfers = batchTransferDetails['transfers'] as List<dynamic>? ?? [];
-    final currency = batchTransferDetails['currency'] as String? ?? 'GBP';
+    final currency = batchTransferDetails['currency'] as String? ?? 'NGN';
     final currencySymbol = _getCurrencySymbol(currency);
 
     return Container(

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -19,6 +20,9 @@ import '../widgets/create_invoice/items_amounts_screen.dart';
 import '../widgets/create_invoice/invoice_review_screen.dart';
 import '../../../../../core/theme/invoice_theme_colors.dart';
 import '../../../../../core/types/app_routes.dart';
+import '../../../../../core/services/injection_container.dart';
+import '../../data/repositories/invoice_repository_grpc_impl.dart';
+import '../../domain/repositories/invoice_repository.dart';
 
 /// Main carousel controller for invoice creation
 ///
@@ -65,6 +69,27 @@ class _CreateInvoiceCarouselState extends State<CreateInvoiceCarousel> {
         context
             .read<CreateInvoiceCubit>()
             .initializeWithUserData(authState.profile.user);
+      }
+
+      // Initialize invoice currency from active account if not already set
+      final createCubit = context.read<CreateInvoiceCubit>();
+      if (createCubit.invoiceCurrency.isEmpty) {
+        try {
+          final acctState = context.read<AccountCardsSummaryCubit>().state;
+          if (acctState is AccountCardsSummaryLoaded && acctState.accountSummaries.isNotEmpty) {
+            final acctCurrency = acctState.accountSummaries.first.currency;
+            createCubit.updateInvoiceCurrency(acctCurrency);
+            // Derive country from currency
+            const currencyToCountry = {
+              'NGN': 'NG', 'USD': 'US', 'GBP': 'GB', 'CAD': 'CA', 'INR': 'IN',
+              'EUR': 'DE', 'ZAR': 'ZA', 'AUD': 'AU', 'JPY': 'JP',
+            };
+            final country = currencyToCountry[acctCurrency];
+            if (country != null) {
+              createCubit.updateInvoiceCountry(country);
+            }
+          }
+        } catch (_) {}
       }
     });
   }
@@ -137,18 +162,61 @@ class _CreateInvoiceCarouselState extends State<CreateInvoiceCarousel> {
 
     try {
       final cubit = context.read<CreateInvoiceCubit>();
-      String accountCurrency = 'NGN';
-      try {
-        final acctState = context.read<AccountCardsSummaryCubit>().state;
-        if (acctState is AccountCardsSummaryLoaded && acctState.accountSummaries.isNotEmpty) {
-          accountCurrency = acctState.accountSummaries.first.currency;
+
+      // Upload payer and recipient logos if present
+      String? payerLogoUrl;
+      String? recipientLogoUrl;
+
+      final repo = serviceLocator<InvoiceRepository>();
+      if (repo is InvoiceRepositoryGrpcImpl) {
+        final grpcRepo = repo;
+
+        if (cubit.payerImage != null) {
+          try {
+            final file = cubit.payerImage!;
+            final bytes = await file.readAsBytes();
+            final fileName = 'payer_logo_${DateTime.now().millisecondsSinceEpoch}.${file.path.split('.').last}';
+            final contentType = file.path.endsWith('.png') ? 'image/png' : 'image/jpeg';
+            payerLogoUrl = await grpcRepo.uploadInvoiceImage(bytes, fileName, contentType);
+          } catch (e) {
+            // Non-fatal: continue without logo
+          }
         }
-      } catch (_) {}
-      final invoice = cubit.buildInvoice(authState.profile.user.id, currency: accountCurrency);
+
+        if (cubit.recipientImage != null) {
+          try {
+            final file = cubit.recipientImage!;
+            final bytes = await file.readAsBytes();
+            final fileName = 'recipient_logo_${DateTime.now().millisecondsSinceEpoch}.${file.path.split('.').last}';
+            final contentType = file.path.endsWith('.png') ? 'image/png' : 'image/jpeg';
+            recipientLogoUrl = await grpcRepo.uploadInvoiceImage(bytes, fileName, contentType);
+          } catch (e) {
+            // Non-fatal: continue without logo
+          }
+        }
+      }
+
+      var invoice = cubit.buildInvoice(authState.profile.user.id);
+      invoice = invoice.copyWith(
+        payerLogoUrl: payerLogoUrl,
+        recipientLogoUrl: recipientLogoUrl,
+      );
 
       final invoiceCubit = context.read<InvoiceCubit>();
 
-      await invoiceCubit.createInvoice(
+      // Listen for the state change via a stream subscription so we don't
+      // miss it due to subsequent state emissions (e.g. loadInvoices).
+      final stateCompleter = Completer<InvoiceState>();
+      late final StreamSubscription<InvoiceState> sub;
+      sub = invoiceCubit.stream.where((s) =>
+          s is InvoiceOperationSuccess || s is InvoiceError).listen((s) {
+        if (!stateCompleter.isCompleted) {
+          stateCompleter.complete(s);
+        }
+        sub.cancel();
+      });
+
+      invoiceCubit.createInvoice(
         title: invoice.title,
         description: invoice.description,
         items: invoice.items,
@@ -188,23 +256,39 @@ class _CreateInvoiceCarouselState extends State<CreateInvoiceCarousel> {
                 country: invoice.payerDetails!.country,
               )
             : null,
-        currency: accountCurrency,
+        currency: invoice.currency,
+        payerLogoUrl: invoice.payerLogoUrl,
+        recipientLogoUrl: invoice.recipientLogoUrl,
+      );
+
+      final resultState = await stateCompleter.future.timeout(
+        const Duration(seconds: 30),
+        onTimeout: () => const InvoiceError(message: 'Invoice creation timed out'),
       );
 
       if (!mounted) return;
 
-      final currentState = invoiceCubit.state;
-      if (currentState is! InvoiceOperationSuccess || currentState.invoice == null) {
-        final errorMsg = currentState is InvoiceError
-            ? currentState.message
+      if (resultState is! InvoiceOperationSuccess || resultState.invoice == null) {
+        final errorMsg = resultState is InvoiceError
+            ? resultState.message
             : 'Failed to create invoice';
         _showErrorSnackBar(errorMsg);
         return;
       }
 
-      final createdInvoice = currentState.invoice!;
+      // Merge form address details into created invoice since backend
+      // doesn't return full address details in the response.
+      final createdInvoice = resultState.invoice!.copyWith(
+        recipientDetails: invoice.recipientDetails,
+        payerDetails: invoice.payerDetails,
+        payerLogoUrl: resultState.invoice!.payerLogoUrl ?? invoice.payerLogoUrl,
+        recipientLogoUrl: resultState.invoice!.recipientLogoUrl ?? invoice.recipientLogoUrl,
+      );
 
       cubit.reset();
+
+      // Reload invoices in background for the home screen
+      invoiceCubit.loadInvoices();
 
       Get.offNamed(AppRoutes.invoicePayment, arguments: createdInvoice);
     } catch (e) {

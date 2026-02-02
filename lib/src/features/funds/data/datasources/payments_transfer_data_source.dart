@@ -29,6 +29,7 @@ class PaymentsTransferResult {
   final DateTime? createdAt;
   final double? newBalance;  // New balance in major units
   final String? recipientName;
+  final DateTime? scheduledAt;
 
   PaymentsTransferResult({
     required this.success,
@@ -42,6 +43,7 @@ class PaymentsTransferResult {
     this.createdAt,
     this.newBalance,
     this.recipientName,
+    this.scheduledAt,
   });
 
   /// Create result from SendFundsResponse (Transfer Gateway API)
@@ -78,6 +80,7 @@ abstract class IPaymentsTransferDataSource {
     required String description,        // Transfer description
     required String transactionId,      // Transaction ID for PIN verification
     required String verificationToken,  // Token from TransactionPinService
+    DateTime? scheduledAt,              // Optional: schedule for future execution
   });
 
   /// Initiate a batch transfer to multiple recipients
@@ -138,6 +141,7 @@ class PaymentsTransferDataSourceImpl implements IPaymentsTransferDataSource {
     required String description,
     required String transactionId,
     required String verificationToken,
+    DateTime? scheduledAt,
   }) async {
     return await RetryPolicy.critical.execute(
       () async {
@@ -153,14 +157,39 @@ class PaymentsTransferDataSourceImpl implements IPaymentsTransferDataSource {
         try {
           final response = await _callOptionsHelper.executeWithTokenRotation(() async {
             final callOptions = await _callOptionsHelper.withAuth();
-            return await _client.sendFunds(
-              request,
-              options: callOptions.mergedWith(
-                CallOptions(timeout: const Duration(seconds: 30)),
-              ),
+
+            // Add scheduled_at as gRPC metadata if present
+            var mergedOptions = callOptions.mergedWith(
+              CallOptions(timeout: const Duration(seconds: 30)),
             );
+            if (scheduledAt != null) {
+              mergedOptions = mergedOptions.mergedWith(
+                CallOptions(metadata: {
+                  'x-scheduled-at': scheduledAt.toUtc().toIso8601String(),
+                }),
+              );
+            }
+
+            return await _client.sendFunds(request, options: mergedOptions);
           });
-          return PaymentsTransferResult.fromSendFundsResponse(response);
+
+          // Parse scheduledAt from metadata JSON if status is "scheduled"
+          DateTime? parsedScheduledAt = scheduledAt;
+          final result = PaymentsTransferResult.fromSendFundsResponse(response);
+          return PaymentsTransferResult(
+            success: result.success,
+            transferId: result.transferId,
+            reference: result.reference,
+            status: result.status,
+            amount: result.amount,
+            fee: result.fee,
+            errorCode: result.errorCode,
+            errorMessage: result.errorMessage,
+            createdAt: result.createdAt,
+            newBalance: result.newBalance,
+            recipientName: result.recipientName,
+            scheduledAt: result.status == 'scheduled' ? parsedScheduledAt : null,
+          );
         } on GrpcError catch (e) {
           print('gRPC Error during sendFunds: ${e.code} - ${e.message}');
           throw ServerException(

@@ -737,7 +737,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
           child: Container(
             width: double.infinity,
             constraints: BoxConstraints(
-              maxHeight: MediaQuery.of(dialogContext).size.height * 0.85,
+              maxHeight: MediaQuery.of(dialogContext).size.height * 0.92,
             ),
             decoration: BoxDecoration(
               color: Colors.black.withValues(alpha: 0.95),
@@ -912,13 +912,6 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                               decoration: BoxDecoration(
                                 color: const Color(0xFF2962FF).withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(12),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: const Color(0xFF2962FF).withValues(alpha: 0.25),
-                                    blurRadius: 8,
-                                    offset: const Offset(0, 2),
-                                  ),
-                                ],
                               ),
                               child: Row(
                                 children: [
@@ -1169,6 +1162,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
       description: narration,
       transactionId: transactionId,
       verificationToken: verificationToken,
+      scheduledAt: scheduledDate,
     );
     print("_executeTransferWithPin: Transfer initiated.");
   }
@@ -1388,6 +1382,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
               'transferType': _recipient!.bankName == 'LazerVault'
                   ? 'Internal Transfer'
                   : 'Domestic Transfer',
+              if (scheduledDate != null) 'scheduledAt': scheduledDate,
             };
             print(
                 'Listener: Transfer details prepared: $transferDetails');

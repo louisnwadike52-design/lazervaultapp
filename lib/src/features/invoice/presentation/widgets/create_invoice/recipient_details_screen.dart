@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 import '../../cubit/create_invoice_cubit.dart';
+import '../../utils/phone_validator.dart';
 
 /// Screen 2: Recipient Details
 ///
@@ -25,6 +29,7 @@ class _RecipientDetailsScreenState extends State<RecipientDetailsScreen>
     with TickerProviderStateMixin {
   late AnimationController _fadeController;
   late Animation<double> _fadeAnimation;
+  final ImagePicker _imagePicker = ImagePicker();
 
   late TextEditingController _companyController;
   late TextEditingController _contactController;
@@ -81,6 +86,28 @@ class _RecipientDetailsScreenState extends State<RecipientDetailsScreen>
     super.dispose();
   }
 
+  bool _isPickingImage = false;
+
+  Future<void> _pickImage() async {
+    if (_isPickingImage) return;
+    _isPickingImage = true;
+    try {
+      final XFile? image = await _imagePicker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1024,
+        maxHeight: 1024,
+        imageQuality: 85,
+      );
+
+      if (image != null && mounted) {
+        final cubit = context.read<CreateInvoiceCubit>();
+        cubit.updateRecipientImage(File(image.path));
+      }
+    } finally {
+      _isPickingImage = false;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return FadeTransition(
@@ -92,11 +119,108 @@ class _RecipientDetailsScreenState extends State<RecipientDetailsScreen>
           children: [
             _buildHeader(),
             SizedBox(height: 32.h),
+            _buildLogoSection(),
+            SizedBox(height: 32.h),
             _buildFormFields(),
             SizedBox(height: 24.h),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildLogoSection() {
+    return BlocBuilder<CreateInvoiceCubit, dynamic>(
+      builder: (context, state) {
+        final cubit = context.read<CreateInvoiceCubit>();
+        final recipientImage = cubit.recipientImage;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Logo/Image (Optional)',
+              style: GoogleFonts.inter(
+                fontSize: 16.sp,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
+            ),
+            SizedBox(height: 16.h),
+            GestureDetector(
+              onTap: _pickImage,
+              child: Container(
+                height: 140.h,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1F1F1F),
+                  borderRadius: BorderRadius.circular(16.r),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: recipientImage != null
+                    ? Stack(
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(16.r),
+                            child: Image.file(
+                              recipientImage,
+                              width: double.infinity,
+                              height: 140.h,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                          Positioned(
+                            top: 8.h,
+                            right: 8.w,
+                            child: GestureDetector(
+                              onTap: () => cubit.updateRecipientImage(null),
+                              child: Container(
+                                padding: EdgeInsets.all(6.w),
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withValues(alpha: 0.6),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(
+                                  Icons.close,
+                                  color: Colors.white,
+                                  size: 20.sp,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      )
+                    : Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.add_photo_alternate,
+                              size: 48.sp,
+                              color: Colors.white.withValues(alpha: 0.4),
+                            ),
+                            SizedBox(height: 8.h),
+                            Text(
+                              'Tap to add logo or image',
+                              style: GoogleFonts.inter(
+                                fontSize: 14.sp,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.grey[500],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -157,14 +281,7 @@ class _RecipientDetailsScreenState extends State<RecipientDetailsScreen>
         ),
         if (widget.showPhone) ...[
           SizedBox(height: 16.h),
-          _buildTextField(
-            controller: _phoneController,
-            label: 'Phone Number (Optional)',
-            hint: '+1 234 567 8900',
-            icon: Icons.phone,
-            keyboardType: TextInputType.phone,
-            onChanged: (value) => cubit.updateRecipientPhone(value),
-          ),
+          _buildPhoneField(cubit),
         ],
         if (widget.showAddress) ...[
           SizedBox(height: 24.h),
@@ -241,6 +358,84 @@ class _RecipientDetailsScreenState extends State<RecipientDetailsScreen>
           ],
         ),
         ],
+      ],
+    );
+  }
+
+  Widget _buildPhoneField(CreateInvoiceCubit cubit) {
+    final country = cubit.invoiceCountry;
+    final maxLen = PhoneValidator.getMaxLength(country);
+    final hint = PhoneValidator.getHintText(country);
+    final phone = cubit.recipientPhone;
+    final error = phone.isNotEmpty && country.isNotEmpty
+        ? PhoneValidator.validate(phone, country)
+        : null;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Phone Number (Optional)',
+          style: GoogleFonts.inter(
+            fontSize: 14.sp,
+            fontWeight: FontWeight.w500,
+            color: Colors.grey[400],
+          ),
+        ),
+        SizedBox(height: 8.h),
+        TextField(
+          controller: _phoneController,
+          keyboardType: TextInputType.phone,
+          inputFormatters: [
+            FilteringTextInputFormatter.digitsOnly,
+            LengthLimitingTextInputFormatter(maxLen),
+          ],
+          onChanged: (value) => cubit.updateRecipientPhone(value),
+          style: GoogleFonts.inter(
+            fontSize: 15.sp,
+            fontWeight: FontWeight.w500,
+            color: Colors.white,
+          ),
+          decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: GoogleFonts.inter(
+              fontSize: 15.sp,
+              fontWeight: FontWeight.w400,
+              color: Colors.grey[600],
+            ),
+            prefixIcon: Icon(
+              Icons.phone,
+              size: 20.sp,
+              color: Colors.white.withValues(alpha: 0.5),
+            ),
+            errorText: error,
+            errorStyle: GoogleFonts.inter(
+              fontSize: 12.sp,
+              color: Colors.red.shade400,
+            ),
+            filled: true,
+            fillColor: Colors.white.withValues(alpha: 0.08),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12.r),
+              borderSide: BorderSide.none,
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12.r),
+              borderSide: BorderSide.none,
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12.r),
+              borderSide: const BorderSide(
+                color: Color(0xFF3B82F6),
+                width: 1.5,
+              ),
+            ),
+            contentPadding: EdgeInsets.symmetric(
+              horizontal: 16.w,
+              vertical: 14.h,
+            ),
+          ),
+        ),
       ],
     );
   }

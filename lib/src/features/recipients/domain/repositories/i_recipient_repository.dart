@@ -11,4 +11,6 @@ abstract class IRecipientRepository {
   });
   Future<Either<Failure, RecipientModel>> addRecipient({required RecipientModel recipient, required String accessToken});
   Future<Either<Failure, void>> toggleFavorite({required String recipientId, required bool isFavorite, required String accessToken});
+  Future<Either<Failure, RecipientModel>> updateAlias({required String recipientId, required String? alias, required String accessToken});
+  Future<Either<Failure, void>> deleteRecipient({required String recipientId, required String accessToken});
 } 

@@ -32,6 +32,7 @@ class Recipient extends $pb.GeneratedMessage {
     ..aOS(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
     ..aOS(16, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'swiftCode')
     ..aOS(17, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'iban')
+    ..aOS(18, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'alias')
     ..hasRequiredFields = false
   ;
 
@@ -54,6 +55,7 @@ class Recipient extends $pb.GeneratedMessage {
     $core.String? currency,
     $core.String? swiftCode,
     $core.String? iban,
+    $core.String? alias,
   }) {
     final _result = create();
     if (id != null) {
@@ -106,6 +108,9 @@ class Recipient extends $pb.GeneratedMessage {
     }
     if (iban != null) {
       _result.iban = iban;
+    }
+    if (alias != null) {
+      _result.alias = alias;
     }
     return _result;
   }
@@ -286,6 +291,15 @@ class Recipient extends $pb.GeneratedMessage {
   $core.bool hasIban() => $_has(16);
   @$pb.TagNumber(17)
   void clearIban() => clearField(17);
+
+  @$pb.TagNumber(18)
+  $core.String get alias => $_getSZ(17);
+  @$pb.TagNumber(18)
+  set alias($core.String v) { $_setString(17, v); }
+  @$pb.TagNumber(18)
+  $core.bool hasAlias() => $_has(17);
+  @$pb.TagNumber(18)
+  void clearAlias() => clearField(18);
 }
 
 class CreateRecipientRequest extends $pb.GeneratedMessage {
@@ -303,6 +317,7 @@ class CreateRecipientRequest extends $pb.GeneratedMessage {
     ..aOS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
     ..aOS(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'swiftCode')
     ..aOS(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'iban')
+    ..aOS(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'alias')
     ..hasRequiredFields = false
   ;
 
@@ -321,6 +336,7 @@ class CreateRecipientRequest extends $pb.GeneratedMessage {
     $core.String? currency,
     $core.String? swiftCode,
     $core.String? iban,
+    $core.String? alias,
   }) {
     final _result = create();
     if (name != null) {
@@ -361,6 +377,9 @@ class CreateRecipientRequest extends $pb.GeneratedMessage {
     }
     if (iban != null) {
       _result.iban = iban;
+    }
+    if (alias != null) {
+      _result.alias = alias;
     }
     return _result;
   }
@@ -501,6 +520,15 @@ class CreateRecipientRequest extends $pb.GeneratedMessage {
   $core.bool hasIban() => $_has(12);
   @$pb.TagNumber(13)
   void clearIban() => clearField(13);
+
+  @$pb.TagNumber(14)
+  $core.String get alias => $_getSZ(13);
+  @$pb.TagNumber(14)
+  set alias($core.String v) { $_setString(13, v); }
+  @$pb.TagNumber(14)
+  $core.bool hasAlias() => $_has(13);
+  @$pb.TagNumber(14)
+  void clearAlias() => clearField(14);
 }
 
 class CreateRecipientResponse extends $pb.GeneratedMessage {
@@ -677,6 +705,7 @@ class UpdateRecipientRequest extends $pb.GeneratedMessage {
     ..aOM<$38.StringValue>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sortCode', subBuilder: $38.StringValue.create)
     ..aOM<$38.StringValue>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'bankName', subBuilder: $38.StringValue.create)
     ..aOM<$38.StringValue>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'countryCode', subBuilder: $38.StringValue.create)
+    ..aOM<$38.StringValue>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'alias', subBuilder: $38.StringValue.create)
     ..hasRequiredFields = false
   ;
 
@@ -689,6 +718,7 @@ class UpdateRecipientRequest extends $pb.GeneratedMessage {
     $38.StringValue? sortCode,
     $38.StringValue? bankName,
     $38.StringValue? countryCode,
+    $38.StringValue? alias,
   }) {
     final _result = create();
     if (recipientId != null) {
@@ -711,6 +741,9 @@ class UpdateRecipientRequest extends $pb.GeneratedMessage {
     }
     if (countryCode != null) {
       _result.countryCode = countryCode;
+    }
+    if (alias != null) {
+      _result.alias = alias;
     }
     return _result;
   }
@@ -809,6 +842,17 @@ class UpdateRecipientRequest extends $pb.GeneratedMessage {
   void clearCountryCode() => clearField(7);
   @$pb.TagNumber(7)
   $38.StringValue ensureCountryCode() => $_ensure(6);
+
+  @$pb.TagNumber(8)
+  $38.StringValue get alias => $_getN(7);
+  @$pb.TagNumber(8)
+  set alias($38.StringValue v) { setField(8, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasAlias() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearAlias() => clearField(8);
+  @$pb.TagNumber(8)
+  $38.StringValue ensureAlias() => $_ensure(7);
 }
 
 class UpdateRecipientResponse extends $pb.GeneratedMessage {

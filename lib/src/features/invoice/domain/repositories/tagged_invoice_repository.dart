@@ -8,6 +8,7 @@ abstract class TaggedInvoiceRepository {
     int page = 1,
     int limit = 20,
     InvoicePaymentStatus? statusFilter,
+    String? currency,
   });
 
   /// Get invoices that the current user created and tagged others to (outgoing)

@@ -7,6 +7,7 @@ import '../../../../../core/types/app_routes.dart';
 import '../../../../../core/theme/invoice_theme_colors.dart';
 import '../../../authentication/cubit/authentication_cubit.dart';
 import '../../../authentication/cubit/authentication_state.dart';
+import 'package:lazervault/src/generated/common.pbenum.dart';
 import '../../domain/entities/invoice_entity.dart';
 import '../cubit/invoice_cubit.dart';
 import '../cubit/invoice_state.dart';
@@ -14,6 +15,7 @@ import '../cubit/tagged_invoice_cubit.dart';
 import '../cubit/tagged_invoice_state.dart';
 import '../widgets/invoice_voice_agent_button.dart';
 import '../widgets/invoice_shimmer.dart';
+import '../widgets/invoice_pagination_bar.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 import '../../../account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import '../../../account_cards_summary/cubit/account_cards_summary_state.dart';
@@ -74,8 +76,8 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
     if (authState is AuthenticationSuccess) {
       context.read<InvoiceCubit>().setUserId(authState.profile.userId);
     }
-    // Load received tab data
-    context.read<TaggedInvoiceCubit>().loadIncomingInvoices();
+    // Load received tab data with pagination
+    context.read<TaggedInvoiceCubit>().loadIncomingInvoicesPage(page: 1);
   }
 
   @override
@@ -88,23 +90,50 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
   void _onTabChanged() {
     if (_tabController.indexIsChanging) return;
     setState(() => _selectedFilter = 'All');
-    // Reload data for the active tab so stats are up-to-date
+    // Reload data for the active tab with server-side pagination
     if (_tabController.index == 0) {
-      context.read<TaggedInvoiceCubit>().loadIncomingInvoices();
+      context.read<TaggedInvoiceCubit>().loadIncomingInvoicesPage(page: 1);
     } else {
-      context.read<InvoiceCubit>().loadInvoices();
+      context.read<InvoiceCubit>().loadInvoicesPage(page: 1);
     }
   }
 
   void _onFilterSelected(String filter) {
     setState(() => _selectedFilter = filter);
+    // Use server-side filtering with pagination
+    final statusParam = filter == 'All' ? null : _filterToStatus(filter);
     if (_tabController.index == 0) {
-      // Received tab
-      context.read<TaggedInvoiceCubit>().loadIncomingInvoices();
+      final statusEnum = filter == 'All' ? null : _filterToPaymentStatus(filter);
+      context.read<TaggedInvoiceCubit>().loadIncomingInvoicesPage(
+        page: 1,
+        statusFilter: statusEnum,
+      );
     } else {
-      // Sent tab
-      final statusFilter = filter == 'All' ? null : [filter.toLowerCase()];
-      context.read<InvoiceCubit>().loadInvoices(statusFilter: statusFilter);
+      context.read<InvoiceCubit>().loadInvoicesPage(
+        page: 1,
+        statusFilter: statusParam,
+      );
+    }
+  }
+
+  String? _filterToStatus(String filter) {
+    switch (filter.toLowerCase()) {
+      case 'pending': return 'pending';
+      case 'paid': return 'paid';
+      case 'overdue': return 'overdue';
+      case 'cancelled': return 'cancelled';
+      case 'partially paid': return 'partially_paid';
+      default: return null;
+    }
+  }
+
+  InvoicePaymentStatus? _filterToPaymentStatus(String filter) {
+    switch (filter.toLowerCase()) {
+      case 'pending': return InvoicePaymentStatus.INVOICE_PAYMENT_STATUS_PENDING;
+      case 'paid': return InvoicePaymentStatus.INVOICE_PAYMENT_STATUS_COMPLETED;
+      case 'overdue': return InvoicePaymentStatus.INVOICE_PAYMENT_STATUS_OVERDUE;
+      case 'cancelled': return InvoicePaymentStatus.INVOICE_PAYMENT_STATUS_CANCELLED;
+      default: return null;
     }
   }
 
@@ -116,8 +145,8 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
         onPressed: () async {
           await Get.toNamed(AppRoutes.createInvoice);
           if (context.mounted) {
-            context.read<InvoiceCubit>().loadInvoices();
-            context.read<TaggedInvoiceCubit>().loadIncomingInvoices();
+            context.read<InvoiceCubit>().loadInvoicesPage(page: 1);
+            context.read<TaggedInvoiceCubit>().loadIncomingInvoicesPage(page: 1);
           }
         },
         backgroundColor: InvoiceThemeColors.primaryPurple,
@@ -249,30 +278,31 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
             }
 
             double totalAmount = 0;
-            double overdueAmount = 0;
             int pendingCount = 0;
             int paidCount = 0;
             int partiallyPaidCount = 0;
+            int overdueCount = 0;
+
+            if (isReceivedTab && taggedState is IncomingTaggedInvoicesLoaded) {
+              // Compute stats from the actual loaded invoices for accuracy
+              // Backend statistics RPC may return stale/incorrect data
+              final invoices = taggedState.invoices;
+              totalAmount = invoices.fold<double>(0.0, (sum, inv) => sum + inv.amount);
+              pendingCount = invoices.where((inv) => inv.isPending && !inv.isOverdue).length;
+              paidCount = invoices.where((inv) => inv.isPaid).length;
+              overdueCount = invoices.where((inv) => inv.isOverdue || inv.paymentStatus == InvoicePaymentStatus.INVOICE_PAYMENT_STATUS_OVERDUE).length;
+            }
 
             if (!isReceivedTab && invoiceState is InvoicesLoaded) {
               // Compute stats from the actual loaded invoices for the Created tab
               final invoices = invoiceState.invoices;
               totalAmount = invoices.fold<double>(0.0, (sum, inv) => sum + inv.amount);
-              overdueAmount = invoices
-                  .where((inv) => inv.isOverdue)
-                  .fold<double>(0.0, (sum, inv) => sum + inv.amount);
               pendingCount = invoices.where((inv) => inv.status == InvoiceStatus.pending).length;
               paidCount = invoices.where((inv) => inv.status == InvoiceStatus.paid).length;
               partiallyPaidCount = invoices
                   .where((inv) => inv.status == InvoiceStatus.partiallyPaid)
                   .length;
-            }
-
-            if (isReceivedTab && taggedState is IncomingTaggedInvoicesLoaded) {
-              totalAmount = taggedState.statistics.totalAmount;
-              overdueAmount = taggedState.statistics.overdueAmount;
-              pendingCount = taggedState.statistics.pendingInvoices;
-              paidCount = taggedState.statistics.paidInvoices;
+              overdueCount = invoices.where((inv) => inv.isOverdue).length;
             }
 
             return Padding(
@@ -301,7 +331,7 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
                     Expanded(
                       child: _buildStatCard(
                         label: 'Overdue',
-                        value: '$_currencySymbol${(overdueAmount / 100).toStringAsFixed(0)}',
+                        value: overdueCount.toString(),
                         color: const Color(0xFFEF4444),
                       ),
                     ),
@@ -451,11 +481,11 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
         if (state is TaggedInvoiceError) {
           return _buildErrorState(
             _friendlyErrorMessage(state.message),
-            () => context.read<TaggedInvoiceCubit>().loadIncomingInvoices(),
+            () => context.read<TaggedInvoiceCubit>().loadIncomingInvoicesPage(page: 1),
           );
         }
         if (state is IncomingTaggedInvoicesLoaded) {
-          final invoices = _filterTaggedInvoices(state.invoices);
+          final invoices = state.invoices;
           if (invoices.isEmpty && _selectedFilter != 'All') {
             return _buildEmptyState(
               'No ${_selectedFilter.toLowerCase()} invoices',
@@ -470,23 +500,40 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
               icon: Icons.inbox_outlined,
             );
           }
-          return RefreshIndicator(
-            onRefresh: () => context.read<TaggedInvoiceCubit>().refreshIncoming(),
-            color: InvoiceThemeColors.primaryPurple,
-            child: ListView.builder(
-              padding: EdgeInsets.symmetric(horizontal: 20.w),
-              itemCount: invoices.length,
-              itemBuilder: (context, index) {
-                final invoice = invoices[index];
-                return _buildTaggedInvoiceItem(invoice);
-              },
-            ),
+          return Column(
+            children: [
+              Expanded(
+                child: RefreshIndicator(
+                  onRefresh: () => context.read<TaggedInvoiceCubit>().loadIncomingInvoicesPage(
+                    page: state.currentPage,
+                    statusFilter: state.currentFilter,
+                  ),
+                  color: InvoiceThemeColors.primaryPurple,
+                  child: ListView.builder(
+                    padding: EdgeInsets.symmetric(horizontal: 20.w),
+                    itemCount: invoices.length,
+                    itemBuilder: (context, index) {
+                      final invoice = invoices[index];
+                      return _buildTaggedInvoiceItem(invoice);
+                    },
+                  ),
+                ),
+              ),
+              InvoicePaginationBar(
+                currentPage: state.currentPage,
+                totalPages: state.totalPages,
+                totalCount: state.totalCount,
+                hasNext: state.currentPage < state.totalPages,
+                hasPrevious: state.currentPage > 1,
+                onPageChanged: (page) => context.read<TaggedInvoiceCubit>().goToIncomingPage(page),
+              ),
+            ],
           );
         }
         // Initial state - trigger load
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (!context.read<TaggedInvoiceCubit>().isClosed) {
-            context.read<TaggedInvoiceCubit>().loadIncomingInvoices();
+            context.read<TaggedInvoiceCubit>().loadIncomingInvoicesPage(page: 1);
           }
         });
         return const InvoiceListShimmer();
@@ -503,11 +550,11 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
         if (state is InvoiceError) {
           return _buildErrorState(
             _friendlyErrorMessage(state.message),
-            () => context.read<InvoiceCubit>().loadInvoices(),
+            () => context.read<InvoiceCubit>().loadInvoicesPage(page: 1),
           );
         }
         if (state is InvoicesLoaded) {
-          final invoices = _filterInvoices(state.invoices);
+          final invoices = state.invoices;
           if (invoices.isEmpty && _selectedFilter != 'All') {
             return _buildEmptyState(
               'No ${_selectedFilter.toLowerCase()} invoices',
@@ -522,41 +569,40 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
               icon: Icons.description_outlined,
             );
           }
-          return RefreshIndicator(
-            onRefresh: () => context.read<InvoiceCubit>().loadInvoices(),
-            color: InvoiceThemeColors.primaryPurple,
-            child: ListView.builder(
-              padding: EdgeInsets.symmetric(horizontal: 20.w),
-              itemCount: invoices.length,
-              itemBuilder: (context, index) {
-                final invoice = invoices[index];
-                return _buildSentInvoiceItem(invoice);
-              },
-            ),
+          return Column(
+            children: [
+              Expanded(
+                child: RefreshIndicator(
+                  onRefresh: () => context.read<InvoiceCubit>().loadInvoicesPage(
+                    page: state.currentPage,
+                    statusFilter: state.currentFilter,
+                  ),
+                  color: InvoiceThemeColors.primaryPurple,
+                  child: ListView.builder(
+                    padding: EdgeInsets.symmetric(horizontal: 20.w),
+                    itemCount: invoices.length,
+                    itemBuilder: (context, index) {
+                      final invoice = invoices[index];
+                      return _buildSentInvoiceItem(invoice);
+                    },
+                  ),
+                ),
+              ),
+              InvoicePaginationBar(
+                currentPage: state.currentPage,
+                totalPages: state.totalPages,
+                totalCount: state.totalCount,
+                hasNext: state.hasNext,
+                hasPrevious: state.hasPrevious,
+                onPageChanged: (page) => context.read<InvoiceCubit>().goToPage(page),
+              ),
+            ],
           );
         }
         // Initial/form state - show shimmer while loading
         return const InvoiceListShimmer();
       },
     );
-  }
-
-  List<dynamic> _filterTaggedInvoices(List<dynamic> invoices) {
-    if (_selectedFilter == 'All') return invoices;
-    return invoices.where((inv) {
-      final status = inv.statusText.toLowerCase();
-      return status == _selectedFilter.toLowerCase();
-    }).toList();
-  }
-
-  List<Invoice> _filterInvoices(List<Invoice> invoices) {
-    if (_selectedFilter == 'All') return invoices;
-    if (_selectedFilter == 'Overdue') {
-      return invoices.where((inv) => inv.isOverdue).toList();
-    }
-    return invoices.where((inv) {
-      return inv.statusDisplayName.toLowerCase() == _selectedFilter.toLowerCase();
-    }).toList();
   }
 
   Widget _buildTaggedInvoiceItem(dynamic invoice) {

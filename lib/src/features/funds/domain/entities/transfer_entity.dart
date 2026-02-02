@@ -8,6 +8,7 @@ class TransferEntity extends Equatable {
   final Int64 fee; // Minor units
   final Int64 totalAmount; // Minor units
   final DateTime createdAt;
+  final DateTime? scheduledAt;
 
   const TransferEntity({
     required this.transferId,
@@ -16,7 +17,10 @@ class TransferEntity extends Equatable {
     required this.fee,
     required this.totalAmount,
     required this.createdAt,
+    this.scheduledAt,
   });
+
+  bool get isScheduled => scheduledAt != null && status == 'scheduled';
 
   @override
   List<Object?> get props => [
@@ -26,5 +30,6 @@ class TransferEntity extends Equatable {
         fee,
         totalAmount,
         createdAt,
+        scheduledAt,
       ];
 }

@@ -38,6 +38,10 @@ class _ItemsAmountsScreenState extends State<ItemsAmountsScreen>
 
   String get _currencySymbol {
     try {
+      final cubit = context.read<CreateInvoiceCubit>();
+      if (cubit.invoiceCurrency.isNotEmpty) {
+        return _getCurrencySymbol(cubit.invoiceCurrency);
+      }
       final state = context.read<AccountCardsSummaryCubit>().state;
       if (state is AccountCardsSummaryLoaded && state.accountSummaries.isNotEmpty) {
         return _getCurrencySymbol(state.accountSummaries.first.currency);
@@ -273,21 +277,27 @@ class _ItemsAmountsScreenState extends State<ItemsAmountsScreen>
                 SizedBox(height: 8.h),
                 Row(
                   children: [
-                    Text(
-                      '${item.quantity} × $_currencySymbol${item.unitPrice.toStringAsFixed(2)}',
-                      style: GoogleFonts.inter(
-                        fontSize: 13.sp,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.grey[400],
+                    Flexible(
+                      child: Text(
+                        '${item.quantity} × $_currencySymbol${item.unitPrice.toStringAsFixed(2)}',
+                        style: GoogleFonts.inter(
+                          fontSize: 13.sp,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.grey[400],
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    SizedBox(width: 12.w),
-                    Text(
-                      '= $_currencySymbol${total.toStringAsFixed(2)}',
-                      style: GoogleFonts.inter(
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w700,
-                        color: const Color(0xFF3B82F6),
+                    SizedBox(width: 8.w),
+                    Flexible(
+                      child: Text(
+                        '= $_currencySymbol${total.toStringAsFixed(2)}',
+                        style: GoogleFonts.inter(
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF3B82F6),
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],
@@ -430,7 +440,8 @@ class _ItemsAmountsScreenState extends State<ItemsAmountsScreen>
             SizedBox(height: 8.h),
             _buildSummaryRow('Tax', tax, color: Colors.grey[400]),
             SizedBox(height: 8.h),
-            _buildSummaryRow('Discount', -discount, color: Colors.red.shade400),
+            if (discount > 0)
+              _buildSummaryRow('Discount', discount, color: Colors.red.shade400, prefix: '- '),
             SizedBox(height: 12.h),
             Divider(color: Colors.white.withValues(alpha: 0.2)),
             SizedBox(height: 12.h),
@@ -513,7 +524,7 @@ class _ItemsAmountsScreenState extends State<ItemsAmountsScreen>
   }
 
   Widget _buildSummaryRow(String label, double amount,
-      {bool isTotal = false, Color? color}) {
+      {bool isTotal = false, Color? color, String prefix = ''}) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -526,7 +537,7 @@ class _ItemsAmountsScreenState extends State<ItemsAmountsScreen>
           ),
         ),
         Text(
-          '$_currencySymbol${amount.toStringAsFixed(2)}',
+          '$prefix$_currencySymbol${amount.toStringAsFixed(2)}',
           style: GoogleFonts.inter(
             fontSize: isTotal ? 18.sp : 14.sp,
             fontWeight: isTotal ? FontWeight.w700 : FontWeight.w600,

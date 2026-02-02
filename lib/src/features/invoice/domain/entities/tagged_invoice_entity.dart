@@ -247,3 +247,24 @@ class TaggedInvoiceStatistics extends Equatable {
     paidAmount: 0.0,
   );
 }
+
+/// Paginated result for tagged invoices
+class TaggedInvoicePaginatedResult {
+  final List<TaggedInvoice> invoices;
+  final int currentPage;
+  final int pageSize;
+  final int totalCount;
+  final int totalPages;
+  final bool hasNext;
+  final bool hasPrevious;
+
+  TaggedInvoicePaginatedResult({
+    required this.invoices,
+    required this.currentPage,
+    required this.pageSize,
+    required this.totalCount,
+    required this.totalPages,
+    required this.hasNext,
+    required this.hasPrevious,
+  });
+}

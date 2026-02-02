@@ -34,6 +34,34 @@ abstract class InvoiceRepository {
   // User tagging for invoices
   Future<TagUsersResponse> tagUsersToInvoice(String invoiceId, List<String> userIds, List<String> emails, List<String> phoneNumbers);
   Future<List<InvoiceUser>> searchUsers(String query, {int limit = 20});
+
+  // Paginated queries
+  Future<PaginatedInvoiceResult> getSentInvoicesPaginated({
+    int page = 1,
+    int pageSize = 20,
+    String? status,
+  });
+}
+
+// Paginated result with metadata
+class PaginatedInvoiceResult {
+  final List<Invoice> invoices;
+  final int currentPage;
+  final int pageSize;
+  final int totalCount;
+  final int totalPages;
+  final bool hasNext;
+  final bool hasPrevious;
+
+  PaginatedInvoiceResult({
+    required this.invoices,
+    required this.currentPage,
+    required this.pageSize,
+    required this.totalCount,
+    required this.totalPages,
+    required this.hasNext,
+    required this.hasPrevious,
+  });
 }
 
 // User model for search results

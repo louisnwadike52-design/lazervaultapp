@@ -1661,53 +1661,9 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
   Widget _buildParticipantDetails(Invoice invoice) {
     return Column(
       children: [
-        // Recipient Details
+        // From (invoice creator / payer details)
         Container(
-          padding: EdgeInsets.all(16.w),
-          decoration: BoxDecoration(
-            color: InvoiceThemeColors.secondaryBackground,
-            borderRadius: BorderRadius.circular(12.r),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    padding: EdgeInsets.all(8.w),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(8.r),
-                    ),
-                    child: Icon(
-                      Icons.person_outline,
-                      color: const Color(0xFF3B82F6),
-                      size: 20.sp,
-                    ),
-                  ),
-                  SizedBox(width: 12.w),
-                  Text(
-                    'Recipient Details',
-                    style: GoogleFonts.inter(
-                      color: Colors.white,
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 16.h),
-              _buildParticipantInfo(
-                invoice.recipientDetails,
-                invoice.toName,
-                invoice.toEmail,
-              ),
-            ],
-          ),
-        ),
-        SizedBox(height: 16.h),
-        // Payer Details
-        Container(
+          width: double.infinity,
           padding: EdgeInsets.all(16.w),
           decoration: BoxDecoration(
             color: InvoiceThemeColors.secondaryBackground,
@@ -1725,14 +1681,14 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
                       borderRadius: BorderRadius.circular(8.r),
                     ),
                     child: Icon(
-                      Icons.business_outlined,
+                      Icons.arrow_upward_rounded,
                       color: InvoiceThemeColors.successGreen,
                       size: 20.sp,
                     ),
                   ),
                   SizedBox(width: 12.w),
                   Text(
-                    'Payer Details',
+                    'From',
                     style: GoogleFonts.inter(
                       color: Colors.white,
                       fontSize: 16.sp,
@@ -1743,6 +1699,52 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
               ),
               SizedBox(height: 16.h),
               _buildParticipantInfo(invoice.payerDetails, null, null),
+            ],
+          ),
+        ),
+        SizedBox(height: 16.h),
+        // To (recipient details)
+        Container(
+          width: double.infinity,
+          padding: EdgeInsets.all(16.w),
+          decoration: BoxDecoration(
+            color: InvoiceThemeColors.secondaryBackground,
+            borderRadius: BorderRadius.circular(12.r),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: EdgeInsets.all(8.w),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8.r),
+                    ),
+                    child: Icon(
+                      Icons.arrow_downward_rounded,
+                      color: const Color(0xFF3B82F6),
+                      size: 20.sp,
+                    ),
+                  ),
+                  SizedBox(width: 12.w),
+                  Text(
+                    'To',
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 16.h),
+              _buildParticipantInfo(
+                invoice.recipientDetails,
+                invoice.toName,
+                invoice.toEmail,
+              ),
             ],
           ),
         ),
@@ -1792,33 +1794,56 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
   }
 
   Widget _buildNotesSection(Invoice invoice) {
-    return Container(
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: InvoiceThemeColors.secondaryBackground,
-        borderRadius: BorderRadius.circular(12.r),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Notes',
-            style: GoogleFonts.inter(
-              color: Colors.white,
-              fontSize: 16.sp,
-              fontWeight: FontWeight.w600,
+    return SizedBox(
+      width: double.infinity,
+      child: Container(
+        padding: EdgeInsets.all(16.w),
+        decoration: BoxDecoration(
+          color: InvoiceThemeColors.secondaryBackground,
+          borderRadius: BorderRadius.circular(12.r),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: EdgeInsets.all(8.w),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFB923C).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8.r),
+                  ),
+                  child: Icon(
+                    Icons.notes_rounded,
+                    color: const Color(0xFFFB923C),
+                    size: 20.sp,
+                  ),
+                ),
+                SizedBox(width: 12.w),
+                Text(
+                  'Notes',
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
             ),
-          ),
-          SizedBox(height: 12.h),
-          Text(
-            invoice.notes!,
-            style: GoogleFonts.inter(
-              color: Colors.grey[300],
-              fontSize: 14.sp,
-              height: 1.5,
+            SizedBox(height: 12.h),
+            SizedBox(
+              width: double.infinity,
+              child: Text(
+                invoice.notes!,
+                style: GoogleFonts.inter(
+                  color: Colors.grey[300],
+                  fontSize: 14.sp,
+                  height: 1.5,
+                ),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

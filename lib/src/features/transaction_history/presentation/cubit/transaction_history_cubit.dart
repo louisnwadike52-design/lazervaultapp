@@ -42,10 +42,15 @@ class TransactionHistoryCubit extends Cubit<TransactionHistoryState> {
       if (response.transactions.isEmpty) {
         emit(TransactionHistoryEmpty(activeFilters: filters));
       } else {
-        final stats = await repository.getStatistics(
-          startDate: filters?.startDate,
-          endDate: filters?.endDate,
-        );
+        TransactionStatistics? stats;
+        try {
+          stats = await repository.getStatistics(
+            startDate: filters?.startDate,
+            endDate: filters?.endDate,
+          );
+        } catch (_) {
+          // Stats failure is non-blocking
+        }
 
         emit(TransactionHistoryLoaded(
           transactions: response.transactions,
@@ -93,11 +98,16 @@ class TransactionHistoryCubit extends Cubit<TransactionHistoryState> {
           activeFilters: filters,
         ));
       } else {
-        final stats = await repository.getStatistics(
-          serviceType: serviceType,
-          startDate: filters?.startDate,
-          endDate: filters?.endDate,
-        );
+        TransactionStatistics? stats;
+        try {
+          stats = await repository.getStatistics(
+            serviceType: serviceType,
+            startDate: filters?.startDate,
+            endDate: filters?.endDate,
+          );
+        } catch (_) {
+          // Stats failure is non-blocking
+        }
 
         emit(TransactionHistoryLoaded(
           transactions: response.transactions,
@@ -266,6 +276,17 @@ class TransactionHistoryCubit extends Cubit<TransactionHistoryState> {
         errorCode: 'STATS_FAILED',
       ));
     }
+  }
+
+  /// Fetch transactions for export (date range, no pagination)
+  Future<List<UnifiedTransaction>> fetchTransactionsForExport({
+    required DateTime startDate,
+    required DateTime endDate,
+  }) async {
+    return repository.fetchTransactionsForExport(
+      startDate: startDate,
+      endDate: endDate,
+    );
   }
 
   /// Reset to initial state

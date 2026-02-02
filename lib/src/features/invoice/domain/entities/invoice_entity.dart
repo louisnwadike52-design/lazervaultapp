@@ -47,6 +47,7 @@ class AddressDetails extends Equatable {
   final String? intermediaryBankName;
   final String? intermediaryBankSwift;
   final String? accountHolderName;
+  final String? logoUrl;
 
   const AddressDetails({
     this.companyName,
@@ -72,6 +73,7 @@ class AddressDetails extends Equatable {
     this.intermediaryBankName,
     this.intermediaryBankSwift,
     this.accountHolderName,
+    this.logoUrl,
   });
 
   @override
@@ -99,6 +101,7 @@ class AddressDetails extends Equatable {
         intermediaryBankName,
         intermediaryBankSwift,
         accountHolderName,
+        logoUrl,
       ];
 
   AddressDetails copyWith({
@@ -125,6 +128,7 @@ class AddressDetails extends Equatable {
     String? intermediaryBankName,
     String? intermediaryBankSwift,
     String? accountHolderName,
+    String? logoUrl,
   }) {
     return AddressDetails(
       companyName: companyName ?? this.companyName,
@@ -150,6 +154,7 @@ class AddressDetails extends Equatable {
       intermediaryBankName: intermediaryBankName ?? this.intermediaryBankName,
       intermediaryBankSwift: intermediaryBankSwift ?? this.intermediaryBankSwift,
       accountHolderName: accountHolderName ?? this.accountHolderName,
+      logoUrl: logoUrl ?? this.logoUrl,
     );
   }
 
@@ -176,7 +181,8 @@ class AddressDetails extends Equatable {
         bankAddress == null &&
         intermediaryBankName == null &&
         intermediaryBankSwift == null &&
-        accountHolderName == null;
+        accountHolderName == null &&
+        logoUrl == null;
   }
 
   String get formattedAddress {
@@ -221,6 +227,8 @@ class Invoice extends Equatable {
   final bool isUnlocked;
   final String? unlockPaymentRef;
   final List<TaggedUserInfo>? taggedUsers;
+  final String? payerLogoUrl;
+  final String? recipientLogoUrl;
 
   const Invoice({
     required this.id,
@@ -252,6 +260,8 @@ class Invoice extends Equatable {
     this.isUnlocked = false,
     this.unlockPaymentRef,
     this.taggedUsers,
+    this.payerLogoUrl,
+    this.recipientLogoUrl,
   });
 
   @override
@@ -285,6 +295,8 @@ class Invoice extends Equatable {
         isUnlocked,
         unlockPaymentRef,
         taggedUsers,
+        payerLogoUrl,
+        recipientLogoUrl,
       ];
 
   Invoice copyWith({
@@ -317,6 +329,8 @@ class Invoice extends Equatable {
     bool? isUnlocked,
     String? unlockPaymentRef,
     List<TaggedUserInfo>? taggedUsers,
+    String? payerLogoUrl,
+    String? recipientLogoUrl,
   }) {
     return Invoice(
       id: id ?? this.id,
@@ -348,6 +362,8 @@ class Invoice extends Equatable {
       isUnlocked: isUnlocked ?? this.isUnlocked,
       unlockPaymentRef: unlockPaymentRef ?? this.unlockPaymentRef,
       taggedUsers: taggedUsers ?? this.taggedUsers,
+      payerLogoUrl: payerLogoUrl ?? this.payerLogoUrl,
+      recipientLogoUrl: recipientLogoUrl ?? this.recipientLogoUrl,
     );
   }
 

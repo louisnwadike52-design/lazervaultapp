@@ -91,6 +91,7 @@ class TransferCubit extends Cubit<TransferState> {
     required String description,
     required String transactionId,
     required String verificationToken,
+    DateTime? scheduledAt,
   }) async {
     if (isClosed) return;
     emit(const TransferLoading());
@@ -103,6 +104,7 @@ class TransferCubit extends Cubit<TransferState> {
         description: description,
         transactionId: transactionId,
         verificationToken: verificationToken,
+        scheduledAt: scheduledAt,
       );
 
       if (isClosed) return;
@@ -130,6 +132,7 @@ class TransferCubit extends Cubit<TransferState> {
       fee: Int64(feeMinor),
       totalAmount: Int64(amountMinor + feeMinor),
       createdAt: result.createdAt ?? DateTime.now(),
+      scheduledAt: result.scheduledAt,
     );
   }
 }

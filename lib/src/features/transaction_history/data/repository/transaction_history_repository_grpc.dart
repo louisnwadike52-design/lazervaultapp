@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:lazervault/src/core/grpc/accounts_grpc_client.dart';
 import 'package:lazervault/src/generated/accounts.pb.dart';
@@ -302,6 +304,32 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
   }
 
   @override
+  Future<List<UnifiedTransaction>> fetchTransactionsForExport({
+    required DateTime startDate,
+    required DateTime endDate,
+  }) async {
+    try {
+      final accountId = accountManager.activeAccountId;
+      if (accountId == null) {
+        throw Exception('No active account selected');
+      }
+
+      // Fetch up to 500 transactions for export
+      final response = await grpcClient.getTransactionHistory(
+        accountId: accountId,
+        startDate: startDate,
+        endDate: endDate,
+        limit: 500,
+        offset: 0,
+      );
+
+      return response.transactions.map(_convertFromProto).toList();
+    } catch (e) {
+      throw Exception('Failed to fetch transactions for export: $e');
+    }
+  }
+
+  @override
   Future<void> refreshTransactions() async {
     try {
       final accountId = accountManager.activeAccountId;
@@ -380,18 +408,30 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
     // Map status
     final status = _mapStatusFromProto(protoTx.status);
 
+    // Build metadata: start with parsed JSON metadata, then merge in
+    // proto-level fields that receipt screens need for display.
+    final metadata = <String, dynamic>{};
+    if (protoTx.metadata.isNotEmpty) {
+      final parsed = _parseMetadata(protoTx.metadata);
+      if (parsed != null) metadata.addAll(parsed);
+    }
+    if (protoTx.balanceBefore != 0 || protoTx.balanceAfter != 0) {
+      metadata['balance_before'] = protoTx.balanceBefore;
+      metadata['balance_after'] = protoTx.balanceAfter;
+    }
+
     return UnifiedTransaction(
       id: protoTx.id,
       serviceType: serviceType,
       title: _generateTransactionTitle(protoTx.category, protoTx.type),
       description: protoTx.description.isNotEmpty ? protoTx.description : null,
       amount: protoTx.amount,
-      currency: 'USD', // TODO: Get from account
+      currency: accountManager.activeAccountDetails?.currency ?? 'NGN',
       createdAt: createdAt,
       status: status,
       flow: flow,
       transactionReference: protoTx.reference.isNotEmpty ? protoTx.reference : null,
-      metadata: protoTx.metadata.isNotEmpty ? _parseMetadata(protoTx.metadata) : null,
+      metadata: metadata.isNotEmpty ? metadata : null,
     );
   }
 
@@ -412,6 +452,26 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
       return 'Account Deposit';
     } else if (categoryLower.contains('withdrawal')) {
       return 'Account Withdrawal';
+    } else if (categoryLower.contains('invoice')) {
+      return typeLower == 'credit' ? 'Invoice Received' : 'Invoice Payment';
+    } else if (categoryLower.contains('crypto')) {
+      return typeLower == 'credit' ? 'Crypto Sale' : 'Crypto Purchase';
+    } else if (categoryLower.contains('stock')) {
+      return typeLower == 'credit' ? 'Stock Sale' : 'Stock Purchase';
+    } else if (categoryLower.contains('insurance')) {
+      return 'Insurance Payment';
+    } else if (categoryLower.contains('tag')) {
+      return typeLower == 'credit' ? 'Tag Payment Received' : 'Tag Payment Sent';
+    } else if (categoryLower.contains('barcode')) {
+      return 'Barcode Payment';
+    } else if (categoryLower.contains('crowdfund') || categoryLower.contains('donation')) {
+      return 'Donation';
+    } else if (categoryLower.contains('autosave') || categoryLower.contains('auto_save')) {
+      return 'AutoSave Deposit';
+    } else if (categoryLower.contains('water')) {
+      return 'Water Bill Payment';
+    } else if (categoryLower.contains('tv') || categoryLower.contains('subscription')) {
+      return 'TV Subscription';
     } else {
       return typeLower == 'credit' ? 'Credit' : 'Debit';
     }
@@ -420,9 +480,11 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
   /// Parse metadata JSON string to Map
   Map<String, dynamic>? _parseMetadata(String metadataJson) {
     try {
-      // Simple JSON parsing
-      // In production, use dart:convert
-      return <String, dynamic>{}; // Placeholder
+      final decoded = jsonDecode(metadataJson);
+      if (decoded is Map) {
+        return Map<String, dynamic>.from(decoded);
+      }
+      return null;
     } catch (e) {
       return null;
     }

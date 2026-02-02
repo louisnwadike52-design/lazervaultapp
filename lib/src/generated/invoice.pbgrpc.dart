@@ -99,6 +99,12 @@ class InvoiceServiceClient extends $grpc.Client {
           ($0.UnlockInvoiceRequest value) => value.writeToBuffer(),
           ($core.List<$core.int> value) =>
               $0.UnlockInvoiceResponse.fromBuffer(value));
+  static final _$uploadInvoiceImage = $grpc.ClientMethod<
+          $0.UploadInvoiceImageRequest, $0.UploadInvoiceImageResponse>(
+      '/invoice.InvoiceService/UploadInvoiceImage',
+      ($0.UploadInvoiceImageRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $0.UploadInvoiceImageResponse.fromBuffer(value));
 
   InvoiceServiceClient($grpc.ClientChannel channel,
       {$grpc.CallOptions? options,
@@ -188,6 +194,12 @@ class InvoiceServiceClient extends $grpc.Client {
       $0.UnlockInvoiceRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$unlockInvoice, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.UploadInvoiceImageResponse> uploadInvoiceImage(
+      $0.UploadInvoiceImageRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$uploadInvoiceImage, request, options: options);
   }
 }
 
@@ -317,6 +329,15 @@ abstract class InvoiceServiceBase extends $grpc.Service {
             ($core.List<$core.int> value) =>
                 $0.UnlockInvoiceRequest.fromBuffer(value),
             ($0.UnlockInvoiceResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.UploadInvoiceImageRequest,
+            $0.UploadInvoiceImageResponse>(
+        'UploadInvoiceImage',
+        uploadInvoiceImage_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.UploadInvoiceImageRequest.fromBuffer(value),
+        ($0.UploadInvoiceImageResponse value) => value.writeToBuffer()));
   }
 
   $async.Future<$0.CreateInvoiceResponse> createInvoice_Pre(
@@ -400,6 +421,12 @@ abstract class InvoiceServiceBase extends $grpc.Service {
     return unlockInvoice(call, await request);
   }
 
+  $async.Future<$0.UploadInvoiceImageResponse> uploadInvoiceImage_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$0.UploadInvoiceImageRequest> request) async {
+    return uploadInvoiceImage(call, await request);
+  }
+
   $async.Future<$0.CreateInvoiceResponse> createInvoice(
       $grpc.ServiceCall call, $0.CreateInvoiceRequest request);
   $async.Future<$0.GetInvoicesResponse> getInvoices(
@@ -428,4 +455,6 @@ abstract class InvoiceServiceBase extends $grpc.Service {
       $grpc.ServiceCall call, $0.GetInvoiceStatisticsRequest request);
   $async.Future<$0.UnlockInvoiceResponse> unlockInvoice(
       $grpc.ServiceCall call, $0.UnlockInvoiceRequest request);
+  $async.Future<$0.UploadInvoiceImageResponse> uploadInvoiceImage(
+      $grpc.ServiceCall call, $0.UploadInvoiceImageRequest request);
 }

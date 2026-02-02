@@ -1,7 +1,9 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/models/device_contact.dart';
@@ -11,6 +13,8 @@ import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_
 import 'package:lazervault/src/features/recipients/data/models/recipient_model.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
+import 'package:lazervault/src/features/tag_pay/presentation/cubit/tag_pay_cubit.dart';
+import 'package:lazervault/src/features/tag_pay/domain/entities/user_search_result_entity.dart';
 
 // Model for lazertag user search results
 class LazertagUser {
@@ -69,6 +73,7 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
   List<DeviceContact> _deviceContacts = [];
   List<LazertagUser> _lazertagResults = [];
   RecipientSelectionTab _currentTab = RecipientSelectionTab.saved;
+  Timer? _searchDebounce;
 
   @override
   void initState() {
@@ -124,6 +129,7 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
 
   @override
   void dispose() {
+    _searchDebounce?.cancel();
     _searchController.dispose();
     _tabController.dispose();
     super.dispose();
@@ -134,14 +140,18 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
       _searchQuery = _searchController.text;
     });
 
-    // Handle lazertag search
+    // Handle lazertag search with debounce
     if (_searchQuery.startsWith('@') && widget.allowLazertagUsers) {
-      _searchLazertagUsers(_searchQuery);
+      _searchDebounce?.cancel();
+      _searchDebounce = Timer(const Duration(milliseconds: 300), () {
+        _searchLazertagUsers(_searchQuery);
+      });
     }
   }
 
   Future<void> _searchLazertagUsers(String query) async {
-    if (query.length < 2) {
+    final cleanQuery = query.replaceAll('@', '').trim();
+    if (cleanQuery.length < 2) {
       setState(() => _lazertagResults = []);
       return;
     }
@@ -149,47 +159,24 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
     setState(() => _isLoadingLazertag = true);
 
     try {
-      // Simulate API call to search lazertag users
-      await Future.delayed(const Duration(milliseconds: 500));
-      
-      // Mock lazertag user results
-      final mockResults = [
-        LazertagUser(
-          id: 'lz1',
-          username: '@louis',
-          name: 'Louis Lawrence',
-          email: 'louis@example.com',
-          isOnline: true,
-          isVerified: true,
-        ),
-        LazertagUser(
-          id: 'lz2',
-          username: '@sarah',
-          name: 'Sarah Johnson',
-          email: 'sarah@example.com',
-          isOnline: false,
-          isVerified: true,
-        ),
-        LazertagUser(
-          id: 'lz3',
-          username: '@mike',
-          name: 'Mike Davis',
-          email: 'mike@example.com',
-          isOnline: true,
-          isVerified: false,
-        ),
-      ];
+      final tagPayCubit = GetIt.I<TagPayCubit>();
+      final results = await tagPayCubit.searchUsers(cleanQuery, limit: 20);
 
-      final filteredResults = mockResults.where((user) =>
-        user.username.toLowerCase().contains(query.toLowerCase().replaceAll('@', '')) ||
-        user.name.toLowerCase().contains(query.toLowerCase())
-      ).toList();
+      if (!mounted) return;
 
       setState(() {
-        _lazertagResults = filteredResults;
+        _lazertagResults = results.map((user) => LazertagUser(
+          id: user.userId,
+          username: '@${user.username}',
+          name: '${user.firstName} ${user.lastName}'.trim(),
+          email: user.email.isNotEmpty ? user.email : null,
+          avatar: user.profilePicture.isNotEmpty ? user.profilePicture : null,
+          isVerified: true,
+        )).toList();
         _isLoadingLazertag = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _lazertagResults = [];
         _isLoadingLazertag = false;
@@ -335,7 +322,8 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
     
     return recipients.where((recipient) {
       return recipient.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-             recipient.accountNumber.contains(_searchQuery);
+             recipient.accountNumber.contains(_searchQuery) ||
+             (recipient.alias?.toLowerCase().contains(_searchQuery.toLowerCase()) ?? false);
     }).toList();
   }
 
@@ -356,14 +344,7 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
       minChildSize: 0.5,
       builder: (context, scrollController) => Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              const Color(0xFF1A1A3E),
-              const Color(0xFF0F0F23),
-            ],
-          ),
+          color: Colors.white,
           borderRadius: BorderRadius.only(
             topLeft: Radius.circular(20.r),
             topRight: Radius.circular(20.r),
@@ -397,18 +378,18 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
             width: 40.w,
             height: 4.h,
             decoration: BoxDecoration(
-              color: Colors.grey[600],
+              color: Colors.grey[300],
               borderRadius: BorderRadius.circular(2.r),
             ),
           ),
-          
+
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
                 'Select Recipient',
                 style: GoogleFonts.inter(
-                  color: Colors.white,
+                  color: Colors.black87,
                   fontSize: 18.sp,
                   fontWeight: FontWeight.w700,
                 ),
@@ -420,11 +401,11 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
                       Get.back();
                       Get.toNamed(AppRoutes.addRecipient);
                     },
-                    icon: Icon(Icons.add, color: Colors.blue[400], size: 20.sp),
+                    icon: Icon(Icons.add, color: const Color(0xFF4E03D0), size: 20.sp),
                     label: Text(
                       'Add New',
                       style: GoogleFonts.inter(
-                        color: Colors.blue[400],
+                        color: const Color(0xFF4E03D0),
                         fontSize: 14.sp,
                         fontWeight: FontWeight.w600,
                       ),
@@ -434,7 +415,7 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
                     onPressed: () => Get.back(),
                     icon: Icon(
                       Icons.close,
-                      color: Colors.grey[400],
+                      color: Colors.grey[600],
                       size: 20.sp,
                     ),
                   ),
@@ -451,19 +432,12 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
+        color: Colors.grey[100],
         borderRadius: BorderRadius.circular(12.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.15),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
       ),
       child: TextField(
         controller: _searchController,
-        style: GoogleFonts.inter(color: Colors.white, fontSize: 14.sp),
+        style: GoogleFonts.inter(color: Colors.black87, fontSize: 14.sp),
         decoration: InputDecoration(
           hintText: _getSearchHintText(),
           hintStyle: GoogleFonts.inter(
@@ -472,7 +446,7 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
           ),
           prefixIcon: Icon(
             _searchQuery.startsWith('@') ? Icons.alternate_email : Icons.search,
-            color: Colors.grey[400],
+            color: Colors.grey[500],
             size: 20.sp,
           ),
           suffixIcon: _searchQuery.isNotEmpty
@@ -486,7 +460,7 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
                 },
                 icon: Icon(
                   Icons.clear,
-                  color: Colors.grey[400],
+                  color: Colors.grey[500],
                   size: 20.sp,
                 ),
               )
@@ -513,19 +487,19 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 20.w),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
+        color: Colors.grey[100],
         borderRadius: BorderRadius.circular(12.r),
       ),
       child: TabBar(
         controller: _tabController,
         indicator: BoxDecoration(
-          color: Colors.blue[600],
+          color: const Color(0xFF4E03D0),
           borderRadius: BorderRadius.circular(10.r),
         ),
         indicatorPadding: EdgeInsets.all(2.w),
         dividerHeight: 0,
         labelColor: Colors.white,
-        unselectedLabelColor: Colors.grey[400],
+        unselectedLabelColor: Colors.grey[600],
         labelStyle: GoogleFonts.inter(
           fontSize: 14.sp,
           fontWeight: FontWeight.w600,
@@ -633,7 +607,7 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
       builder: (context, state) {
         if (state is RecipientLoading) {
           return const Center(
-            child: CircularProgressIndicator(color: Colors.blue),
+            child: CircularProgressIndicator(color: Color(0xFF4E03D0)),
           );
         } else if (state is RecipientLoaded) {
           final filteredRecipients = _filterRecipients(state.recipients);
@@ -763,7 +737,7 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
             Text(
               title,
               style: GoogleFonts.inter(
-                color: Colors.white,
+                color: Colors.black87,
                 fontSize: 18.sp,
                 fontWeight: FontWeight.w600,
               ),
@@ -804,34 +778,21 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
   }
 
   Widget _buildExampleTags() {
-    final examples = ['@louis', '@sarah', '@mike'];
-    
-    return Wrap(
-      spacing: 8.w,
-      children: examples.map((example) => 
-        GestureDetector(
-          onTap: () {
-            _searchController.text = example;
-            _onSearchChanged();
-          },
-          child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-            decoration: BoxDecoration(
-              color: Colors.blue[600]!.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(16.r),
-              border: Border.all(color: Colors.blue[600]!.withValues(alpha: 0.3)),
-            ),
-            child: Text(
-              example,
-              style: GoogleFonts.inter(
-                color: Colors.blue[400],
-                fontSize: 12.sp,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+      decoration: BoxDecoration(
+        color: const Color(0xFF4E03D0).withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(12.r),
+      ),
+      child: Text(
+        'Type @username to search for LazerVault users',
+        style: GoogleFonts.inter(
+          color: const Color(0xFF4E03D0),
+          fontSize: 13.sp,
+          fontWeight: FontWeight.w500,
         ),
-      ).toList(),
+        textAlign: TextAlign.center,
+      ),
     );
   }
 
@@ -876,7 +837,7 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
             child: Text(
               'Retry',
               style: GoogleFonts.inter(
-                color: Colors.blue[400],
+                color: const Color(0xFF4E03D0),
                 fontSize: 14.sp,
                 fontWeight: FontWeight.w600,
               ),
@@ -891,16 +852,9 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
     return Container(
       margin: EdgeInsets.only(bottom: 12.h),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
+        color: Colors.grey[50],
         borderRadius: BorderRadius.circular(12.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+        border: Border.all(color: Colors.grey[200]!),
       ),
       child: ListTile(
         contentPadding: EdgeInsets.symmetric(
@@ -930,7 +884,7 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
         title: Text(
           recipient.name,
           style: GoogleFonts.inter(
-            color: Colors.white,
+            color: Colors.black87,
             fontSize: 16.sp,
             fontWeight: FontWeight.w600,
           ),
@@ -982,16 +936,9 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
     return Container(
       margin: EdgeInsets.only(bottom: 12.h),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
+        color: Colors.grey[50],
         borderRadius: BorderRadius.circular(12.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+        border: Border.all(color: Colors.grey[200]!),
       ),
       child: ListTile(
         contentPadding: EdgeInsets.symmetric(
@@ -1041,7 +988,7 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
               child: Text(
                 user.name,
                 style: GoogleFonts.inter(
-                  color: Colors.white,
+                  color: Colors.black87,
                   fontSize: 16.sp,
                   fontWeight: FontWeight.w600,
                 ),
@@ -1050,7 +997,7 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
             if (user.isVerified)
               Icon(
                 Icons.verified,
-                color: Colors.blue[400],
+                color: const Color(0xFF4E03D0),
                 size: 16.sp,
               ),
           ],
@@ -1116,16 +1063,9 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
     return Container(
       margin: EdgeInsets.only(bottom: 12.h),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
+        color: Colors.grey[50],
         borderRadius: BorderRadius.circular(12.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+        border: Border.all(color: Colors.grey[200]!),
       ),
       child: ListTile(
         contentPadding: EdgeInsets.symmetric(
@@ -1155,7 +1095,7 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
         title: Text(
           contact.name,
           style: GoogleFonts.inter(
-            color: Colors.white,
+            color: Colors.black87,
             fontSize: 16.sp,
             fontWeight: FontWeight.w600,
           ),

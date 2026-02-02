@@ -21,6 +21,11 @@ import 'package:lazervault/src/features/recipients/presentation/widgets/recipien
 import 'package:lazervault/src/features/recipients/data/models/recipient_model.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/enhanced_recipient_selection_bottom_sheet.dart';
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
+import 'package:lazervault/src/features/recipients/presentation/widgets/scan_bank_details_modal.dart';
+import 'package:lazervault/src/features/recipients/data/datasources/bank_scan_datasource.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'dart:io';
 
 class SelectRecipients extends StatefulWidget {
   const SelectRecipients({super.key});
@@ -155,79 +160,37 @@ class _SelectRecipientsState extends State<SelectRecipients> {
                         ),
                         SizedBox(height: 24.h),
 
-                        // Search Bar and Voice Command
+                        // Search Bar
                         GestureDetector(
                           onTap: _showEnhancedRecipientSelection,
                           child: Container(
                             height: 48.h,
+                            padding: EdgeInsets.symmetric(horizontal: 16.w),
                             decoration: BoxDecoration(
                               color: Colors.white.withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(24),
                               boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.08),
+                                  blurRadius: 6,
+                                  offset: Offset(0, 2),
+                                ),
+                              ],
                             ),
                             child: Row(
                               children: [
-                                Expanded(
-                                  child: Padding(
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal: 16.w,
-                                      vertical: 12.h,
-                                    ),
-                                    child: Row(
-                                      children: [
-                                        Icon(
-                                          Icons.search,
-                                          color: Colors.white.withValues(alpha: 0.7),
-                                          size: 20,
-                                        ),
-                                        SizedBox(width: 12.w),
-                                                                                 Expanded(
-                                           child: Text(
-                                             'Recipient, @username or contact',
-                                             style: TextStyle(
-                                               color: Colors.white.withValues(alpha: 0.7),
-                                               fontSize: 14.sp,
-                                             ),
-                                           ),
-                                         ),
-                                        Icon(
-                                          Icons.alternate_email,
-                                          color: Colors.white.withValues(alpha: 0.8),
-                                          size: 16.sp,
-                                        ),
-                                        SizedBox(width: 8.w),
-                                        Icon(
-                                          Icons.contacts_outlined,
-                                          color: Colors.white.withValues(alpha: 0.8),
-                                          size: 16.sp,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
+                                Icon(
+                                  Icons.search,
+                                  color: Colors.white.withValues(alpha: 0.7),
+                                  size: 20,
                                 ),
-                                Container(
-                                  margin: EdgeInsets.only(right: 4.w),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withValues(alpha: 0.2),
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: IconButton(
-                                    onPressed: () {
-                                      // Implement voice command or show enhanced selection
-                                      _showEnhancedRecipientSelection();
-                                    },
-                                    icon: Icon(Icons.mic,
-                                        color: Colors.white, size: 20),
-                                    constraints: BoxConstraints(
-                                      minWidth: 40.w,
-                                      minHeight: 40.w,
+                                SizedBox(width: 12.w),
+                                Expanded(
+                                  child: Text(
+                                    'Search recipients...',
+                                    style: TextStyle(
+                                      color: Colors.white.withValues(alpha: 0.7),
+                                      fontSize: 14.sp,
                                     ),
                                   ),
                                 ),
@@ -275,9 +238,9 @@ class _SelectRecipientsState extends State<SelectRecipients> {
                               onTap: () => Get.toNamed(AppRoutes.addRecipient),
                             ),
                             _buildQuickAction(
-                              icon: Icons.schedule_outlined,
-                              label: 'Schedule',
-                              onTap: _launchScheduledTransfer,
+                              icon: Icons.document_scanner_outlined,
+                              label: 'Scan Bank Details',
+                              onTap: _launchBankDetailsScan,
                             ),
                             _buildQuickAction(
                               icon: Icons.group_outlined,
@@ -361,92 +324,121 @@ class _SelectRecipientsState extends State<SelectRecipients> {
 
       // Handle case where there are no recipients at all
       if (allRecipients.isEmpty) {
-        return Center(
-          child: Padding(
-            padding: EdgeInsets.all(24.w),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.people_outline,
-                  size: 64,
-                  color: Colors.grey[400],
-                ),
-                SizedBox(height: 16.h),
-                Text(
-                  'No Saved Recipients',
-                  style: TextStyle(
-                    fontSize: 18.sp,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black87,
-                  ),
-                ),
-                SizedBox(height: 8.h),
-                Text(
-                  'Add recipients to see them here',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 14.sp,
-                    color: Colors.grey[600],
-                  ),
-                ),
-                SizedBox(height: 32.h),
-                // Add User button below no recipients section
-                SizedBox(
-                  width: 200.w,
-                  height: 48.h,
-                  child: ElevatedButton.icon(
-                    onPressed: () => Get.toNamed(AppRoutes.addRecipient),
-                    icon: Icon(Icons.person_add, size: 20.sp),
-                    label: Text(
-                      'Add User',
-                      style: TextStyle(
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w600,
+        return RefreshIndicator(
+          color: const Color.fromARGB(255, 78, 3, 208),
+          onRefresh: () async {
+            final authState = context.read<AuthenticationCubit>().state;
+            if (authState is AuthenticationSuccess) {
+              await context.read<RecipientCubit>().getRecipients(
+                accessToken: authState.profile.session.accessToken,
+              );
+            }
+          },
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: SizedBox(
+              height: MediaQuery.of(context).size.height * 0.5,
+              child: Center(
+                child: Padding(
+                  padding: EdgeInsets.all(24.w),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.people_outline,
+                        size: 64,
+                        color: Colors.grey[400],
                       ),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Color.fromARGB(255, 78, 3, 208),
-                      foregroundColor: Colors.white,
-                      padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12.r),
+                      SizedBox(height: 16.h),
+                      Text(
+                        'No Saved Recipients',
+                        style: TextStyle(
+                          fontSize: 18.sp,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black87,
+                        ),
                       ),
-                    ),
+                      SizedBox(height: 8.h),
+                      Text(
+                        'Add recipients to see them here',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 14.sp,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                      SizedBox(height: 32.h),
+                      SizedBox(
+                        width: 200.w,
+                        height: 48.h,
+                        child: ElevatedButton.icon(
+                          onPressed: () => Get.toNamed(AppRoutes.addRecipient),
+                          icon: Icon(Icons.person_add, size: 20.sp),
+                          label: Text(
+                            'Add User',
+                            style: TextStyle(
+                              fontSize: 16.sp,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Color.fromARGB(255, 78, 3, 208),
+                            foregroundColor: Colors.white,
+                            padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12.r),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
+              ),
             ),
           ),
         );
       }
 
       // Build the UI displaying all recipients (favorites first)
-      return SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Favorites Section
-            if (favoriteRecipients.isNotEmpty) ...[
-              Padding(
-                padding: EdgeInsets.all(16.w),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    RecipientChipsBuilder(recipients: favoriteRecipients),
-                  ],
+      return RefreshIndicator(
+        color: const Color.fromARGB(255, 78, 3, 208),
+        onRefresh: () async {
+          final authState = context.read<AuthenticationCubit>().state;
+          if (authState is AuthenticationSuccess) {
+            await context.read<RecipientCubit>().getRecipients(
+              accessToken: authState.profile.session.accessToken,
+            );
+          }
+        },
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(
+            parent: BouncingScrollPhysics(),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Favorites Section
+              if (favoriteRecipients.isNotEmpty) ...[
+                Padding(
+                  padding: EdgeInsets.all(16.w),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      RecipientChipsBuilder(recipients: favoriteRecipients),
+                    ],
+                  ),
                 ),
+              ],
+              // All Recipients Section
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Recipients(recipients: allRecipients),
+                ],
               ),
             ],
-            // All Recipients Section
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Recipients(recipients: allRecipients),
-              ],
-            ),
-          ],
+          ),
         ),
       );
     }
@@ -1079,6 +1071,7 @@ class _SelectRecipientsState extends State<SelectRecipients> {
   /// Step 3: Show confirmation with verified account name
   void _showContactConfirmationSheet(DeviceContact contact) {
     bool isFavorite = false;
+    String? alias;
 
     showModalBottomSheet(
       context: context,
@@ -1209,6 +1202,43 @@ class _SelectRecipientsState extends State<SelectRecipients> {
                       ),
                     ),
 
+                    // Alias Input (visible when favorite is toggled)
+                    if (isFavorite) ...[
+                      SizedBox(height: 12.h),
+                      Container(
+                        padding: EdgeInsets.all(12.w),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[50],
+                          borderRadius: BorderRadius.circular(12.r),
+                          border: Border.all(color: Colors.grey[200]!),
+                        ),
+                        child: TextField(
+                          maxLength: 50,
+                          decoration: InputDecoration(
+                            hintText: 'Set alias (optional)',
+                            hintStyle: TextStyle(
+                              color: Colors.grey[400],
+                              fontSize: 14.sp,
+                            ),
+                            border: InputBorder.none,
+                            counterText: '',
+                            isDense: true,
+                            contentPadding: EdgeInsets.zero,
+                          ),
+                          style: TextStyle(
+                            color: Colors.black87,
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          onChanged: (value) {
+                            setSheetState(() {
+                              alias = value.isEmpty ? null : value;
+                            });
+                          },
+                        ),
+                      ),
+                    ],
+
                     Spacer(),
 
                     // Action Buttons
@@ -1243,7 +1273,7 @@ class _SelectRecipientsState extends State<SelectRecipients> {
                           child: ElevatedButton(
                             onPressed: () {
                               Navigator.pop(bottomSheetContext);
-                              _proceedToPaymentWithContact(contact, isFavorite);
+                              _proceedToPaymentWithContact(contact, isFavorite, alias);
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Color.fromARGB(255, 78, 3, 208),
@@ -1303,7 +1333,7 @@ class _SelectRecipientsState extends State<SelectRecipients> {
     );
   }
 
-  void _proceedToPaymentWithContact(DeviceContact contact, bool isFavorite) {
+  void _proceedToPaymentWithContact(DeviceContact contact, bool isFavorite, String? alias) {
     if (_contactVerificationResult == null) return;
 
     final temporaryRecipient = RecipientModel(
@@ -1313,6 +1343,7 @@ class _SelectRecipientsState extends State<SelectRecipients> {
       bankName: _contactVerificationResult!.bankName,
       sortCode: _contactVerificationResult!.bankCode,
       isFavorite: isFavorite,
+      alias: alias,
       countryCode: 'NG',
       currency: 'NGN',
     );
@@ -1453,6 +1484,12 @@ class _SelectRecipientsState extends State<SelectRecipients> {
         );
 
         // Navigate to send funds with scanned recipient
+        // Include pre-filled amount if from v2 payment QR
+        final arguments = <String, dynamic>{'recipient': recipient};
+        if (result['amount'] != null) {
+          arguments['prefillAmount'] = result['amount'];
+          arguments['prefillCurrency'] = result['currency'] ?? 'NGN';
+        }
         Get.toNamed(AppRoutes.initiateSendFunds, arguments: recipient);
       }
     } catch (e) {
@@ -1524,6 +1561,255 @@ class _SelectRecipientsState extends State<SelectRecipients> {
     Get.toNamed(
       AppRoutes.initiateSendFunds,
       arguments: {'scheduledAt': scheduledDateTime},
+    );
+  }
+
+  Future<void> _launchBankDetailsScan() async {
+    // Step 1: Capture image from camera
+    final picker = ImagePicker();
+    final XFile? image = await picker.pickImage(
+      source: ImageSource.camera,
+      maxWidth: 2048,
+      maxHeight: 2048,
+      imageQuality: 85,
+    );
+
+    if (image == null) return; // User cancelled
+    if (!mounted) return;
+
+    // Step 2: Show processing bottom sheet immediately
+    _showScanProcessingSheet();
+    // Allow the bottom sheet to render before starting network call
+    await Future.delayed(const Duration(milliseconds: 100));
+
+    try {
+      // Step 3: Get user ID from auth state
+      final authState = context.read<AuthenticationCubit>().state;
+      final userId = (authState is AuthenticationSuccess)
+          ? authState.profile.user.id
+          : '';
+
+      // Step 4: Call OCR endpoint
+      final gatewayUrl = dotenv.env['CHAT_GATEWAY_URL'] ?? 'http://10.0.2.2:3011';
+      final dataSource = BankScanDataSource(baseUrl: gatewayUrl);
+
+      final result = await dataSource.scanBankDetails(
+        imageFile: File(image.path),
+        userId: userId,
+        locale: 'en-$_currentCountry',
+      );
+
+      dataSource.dispose();
+
+      // Dismiss processing sheet
+      if (Get.isBottomSheetOpen ?? false) Get.back();
+
+      if (!mounted) return;
+
+      // Step 5: Show extracted details modal for review + verification
+      final verified = await ScanBankDetailsModal.show(
+        context,
+        scanResult: result,
+        country: _currentCountry,
+      );
+
+      if (verified != null) {
+        // Step 6: Navigate to send funds with verified account
+        Get.toNamed(
+          AppRoutes.initiateSendFunds,
+          arguments: {
+            'accountNumber': verified['accountNumber'],
+            'accountName': verified['accountName'],
+            'bankName': verified['bankName'],
+            'bankCode': verified['bankCode'],
+            'source': 'ocr_scan',
+          },
+        );
+      }
+    } on BankScanLowConfidenceException catch (e) {
+      if (Get.isBottomSheetOpen ?? false) Get.back();
+      _showScanErrorSheet('Low Quality Image', e.message, isWarning: true);
+    } on BankScanException catch (e) {
+      if (Get.isBottomSheetOpen ?? false) Get.back();
+      _showScanErrorSheet('Scan Failed', e.message);
+    } catch (e) {
+      if (Get.isBottomSheetOpen ?? false) Get.back();
+      _showScanErrorSheet('Error', 'Something went wrong. Please try again.\n${e.toString()}');
+    }
+  }
+
+  void _showScanProcessingSheet() {
+    Get.bottomSheet(
+      Container(
+        padding: EdgeInsets.all(24.w),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40.w,
+              height: 4.h,
+              decoration: BoxDecoration(
+                color: const Color(0xFFE5E7EB),
+                borderRadius: BorderRadius.circular(2.r),
+              ),
+            ),
+            SizedBox(height: 32.h),
+            Container(
+              width: 72.w,
+              height: 72.h,
+              decoration: BoxDecoration(
+                color: const Color(0xFF4E03D0).withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Center(
+                child: SizedBox(
+                  width: 36.w,
+                  height: 36.h,
+                  child: const CircularProgressIndicator(
+                    strokeWidth: 3,
+                    valueColor: AlwaysStoppedAnimation(Color(0xFF4E03D0)),
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(height: 24.h),
+            Text(
+              'Scanning Bank Details',
+              style: TextStyle(
+                fontSize: 18.sp,
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFF111827),
+              ),
+            ),
+            SizedBox(height: 8.h),
+            Text(
+              'Extracting account information from the image...',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 14.sp,
+                color: const Color(0xFF6B7280),
+              ),
+            ),
+            SizedBox(height: 16.h),
+            LinearProgressIndicator(
+              backgroundColor: const Color(0xFFE5E7EB),
+              valueColor: const AlwaysStoppedAnimation(Color(0xFF4E03D0)),
+              minHeight: 3.h,
+            ),
+            SizedBox(height: 24.h),
+          ],
+        ),
+      ),
+      isDismissible: false,
+      enableDrag: false,
+    );
+  }
+
+  void _showScanErrorSheet(String title, String message, {bool isWarning = false}) {
+    final color = isWarning ? Colors.orange : Colors.red;
+    final icon = isWarning ? Icons.warning_amber_rounded : Icons.error_outline;
+
+    Get.bottomSheet(
+      Container(
+        padding: EdgeInsets.all(24.w),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40.w,
+              height: 4.h,
+              decoration: BoxDecoration(
+                color: const Color(0xFFE5E7EB),
+                borderRadius: BorderRadius.circular(2.r),
+              ),
+            ),
+            SizedBox(height: 32.h),
+            Container(
+              width: 72.w,
+              height: 72.h,
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: color, size: 36.sp),
+            ),
+            SizedBox(height: 24.h),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 18.sp,
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFF111827),
+              ),
+            ),
+            SizedBox(height: 8.h),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 14.sp,
+                color: const Color(0xFF6B7280),
+              ),
+            ),
+            SizedBox(height: 24.h),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Get.back(),
+                    style: OutlinedButton.styleFrom(
+                      padding: EdgeInsets.symmetric(vertical: 14.h),
+                      side: const BorderSide(color: Color(0xFFE5E7EB)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                    ),
+                    child: Text(
+                      'Close',
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        color: const Color(0xFF6B7280),
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Get.back();
+                      _launchBankDetailsScan();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF4E03D0),
+                      padding: EdgeInsets.symmetric(vertical: 14.h),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                    ),
+                    child: Text(
+                      'Try Again',
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 16.h),
+          ],
+        ),
+      ),
     );
   }
 

@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import '../../../../core/network/grpc_client.dart';
 import '../../../../core/network/retry_helper.dart';
 import '../../../../generated/invoice.pb.dart' as pb;
@@ -68,7 +69,10 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
           ..tax = invoice.taxAmount ?? 0.0
           ..discount = invoice.discountAmount ?? 0.0
           ..notes = invoice.notes ?? ''
-          ..payerEmail = invoice.payerDetails?.email ?? '';
+          ..payerEmail = invoice.payerDetails?.email ?? ''
+          ..currency = invoice.currency
+          ..payerLogoUrl = invoice.payerLogoUrl ?? ''
+          ..recipientLogoUrl = invoice.recipientLogoUrl ?? '';
 
         // Add invoice items
         if (invoice.items.isNotEmpty) {
@@ -427,6 +431,60 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
     throw UnimplementedError('Use ProfileCubit.searchUsers for user search');
   }
 
+  /// Upload an image for invoice logos and return the URL
+  @override
+  Future<PaginatedInvoiceResult> getSentInvoicesPaginated({
+    int page = 1,
+    int pageSize = 20,
+    String? status,
+  }) async {
+    return retryWithBackoff(
+      operation: () async {
+        final request = pb.GetSentInvoicesRequest()
+          ..page = page
+          ..pageSize = pageSize;
+        if (status != null && status.isNotEmpty) {
+          request.status = status;
+        }
+        final options = await grpcClient.callOptions;
+        final response = await grpcClient.invoiceClient.getSentInvoices(
+          request,
+          options: options,
+        );
+
+        final invoices = response.invoices.map((inv) => _fromProto(inv)).toList();
+        final pagination = response.pagination;
+
+        return PaginatedInvoiceResult(
+          invoices: invoices,
+          currentPage: pagination.currentPage,
+          pageSize: pagination.pageSize,
+          totalCount: pagination.totalCount,
+          totalPages: pagination.totalPages,
+          hasNext: pagination.hasNext,
+          hasPrevious: pagination.hasPrevious,
+        );
+      },
+    );
+  }
+
+  Future<String> uploadInvoiceImage(Uint8List data, String fileName, String contentType) async {
+    return retryWithBackoff(
+      operation: () async {
+        final request = pb.UploadInvoiceImageRequest()
+          ..imageData = data
+          ..fileName = fileName
+          ..contentType = contentType;
+        final options = await grpcClient.callOptions;
+        final response = await grpcClient.invoiceClient.uploadInvoiceImage(
+          request,
+          options: options,
+        );
+        return response.imageUrl;
+      },
+    );
+  }
+
   // Helper: Convert protobuf to entity
   Invoice _fromProto(pb.Invoice proto) {
     // Parse invoice items or create a default item
@@ -493,9 +551,20 @@ class InvoiceRepositoryGrpcImpl implements InvoiceRepository {
       taxAmount: proto.tax > 0 ? proto.tax : null,
       discountAmount: proto.discount > 0 ? proto.discount : null,
       totalAmount: totalAmount,
-      paymentMethod: null, // Not available in current proto
-      recipientDetails: null, // Not available in current proto
-      payerDetails: null, // Not available in current proto
+      paymentMethod: null,
+      recipientDetails: (proto.recipientName.isNotEmpty || proto.recipientEmail.isNotEmpty)
+          ? AddressDetails(
+              contactName: proto.recipientName.isNotEmpty ? proto.recipientName : null,
+              email: proto.recipientEmail.isNotEmpty ? proto.recipientEmail : null,
+            )
+          : null,
+      payerDetails: proto.payerEmail.isNotEmpty
+          ? AddressDetails(
+              email: proto.payerEmail,
+            )
+          : null,
+      payerLogoUrl: proto.payerLogoUrl.isNotEmpty ? proto.payerLogoUrl : null,
+      recipientLogoUrl: proto.recipientLogoUrl.isNotEmpty ? proto.recipientLogoUrl : null,
       isUnlocked: proto.isUnlocked,
       unlockPaymentRef: proto.unlockPaymentRef.isNotEmpty ? proto.unlockPaymentRef : null,
       taggedUsers: proto.taggedUsers.isNotEmpty

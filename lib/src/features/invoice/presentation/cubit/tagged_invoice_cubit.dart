@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lazervault/src/features/invoice/data/repositories/tagged_invoice_repository_grpc_impl.dart';
 import 'package:lazervault/src/features/invoice/domain/repositories/tagged_invoice_repository.dart';
 import 'package:lazervault/src/generated/common.pbenum.dart';
 import 'tagged_invoice_state.dart';
@@ -15,6 +16,7 @@ class TaggedInvoiceCubit extends Cubit<TaggedInvoiceState> {
     int page = 1,
     bool append = false,
     InvoicePaymentStatus? statusFilter,
+    String? currency,
   }) async {
     try {
       if (!append) {
@@ -33,6 +35,7 @@ class TaggedInvoiceCubit extends Cubit<TaggedInvoiceState> {
         page: page,
         limit: _defaultPageSize,
         statusFilter: statusFilter,
+        currency: currency,
       );
       if (isClosed) return;
 
@@ -353,6 +356,80 @@ class TaggedInvoiceCubit extends Cubit<TaggedInvoiceState> {
           currentPage: 1,
           hasMore: false,
         ));
+      }
+    } catch (e) {
+      if (isClosed) return;
+      emit(TaggedInvoiceError(message: e.toString()));
+    }
+  }
+
+  /// Navigate to a specific page (incoming)
+  Future<void> goToIncomingPage(int page) async {
+    InvoicePaymentStatus? currentFilter;
+    if (state is IncomingTaggedInvoicesLoaded) {
+      currentFilter = (state as IncomingTaggedInvoicesLoaded).currentFilter;
+    }
+    await loadIncomingInvoicesPage(page: page, statusFilter: currentFilter);
+  }
+
+  /// Navigate to next page (incoming)
+  Future<void> nextIncomingPage() async {
+    if (state is IncomingTaggedInvoicesLoaded) {
+      final s = state as IncomingTaggedInvoicesLoaded;
+      if (s.currentPage < s.totalPages) {
+        await goToIncomingPage(s.currentPage + 1);
+      }
+    }
+  }
+
+  /// Navigate to previous page (incoming)
+  Future<void> previousIncomingPage() async {
+    if (state is IncomingTaggedInvoicesLoaded) {
+      final s = state as IncomingTaggedInvoicesLoaded;
+      if (s.currentPage > 1) {
+        await goToIncomingPage(s.currentPage - 1);
+      }
+    }
+  }
+
+  /// Load incoming invoices with full pagination metadata from server
+  Future<void> loadIncomingInvoicesPage({
+    int page = 1,
+    int pageSize = _defaultPageSize,
+    InvoicePaymentStatus? statusFilter,
+    String? currency,
+  }) async {
+    try {
+      if (isClosed) return;
+      emit(const TaggedInvoiceLoading());
+
+      // Use paginated method if repository supports it
+      if (repository is TaggedInvoiceRepositoryGrpcImpl) {
+        final grpcRepo = repository as TaggedInvoiceRepositoryGrpcImpl;
+        final result = await grpcRepo.getIncomingTaggedInvoicesPaginated(
+          page: page,
+          pageSize: pageSize,
+          statusFilter: statusFilter,
+          currency: currency,
+        );
+        if (isClosed) return;
+
+        final statistics = await repository.getIncomingStatistics();
+        if (isClosed) return;
+
+        emit(IncomingTaggedInvoicesLoaded(
+          invoices: result.invoices,
+          statistics: statistics,
+          currentPage: result.currentPage,
+          hasMore: result.hasNext,
+          currentFilter: statusFilter,
+          totalPages: result.totalPages,
+          totalCount: result.totalCount,
+          pageSize: result.pageSize,
+        ));
+      } else {
+        // Fallback to standard method
+        await loadIncomingInvoices(page: page, statusFilter: statusFilter, currency: currency);
       }
     } catch (e) {
       if (isClosed) return;

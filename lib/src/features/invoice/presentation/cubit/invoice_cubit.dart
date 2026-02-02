@@ -7,6 +7,8 @@ import 'invoice_state.dart';
 class InvoiceCubit extends Cubit<InvoiceState> {
   final InvoiceRepository repository;
 
+  static const int defaultPageSize = 20;
+
   // Current user ID - set from authentication state
   String? _currentUserId;
   String? get currentUserId => _currentUserId;
@@ -22,7 +24,7 @@ class InvoiceCubit extends Cubit<InvoiceState> {
     required this.repository,
   }) : super(InvoiceInitial());
 
-  // Load all invoices with statistics
+  // Load all invoices with statistics (legacy, loads all at once)
   Future<void> loadInvoices({
     List<String>? statusFilter,
   }) async {
@@ -54,6 +56,12 @@ class InvoiceCubit extends Cubit<InvoiceState> {
       emit(InvoicesLoaded(
         invoices: filteredInvoices,
         statistics: statistics,
+        totalCount: filteredInvoices.length,
+        totalPages: 1,
+        currentPage: 1,
+        pageSize: filteredInvoices.length,
+        hasNext: false,
+        hasPrevious: false,
       ));
     } catch (e) {
       if (isClosed) return;
@@ -77,6 +85,99 @@ class InvoiceCubit extends Cubit<InvoiceState> {
         ));
       } else {
         emit(InvoiceError(message: 'Failed to load invoices: ${e.toString()}'));
+      }
+    }
+  }
+
+  /// Load invoices page-based (server-side pagination + filtering)
+  Future<void> loadInvoicesPage({
+    int page = 1,
+    int pageSize = defaultPageSize,
+    String? statusFilter,
+  }) async {
+    try {
+      if (currentUserId == null) {
+        if (isClosed) return;
+        emit(const InvoiceError(message: 'User not authenticated. Please log in.'));
+        return;
+      }
+
+      if (isClosed) return;
+      emit(InvoiceLoading());
+
+      final result = await repository.getSentInvoicesPaginated(
+        page: page,
+        pageSize: pageSize,
+        status: statusFilter,
+      );
+      if (isClosed) return;
+
+      final statistics = await repository.getInvoiceStatistics(currentUserId!);
+      if (isClosed) return;
+
+      emit(InvoicesLoaded(
+        invoices: result.invoices,
+        statistics: statistics,
+        currentPage: result.currentPage,
+        totalPages: result.totalPages,
+        totalCount: result.totalCount,
+        pageSize: result.pageSize,
+        hasNext: result.hasNext,
+        hasPrevious: result.hasPrevious,
+        currentFilter: statusFilter,
+      ));
+    } catch (e) {
+      if (isClosed) return;
+      final errorMessage = e.toString().toLowerCase();
+      if (errorMessage.contains('unimplemented') ||
+          errorMessage.contains('unavailable') ||
+          errorMessage.contains('service') ||
+          errorMessage.contains('not found')) {
+        emit(InvoicesLoaded(
+          invoices: [],
+          statistics: {
+            'total_invoices': 0,
+            'paid_invoices': 0,
+            'unpaid_invoices': 0,
+            'total_amount': 0.0,
+            'total_paid': 0.0,
+            'total_unpaid': 0.0,
+          },
+        ));
+      } else {
+        emit(InvoiceError(message: 'Failed to load invoices: ${e.toString()}'));
+      }
+    }
+  }
+
+  /// Navigate to a specific page
+  Future<void> goToPage(int page) async {
+    String? currentFilter;
+    int currentPageSize = defaultPageSize;
+    if (state is InvoicesLoaded) {
+      final loaded = state as InvoicesLoaded;
+      currentFilter = loaded.currentFilter;
+      currentPageSize = loaded.pageSize;
+    }
+    await loadInvoicesPage(page: page, pageSize: currentPageSize, statusFilter: currentFilter);
+  }
+
+  /// Navigate to next page
+  Future<void> nextPage() async {
+    if (state is InvoicesLoaded) {
+      final loaded = state as InvoicesLoaded;
+      if (loaded.hasNext) {
+        await goToPage(loaded.currentPage + 1);
+      }
+    }
+  }
+
+  /// Navigate to previous page
+  Future<void> previousPage() async {
+    if (state is InvoicesLoaded) {
+      final loaded = state as InvoicesLoaded;
+      if (loaded.hasPrevious) {
+        await goToPage(loaded.currentPage - 1);
       }
     }
   }
@@ -175,6 +276,8 @@ class InvoiceCubit extends Cubit<InvoiceState> {
     AddressDetails? recipientDetails,
     AddressDetails? payerDetails,
     String currency = 'NGN',
+    String? payerLogoUrl,
+    String? recipientLogoUrl,
   }) async {
     // Store current form state to restore if error occurs
     final previousFormState = state is InvoiceFormState ? state as InvoiceFormState : null;
@@ -215,6 +318,8 @@ class InvoiceCubit extends Cubit<InvoiceState> {
         notes: notes,
         recipientDetails: recipientDetails,
         payerDetails: payerDetails,
+        payerLogoUrl: payerLogoUrl,
+        recipientLogoUrl: recipientLogoUrl,
       );
 
       final createdInvoice = await repository.createInvoice(invoice);
@@ -224,9 +329,6 @@ class InvoiceCubit extends Cubit<InvoiceState> {
         message: sendImmediately ? 'Invoice created and sent successfully' : 'Invoice created as draft',
         invoice: createdInvoice,
       ));
-
-      // Reload invoice list so home screen reflects the new invoice
-      await loadInvoices();
     } catch (e) {
       if (isClosed) return;
       emit(InvoiceError(message: 'Failed to create invoice: ${e.toString()}'));
@@ -540,9 +642,6 @@ class InvoiceCubit extends Cubit<InvoiceState> {
         message: sendImmediately ? 'Invoice created and sent successfully' : 'Invoice created as draft',
         invoice: createdInvoice,
       ));
-
-      // Reload invoice list so home screen reflects the new invoice
-      await loadInvoices();
     } catch (e) {
       if (isClosed) return;
       emit(InvoiceError(message: 'Failed to create invoice: ${e.toString()}'));

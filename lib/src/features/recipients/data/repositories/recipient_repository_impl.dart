@@ -84,6 +84,9 @@ class RecipientRepositoryImpl implements IRecipientRepository {
         if (recipient.iban != null) {
           request.iban = recipient.iban!;
         }
+        if (recipient.alias != null && recipient.alias!.isNotEmpty) {
+          request.alias = recipient.alias!;
+        }
 
         final callOptions = await _callOptionsHelper.withAuth();
         return await _client.createRecipient(
@@ -120,6 +123,51 @@ class RecipientRepositoryImpl implements IRecipientRepository {
     } catch (e) {
       return Left(
           Failure(message: 'Failed to toggle favorite: $e', statusCode: 500));
+    }
+  }
+
+  @override
+  Future<Either<Failure, RecipientModel>> updateAlias(
+      {required String recipientId, required String? alias, required String accessToken}) async {
+    try {
+      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+        final request = grpc.UpdateRecipientRequest()
+          ..recipientId = Int64.parseInt(recipientId)
+          ..alias = StringValue(value: alias ?? '');
+
+        final callOptions = await _callOptionsHelper.withAuth();
+        return await _client.updateRecipient(
+          request,
+          options: callOptions,
+        );
+      });
+
+      return Right(RecipientModel.fromProto(response.recipient));
+    } catch (e) {
+      return Left(
+          Failure(message: 'Failed to update alias: $e', statusCode: 500));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> deleteRecipient(
+      {required String recipientId, required String accessToken}) async {
+    try {
+      await _callOptionsHelper.executeWithTokenRotation(() async {
+        final request = grpc.DeleteRecipientRequest()
+          ..recipientId = Int64.parseInt(recipientId);
+
+        final callOptions = await _callOptionsHelper.withAuth();
+        return await _client.deleteRecipient(
+          request,
+          options: callOptions,
+        );
+      });
+
+      return Right(null);
+    } catch (e) {
+      return Left(
+          Failure(message: 'Failed to delete recipient: $e', statusCode: 500));
     }
   }
 } 

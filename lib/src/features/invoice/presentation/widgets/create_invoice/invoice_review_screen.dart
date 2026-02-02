@@ -512,7 +512,7 @@ class _InvoiceReviewScreenState extends State<InvoiceReviewScreen>
           ],
           if (cubit.discountAmount > 0) ...[
             SizedBox(height: 12.h),
-            _buildTotalRow('Discount', -cubit.discountAmount),
+            _buildTotalRow('Discount', cubit.discountAmount, prefix: '- '),
           ],
           SizedBox(height: 16.h),
           Divider(color: Colors.white.withValues(alpha: 0.3)),
@@ -621,7 +621,7 @@ class _InvoiceReviewScreenState extends State<InvoiceReviewScreen>
     );
   }
 
-  Widget _buildTotalRow(String label, double amount) {
+  Widget _buildTotalRow(String label, double amount, {String prefix = ''}) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -634,7 +634,7 @@ class _InvoiceReviewScreenState extends State<InvoiceReviewScreen>
           ),
         ),
         Text(
-          '$_currencySymbol${amount.toStringAsFixed(2)}',
+          '$prefix$_currencySymbol${amount.toStringAsFixed(2)}',
           style: GoogleFonts.inter(
             fontSize: 15.sp,
             fontWeight: FontWeight.w600,

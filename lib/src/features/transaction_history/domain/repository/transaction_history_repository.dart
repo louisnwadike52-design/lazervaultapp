@@ -35,6 +35,12 @@ abstract class TransactionHistoryRepository {
   /// Refresh transactions from server
   Future<void> refreshTransactions();
 
+  /// Fetch all transactions within a date range for export (no pagination limit)
+  Future<List<UnifiedTransaction>> fetchTransactionsForExport({
+    required DateTime startDate,
+    required DateTime endDate,
+  });
+
   /// Cache transactions locally
   Future<void> cacheTransactions(List<UnifiedTransaction> transactions);
 

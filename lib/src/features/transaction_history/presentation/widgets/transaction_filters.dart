@@ -1,69 +1,68 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:intl/intl.dart';
 import 'package:lazervault/core/types/unified_transaction.dart';
 
-/// Service type filter chips widget
-class ServiceFilterChips extends StatelessWidget {
-  final List<TransactionServiceType> availableServices;
-  final List<TransactionServiceType> selectedServices;
-  final Function(List<TransactionServiceType>) onSelectionChanged;
+/// Horizontal month selector chips — Revolut-style
+class MonthFilterChips extends StatelessWidget {
+  final int? selectedMonth; // 1-12, null = "All"
+  final int? selectedYear;
+  final ValueChanged<({int? month, int? year})> onChanged;
 
-  const ServiceFilterChips({
+  const MonthFilterChips({
     super.key,
-    required this.availableServices,
-    required this.selectedServices,
-    required this.onSelectionChanged,
+    this.selectedMonth,
+    this.selectedYear,
+    required this.onChanged,
   });
 
   @override
   Widget build(BuildContext context) {
+    final now = DateTime.now();
+    final months = <({String label, int? month, int? year})>[
+      (label: 'All', month: null, year: null),
+    ];
+
+    // Show last 12 months, current first
+    for (int i = 0; i < 12; i++) {
+      final date = DateTime(now.year, now.month - i, 1);
+      months.add((
+        label: DateFormat('MMM').format(date),
+        month: date.month,
+        year: date.year,
+      ));
+    }
+
     return SizedBox(
-      height: 50.h,
-      child: ListView.builder(
+      height: 36.h,
+      child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: EdgeInsets.symmetric(horizontal: 20.w),
-        itemCount: availableServices.length,
+        itemCount: months.length,
+        separatorBuilder: (_, __) => SizedBox(width: 8.w),
         itemBuilder: (context, index) {
-          final service = availableServices[index];
-          final isSelected = selectedServices.contains(service);
+          final item = months[index];
+          final isSelected = item.month == selectedMonth && item.year == selectedYear;
 
-          return Container(
-            margin: EdgeInsets.only(right: 8.w),
-            child: FilterChip(
-              label: Text(
-                service.displayName,
+          return GestureDetector(
+            onTap: () => onChanged((month: item.month, year: item.year)),
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? const Color(0xFF581CD9)
+                    : const Color(0xFF1F1F1F),
+                borderRadius: BorderRadius.circular(18.r),
+              ),
+              child: Text(
+                item.label,
                 style: TextStyle(
                   fontSize: 13.sp,
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                  color: isSelected ? Colors.white : Colors.white.withValues(alpha: 0.7),
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                  color: isSelected ? Colors.white : const Color(0xFF8E8E93),
+                  fontFamily: 'Inter',
                 ),
               ),
-              selected: isSelected,
-              onSelected: (selected) {
-                final newSelection = List<TransactionServiceType>.from(selectedServices);
-                if (selected) {
-                  newSelection.add(service);
-                } else {
-                  newSelection.remove(service);
-                }
-                onSelectionChanged(newSelection);
-              },
-              backgroundColor: Colors.white.withValues(alpha: 0.1),
-              selectedColor: service.color.withValues(alpha: 0.3),
-              checkmarkColor: Colors.white,
-              side: BorderSide(
-                color: isSelected ? service.color : Colors.white.withValues(alpha: 0.1),
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12.r),
-              ),
-              avatar: isSelected
-                  ? Icon(
-                      service.icon,
-                      size: 16.sp,
-                      color: service.color,
-                    )
-                  : null,
             ),
           );
         },
@@ -72,66 +71,63 @@ class ServiceFilterChips extends StatelessWidget {
   }
 }
 
-/// Status filter chips widget
-class StatusFilterChips extends StatelessWidget {
-  final List<UnifiedTransactionStatus> selectedStatuses;
-  final Function(List<UnifiedTransactionStatus>) onSelectionChanged;
+/// Status filter row — "All" / "Completed" / "Pending" / "Failed" text tabs
+class StatusFilterRow extends StatelessWidget {
+  final UnifiedTransactionStatus? selectedStatus; // null = "All"
+  final ValueChanged<UnifiedTransactionStatus?> onChanged;
 
-  const StatusFilterChips({
+  const StatusFilterRow({
     super.key,
-    required this.selectedStatuses,
-    required this.onSelectionChanged,
+    this.selectedStatus,
+    required this.onChanged,
   });
 
   @override
   Widget build(BuildContext context) {
-    final statuses = [
-      UnifiedTransactionStatus.completed,
-      UnifiedTransactionStatus.pending,
-      UnifiedTransactionStatus.failed,
-      UnifiedTransactionStatus.processing,
+    final tabs = <({String label, UnifiedTransactionStatus? status})>[
+      (label: 'All', status: null),
+      (label: 'Completed', status: UnifiedTransactionStatus.completed),
+      (label: 'Pending', status: UnifiedTransactionStatus.pending),
+      (label: 'Failed', status: UnifiedTransactionStatus.failed),
     ];
 
     return SizedBox(
-      height: 50.h,
-      child: ListView.builder(
+      height: 36.h,
+      child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: EdgeInsets.symmetric(horizontal: 20.w),
-        itemCount: statuses.length,
+        itemCount: tabs.length,
+        separatorBuilder: (_, __) => SizedBox(width: 20.w),
         itemBuilder: (context, index) {
-          final status = statuses[index];
-          final isSelected = selectedStatuses.contains(status);
+          final tab = tabs[index];
+          final isSelected = tab.status == selectedStatus;
 
-          return Container(
-            margin: EdgeInsets.only(right: 8.w),
-            child: FilterChip(
-              label: Text(
-                status.displayName,
-                style: TextStyle(
-                  fontSize: 13.sp,
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                  color: isSelected ? Colors.white : Colors.white.withValues(alpha: 0.7),
+          return GestureDetector(
+            onTap: () => onChanged(tab.status),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  tab.label,
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                    color: isSelected ? Colors.white : const Color(0xFF8E8E93),
+                    fontFamily: 'Inter',
+                  ),
                 ),
-              ),
-              selected: isSelected,
-              onSelected: (selected) {
-                final newSelection = List<UnifiedTransactionStatus>.from(selectedStatuses);
-                if (selected) {
-                  newSelection.add(status);
-                } else {
-                  newSelection.remove(status);
-                }
-                onSelectionChanged(newSelection);
-              },
-              backgroundColor: Colors.white.withValues(alpha: 0.1),
-              selectedColor: status.color.withValues(alpha: 0.3),
-              checkmarkColor: Colors.white,
-              side: BorderSide(
-                color: isSelected ? status.color : Colors.white.withValues(alpha: 0.1),
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12.r),
-              ),
+                SizedBox(height: 4.h),
+                Container(
+                  height: 2.h,
+                  width: 24.w,
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? const Color(0xFF581CD9)
+                        : Colors.transparent,
+                    borderRadius: BorderRadius.circular(1.r),
+                  ),
+                ),
+              ],
             ),
           );
         },
@@ -140,7 +136,7 @@ class StatusFilterChips extends StatelessWidget {
   }
 }
 
-/// Search bar widget for transactions
+/// Revolut-style search bar — pill-shaped
 class TransactionSearchBar extends StatelessWidget {
   final TextEditingController controller;
   final Function(String) onChanged;
@@ -157,22 +153,20 @@ class TransactionSearchBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
+      padding: EdgeInsets.symmetric(horizontal: 16.w),
+      height: 44.h,
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
-        ),
+        color: const Color(0xFF1F1F1F),
+        borderRadius: BorderRadius.circular(22.r),
       ),
       child: Row(
         children: [
           Icon(
             Icons.search_rounded,
-            color: Colors.white.withValues(alpha: 0.6),
+            color: const Color(0xFF8E8E93),
             size: 20.sp,
           ),
-          SizedBox(width: 12.w),
+          SizedBox(width: 10.w),
           Expanded(
             child: TextField(
               controller: controller,
@@ -180,17 +174,19 @@ class TransactionSearchBar extends StatelessWidget {
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 14.sp,
-                fontWeight: FontWeight.w500,
+                fontWeight: FontWeight.w400,
+                fontFamily: 'Inter',
               ),
               decoration: InputDecoration(
-                hintText: 'Search transactions...',
+                hintText: 'Search',
                 hintStyle: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.5),
+                  color: const Color(0xFF8E8E93),
                   fontSize: 14.sp,
+                  fontFamily: 'Inter',
                 ),
                 border: InputBorder.none,
                 isDense: true,
-                contentPadding: EdgeInsets.symmetric(vertical: 12.h),
+                contentPadding: EdgeInsets.symmetric(vertical: 10.h),
               ),
             ),
           ),
@@ -199,121 +195,11 @@ class TransactionSearchBar extends StatelessWidget {
               onTap: onClear,
               child: Icon(
                 Icons.clear_rounded,
-                color: Colors.white.withValues(alpha: 0.6),
-                size: 20.sp,
+                color: const Color(0xFF8E8E93),
+                size: 18.sp,
               ),
             ),
         ],
-      ),
-    );
-  }
-}
-
-/// Date range picker button
-class DateRangeFilterButton extends StatelessWidget {
-  final DateTime? startDate;
-  final DateTime? endDate;
-  final VoidCallback onTap;
-
-  const DateRangeFilterButton({
-    super.key,
-    this.startDate,
-    this.endDate,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final hasFilter = startDate != null || endDate != null;
-
-    return Container(
-      margin: EdgeInsets.only(right: 8.w),
-      child: FilterChip(
-        label: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.calendar_today_rounded,
-              size: 14.sp,
-              color: hasFilter ? Colors.white : Colors.white.withValues(alpha: 0.7),
-            ),
-            SizedBox(width: 4.w),
-            Text(
-              _getDateLabel(),
-              style: TextStyle(
-                fontSize: 13.sp,
-                fontWeight: hasFilter ? FontWeight.w600 : FontWeight.w500,
-                color: hasFilter ? Colors.white : Colors.white.withValues(alpha: 0.7),
-              ),
-            ),
-          ],
-        ),
-        selected: hasFilter,
-        onSelected: (_) => onTap(),
-        backgroundColor: Colors.white.withValues(alpha: 0.1),
-        selectedColor: Colors.blue.withValues(alpha: 0.3),
-        checkmarkColor: Colors.white,
-        side: BorderSide(
-          color: hasFilter ? Colors.blue : Colors.white.withValues(alpha: 0.1),
-        ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12.r),
-        ),
-      ),
-    );
-  }
-
-  String _getDateLabel() {
-    if (startDate != null && endDate != null) {
-      return '${_formatDate(startDate!)} - ${_formatDate(endDate!)}';
-    } else if (startDate != null) {
-      return 'Since ${_formatDate(startDate!)}';
-    } else if (endDate != null) {
-      return 'Until ${_formatDate(endDate!)}';
-    }
-    return 'Date Range';
-  }
-
-  String _formatDate(DateTime date) {
-    return '${date.month}/${date.day}';
-  }
-}
-
-/// Clear filters button
-class ClearFiltersButton extends StatelessWidget {
-  final VoidCallback onClear;
-  final bool isActive;
-
-  const ClearFiltersButton({
-    super.key,
-    required this.onClear,
-    this.isActive = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    if (!isActive) return const SizedBox.shrink();
-
-    return TextButton.icon(
-      onPressed: onClear,
-      icon: Icon(
-        Icons.clear_all_rounded,
-        size: 16.sp,
-        color: Colors.white.withValues(alpha: 0.7),
-      ),
-      label: Text(
-        'Clear All',
-        style: TextStyle(
-          fontSize: 13.sp,
-          fontWeight: FontWeight.w500,
-          color: Colors.white.withValues(alpha: 0.7),
-        ),
-      ),
-      style: TextButton.styleFrom(
-        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12.r),
-        ),
       ),
     );
   }
