@@ -444,6 +444,7 @@ import 'package:lazervault/src/features/transaction_history/data/datasources/tra
 import 'package:lazervault/src/features/transaction_history/data/repository/transaction_history_repository_grpc.dart';
 import 'package:lazervault/src/features/transaction_history/domain/repository/transaction_history_repository.dart';
 import 'package:lazervault/src/features/transaction_history/presentation/cubit/transaction_history_cubit.dart';
+import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_transaction_history_cubit.dart';
 import 'package:lazervault/src/features/transaction_history/presentation/screens/dashboard_transaction_history_screen.dart';
 import 'package:lazervault/src/features/transaction_history/presentation/screens/service_transaction_history_screen.dart';
 // End Transaction History Imports
@@ -2046,6 +2047,10 @@ Future<void> init() async {
 
   // Blocs/Cubits
   serviceLocator.registerFactory(() => TransactionHistoryCubit(
+    repository: serviceLocator<TransactionHistoryRepository>(),
+  ));
+
+  serviceLocator.registerFactory(() => RecipientTransactionHistoryCubit(
     repository: serviceLocator<TransactionHistoryRepository>(),
   ));
 

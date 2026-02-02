@@ -420,6 +420,20 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
       metadata['balance_after'] = protoTx.balanceAfter;
     }
 
+    // Extract counterparty info from metadata
+    String? counterpartyName = metadata['recipient_name'] as String?
+        ?? metadata['counterparty_name'] as String?;
+    String? counterpartyAccount = metadata['recipient_account'] as String?
+        ?? metadata['counterparty_account'] as String?;
+
+    // Fallback: try to parse account number from description
+    if (counterpartyAccount == null && protoTx.description.isNotEmpty) {
+      final accountMatch = RegExp(r'\b(\d{10,})\b').firstMatch(protoTx.description);
+      if (accountMatch != null) {
+        counterpartyAccount = accountMatch.group(1);
+      }
+    }
+
     return UnifiedTransaction(
       id: protoTx.id,
       serviceType: serviceType,
@@ -432,6 +446,8 @@ class TransactionHistoryRepositoryGrpc implements TransactionHistoryRepository {
       flow: flow,
       transactionReference: protoTx.reference.isNotEmpty ? protoTx.reference : null,
       metadata: metadata.isNotEmpty ? metadata : null,
+      counterpartyName: counterpartyName,
+      counterpartyAccount: counterpartyAccount,
     );
   }
 
