@@ -57,7 +57,7 @@ class _TagCreationReceiptScreenState extends State<TagCreationReceiptScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          onPressed: () => Get.back(),
+          onPressed: () => Get.offAllNamed(AppRoutes.tagPay),
           icon: Icon(
             Icons.arrow_back,
             color: Colors.white,

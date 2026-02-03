@@ -29,6 +29,10 @@ class _IncomingTagsScreenState extends State<IncomingTagsScreen> {
     context.read<TagPayCubit>().getMyIncomingTags();
   }
 
+  Future<void> _refreshTags() async {
+    await context.read<TagPayCubit>().getMyIncomingTags();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -38,26 +42,35 @@ class _IncomingTagsScreenState extends State<IncomingTagsScreen> {
           children: [
             _buildHeader(),
             Expanded(
-              child: BlocBuilder<TagPayCubit, TagPayState>(
-                builder: (context, state) {
-                  if (state is TagPayLoading) {
-                    return Center(
-                      child: CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                            const Color(0xFF3B82F6)),
-                      ),
-                    );
-                  }
-
-                  if (state is MyIncomingTagsLoaded) {
-                    if (state.tags.isEmpty) {
-                      return _buildEmptyState();
+              child: RefreshIndicator(
+                onRefresh: _refreshTags,
+                color: const Color(0xFF3B82F6),
+                backgroundColor: const Color(0xFF1F1F1F),
+                child: BlocBuilder<TagPayCubit, TagPayState>(
+                  builder: (context, state) {
+                    if (state is TagPayLoading) {
+                      return Center(
+                        child: CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                              const Color(0xFF3B82F6)),
+                        ),
+                      );
                     }
-                    return _buildTagsList(state.tags);
-                  }
 
-                  return const SizedBox.shrink();
-                },
+                    if (state is MyIncomingTagsLoaded) {
+                      if (state.tags.isEmpty) {
+                        return _buildEmptyState();
+                      }
+                      return _buildTagsList(state.tags);
+                    }
+
+                    // Show empty scrollable to allow pull-to-refresh even on error
+                    return ListView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      children: const [],
+                    );
+                  },
+                ),
               ),
             ),
           ],
@@ -118,42 +131,49 @@ class _IncomingTagsScreenState extends State<IncomingTagsScreen> {
   }
 
   Widget _buildEmptyState() {
-    return Container(
-      padding: EdgeInsets.all(32.w),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.inbox_outlined,
-            size: 80.sp,
-            color: const Color(0xFF6B7280),
+    return ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      children: [
+        Container(
+          padding: EdgeInsets.all(32.w),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(height: 80.h),
+              Icon(
+                Icons.inbox_outlined,
+                size: 80.sp,
+                color: const Color(0xFF6B7280),
+              ),
+              SizedBox(height: 24.h),
+              Text(
+                'No Incoming Tags',
+                style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontSize: 20.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              SizedBox(height: 12.h),
+              Text(
+                'You haven\'t received any payment tags yet.\nWhen someone creates a tag for you, it will appear here.',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(
+                  color: const Color(0xFF9CA3AF),
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+            ],
           ),
-          SizedBox(height: 24.h),
-          Text(
-            'No Incoming Tags',
-            style: GoogleFonts.inter(
-              color: Colors.white,
-              fontSize: 20.sp,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          SizedBox(height: 12.h),
-          Text(
-            'You haven\'t received any payment tags yet.\nWhen someone creates a tag for you, it will appear here.',
-            textAlign: TextAlign.center,
-            style: GoogleFonts.inter(
-              color: const Color(0xFF9CA3AF),
-              fontSize: 14.sp,
-              fontWeight: FontWeight.w400,
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
   Widget _buildTagsList(List<UserTagEntity> tags) {
     return ListView.builder(
+      physics: const AlwaysScrollableScrollPhysics(),
       padding: EdgeInsets.all(20.w),
       itemCount: tags.length,
       itemBuilder: (context, index) {

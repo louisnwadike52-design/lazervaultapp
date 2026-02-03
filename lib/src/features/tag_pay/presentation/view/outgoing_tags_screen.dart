@@ -27,6 +27,10 @@ class _OutgoingTagsScreenState extends State<OutgoingTagsScreen> {
     context.read<TagPayCubit>().getMyOutgoingTags();
   }
 
+  Future<void> _refreshTags() async {
+    await context.read<TagPayCubit>().getMyOutgoingTags();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -36,46 +40,55 @@ class _OutgoingTagsScreenState extends State<OutgoingTagsScreen> {
           children: [
             _buildHeader(),
             Expanded(
-              child: BlocConsumer<TagPayCubit, TagPayState>(
-                listener: (context, state) {
-                  if (state is TagPaidSuccess) {
-                    Get.snackbar(
-                      'Success!',
-                      state.message,
-                      backgroundColor: const Color(0xFF10B981),
-                      colorText: Colors.white,
-                      snackPosition: SnackPosition.TOP,
-                    );
-                    _loadTags();
-                  } else if (state is TagPayError) {
-                    Get.snackbar(
-                      'Error',
-                      state.message,
-                      backgroundColor: const Color(0xFFEF4444),
-                      colorText: Colors.white,
-                      snackPosition: SnackPosition.TOP,
-                    );
-                  }
-                },
-                builder: (context, state) {
-                  if (state is TagPayLoading) {
-                    return Center(
-                      child: CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                            const Color(0xFF3B82F6)),
-                      ),
-                    );
-                  }
-
-                  if (state is MyOutgoingTagsLoaded) {
-                    if (state.tags.isEmpty) {
-                      return _buildEmptyState();
+              child: RefreshIndicator(
+                onRefresh: _refreshTags,
+                color: const Color(0xFF3B82F6),
+                backgroundColor: const Color(0xFF1F1F1F),
+                child: BlocConsumer<TagPayCubit, TagPayState>(
+                  listener: (context, state) {
+                    if (state is TagPaidSuccess) {
+                      Get.snackbar(
+                        'Success!',
+                        state.message,
+                        backgroundColor: const Color(0xFF10B981),
+                        colorText: Colors.white,
+                        snackPosition: SnackPosition.TOP,
+                      );
+                      _loadTags();
+                    } else if (state is TagPayError) {
+                      Get.snackbar(
+                        'Error',
+                        state.message,
+                        backgroundColor: const Color(0xFFEF4444),
+                        colorText: Colors.white,
+                        snackPosition: SnackPosition.TOP,
+                      );
                     }
-                    return _buildTagsList(state.tags);
-                  }
+                  },
+                  builder: (context, state) {
+                    if (state is TagPayLoading) {
+                      return Center(
+                        child: CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                              const Color(0xFF3B82F6)),
+                        ),
+                      );
+                    }
 
-                  return const SizedBox.shrink();
-                },
+                    if (state is MyOutgoingTagsLoaded) {
+                      if (state.tags.isEmpty) {
+                        return _buildEmptyState();
+                      }
+                      return _buildTagsList(state.tags);
+                    }
+
+                    // Show empty scrollable to allow pull-to-refresh even on error
+                    return ListView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      children: const [],
+                    );
+                  },
+                ),
               ),
             ),
           ],
@@ -136,61 +149,68 @@ class _OutgoingTagsScreenState extends State<OutgoingTagsScreen> {
   }
 
   Widget _buildEmptyState() {
-    return Container(
-      padding: EdgeInsets.all(32.w),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.label_outline,
-            size: 80.sp,
-            color: const Color(0xFF6B7280),
-          ),
-          SizedBox(height: 24.h),
-          Text(
-            'No Outgoing Tags',
-            style: GoogleFonts.inter(
-              color: Colors.white,
-              fontSize: 20.sp,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          SizedBox(height: 12.h),
-          Text(
-            'You haven\'t created any payment tags yet.\nCreate a tag to track payments you need to make.',
-            textAlign: TextAlign.center,
-            style: GoogleFonts.inter(
-              color: const Color(0xFF9CA3AF),
-              fontSize: 14.sp,
-              fontWeight: FontWeight.w400,
-            ),
-          ),
-          SizedBox(height: 32.h),
-          ElevatedButton.icon(
-            onPressed: () => Get.toNamed(AppRoutes.createTag),
-            icon: Icon(Icons.add, size: 20.sp),
-            label: Text(
-              'Create Tag',
-              style: GoogleFonts.inter(
-                fontSize: 16.sp,
-                fontWeight: FontWeight.w600,
+    return ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      children: [
+        Container(
+          padding: EdgeInsets.all(32.w),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(height: 80.h),
+              Icon(
+                Icons.label_outline,
+                size: 80.sp,
+                color: const Color(0xFF6B7280),
               ),
-            ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF3B82F6),
-              padding: EdgeInsets.symmetric(horizontal: 32.w, vertical: 16.h),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12.r),
+              SizedBox(height: 24.h),
+              Text(
+                'No Outgoing Tags',
+                style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontSize: 20.sp,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
-            ),
+              SizedBox(height: 12.h),
+              Text(
+                'You haven\'t created any payment tags yet.\nCreate a tag to track payments you need to make.',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(
+                  color: const Color(0xFF9CA3AF),
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+              SizedBox(height: 32.h),
+              ElevatedButton.icon(
+                onPressed: () => Get.toNamed(AppRoutes.createTag),
+                icon: Icon(Icons.add, size: 20.sp),
+                label: Text(
+                  'Create Tag',
+                  style: GoogleFonts.inter(
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF3B82F6),
+                  padding: EdgeInsets.symmetric(horizontal: 32.w, vertical: 16.h),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
   Widget _buildTagsList(List<UserTagEntity> tags) {
     return ListView.builder(
+      physics: const AlwaysScrollableScrollPhysics(),
       padding: EdgeInsets.all(20.w),
       itemCount: tags.length,
       itemBuilder: (context, index) {
