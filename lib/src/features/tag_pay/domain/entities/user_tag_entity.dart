@@ -1,5 +1,19 @@
 import 'package:equatable/equatable.dart';
 
+class TagsPageResult {
+  final List<UserTagEntity> tags;
+  final int total;
+  final int page;
+  final int totalPages;
+
+  const TagsPageResult({
+    required this.tags,
+    required this.total,
+    required this.page,
+    required this.totalPages,
+  });
+}
+
 enum TagStatus {
   pending,
   paid,
@@ -37,7 +51,28 @@ class UserTagEntity extends Equatable {
     this.paidAt,
   });
 
-  String get formattedAmount => '$currency ${amount.toStringAsFixed(2)}';
+  String get formattedAmount => '${currencySymbol(currency)}${amount.toStringAsFixed(2)}';
+
+  static String currencySymbol(String code) {
+    switch (code) {
+      case 'NGN':
+        return '\u20A6';
+      case 'GBP':
+        return '\u00A3';
+      case 'EUR':
+        return '\u20AC';
+      case 'USD':
+        return '\$';
+      case 'ZAR':
+        return 'R';
+      default:
+        return '$code ';
+    }
+  }
+
+  bool get isPending => status == TagStatus.pending;
+  bool get isPaid => status == TagStatus.paid;
+  bool get isCancelled => status == TagStatus.cancelled;
 
   @override
   List<Object?> get props => [

@@ -438,25 +438,44 @@ class TagPayRepositoryGrpcImpl implements TagPayRepository {
     );
   }
 
-  @override
-  Future<List<UserTagEntity>> getMyTags({
-    int page = 1,
-    int limit = 20,
-  }) async {
-    // Backward compatibility - returns outgoing tags
-    return getMyOutgoingTags(page: page, limit: limit);
+  pb.TagStatus? _mapStatusFilter(String? status) {
+    switch (status) {
+      case 'paid':
+        return pb.TagStatus.TAG_STATUS_PAID;
+      case 'cancelled':
+        return pb.TagStatus.TAG_STATUS_CANCELLED;
+      default:
+        // null, 'all', 'pending' → don't set (default = all from backend)
+        return null;
+    }
   }
 
   @override
-  Future<List<UserTagEntity>> getMyOutgoingTags({
+  Future<TagsPageResult> getMyTags({
     int page = 1,
     int limit = 20,
+    String? status,
+  }) async {
+    // Backward compatibility - returns outgoing tags
+    return getMyOutgoingTags(page: page, limit: limit, status: status);
+  }
+
+  @override
+  Future<TagsPageResult> getMyOutgoingTags({
+    int page = 1,
+    int limit = 20,
+    String? status,
   }) async {
     return retryWithBackoff(
       operation: () async {
         final request = pb.GetMyTagsRequest()
           ..page = page
           ..limit = limit;
+
+        final protoStatus = _mapStatusFilter(status);
+        if (protoStatus != null) {
+          request.status = protoStatus;
+        }
 
         try {
           final options = await grpcClient.callOptions;
@@ -466,7 +485,12 @@ class TagPayRepositoryGrpcImpl implements TagPayRepository {
           );
 
           print('[TagPayRepository] Retrieved ${response.tags.length} outgoing tags');
-          return response.tags.map((tag) => _userTagFromProto(tag)).toList();
+          return TagsPageResult(
+            tags: response.tags.map((tag) => _userTagFromProto(tag)).toList(),
+            total: response.total,
+            page: response.page,
+            totalPages: response.totalPages,
+          );
         } on GrpcError catch (e) {
           if (e.code == StatusCode.unauthenticated) {
             print('[TagPayRepository] Token expired in getMyOutgoingTags - triggering refresh');
@@ -484,15 +508,21 @@ class TagPayRepositoryGrpcImpl implements TagPayRepository {
   }
 
   @override
-  Future<List<UserTagEntity>> getMyIncomingTags({
+  Future<TagsPageResult> getMyIncomingTags({
     int page = 1,
     int limit = 20,
+    String? status,
   }) async {
     return retryWithBackoff(
       operation: () async {
         final request = pb.GetMyTagsRequest()
           ..page = page
           ..limit = limit;
+
+        final protoStatus = _mapStatusFilter(status);
+        if (protoStatus != null) {
+          request.status = protoStatus;
+        }
 
         try {
           final options = await grpcClient.callOptions;
@@ -502,7 +532,12 @@ class TagPayRepositoryGrpcImpl implements TagPayRepository {
           );
 
           print('[TagPayRepository] Retrieved ${response.tags.length} incoming tags');
-          return response.tags.map((tag) => _userTagFromProto(tag)).toList();
+          return TagsPageResult(
+            tags: response.tags.map((tag) => _userTagFromProto(tag)).toList(),
+            total: response.total,
+            page: response.page,
+            totalPages: response.totalPages,
+          );
         } on GrpcError catch (e) {
           if (e.code == StatusCode.unauthenticated) {
             print('[TagPayRepository] Token expired in getMyIncomingTags - triggering refresh');
@@ -523,6 +558,7 @@ class TagPayRepositoryGrpcImpl implements TagPayRepository {
   Future<TagPayTransactionEntity> payTag({
     required String tagId,
     required String sourceAccountId,
+    String transactionPin = '',
   }) async {
     return retryWithBackoff(
       operation: () async {
@@ -530,7 +566,7 @@ class TagPayRepositoryGrpcImpl implements TagPayRepository {
         final request = pb.PayTagRequest()
           ..tagId = tagId
           ..sourceAccountId = sourceAccountId
-          ..transactionPin = ''; // No PIN required for quick pay
+          ..transactionPin = transactionPin;
 
         final options = await grpcClient.callOptions;
         final response = await grpcClient.tagPayClient.payTag(
@@ -588,6 +624,39 @@ class TagPayRepositoryGrpcImpl implements TagPayRepository {
                   profilePicture: user.profilePicture,
                 ))
             .toList();
+      },
+    );
+  }
+
+  @override
+  Future<List<UserTagEntity>> batchCreateTags({
+    required List<String> taggedUserTagPays,
+    required double amount,
+    required String currency,
+    String? description,
+  }) async {
+    return retryWithBackoff(
+      operation: () async {
+        final request = pb.BatchCreateTagsRequest()
+          ..taggedUserTagPays.addAll(taggedUserTagPays)
+          ..amount = amount
+          ..currency = currency;
+
+        if (description != null) {
+          request.description = description;
+        }
+
+        final options = await grpcClient.callOptions;
+        final response = await grpcClient.tagPayClient.batchCreateTags(
+          request,
+          options: options,
+        );
+
+        if (!response.success) {
+          throw Exception(response.message);
+        }
+
+        return response.tags.map((tag) => _userTagFromProto(tag)).toList();
       },
     );
   }

@@ -3,18 +3,88 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../domain/entities/tag_pay_entity.dart';
-import '../../domain/entities/user_tag_entity.dart';
+import '../../domain/entities/user_tag_entity.dart' show UserTagEntity;
 import '../../../../../core/types/app_routes.dart';
-import 'package:share_plus/share_plus.dart';
+import '../../services/tag_pay_pdf_service.dart';
 
-class TagPaymentReceiptScreen extends StatelessWidget {
+class TagPaymentReceiptScreen extends StatefulWidget {
   const TagPaymentReceiptScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  State<TagPaymentReceiptScreen> createState() =>
+      _TagPaymentReceiptScreenState();
+}
+
+class _TagPaymentReceiptScreenState extends State<TagPaymentReceiptScreen> {
+  late final TagPayTransactionEntity transaction;
+  late final UserTagEntity tag;
+  bool _isDownloading = false;
+  bool _isSharing = false;
+
+  @override
+  void initState() {
+    super.initState();
     final args = Get.arguments as Map<String, dynamic>;
-    final TagPayTransactionEntity transaction = args['transaction'];
-    final UserTagEntity tag = args['tag'];
+    transaction = args['transaction'];
+    tag = args['tag'];
+  }
+
+  Future<void> _downloadReceipt() async {
+    if (_isDownloading) return;
+    setState(() => _isDownloading = true);
+
+    try {
+      final path = await TagPayPdfService.downloadReceipt(
+        transaction: transaction,
+        tag: tag,
+      );
+      Get.snackbar(
+        'Download Complete',
+        'Receipt saved to: ${path.split('/').last}',
+        backgroundColor: const Color(0xFF10B981),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
+        margin: EdgeInsets.all(16.w),
+      );
+    } catch (e) {
+      Get.snackbar(
+        'Download Failed',
+        'Could not download receipt. Please try again.',
+        backgroundColor: const Color(0xFFEF4444),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
+        margin: EdgeInsets.all(16.w),
+      );
+    } finally {
+      setState(() => _isDownloading = false);
+    }
+  }
+
+  Future<void> _shareReceipt() async {
+    if (_isSharing) return;
+    setState(() => _isSharing = true);
+
+    try {
+      await TagPayPdfService.shareReceipt(
+        transaction: transaction,
+        tag: tag,
+      );
+    } catch (e) {
+      Get.snackbar(
+        'Share Failed',
+        'Could not share receipt. Please try again.',
+        backgroundColor: const Color(0xFFEF4444),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
+        margin: EdgeInsets.all(16.w),
+      );
+    } finally {
+      setState(() => _isSharing = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
 
     return Scaffold(
       backgroundColor: const Color(0xFF0A0A0A),
@@ -105,7 +175,7 @@ class TagPaymentReceiptScreen extends StatelessWidget {
           ),
           SizedBox(height: 8.h),
           Text(
-            '${transaction.currency} ${transaction.amount.toStringAsFixed(2)}',
+            '${UserTagEntity.currencySymbol(transaction.currency)}${transaction.amount.toStringAsFixed(2)}',
             style: GoogleFonts.inter(
               color: Colors.white,
               fontSize: 40.sp,
@@ -119,6 +189,14 @@ class TagPaymentReceiptScreen extends StatelessWidget {
 
   Widget _buildTransactionDetails(
       TagPayTransactionEntity transaction, UserTagEntity tag) {
+    // Use fallbacks if transaction receiver info is empty
+    final recipientName = transaction.receiverName.isNotEmpty
+        ? transaction.receiverName
+        : (tag.taggerName.isNotEmpty ? tag.taggerName : 'LazerVault User');
+    final recipientTag = transaction.receiverTagPay.isNotEmpty
+        ? transaction.receiverTagPay
+        : tag.taggerTagPay;
+
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
@@ -144,10 +222,12 @@ class TagPaymentReceiptScreen extends StatelessWidget {
             ),
           ),
           SizedBox(height: 16.h),
-          _buildDetailRow('Recipient', transaction.receiverName),
+          _buildDetailRow('Recipient', recipientName),
           SizedBox(height: 12.h),
-          _buildDetailRow('Tag', '@${transaction.receiverTagPay}'),
-          SizedBox(height: 12.h),
+          if (recipientTag.isNotEmpty) ...[
+            _buildDetailRow('Tag', '@$recipientTag'),
+            SizedBox(height: 12.h),
+          ],
           _buildDetailRow('Reference', transaction.referenceNumber),
           if (transaction.description != null &&
               transaction.description!.isNotEmpty) ...[
@@ -227,13 +307,19 @@ class TagPaymentReceiptScreen extends StatelessWidget {
             children: [
               Expanded(
                 child: OutlinedButton.icon(
-                  onPressed: () {
-                    // Share receipt
-                    SharePlus.instance.share(ShareParams(text: 'Payment Receipt\nAmount: ...'));
-                  },
-                  icon: Icon(Icons.share, size: 18.sp),
+                  onPressed: _isSharing ? null : _shareReceipt,
+                  icon: _isSharing
+                      ? SizedBox(
+                          width: 18.sp,
+                          height: 18.sp,
+                          child: const CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : Icon(Icons.share, size: 18.sp),
                   label: Text(
-                    'Share',
+                    _isSharing ? 'Sharing...' : 'Share',
                     style: GoogleFonts.inter(
                       fontSize: 14.sp,
                       fontWeight: FontWeight.w600,
@@ -252,18 +338,19 @@ class TagPaymentReceiptScreen extends StatelessWidget {
               SizedBox(width: 12.w),
               Expanded(
                 child: OutlinedButton.icon(
-                  onPressed: () {
-                    // Download receipt
-                    Get.snackbar(
-                      'Download',
-                      'Receipt downloaded successfully',
-                      backgroundColor: const Color(0xFF10B981),
-                      colorText: Colors.white,
-                    );
-                  },
-                  icon: Icon(Icons.download, size: 18.sp),
+                  onPressed: _isDownloading ? null : _downloadReceipt,
+                  icon: _isDownloading
+                      ? SizedBox(
+                          width: 18.sp,
+                          height: 18.sp,
+                          child: const CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : Icon(Icons.download, size: 18.sp),
                   label: Text(
-                    'Download',
+                    _isDownloading ? 'Saving...' : 'Download',
                     style: GoogleFonts.inter(
                       fontSize: 14.sp,
                       fontWeight: FontWeight.w600,
@@ -284,20 +371,22 @@ class TagPaymentReceiptScreen extends StatelessWidget {
           SizedBox(height: 12.h),
           SizedBox(
             width: double.infinity,
-            child: ElevatedButton(
+            child: OutlinedButton.icon(
               onPressed: () {
-                Get.offAllNamed(AppRoutes.dashboard);
+                // Go back to the tag pay home screen
+                Get.until((route) => route.settings.name == AppRoutes.tagPay || route.isFirst);
               },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF3B82F6),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.white,
+                side: const BorderSide(color: Color(0xFF3B82F6)),
                 padding: EdgeInsets.symmetric(vertical: 16.h),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12.r),
                 ),
-                elevation: 0,
               ),
-              child: Text(
-                'Done',
+              icon: Icon(Icons.arrow_back, size: 20.sp),
+              label: Text(
+                'Back',
                 style: GoogleFonts.inter(
                   color: Colors.white,
                   fontSize: 16.sp,

@@ -40,11 +40,13 @@ class _TagPayProcessingScreenState extends State<TagPayProcessingScreen>
         final args = Get.arguments as Map<String, dynamic>;
         final String tagId = args['tag'].id;
         final String accountId = args['accountId'];
+        final String? transactionPin = args['transactionPin'];
 
         print('🚀 [ProcessingScreen] Triggering payment in initState - tagId: $tagId, accountId: $accountId');
         context.read<TagPayCubit>().payTag(
           tagId: tagId,
           sourceAccountId: accountId,
+          transactionPin: transactionPin,
         );
       }
     });
@@ -239,7 +241,7 @@ class _TagPayProcessingScreenState extends State<TagPayProcessingScreen>
           ),
           SizedBox(height: 16.h),
           Text(
-            'Sending ${tag.currency} ${tag.amount.toStringAsFixed(2)} to @${tag.taggerTagPay}',
+            'Sending ${tag.currency} ${tag.amount.toStringAsFixed(2)} to ${tag.taggerTagPay.isNotEmpty ? '@${tag.taggerTagPay}' : tag.taggerName.isNotEmpty ? tag.taggerName : 'recipient'}',
             style: GoogleFonts.inter(
               color: Colors.grey[400],
               fontSize: 16.sp,
@@ -414,9 +416,10 @@ class _TagPayProcessingScreenState extends State<TagPayProcessingScreen>
           SizedBox(height: 12.h),
           Divider(color: Colors.white.withValues(alpha: 0.1)),
           SizedBox(height: 12.h),
-          _buildDetailRow('To', tag.taggerName),
+          _buildDetailRow('To', tag.taggerName.isNotEmpty ? tag.taggerName : 'Unknown'),
           SizedBox(height: 12.h),
-          _buildDetailRow('Tag', '@${tag.taggerTagPay}'),
+          if (tag.taggerTagPay.isNotEmpty)
+            _buildDetailRow('Tag', '@${tag.taggerTagPay}'),
         ],
       ),
     );

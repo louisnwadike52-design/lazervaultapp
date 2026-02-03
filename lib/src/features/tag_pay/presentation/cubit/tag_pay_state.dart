@@ -112,6 +112,21 @@ class TagCreatedSuccess extends TagPayState {
   List<Object?> get props => [tag, message];
 }
 
+class BatchTagsCreatedSuccess extends TagPayState {
+  final List<UserTagEntity> tags;
+  final List<String> failedUsers;
+  final String message;
+
+  const BatchTagsCreatedSuccess({
+    required this.tags,
+    this.failedUsers = const [],
+    required this.message,
+  });
+
+  @override
+  List<Object?> get props => [tags, failedUsers, message];
+}
+
 class MyTagsLoaded extends TagPayState {
   final List<UserTagEntity> tags;
 
@@ -123,20 +138,106 @@ class MyTagsLoaded extends TagPayState {
 
 class MyOutgoingTagsLoaded extends TagPayState {
   final List<UserTagEntity> tags;
+  final int total;
+  final int page;
+  final int totalPages;
 
-  const MyOutgoingTagsLoaded(this.tags);
+  const MyOutgoingTagsLoaded(
+    this.tags, {
+    this.total = 0,
+    this.page = 1,
+    this.totalPages = 1,
+  });
 
   @override
-  List<Object?> get props => [tags];
+  List<Object?> get props => [tags, total, page, totalPages];
 }
 
 class MyIncomingTagsLoaded extends TagPayState {
   final List<UserTagEntity> tags;
+  final int total;
+  final int page;
+  final int totalPages;
 
-  const MyIncomingTagsLoaded(this.tags);
+  const MyIncomingTagsLoaded(
+    this.tags, {
+    this.total = 0,
+    this.page = 1,
+    this.totalPages = 1,
+  });
 
   @override
-  List<Object?> get props => [tags];
+  List<Object?> get props => [tags, total, page, totalPages];
+}
+
+class TagPayHomeLoaded extends TagPayState {
+  final TagPayEntity? tagPay;
+  final List<UserTagEntity> incomingTags;
+  final List<UserTagEntity> outgoingTags;
+  final int incomingTotal;
+  final int incomingPage;
+  final int incomingTotalPages;
+  final int outgoingTotal;
+  final int outgoingPage;
+  final int outgoingTotalPages;
+
+  const TagPayHomeLoaded({
+    this.tagPay,
+    this.incomingTags = const [],
+    this.outgoingTags = const [],
+    this.incomingTotal = 0,
+    this.incomingPage = 1,
+    this.incomingTotalPages = 1,
+    this.outgoingTotal = 0,
+    this.outgoingPage = 1,
+    this.outgoingTotalPages = 1,
+  });
+
+  int get incomingPendingCount =>
+      incomingTags.where((t) => t.status == TagStatus.pending).length;
+  int get incomingPaidCount =>
+      incomingTags.where((t) => t.status == TagStatus.paid).length;
+  int get outgoingPendingCount =>
+      outgoingTags.where((t) => t.status == TagStatus.pending).length;
+  int get outgoingPaidCount =>
+      outgoingTags.where((t) => t.status == TagStatus.paid).length;
+
+  TagPayHomeLoaded copyWith({
+    TagPayEntity? tagPay,
+    List<UserTagEntity>? incomingTags,
+    List<UserTagEntity>? outgoingTags,
+    int? incomingTotal,
+    int? incomingPage,
+    int? incomingTotalPages,
+    int? outgoingTotal,
+    int? outgoingPage,
+    int? outgoingTotalPages,
+  }) {
+    return TagPayHomeLoaded(
+      tagPay: tagPay ?? this.tagPay,
+      incomingTags: incomingTags ?? this.incomingTags,
+      outgoingTags: outgoingTags ?? this.outgoingTags,
+      incomingTotal: incomingTotal ?? this.incomingTotal,
+      incomingPage: incomingPage ?? this.incomingPage,
+      incomingTotalPages: incomingTotalPages ?? this.incomingTotalPages,
+      outgoingTotal: outgoingTotal ?? this.outgoingTotal,
+      outgoingPage: outgoingPage ?? this.outgoingPage,
+      outgoingTotalPages: outgoingTotalPages ?? this.outgoingTotalPages,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        tagPay,
+        incomingTags,
+        outgoingTags,
+        incomingTotal,
+        incomingPage,
+        incomingTotalPages,
+        outgoingTotal,
+        outgoingPage,
+        outgoingTotalPages,
+      ];
 }
 
 class TagPaidSuccess extends TagPayState {

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../domain/entities/user_tag_entity.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -9,6 +11,8 @@ import '../../../account_cards_summary/cubit/account_cards_summary_state.dart';
 import '../cubit/tag_pay_cubit.dart';
 import '../cubit/tag_pay_state.dart';
 import '../../../../../core/types/app_routes.dart';
+import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
+import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 
 class TagPaymentConfirmationScreen extends StatefulWidget {
   final UserTagEntity tag;
@@ -24,24 +28,27 @@ class TagPaymentConfirmationScreen extends StatefulWidget {
 }
 
 class _TagPaymentConfirmationScreenState
-    extends State<TagPaymentConfirmationScreen> {
-  final _pinController = TextEditingController();
+    extends State<TagPaymentConfirmationScreen> with TransactionPinMixin {
+  @override
+  ITransactionPinService get transactionPinService =>
+      GetIt.I<ITransactionPinService>();
+
   String? _selectedAccountId;
   bool _isProcessing = false;
 
   @override
   void initState() {
     super.initState();
-    // Accounts are already loaded from dashboard - no need to fetch again
+    // Ensure accounts are loaded (may not be if navigated directly)
+    final accountState = context.read<AccountCardsSummaryCubit>().state;
+    if (accountState is! AccountCardsSummaryLoaded) {
+      context.read<AccountCardsSummaryCubit>().fetchAccountSummaries(
+        userId: 'current_user',
+      );
+    }
   }
 
-  @override
-  void dispose() {
-    _pinController.dispose();
-    super.dispose();
-  }
-
-  void _processPayment() {
+  void _processPayment() async {
     if (_selectedAccountId == null) {
       Get.snackbar(
         'No Account Selected',
@@ -53,24 +60,32 @@ class _TagPaymentConfirmationScreenState
       return;
     }
 
-    if (_pinController.text.length != 4) {
-      Get.snackbar(
-        'Invalid PIN',
-        'Please enter your 4-digit transaction PIN',
-        backgroundColor: const Color(0xFFEF4444),
-        colorText: Colors.white,
-        snackPosition: SnackPosition.TOP,
-      );
-      return;
-    }
+    HapticFeedback.mediumImpact();
+
+    final idPrefix = widget.tag.id.length >= 8
+        ? widget.tag.id.substring(0, 8)
+        : widget.tag.id;
+    final transactionId = 'TAG-PAY-$idPrefix';
+
+    final pinResult = await validatePinOnly(
+      context: context,
+      transactionId: transactionId,
+      transactionType: 'tag_payment',
+      amount: widget.tag.amount,
+      currency: widget.tag.currency,
+    );
+
+    if (pinResult == null || !pinResult.success) return;
 
     setState(() {
       _isProcessing = true;
     });
 
+    if (!mounted) return;
     context.read<TagPayCubit>().payTag(
           tagId: widget.tag.id,
           sourceAccountId: _selectedAccountId!,
+          transactionPin: pinResult.verificationToken ?? '',
         );
   }
 
@@ -116,8 +131,6 @@ class _TagPaymentConfirmationScreenState
                 _buildPaymentDetails(),
                 SizedBox(height: 24.h),
                 _buildAccountSelector(),
-                SizedBox(height: 24.h),
-                _buildPinInput(),
                 SizedBox(height: 32.h),
                 _buildPayButton(),
               ],
@@ -226,9 +239,10 @@ class _TagPaymentConfirmationScreenState
           SizedBox(height: 24.h),
           Divider(color: const Color(0xFF2D2D2D), thickness: 1),
           SizedBox(height: 24.h),
-          _buildDetailRow('To', widget.tag.taggerName),
+          _buildDetailRow('To', widget.tag.taggerName.isNotEmpty ? widget.tag.taggerName : 'Unknown'),
           SizedBox(height: 16.h),
-          _buildDetailRow('Tag', '@${widget.tag.taggerTagPay}'),
+          if (widget.tag.taggerTagPay.isNotEmpty)
+            _buildDetailRow('Tag', '@${widget.tag.taggerTagPay}'),
           if (widget.tag.description.isNotEmpty) ...[
             SizedBox(height: 16.h),
             _buildDetailRow('Description', widget.tag.description),
@@ -376,51 +390,6 @@ class _TagPaymentConfirmationScreenState
 
         return const SizedBox.shrink();
       },
-    );
-  }
-
-  Widget _buildPinInput() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Transaction PIN',
-          style: GoogleFonts.inter(
-            color: Colors.white,
-            fontSize: 16.sp,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        SizedBox(height: 12.h),
-        Container(
-          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
-          decoration: BoxDecoration(
-            color: const Color(0xFF1F1F1F),
-            borderRadius: BorderRadius.circular(12.r),
-          ),
-          child: TextField(
-            controller: _pinController,
-            keyboardType: TextInputType.number,
-            obscureText: true,
-            maxLength: 4,
-            style: GoogleFonts.inter(
-              color: Colors.white,
-              fontSize: 18.sp,
-              letterSpacing: 8,
-            ),
-            decoration: InputDecoration(
-              hintText: '••••',
-              hintStyle: GoogleFonts.inter(
-                color: const Color(0xFF9CA3AF),
-                fontSize: 18.sp,
-                letterSpacing: 8,
-              ),
-              border: InputBorder.none,
-              counterText: '',
-            ),
-          ),
-        ),
-      ],
     );
   }
 

@@ -75,32 +75,44 @@ abstract class TagPayRepository {
   });
 
   /// Get all my tags (backward compatibility - returns outgoing tags)
-  Future<List<UserTagEntity>> getMyTags({
+  Future<TagsPageResult> getMyTags({
     int page = 1,
     int limit = 20,
+    String? status,
   });
 
   /// Get tags I created (I owe them money)
-  Future<List<UserTagEntity>> getMyOutgoingTags({
+  Future<TagsPageResult> getMyOutgoingTags({
     int page = 1,
     int limit = 20,
+    String? status,
   });
 
   /// Get tags others created for me (they owe me money)
-  Future<List<UserTagEntity>> getMyIncomingTags({
+  Future<TagsPageResult> getMyIncomingTags({
     int page = 1,
     int limit = 20,
+    String? status,
   });
 
-  /// Pay a specific tag (no PIN required for quick pay)
+  /// Pay a specific tag
   Future<TagPayTransactionEntity> payTag({
     required String tagId,
     required String sourceAccountId,
+    String transactionPin = '',
   });
 
   /// Search users by username or name for tagging
   Future<List<UserSearchResultEntity>> searchUsers({
     required String query,
     int limit = 10,
+  });
+
+  /// Batch create tags for multiple users
+  Future<List<UserTagEntity>> batchCreateTags({
+    required List<String> taggedUserTagPays,
+    required double amount,
+    required String currency,
+    String? description,
   });
 }
