@@ -88,6 +88,27 @@ class _TagPaymentReceiptScreenState extends State<TagPaymentReceiptScreen> {
 
     return Scaffold(
       backgroundColor: const Color(0xFF0A0A0A),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          onPressed: () => Get.offAllNamed(AppRoutes.tagPay),
+          icon: Icon(
+            Icons.arrow_back,
+            color: Colors.white,
+            size: 24.sp,
+          ),
+        ),
+        title: Text(
+          'Payment Receipt',
+          style: GoogleFonts.inter(
+            color: Colors.white,
+            fontSize: 18.sp,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        centerTitle: true,
+      ),
       body: SafeArea(
         child: Column(
           children: [
@@ -97,7 +118,7 @@ class _TagPaymentReceiptScreenState extends State<TagPaymentReceiptScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    SizedBox(height: 20.h),
+                    SizedBox(height: 8.h),
                     _buildSuccessIcon(),
                     SizedBox(height: 24.h),
                     Text(
@@ -300,97 +321,65 @@ class _TagPaymentReceiptScreenState extends State<TagPaymentReceiptScreen> {
           topRight: Radius.circular(20.r),
         ),
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
+      child: Row(
         children: [
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: _isSharing ? null : _shareReceipt,
-                  icon: _isSharing
-                      ? SizedBox(
-                          width: 18.sp,
-                          height: 18.sp,
-                          child: const CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
-                      : Icon(Icons.share, size: 18.sp),
-                  label: Text(
-                    _isSharing ? 'Sharing...' : 'Share',
-                    style: GoogleFonts.inter(
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.white,
-                    side: const BorderSide(color: Color(0xFF3B82F6)),
-                    padding: EdgeInsets.symmetric(vertical: 14.h),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12.r),
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(width: 12.w),
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: _isDownloading ? null : _downloadReceipt,
-                  icon: _isDownloading
-                      ? SizedBox(
-                          width: 18.sp,
-                          height: 18.sp,
-                          child: const CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
-                      : Icon(Icons.download, size: 18.sp),
-                  label: Text(
-                    _isDownloading ? 'Saving...' : 'Download',
-                    style: GoogleFonts.inter(
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.white,
-                    side: const BorderSide(color: Color(0xFF3B82F6)),
-                    padding: EdgeInsets.symmetric(vertical: 14.h),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12.r),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 12.h),
-          SizedBox(
-            width: double.infinity,
+          Expanded(
             child: OutlinedButton.icon(
-              onPressed: () {
-                // Go back to the tag pay home screen
-                Get.until((route) => route.settings.name == AppRoutes.tagPay || route.isFirst);
-              },
+              onPressed: _isSharing ? null : _shareReceipt,
+              icon: _isSharing
+                  ? SizedBox(
+                      width: 18.sp,
+                      height: 18.sp,
+                      child: const CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : Icon(Icons.share, size: 18.sp),
+              label: Text(
+                _isSharing ? 'Sharing...' : 'Share',
+                style: GoogleFonts.inter(
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
               style: OutlinedButton.styleFrom(
                 foregroundColor: Colors.white,
                 side: const BorderSide(color: Color(0xFF3B82F6)),
-                padding: EdgeInsets.symmetric(vertical: 16.h),
+                padding: EdgeInsets.symmetric(vertical: 14.h),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12.r),
                 ),
               ),
-              icon: Icon(Icons.arrow_back, size: 20.sp),
+            ),
+          ),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: OutlinedButton.icon(
+              onPressed: _isDownloading ? null : _downloadReceipt,
+              icon: _isDownloading
+                  ? SizedBox(
+                      width: 18.sp,
+                      height: 18.sp,
+                      child: const CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : Icon(Icons.download, size: 18.sp),
               label: Text(
-                'Back',
+                _isDownloading ? 'Saving...' : 'Download',
                 style: GoogleFonts.inter(
-                  color: Colors.white,
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.w700,
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.white,
+                side: const BorderSide(color: Color(0xFF3B82F6)),
+                padding: EdgeInsets.symmetric(vertical: 14.h),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12.r),
                 ),
               ),
             ),
