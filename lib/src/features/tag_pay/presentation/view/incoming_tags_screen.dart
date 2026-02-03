@@ -164,6 +164,9 @@ class _IncomingTagsScreenState extends State<IncomingTagsScreen> {
 
   Widget _buildTagItem(UserTagEntity tag) {
     final isPending = tag.status == TagStatus.pending;
+    // Handle empty tagger info gracefully
+    final taggerName = tag.taggerName.isNotEmpty ? tag.taggerName : 'LazerVault User';
+    final taggerTag = tag.taggerTagPay.isNotEmpty ? '@${tag.taggerTagPay}' : '';
 
     return GestureDetector(
       onTap: () {
@@ -200,21 +203,23 @@ class _IncomingTagsScreenState extends State<IncomingTagsScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'From: ${tag.taggerName}',
+                      'From: $taggerName',
                       style: GoogleFonts.inter(
                         color: Colors.white,
                         fontSize: 16.sp,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    SizedBox(height: 4.h),
-                    Text(
-                      '@${tag.taggerTagPay}',
-                      style: GoogleFonts.inter(
-                        color: const Color(0xFF9CA3AF),
-                        fontSize: 14.sp,
+                    if (taggerTag.isNotEmpty) ...[
+                      SizedBox(height: 4.h),
+                      Text(
+                        taggerTag,
+                        style: GoogleFonts.inter(
+                          color: const Color(0xFF9CA3AF),
+                          fontSize: 14.sp,
+                        ),
                       ),
-                    ),
+                    ],
                   ],
                 ),
               ),

@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../domain/entities/user_tag_entity.dart';
 import '../../domain/repositories/tag_pay_repository.dart';
 import '../../domain/entities/user_search_result_entity.dart';
 import 'tag_pay_state.dart';
@@ -266,39 +267,39 @@ class TagPayCubit extends Cubit<TagPayState> {
     }
   }
 
-  Future<void> getMyTags({int page = 1, int limit = 20}) async {
+  Future<void> getMyTags({int page = 1, int limit = 20, String? status}) async {
     try {
       if (isClosed) return;
       emit(TagPayLoading());
-      final tags = await repository.getMyTags(page: page, limit: limit);
+      final result = await repository.getMyTags(page: page, limit: limit, status: status);
       if (isClosed) return;
-      emit(MyTagsLoaded(tags));
+      emit(MyTagsLoaded(result.tags));
     } catch (e) {
       if (isClosed) return;
       emit(TagPayError(e.toString()));
     }
   }
 
-  Future<void> getMyOutgoingTags({int page = 1, int limit = 20}) async {
+  Future<void> getMyOutgoingTags({int page = 1, int limit = 20, String? status}) async {
     try {
       if (isClosed) return;
       emit(TagPayLoading());
-      final tags = await repository.getMyOutgoingTags(page: page, limit: limit);
+      final result = await repository.getMyOutgoingTags(page: page, limit: limit, status: status);
       if (isClosed) return;
-      emit(MyOutgoingTagsLoaded(tags));
+      emit(MyOutgoingTagsLoaded(result.tags, total: result.total, page: result.page, totalPages: result.totalPages));
     } catch (e) {
       if (isClosed) return;
       emit(TagPayError(e.toString()));
     }
   }
 
-  Future<void> getMyIncomingTags({int page = 1, int limit = 20}) async {
+  Future<void> getMyIncomingTags({int page = 1, int limit = 20, String? status}) async {
     try {
       if (isClosed) return;
       emit(TagPayLoading());
-      final tags = await repository.getMyIncomingTags(page: page, limit: limit);
+      final result = await repository.getMyIncomingTags(page: page, limit: limit, status: status);
       if (isClosed) return;
-      emit(MyIncomingTagsLoaded(tags));
+      emit(MyIncomingTagsLoaded(result.tags, total: result.total, page: result.page, totalPages: result.totalPages));
     } catch (e) {
       if (isClosed) return;
       emit(TagPayError(e.toString()));
@@ -308,6 +309,7 @@ class TagPayCubit extends Cubit<TagPayState> {
   Future<void> payTag({
     required String tagId,
     required String sourceAccountId,
+    String? transactionPin,
   }) async {
     try {
       print('🏷️ [TagPayCubit] Starting payTag - tagId: $tagId, accountId: $sourceAccountId');
@@ -316,6 +318,7 @@ class TagPayCubit extends Cubit<TagPayState> {
       final transaction = await repository.payTag(
         tagId: tagId,
         sourceAccountId: sourceAccountId,
+        transactionPin: transactionPin ?? '',
       );
       print('✅ [TagPayCubit] Tag payment successful - transaction ID: ${transaction.id}');
       if (isClosed) return;
@@ -330,7 +333,148 @@ class TagPayCubit extends Cubit<TagPayState> {
     }
   }
 
+  Future<void> batchCreateTags({
+    required List<String> taggedUserTagPays,
+    required double amount,
+    required String currency,
+    String? description,
+  }) async {
+    try {
+      if (isClosed) return;
+      emit(TagPayLoading());
+      final tags = await repository.batchCreateTags(
+        taggedUserTagPays: taggedUserTagPays,
+        amount: amount,
+        currency: currency,
+        description: description,
+      );
+      if (isClosed) return;
+      emit(BatchTagsCreatedSuccess(
+        tags: tags,
+        message: 'Created ${tags.length} tag(s)',
+      ));
+    } catch (e) {
+      if (isClosed) return;
+      emit(TagPayError(e.toString()));
+    }
+  }
+
   Future<List<UserSearchResultEntity>> searchUsers(String query, {int limit = 10}) async {
     return await repository.searchUsers(query: query, limit: limit);
+  }
+
+  /// Load home screen data: incoming tags for default tab.
+  /// Profile badge is read directly from ProfileCubit in the UI.
+  Future<void> loadHomeData({int page = 1, int limit = 20, String? status}) async {
+    try {
+      if (isClosed) return;
+      emit(TagPayLoading());
+
+      final isPendingFilter = status == 'pending';
+      final result = await repository.getMyIncomingTags(
+        page: page,
+        limit: limit,
+        status: isPendingFilter ? null : status,
+      );
+
+      final tags = isPendingFilter
+          ? result.tags.where((t) => t.status == TagStatus.pending).toList()
+          : result.tags;
+
+      if (isClosed) return;
+      emit(TagPayHomeLoaded(
+        incomingTags: tags,
+        incomingTotal: result.total,
+        incomingPage: result.page,
+        incomingTotalPages: result.totalPages,
+      ));
+    } catch (e) {
+      if (isClosed) return;
+      emit(TagPayError(e.toString()));
+    }
+  }
+
+  /// Load incoming tags page (Received tab)
+  Future<void> loadIncomingTagsPage({int page = 1, int limit = 20, String? status}) async {
+    try {
+      if (isClosed) return;
+      final currentState = state;
+      if (currentState is! TagPayHomeLoaded) {
+        emit(TagPayLoading());
+      }
+
+      final isPendingFilter = status == 'pending';
+      final result = await repository.getMyIncomingTags(
+        page: page,
+        limit: limit,
+        status: isPendingFilter ? null : status,
+      );
+
+      final tags = isPendingFilter
+          ? result.tags.where((t) => t.status == TagStatus.pending).toList()
+          : result.tags;
+
+      if (isClosed) return;
+      if (currentState is TagPayHomeLoaded) {
+        emit(currentState.copyWith(
+          incomingTags: tags,
+          incomingTotal: result.total,
+          incomingPage: result.page,
+          incomingTotalPages: result.totalPages,
+        ));
+      } else {
+        emit(TagPayHomeLoaded(
+          incomingTags: tags,
+          incomingTotal: result.total,
+          incomingPage: result.page,
+          incomingTotalPages: result.totalPages,
+        ));
+      }
+    } catch (e) {
+      if (isClosed) return;
+      emit(TagPayError(e.toString()));
+    }
+  }
+
+  /// Load outgoing tags page (Created tab)
+  Future<void> loadOutgoingTagsPage({int page = 1, int limit = 20, String? status}) async {
+    try {
+      if (isClosed) return;
+      final currentState = state;
+      if (currentState is! TagPayHomeLoaded) {
+        emit(TagPayLoading());
+      }
+
+      final isPendingFilter = status == 'pending';
+      final result = await repository.getMyOutgoingTags(
+        page: page,
+        limit: limit,
+        status: isPendingFilter ? null : status,
+      );
+
+      final tags = isPendingFilter
+          ? result.tags.where((t) => t.status == TagStatus.pending).toList()
+          : result.tags;
+
+      if (isClosed) return;
+      if (currentState is TagPayHomeLoaded) {
+        emit(currentState.copyWith(
+          outgoingTags: tags,
+          outgoingTotal: result.total,
+          outgoingPage: result.page,
+          outgoingTotalPages: result.totalPages,
+        ));
+      } else {
+        emit(TagPayHomeLoaded(
+          outgoingTags: tags,
+          outgoingTotal: result.total,
+          outgoingPage: result.page,
+          outgoingTotalPages: result.totalPages,
+        ));
+      }
+    } catch (e) {
+      if (isClosed) return;
+      emit(TagPayError(e.toString()));
+    }
   }
 }

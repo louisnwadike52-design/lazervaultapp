@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../cubit/tag_pay_cubit.dart';
 import '../cubit/tag_pay_state.dart';
 import '../../../../../core/types/app_routes.dart';
+import '../../domain/entities/user_tag_entity.dart';
 
 class TagCreationProcessingScreen extends StatefulWidget {
   const TagCreationProcessingScreen({super.key});
@@ -20,29 +21,68 @@ class _TagCreationProcessingScreenState extends State<TagCreationProcessingScree
   late Animation<double> _scaleAnimation;
   late Animation<double> _opacityAnimation;
 
+  late final Map<String, dynamic> _args;
+  late final String _recipientName;
+  late final String _recipientTag;
+  late final List<String> _recipientNames;
+  late final List<String> _recipientTags;
+  late final double _amount;
+  late final String _currency;
+  late final String _description;
+  late final bool _isBatch;
+
   @override
   void initState() {
     super.initState();
+
+    _args = Get.arguments as Map<String, dynamic>;
+    _recipientName = _args['recipientName'] as String;
+    _recipientTag = _args['recipientTag'] as String;
+    _recipientNames = (_args['recipientNames'] as List<String>?) ?? [_recipientName];
+    _recipientTags = (_args['recipientTags'] as List<String>?) ?? [_recipientTag];
+    _amount = _args['amount'] as double;
+    _currency = _args['currency'] as String;
+    _description = (_args['description'] as String?) ?? '';
+    _isBatch = _args['isBatch'] as bool? ?? false;
+
     _controller = AnimationController(
       duration: const Duration(milliseconds: 1500),
       vsync: this,
     );
 
     _scaleAnimation = Tween<double>(begin: 0.8, end: 1.2).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: Curves.easeInOut,
-      ),
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
     );
 
     _opacityAnimation = Tween<double>(begin: 0.3, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: Curves.easeInOut,
-      ),
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
     );
 
     _controller.repeat(reverse: true);
+
+    // Dispatch the create call on THIS screen's cubit
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _dispatchCreateTag();
+    });
+  }
+
+  void _dispatchCreateTag() {
+    final cubit = context.read<TagPayCubit>();
+    if (_isBatch) {
+      cubit.batchCreateTags(
+        taggedUserTagPays: _recipientTags,
+        amount: _amount,
+        currency: _currency,
+        description: _description,
+      );
+    } else {
+      cubit.createTag(
+        taggedUserTagPay: _recipientTags.first,
+        amount: _amount,
+        currency: _currency,
+        description: _description,
+      );
+    }
   }
 
   @override
@@ -53,30 +93,41 @@ class _TagCreationProcessingScreenState extends State<TagCreationProcessingScree
 
   @override
   Widget build(BuildContext context) {
-    final args = Get.arguments as Map<String, dynamic>;
-    final String recipientName = args['recipientName'];
-    final String recipientTag = args['recipientTag'];
-    final double amount = args['amount'];
-    final String currency = args['currency'];
-    final String description = args['description'] ?? '';
+    final count = _recipientNames.length;
 
     return BlocListener<TagPayCubit, TagPayState>(
       listener: (context, state) {
         if (state is TagCreatedSuccess) {
-          // Navigate to receipt screen
           Get.offNamed(
             AppRoutes.tagCreationReceipt,
             arguments: {
               'tag': state.tag,
-              'recipientName': recipientName,
-              'recipientTag': recipientTag,
-              'amount': amount,
-              'currency': currency,
-              'description': description,
+              'tags': [state.tag],
+              'recipientName': _recipientName,
+              'recipientTag': _recipientTag,
+              'recipientNames': _recipientNames,
+              'recipientTags': _recipientTags,
+              'amount': _amount,
+              'currency': _currency,
+              'description': _description,
+            },
+          );
+        } else if (state is BatchTagsCreatedSuccess) {
+          Get.offNamed(
+            AppRoutes.tagCreationReceipt,
+            arguments: {
+              'tag': state.tags.first,
+              'tags': state.tags,
+              'recipientName': _recipientNames.first,
+              'recipientTag': _recipientTags.first,
+              'recipientNames': _recipientNames,
+              'recipientTags': _recipientTags,
+              'amount': _amount,
+              'currency': _currency,
+              'description': _description,
             },
           );
         } else if (state is TagPayError) {
-          // Show error and go back
           Get.back();
           Get.snackbar(
             'Tag Creation Failed',
@@ -99,7 +150,7 @@ class _TagCreationProcessingScreenState extends State<TagCreationProcessingScree
                 _buildProcessingAnimation(),
                 SizedBox(height: 32.h),
                 Text(
-                  'Creating Tag',
+                  _isBatch ? 'Creating $count Tags' : 'Creating Tag',
                   style: GoogleFonts.inter(
                     color: Colors.white,
                     fontSize: 24.sp,
@@ -108,7 +159,9 @@ class _TagCreationProcessingScreenState extends State<TagCreationProcessingScree
                 ),
                 SizedBox(height: 12.h),
                 Text(
-                  'Please wait while we create your tag',
+                  _isBatch
+                      ? 'Please wait while we create your tags'
+                      : 'Please wait while we create your tag',
                   textAlign: TextAlign.center,
                   style: GoogleFonts.inter(
                     color: const Color(0xFF9CA3AF),
@@ -117,7 +170,7 @@ class _TagCreationProcessingScreenState extends State<TagCreationProcessingScree
                   ),
                 ),
                 SizedBox(height: 32.h),
-                _buildTagDetails(recipientName, recipientTag, amount, currency, description),
+                _buildTagDetails(),
                 const Spacer(),
                 _buildLoadingIndicator(),
                 SizedBox(height: 40.h),
@@ -158,7 +211,7 @@ class _TagCreationProcessingScreenState extends State<TagCreationProcessingScree
     );
   }
 
-  Widget _buildTagDetails(String recipientName, String recipientTag, double amount, String currency, String description) {
+  Widget _buildTagDetails() {
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
@@ -171,16 +224,25 @@ class _TagCreationProcessingScreenState extends State<TagCreationProcessingScree
       ),
       child: Column(
         children: [
-          _buildDetailRow('Amount', '$currency ${amount.toStringAsFixed(2)}'),
+          if (_isBatch)
+            _buildDetailRow('Total', '${UserTagEntity.currencySymbol(_currency)}${(_amount * _recipientNames.length).toStringAsFixed(2)}')
+          else
+            _buildDetailRow('Amount', '${UserTagEntity.currencySymbol(_currency)}${_amount.toStringAsFixed(2)}'),
           SizedBox(height: 12.h),
           Divider(color: const Color(0xFF2D2D2D)),
           SizedBox(height: 12.h),
-          _buildDetailRow('For', recipientName),
-          SizedBox(height: 12.h),
-          _buildDetailRow('Tag', '@$recipientTag'),
-          if (description.isNotEmpty) ...[
+          if (_isBatch) ...[
+            _buildDetailRow('Users', '${_recipientNames.length} recipients'),
             SizedBox(height: 12.h),
-            _buildDetailRow('Note', description),
+            _buildDetailRow('Each', '${UserTagEntity.currencySymbol(_currency)}${_amount.toStringAsFixed(2)}'),
+          ] else ...[
+            _buildDetailRow('For', _recipientNames.first),
+            SizedBox(height: 12.h),
+            _buildDetailRow('Tag', '@${_recipientTags.first}'),
+          ],
+          if (_description.isNotEmpty) ...[
+            SizedBox(height: 12.h),
+            _buildDetailRow('Note', _description),
           ],
         ],
       ),
