@@ -26,7 +26,6 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
   final LocalAuthentication auth = LocalAuthentication();
   late PageController _pageController;
   bool isPasswordObscured = true;
-  DateTime? _selectedDate; // Store selected date - managed by cubit state now
   late ResponsiveController _responsiveController;
 
   @override

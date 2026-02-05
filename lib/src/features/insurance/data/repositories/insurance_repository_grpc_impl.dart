@@ -209,7 +209,6 @@ class InsuranceRepositoryGrpcImpl implements InsuranceRepository {
   @override
   Future<InsurancePayment> updatePayment(InsurancePayment payment) async {
     try {
-      final accessToken = await _getAccessToken();
       // Note: The remote datasource doesn't have updatePayment method
       // This would need to be added to the proto and datasource
       // For now, we'll return the payment as-is or throw an error

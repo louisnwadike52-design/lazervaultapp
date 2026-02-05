@@ -324,7 +324,7 @@ class _BatchTransferProcessingScreenState extends State<BatchTransferProcessingS
               child: Column(
                 children: [
                   Text(
-                    'Sending $currencySymbol${totalAmount is num ? (totalAmount as num).toStringAsFixed(2) : totalAmount} to',
+                    'Sending $currencySymbol${totalAmount is num ? totalAmount.toStringAsFixed(2) : totalAmount} to',
                     style: GoogleFonts.inter(
                       color: Colors.grey[400],
                       fontSize: 16.sp,

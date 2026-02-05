@@ -231,7 +231,6 @@ class InsuranceRepositoryImpl implements InsuranceRepository {
   @override
   Future<void> deleteClaim(String id) async {
     try {
-      final accessToken = await secureStorage.getAccessToken() ?? '';
       // Note: deleteClaim not in remote datasource interface, might need to add
       throw UnimplementedError('Delete claim not yet implemented in remote datasource');
     } catch (e) {

@@ -429,8 +429,6 @@ class UniversalMicButton extends StatefulWidget {
 class _UniversalMicButtonState extends State<UniversalMicButton> {
   UniversalVoiceMode? _voiceMode;
   bool _isListening = false;
-  String _currentService = '';
-  String _lastResponse = '';
 
   @override
   void initState() {
@@ -441,13 +439,11 @@ class _UniversalMicButtonState extends State<UniversalMicButton> {
     _voiceMode!.setCallbacks(
       onRoutingStart: (service, intent) {
         setState(() {
-          _currentService = service;
           _isListening = true;
         });
       },
       onResponse: (response) {
         setState(() {
-          _lastResponse = response.text;
           _isListening = false;
         });
       },
@@ -526,7 +522,6 @@ class ServiceMicButton extends StatefulWidget {
 class _ServiceMicButtonState extends State<ServiceMicButton> {
   ServiceSpecificVoiceMode? _voiceMode;
   bool _isListening = false;
-  String _lastResponse = '';
 
   @override
   void initState() {
@@ -542,7 +537,6 @@ class _ServiceMicButtonState extends State<ServiceMicButton> {
       },
       onResponse: (response) {
         setState(() {
-          _lastResponse = response.text;
           _isListening = false;
         });
       },

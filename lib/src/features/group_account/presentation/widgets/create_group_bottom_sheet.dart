@@ -269,9 +269,6 @@ class _CreateGroupBottomSheetState extends State<CreateGroupBottomSheet> {
                       decoration: BoxDecoration(
                         color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12.r),
-                        border: Border.all(
-                          color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
-                        ),
                       ),
                       child: Row(
                         children: [

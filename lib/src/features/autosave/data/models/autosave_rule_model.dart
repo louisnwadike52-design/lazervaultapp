@@ -67,19 +67,6 @@ class AutoSaveRuleModel extends AutoSaveRuleEntity {
     }
   }
 
-  static autosave_pb.TriggerType _triggerTypeToProto(TriggerType type) {
-    switch (type) {
-      case TriggerType.onDeposit:
-        return autosave_pb.TriggerType.TRIGGER_ON_DEPOSIT;
-      case TriggerType.scheduled:
-        return autosave_pb.TriggerType.TRIGGER_SCHEDULED;
-      case TriggerType.roundUp:
-        return autosave_pb.TriggerType.TRIGGER_ROUND_UP;
-      default:
-        return autosave_pb.TriggerType.TRIGGER_UNKNOWN;
-    }
-  }
-
   static AmountType _amountTypeFromProto(autosave_pb.AmountType proto) {
     switch (proto) {
       case autosave_pb.AmountType.AMOUNT_FIXED:
@@ -88,17 +75,6 @@ class AutoSaveRuleModel extends AutoSaveRuleEntity {
         return AmountType.percentage;
       default:
         return AmountType.unknown;
-    }
-  }
-
-  static autosave_pb.AmountType _amountTypeToProto(AmountType type) {
-    switch (type) {
-      case AmountType.fixed:
-        return autosave_pb.AmountType.AMOUNT_FIXED;
-      case AmountType.percentage:
-        return autosave_pb.AmountType.AMOUNT_PERCENTAGE;
-      default:
-        return autosave_pb.AmountType.AMOUNT_UNKNOWN;
     }
   }
 
@@ -132,22 +108,6 @@ class AutoSaveRuleModel extends AutoSaveRuleEntity {
     }
   }
 
-  static autosave_pb.ScheduleFrequency _frequencyToProto(ScheduleFrequency? freq) {
-    if (freq == null) return autosave_pb.ScheduleFrequency.FREQUENCY_UNKNOWN;
-
-    switch (freq) {
-      case ScheduleFrequency.daily:
-        return autosave_pb.ScheduleFrequency.FREQUENCY_DAILY;
-      case ScheduleFrequency.weekly:
-        return autosave_pb.ScheduleFrequency.FREQUENCY_WEEKLY;
-      case ScheduleFrequency.biweekly:
-        return autosave_pb.ScheduleFrequency.FREQUENCY_BIWEEKLY;
-      case ScheduleFrequency.monthly:
-        return autosave_pb.ScheduleFrequency.FREQUENCY_MONTHLY;
-      default:
-        return autosave_pb.ScheduleFrequency.FREQUENCY_UNKNOWN;
-    }
-  }
 }
 
 class AutoSaveTransactionModel extends AutoSaveTransactionEntity {

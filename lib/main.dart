@@ -159,7 +159,6 @@ Future<String> _determineInitialRoute() async {
     }
 
     // Check for incomplete signup (local draft)
-    final signupDraft = await storage.read(key: 'signup_draft');
     final hasIncompleteSignup = await storage.read(key: 'has_incomplete_signup');
     final currentSignupStep = await storage.read(key: 'current_signup_step');
 

@@ -32,8 +32,6 @@ class _ValidationStatusIconState extends State<ValidationStatusIcon>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
-  ValidationStatus _previousStatus = ValidationStatus.neutral;
-
   @override
   void initState() {
     super.initState();
@@ -64,7 +62,6 @@ class _ValidationStatusIconState extends State<ValidationStatusIcon>
       _controller.forward(from: 0.5);
     }
 
-    _previousStatus = oldWidget.status;
   }
 
   @override

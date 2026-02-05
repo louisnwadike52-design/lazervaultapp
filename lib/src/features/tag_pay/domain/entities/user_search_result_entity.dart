@@ -6,6 +6,7 @@ class UserSearchResultEntity extends Equatable {
   final String firstName;
   final String lastName;
   final String email;
+  final String phoneNumber;
   final String profilePicture;
 
   const UserSearchResultEntity({
@@ -14,6 +15,7 @@ class UserSearchResultEntity extends Equatable {
     required this.firstName,
     required this.lastName,
     required this.email,
+    required this.phoneNumber,
     required this.profilePicture,
   });
 
@@ -24,6 +26,15 @@ class UserSearchResultEntity extends Equatable {
       return '@$username';
     }
     return fullName;
+  }
+
+  /// Returns display info for search results showing what matched
+  String get searchMatchInfo {
+    final parts = <String>[];
+    if (username.isNotEmpty) parts.add('@$username');
+    if (email.isNotEmpty) parts.add(email);
+    if (phoneNumber.isNotEmpty) parts.add(phoneNumber);
+    return parts.join(' • ');
   }
 
   String get initials {
@@ -39,6 +50,7 @@ class UserSearchResultEntity extends Equatable {
         firstName,
         lastName,
         email,
+        phoneNumber,
         profilePicture,
       ];
 }

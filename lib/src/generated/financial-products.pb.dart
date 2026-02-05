@@ -4130,3 +4130,1935 @@ class CloseCrowdfundResponse extends $pb.GeneratedMessage {
   void clearMessage() => clearField(2);
 }
 
+class GetCrowdfundStatisticsRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetCrowdfundStatisticsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'crowdfundId')
+    ..aOB(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'includeLeaderboard')
+    ..aOB(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'includeDailyProgress')
+    ..a<$core.int>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'leaderboardLimit', $pb.PbFieldType.O3)
+    ..a<$core.int>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'progressDays', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  GetCrowdfundStatisticsRequest._() : super();
+  factory GetCrowdfundStatisticsRequest({
+    $core.String? crowdfundId,
+    $core.bool? includeLeaderboard,
+    $core.bool? includeDailyProgress,
+    $core.int? leaderboardLimit,
+    $core.int? progressDays,
+  }) {
+    final _result = create();
+    if (crowdfundId != null) {
+      _result.crowdfundId = crowdfundId;
+    }
+    if (includeLeaderboard != null) {
+      _result.includeLeaderboard = includeLeaderboard;
+    }
+    if (includeDailyProgress != null) {
+      _result.includeDailyProgress = includeDailyProgress;
+    }
+    if (leaderboardLimit != null) {
+      _result.leaderboardLimit = leaderboardLimit;
+    }
+    if (progressDays != null) {
+      _result.progressDays = progressDays;
+    }
+    return _result;
+  }
+  factory GetCrowdfundStatisticsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetCrowdfundStatisticsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetCrowdfundStatisticsRequest clone() => GetCrowdfundStatisticsRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetCrowdfundStatisticsRequest copyWith(void Function(GetCrowdfundStatisticsRequest) updates) => super.copyWith((message) => updates(message as GetCrowdfundStatisticsRequest)) as GetCrowdfundStatisticsRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GetCrowdfundStatisticsRequest create() => GetCrowdfundStatisticsRequest._();
+  GetCrowdfundStatisticsRequest createEmptyInstance() => create();
+  static $pb.PbList<GetCrowdfundStatisticsRequest> createRepeated() => $pb.PbList<GetCrowdfundStatisticsRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetCrowdfundStatisticsRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetCrowdfundStatisticsRequest>(create);
+  static GetCrowdfundStatisticsRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get crowdfundId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set crowdfundId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasCrowdfundId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearCrowdfundId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.bool get includeLeaderboard => $_getBF(1);
+  @$pb.TagNumber(2)
+  set includeLeaderboard($core.bool v) { $_setBool(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasIncludeLeaderboard() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearIncludeLeaderboard() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.bool get includeDailyProgress => $_getBF(2);
+  @$pb.TagNumber(3)
+  set includeDailyProgress($core.bool v) { $_setBool(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasIncludeDailyProgress() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearIncludeDailyProgress() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.int get leaderboardLimit => $_getIZ(3);
+  @$pb.TagNumber(4)
+  set leaderboardLimit($core.int v) { $_setSignedInt32(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasLeaderboardLimit() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearLeaderboardLimit() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.int get progressDays => $_getIZ(4);
+  @$pb.TagNumber(5)
+  set progressDays($core.int v) { $_setSignedInt32(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasProgressDays() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearProgressDays() => clearField(5);
+}
+
+class GetCrowdfundStatisticsResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetCrowdfundStatisticsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..aOM<CrowdfundStatistics>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'statistics', subBuilder: CrowdfundStatistics.create)
+    ..hasRequiredFields = false
+  ;
+
+  GetCrowdfundStatisticsResponse._() : super();
+  factory GetCrowdfundStatisticsResponse({
+    CrowdfundStatistics? statistics,
+  }) {
+    final _result = create();
+    if (statistics != null) {
+      _result.statistics = statistics;
+    }
+    return _result;
+  }
+  factory GetCrowdfundStatisticsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetCrowdfundStatisticsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetCrowdfundStatisticsResponse clone() => GetCrowdfundStatisticsResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetCrowdfundStatisticsResponse copyWith(void Function(GetCrowdfundStatisticsResponse) updates) => super.copyWith((message) => updates(message as GetCrowdfundStatisticsResponse)) as GetCrowdfundStatisticsResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GetCrowdfundStatisticsResponse create() => GetCrowdfundStatisticsResponse._();
+  GetCrowdfundStatisticsResponse createEmptyInstance() => create();
+  static $pb.PbList<GetCrowdfundStatisticsResponse> createRepeated() => $pb.PbList<GetCrowdfundStatisticsResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetCrowdfundStatisticsResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetCrowdfundStatisticsResponse>(create);
+  static GetCrowdfundStatisticsResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  CrowdfundStatistics get statistics => $_getN(0);
+  @$pb.TagNumber(1)
+  set statistics(CrowdfundStatistics v) { setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasStatistics() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearStatistics() => clearField(1);
+  @$pb.TagNumber(1)
+  CrowdfundStatistics ensureStatistics() => $_ensure(0);
+}
+
+class CrowdfundStatistics extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CrowdfundStatistics', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'crowdfundId')
+    ..a<$core.double>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalRaised', $pb.PbFieldType.OD)
+    ..a<$core.double>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'targetAmount', $pb.PbFieldType.OD)
+    ..a<$core.double>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'progressPercentage', $pb.PbFieldType.OD)
+    ..a<$core.int>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'donorCount', $pb.PbFieldType.O3)
+    ..a<$core.double>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'averageDonation', $pb.PbFieldType.OD)
+    ..a<$core.double>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'largestDonation', $pb.PbFieldType.OD)
+    ..a<$core.double>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'smallestDonation', $pb.PbFieldType.OD)
+    ..a<$core.int>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'daysRemaining', $pb.PbFieldType.O3)
+    ..a<$core.int>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'daysActive', $pb.PbFieldType.O3)
+    ..aOB(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isCompleted')
+    ..aOS(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt')
+    ..pc<ContributorLeaderboardEntry>(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'topContributors', $pb.PbFieldType.PM, subBuilder: ContributorLeaderboardEntry.create)
+    ..pc<DailyProgress>(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'dailyProgress', $pb.PbFieldType.PM, subBuilder: DailyProgress.create)
+    ..a<$core.double>(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'fundingVelocity', $pb.PbFieldType.OD)
+    ..aOS(16, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'projectedCompletionDate')
+    ..a<$core.int>(17, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'newDonorsToday', $pb.PbFieldType.O3)
+    ..a<$core.int>(18, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'newDonorsThisWeek', $pb.PbFieldType.O3)
+    ..a<$core.double>(19, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amountRaisedToday', $pb.PbFieldType.OD)
+    ..a<$core.double>(20, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amountRaisedThisWeek', $pb.PbFieldType.OD)
+    ..hasRequiredFields = false
+  ;
+
+  CrowdfundStatistics._() : super();
+  factory CrowdfundStatistics({
+    $core.String? crowdfundId,
+    $core.double? totalRaised,
+    $core.double? targetAmount,
+    $core.double? progressPercentage,
+    $core.int? donorCount,
+    $core.double? averageDonation,
+    $core.double? largestDonation,
+    $core.double? smallestDonation,
+    $core.int? daysRemaining,
+    $core.int? daysActive,
+    $core.bool? isCompleted,
+    $core.String? createdAt,
+    $core.Iterable<ContributorLeaderboardEntry>? topContributors,
+    $core.Iterable<DailyProgress>? dailyProgress,
+    $core.double? fundingVelocity,
+    $core.String? projectedCompletionDate,
+    $core.int? newDonorsToday,
+    $core.int? newDonorsThisWeek,
+    $core.double? amountRaisedToday,
+    $core.double? amountRaisedThisWeek,
+  }) {
+    final _result = create();
+    if (crowdfundId != null) {
+      _result.crowdfundId = crowdfundId;
+    }
+    if (totalRaised != null) {
+      _result.totalRaised = totalRaised;
+    }
+    if (targetAmount != null) {
+      _result.targetAmount = targetAmount;
+    }
+    if (progressPercentage != null) {
+      _result.progressPercentage = progressPercentage;
+    }
+    if (donorCount != null) {
+      _result.donorCount = donorCount;
+    }
+    if (averageDonation != null) {
+      _result.averageDonation = averageDonation;
+    }
+    if (largestDonation != null) {
+      _result.largestDonation = largestDonation;
+    }
+    if (smallestDonation != null) {
+      _result.smallestDonation = smallestDonation;
+    }
+    if (daysRemaining != null) {
+      _result.daysRemaining = daysRemaining;
+    }
+    if (daysActive != null) {
+      _result.daysActive = daysActive;
+    }
+    if (isCompleted != null) {
+      _result.isCompleted = isCompleted;
+    }
+    if (createdAt != null) {
+      _result.createdAt = createdAt;
+    }
+    if (topContributors != null) {
+      _result.topContributors.addAll(topContributors);
+    }
+    if (dailyProgress != null) {
+      _result.dailyProgress.addAll(dailyProgress);
+    }
+    if (fundingVelocity != null) {
+      _result.fundingVelocity = fundingVelocity;
+    }
+    if (projectedCompletionDate != null) {
+      _result.projectedCompletionDate = projectedCompletionDate;
+    }
+    if (newDonorsToday != null) {
+      _result.newDonorsToday = newDonorsToday;
+    }
+    if (newDonorsThisWeek != null) {
+      _result.newDonorsThisWeek = newDonorsThisWeek;
+    }
+    if (amountRaisedToday != null) {
+      _result.amountRaisedToday = amountRaisedToday;
+    }
+    if (amountRaisedThisWeek != null) {
+      _result.amountRaisedThisWeek = amountRaisedThisWeek;
+    }
+    return _result;
+  }
+  factory CrowdfundStatistics.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory CrowdfundStatistics.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  CrowdfundStatistics clone() => CrowdfundStatistics()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  CrowdfundStatistics copyWith(void Function(CrowdfundStatistics) updates) => super.copyWith((message) => updates(message as CrowdfundStatistics)) as CrowdfundStatistics; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static CrowdfundStatistics create() => CrowdfundStatistics._();
+  CrowdfundStatistics createEmptyInstance() => create();
+  static $pb.PbList<CrowdfundStatistics> createRepeated() => $pb.PbList<CrowdfundStatistics>();
+  @$core.pragma('dart2js:noInline')
+  static CrowdfundStatistics getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<CrowdfundStatistics>(create);
+  static CrowdfundStatistics? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get crowdfundId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set crowdfundId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasCrowdfundId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearCrowdfundId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.double get totalRaised => $_getN(1);
+  @$pb.TagNumber(2)
+  set totalRaised($core.double v) { $_setDouble(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasTotalRaised() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearTotalRaised() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.double get targetAmount => $_getN(2);
+  @$pb.TagNumber(3)
+  set targetAmount($core.double v) { $_setDouble(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasTargetAmount() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearTargetAmount() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.double get progressPercentage => $_getN(3);
+  @$pb.TagNumber(4)
+  set progressPercentage($core.double v) { $_setDouble(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasProgressPercentage() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearProgressPercentage() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.int get donorCount => $_getIZ(4);
+  @$pb.TagNumber(5)
+  set donorCount($core.int v) { $_setSignedInt32(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasDonorCount() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearDonorCount() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.double get averageDonation => $_getN(5);
+  @$pb.TagNumber(6)
+  set averageDonation($core.double v) { $_setDouble(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasAverageDonation() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearAverageDonation() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.double get largestDonation => $_getN(6);
+  @$pb.TagNumber(7)
+  set largestDonation($core.double v) { $_setDouble(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasLargestDonation() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearLargestDonation() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.double get smallestDonation => $_getN(7);
+  @$pb.TagNumber(8)
+  set smallestDonation($core.double v) { $_setDouble(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasSmallestDonation() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearSmallestDonation() => clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.int get daysRemaining => $_getIZ(8);
+  @$pb.TagNumber(9)
+  set daysRemaining($core.int v) { $_setSignedInt32(8, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasDaysRemaining() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearDaysRemaining() => clearField(9);
+
+  @$pb.TagNumber(10)
+  $core.int get daysActive => $_getIZ(9);
+  @$pb.TagNumber(10)
+  set daysActive($core.int v) { $_setSignedInt32(9, v); }
+  @$pb.TagNumber(10)
+  $core.bool hasDaysActive() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearDaysActive() => clearField(10);
+
+  @$pb.TagNumber(11)
+  $core.bool get isCompleted => $_getBF(10);
+  @$pb.TagNumber(11)
+  set isCompleted($core.bool v) { $_setBool(10, v); }
+  @$pb.TagNumber(11)
+  $core.bool hasIsCompleted() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearIsCompleted() => clearField(11);
+
+  @$pb.TagNumber(12)
+  $core.String get createdAt => $_getSZ(11);
+  @$pb.TagNumber(12)
+  set createdAt($core.String v) { $_setString(11, v); }
+  @$pb.TagNumber(12)
+  $core.bool hasCreatedAt() => $_has(11);
+  @$pb.TagNumber(12)
+  void clearCreatedAt() => clearField(12);
+
+  @$pb.TagNumber(13)
+  $core.List<ContributorLeaderboardEntry> get topContributors => $_getList(12);
+
+  @$pb.TagNumber(14)
+  $core.List<DailyProgress> get dailyProgress => $_getList(13);
+
+  @$pb.TagNumber(15)
+  $core.double get fundingVelocity => $_getN(14);
+  @$pb.TagNumber(15)
+  set fundingVelocity($core.double v) { $_setDouble(14, v); }
+  @$pb.TagNumber(15)
+  $core.bool hasFundingVelocity() => $_has(14);
+  @$pb.TagNumber(15)
+  void clearFundingVelocity() => clearField(15);
+
+  @$pb.TagNumber(16)
+  $core.String get projectedCompletionDate => $_getSZ(15);
+  @$pb.TagNumber(16)
+  set projectedCompletionDate($core.String v) { $_setString(15, v); }
+  @$pb.TagNumber(16)
+  $core.bool hasProjectedCompletionDate() => $_has(15);
+  @$pb.TagNumber(16)
+  void clearProjectedCompletionDate() => clearField(16);
+
+  @$pb.TagNumber(17)
+  $core.int get newDonorsToday => $_getIZ(16);
+  @$pb.TagNumber(17)
+  set newDonorsToday($core.int v) { $_setSignedInt32(16, v); }
+  @$pb.TagNumber(17)
+  $core.bool hasNewDonorsToday() => $_has(16);
+  @$pb.TagNumber(17)
+  void clearNewDonorsToday() => clearField(17);
+
+  @$pb.TagNumber(18)
+  $core.int get newDonorsThisWeek => $_getIZ(17);
+  @$pb.TagNumber(18)
+  set newDonorsThisWeek($core.int v) { $_setSignedInt32(17, v); }
+  @$pb.TagNumber(18)
+  $core.bool hasNewDonorsThisWeek() => $_has(17);
+  @$pb.TagNumber(18)
+  void clearNewDonorsThisWeek() => clearField(18);
+
+  @$pb.TagNumber(19)
+  $core.double get amountRaisedToday => $_getN(18);
+  @$pb.TagNumber(19)
+  set amountRaisedToday($core.double v) { $_setDouble(18, v); }
+  @$pb.TagNumber(19)
+  $core.bool hasAmountRaisedToday() => $_has(18);
+  @$pb.TagNumber(19)
+  void clearAmountRaisedToday() => clearField(19);
+
+  @$pb.TagNumber(20)
+  $core.double get amountRaisedThisWeek => $_getN(19);
+  @$pb.TagNumber(20)
+  set amountRaisedThisWeek($core.double v) { $_setDouble(19, v); }
+  @$pb.TagNumber(20)
+  $core.bool hasAmountRaisedThisWeek() => $_has(19);
+  @$pb.TagNumber(20)
+  void clearAmountRaisedThisWeek() => clearField(20);
+}
+
+class ContributorLeaderboardEntry extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ContributorLeaderboardEntry', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..a<$core.int>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'rank', $pb.PbFieldType.O3)
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'displayName')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'profilePicture')
+    ..a<$core.double>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalAmount', $pb.PbFieldType.OD)
+    ..a<$core.int>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'contributionCount', $pb.PbFieldType.O3)
+    ..aOB(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isAnonymous')
+    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'firstContributionDate')
+    ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastContributionDate')
+    ..hasRequiredFields = false
+  ;
+
+  ContributorLeaderboardEntry._() : super();
+  factory ContributorLeaderboardEntry({
+    $core.int? rank,
+    $core.String? userId,
+    $core.String? displayName,
+    $core.String? profilePicture,
+    $core.double? totalAmount,
+    $core.int? contributionCount,
+    $core.bool? isAnonymous,
+    $core.String? firstContributionDate,
+    $core.String? lastContributionDate,
+  }) {
+    final _result = create();
+    if (rank != null) {
+      _result.rank = rank;
+    }
+    if (userId != null) {
+      _result.userId = userId;
+    }
+    if (displayName != null) {
+      _result.displayName = displayName;
+    }
+    if (profilePicture != null) {
+      _result.profilePicture = profilePicture;
+    }
+    if (totalAmount != null) {
+      _result.totalAmount = totalAmount;
+    }
+    if (contributionCount != null) {
+      _result.contributionCount = contributionCount;
+    }
+    if (isAnonymous != null) {
+      _result.isAnonymous = isAnonymous;
+    }
+    if (firstContributionDate != null) {
+      _result.firstContributionDate = firstContributionDate;
+    }
+    if (lastContributionDate != null) {
+      _result.lastContributionDate = lastContributionDate;
+    }
+    return _result;
+  }
+  factory ContributorLeaderboardEntry.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory ContributorLeaderboardEntry.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  ContributorLeaderboardEntry clone() => ContributorLeaderboardEntry()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  ContributorLeaderboardEntry copyWith(void Function(ContributorLeaderboardEntry) updates) => super.copyWith((message) => updates(message as ContributorLeaderboardEntry)) as ContributorLeaderboardEntry; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static ContributorLeaderboardEntry create() => ContributorLeaderboardEntry._();
+  ContributorLeaderboardEntry createEmptyInstance() => create();
+  static $pb.PbList<ContributorLeaderboardEntry> createRepeated() => $pb.PbList<ContributorLeaderboardEntry>();
+  @$core.pragma('dart2js:noInline')
+  static ContributorLeaderboardEntry getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ContributorLeaderboardEntry>(create);
+  static ContributorLeaderboardEntry? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.int get rank => $_getIZ(0);
+  @$pb.TagNumber(1)
+  set rank($core.int v) { $_setSignedInt32(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasRank() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearRank() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get userId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set userId($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasUserId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearUserId() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get displayName => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set displayName($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasDisplayName() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearDisplayName() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get profilePicture => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set profilePicture($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasProfilePicture() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearProfilePicture() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.double get totalAmount => $_getN(4);
+  @$pb.TagNumber(5)
+  set totalAmount($core.double v) { $_setDouble(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasTotalAmount() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearTotalAmount() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.int get contributionCount => $_getIZ(5);
+  @$pb.TagNumber(6)
+  set contributionCount($core.int v) { $_setSignedInt32(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasContributionCount() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearContributionCount() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.bool get isAnonymous => $_getBF(6);
+  @$pb.TagNumber(7)
+  set isAnonymous($core.bool v) { $_setBool(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasIsAnonymous() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearIsAnonymous() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.String get firstContributionDate => $_getSZ(7);
+  @$pb.TagNumber(8)
+  set firstContributionDate($core.String v) { $_setString(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasFirstContributionDate() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearFirstContributionDate() => clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.String get lastContributionDate => $_getSZ(8);
+  @$pb.TagNumber(9)
+  set lastContributionDate($core.String v) { $_setString(8, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasLastContributionDate() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearLastContributionDate() => clearField(9);
+}
+
+class DailyProgress extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'DailyProgress', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'date')
+    ..a<$core.double>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amountRaised', $pb.PbFieldType.OD)
+    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'newDonors', $pb.PbFieldType.O3)
+    ..a<$core.int>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalContributions', $pb.PbFieldType.O3)
+    ..a<$core.double>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'cumulativeAmount', $pb.PbFieldType.OD)
+    ..a<$core.double>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'progressPercentage', $pb.PbFieldType.OD)
+    ..hasRequiredFields = false
+  ;
+
+  DailyProgress._() : super();
+  factory DailyProgress({
+    $core.String? date,
+    $core.double? amountRaised,
+    $core.int? newDonors,
+    $core.int? totalContributions,
+    $core.double? cumulativeAmount,
+    $core.double? progressPercentage,
+  }) {
+    final _result = create();
+    if (date != null) {
+      _result.date = date;
+    }
+    if (amountRaised != null) {
+      _result.amountRaised = amountRaised;
+    }
+    if (newDonors != null) {
+      _result.newDonors = newDonors;
+    }
+    if (totalContributions != null) {
+      _result.totalContributions = totalContributions;
+    }
+    if (cumulativeAmount != null) {
+      _result.cumulativeAmount = cumulativeAmount;
+    }
+    if (progressPercentage != null) {
+      _result.progressPercentage = progressPercentage;
+    }
+    return _result;
+  }
+  factory DailyProgress.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory DailyProgress.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  DailyProgress clone() => DailyProgress()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  DailyProgress copyWith(void Function(DailyProgress) updates) => super.copyWith((message) => updates(message as DailyProgress)) as DailyProgress; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static DailyProgress create() => DailyProgress._();
+  DailyProgress createEmptyInstance() => create();
+  static $pb.PbList<DailyProgress> createRepeated() => $pb.PbList<DailyProgress>();
+  @$core.pragma('dart2js:noInline')
+  static DailyProgress getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<DailyProgress>(create);
+  static DailyProgress? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get date => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set date($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasDate() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearDate() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.double get amountRaised => $_getN(1);
+  @$pb.TagNumber(2)
+  set amountRaised($core.double v) { $_setDouble(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasAmountRaised() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearAmountRaised() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.int get newDonors => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set newDonors($core.int v) { $_setSignedInt32(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasNewDonors() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearNewDonors() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.int get totalContributions => $_getIZ(3);
+  @$pb.TagNumber(4)
+  set totalContributions($core.int v) { $_setSignedInt32(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasTotalContributions() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearTotalContributions() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.double get cumulativeAmount => $_getN(4);
+  @$pb.TagNumber(5)
+  set cumulativeAmount($core.double v) { $_setDouble(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasCumulativeAmount() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearCumulativeAmount() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.double get progressPercentage => $_getN(5);
+  @$pb.TagNumber(6)
+  set progressPercentage($core.double v) { $_setDouble(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasProgressPercentage() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearProgressPercentage() => clearField(6);
+}
+
+class SearchCrowdfundsRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'SearchCrowdfundsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'query')
+    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'limit', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  SearchCrowdfundsRequest._() : super();
+  factory SearchCrowdfundsRequest({
+    $core.String? query,
+    $core.int? limit,
+  }) {
+    final _result = create();
+    if (query != null) {
+      _result.query = query;
+    }
+    if (limit != null) {
+      _result.limit = limit;
+    }
+    return _result;
+  }
+  factory SearchCrowdfundsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory SearchCrowdfundsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  SearchCrowdfundsRequest clone() => SearchCrowdfundsRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  SearchCrowdfundsRequest copyWith(void Function(SearchCrowdfundsRequest) updates) => super.copyWith((message) => updates(message as SearchCrowdfundsRequest)) as SearchCrowdfundsRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static SearchCrowdfundsRequest create() => SearchCrowdfundsRequest._();
+  SearchCrowdfundsRequest createEmptyInstance() => create();
+  static $pb.PbList<SearchCrowdfundsRequest> createRepeated() => $pb.PbList<SearchCrowdfundsRequest>();
+  @$core.pragma('dart2js:noInline')
+  static SearchCrowdfundsRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<SearchCrowdfundsRequest>(create);
+  static SearchCrowdfundsRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get query => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set query($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasQuery() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearQuery() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.int get limit => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set limit($core.int v) { $_setSignedInt32(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasLimit() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearLimit() => clearField(2);
+}
+
+class SearchCrowdfundsResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'SearchCrowdfundsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..pc<Crowdfund>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'crowdfunds', $pb.PbFieldType.PM, subBuilder: Crowdfund.create)
+    ..hasRequiredFields = false
+  ;
+
+  SearchCrowdfundsResponse._() : super();
+  factory SearchCrowdfundsResponse({
+    $core.Iterable<Crowdfund>? crowdfunds,
+  }) {
+    final _result = create();
+    if (crowdfunds != null) {
+      _result.crowdfunds.addAll(crowdfunds);
+    }
+    return _result;
+  }
+  factory SearchCrowdfundsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory SearchCrowdfundsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  SearchCrowdfundsResponse clone() => SearchCrowdfundsResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  SearchCrowdfundsResponse copyWith(void Function(SearchCrowdfundsResponse) updates) => super.copyWith((message) => updates(message as SearchCrowdfundsResponse)) as SearchCrowdfundsResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static SearchCrowdfundsResponse create() => SearchCrowdfundsResponse._();
+  SearchCrowdfundsResponse createEmptyInstance() => create();
+  static $pb.PbList<SearchCrowdfundsResponse> createRepeated() => $pb.PbList<SearchCrowdfundsResponse>();
+  @$core.pragma('dart2js:noInline')
+  static SearchCrowdfundsResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<SearchCrowdfundsResponse>(create);
+  static SearchCrowdfundsResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.List<Crowdfund> get crowdfunds => $_getList(0);
+}
+
+class UpdateCrowdfundRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UpdateCrowdfundRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'crowdfundId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'title')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'category')
+    ..a<$core.double>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'targetAmount', $pb.PbFieldType.OD)
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'deadline')
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'imageUrl')
+    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status')
+    ..hasRequiredFields = false
+  ;
+
+  UpdateCrowdfundRequest._() : super();
+  factory UpdateCrowdfundRequest({
+    $core.String? crowdfundId,
+    $core.String? title,
+    $core.String? description,
+    $core.String? category,
+    $core.double? targetAmount,
+    $core.String? deadline,
+    $core.String? imageUrl,
+    $core.String? status,
+  }) {
+    final _result = create();
+    if (crowdfundId != null) {
+      _result.crowdfundId = crowdfundId;
+    }
+    if (title != null) {
+      _result.title = title;
+    }
+    if (description != null) {
+      _result.description = description;
+    }
+    if (category != null) {
+      _result.category = category;
+    }
+    if (targetAmount != null) {
+      _result.targetAmount = targetAmount;
+    }
+    if (deadline != null) {
+      _result.deadline = deadline;
+    }
+    if (imageUrl != null) {
+      _result.imageUrl = imageUrl;
+    }
+    if (status != null) {
+      _result.status = status;
+    }
+    return _result;
+  }
+  factory UpdateCrowdfundRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory UpdateCrowdfundRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  UpdateCrowdfundRequest clone() => UpdateCrowdfundRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  UpdateCrowdfundRequest copyWith(void Function(UpdateCrowdfundRequest) updates) => super.copyWith((message) => updates(message as UpdateCrowdfundRequest)) as UpdateCrowdfundRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static UpdateCrowdfundRequest create() => UpdateCrowdfundRequest._();
+  UpdateCrowdfundRequest createEmptyInstance() => create();
+  static $pb.PbList<UpdateCrowdfundRequest> createRepeated() => $pb.PbList<UpdateCrowdfundRequest>();
+  @$core.pragma('dart2js:noInline')
+  static UpdateCrowdfundRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<UpdateCrowdfundRequest>(create);
+  static UpdateCrowdfundRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get crowdfundId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set crowdfundId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasCrowdfundId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearCrowdfundId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get title => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set title($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasTitle() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearTitle() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get description => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set description($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasDescription() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearDescription() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get category => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set category($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasCategory() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearCategory() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.double get targetAmount => $_getN(4);
+  @$pb.TagNumber(5)
+  set targetAmount($core.double v) { $_setDouble(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasTargetAmount() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearTargetAmount() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get deadline => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set deadline($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasDeadline() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearDeadline() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.String get imageUrl => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set imageUrl($core.String v) { $_setString(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasImageUrl() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearImageUrl() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.String get status => $_getSZ(7);
+  @$pb.TagNumber(8)
+  set status($core.String v) { $_setString(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasStatus() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearStatus() => clearField(8);
+}
+
+class UpdateCrowdfundResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UpdateCrowdfundResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..aOM<Crowdfund>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'crowdfund', subBuilder: Crowdfund.create)
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
+  UpdateCrowdfundResponse._() : super();
+  factory UpdateCrowdfundResponse({
+    Crowdfund? crowdfund,
+    $core.String? message,
+  }) {
+    final _result = create();
+    if (crowdfund != null) {
+      _result.crowdfund = crowdfund;
+    }
+    if (message != null) {
+      _result.message = message;
+    }
+    return _result;
+  }
+  factory UpdateCrowdfundResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory UpdateCrowdfundResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  UpdateCrowdfundResponse clone() => UpdateCrowdfundResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  UpdateCrowdfundResponse copyWith(void Function(UpdateCrowdfundResponse) updates) => super.copyWith((message) => updates(message as UpdateCrowdfundResponse)) as UpdateCrowdfundResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static UpdateCrowdfundResponse create() => UpdateCrowdfundResponse._();
+  UpdateCrowdfundResponse createEmptyInstance() => create();
+  static $pb.PbList<UpdateCrowdfundResponse> createRepeated() => $pb.PbList<UpdateCrowdfundResponse>();
+  @$core.pragma('dart2js:noInline')
+  static UpdateCrowdfundResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<UpdateCrowdfundResponse>(create);
+  static UpdateCrowdfundResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  Crowdfund get crowdfund => $_getN(0);
+  @$pb.TagNumber(1)
+  set crowdfund(Crowdfund v) { setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasCrowdfund() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearCrowdfund() => clearField(1);
+  @$pb.TagNumber(1)
+  Crowdfund ensureCrowdfund() => $_ensure(0);
+
+  @$pb.TagNumber(2)
+  $core.String get message => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set message($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasMessage() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMessage() => clearField(2);
+}
+
+class DeleteCrowdfundRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'DeleteCrowdfundRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'crowdfundId')
+    ..hasRequiredFields = false
+  ;
+
+  DeleteCrowdfundRequest._() : super();
+  factory DeleteCrowdfundRequest({
+    $core.String? crowdfundId,
+  }) {
+    final _result = create();
+    if (crowdfundId != null) {
+      _result.crowdfundId = crowdfundId;
+    }
+    return _result;
+  }
+  factory DeleteCrowdfundRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory DeleteCrowdfundRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  DeleteCrowdfundRequest clone() => DeleteCrowdfundRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  DeleteCrowdfundRequest copyWith(void Function(DeleteCrowdfundRequest) updates) => super.copyWith((message) => updates(message as DeleteCrowdfundRequest)) as DeleteCrowdfundRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static DeleteCrowdfundRequest create() => DeleteCrowdfundRequest._();
+  DeleteCrowdfundRequest createEmptyInstance() => create();
+  static $pb.PbList<DeleteCrowdfundRequest> createRepeated() => $pb.PbList<DeleteCrowdfundRequest>();
+  @$core.pragma('dart2js:noInline')
+  static DeleteCrowdfundRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<DeleteCrowdfundRequest>(create);
+  static DeleteCrowdfundRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get crowdfundId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set crowdfundId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasCrowdfundId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearCrowdfundId() => clearField(1);
+}
+
+class DeleteCrowdfundResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'DeleteCrowdfundResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
+  DeleteCrowdfundResponse._() : super();
+  factory DeleteCrowdfundResponse({
+    $core.bool? success,
+    $core.String? message,
+  }) {
+    final _result = create();
+    if (success != null) {
+      _result.success = success;
+    }
+    if (message != null) {
+      _result.message = message;
+    }
+    return _result;
+  }
+  factory DeleteCrowdfundResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory DeleteCrowdfundResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  DeleteCrowdfundResponse clone() => DeleteCrowdfundResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  DeleteCrowdfundResponse copyWith(void Function(DeleteCrowdfundResponse) updates) => super.copyWith((message) => updates(message as DeleteCrowdfundResponse)) as DeleteCrowdfundResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static DeleteCrowdfundResponse create() => DeleteCrowdfundResponse._();
+  DeleteCrowdfundResponse createEmptyInstance() => create();
+  static $pb.PbList<DeleteCrowdfundResponse> createRepeated() => $pb.PbList<DeleteCrowdfundResponse>();
+  @$core.pragma('dart2js:noInline')
+  static DeleteCrowdfundResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<DeleteCrowdfundResponse>(create);
+  static DeleteCrowdfundResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool v) { $_setBool(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get message => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set message($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasMessage() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMessage() => clearField(2);
+}
+
+class GetCrowdfundDonationsRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetCrowdfundDonationsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'crowdfundId')
+    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'page', $pb.PbFieldType.O3)
+    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pageSize', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  GetCrowdfundDonationsRequest._() : super();
+  factory GetCrowdfundDonationsRequest({
+    $core.String? crowdfundId,
+    $core.int? page,
+    $core.int? pageSize,
+  }) {
+    final _result = create();
+    if (crowdfundId != null) {
+      _result.crowdfundId = crowdfundId;
+    }
+    if (page != null) {
+      _result.page = page;
+    }
+    if (pageSize != null) {
+      _result.pageSize = pageSize;
+    }
+    return _result;
+  }
+  factory GetCrowdfundDonationsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetCrowdfundDonationsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetCrowdfundDonationsRequest clone() => GetCrowdfundDonationsRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetCrowdfundDonationsRequest copyWith(void Function(GetCrowdfundDonationsRequest) updates) => super.copyWith((message) => updates(message as GetCrowdfundDonationsRequest)) as GetCrowdfundDonationsRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GetCrowdfundDonationsRequest create() => GetCrowdfundDonationsRequest._();
+  GetCrowdfundDonationsRequest createEmptyInstance() => create();
+  static $pb.PbList<GetCrowdfundDonationsRequest> createRepeated() => $pb.PbList<GetCrowdfundDonationsRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetCrowdfundDonationsRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetCrowdfundDonationsRequest>(create);
+  static GetCrowdfundDonationsRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get crowdfundId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set crowdfundId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasCrowdfundId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearCrowdfundId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.int get page => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set page($core.int v) { $_setSignedInt32(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasPage() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearPage() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.int get pageSize => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set pageSize($core.int v) { $_setSignedInt32(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasPageSize() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearPageSize() => clearField(3);
+}
+
+class GetCrowdfundDonationsResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetCrowdfundDonationsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..pc<CrowdfundContribution>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'donations', $pb.PbFieldType.PM, subBuilder: CrowdfundContribution.create)
+    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'total', $pb.PbFieldType.O3)
+    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'page', $pb.PbFieldType.O3)
+    ..a<$core.int>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pageSize', $pb.PbFieldType.O3)
+    ..aOB(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'hasMore')
+    ..hasRequiredFields = false
+  ;
+
+  GetCrowdfundDonationsResponse._() : super();
+  factory GetCrowdfundDonationsResponse({
+    $core.Iterable<CrowdfundContribution>? donations,
+    $core.int? total,
+    $core.int? page,
+    $core.int? pageSize,
+    $core.bool? hasMore,
+  }) {
+    final _result = create();
+    if (donations != null) {
+      _result.donations.addAll(donations);
+    }
+    if (total != null) {
+      _result.total = total;
+    }
+    if (page != null) {
+      _result.page = page;
+    }
+    if (pageSize != null) {
+      _result.pageSize = pageSize;
+    }
+    if (hasMore != null) {
+      _result.hasMore = hasMore;
+    }
+    return _result;
+  }
+  factory GetCrowdfundDonationsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetCrowdfundDonationsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetCrowdfundDonationsResponse clone() => GetCrowdfundDonationsResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetCrowdfundDonationsResponse copyWith(void Function(GetCrowdfundDonationsResponse) updates) => super.copyWith((message) => updates(message as GetCrowdfundDonationsResponse)) as GetCrowdfundDonationsResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GetCrowdfundDonationsResponse create() => GetCrowdfundDonationsResponse._();
+  GetCrowdfundDonationsResponse createEmptyInstance() => create();
+  static $pb.PbList<GetCrowdfundDonationsResponse> createRepeated() => $pb.PbList<GetCrowdfundDonationsResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetCrowdfundDonationsResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetCrowdfundDonationsResponse>(create);
+  static GetCrowdfundDonationsResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.List<CrowdfundContribution> get donations => $_getList(0);
+
+  @$pb.TagNumber(2)
+  $core.int get total => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set total($core.int v) { $_setSignedInt32(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasTotal() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearTotal() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.int get page => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set page($core.int v) { $_setSignedInt32(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasPage() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearPage() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.int get pageSize => $_getIZ(3);
+  @$pb.TagNumber(4)
+  set pageSize($core.int v) { $_setSignedInt32(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasPageSize() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearPageSize() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.bool get hasMore => $_getBF(4);
+  @$pb.TagNumber(5)
+  set hasMore($core.bool v) { $_setBool(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasHasMore() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearHasMore() => clearField(5);
+}
+
+class GetUserDonationsRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetUserDonationsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..a<$core.int>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'page', $pb.PbFieldType.O3)
+    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pageSize', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  GetUserDonationsRequest._() : super();
+  factory GetUserDonationsRequest({
+    $core.int? page,
+    $core.int? pageSize,
+  }) {
+    final _result = create();
+    if (page != null) {
+      _result.page = page;
+    }
+    if (pageSize != null) {
+      _result.pageSize = pageSize;
+    }
+    return _result;
+  }
+  factory GetUserDonationsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetUserDonationsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetUserDonationsRequest clone() => GetUserDonationsRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetUserDonationsRequest copyWith(void Function(GetUserDonationsRequest) updates) => super.copyWith((message) => updates(message as GetUserDonationsRequest)) as GetUserDonationsRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GetUserDonationsRequest create() => GetUserDonationsRequest._();
+  GetUserDonationsRequest createEmptyInstance() => create();
+  static $pb.PbList<GetUserDonationsRequest> createRepeated() => $pb.PbList<GetUserDonationsRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetUserDonationsRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetUserDonationsRequest>(create);
+  static GetUserDonationsRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.int get page => $_getIZ(0);
+  @$pb.TagNumber(1)
+  set page($core.int v) { $_setSignedInt32(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasPage() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearPage() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.int get pageSize => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set pageSize($core.int v) { $_setSignedInt32(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasPageSize() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearPageSize() => clearField(2);
+}
+
+class GetUserDonationsResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetUserDonationsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..pc<CrowdfundContribution>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'donations', $pb.PbFieldType.PM, subBuilder: CrowdfundContribution.create)
+    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'total', $pb.PbFieldType.O3)
+    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'page', $pb.PbFieldType.O3)
+    ..a<$core.int>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pageSize', $pb.PbFieldType.O3)
+    ..aOB(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'hasMore')
+    ..hasRequiredFields = false
+  ;
+
+  GetUserDonationsResponse._() : super();
+  factory GetUserDonationsResponse({
+    $core.Iterable<CrowdfundContribution>? donations,
+    $core.int? total,
+    $core.int? page,
+    $core.int? pageSize,
+    $core.bool? hasMore,
+  }) {
+    final _result = create();
+    if (donations != null) {
+      _result.donations.addAll(donations);
+    }
+    if (total != null) {
+      _result.total = total;
+    }
+    if (page != null) {
+      _result.page = page;
+    }
+    if (pageSize != null) {
+      _result.pageSize = pageSize;
+    }
+    if (hasMore != null) {
+      _result.hasMore = hasMore;
+    }
+    return _result;
+  }
+  factory GetUserDonationsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetUserDonationsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetUserDonationsResponse clone() => GetUserDonationsResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetUserDonationsResponse copyWith(void Function(GetUserDonationsResponse) updates) => super.copyWith((message) => updates(message as GetUserDonationsResponse)) as GetUserDonationsResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GetUserDonationsResponse create() => GetUserDonationsResponse._();
+  GetUserDonationsResponse createEmptyInstance() => create();
+  static $pb.PbList<GetUserDonationsResponse> createRepeated() => $pb.PbList<GetUserDonationsResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetUserDonationsResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetUserDonationsResponse>(create);
+  static GetUserDonationsResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.List<CrowdfundContribution> get donations => $_getList(0);
+
+  @$pb.TagNumber(2)
+  $core.int get total => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set total($core.int v) { $_setSignedInt32(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasTotal() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearTotal() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.int get page => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set page($core.int v) { $_setSignedInt32(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasPage() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearPage() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.int get pageSize => $_getIZ(3);
+  @$pb.TagNumber(4)
+  set pageSize($core.int v) { $_setSignedInt32(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasPageSize() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearPageSize() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.bool get hasMore => $_getBF(4);
+  @$pb.TagNumber(5)
+  set hasMore($core.bool v) { $_setBool(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasHasMore() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearHasMore() => clearField(5);
+}
+
+class GenerateDonationReceiptRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GenerateDonationReceiptRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'donationId')
+    ..hasRequiredFields = false
+  ;
+
+  GenerateDonationReceiptRequest._() : super();
+  factory GenerateDonationReceiptRequest({
+    $core.String? donationId,
+  }) {
+    final _result = create();
+    if (donationId != null) {
+      _result.donationId = donationId;
+    }
+    return _result;
+  }
+  factory GenerateDonationReceiptRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GenerateDonationReceiptRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GenerateDonationReceiptRequest clone() => GenerateDonationReceiptRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GenerateDonationReceiptRequest copyWith(void Function(GenerateDonationReceiptRequest) updates) => super.copyWith((message) => updates(message as GenerateDonationReceiptRequest)) as GenerateDonationReceiptRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GenerateDonationReceiptRequest create() => GenerateDonationReceiptRequest._();
+  GenerateDonationReceiptRequest createEmptyInstance() => create();
+  static $pb.PbList<GenerateDonationReceiptRequest> createRepeated() => $pb.PbList<GenerateDonationReceiptRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GenerateDonationReceiptRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GenerateDonationReceiptRequest>(create);
+  static GenerateDonationReceiptRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get donationId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set donationId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasDonationId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearDonationId() => clearField(1);
+}
+
+class GenerateDonationReceiptResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GenerateDonationReceiptResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..aOM<CrowdfundReceipt>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'receipt', subBuilder: CrowdfundReceipt.create)
+    ..hasRequiredFields = false
+  ;
+
+  GenerateDonationReceiptResponse._() : super();
+  factory GenerateDonationReceiptResponse({
+    CrowdfundReceipt? receipt,
+  }) {
+    final _result = create();
+    if (receipt != null) {
+      _result.receipt = receipt;
+    }
+    return _result;
+  }
+  factory GenerateDonationReceiptResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GenerateDonationReceiptResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GenerateDonationReceiptResponse clone() => GenerateDonationReceiptResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GenerateDonationReceiptResponse copyWith(void Function(GenerateDonationReceiptResponse) updates) => super.copyWith((message) => updates(message as GenerateDonationReceiptResponse)) as GenerateDonationReceiptResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GenerateDonationReceiptResponse create() => GenerateDonationReceiptResponse._();
+  GenerateDonationReceiptResponse createEmptyInstance() => create();
+  static $pb.PbList<GenerateDonationReceiptResponse> createRepeated() => $pb.PbList<GenerateDonationReceiptResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GenerateDonationReceiptResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GenerateDonationReceiptResponse>(create);
+  static GenerateDonationReceiptResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  CrowdfundReceipt get receipt => $_getN(0);
+  @$pb.TagNumber(1)
+  set receipt(CrowdfundReceipt v) { setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasReceipt() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearReceipt() => clearField(1);
+  @$pb.TagNumber(1)
+  CrowdfundReceipt ensureReceipt() => $_ensure(0);
+}
+
+class GetUserCrowdfundReceiptsRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetUserCrowdfundReceiptsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..a<$core.int>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'page', $pb.PbFieldType.O3)
+    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pageSize', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  GetUserCrowdfundReceiptsRequest._() : super();
+  factory GetUserCrowdfundReceiptsRequest({
+    $core.int? page,
+    $core.int? pageSize,
+  }) {
+    final _result = create();
+    if (page != null) {
+      _result.page = page;
+    }
+    if (pageSize != null) {
+      _result.pageSize = pageSize;
+    }
+    return _result;
+  }
+  factory GetUserCrowdfundReceiptsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetUserCrowdfundReceiptsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetUserCrowdfundReceiptsRequest clone() => GetUserCrowdfundReceiptsRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetUserCrowdfundReceiptsRequest copyWith(void Function(GetUserCrowdfundReceiptsRequest) updates) => super.copyWith((message) => updates(message as GetUserCrowdfundReceiptsRequest)) as GetUserCrowdfundReceiptsRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GetUserCrowdfundReceiptsRequest create() => GetUserCrowdfundReceiptsRequest._();
+  GetUserCrowdfundReceiptsRequest createEmptyInstance() => create();
+  static $pb.PbList<GetUserCrowdfundReceiptsRequest> createRepeated() => $pb.PbList<GetUserCrowdfundReceiptsRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetUserCrowdfundReceiptsRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetUserCrowdfundReceiptsRequest>(create);
+  static GetUserCrowdfundReceiptsRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.int get page => $_getIZ(0);
+  @$pb.TagNumber(1)
+  set page($core.int v) { $_setSignedInt32(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasPage() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearPage() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.int get pageSize => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set pageSize($core.int v) { $_setSignedInt32(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasPageSize() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearPageSize() => clearField(2);
+}
+
+class GetUserCrowdfundReceiptsResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetUserCrowdfundReceiptsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..pc<CrowdfundReceipt>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'receipts', $pb.PbFieldType.PM, subBuilder: CrowdfundReceipt.create)
+    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'total', $pb.PbFieldType.O3)
+    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'page', $pb.PbFieldType.O3)
+    ..a<$core.int>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pageSize', $pb.PbFieldType.O3)
+    ..aOB(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'hasMore')
+    ..hasRequiredFields = false
+  ;
+
+  GetUserCrowdfundReceiptsResponse._() : super();
+  factory GetUserCrowdfundReceiptsResponse({
+    $core.Iterable<CrowdfundReceipt>? receipts,
+    $core.int? total,
+    $core.int? page,
+    $core.int? pageSize,
+    $core.bool? hasMore,
+  }) {
+    final _result = create();
+    if (receipts != null) {
+      _result.receipts.addAll(receipts);
+    }
+    if (total != null) {
+      _result.total = total;
+    }
+    if (page != null) {
+      _result.page = page;
+    }
+    if (pageSize != null) {
+      _result.pageSize = pageSize;
+    }
+    if (hasMore != null) {
+      _result.hasMore = hasMore;
+    }
+    return _result;
+  }
+  factory GetUserCrowdfundReceiptsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetUserCrowdfundReceiptsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetUserCrowdfundReceiptsResponse clone() => GetUserCrowdfundReceiptsResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetUserCrowdfundReceiptsResponse copyWith(void Function(GetUserCrowdfundReceiptsResponse) updates) => super.copyWith((message) => updates(message as GetUserCrowdfundReceiptsResponse)) as GetUserCrowdfundReceiptsResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GetUserCrowdfundReceiptsResponse create() => GetUserCrowdfundReceiptsResponse._();
+  GetUserCrowdfundReceiptsResponse createEmptyInstance() => create();
+  static $pb.PbList<GetUserCrowdfundReceiptsResponse> createRepeated() => $pb.PbList<GetUserCrowdfundReceiptsResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetUserCrowdfundReceiptsResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetUserCrowdfundReceiptsResponse>(create);
+  static GetUserCrowdfundReceiptsResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.List<CrowdfundReceipt> get receipts => $_getList(0);
+
+  @$pb.TagNumber(2)
+  $core.int get total => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set total($core.int v) { $_setSignedInt32(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasTotal() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearTotal() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.int get page => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set page($core.int v) { $_setSignedInt32(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasPage() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearPage() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.int get pageSize => $_getIZ(3);
+  @$pb.TagNumber(4)
+  set pageSize($core.int v) { $_setSignedInt32(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasPageSize() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearPageSize() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.bool get hasMore => $_getBF(4);
+  @$pb.TagNumber(5)
+  set hasMore($core.bool v) { $_setBool(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasHasMore() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearHasMore() => clearField(5);
+}
+
+class CrowdfundReceipt extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CrowdfundReceipt', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'donationId')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'crowdfundId')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'crowdfundTitle')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'donorUserId')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'donorName')
+    ..a<$core.double>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
+    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
+    ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'donationDate')
+    ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'generatedAt')
+    ..aOS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'receiptNumber')
+    ..aOS(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'receiptData')
+    ..hasRequiredFields = false
+  ;
+
+  CrowdfundReceipt._() : super();
+  factory CrowdfundReceipt({
+    $core.String? id,
+    $core.String? donationId,
+    $core.String? crowdfundId,
+    $core.String? crowdfundTitle,
+    $core.String? donorUserId,
+    $core.String? donorName,
+    $core.double? amount,
+    $core.String? currency,
+    $core.String? donationDate,
+    $core.String? generatedAt,
+    $core.String? receiptNumber,
+    $core.String? receiptData,
+  }) {
+    final _result = create();
+    if (id != null) {
+      _result.id = id;
+    }
+    if (donationId != null) {
+      _result.donationId = donationId;
+    }
+    if (crowdfundId != null) {
+      _result.crowdfundId = crowdfundId;
+    }
+    if (crowdfundTitle != null) {
+      _result.crowdfundTitle = crowdfundTitle;
+    }
+    if (donorUserId != null) {
+      _result.donorUserId = donorUserId;
+    }
+    if (donorName != null) {
+      _result.donorName = donorName;
+    }
+    if (amount != null) {
+      _result.amount = amount;
+    }
+    if (currency != null) {
+      _result.currency = currency;
+    }
+    if (donationDate != null) {
+      _result.donationDate = donationDate;
+    }
+    if (generatedAt != null) {
+      _result.generatedAt = generatedAt;
+    }
+    if (receiptNumber != null) {
+      _result.receiptNumber = receiptNumber;
+    }
+    if (receiptData != null) {
+      _result.receiptData = receiptData;
+    }
+    return _result;
+  }
+  factory CrowdfundReceipt.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory CrowdfundReceipt.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  CrowdfundReceipt clone() => CrowdfundReceipt()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  CrowdfundReceipt copyWith(void Function(CrowdfundReceipt) updates) => super.copyWith((message) => updates(message as CrowdfundReceipt)) as CrowdfundReceipt; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static CrowdfundReceipt create() => CrowdfundReceipt._();
+  CrowdfundReceipt createEmptyInstance() => create();
+  static $pb.PbList<CrowdfundReceipt> createRepeated() => $pb.PbList<CrowdfundReceipt>();
+  @$core.pragma('dart2js:noInline')
+  static CrowdfundReceipt getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<CrowdfundReceipt>(create);
+  static CrowdfundReceipt? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get id => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set id($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get donationId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set donationId($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasDonationId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearDonationId() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get crowdfundId => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set crowdfundId($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasCrowdfundId() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearCrowdfundId() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get crowdfundTitle => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set crowdfundTitle($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasCrowdfundTitle() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearCrowdfundTitle() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get donorUserId => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set donorUserId($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasDonorUserId() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearDonorUserId() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get donorName => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set donorName($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasDonorName() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearDonorName() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.double get amount => $_getN(6);
+  @$pb.TagNumber(7)
+  set amount($core.double v) { $_setDouble(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasAmount() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearAmount() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.String get currency => $_getSZ(7);
+  @$pb.TagNumber(8)
+  set currency($core.String v) { $_setString(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasCurrency() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearCurrency() => clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.String get donationDate => $_getSZ(8);
+  @$pb.TagNumber(9)
+  set donationDate($core.String v) { $_setString(8, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasDonationDate() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearDonationDate() => clearField(9);
+
+  @$pb.TagNumber(10)
+  $core.String get generatedAt => $_getSZ(9);
+  @$pb.TagNumber(10)
+  set generatedAt($core.String v) { $_setString(9, v); }
+  @$pb.TagNumber(10)
+  $core.bool hasGeneratedAt() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearGeneratedAt() => clearField(10);
+
+  @$pb.TagNumber(11)
+  $core.String get receiptNumber => $_getSZ(10);
+  @$pb.TagNumber(11)
+  set receiptNumber($core.String v) { $_setString(10, v); }
+  @$pb.TagNumber(11)
+  $core.bool hasReceiptNumber() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearReceiptNumber() => clearField(11);
+
+  @$pb.TagNumber(12)
+  $core.String get receiptData => $_getSZ(11);
+  @$pb.TagNumber(12)
+  set receiptData($core.String v) { $_setString(11, v); }
+  @$pb.TagNumber(12)
+  $core.bool hasReceiptData() => $_has(11);
+  @$pb.TagNumber(12)
+  void clearReceiptData() => clearField(12);
+}
+

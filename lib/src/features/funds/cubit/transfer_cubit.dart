@@ -1,18 +1,40 @@
 import 'package:bloc/bloc.dart';
 import 'package:fixnum/fixnum.dart';
+import 'package:grpc/grpc.dart';
 
+import 'package:lazervault/core/offline/mutation_queue.dart';
 import 'package:lazervault/src/features/funds/cubit/transfer_state.dart';
 import 'package:lazervault/src/features/funds/data/datasources/payments_transfer_data_source.dart';
 import 'package:lazervault/src/features/funds/domain/entities/transfer_entity.dart';
 
 class TransferCubit extends Cubit<TransferState> {
   final IPaymentsTransferDataSource paymentsTransferDataSource;
+  final MutationQueue? mutationQueue;
 
   /// Cache the last fee lookup result so it can be used when building receipt details
   TransferFeeLoaded? lastFeeLoaded;
 
-  TransferCubit({required this.paymentsTransferDataSource})
-      : super(const TransferInitial());
+  TransferCubit({
+    required this.paymentsTransferDataSource,
+    this.mutationQueue,
+  }) : super(const TransferInitial());
+
+  /// Check if an error is a network-related error that should trigger offline queuing
+  bool _isNetworkError(dynamic error) {
+    if (error is GrpcError) {
+      return error.code == StatusCode.unavailable ||
+          error.code == StatusCode.deadlineExceeded ||
+          error.code == StatusCode.unknown;
+    }
+    final errorStr = error.toString().toLowerCase();
+    return errorStr.contains('network') ||
+        errorStr.contains('connection') ||
+        errorStr.contains('timeout') ||
+        errorStr.contains('unavailable') ||
+        errorStr.contains('failed to connect') ||
+        errorStr.contains('socket') ||
+        errorStr.contains('unreachable');
+  }
 
   /// Get transfer fee for a given amount, currency, and transfer type.
   /// Internal transfers are always free. External transfers use tiered fees.
@@ -84,6 +106,7 @@ class TransferCubit extends Cubit<TransferState> {
 
   /// Unified send funds method (works for both internal and external transfers)
   /// Uses Transfer Gateway (port 50076) -> Core-Payment-Service (port 50053)
+  /// On network failure, queues the transfer for retry when online.
   Future<void> sendFunds({
     required String fromAccountId,
     required String toAccountNumber,
@@ -116,7 +139,17 @@ class TransferCubit extends Cubit<TransferState> {
       }
     } catch (e) {
       if (isClosed) return;
-      emit(TransferFailure(message: 'Transfer failed: ${e.toString()}'));
+
+      // For financial operations, show clear error and let user retry manually
+      // NEVER queue payments offline - security tokens expire, balances change
+      final errorMessage = e.toString();
+      if (_isNetworkError(e)) {
+        emit(const TransferFailure(
+          message: 'No internet connection. Please check your network and try again.',
+        ));
+      } else {
+        emit(TransferFailure(message: 'Transfer failed: $errorMessage'));
+      }
     }
   }
 

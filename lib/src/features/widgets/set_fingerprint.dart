@@ -33,43 +33,6 @@ class _SetFingerPrintState extends State<SetFingerPrint>
     )..repeat(reverse: true);
   }
 
-  Future<void> _scanFingerprint() async {
-    setState(() {
-      isScanning = true;
-      scanProgress = 0.0;
-    });
-
-    // Simulate scanning progress
-    for (int i = 0; i <= 100; i++) {
-      await Future.delayed(const Duration(milliseconds: 50));
-      setState(() {
-        scanProgress = i / 100.0;
-      });
-    }
-
-    // Authenticate using local_auth
-    final bool didAuthenticate = await auth.authenticate(
-      localizedReason: 'Please authenticate to set your fingerprint',
-    );
-
-    setState(() {
-      isScanning = false;
-    });
-    if (context.mounted) {
-      if (didAuthenticate) {
-        // Handle successful authentication
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Fingerprint set successfully!')),
-        );
-      } else {
-        // Handle authentication failure
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Authentication failed.')),
-        );
-      }
-    }
-  }
-
   @override
   void dispose() {
     _controller.dispose();

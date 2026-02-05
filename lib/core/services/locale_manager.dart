@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:rxdart/rxdart.dart';
 
 /// Centralized locale manager that maintains app-wide locale state
@@ -7,52 +6,20 @@ import 'package:rxdart/rxdart.dart';
 ///
 /// Locale format: BCP 47 standard (e.g., "en-NG", "en-US", "en-GB", "en-ZA")
 ///
-/// Now includes currency management with local storage and server sync support.
-/// Default is Nigeria (NG) as it's the primary supported country.
+/// Purely in-memory — no persistence. On each login, reset to registration
+/// country via [resetToCountry]. Country change auto-derives currency from
+/// [CountryLocales] lookup.
 class LocaleManager {
-  static const String _localeKey = 'app_locale';
-  static const String _countryKey = 'app_country';
-  static const String _currencyKey = 'app_currency';
   static const String _defaultLocale = 'en-NG';
   static const String _defaultCountry = 'NG';
   static const String _defaultCurrency = 'NGN';
-
-  final FlutterSecureStorage _storage;
 
   // Stream controller for reactive locale updates
   final _localeController = BehaviorSubject<String>.seeded(_defaultLocale);
   final _countryController = BehaviorSubject<String>.seeded(_defaultCountry);
   final _currencyController = BehaviorSubject<String>.seeded(_defaultCurrency);
 
-  LocaleManager(this._storage) {
-    _initializeLocale();
-  }
-
-  /// Initialize locale from storage
-  Future<void> _initializeLocale() async {
-    try {
-      final storedLocale = await _storage.read(key: _localeKey);
-      final storedCountry = await _storage.read(key: _countryKey);
-      final storedCurrency = await _storage.read(key: _currencyKey);
-
-      if (storedLocale != null && storedLocale.isNotEmpty) {
-        _localeController.add(storedLocale);
-      }
-
-      if (storedCountry != null && storedCountry.isNotEmpty) {
-        _countryController.add(storedCountry);
-      }
-
-      if (storedCurrency != null && storedCurrency.isNotEmpty) {
-        _currencyController.add(storedCurrency);
-      }
-    } catch (e) {
-      // If storage fails, use default values
-      _localeController.add(_defaultLocale);
-      _countryController.add(_defaultCountry);
-      _currencyController.add(_defaultCurrency);
-    }
-  }
+  LocaleManager();
 
   /// Get current locale (e.g., "en-US", "en-GB")
   String get currentLocale => _localeController.value;
@@ -72,97 +39,59 @@ class LocaleManager {
   /// Stream of currency changes for reactive UI updates
   Stream<String> get currencyStream => _currencyController.stream;
 
-  /// Update both locale and country atomically
+  /// Update both locale and country atomically, auto-deriving currency
   ///
   /// Example: updateLocale(locale: "en-GB", country: "GB")
-  Future<void> updateLocale({
+  void updateLocale({
     required String locale,
     required String country,
-  }) async {
-    try {
-      // Validate format (basic check)
-      if (!_isValidLocaleFormat(locale)) {
-        throw ArgumentError('Invalid locale format: $locale. Expected format: en-US');
-      }
+  }) {
+    if (!_isValidLocaleFormat(locale)) {
+      throw ArgumentError('Invalid locale format: $locale. Expected format: en-US');
+    }
 
-      // Save to storage
-      await Future.wait([
-        _storage.write(key: _localeKey, value: locale),
-        _storage.write(key: _countryKey, value: country),
-      ]);
+    _localeController.add(locale);
+    _countryController.add(country);
 
-      // Notify listeners
-      _localeController.add(locale);
-      _countryController.add(country);
-    } catch (e) {
-      rethrow;
+    // Auto-derive currency from country
+    final countryLocale = CountryLocales.findByCountryCode(country);
+    if (countryLocale != null) {
+      _currencyController.add(countryLocale.currency);
     }
   }
 
-  /// Update currency (stores locally for offline access)
-  ///
-  /// Note: This only updates local storage. Use CurrencySyncService
-  /// to sync with server preferences.
+  /// Update currency in-memory
   ///
   /// Example: setCurrency("GBP")
-  Future<void> setCurrency(String currencyCode) async {
-    try {
-      // Validate currency code (basic check for ISO 4217 format)
-      if (!_isValidCurrencyFormat(currencyCode)) {
-        throw ArgumentError('Invalid currency format: $currencyCode. Expected format: USD, GBP, EUR');
-      }
-
-      // Save to storage
-      await _storage.write(key: _currencyKey, value: currencyCode);
-
-      // Notify listeners
-      _currencyController.add(currencyCode);
-    } catch (e) {
-      rethrow;
+  void setCurrency(String currencyCode) {
+    if (!_isValidCurrencyFormat(currencyCode)) {
+      throw ArgumentError('Invalid currency format: $currencyCode. Expected format: USD, GBP, EUR');
     }
+    _currencyController.add(currencyCode);
   }
 
   /// Update currency from server sync (internal method)
-  ///
-  /// Used by CurrencySyncService to update local currency after server sync.
-  /// This bypasses validation since the server is the source of truth.
-  Future<void> setCurrencyFromServerSync(String currencyCode) async {
-    try {
-      await _storage.write(key: _currencyKey, value: currencyCode);
-      _currencyController.add(currencyCode);
-    } catch (e) {
-      // Silently fail - server data takes precedence
-    }
+  void setCurrencyFromServerSync(String currencyCode) {
+    _currencyController.add(currencyCode);
   }
 
   /// Update country only (derives locale from language + country)
   ///
   /// Example: setCountry("GB") -> "en-GB" if current language is "en"
-  Future<void> setCountry(String countryCode) async {
-    try {
-      final currentLocale = _localeController.value;
-      final languageCode = currentLocale.split('-').first; // Extract language part
-
-      final newLocale = '$languageCode-${countryCode.toUpperCase()}';
-
-      await updateLocale(locale: newLocale, country: countryCode.toUpperCase());
-    } catch (e) {
-      rethrow;
-    }
+  void setCountry(String countryCode) {
+    final currentLocale = _localeController.value;
+    final languageCode = currentLocale.split('-').first;
+    final newLocale = '$languageCode-${countryCode.toUpperCase()}';
+    updateLocale(locale: newLocale, country: countryCode.toUpperCase());
   }
 
   /// Update language only (keeps current country)
   ///
   /// Example: setLanguage("fr") -> "fr-US" if current country is "US"
-  Future<void> setLanguage(String languageCode) async {
-    try {
-      final currentCountry = _countryController.value;
-      final newLocale = '$languageCode-$currentCountry';
-
-      await updateLocale(locale: newLocale, country: currentCountry);
-    } catch (e) {
-      rethrow;
-    }
+  void setLanguage(String languageCode) {
+    final currentCountry = _countryController.value;
+    final newLocale = '$languageCode-$currentCountry';
+    updateLocale(locale: newLocale, country: currentCountry);
   }
 
   /// Get the language part of the locale (e.g., "en" from "en-US")
@@ -203,9 +132,24 @@ class LocaleManager {
   }
 
   /// Reset to default locale and currency
-  Future<void> resetToDefault() async {
-    await updateLocale(locale: _defaultLocale, country: _defaultCountry);
-    await setCurrency(_defaultCurrency);
+  void resetToDefault() {
+    updateLocale(locale: _defaultLocale, country: _defaultCountry);
+    setCurrency(_defaultCurrency);
+  }
+
+  /// Reset locale, country, and currency based on a country code.
+  /// Used on login to set state from the user's registration country.
+  void resetToCountry(String countryCode) {
+    final countryLocale = CountryLocales.findByCountryCode(countryCode);
+    if (countryLocale != null) {
+      _localeController.add(countryLocale.locale);
+      _countryController.add(countryLocale.countryCode);
+      _currencyController.add(countryLocale.currency);
+    } else {
+      // Fallback: derive locale as en-XX, currency stays default
+      _localeController.add('en-${countryCode.toUpperCase()}');
+      _countryController.add(countryCode.toUpperCase());
+    }
   }
 
   /// Clean up resources

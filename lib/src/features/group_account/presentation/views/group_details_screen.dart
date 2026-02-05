@@ -11,6 +11,9 @@ import '../widgets/member_card.dart';
 import '../widgets/contribution_card.dart';
 import '../widgets/add_member_bottom_sheet.dart';
 import '../widgets/create_contribution_bottom_sheet.dart';
+import '../widgets/member_detail_dialog.dart';
+import '../../../authentication/cubit/authentication_cubit.dart';
+import '../../../authentication/cubit/authentication_state.dart';
 
 class GroupDetailsScreen extends StatefulWidget {
   final String groupId;
@@ -70,6 +73,10 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
                   behavior: SnackBarBehavior.floating,
                 ),
               );
+            } else if (state is MemberAddedSuccess && state.groupId == widget.groupId) {
+              // Reload group details to get updated members list
+              // This is a single reload after successful member add
+              context.read<GroupAccountCubit>().loadGroupDetails(widget.groupId);
             }
           },
           builder: (context, state) {
@@ -171,10 +178,18 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
     List<GroupMember> members,
     List<Contribution> contributions,
   ) {
+    // Get current user ID from the cubit
+    final currentUserId = context.read<GroupAccountCubit>().currentUserId;
+    final currentUserMember = currentUserId != null
+        ? members.where((m) => m.userId == currentUserId).firstOrNull
+        : null;
+
     return Column(
       children: [
         _buildHeader(group),
         _buildGroupOverview(group, members, contributions),
+        if (currentUserMember != null)
+          _buildYourRoleCard(currentUserMember, group),
         _buildTabBar(),
         Expanded(
           child: TabBarView(
@@ -189,13 +204,181 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
     );
   }
 
+  Widget _buildYourRoleCard(GroupMember currentMember, GroupAccount group) {
+    final role = currentMember.role;
+    final isAdmin = role == GroupMemberRole.admin;
+    final isModerator = role == GroupMemberRole.moderator;
+
+    // Get role color
+    Color roleColor;
+    IconData roleIcon;
+    switch (role) {
+      case GroupMemberRole.admin:
+        roleColor = const Color(0xFFEF4444); // Red
+        roleIcon = Icons.admin_panel_settings;
+      case GroupMemberRole.moderator:
+        roleColor = const Color(0xFFF59E0B); // Orange
+        roleIcon = Icons.shield;
+      case GroupMemberRole.member:
+        roleColor = const Color(0xFF10B981); // Green
+        roleIcon = Icons.person;
+    }
+
+    // Build permissions list based on role
+    final permissions = <String>[];
+    if (isAdmin) {
+      permissions.addAll([
+        'Manage all group settings',
+        'Add & remove members',
+        'Manage all contributions',
+        'Change member roles',
+      ]);
+    } else if (isModerator) {
+      permissions.addAll([
+        'Add new members',
+        'Create contributions',
+        'Manage your contributions',
+      ]);
+    } else {
+      permissions.addAll([
+        'View group details',
+        'Create contributions',
+        'Make payments',
+      ]);
+    }
+
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1F1F1F),
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(
+          color: roleColor.withValues(alpha: 0.3),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: EdgeInsets.all(10.w),
+                decoration: BoxDecoration(
+                  color: roleColor.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(10.r),
+                ),
+                child: Icon(
+                  roleIcon,
+                  color: roleColor,
+                  size: 20.sp,
+                ),
+              ),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Your Role',
+                      style: GoogleFonts.inter(
+                        fontSize: 12.sp,
+                        color: Colors.grey[400],
+                      ),
+                    ),
+                    SizedBox(height: 2.h),
+                    Row(
+                      children: [
+                        Text(
+                          role.displayName,
+                          style: GoogleFonts.inter(
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.w700,
+                            color: roleColor,
+                          ),
+                        ),
+                        if (group.adminId == currentMember.userId) ...[
+                          SizedBox(width: 8.w),
+                          Container(
+                            padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(4.r),
+                            ),
+                            child: Text(
+                              'Creator',
+                              style: GoogleFonts.inter(
+                                fontSize: 9.sp,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.grey[400],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.info_outline,
+                color: Colors.grey[500],
+                size: 18.sp,
+              ),
+            ],
+          ),
+          SizedBox(height: 12.h),
+          Wrap(
+            spacing: 6.w,
+            runSpacing: 6.h,
+            children: permissions.map((permission) => Container(
+              padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+              decoration: BoxDecoration(
+                color: roleColor.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(6.r),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.check_circle,
+                    color: roleColor,
+                    size: 12.sp,
+                  ),
+                  SizedBox(width: 4.w),
+                  Text(
+                    permission,
+                    style: GoogleFonts.inter(
+                      fontSize: 10.sp,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.white.withValues(alpha: 0.9),
+                    ),
+                  ),
+                ],
+              ),
+            )).toList(),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildHeader(GroupAccount group) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
       child: Row(
         children: [
           GestureDetector(
-            onTap: () => Get.back(),
+            onTap: () {
+              // Check if we can pop, otherwise navigate to groups list explicitly
+              // This handles the case when coming from receipt screen which clears the stack
+              if (Get.previousRoute.isNotEmpty) {
+                Get.back();
+              } else {
+                Get.offAllNamed(AppRoutes.groupAccount);
+              }
+            },
             child: Container(
               padding: EdgeInsets.all(12.w),
               decoration: BoxDecoration(
@@ -284,6 +467,9 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
     final totalTarget = contributions.fold<double>(0, (sum, c) => sum + c.targetAmount);
     final totalCurrent = contributions.fold<double>(0, (sum, c) => sum + c.currentAmount);
     final progressPercentage = totalTarget > 0 ? (totalCurrent / totalTarget) * 100 : 0;
+    // Get the primary currency from contributions (use first contribution's currency)
+    final primaryCurrency = contributions.isNotEmpty ? contributions.first.currency : 'NGN';
+    final currencySymbol = _getCurrencySymbol(primaryCurrency);
 
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 20.w),
@@ -345,7 +531,7 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
                       ),
                     ),
                     Text(
-                      '\$${totalCurrent.toStringAsFixed(2)} / \$${totalTarget.toStringAsFixed(2)}',
+                      '$currencySymbol${totalCurrent.toStringAsFixed(2)} / $currencySymbol${totalTarget.toStringAsFixed(2)}',
                       style: GoogleFonts.inter(
                         fontSize: 14.sp,
                         fontWeight: FontWeight.w600,
@@ -448,151 +634,240 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
   }
 
   Widget _buildMembersTab(List<GroupMember> members, GroupAccount group) {
-    return Column(
-      children: [
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20.w),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                '${members.length} Members',
-                style: GoogleFonts.inter(
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
-                ),
-              ),
-              ElevatedButton.icon(
-                onPressed: () => _showAddMemberBottomSheet(group),
-                icon: Icon(Icons.add, size: 16.sp),
-                label: Text(
-                  'Add Member',
-                  style: GoogleFonts.inter(fontSize: 12.sp),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color.fromARGB(255, 78, 3, 208),
-                  foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8.r),
+    // Check if current user can add members
+    final currentUserId = context.read<GroupAccountCubit>().currentUserId;
+    final currentMember = currentUserId != null
+        ? members.where((m) => m.userId == currentUserId).firstOrNull
+        : null;
+    final canAddMembers = currentMember != null &&
+        (currentMember.role == GroupMemberRole.admin ||
+         currentMember.role == GroupMemberRole.moderator);
+
+    return RefreshIndicator(
+      onRefresh: () async {
+        context.read<GroupAccountCubit>().loadGroupDetails(widget.groupId);
+      },
+      color: const Color.fromARGB(255, 78, 3, 208),
+      backgroundColor: const Color(0xFF1F1F1F),
+      child: CustomScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        slivers: [
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20.w),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    '${members.length} Members',
+                    style: GoogleFonts.inter(
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
                   ),
-                ),
+                  if (canAddMembers)
+                    ElevatedButton.icon(
+                      onPressed: () => _showAddMemberBottomSheet(group, members),
+                      icon: Icon(Icons.add, size: 16.sp),
+                      label: Text(
+                        'Add Member',
+                        style: GoogleFonts.inter(fontSize: 12.sp),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color.fromARGB(255, 78, 3, 208),
+                        foregroundColor: Colors.white,
+                        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8.r),
+                        ),
+                      ),
+                    )
+                  else
+                    // Show a disabled button or nothing for non-privileged users
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[800],
+                        borderRadius: BorderRadius.circular(8.r),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.lock_outline, size: 14.sp, color: Colors.grey[500]),
+                          SizedBox(width: 4.w),
+                          Text(
+                            'Member',
+                            style: GoogleFonts.inter(
+                              fontSize: 12.sp,
+                              color: Colors.grey[500],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
               ),
-            ],
+            ),
           ),
-        ),
-        SizedBox(height: 16.h),
-        Expanded(
-          child: ListView.builder(
-            padding: EdgeInsets.symmetric(horizontal: 20.w),
-            itemCount: members.length,
-            itemBuilder: (context, index) {
-              final member = members[index];
-              return Padding(
-                padding: EdgeInsets.only(bottom: 12.h),
-                child: MemberCard(
-                  member: member,
-                  group: group,
-                  onTap: () => _showMemberOptions(member, group),
-                ),
-              );
-            },
+          SliverPadding(
+            padding: EdgeInsets.only(top: 16.h, left: 20.w, right: 20.w),
+            sliver: SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  final member = members[index];
+                  return Padding(
+                    padding: EdgeInsets.only(bottom: 12.h),
+                    child: MemberCard(
+                      member: member,
+                      group: group,
+                      onTap: () => _showMemberOptions(member, group),
+                    ),
+                  );
+                },
+                childCount: members.length,
+              ),
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
   Widget _buildContributionsTab(List<Contribution> contributions, GroupAccount group) {
-    return Column(
+    return RefreshIndicator(
+      onRefresh: () async {
+        context.read<GroupAccountCubit>().loadGroupDetails(widget.groupId);
+      },
+      color: const Color.fromARGB(255, 78, 3, 208),
+      backgroundColor: const Color(0xFF1F1F1F),
+      child: contributions.isEmpty
+          ? _buildEmptyContributions(group)
+          : CustomScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              slivers: [
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 20.w),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          '${contributions.length} Contributions',
+                          style: GoogleFonts.inter(
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
+                        ),
+                        ElevatedButton.icon(
+                          onPressed: () => _showCreateContributionBottomSheet(group),
+                          icon: Icon(Icons.add, size: 16.sp),
+                          label: Text(
+                            'New Goal',
+                            style: GoogleFonts.inter(fontSize: 12.sp),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color.fromARGB(255, 78, 3, 208),
+                            foregroundColor: Colors.white,
+                            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8.r),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                SliverPadding(
+                  padding: EdgeInsets.only(top: 16.h, left: 20.w, right: 20.w),
+                  sliver: SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                        final contribution = contributions[index];
+                        return Padding(
+                          padding: EdgeInsets.only(bottom: 12.h),
+                          child: ContributionCard(
+                            contribution: contribution,
+                            onTap: () => _navigateToContributionDetails(contribution),
+                            onPayment: () => _navigateToMakePayment(contribution),
+                          ),
+                        );
+                      },
+                      childCount: contributions.length,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+    );
+  }
+
+  Widget _buildEmptyContributions(GroupAccount group) {
+    return ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
       children: [
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20.w),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        SizedBox(height: 60.h),
+        Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              Icon(
+                Icons.account_balance_wallet_outlined,
+                size: 64.sp,
+                color: Colors.grey[600],
+              ),
+              SizedBox(height: 16.h),
               Text(
-                '${contributions.length} Contributions',
+                'No Contributions Yet',
                 style: GoogleFonts.inter(
-                  fontSize: 16.sp,
+                  fontSize: 18.sp,
                   fontWeight: FontWeight.w600,
                   color: Colors.white,
                 ),
               ),
+              SizedBox(height: 8.h),
+              Text(
+                'Create the first contribution goal for this group',
+                style: GoogleFonts.inter(
+                  fontSize: 14.sp,
+                  color: Colors.grey[400],
+                ),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 24.h),
               ElevatedButton.icon(
                 onPressed: () => _showCreateContributionBottomSheet(group),
-                icon: Icon(Icons.add, size: 16.sp),
+                icon: Icon(Icons.add, size: 20.sp),
                 label: Text(
-                  'New Goal',
-                  style: GoogleFonts.inter(fontSize: 12.sp),
+                  'Create Contribution',
+                  style: GoogleFonts.inter(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color.fromARGB(255, 78, 3, 208),
                   foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                  padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 14.h),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8.r),
+                    borderRadius: BorderRadius.circular(12.r),
                   ),
+                ),
+              ),
+              SizedBox(height: 16.h),
+              Text(
+                'Pull down to refresh',
+                style: GoogleFonts.inter(
+                  fontSize: 12.sp,
+                  color: Colors.grey[600],
                 ),
               ),
             ],
           ),
         ),
-        SizedBox(height: 16.h),
-        Expanded(
-          child: contributions.isEmpty
-              ? _buildEmptyContributions()
-              : ListView.builder(
-                  padding: EdgeInsets.symmetric(horizontal: 20.w),
-                  itemCount: contributions.length,
-                  itemBuilder: (context, index) {
-                    final contribution = contributions[index];
-                    return Padding(
-                      padding: EdgeInsets.only(bottom: 12.h),
-                      child: ContributionCard(
-                        contribution: contribution,
-                        onTap: () => _navigateToContributionDetails(contribution),
-                        onPayment: () => _navigateToMakePayment(contribution),
-                      ),
-                    );
-                  },
-                ),
-        ),
       ],
-    );
-  }
-
-  Widget _buildEmptyContributions() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.account_balance_wallet_outlined,
-            size: 64.sp,
-            color: Colors.grey[600],
-          ),
-          SizedBox(height: 16.h),
-          Text(
-            'No Contributions Yet',
-            style: GoogleFonts.inter(
-              fontSize: 18.sp,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
-            ),
-          ),
-          SizedBox(height: 8.h),
-          Text(
-            'Create the first contribution goal for this group',
-            style: GoogleFonts.inter(
-              fontSize: 14.sp,
-              color: Colors.grey[400],
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
     );
   }
 
@@ -644,26 +919,47 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
     );
   }
 
-  void _showAddMemberBottomSheet(GroupAccount group) {
+  void _showAddMemberBottomSheet(GroupAccount group, List<GroupMember> existingMembers) {
     final cubit = context.read<GroupAccountCubit>();
 
-    showModalBottomSheet(
+    showModalBottomSheet<GroupMember?>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => BlocProvider.value(
         value: cubit,
-        child: AddMemberBottomSheet(group: group),
+        child: AddMemberBottomSheet(
+          group: group,
+          existingMembers: existingMembers,
+        ),
       ),
-    ).then((_) {
+    ).then((newMember) {
       if (!mounted) return;
-      // Reload group details after bottom sheet closes to ensure members list is updated
-      context.read<GroupAccountCubit>().loadGroupDetails(widget.groupId);
+      // Only reload if no member was returned (e.g., for invites or cancelled)
+      // For successful member adds, the state is already updated reactively via MemberAddedSuccess
+      if (newMember == null) {
+        // Check if this was an invite that succeeded (not a member add)
+        // For invites, we don't need to reload either
+        return;
+      }
+      // Member was added - no reload needed, UI updates reactively via BlocListener
     });
   }
 
   void _showCreateContributionBottomSheet(GroupAccount group) {
     final cubit = context.read<GroupAccountCubit>();
+
+    // Get user's currency from auth state
+    String userCurrency = 'NGN'; // Default
+    String currencySymbol = '₦';
+    final authState = context.read<AuthenticationCubit>().state;
+    if (authState is AuthenticationSuccess) {
+      final currency = authState.profile.user.currency;
+      if (currency != null && currency.isNotEmpty) {
+        userCurrency = currency.toUpperCase();
+        currencySymbol = _getCurrencySymbol(userCurrency);
+      }
+    }
 
     showModalBottomSheet(
       context: context,
@@ -674,6 +970,8 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
         child: CreateContributionBottomSheet(
           groupId: group.id,
           groupMembers: group.members,
+          currency: userCurrency,
+          currencySymbol: currencySymbol,
         ),
       ),
     ).then((_) {
@@ -683,8 +981,65 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
     });
   }
 
+  String _getCurrencySymbol(String currency) {
+    const symbols = {
+      'NGN': '₦',
+      'USD': '\$',
+      'EUR': '€',
+      'GBP': '£',
+      'GHS': '₵',
+      'ZAR': 'R',
+      'KES': 'KSh',
+      'XOF': 'CFA',
+      'XAF': 'FCFA',
+    };
+    return symbols[currency] ?? currency;
+  }
+
   void _showMemberOptions(GroupMember member, GroupAccount group) {
-    // Show member options like change role, remove, etc.
+    final currentUserId = context.read<GroupAccountCubit>().currentUserId ?? '';
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => MemberDetailDialog(
+        member: member,
+        group: group,
+        currentUserId: currentUserId,
+        onChangeRole: () => _showChangeRoleDialog(member, group),
+        onRemoveMember: () => _showRemoveMemberConfirmation(member, group),
+      ),
+    );
+  }
+
+  void _showChangeRoleDialog(GroupMember member, GroupAccount group) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => ChangeRoleDialog(
+        member: member,
+        onRoleSelected: (newRole) {
+          context.read<GroupAccountCubit>().updateMemberRoleInGroup(
+            groupId: group.id,
+            memberId: member.id,
+            newRole: newRole,
+          );
+        },
+      ),
+    );
+  }
+
+  void _showRemoveMemberConfirmation(GroupMember member, GroupAccount group) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => RemoveMemberConfirmDialog(
+        member: member,
+        onConfirm: () {
+          context.read<GroupAccountCubit>().removeMemberFromGroupAccount(
+            groupId: group.id,
+            memberId: member.id,
+          );
+        },
+      ),
+    );
   }
 
   void _navigateToContributionDetails(Contribution contribution) {

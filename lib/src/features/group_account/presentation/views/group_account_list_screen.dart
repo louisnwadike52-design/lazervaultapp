@@ -21,17 +21,37 @@ class GroupAccountListScreen extends StatefulWidget {
 }
 
 class _GroupAccountListScreenState extends State<GroupAccountListScreen> {
+  bool _userIdSet = false;
+  bool _navigatedToDetails = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initializeUserIdIfAuthenticated();
+    });
+  }
+
+  void _initializeUserIdIfAuthenticated() {
+    final authState = context.read<AuthenticationCubit>().state;
+    print('🔵 GroupAccountListScreen: _initializeUserIdIfAuthenticated - authState: ${authState.runtimeType}, _userIdSet: $_userIdSet');
+    if (authState is AuthenticationSuccess && !_userIdSet) {
+      _userIdSet = true;
+      print('🟢 GroupAccountListScreen: Setting userId: ${authState.profile.user.id}');
+      context.read<GroupAccountCubit>().setUserId(authState.profile.user.id);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<AuthenticationCubit, AuthenticationState>(
       listener: (context, authState) {
-        if (authState is AuthenticationSuccess) {
-          // Set user ID in group account cubit when authenticated
+        if (authState is AuthenticationSuccess && !_userIdSet) {
+          _userIdSet = true;
           context.read<GroupAccountCubit>().setUserId(authState.profile.user.id);
         }
       },
       builder: (context, authState) {
-        // Show loading if not authenticated yet
         if (authState is! AuthenticationSuccess) {
           return _buildAuthLoadingScreen();
         }
@@ -175,19 +195,35 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen> {
               behavior: SnackBarBehavior.floating,
             ),
           );
-          // Reload groups
           context.read<GroupAccountCubit>().loadUserGroups();
         }
       },
       builder: (context, state) {
-        if (state is GroupAccountLoading) {
+        final cubit = context.read<GroupAccountCubit>();
+
+        // Show loading for initial/loading states
+        if (state is GroupAccountLoading || state is GroupAccountInitial) {
           return _buildLoadingView();
-        } else if (state is GroupAccountGroupsLoaded) {
+        }
+
+        // Show groups list
+        if (state is GroupAccountGroupsLoaded) {
           return _buildGroupsList(state.groups);
-        } else if (state is GroupAccountError) {
+        }
+
+        // Show error
+        if (state is GroupAccountError) {
           return _buildErrorView(state.message);
         }
-        
+
+        // For any other state (like GroupAccountGroupLoaded from detail screen),
+        // show cached groups if available, otherwise show loading and restore
+        final cachedGroups = cubit.cachedGroups;
+        if (cachedGroups != null && cachedGroups.isNotEmpty) {
+          // Show cached groups - don't trigger any state changes from builder
+          return _buildGroupsList(cachedGroups);
+        }
+
         return _buildEmptyView();
       },
     );
@@ -388,69 +424,85 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen> {
   }
 
   Widget _buildEmptyView() {
-    return Center(
-      child: Padding(
-        padding: EdgeInsets.all(32.w),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: EdgeInsets.all(24.w),
-              decoration: BoxDecoration(
-                color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
+    return RefreshIndicator(
+      onRefresh: () async {
+        context.read<GroupAccountCubit>().loadUserGroups();
+      },
+      color: const Color.fromARGB(255, 78, 3, 208),
+      backgroundColor: const Color(0xFF1F1F1F),
+      child: ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        children: [
+          SizedBox(height: MediaQuery.of(context).size.height * 0.15),
+          Padding(
+            padding: EdgeInsets.all(32.w),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: EdgeInsets.all(24.w),
+                  decoration: BoxDecoration(
+                    color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.groups,
+                    size: 48.sp,
+                    color: const Color.fromARGB(255, 78, 3, 208),
+                  ),
                 ),
-              ),
-              child: Icon(
-                Icons.groups,
-                size: 48.sp,
-                color: const Color.fromARGB(255, 78, 3, 208),
-              ),
-            ),
-            SizedBox(height: 24.h),
-            Text(
-              'No Groups Yet',
-              style: GoogleFonts.inter(
-                fontSize: 22.sp,
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
-              ),
-            ),
-            SizedBox(height: 12.h),
-            Text(
-              'Create your first group account to start managing shared contributions with friends and family.',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.inter(
-                fontSize: 14.sp,
-                color: Colors.grey[400],
-                height: 1.4,
-              ),
-            ),
-            SizedBox(height: 32.h),
-            ElevatedButton.icon(
-              onPressed: () => _showCreateGroupBottomSheet(),
-              icon: Icon(Icons.add, size: 20.sp),
-              label: Text(
-                'Create Group',
-                style: GoogleFonts.inter(
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.w600,
+                SizedBox(height: 24.h),
+                Text(
+                  'No Groups Yet',
+                  style: GoogleFonts.inter(
+                    fontSize: 22.sp,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
                 ),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color.fromARGB(255, 78, 3, 208),
-                foregroundColor: Colors.white,
-                padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 16.h),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12.r),
+                SizedBox(height: 12.h),
+                Text(
+                  'Create your first group account to start managing shared contributions with friends and family.',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.inter(
+                    fontSize: 14.sp,
+                    color: Colors.grey[400],
+                    height: 1.4,
+                  ),
                 ),
-                elevation: 0,
-              ),
+                SizedBox(height: 12.h),
+                Text(
+                  'Pull down to refresh',
+                  style: GoogleFonts.inter(
+                    fontSize: 12.sp,
+                    color: Colors.grey[600],
+                  ),
+                ),
+                SizedBox(height: 32.h),
+                ElevatedButton.icon(
+                  onPressed: () => _showCreateGroupBottomSheet(),
+                  icon: Icon(Icons.add, size: 20.sp),
+                  label: Text(
+                    'Create Group',
+                    style: GoogleFonts.inter(
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color.fromARGB(255, 78, 3, 208),
+                    foregroundColor: Colors.white,
+                    padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 16.h),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                    elevation: 0,
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -511,22 +563,28 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen> {
   }
 
   void _showCreateGroupBottomSheet() {
-    // Capture the cubit before showing the modal to avoid provider access issues
     final cubit = context.read<GroupAccountCubit>();
-    
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => BlocProvider.value(
-        value: cubit, // Use the captured cubit reference
+        value: cubit,
         child: const CreateGroupBottomSheet(),
       ),
     );
   }
 
   void _navigateToGroupDetails(GroupAccount group) {
-    // Navigate to group details screen
-    Get.toNamed(AppRoutes.groupDetails, arguments: group.id);
+    _navigatedToDetails = true;
+    Get.toNamed(AppRoutes.groupDetails, arguments: group.id)?.then((_) {
+      // When returning from details, restore groups list state
+      if (mounted && _navigatedToDetails) {
+        _navigatedToDetails = false;
+        print('🔵 GroupAccountListScreen: Returned from details, restoring groups');
+        context.read<GroupAccountCubit>().restoreGroupsListState();
+      }
+    });
   }
-} 
+}

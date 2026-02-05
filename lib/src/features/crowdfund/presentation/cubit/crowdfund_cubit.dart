@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../data/services/crowdfund_report_service.dart';
 import '../../domain/entities/crowdfund_entities.dart';
 import '../../domain/usecases/crowdfund_usecases.dart';
 import 'crowdfund_state.dart';
@@ -16,6 +17,7 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
   final GenerateDonationReceiptUseCase generateDonationReceiptUseCase;
   final GetUserReceiptsUseCase getUserReceiptsUseCase;
   final GetCrowdfundStatisticsUseCase getCrowdfundStatisticsUseCase;
+  final CrowdfundReportService? reportService;
 
   CrowdfundCubit({
     required this.createCrowdfundUseCase,
@@ -30,6 +32,7 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
     required this.generateDonationReceiptUseCase,
     required this.getUserReceiptsUseCase,
     required this.getCrowdfundStatisticsUseCase,
+    this.reportService,
   }) : super(const CrowdfundInitial());
 
   /// Load all crowdfunds with optional filters
@@ -423,5 +426,193 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
   void reset() {
     if (isClosed) return;
     emit(const CrowdfundInitial());
+  }
+
+  // ============================================================================
+  // REPORT METHODS
+  // ============================================================================
+
+  /// Generate AI-powered campaign report
+  Future<void> generateReport({
+    required Crowdfund crowdfund,
+    CrowdfundStatistics? statistics,
+    List<CrowdfundDonation>? donations,
+    String reportType = 'progress',
+    String? campaignUrl,
+  }) async {
+    if (reportService == null) {
+      if (isClosed) return;
+      emit(const CrowdfundError(
+        message: 'Report service not available',
+        errorCode: 'SERVICE_UNAVAILABLE',
+      ));
+      return;
+    }
+
+    try {
+      if (isClosed) return;
+      emit(const CrowdfundReportLoading(
+        message: 'Generating AI report...',
+      ));
+
+      // If statistics not provided, try to fetch them
+      final stats = statistics ??
+          await getCrowdfundStatisticsUseCase(crowdfund.id);
+
+      // If donations not provided, fetch recent ones
+      final recentDonations = donations ??
+          await getCrowdfundDonationsUseCase(
+            crowdfundId: crowdfund.id,
+            page: 1,
+            pageSize: 10,
+          );
+
+      final report = await reportService!.generateReport(
+        crowdfund: crowdfund,
+        statistics: stats,
+        contributions: recentDonations,
+        reportType: reportType,
+      );
+
+      if (isClosed) return;
+      emit(CrowdfundReportGenerated(
+        report: report,
+        crowdfund: crowdfund,
+        campaignUrl: campaignUrl,
+      ));
+    } on ReportGenerationException catch (e) {
+      if (isClosed) return;
+      emit(CrowdfundError(
+        message: e.message,
+        errorCode: 'REPORT_GENERATION_FAILED',
+      ));
+    } catch (e) {
+      if (isClosed) return;
+      emit(CrowdfundError(
+        message: 'Failed to generate report: ${e.toString()}',
+        errorCode: 'REPORT_GENERATION_ERROR',
+      ));
+    }
+  }
+
+  /// Share report to WhatsApp
+  Future<void> shareReportToWhatsApp(
+    CrowdfundReport report,
+    String? campaignUrl,
+  ) async {
+    if (reportService == null) return;
+
+    try {
+      await reportService!.shareToWhatsApp(report, campaignUrl);
+      if (isClosed) return;
+      emit(const CrowdfundReportShared(
+        platform: 'WhatsApp',
+        message: 'Report shared to WhatsApp',
+      ));
+    } catch (e) {
+      if (isClosed) return;
+      emit(CrowdfundReportShareError(
+        message: 'Failed to share to WhatsApp: $e',
+        platform: 'WhatsApp',
+      ));
+    }
+  }
+
+  /// Share report to Facebook
+  Future<void> shareReportToFacebook(
+    CrowdfundReport report,
+    String? campaignUrl,
+  ) async {
+    if (reportService == null) return;
+
+    try {
+      await reportService!.shareToFacebook(report, campaignUrl);
+      if (isClosed) return;
+      emit(const CrowdfundReportShared(
+        platform: 'Facebook',
+        message: 'Report shared to Facebook',
+      ));
+    } catch (e) {
+      if (isClosed) return;
+      emit(CrowdfundReportShareError(
+        message: 'Failed to share to Facebook: $e',
+        platform: 'Facebook',
+      ));
+    }
+  }
+
+  /// Share report to Telegram
+  Future<void> shareReportToTelegram(
+    CrowdfundReport report,
+    String? campaignUrl,
+  ) async {
+    if (reportService == null) return;
+
+    try {
+      await reportService!.shareToTelegram(report, campaignUrl);
+      if (isClosed) return;
+      emit(const CrowdfundReportShared(
+        platform: 'Telegram',
+        message: 'Report shared to Telegram',
+      ));
+    } catch (e) {
+      if (isClosed) return;
+      emit(CrowdfundReportShareError(
+        message: 'Failed to share to Telegram: $e',
+        platform: 'Telegram',
+      ));
+    }
+  }
+
+  /// Share report to Twitter/X
+  Future<void> shareReportToTwitter(
+    CrowdfundReport report,
+    String? campaignUrl,
+  ) async {
+    if (reportService == null) return;
+
+    try {
+      await reportService!.shareToTwitter(report, campaignUrl);
+      if (isClosed) return;
+      emit(const CrowdfundReportShared(
+        platform: 'Twitter',
+        message: 'Report shared to Twitter',
+      ));
+    } catch (e) {
+      if (isClosed) return;
+      emit(CrowdfundReportShareError(
+        message: 'Failed to share to Twitter: $e',
+        platform: 'Twitter',
+      ));
+    }
+  }
+
+  /// Share report using system share sheet
+  Future<void> shareReportGeneral(
+    CrowdfundReport report,
+    String? campaignUrl,
+  ) async {
+    if (reportService == null) return;
+
+    try {
+      await reportService!.shareGeneral(report, campaignUrl);
+      if (isClosed) return;
+      emit(const CrowdfundReportShared(
+        platform: 'General',
+        message: 'Report shared successfully',
+      ));
+    } catch (e) {
+      if (isClosed) return;
+      emit(CrowdfundReportShareError(
+        message: 'Failed to share report: $e',
+        platform: 'General',
+      ));
+    }
+  }
+
+  /// Get shareable text for copying
+  String? getShareableText(CrowdfundReport report, String? campaignUrl) {
+    if (reportService == null) return null;
+    return reportService!.getShareableText(report, campaignUrl);
   }
 }

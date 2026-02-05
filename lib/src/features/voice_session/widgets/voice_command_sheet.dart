@@ -28,7 +28,6 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
   late AnimationController _micAnimationController;
   final VoiceActivationManager _voiceActivationManager = VoiceActivationManager();
 
-  bool _isCheckingEnrollment = true;
   bool _voiceVerified = false;
 
   @override
@@ -48,9 +47,6 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
     final authState = context.read<AuthenticationCubit>().state;
 
     if (authState is! AuthenticationSuccess) {
-      setState(() {
-        _isCheckingEnrollment = false;
-      });
       return;
     }
 
@@ -71,10 +67,6 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
         }
       },
     );
-
-    setState(() {
-      _isCheckingEnrollment = false;
-    });
 
     if (!activated && !_voiceVerified) {
       // User canceled or failed verification, close the sheet

@@ -16,24 +16,12 @@ class CardSettings extends StatefulWidget {
 class _CardSettingsState extends State<CardSettings> {
   final _controller = ValueNotifier<bool>(false);
 
-// 2. In case, you want to call setState on switch changes.
-// 2.1. Add event listener, for example in the initState() method.
-// ...
-  bool _checked = false;
-
-// ...
   @override
   void initState() {
     super.initState();
 
     _controller.addListener(() {
-      setState(() {
-        if (_controller.value) {
-          _checked = true;
-        } else {
-          _checked = false;
-        }
-      });
+      setState(() {});
     });
   }
 

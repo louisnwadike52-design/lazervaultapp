@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../../core/services/injection_container.dart';
 import '../../../../../core/types/app_routes.dart';
+import 'package:lazervault/src/features/presentation/views/dashboard/dashboard_screen.dart';
 import '../cubit/tag_pay_cubit.dart';
 import '../cubit/tag_pay_state.dart';
 import '../../../profile/cubit/profile_cubit.dart';
@@ -164,7 +165,7 @@ class _TagPayHomeViewState extends State<_TagPayHomeView>
       child: Row(
         children: [
           GestureDetector(
-            onTap: () => Get.back(),
+            onTap: () => Get.offAll(() => const DashboardScreen()),
             child: Container(
               width: 44.w,
               height: 44.w,

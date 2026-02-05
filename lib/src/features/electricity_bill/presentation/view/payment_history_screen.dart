@@ -226,8 +226,6 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
 
   Widget _buildPaymentCard(BillPaymentEntity payment) {
     final dateFormat = DateFormat('MMM dd, yyyy');
-    final timeFormat = DateFormat('hh:mm a');
-
     return GestureDetector(
       onTap: () {
         if (payment.isCompleted) {

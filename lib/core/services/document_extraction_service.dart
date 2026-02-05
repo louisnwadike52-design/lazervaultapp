@@ -420,38 +420,6 @@ class DocumentExtractionService {
     return 'Image quality too low. Please provide a clearer image.';
   }
 
-  /// Mock extraction for development only
-  ///
-  /// NOTE: This should only be used in development environment.
-  /// In production, all extractions must go through the real API.
-  DocumentExtractionResult _mockExtraction(
-    String countryCode,
-    DocumentTypeForExtraction? documentType,
-  ) {
-    // Check if we're in development mode before allowing mock
-    final isDev = dotenv.env['ENVIRONMENT'] == 'development' ||
-                   dotenv.env['ENVIRONMENT'] == 'dev';
-
-    if (!isDev) {
-      return DocumentExtractionResult.failure(
-        'Mock extraction is only available in development mode',
-      );
-    }
-
-    // Return mock data for development
-    return DocumentExtractionResult.success(
-      {
-        'firstName': 'John',
-        'lastName': 'Doe',
-        'dateOfBirth': '1990-01-15',
-        'documentNumber': '12345678901',
-        'countryCode': countryCode,
-        '_mock': true,
-      },
-      ExtractionConfidence.medium,
-    );
-  }
-
   /// Verify extracted data against backend
   Future<DocumentExtractionResult> verifyWithBackend({
     required Map<String, dynamic> extractedData,

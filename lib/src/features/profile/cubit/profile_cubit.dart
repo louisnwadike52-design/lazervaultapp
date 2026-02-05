@@ -29,22 +29,31 @@ class ProfileCubit extends Cubit<ProfileState> {
         final user = data['user'];
         final preferences = data['preferences'];
 
-        // First emit ProfileLoaded so the UI is unblocked
+        // Emit ProfileLoaded so the UI is unblocked
         emit(ProfileLoaded(user: user, preferences: preferences));
 
-        // Sync activeCountry from LocaleManager if not already set
-        // This ensures the country selected during signup is persisted to preferences
+        // Best-effort sync: persist activeCountry from LocaleManager
+        // without going through state-emitting updatePreferences(),
+        // so a backend failure doesn't clobber the ProfileLoaded state.
         if (preferences.activeCountry.isEmpty) {
           try {
             final localeManager = serviceLocator<LocaleManager>();
             final countryFromLocale = localeManager.currentCountry;
             if (countryFromLocale.isNotEmpty) {
-              // Update preferences with the country from LocaleManager
-              await updatePreferences(activeCountry: countryFromLocale);
+              final result = await _repository.updatePreferences(
+                activeCountry: countryFromLocale,
+              );
+              result.fold(
+                (_) {}, // silently ignore failure
+                (updatedPrefs) {
+                  if (!isClosed && state is ProfileLoaded) {
+                    emit((state as ProfileLoaded).copyWith(preferences: updatedPrefs));
+                  }
+                },
+              );
             }
           } catch (e) {
             // Silently fail - locale sync is best effort
-            print('Error syncing country from LocaleManager: $e');
           }
         }
       },

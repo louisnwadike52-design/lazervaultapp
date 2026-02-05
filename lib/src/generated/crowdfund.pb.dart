@@ -10,7 +10,7 @@ import 'dart:core' as $core;
 import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'google/protobuf/timestamp.pb.dart' as $36;
+import 'google/protobuf/timestamp.pb.dart' as $1;
 
 import 'crowdfund.pbenum.dart';
 
@@ -24,7 +24,7 @@ class CrowdfundCreatorMessage extends $pb.GeneratedMessage {
     ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastName')
     ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'profilePicture')
     ..aOB(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'verified')
-    ..aOM<$36.Timestamp>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'verifiedAt', subBuilder: $36.Timestamp.create)
+    ..aOM<$1.Timestamp>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'verifiedAt', subBuilder: $1.Timestamp.create)
     ..aOB(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'facialRecognitionEnabled')
     ..hasRequiredFields = false
   ;
@@ -37,7 +37,7 @@ class CrowdfundCreatorMessage extends $pb.GeneratedMessage {
     $core.String? lastName,
     $core.String? profilePicture,
     $core.bool? verified,
-    $36.Timestamp? verifiedAt,
+    $1.Timestamp? verifiedAt,
     $core.bool? facialRecognitionEnabled,
   }) {
     final _result = create();
@@ -143,15 +143,15 @@ class CrowdfundCreatorMessage extends $pb.GeneratedMessage {
   void clearVerified() => clearField(6);
 
   @$pb.TagNumber(7)
-  $36.Timestamp get verifiedAt => $_getN(6);
+  $1.Timestamp get verifiedAt => $_getN(6);
   @$pb.TagNumber(7)
-  set verifiedAt($36.Timestamp v) { setField(7, v); }
+  set verifiedAt($1.Timestamp v) { setField(7, v); }
   @$pb.TagNumber(7)
   $core.bool hasVerifiedAt() => $_has(6);
   @$pb.TagNumber(7)
   void clearVerifiedAt() => clearField(7);
   @$pb.TagNumber(7)
-  $36.Timestamp ensureVerifiedAt() => $_ensure(6);
+  $1.Timestamp ensureVerifiedAt() => $_ensure(6);
 
   @$pb.TagNumber(8)
   $core.bool get facialRecognitionEnabled => $_getBF(7);
@@ -175,7 +175,7 @@ class CrowdfundMessage extends $pb.GeneratedMessage {
     ..a<$fixnum.Int64>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'targetAmount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..a<$fixnum.Int64>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currentAmount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
-    ..aOM<$36.Timestamp>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'deadline', subBuilder: $36.Timestamp.create)
+    ..aOM<$1.Timestamp>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'deadline', subBuilder: $1.Timestamp.create)
     ..aOS(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'category')
     ..e<CrowdfundStatus>(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: CrowdfundStatus.CROWDFUND_STATUS_UNSPECIFIED, valueOf: CrowdfundStatus.valueOf, enumValues: CrowdfundStatus.values)
     ..aOS(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'imageUrl')
@@ -183,8 +183,8 @@ class CrowdfundMessage extends $pb.GeneratedMessage {
     ..aOS(16, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'metadata')
     ..a<$core.int>(17, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'donorCount', $pb.PbFieldType.O3)
     ..a<$core.double>(18, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'progressPercentage', $pb.PbFieldType.OD)
-    ..aOM<$36.Timestamp>(19, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $36.Timestamp.create)
-    ..aOM<$36.Timestamp>(20, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $36.Timestamp.create)
+    ..aOM<$1.Timestamp>(19, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(20, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $1.Timestamp.create)
     ..pc<CrowdfundDonationMessage>(21, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recentDonations', $pb.PbFieldType.PM, subBuilder: CrowdfundDonationMessage.create)
     ..hasRequiredFields = false
   ;
@@ -201,7 +201,7 @@ class CrowdfundMessage extends $pb.GeneratedMessage {
     $fixnum.Int64? targetAmount,
     $fixnum.Int64? currentAmount,
     $core.String? currency,
-    $36.Timestamp? deadline,
+    $1.Timestamp? deadline,
     $core.String? category,
     CrowdfundStatus? status,
     $core.String? imageUrl,
@@ -209,8 +209,8 @@ class CrowdfundMessage extends $pb.GeneratedMessage {
     $core.String? metadata,
     $core.int? donorCount,
     $core.double? progressPercentage,
-    $36.Timestamp? createdAt,
-    $36.Timestamp? updatedAt,
+    $1.Timestamp? createdAt,
+    $1.Timestamp? updatedAt,
     $core.Iterable<CrowdfundDonationMessage>? recentDonations,
   }) {
     final _result = create();
@@ -393,15 +393,15 @@ class CrowdfundMessage extends $pb.GeneratedMessage {
   void clearCurrency() => clearField(10);
 
   @$pb.TagNumber(11)
-  $36.Timestamp get deadline => $_getN(10);
+  $1.Timestamp get deadline => $_getN(10);
   @$pb.TagNumber(11)
-  set deadline($36.Timestamp v) { setField(11, v); }
+  set deadline($1.Timestamp v) { setField(11, v); }
   @$pb.TagNumber(11)
   $core.bool hasDeadline() => $_has(10);
   @$pb.TagNumber(11)
   void clearDeadline() => clearField(11);
   @$pb.TagNumber(11)
-  $36.Timestamp ensureDeadline() => $_ensure(10);
+  $1.Timestamp ensureDeadline() => $_ensure(10);
 
   @$pb.TagNumber(12)
   $core.String get category => $_getSZ(11);
@@ -467,26 +467,26 @@ class CrowdfundMessage extends $pb.GeneratedMessage {
   void clearProgressPercentage() => clearField(18);
 
   @$pb.TagNumber(19)
-  $36.Timestamp get createdAt => $_getN(18);
+  $1.Timestamp get createdAt => $_getN(18);
   @$pb.TagNumber(19)
-  set createdAt($36.Timestamp v) { setField(19, v); }
+  set createdAt($1.Timestamp v) { setField(19, v); }
   @$pb.TagNumber(19)
   $core.bool hasCreatedAt() => $_has(18);
   @$pb.TagNumber(19)
   void clearCreatedAt() => clearField(19);
   @$pb.TagNumber(19)
-  $36.Timestamp ensureCreatedAt() => $_ensure(18);
+  $1.Timestamp ensureCreatedAt() => $_ensure(18);
 
   @$pb.TagNumber(20)
-  $36.Timestamp get updatedAt => $_getN(19);
+  $1.Timestamp get updatedAt => $_getN(19);
   @$pb.TagNumber(20)
-  set updatedAt($36.Timestamp v) { setField(20, v); }
+  set updatedAt($1.Timestamp v) { setField(20, v); }
   @$pb.TagNumber(20)
   $core.bool hasUpdatedAt() => $_has(19);
   @$pb.TagNumber(20)
   void clearUpdatedAt() => clearField(20);
   @$pb.TagNumber(20)
-  $36.Timestamp ensureUpdatedAt() => $_ensure(19);
+  $1.Timestamp ensureUpdatedAt() => $_ensure(19);
 
   @$pb.TagNumber(21)
   $core.List<CrowdfundDonationMessage> get recentDonations => $_getList(20);
@@ -603,7 +603,7 @@ class CrowdfundDonationMessage extends $pb.GeneratedMessage {
     ..aOM<CrowdfundDonorMessage>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'donor', subBuilder: CrowdfundDonorMessage.create)
     ..a<$fixnum.Int64>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
-    ..aOM<$36.Timestamp>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'donationDate', subBuilder: $36.Timestamp.create)
+    ..aOM<$1.Timestamp>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'donationDate', subBuilder: $1.Timestamp.create)
     ..e<DonationStatus>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: DonationStatus.DONATION_STATUS_UNSPECIFIED, valueOf: DonationStatus.valueOf, enumValues: DonationStatus.values)
     ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactionId')
     ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'receiptId')
@@ -622,7 +622,7 @@ class CrowdfundDonationMessage extends $pb.GeneratedMessage {
     CrowdfundDonorMessage? donor,
     $fixnum.Int64? amount,
     $core.String? currency,
-    $36.Timestamp? donationDate,
+    $1.Timestamp? donationDate,
     DonationStatus? status,
     $core.String? transactionId,
     $core.String? receiptId,
@@ -754,15 +754,15 @@ class CrowdfundDonationMessage extends $pb.GeneratedMessage {
   void clearCurrency() => clearField(6);
 
   @$pb.TagNumber(7)
-  $36.Timestamp get donationDate => $_getN(6);
+  $1.Timestamp get donationDate => $_getN(6);
   @$pb.TagNumber(7)
-  set donationDate($36.Timestamp v) { setField(7, v); }
+  set donationDate($1.Timestamp v) { setField(7, v); }
   @$pb.TagNumber(7)
   $core.bool hasDonationDate() => $_has(6);
   @$pb.TagNumber(7)
   void clearDonationDate() => clearField(7);
   @$pb.TagNumber(7)
-  $36.Timestamp ensureDonationDate() => $_ensure(6);
+  $1.Timestamp ensureDonationDate() => $_ensure(6);
 
   @$pb.TagNumber(8)
   DonationStatus get status => $_getN(7);
@@ -838,8 +838,8 @@ class CrowdfundReceiptMessage extends $pb.GeneratedMessage {
     ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'donorName')
     ..a<$fixnum.Int64>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
-    ..aOM<$36.Timestamp>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'donationDate', subBuilder: $36.Timestamp.create)
-    ..aOM<$36.Timestamp>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'generatedAt', subBuilder: $36.Timestamp.create)
+    ..aOM<$1.Timestamp>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'donationDate', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'generatedAt', subBuilder: $1.Timestamp.create)
     ..aOS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'receiptNumber')
     ..aOS(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'receiptData')
     ..hasRequiredFields = false
@@ -855,8 +855,8 @@ class CrowdfundReceiptMessage extends $pb.GeneratedMessage {
     $core.String? donorName,
     $fixnum.Int64? amount,
     $core.String? currency,
-    $36.Timestamp? donationDate,
-    $36.Timestamp? generatedAt,
+    $1.Timestamp? donationDate,
+    $1.Timestamp? generatedAt,
     $core.String? receiptNumber,
     $core.String? receiptData,
   }) {
@@ -993,26 +993,26 @@ class CrowdfundReceiptMessage extends $pb.GeneratedMessage {
   void clearCurrency() => clearField(8);
 
   @$pb.TagNumber(9)
-  $36.Timestamp get donationDate => $_getN(8);
+  $1.Timestamp get donationDate => $_getN(8);
   @$pb.TagNumber(9)
-  set donationDate($36.Timestamp v) { setField(9, v); }
+  set donationDate($1.Timestamp v) { setField(9, v); }
   @$pb.TagNumber(9)
   $core.bool hasDonationDate() => $_has(8);
   @$pb.TagNumber(9)
   void clearDonationDate() => clearField(9);
   @$pb.TagNumber(9)
-  $36.Timestamp ensureDonationDate() => $_ensure(8);
+  $1.Timestamp ensureDonationDate() => $_ensure(8);
 
   @$pb.TagNumber(10)
-  $36.Timestamp get generatedAt => $_getN(9);
+  $1.Timestamp get generatedAt => $_getN(9);
   @$pb.TagNumber(10)
-  set generatedAt($36.Timestamp v) { setField(10, v); }
+  set generatedAt($1.Timestamp v) { setField(10, v); }
   @$pb.TagNumber(10)
   $core.bool hasGeneratedAt() => $_has(9);
   @$pb.TagNumber(10)
   void clearGeneratedAt() => clearField(10);
   @$pb.TagNumber(10)
-  $36.Timestamp ensureGeneratedAt() => $_ensure(9);
+  $1.Timestamp ensureGeneratedAt() => $_ensure(9);
 
   @$pb.TagNumber(11)
   $core.String get receiptNumber => $_getSZ(10);
@@ -1040,7 +1040,7 @@ class CreateCrowdfundRequest extends $pb.GeneratedMessage {
     ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'story')
     ..a<$fixnum.Int64>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'targetAmount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
-    ..aOM<$36.Timestamp>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'deadline', subBuilder: $36.Timestamp.create)
+    ..aOM<$1.Timestamp>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'deadline', subBuilder: $1.Timestamp.create)
     ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'category')
     ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'imageUrl')
     ..e<CrowdfundVisibility>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'visibility', $pb.PbFieldType.OE, defaultOrMaker: CrowdfundVisibility.CROWDFUND_VISIBILITY_UNSPECIFIED, valueOf: CrowdfundVisibility.valueOf, enumValues: CrowdfundVisibility.values)
@@ -1055,7 +1055,7 @@ class CreateCrowdfundRequest extends $pb.GeneratedMessage {
     $core.String? story,
     $fixnum.Int64? targetAmount,
     $core.String? currency,
-    $36.Timestamp? deadline,
+    $1.Timestamp? deadline,
     $core.String? category,
     $core.String? imageUrl,
     CrowdfundVisibility? visibility,
@@ -1161,15 +1161,15 @@ class CreateCrowdfundRequest extends $pb.GeneratedMessage {
   void clearCurrency() => clearField(5);
 
   @$pb.TagNumber(6)
-  $36.Timestamp get deadline => $_getN(5);
+  $1.Timestamp get deadline => $_getN(5);
   @$pb.TagNumber(6)
-  set deadline($36.Timestamp v) { setField(6, v); }
+  set deadline($1.Timestamp v) { setField(6, v); }
   @$pb.TagNumber(6)
   $core.bool hasDeadline() => $_has(5);
   @$pb.TagNumber(6)
   void clearDeadline() => clearField(6);
   @$pb.TagNumber(6)
-  $36.Timestamp ensureDeadline() => $_ensure(5);
+  $1.Timestamp ensureDeadline() => $_ensure(5);
 
   @$pb.TagNumber(7)
   $core.String get category => $_getSZ(6);
@@ -1621,7 +1621,7 @@ class UpdateCrowdfundRequest extends $pb.GeneratedMessage {
     ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'title')
     ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
     ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'story')
-    ..aOM<$36.Timestamp>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'deadline', subBuilder: $36.Timestamp.create)
+    ..aOM<$1.Timestamp>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'deadline', subBuilder: $1.Timestamp.create)
     ..e<CrowdfundStatus>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: CrowdfundStatus.CROWDFUND_STATUS_UNSPECIFIED, valueOf: CrowdfundStatus.valueOf, enumValues: CrowdfundStatus.values)
     ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'imageUrl')
     ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'metadata')
@@ -1634,7 +1634,7 @@ class UpdateCrowdfundRequest extends $pb.GeneratedMessage {
     $core.String? title,
     $core.String? description,
     $core.String? story,
-    $36.Timestamp? deadline,
+    $1.Timestamp? deadline,
     CrowdfundStatus? status,
     $core.String? imageUrl,
     $core.String? metadata,
@@ -1724,15 +1724,15 @@ class UpdateCrowdfundRequest extends $pb.GeneratedMessage {
   void clearStory() => clearField(4);
 
   @$pb.TagNumber(5)
-  $36.Timestamp get deadline => $_getN(4);
+  $1.Timestamp get deadline => $_getN(4);
   @$pb.TagNumber(5)
-  set deadline($36.Timestamp v) { setField(5, v); }
+  set deadline($1.Timestamp v) { setField(5, v); }
   @$pb.TagNumber(5)
   $core.bool hasDeadline() => $_has(4);
   @$pb.TagNumber(5)
   void clearDeadline() => clearField(5);
   @$pb.TagNumber(5)
-  $36.Timestamp ensureDeadline() => $_ensure(4);
+  $1.Timestamp ensureDeadline() => $_ensure(4);
 
   @$pb.TagNumber(6)
   CrowdfundStatus get status => $_getN(5);
@@ -2593,7 +2593,13 @@ class GetCrowdfundStatisticsResponse extends $pb.GeneratedMessage {
     ..a<$fixnum.Int64>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'largestDonation', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..a<$core.int>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'daysRemaining', $pb.PbFieldType.O3)
     ..aOB(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isCompleted')
-    ..aOM<$36.Timestamp>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $36.Timestamp.create)
+    ..aOM<$1.Timestamp>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
+    ..a<$core.int>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'uniqueDonors', $pb.PbFieldType.O3)
+    ..a<$fixnum.Int64>(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'smallestDonation', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..pc<ContributorLeaderboardEntry>(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'topContributors', $pb.PbFieldType.PM, subBuilder: ContributorLeaderboardEntry.create)
+    ..pc<DailyProgressEntry>(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'dailyProgress', $pb.PbFieldType.PM, subBuilder: DailyProgressEntry.create)
+    ..a<$core.double>(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'fundingVelocity', $pb.PbFieldType.OD)
+    ..aOS(16, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'projectedCompletionDate')
     ..hasRequiredFields = false
   ;
 
@@ -2608,7 +2614,13 @@ class GetCrowdfundStatisticsResponse extends $pb.GeneratedMessage {
     $fixnum.Int64? largestDonation,
     $core.int? daysRemaining,
     $core.bool? isCompleted,
-    $36.Timestamp? createdAt,
+    $1.Timestamp? createdAt,
+    $core.int? uniqueDonors,
+    $fixnum.Int64? smallestDonation,
+    $core.Iterable<ContributorLeaderboardEntry>? topContributors,
+    $core.Iterable<DailyProgressEntry>? dailyProgress,
+    $core.double? fundingVelocity,
+    $core.String? projectedCompletionDate,
   }) {
     final _result = create();
     if (crowdfundId != null) {
@@ -2640,6 +2652,24 @@ class GetCrowdfundStatisticsResponse extends $pb.GeneratedMessage {
     }
     if (createdAt != null) {
       _result.createdAt = createdAt;
+    }
+    if (uniqueDonors != null) {
+      _result.uniqueDonors = uniqueDonors;
+    }
+    if (smallestDonation != null) {
+      _result.smallestDonation = smallestDonation;
+    }
+    if (topContributors != null) {
+      _result.topContributors.addAll(topContributors);
+    }
+    if (dailyProgress != null) {
+      _result.dailyProgress.addAll(dailyProgress);
+    }
+    if (fundingVelocity != null) {
+      _result.fundingVelocity = fundingVelocity;
+    }
+    if (projectedCompletionDate != null) {
+      _result.projectedCompletionDate = projectedCompletionDate;
     }
     return _result;
   }
@@ -2746,15 +2776,249 @@ class GetCrowdfundStatisticsResponse extends $pb.GeneratedMessage {
   void clearIsCompleted() => clearField(9);
 
   @$pb.TagNumber(10)
-  $36.Timestamp get createdAt => $_getN(9);
+  $1.Timestamp get createdAt => $_getN(9);
   @$pb.TagNumber(10)
-  set createdAt($36.Timestamp v) { setField(10, v); }
+  set createdAt($1.Timestamp v) { setField(10, v); }
   @$pb.TagNumber(10)
   $core.bool hasCreatedAt() => $_has(9);
   @$pb.TagNumber(10)
   void clearCreatedAt() => clearField(10);
   @$pb.TagNumber(10)
-  $36.Timestamp ensureCreatedAt() => $_ensure(9);
+  $1.Timestamp ensureCreatedAt() => $_ensure(9);
+
+  @$pb.TagNumber(11)
+  $core.int get uniqueDonors => $_getIZ(10);
+  @$pb.TagNumber(11)
+  set uniqueDonors($core.int v) { $_setSignedInt32(10, v); }
+  @$pb.TagNumber(11)
+  $core.bool hasUniqueDonors() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearUniqueDonors() => clearField(11);
+
+  @$pb.TagNumber(12)
+  $fixnum.Int64 get smallestDonation => $_getI64(11);
+  @$pb.TagNumber(12)
+  set smallestDonation($fixnum.Int64 v) { $_setInt64(11, v); }
+  @$pb.TagNumber(12)
+  $core.bool hasSmallestDonation() => $_has(11);
+  @$pb.TagNumber(12)
+  void clearSmallestDonation() => clearField(12);
+
+  @$pb.TagNumber(13)
+  $core.List<ContributorLeaderboardEntry> get topContributors => $_getList(12);
+
+  @$pb.TagNumber(14)
+  $core.List<DailyProgressEntry> get dailyProgress => $_getList(13);
+
+  @$pb.TagNumber(15)
+  $core.double get fundingVelocity => $_getN(14);
+  @$pb.TagNumber(15)
+  set fundingVelocity($core.double v) { $_setDouble(14, v); }
+  @$pb.TagNumber(15)
+  $core.bool hasFundingVelocity() => $_has(14);
+  @$pb.TagNumber(15)
+  void clearFundingVelocity() => clearField(15);
+
+  @$pb.TagNumber(16)
+  $core.String get projectedCompletionDate => $_getSZ(15);
+  @$pb.TagNumber(16)
+  set projectedCompletionDate($core.String v) { $_setString(15, v); }
+  @$pb.TagNumber(16)
+  $core.bool hasProjectedCompletionDate() => $_has(15);
+  @$pb.TagNumber(16)
+  void clearProjectedCompletionDate() => clearField(16);
+}
+
+class ContributorLeaderboardEntry extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ContributorLeaderboardEntry', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..a<$core.int>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'rank', $pb.PbFieldType.O3)
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'displayName')
+    ..a<$core.double>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalAmount', $pb.PbFieldType.OD)
+    ..a<$core.int>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'contributionCount', $pb.PbFieldType.O3)
+    ..aOB(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isAnonymous')
+    ..hasRequiredFields = false
+  ;
+
+  ContributorLeaderboardEntry._() : super();
+  factory ContributorLeaderboardEntry({
+    $core.int? rank,
+    $core.String? displayName,
+    $core.double? totalAmount,
+    $core.int? contributionCount,
+    $core.bool? isAnonymous,
+  }) {
+    final _result = create();
+    if (rank != null) {
+      _result.rank = rank;
+    }
+    if (displayName != null) {
+      _result.displayName = displayName;
+    }
+    if (totalAmount != null) {
+      _result.totalAmount = totalAmount;
+    }
+    if (contributionCount != null) {
+      _result.contributionCount = contributionCount;
+    }
+    if (isAnonymous != null) {
+      _result.isAnonymous = isAnonymous;
+    }
+    return _result;
+  }
+  factory ContributorLeaderboardEntry.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory ContributorLeaderboardEntry.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  ContributorLeaderboardEntry clone() => ContributorLeaderboardEntry()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  ContributorLeaderboardEntry copyWith(void Function(ContributorLeaderboardEntry) updates) => super.copyWith((message) => updates(message as ContributorLeaderboardEntry)) as ContributorLeaderboardEntry; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static ContributorLeaderboardEntry create() => ContributorLeaderboardEntry._();
+  ContributorLeaderboardEntry createEmptyInstance() => create();
+  static $pb.PbList<ContributorLeaderboardEntry> createRepeated() => $pb.PbList<ContributorLeaderboardEntry>();
+  @$core.pragma('dart2js:noInline')
+  static ContributorLeaderboardEntry getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ContributorLeaderboardEntry>(create);
+  static ContributorLeaderboardEntry? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.int get rank => $_getIZ(0);
+  @$pb.TagNumber(1)
+  set rank($core.int v) { $_setSignedInt32(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasRank() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearRank() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get displayName => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set displayName($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasDisplayName() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearDisplayName() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.double get totalAmount => $_getN(2);
+  @$pb.TagNumber(3)
+  set totalAmount($core.double v) { $_setDouble(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasTotalAmount() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearTotalAmount() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.int get contributionCount => $_getIZ(3);
+  @$pb.TagNumber(4)
+  set contributionCount($core.int v) { $_setSignedInt32(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasContributionCount() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearContributionCount() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.bool get isAnonymous => $_getBF(4);
+  @$pb.TagNumber(5)
+  set isAnonymous($core.bool v) { $_setBool(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasIsAnonymous() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearIsAnonymous() => clearField(5);
+}
+
+class DailyProgressEntry extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'DailyProgressEntry', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'date')
+    ..a<$core.double>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
+    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'donationCount', $pb.PbFieldType.O3)
+    ..a<$core.double>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'cumulativeAmount', $pb.PbFieldType.OD)
+    ..hasRequiredFields = false
+  ;
+
+  DailyProgressEntry._() : super();
+  factory DailyProgressEntry({
+    $core.String? date,
+    $core.double? amount,
+    $core.int? donationCount,
+    $core.double? cumulativeAmount,
+  }) {
+    final _result = create();
+    if (date != null) {
+      _result.date = date;
+    }
+    if (amount != null) {
+      _result.amount = amount;
+    }
+    if (donationCount != null) {
+      _result.donationCount = donationCount;
+    }
+    if (cumulativeAmount != null) {
+      _result.cumulativeAmount = cumulativeAmount;
+    }
+    return _result;
+  }
+  factory DailyProgressEntry.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory DailyProgressEntry.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  DailyProgressEntry clone() => DailyProgressEntry()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  DailyProgressEntry copyWith(void Function(DailyProgressEntry) updates) => super.copyWith((message) => updates(message as DailyProgressEntry)) as DailyProgressEntry; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static DailyProgressEntry create() => DailyProgressEntry._();
+  DailyProgressEntry createEmptyInstance() => create();
+  static $pb.PbList<DailyProgressEntry> createRepeated() => $pb.PbList<DailyProgressEntry>();
+  @$core.pragma('dart2js:noInline')
+  static DailyProgressEntry getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<DailyProgressEntry>(create);
+  static DailyProgressEntry? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get date => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set date($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasDate() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearDate() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.double get amount => $_getN(1);
+  @$pb.TagNumber(2)
+  set amount($core.double v) { $_setDouble(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasAmount() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearAmount() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.int get donationCount => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set donationCount($core.int v) { $_setSignedInt32(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasDonationCount() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearDonationCount() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.double get cumulativeAmount => $_getN(3);
+  @$pb.TagNumber(4)
+  set cumulativeAmount($core.double v) { $_setDouble(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasCumulativeAmount() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearCumulativeAmount() => clearField(4);
 }
 
 class CrowdfundPaginationInfo extends $pb.GeneratedMessage {
@@ -3106,5 +3370,2141 @@ class CrowdfundReceiptPaginationInfo extends $pb.GeneratedMessage {
   $core.bool hasHasPrev() => $_has(5);
   @$pb.TagNumber(6)
   void clearHasPrev() => clearField(6);
+}
+
+class NotificationChannelMessage extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'NotificationChannelMessage', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'crowdfundId')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'creatorUserId')
+    ..e<NotificationChannelType>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'channelType', $pb.PbFieldType.OE, defaultOrMaker: NotificationChannelType.NOTIFICATION_CHANNEL_TYPE_UNSPECIFIED, valueOf: NotificationChannelType.valueOf, enumValues: NotificationChannelType.values)
+    ..e<NotificationChannelStatus>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: NotificationChannelStatus.NOTIFICATION_CHANNEL_STATUS_UNSPECIFIED, valueOf: NotificationChannelStatus.valueOf, enumValues: NotificationChannelStatus.values)
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'channelName')
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'channelUsername')
+    ..pc<NotificationEventType>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'enabledEvents', $pb.PbFieldType.KE, valueOf: NotificationEventType.valueOf, enumValues: NotificationEventType.values, defaultEnumValue: NotificationEventType.NOTIFICATION_EVENT_TYPE_UNSPECIFIED)
+    ..aOM<NotificationPreferencesMessage>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'preferences', subBuilder: NotificationPreferencesMessage.create)
+    ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastNotificationAt')
+    ..a<$core.int>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'notificationCount', $pb.PbFieldType.O3)
+    ..a<$core.int>(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'failureCount', $pb.PbFieldType.O3)
+    ..aOS(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastError')
+    ..aOS(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt')
+    ..aOS(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt')
+    ..hasRequiredFields = false
+  ;
+
+  NotificationChannelMessage._() : super();
+  factory NotificationChannelMessage({
+    $core.String? id,
+    $core.String? crowdfundId,
+    $core.String? creatorUserId,
+    NotificationChannelType? channelType,
+    NotificationChannelStatus? status,
+    $core.String? channelName,
+    $core.String? channelUsername,
+    $core.Iterable<NotificationEventType>? enabledEvents,
+    NotificationPreferencesMessage? preferences,
+    $core.String? lastNotificationAt,
+    $core.int? notificationCount,
+    $core.int? failureCount,
+    $core.String? lastError,
+    $core.String? createdAt,
+    $core.String? updatedAt,
+  }) {
+    final _result = create();
+    if (id != null) {
+      _result.id = id;
+    }
+    if (crowdfundId != null) {
+      _result.crowdfundId = crowdfundId;
+    }
+    if (creatorUserId != null) {
+      _result.creatorUserId = creatorUserId;
+    }
+    if (channelType != null) {
+      _result.channelType = channelType;
+    }
+    if (status != null) {
+      _result.status = status;
+    }
+    if (channelName != null) {
+      _result.channelName = channelName;
+    }
+    if (channelUsername != null) {
+      _result.channelUsername = channelUsername;
+    }
+    if (enabledEvents != null) {
+      _result.enabledEvents.addAll(enabledEvents);
+    }
+    if (preferences != null) {
+      _result.preferences = preferences;
+    }
+    if (lastNotificationAt != null) {
+      _result.lastNotificationAt = lastNotificationAt;
+    }
+    if (notificationCount != null) {
+      _result.notificationCount = notificationCount;
+    }
+    if (failureCount != null) {
+      _result.failureCount = failureCount;
+    }
+    if (lastError != null) {
+      _result.lastError = lastError;
+    }
+    if (createdAt != null) {
+      _result.createdAt = createdAt;
+    }
+    if (updatedAt != null) {
+      _result.updatedAt = updatedAt;
+    }
+    return _result;
+  }
+  factory NotificationChannelMessage.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory NotificationChannelMessage.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  NotificationChannelMessage clone() => NotificationChannelMessage()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  NotificationChannelMessage copyWith(void Function(NotificationChannelMessage) updates) => super.copyWith((message) => updates(message as NotificationChannelMessage)) as NotificationChannelMessage; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static NotificationChannelMessage create() => NotificationChannelMessage._();
+  NotificationChannelMessage createEmptyInstance() => create();
+  static $pb.PbList<NotificationChannelMessage> createRepeated() => $pb.PbList<NotificationChannelMessage>();
+  @$core.pragma('dart2js:noInline')
+  static NotificationChannelMessage getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<NotificationChannelMessage>(create);
+  static NotificationChannelMessage? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get id => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set id($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get crowdfundId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set crowdfundId($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasCrowdfundId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearCrowdfundId() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get creatorUserId => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set creatorUserId($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasCreatorUserId() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearCreatorUserId() => clearField(3);
+
+  @$pb.TagNumber(4)
+  NotificationChannelType get channelType => $_getN(3);
+  @$pb.TagNumber(4)
+  set channelType(NotificationChannelType v) { setField(4, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasChannelType() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearChannelType() => clearField(4);
+
+  @$pb.TagNumber(5)
+  NotificationChannelStatus get status => $_getN(4);
+  @$pb.TagNumber(5)
+  set status(NotificationChannelStatus v) { setField(5, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasStatus() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearStatus() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get channelName => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set channelName($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasChannelName() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearChannelName() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.String get channelUsername => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set channelUsername($core.String v) { $_setString(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasChannelUsername() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearChannelUsername() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.List<NotificationEventType> get enabledEvents => $_getList(7);
+
+  @$pb.TagNumber(9)
+  NotificationPreferencesMessage get preferences => $_getN(8);
+  @$pb.TagNumber(9)
+  set preferences(NotificationPreferencesMessage v) { setField(9, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasPreferences() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearPreferences() => clearField(9);
+  @$pb.TagNumber(9)
+  NotificationPreferencesMessage ensurePreferences() => $_ensure(8);
+
+  @$pb.TagNumber(10)
+  $core.String get lastNotificationAt => $_getSZ(9);
+  @$pb.TagNumber(10)
+  set lastNotificationAt($core.String v) { $_setString(9, v); }
+  @$pb.TagNumber(10)
+  $core.bool hasLastNotificationAt() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearLastNotificationAt() => clearField(10);
+
+  @$pb.TagNumber(11)
+  $core.int get notificationCount => $_getIZ(10);
+  @$pb.TagNumber(11)
+  set notificationCount($core.int v) { $_setSignedInt32(10, v); }
+  @$pb.TagNumber(11)
+  $core.bool hasNotificationCount() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearNotificationCount() => clearField(11);
+
+  @$pb.TagNumber(12)
+  $core.int get failureCount => $_getIZ(11);
+  @$pb.TagNumber(12)
+  set failureCount($core.int v) { $_setSignedInt32(11, v); }
+  @$pb.TagNumber(12)
+  $core.bool hasFailureCount() => $_has(11);
+  @$pb.TagNumber(12)
+  void clearFailureCount() => clearField(12);
+
+  @$pb.TagNumber(13)
+  $core.String get lastError => $_getSZ(12);
+  @$pb.TagNumber(13)
+  set lastError($core.String v) { $_setString(12, v); }
+  @$pb.TagNumber(13)
+  $core.bool hasLastError() => $_has(12);
+  @$pb.TagNumber(13)
+  void clearLastError() => clearField(13);
+
+  @$pb.TagNumber(14)
+  $core.String get createdAt => $_getSZ(13);
+  @$pb.TagNumber(14)
+  set createdAt($core.String v) { $_setString(13, v); }
+  @$pb.TagNumber(14)
+  $core.bool hasCreatedAt() => $_has(13);
+  @$pb.TagNumber(14)
+  void clearCreatedAt() => clearField(14);
+
+  @$pb.TagNumber(15)
+  $core.String get updatedAt => $_getSZ(14);
+  @$pb.TagNumber(15)
+  set updatedAt($core.String v) { $_setString(14, v); }
+  @$pb.TagNumber(15)
+  $core.bool hasUpdatedAt() => $_has(14);
+  @$pb.TagNumber(15)
+  void clearUpdatedAt() => clearField(15);
+}
+
+class NotificationPreferencesMessage extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'NotificationPreferencesMessage', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'includeDonorName')
+    ..aOB(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'includeAmount')
+    ..aOB(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'includeMessage')
+    ..aOB(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'includeProgress')
+    ..aOB(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'includeLeaderboard')
+    ..a<$core.double>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'largeDonationThreshold', $pb.PbFieldType.OD)
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'messageTemplate')
+    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'language')
+    ..aOB(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'quietHoursEnabled')
+    ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'quietHoursStart')
+    ..aOS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'quietHoursEnd')
+    ..aOS(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'timezone')
+    ..hasRequiredFields = false
+  ;
+
+  NotificationPreferencesMessage._() : super();
+  factory NotificationPreferencesMessage({
+    $core.bool? includeDonorName,
+    $core.bool? includeAmount,
+    $core.bool? includeMessage,
+    $core.bool? includeProgress,
+    $core.bool? includeLeaderboard,
+    $core.double? largeDonationThreshold,
+    $core.String? messageTemplate,
+    $core.String? language,
+    $core.bool? quietHoursEnabled,
+    $core.String? quietHoursStart,
+    $core.String? quietHoursEnd,
+    $core.String? timezone,
+  }) {
+    final _result = create();
+    if (includeDonorName != null) {
+      _result.includeDonorName = includeDonorName;
+    }
+    if (includeAmount != null) {
+      _result.includeAmount = includeAmount;
+    }
+    if (includeMessage != null) {
+      _result.includeMessage = includeMessage;
+    }
+    if (includeProgress != null) {
+      _result.includeProgress = includeProgress;
+    }
+    if (includeLeaderboard != null) {
+      _result.includeLeaderboard = includeLeaderboard;
+    }
+    if (largeDonationThreshold != null) {
+      _result.largeDonationThreshold = largeDonationThreshold;
+    }
+    if (messageTemplate != null) {
+      _result.messageTemplate = messageTemplate;
+    }
+    if (language != null) {
+      _result.language = language;
+    }
+    if (quietHoursEnabled != null) {
+      _result.quietHoursEnabled = quietHoursEnabled;
+    }
+    if (quietHoursStart != null) {
+      _result.quietHoursStart = quietHoursStart;
+    }
+    if (quietHoursEnd != null) {
+      _result.quietHoursEnd = quietHoursEnd;
+    }
+    if (timezone != null) {
+      _result.timezone = timezone;
+    }
+    return _result;
+  }
+  factory NotificationPreferencesMessage.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory NotificationPreferencesMessage.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  NotificationPreferencesMessage clone() => NotificationPreferencesMessage()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  NotificationPreferencesMessage copyWith(void Function(NotificationPreferencesMessage) updates) => super.copyWith((message) => updates(message as NotificationPreferencesMessage)) as NotificationPreferencesMessage; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static NotificationPreferencesMessage create() => NotificationPreferencesMessage._();
+  NotificationPreferencesMessage createEmptyInstance() => create();
+  static $pb.PbList<NotificationPreferencesMessage> createRepeated() => $pb.PbList<NotificationPreferencesMessage>();
+  @$core.pragma('dart2js:noInline')
+  static NotificationPreferencesMessage getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<NotificationPreferencesMessage>(create);
+  static NotificationPreferencesMessage? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get includeDonorName => $_getBF(0);
+  @$pb.TagNumber(1)
+  set includeDonorName($core.bool v) { $_setBool(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasIncludeDonorName() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearIncludeDonorName() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.bool get includeAmount => $_getBF(1);
+  @$pb.TagNumber(2)
+  set includeAmount($core.bool v) { $_setBool(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasIncludeAmount() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearIncludeAmount() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.bool get includeMessage => $_getBF(2);
+  @$pb.TagNumber(3)
+  set includeMessage($core.bool v) { $_setBool(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasIncludeMessage() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearIncludeMessage() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.bool get includeProgress => $_getBF(3);
+  @$pb.TagNumber(4)
+  set includeProgress($core.bool v) { $_setBool(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasIncludeProgress() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearIncludeProgress() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.bool get includeLeaderboard => $_getBF(4);
+  @$pb.TagNumber(5)
+  set includeLeaderboard($core.bool v) { $_setBool(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasIncludeLeaderboard() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearIncludeLeaderboard() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.double get largeDonationThreshold => $_getN(5);
+  @$pb.TagNumber(6)
+  set largeDonationThreshold($core.double v) { $_setDouble(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasLargeDonationThreshold() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearLargeDonationThreshold() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.String get messageTemplate => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set messageTemplate($core.String v) { $_setString(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasMessageTemplate() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearMessageTemplate() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.String get language => $_getSZ(7);
+  @$pb.TagNumber(8)
+  set language($core.String v) { $_setString(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasLanguage() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearLanguage() => clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.bool get quietHoursEnabled => $_getBF(8);
+  @$pb.TagNumber(9)
+  set quietHoursEnabled($core.bool v) { $_setBool(8, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasQuietHoursEnabled() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearQuietHoursEnabled() => clearField(9);
+
+  @$pb.TagNumber(10)
+  $core.String get quietHoursStart => $_getSZ(9);
+  @$pb.TagNumber(10)
+  set quietHoursStart($core.String v) { $_setString(9, v); }
+  @$pb.TagNumber(10)
+  $core.bool hasQuietHoursStart() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearQuietHoursStart() => clearField(10);
+
+  @$pb.TagNumber(11)
+  $core.String get quietHoursEnd => $_getSZ(10);
+  @$pb.TagNumber(11)
+  set quietHoursEnd($core.String v) { $_setString(10, v); }
+  @$pb.TagNumber(11)
+  $core.bool hasQuietHoursEnd() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearQuietHoursEnd() => clearField(11);
+
+  @$pb.TagNumber(12)
+  $core.String get timezone => $_getSZ(11);
+  @$pb.TagNumber(12)
+  set timezone($core.String v) { $_setString(11, v); }
+  @$pb.TagNumber(12)
+  $core.bool hasTimezone() => $_has(11);
+  @$pb.TagNumber(12)
+  void clearTimezone() => clearField(12);
+}
+
+class NotificationDeliveryMessage extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'NotificationDeliveryMessage', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'channelId')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'crowdfundId')
+    ..e<NotificationEventType>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'eventType', $pb.PbFieldType.OE, defaultOrMaker: NotificationEventType.NOTIFICATION_EVENT_TYPE_UNSPECIFIED, valueOf: NotificationEventType.valueOf, enumValues: NotificationEventType.values)
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'eventData')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'messageContent')
+    ..aOB(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'errorMessage')
+    ..a<$core.int>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'retryCount', $pb.PbFieldType.O3)
+    ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'platformMessageId')
+    ..aOS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt')
+    ..aOS(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'deliveredAt')
+    ..hasRequiredFields = false
+  ;
+
+  NotificationDeliveryMessage._() : super();
+  factory NotificationDeliveryMessage({
+    $core.String? id,
+    $core.String? channelId,
+    $core.String? crowdfundId,
+    NotificationEventType? eventType,
+    $core.String? eventData,
+    $core.String? messageContent,
+    $core.bool? success,
+    $core.String? errorMessage,
+    $core.int? retryCount,
+    $core.String? platformMessageId,
+    $core.String? createdAt,
+    $core.String? deliveredAt,
+  }) {
+    final _result = create();
+    if (id != null) {
+      _result.id = id;
+    }
+    if (channelId != null) {
+      _result.channelId = channelId;
+    }
+    if (crowdfundId != null) {
+      _result.crowdfundId = crowdfundId;
+    }
+    if (eventType != null) {
+      _result.eventType = eventType;
+    }
+    if (eventData != null) {
+      _result.eventData = eventData;
+    }
+    if (messageContent != null) {
+      _result.messageContent = messageContent;
+    }
+    if (success != null) {
+      _result.success = success;
+    }
+    if (errorMessage != null) {
+      _result.errorMessage = errorMessage;
+    }
+    if (retryCount != null) {
+      _result.retryCount = retryCount;
+    }
+    if (platformMessageId != null) {
+      _result.platformMessageId = platformMessageId;
+    }
+    if (createdAt != null) {
+      _result.createdAt = createdAt;
+    }
+    if (deliveredAt != null) {
+      _result.deliveredAt = deliveredAt;
+    }
+    return _result;
+  }
+  factory NotificationDeliveryMessage.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory NotificationDeliveryMessage.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  NotificationDeliveryMessage clone() => NotificationDeliveryMessage()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  NotificationDeliveryMessage copyWith(void Function(NotificationDeliveryMessage) updates) => super.copyWith((message) => updates(message as NotificationDeliveryMessage)) as NotificationDeliveryMessage; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static NotificationDeliveryMessage create() => NotificationDeliveryMessage._();
+  NotificationDeliveryMessage createEmptyInstance() => create();
+  static $pb.PbList<NotificationDeliveryMessage> createRepeated() => $pb.PbList<NotificationDeliveryMessage>();
+  @$core.pragma('dart2js:noInline')
+  static NotificationDeliveryMessage getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<NotificationDeliveryMessage>(create);
+  static NotificationDeliveryMessage? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get id => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set id($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get channelId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set channelId($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasChannelId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearChannelId() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get crowdfundId => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set crowdfundId($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasCrowdfundId() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearCrowdfundId() => clearField(3);
+
+  @$pb.TagNumber(4)
+  NotificationEventType get eventType => $_getN(3);
+  @$pb.TagNumber(4)
+  set eventType(NotificationEventType v) { setField(4, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasEventType() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearEventType() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get eventData => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set eventData($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasEventData() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearEventData() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get messageContent => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set messageContent($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasMessageContent() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearMessageContent() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.bool get success => $_getBF(6);
+  @$pb.TagNumber(7)
+  set success($core.bool v) { $_setBool(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasSuccess() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearSuccess() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.String get errorMessage => $_getSZ(7);
+  @$pb.TagNumber(8)
+  set errorMessage($core.String v) { $_setString(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasErrorMessage() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearErrorMessage() => clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.int get retryCount => $_getIZ(8);
+  @$pb.TagNumber(9)
+  set retryCount($core.int v) { $_setSignedInt32(8, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasRetryCount() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearRetryCount() => clearField(9);
+
+  @$pb.TagNumber(10)
+  $core.String get platformMessageId => $_getSZ(9);
+  @$pb.TagNumber(10)
+  set platformMessageId($core.String v) { $_setString(9, v); }
+  @$pb.TagNumber(10)
+  $core.bool hasPlatformMessageId() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearPlatformMessageId() => clearField(10);
+
+  @$pb.TagNumber(11)
+  $core.String get createdAt => $_getSZ(10);
+  @$pb.TagNumber(11)
+  set createdAt($core.String v) { $_setString(10, v); }
+  @$pb.TagNumber(11)
+  $core.bool hasCreatedAt() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearCreatedAt() => clearField(11);
+
+  @$pb.TagNumber(12)
+  $core.String get deliveredAt => $_getSZ(11);
+  @$pb.TagNumber(12)
+  set deliveredAt($core.String v) { $_setString(11, v); }
+  @$pb.TagNumber(12)
+  $core.bool hasDeliveredAt() => $_has(11);
+  @$pb.TagNumber(12)
+  void clearDeliveredAt() => clearField(12);
+}
+
+class TelegramConnectionDataMessage extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'TelegramConnectionDataMessage', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'chatId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'verificationCode')
+    ..hasRequiredFields = false
+  ;
+
+  TelegramConnectionDataMessage._() : super();
+  factory TelegramConnectionDataMessage({
+    $core.String? chatId,
+    $core.String? verificationCode,
+  }) {
+    final _result = create();
+    if (chatId != null) {
+      _result.chatId = chatId;
+    }
+    if (verificationCode != null) {
+      _result.verificationCode = verificationCode;
+    }
+    return _result;
+  }
+  factory TelegramConnectionDataMessage.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory TelegramConnectionDataMessage.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  TelegramConnectionDataMessage clone() => TelegramConnectionDataMessage()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  TelegramConnectionDataMessage copyWith(void Function(TelegramConnectionDataMessage) updates) => super.copyWith((message) => updates(message as TelegramConnectionDataMessage)) as TelegramConnectionDataMessage; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static TelegramConnectionDataMessage create() => TelegramConnectionDataMessage._();
+  TelegramConnectionDataMessage createEmptyInstance() => create();
+  static $pb.PbList<TelegramConnectionDataMessage> createRepeated() => $pb.PbList<TelegramConnectionDataMessage>();
+  @$core.pragma('dart2js:noInline')
+  static TelegramConnectionDataMessage getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<TelegramConnectionDataMessage>(create);
+  static TelegramConnectionDataMessage? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get chatId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set chatId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasChatId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearChatId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get verificationCode => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set verificationCode($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasVerificationCode() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearVerificationCode() => clearField(2);
+}
+
+class DiscordConnectionDataMessage extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'DiscordConnectionDataMessage', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'webhookUrl')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'serverName')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'channelName')
+    ..hasRequiredFields = false
+  ;
+
+  DiscordConnectionDataMessage._() : super();
+  factory DiscordConnectionDataMessage({
+    $core.String? webhookUrl,
+    $core.String? serverName,
+    $core.String? channelName,
+  }) {
+    final _result = create();
+    if (webhookUrl != null) {
+      _result.webhookUrl = webhookUrl;
+    }
+    if (serverName != null) {
+      _result.serverName = serverName;
+    }
+    if (channelName != null) {
+      _result.channelName = channelName;
+    }
+    return _result;
+  }
+  factory DiscordConnectionDataMessage.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory DiscordConnectionDataMessage.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  DiscordConnectionDataMessage clone() => DiscordConnectionDataMessage()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  DiscordConnectionDataMessage copyWith(void Function(DiscordConnectionDataMessage) updates) => super.copyWith((message) => updates(message as DiscordConnectionDataMessage)) as DiscordConnectionDataMessage; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static DiscordConnectionDataMessage create() => DiscordConnectionDataMessage._();
+  DiscordConnectionDataMessage createEmptyInstance() => create();
+  static $pb.PbList<DiscordConnectionDataMessage> createRepeated() => $pb.PbList<DiscordConnectionDataMessage>();
+  @$core.pragma('dart2js:noInline')
+  static DiscordConnectionDataMessage getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<DiscordConnectionDataMessage>(create);
+  static DiscordConnectionDataMessage? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get webhookUrl => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set webhookUrl($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasWebhookUrl() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearWebhookUrl() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get serverName => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set serverName($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasServerName() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearServerName() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get channelName => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set channelName($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasChannelName() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearChannelName() => clearField(3);
+}
+
+class WhatsAppBusinessConnectionDataMessage extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'WhatsAppBusinessConnectionDataMessage', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'phoneNumberId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accessToken')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recipientId')
+    ..hasRequiredFields = false
+  ;
+
+  WhatsAppBusinessConnectionDataMessage._() : super();
+  factory WhatsAppBusinessConnectionDataMessage({
+    $core.String? phoneNumberId,
+    $core.String? accessToken,
+    $core.String? recipientId,
+  }) {
+    final _result = create();
+    if (phoneNumberId != null) {
+      _result.phoneNumberId = phoneNumberId;
+    }
+    if (accessToken != null) {
+      _result.accessToken = accessToken;
+    }
+    if (recipientId != null) {
+      _result.recipientId = recipientId;
+    }
+    return _result;
+  }
+  factory WhatsAppBusinessConnectionDataMessage.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory WhatsAppBusinessConnectionDataMessage.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  WhatsAppBusinessConnectionDataMessage clone() => WhatsAppBusinessConnectionDataMessage()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  WhatsAppBusinessConnectionDataMessage copyWith(void Function(WhatsAppBusinessConnectionDataMessage) updates) => super.copyWith((message) => updates(message as WhatsAppBusinessConnectionDataMessage)) as WhatsAppBusinessConnectionDataMessage; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static WhatsAppBusinessConnectionDataMessage create() => WhatsAppBusinessConnectionDataMessage._();
+  WhatsAppBusinessConnectionDataMessage createEmptyInstance() => create();
+  static $pb.PbList<WhatsAppBusinessConnectionDataMessage> createRepeated() => $pb.PbList<WhatsAppBusinessConnectionDataMessage>();
+  @$core.pragma('dart2js:noInline')
+  static WhatsAppBusinessConnectionDataMessage getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<WhatsAppBusinessConnectionDataMessage>(create);
+  static WhatsAppBusinessConnectionDataMessage? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get phoneNumberId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set phoneNumberId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasPhoneNumberId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearPhoneNumberId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get accessToken => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set accessToken($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasAccessToken() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearAccessToken() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get recipientId => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set recipientId($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasRecipientId() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearRecipientId() => clearField(3);
+}
+
+class SlackConnectionDataMessage extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'SlackConnectionDataMessage', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'webhookUrl')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'workspaceName')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'channelName')
+    ..hasRequiredFields = false
+  ;
+
+  SlackConnectionDataMessage._() : super();
+  factory SlackConnectionDataMessage({
+    $core.String? webhookUrl,
+    $core.String? workspaceName,
+    $core.String? channelName,
+  }) {
+    final _result = create();
+    if (webhookUrl != null) {
+      _result.webhookUrl = webhookUrl;
+    }
+    if (workspaceName != null) {
+      _result.workspaceName = workspaceName;
+    }
+    if (channelName != null) {
+      _result.channelName = channelName;
+    }
+    return _result;
+  }
+  factory SlackConnectionDataMessage.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory SlackConnectionDataMessage.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  SlackConnectionDataMessage clone() => SlackConnectionDataMessage()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  SlackConnectionDataMessage copyWith(void Function(SlackConnectionDataMessage) updates) => super.copyWith((message) => updates(message as SlackConnectionDataMessage)) as SlackConnectionDataMessage; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static SlackConnectionDataMessage create() => SlackConnectionDataMessage._();
+  SlackConnectionDataMessage createEmptyInstance() => create();
+  static $pb.PbList<SlackConnectionDataMessage> createRepeated() => $pb.PbList<SlackConnectionDataMessage>();
+  @$core.pragma('dart2js:noInline')
+  static SlackConnectionDataMessage getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<SlackConnectionDataMessage>(create);
+  static SlackConnectionDataMessage? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get webhookUrl => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set webhookUrl($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasWebhookUrl() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearWebhookUrl() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get workspaceName => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set workspaceName($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasWorkspaceName() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearWorkspaceName() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get channelName => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set channelName($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasChannelName() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearChannelName() => clearField(3);
+}
+
+enum ConnectNotificationChannelRequest_ConnectionData {
+  telegram, 
+  discord, 
+  whatsappBusiness, 
+  slack, 
+  notSet
+}
+
+class ConnectNotificationChannelRequest extends $pb.GeneratedMessage {
+  static const $core.Map<$core.int, ConnectNotificationChannelRequest_ConnectionData> _ConnectNotificationChannelRequest_ConnectionDataByTag = {
+    4 : ConnectNotificationChannelRequest_ConnectionData.telegram,
+    5 : ConnectNotificationChannelRequest_ConnectionData.discord,
+    6 : ConnectNotificationChannelRequest_ConnectionData.whatsappBusiness,
+    7 : ConnectNotificationChannelRequest_ConnectionData.slack,
+    0 : ConnectNotificationChannelRequest_ConnectionData.notSet
+  };
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ConnectNotificationChannelRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..oo(0, [4, 5, 6, 7])
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'crowdfundId')
+    ..e<NotificationChannelType>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'channelType', $pb.PbFieldType.OE, defaultOrMaker: NotificationChannelType.NOTIFICATION_CHANNEL_TYPE_UNSPECIFIED, valueOf: NotificationChannelType.valueOf, enumValues: NotificationChannelType.values)
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'channelName')
+    ..aOM<TelegramConnectionDataMessage>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'telegram', subBuilder: TelegramConnectionDataMessage.create)
+    ..aOM<DiscordConnectionDataMessage>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'discord', subBuilder: DiscordConnectionDataMessage.create)
+    ..aOM<WhatsAppBusinessConnectionDataMessage>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'whatsappBusiness', subBuilder: WhatsAppBusinessConnectionDataMessage.create)
+    ..aOM<SlackConnectionDataMessage>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'slack', subBuilder: SlackConnectionDataMessage.create)
+    ..pc<NotificationEventType>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'enabledEvents', $pb.PbFieldType.KE, valueOf: NotificationEventType.valueOf, enumValues: NotificationEventType.values, defaultEnumValue: NotificationEventType.NOTIFICATION_EVENT_TYPE_UNSPECIFIED)
+    ..aOM<NotificationPreferencesMessage>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'preferences', subBuilder: NotificationPreferencesMessage.create)
+    ..hasRequiredFields = false
+  ;
+
+  ConnectNotificationChannelRequest._() : super();
+  factory ConnectNotificationChannelRequest({
+    $core.String? crowdfundId,
+    NotificationChannelType? channelType,
+    $core.String? channelName,
+    TelegramConnectionDataMessage? telegram,
+    DiscordConnectionDataMessage? discord,
+    WhatsAppBusinessConnectionDataMessage? whatsappBusiness,
+    SlackConnectionDataMessage? slack,
+    $core.Iterable<NotificationEventType>? enabledEvents,
+    NotificationPreferencesMessage? preferences,
+  }) {
+    final _result = create();
+    if (crowdfundId != null) {
+      _result.crowdfundId = crowdfundId;
+    }
+    if (channelType != null) {
+      _result.channelType = channelType;
+    }
+    if (channelName != null) {
+      _result.channelName = channelName;
+    }
+    if (telegram != null) {
+      _result.telegram = telegram;
+    }
+    if (discord != null) {
+      _result.discord = discord;
+    }
+    if (whatsappBusiness != null) {
+      _result.whatsappBusiness = whatsappBusiness;
+    }
+    if (slack != null) {
+      _result.slack = slack;
+    }
+    if (enabledEvents != null) {
+      _result.enabledEvents.addAll(enabledEvents);
+    }
+    if (preferences != null) {
+      _result.preferences = preferences;
+    }
+    return _result;
+  }
+  factory ConnectNotificationChannelRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory ConnectNotificationChannelRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  ConnectNotificationChannelRequest clone() => ConnectNotificationChannelRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  ConnectNotificationChannelRequest copyWith(void Function(ConnectNotificationChannelRequest) updates) => super.copyWith((message) => updates(message as ConnectNotificationChannelRequest)) as ConnectNotificationChannelRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static ConnectNotificationChannelRequest create() => ConnectNotificationChannelRequest._();
+  ConnectNotificationChannelRequest createEmptyInstance() => create();
+  static $pb.PbList<ConnectNotificationChannelRequest> createRepeated() => $pb.PbList<ConnectNotificationChannelRequest>();
+  @$core.pragma('dart2js:noInline')
+  static ConnectNotificationChannelRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ConnectNotificationChannelRequest>(create);
+  static ConnectNotificationChannelRequest? _defaultInstance;
+
+  ConnectNotificationChannelRequest_ConnectionData whichConnectionData() => _ConnectNotificationChannelRequest_ConnectionDataByTag[$_whichOneof(0)]!;
+  void clearConnectionData() => clearField($_whichOneof(0));
+
+  @$pb.TagNumber(1)
+  $core.String get crowdfundId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set crowdfundId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasCrowdfundId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearCrowdfundId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  NotificationChannelType get channelType => $_getN(1);
+  @$pb.TagNumber(2)
+  set channelType(NotificationChannelType v) { setField(2, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasChannelType() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearChannelType() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get channelName => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set channelName($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasChannelName() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearChannelName() => clearField(3);
+
+  @$pb.TagNumber(4)
+  TelegramConnectionDataMessage get telegram => $_getN(3);
+  @$pb.TagNumber(4)
+  set telegram(TelegramConnectionDataMessage v) { setField(4, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasTelegram() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearTelegram() => clearField(4);
+  @$pb.TagNumber(4)
+  TelegramConnectionDataMessage ensureTelegram() => $_ensure(3);
+
+  @$pb.TagNumber(5)
+  DiscordConnectionDataMessage get discord => $_getN(4);
+  @$pb.TagNumber(5)
+  set discord(DiscordConnectionDataMessage v) { setField(5, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasDiscord() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearDiscord() => clearField(5);
+  @$pb.TagNumber(5)
+  DiscordConnectionDataMessage ensureDiscord() => $_ensure(4);
+
+  @$pb.TagNumber(6)
+  WhatsAppBusinessConnectionDataMessage get whatsappBusiness => $_getN(5);
+  @$pb.TagNumber(6)
+  set whatsappBusiness(WhatsAppBusinessConnectionDataMessage v) { setField(6, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasWhatsappBusiness() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearWhatsappBusiness() => clearField(6);
+  @$pb.TagNumber(6)
+  WhatsAppBusinessConnectionDataMessage ensureWhatsappBusiness() => $_ensure(5);
+
+  @$pb.TagNumber(7)
+  SlackConnectionDataMessage get slack => $_getN(6);
+  @$pb.TagNumber(7)
+  set slack(SlackConnectionDataMessage v) { setField(7, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasSlack() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearSlack() => clearField(7);
+  @$pb.TagNumber(7)
+  SlackConnectionDataMessage ensureSlack() => $_ensure(6);
+
+  @$pb.TagNumber(8)
+  $core.List<NotificationEventType> get enabledEvents => $_getList(7);
+
+  @$pb.TagNumber(9)
+  NotificationPreferencesMessage get preferences => $_getN(8);
+  @$pb.TagNumber(9)
+  set preferences(NotificationPreferencesMessage v) { setField(9, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasPreferences() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearPreferences() => clearField(9);
+  @$pb.TagNumber(9)
+  NotificationPreferencesMessage ensurePreferences() => $_ensure(8);
+}
+
+class ConnectNotificationChannelResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ConnectNotificationChannelResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOM<NotificationChannelMessage>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'channel', subBuilder: NotificationChannelMessage.create)
+    ..aOB(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'requiresVerification')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'verificationInstructions')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
+  ConnectNotificationChannelResponse._() : super();
+  factory ConnectNotificationChannelResponse({
+    NotificationChannelMessage? channel,
+    $core.bool? requiresVerification,
+    $core.String? verificationInstructions,
+    $core.String? message,
+  }) {
+    final _result = create();
+    if (channel != null) {
+      _result.channel = channel;
+    }
+    if (requiresVerification != null) {
+      _result.requiresVerification = requiresVerification;
+    }
+    if (verificationInstructions != null) {
+      _result.verificationInstructions = verificationInstructions;
+    }
+    if (message != null) {
+      _result.message = message;
+    }
+    return _result;
+  }
+  factory ConnectNotificationChannelResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory ConnectNotificationChannelResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  ConnectNotificationChannelResponse clone() => ConnectNotificationChannelResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  ConnectNotificationChannelResponse copyWith(void Function(ConnectNotificationChannelResponse) updates) => super.copyWith((message) => updates(message as ConnectNotificationChannelResponse)) as ConnectNotificationChannelResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static ConnectNotificationChannelResponse create() => ConnectNotificationChannelResponse._();
+  ConnectNotificationChannelResponse createEmptyInstance() => create();
+  static $pb.PbList<ConnectNotificationChannelResponse> createRepeated() => $pb.PbList<ConnectNotificationChannelResponse>();
+  @$core.pragma('dart2js:noInline')
+  static ConnectNotificationChannelResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ConnectNotificationChannelResponse>(create);
+  static ConnectNotificationChannelResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  NotificationChannelMessage get channel => $_getN(0);
+  @$pb.TagNumber(1)
+  set channel(NotificationChannelMessage v) { setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasChannel() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearChannel() => clearField(1);
+  @$pb.TagNumber(1)
+  NotificationChannelMessage ensureChannel() => $_ensure(0);
+
+  @$pb.TagNumber(2)
+  $core.bool get requiresVerification => $_getBF(1);
+  @$pb.TagNumber(2)
+  set requiresVerification($core.bool v) { $_setBool(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasRequiresVerification() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearRequiresVerification() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get verificationInstructions => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set verificationInstructions($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasVerificationInstructions() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearVerificationInstructions() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get message => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set message($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasMessage() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearMessage() => clearField(4);
+}
+
+class DisconnectNotificationChannelRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'DisconnectNotificationChannelRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'channelId')
+    ..hasRequiredFields = false
+  ;
+
+  DisconnectNotificationChannelRequest._() : super();
+  factory DisconnectNotificationChannelRequest({
+    $core.String? channelId,
+  }) {
+    final _result = create();
+    if (channelId != null) {
+      _result.channelId = channelId;
+    }
+    return _result;
+  }
+  factory DisconnectNotificationChannelRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory DisconnectNotificationChannelRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  DisconnectNotificationChannelRequest clone() => DisconnectNotificationChannelRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  DisconnectNotificationChannelRequest copyWith(void Function(DisconnectNotificationChannelRequest) updates) => super.copyWith((message) => updates(message as DisconnectNotificationChannelRequest)) as DisconnectNotificationChannelRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static DisconnectNotificationChannelRequest create() => DisconnectNotificationChannelRequest._();
+  DisconnectNotificationChannelRequest createEmptyInstance() => create();
+  static $pb.PbList<DisconnectNotificationChannelRequest> createRepeated() => $pb.PbList<DisconnectNotificationChannelRequest>();
+  @$core.pragma('dart2js:noInline')
+  static DisconnectNotificationChannelRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<DisconnectNotificationChannelRequest>(create);
+  static DisconnectNotificationChannelRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get channelId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set channelId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasChannelId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearChannelId() => clearField(1);
+}
+
+class DisconnectNotificationChannelResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'DisconnectNotificationChannelResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
+  DisconnectNotificationChannelResponse._() : super();
+  factory DisconnectNotificationChannelResponse({
+    $core.bool? success,
+    $core.String? message,
+  }) {
+    final _result = create();
+    if (success != null) {
+      _result.success = success;
+    }
+    if (message != null) {
+      _result.message = message;
+    }
+    return _result;
+  }
+  factory DisconnectNotificationChannelResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory DisconnectNotificationChannelResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  DisconnectNotificationChannelResponse clone() => DisconnectNotificationChannelResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  DisconnectNotificationChannelResponse copyWith(void Function(DisconnectNotificationChannelResponse) updates) => super.copyWith((message) => updates(message as DisconnectNotificationChannelResponse)) as DisconnectNotificationChannelResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static DisconnectNotificationChannelResponse create() => DisconnectNotificationChannelResponse._();
+  DisconnectNotificationChannelResponse createEmptyInstance() => create();
+  static $pb.PbList<DisconnectNotificationChannelResponse> createRepeated() => $pb.PbList<DisconnectNotificationChannelResponse>();
+  @$core.pragma('dart2js:noInline')
+  static DisconnectNotificationChannelResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<DisconnectNotificationChannelResponse>(create);
+  static DisconnectNotificationChannelResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool v) { $_setBool(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get message => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set message($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasMessage() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMessage() => clearField(2);
+}
+
+class GetNotificationChannelsRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetNotificationChannelsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'crowdfundId')
+    ..hasRequiredFields = false
+  ;
+
+  GetNotificationChannelsRequest._() : super();
+  factory GetNotificationChannelsRequest({
+    $core.String? crowdfundId,
+  }) {
+    final _result = create();
+    if (crowdfundId != null) {
+      _result.crowdfundId = crowdfundId;
+    }
+    return _result;
+  }
+  factory GetNotificationChannelsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetNotificationChannelsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetNotificationChannelsRequest clone() => GetNotificationChannelsRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetNotificationChannelsRequest copyWith(void Function(GetNotificationChannelsRequest) updates) => super.copyWith((message) => updates(message as GetNotificationChannelsRequest)) as GetNotificationChannelsRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GetNotificationChannelsRequest create() => GetNotificationChannelsRequest._();
+  GetNotificationChannelsRequest createEmptyInstance() => create();
+  static $pb.PbList<GetNotificationChannelsRequest> createRepeated() => $pb.PbList<GetNotificationChannelsRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetNotificationChannelsRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetNotificationChannelsRequest>(create);
+  static GetNotificationChannelsRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get crowdfundId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set crowdfundId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasCrowdfundId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearCrowdfundId() => clearField(1);
+}
+
+class GetNotificationChannelsResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetNotificationChannelsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..pc<NotificationChannelMessage>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'channels', $pb.PbFieldType.PM, subBuilder: NotificationChannelMessage.create)
+    ..hasRequiredFields = false
+  ;
+
+  GetNotificationChannelsResponse._() : super();
+  factory GetNotificationChannelsResponse({
+    $core.Iterable<NotificationChannelMessage>? channels,
+  }) {
+    final _result = create();
+    if (channels != null) {
+      _result.channels.addAll(channels);
+    }
+    return _result;
+  }
+  factory GetNotificationChannelsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetNotificationChannelsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetNotificationChannelsResponse clone() => GetNotificationChannelsResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetNotificationChannelsResponse copyWith(void Function(GetNotificationChannelsResponse) updates) => super.copyWith((message) => updates(message as GetNotificationChannelsResponse)) as GetNotificationChannelsResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GetNotificationChannelsResponse create() => GetNotificationChannelsResponse._();
+  GetNotificationChannelsResponse createEmptyInstance() => create();
+  static $pb.PbList<GetNotificationChannelsResponse> createRepeated() => $pb.PbList<GetNotificationChannelsResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetNotificationChannelsResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetNotificationChannelsResponse>(create);
+  static GetNotificationChannelsResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.List<NotificationChannelMessage> get channels => $_getList(0);
+}
+
+class UpdateNotificationChannelRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UpdateNotificationChannelRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'channelId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'channelName')
+    ..pc<NotificationEventType>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'enabledEvents', $pb.PbFieldType.KE, valueOf: NotificationEventType.valueOf, enumValues: NotificationEventType.values, defaultEnumValue: NotificationEventType.NOTIFICATION_EVENT_TYPE_UNSPECIFIED)
+    ..aOM<NotificationPreferencesMessage>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'preferences', subBuilder: NotificationPreferencesMessage.create)
+    ..e<NotificationChannelStatus>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: NotificationChannelStatus.NOTIFICATION_CHANNEL_STATUS_UNSPECIFIED, valueOf: NotificationChannelStatus.valueOf, enumValues: NotificationChannelStatus.values)
+    ..hasRequiredFields = false
+  ;
+
+  UpdateNotificationChannelRequest._() : super();
+  factory UpdateNotificationChannelRequest({
+    $core.String? channelId,
+    $core.String? channelName,
+    $core.Iterable<NotificationEventType>? enabledEvents,
+    NotificationPreferencesMessage? preferences,
+    NotificationChannelStatus? status,
+  }) {
+    final _result = create();
+    if (channelId != null) {
+      _result.channelId = channelId;
+    }
+    if (channelName != null) {
+      _result.channelName = channelName;
+    }
+    if (enabledEvents != null) {
+      _result.enabledEvents.addAll(enabledEvents);
+    }
+    if (preferences != null) {
+      _result.preferences = preferences;
+    }
+    if (status != null) {
+      _result.status = status;
+    }
+    return _result;
+  }
+  factory UpdateNotificationChannelRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory UpdateNotificationChannelRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  UpdateNotificationChannelRequest clone() => UpdateNotificationChannelRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  UpdateNotificationChannelRequest copyWith(void Function(UpdateNotificationChannelRequest) updates) => super.copyWith((message) => updates(message as UpdateNotificationChannelRequest)) as UpdateNotificationChannelRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static UpdateNotificationChannelRequest create() => UpdateNotificationChannelRequest._();
+  UpdateNotificationChannelRequest createEmptyInstance() => create();
+  static $pb.PbList<UpdateNotificationChannelRequest> createRepeated() => $pb.PbList<UpdateNotificationChannelRequest>();
+  @$core.pragma('dart2js:noInline')
+  static UpdateNotificationChannelRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<UpdateNotificationChannelRequest>(create);
+  static UpdateNotificationChannelRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get channelId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set channelId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasChannelId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearChannelId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get channelName => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set channelName($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasChannelName() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearChannelName() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.List<NotificationEventType> get enabledEvents => $_getList(2);
+
+  @$pb.TagNumber(4)
+  NotificationPreferencesMessage get preferences => $_getN(3);
+  @$pb.TagNumber(4)
+  set preferences(NotificationPreferencesMessage v) { setField(4, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasPreferences() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearPreferences() => clearField(4);
+  @$pb.TagNumber(4)
+  NotificationPreferencesMessage ensurePreferences() => $_ensure(3);
+
+  @$pb.TagNumber(5)
+  NotificationChannelStatus get status => $_getN(4);
+  @$pb.TagNumber(5)
+  set status(NotificationChannelStatus v) { setField(5, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasStatus() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearStatus() => clearField(5);
+}
+
+class UpdateNotificationChannelResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UpdateNotificationChannelResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOM<NotificationChannelMessage>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'channel', subBuilder: NotificationChannelMessage.create)
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
+  UpdateNotificationChannelResponse._() : super();
+  factory UpdateNotificationChannelResponse({
+    NotificationChannelMessage? channel,
+    $core.String? message,
+  }) {
+    final _result = create();
+    if (channel != null) {
+      _result.channel = channel;
+    }
+    if (message != null) {
+      _result.message = message;
+    }
+    return _result;
+  }
+  factory UpdateNotificationChannelResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory UpdateNotificationChannelResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  UpdateNotificationChannelResponse clone() => UpdateNotificationChannelResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  UpdateNotificationChannelResponse copyWith(void Function(UpdateNotificationChannelResponse) updates) => super.copyWith((message) => updates(message as UpdateNotificationChannelResponse)) as UpdateNotificationChannelResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static UpdateNotificationChannelResponse create() => UpdateNotificationChannelResponse._();
+  UpdateNotificationChannelResponse createEmptyInstance() => create();
+  static $pb.PbList<UpdateNotificationChannelResponse> createRepeated() => $pb.PbList<UpdateNotificationChannelResponse>();
+  @$core.pragma('dart2js:noInline')
+  static UpdateNotificationChannelResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<UpdateNotificationChannelResponse>(create);
+  static UpdateNotificationChannelResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  NotificationChannelMessage get channel => $_getN(0);
+  @$pb.TagNumber(1)
+  set channel(NotificationChannelMessage v) { setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasChannel() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearChannel() => clearField(1);
+  @$pb.TagNumber(1)
+  NotificationChannelMessage ensureChannel() => $_ensure(0);
+
+  @$pb.TagNumber(2)
+  $core.String get message => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set message($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasMessage() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMessage() => clearField(2);
+}
+
+class TestNotificationChannelRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'TestNotificationChannelRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'channelId')
+    ..hasRequiredFields = false
+  ;
+
+  TestNotificationChannelRequest._() : super();
+  factory TestNotificationChannelRequest({
+    $core.String? channelId,
+  }) {
+    final _result = create();
+    if (channelId != null) {
+      _result.channelId = channelId;
+    }
+    return _result;
+  }
+  factory TestNotificationChannelRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory TestNotificationChannelRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  TestNotificationChannelRequest clone() => TestNotificationChannelRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  TestNotificationChannelRequest copyWith(void Function(TestNotificationChannelRequest) updates) => super.copyWith((message) => updates(message as TestNotificationChannelRequest)) as TestNotificationChannelRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static TestNotificationChannelRequest create() => TestNotificationChannelRequest._();
+  TestNotificationChannelRequest createEmptyInstance() => create();
+  static $pb.PbList<TestNotificationChannelRequest> createRepeated() => $pb.PbList<TestNotificationChannelRequest>();
+  @$core.pragma('dart2js:noInline')
+  static TestNotificationChannelRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<TestNotificationChannelRequest>(create);
+  static TestNotificationChannelRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get channelId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set channelId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasChannelId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearChannelId() => clearField(1);
+}
+
+class TestNotificationChannelResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'TestNotificationChannelResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'platformMessageId')
+    ..hasRequiredFields = false
+  ;
+
+  TestNotificationChannelResponse._() : super();
+  factory TestNotificationChannelResponse({
+    $core.bool? success,
+    $core.String? message,
+    $core.String? platformMessageId,
+  }) {
+    final _result = create();
+    if (success != null) {
+      _result.success = success;
+    }
+    if (message != null) {
+      _result.message = message;
+    }
+    if (platformMessageId != null) {
+      _result.platformMessageId = platformMessageId;
+    }
+    return _result;
+  }
+  factory TestNotificationChannelResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory TestNotificationChannelResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  TestNotificationChannelResponse clone() => TestNotificationChannelResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  TestNotificationChannelResponse copyWith(void Function(TestNotificationChannelResponse) updates) => super.copyWith((message) => updates(message as TestNotificationChannelResponse)) as TestNotificationChannelResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static TestNotificationChannelResponse create() => TestNotificationChannelResponse._();
+  TestNotificationChannelResponse createEmptyInstance() => create();
+  static $pb.PbList<TestNotificationChannelResponse> createRepeated() => $pb.PbList<TestNotificationChannelResponse>();
+  @$core.pragma('dart2js:noInline')
+  static TestNotificationChannelResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<TestNotificationChannelResponse>(create);
+  static TestNotificationChannelResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool v) { $_setBool(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get message => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set message($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasMessage() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMessage() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get platformMessageId => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set platformMessageId($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasPlatformMessageId() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearPlatformMessageId() => clearField(3);
+}
+
+class GetTelegramBotInfoRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetTelegramBotInfoRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..hasRequiredFields = false
+  ;
+
+  GetTelegramBotInfoRequest._() : super();
+  factory GetTelegramBotInfoRequest() => create();
+  factory GetTelegramBotInfoRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetTelegramBotInfoRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetTelegramBotInfoRequest clone() => GetTelegramBotInfoRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetTelegramBotInfoRequest copyWith(void Function(GetTelegramBotInfoRequest) updates) => super.copyWith((message) => updates(message as GetTelegramBotInfoRequest)) as GetTelegramBotInfoRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GetTelegramBotInfoRequest create() => GetTelegramBotInfoRequest._();
+  GetTelegramBotInfoRequest createEmptyInstance() => create();
+  static $pb.PbList<GetTelegramBotInfoRequest> createRepeated() => $pb.PbList<GetTelegramBotInfoRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetTelegramBotInfoRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetTelegramBotInfoRequest>(create);
+  static GetTelegramBotInfoRequest? _defaultInstance;
+}
+
+class GetTelegramBotInfoResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetTelegramBotInfoResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'botUsername')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'botName')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'botLink')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'instructions')
+    ..hasRequiredFields = false
+  ;
+
+  GetTelegramBotInfoResponse._() : super();
+  factory GetTelegramBotInfoResponse({
+    $core.String? botUsername,
+    $core.String? botName,
+    $core.String? botLink,
+    $core.String? instructions,
+  }) {
+    final _result = create();
+    if (botUsername != null) {
+      _result.botUsername = botUsername;
+    }
+    if (botName != null) {
+      _result.botName = botName;
+    }
+    if (botLink != null) {
+      _result.botLink = botLink;
+    }
+    if (instructions != null) {
+      _result.instructions = instructions;
+    }
+    return _result;
+  }
+  factory GetTelegramBotInfoResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetTelegramBotInfoResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetTelegramBotInfoResponse clone() => GetTelegramBotInfoResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetTelegramBotInfoResponse copyWith(void Function(GetTelegramBotInfoResponse) updates) => super.copyWith((message) => updates(message as GetTelegramBotInfoResponse)) as GetTelegramBotInfoResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GetTelegramBotInfoResponse create() => GetTelegramBotInfoResponse._();
+  GetTelegramBotInfoResponse createEmptyInstance() => create();
+  static $pb.PbList<GetTelegramBotInfoResponse> createRepeated() => $pb.PbList<GetTelegramBotInfoResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetTelegramBotInfoResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetTelegramBotInfoResponse>(create);
+  static GetTelegramBotInfoResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get botUsername => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set botUsername($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasBotUsername() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearBotUsername() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get botName => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set botName($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasBotName() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearBotName() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get botLink => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set botLink($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasBotLink() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearBotLink() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get instructions => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set instructions($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasInstructions() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearInstructions() => clearField(4);
+}
+
+class VerifyTelegramChannelRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'VerifyTelegramChannelRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'crowdfundId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'chatId')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'verificationCode')
+    ..hasRequiredFields = false
+  ;
+
+  VerifyTelegramChannelRequest._() : super();
+  factory VerifyTelegramChannelRequest({
+    $core.String? crowdfundId,
+    $core.String? chatId,
+    $core.String? verificationCode,
+  }) {
+    final _result = create();
+    if (crowdfundId != null) {
+      _result.crowdfundId = crowdfundId;
+    }
+    if (chatId != null) {
+      _result.chatId = chatId;
+    }
+    if (verificationCode != null) {
+      _result.verificationCode = verificationCode;
+    }
+    return _result;
+  }
+  factory VerifyTelegramChannelRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory VerifyTelegramChannelRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  VerifyTelegramChannelRequest clone() => VerifyTelegramChannelRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  VerifyTelegramChannelRequest copyWith(void Function(VerifyTelegramChannelRequest) updates) => super.copyWith((message) => updates(message as VerifyTelegramChannelRequest)) as VerifyTelegramChannelRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static VerifyTelegramChannelRequest create() => VerifyTelegramChannelRequest._();
+  VerifyTelegramChannelRequest createEmptyInstance() => create();
+  static $pb.PbList<VerifyTelegramChannelRequest> createRepeated() => $pb.PbList<VerifyTelegramChannelRequest>();
+  @$core.pragma('dart2js:noInline')
+  static VerifyTelegramChannelRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<VerifyTelegramChannelRequest>(create);
+  static VerifyTelegramChannelRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get crowdfundId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set crowdfundId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasCrowdfundId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearCrowdfundId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get chatId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set chatId($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasChatId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearChatId() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get verificationCode => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set verificationCode($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasVerificationCode() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearVerificationCode() => clearField(3);
+}
+
+class VerifyTelegramChannelResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'VerifyTelegramChannelResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOM<NotificationChannelMessage>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'channel', subBuilder: NotificationChannelMessage.create)
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
+  VerifyTelegramChannelResponse._() : super();
+  factory VerifyTelegramChannelResponse({
+    $core.bool? success,
+    NotificationChannelMessage? channel,
+    $core.String? message,
+  }) {
+    final _result = create();
+    if (success != null) {
+      _result.success = success;
+    }
+    if (channel != null) {
+      _result.channel = channel;
+    }
+    if (message != null) {
+      _result.message = message;
+    }
+    return _result;
+  }
+  factory VerifyTelegramChannelResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory VerifyTelegramChannelResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  VerifyTelegramChannelResponse clone() => VerifyTelegramChannelResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  VerifyTelegramChannelResponse copyWith(void Function(VerifyTelegramChannelResponse) updates) => super.copyWith((message) => updates(message as VerifyTelegramChannelResponse)) as VerifyTelegramChannelResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static VerifyTelegramChannelResponse create() => VerifyTelegramChannelResponse._();
+  VerifyTelegramChannelResponse createEmptyInstance() => create();
+  static $pb.PbList<VerifyTelegramChannelResponse> createRepeated() => $pb.PbList<VerifyTelegramChannelResponse>();
+  @$core.pragma('dart2js:noInline')
+  static VerifyTelegramChannelResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<VerifyTelegramChannelResponse>(create);
+  static VerifyTelegramChannelResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool v) { $_setBool(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => clearField(1);
+
+  @$pb.TagNumber(2)
+  NotificationChannelMessage get channel => $_getN(1);
+  @$pb.TagNumber(2)
+  set channel(NotificationChannelMessage v) { setField(2, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasChannel() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearChannel() => clearField(2);
+  @$pb.TagNumber(2)
+  NotificationChannelMessage ensureChannel() => $_ensure(1);
+
+  @$pb.TagNumber(3)
+  $core.String get message => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set message($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasMessage() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearMessage() => clearField(3);
+}
+
+class GetNotificationHistoryRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetNotificationHistoryRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'crowdfundId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'channelId')
+    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'page', $pb.PbFieldType.O3)
+    ..a<$core.int>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pageSize', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  GetNotificationHistoryRequest._() : super();
+  factory GetNotificationHistoryRequest({
+    $core.String? crowdfundId,
+    $core.String? channelId,
+    $core.int? page,
+    $core.int? pageSize,
+  }) {
+    final _result = create();
+    if (crowdfundId != null) {
+      _result.crowdfundId = crowdfundId;
+    }
+    if (channelId != null) {
+      _result.channelId = channelId;
+    }
+    if (page != null) {
+      _result.page = page;
+    }
+    if (pageSize != null) {
+      _result.pageSize = pageSize;
+    }
+    return _result;
+  }
+  factory GetNotificationHistoryRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetNotificationHistoryRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetNotificationHistoryRequest clone() => GetNotificationHistoryRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetNotificationHistoryRequest copyWith(void Function(GetNotificationHistoryRequest) updates) => super.copyWith((message) => updates(message as GetNotificationHistoryRequest)) as GetNotificationHistoryRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GetNotificationHistoryRequest create() => GetNotificationHistoryRequest._();
+  GetNotificationHistoryRequest createEmptyInstance() => create();
+  static $pb.PbList<GetNotificationHistoryRequest> createRepeated() => $pb.PbList<GetNotificationHistoryRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetNotificationHistoryRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetNotificationHistoryRequest>(create);
+  static GetNotificationHistoryRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get crowdfundId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set crowdfundId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasCrowdfundId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearCrowdfundId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get channelId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set channelId($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasChannelId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearChannelId() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.int get page => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set page($core.int v) { $_setSignedInt32(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasPage() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearPage() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.int get pageSize => $_getIZ(3);
+  @$pb.TagNumber(4)
+  set pageSize($core.int v) { $_setSignedInt32(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasPageSize() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearPageSize() => clearField(4);
+}
+
+class GetNotificationHistoryResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetNotificationHistoryResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..pc<NotificationDeliveryMessage>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'deliveries', $pb.PbFieldType.PM, subBuilder: NotificationDeliveryMessage.create)
+    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'total', $pb.PbFieldType.O3)
+    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'page', $pb.PbFieldType.O3)
+    ..a<$core.int>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pageSize', $pb.PbFieldType.O3)
+    ..aOB(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'hasMore')
+    ..hasRequiredFields = false
+  ;
+
+  GetNotificationHistoryResponse._() : super();
+  factory GetNotificationHistoryResponse({
+    $core.Iterable<NotificationDeliveryMessage>? deliveries,
+    $core.int? total,
+    $core.int? page,
+    $core.int? pageSize,
+    $core.bool? hasMore,
+  }) {
+    final _result = create();
+    if (deliveries != null) {
+      _result.deliveries.addAll(deliveries);
+    }
+    if (total != null) {
+      _result.total = total;
+    }
+    if (page != null) {
+      _result.page = page;
+    }
+    if (pageSize != null) {
+      _result.pageSize = pageSize;
+    }
+    if (hasMore != null) {
+      _result.hasMore = hasMore;
+    }
+    return _result;
+  }
+  factory GetNotificationHistoryResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetNotificationHistoryResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetNotificationHistoryResponse clone() => GetNotificationHistoryResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetNotificationHistoryResponse copyWith(void Function(GetNotificationHistoryResponse) updates) => super.copyWith((message) => updates(message as GetNotificationHistoryResponse)) as GetNotificationHistoryResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GetNotificationHistoryResponse create() => GetNotificationHistoryResponse._();
+  GetNotificationHistoryResponse createEmptyInstance() => create();
+  static $pb.PbList<GetNotificationHistoryResponse> createRepeated() => $pb.PbList<GetNotificationHistoryResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetNotificationHistoryResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetNotificationHistoryResponse>(create);
+  static GetNotificationHistoryResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.List<NotificationDeliveryMessage> get deliveries => $_getList(0);
+
+  @$pb.TagNumber(2)
+  $core.int get total => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set total($core.int v) { $_setSignedInt32(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasTotal() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearTotal() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.int get page => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set page($core.int v) { $_setSignedInt32(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasPage() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearPage() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.int get pageSize => $_getIZ(3);
+  @$pb.TagNumber(4)
+  set pageSize($core.int v) { $_setSignedInt32(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasPageSize() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearPageSize() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.bool get hasMore => $_getBF(4);
+  @$pb.TagNumber(5)
+  set hasMore($core.bool v) { $_setBool(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasHasMore() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearHasMore() => clearField(5);
 }
 

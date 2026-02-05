@@ -517,6 +517,141 @@ const SocialLoginResponse$json = const {
 
 /// Descriptor for `SocialLoginResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List socialLoginResponseDescriptor = $convert.base64Decode('ChNTb2NpYWxMb2dpblJlc3BvbnNlEiEKDGFjY2Vzc190b2tlbhgBIAEoCVILYWNjZXNzVG9rZW4SIwoNcmVmcmVzaF90b2tlbhgCIAEoCVIMcmVmcmVzaFRva2VuEh0KCmV4cGlyZXNfaW4YAyABKANSCWV4cGlyZXNJbhIeCgR1c2VyGAQgASgLMgouYXV0aC5Vc2VyUgR1c2VyEh4KC2lzX25ld191c2VyGAUgASgIUglpc05ld1VzZXI=');
+@$core.Deprecated('Use linkedSocialAccountDescriptor instead')
+const LinkedSocialAccount$json = const {
+  '1': 'LinkedSocialAccount',
+  '2': const [
+    const {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
+    const {'1': 'user_id', '3': 2, '4': 1, '5': 9, '10': 'userId'},
+    const {'1': 'provider', '3': 3, '4': 1, '5': 9, '10': 'provider'},
+    const {'1': 'provider_user_id', '3': 4, '4': 1, '5': 9, '10': 'providerUserId'},
+    const {'1': 'provider_email', '3': 5, '4': 1, '5': 9, '10': 'providerEmail'},
+    const {'1': 'display_name', '3': 6, '4': 1, '5': 9, '10': 'displayName'},
+    const {'1': 'profile_picture_url', '3': 7, '4': 1, '5': 9, '10': 'profilePictureUrl'},
+    const {'1': 'profile_url', '3': 8, '4': 1, '5': 9, '10': 'profileUrl'},
+    const {'1': 'status', '3': 9, '4': 1, '5': 9, '10': 'status'},
+    const {'1': 'is_primary', '3': 10, '4': 1, '5': 8, '10': 'isPrimary'},
+    const {'1': 'linked_at', '3': 11, '4': 1, '5': 9, '10': 'linkedAt'},
+    const {'1': 'last_used_at', '3': 12, '4': 1, '5': 9, '10': 'lastUsedAt'},
+  ],
+};
+
+/// Descriptor for `LinkedSocialAccount`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List linkedSocialAccountDescriptor = $convert.base64Decode('ChNMaW5rZWRTb2NpYWxBY2NvdW50Eg4KAmlkGAEgASgJUgJpZBIXCgd1c2VyX2lkGAIgASgJUgZ1c2VySWQSGgoIcHJvdmlkZXIYAyABKAlSCHByb3ZpZGVyEigKEHByb3ZpZGVyX3VzZXJfaWQYBCABKAlSDnByb3ZpZGVyVXNlcklkEiUKDnByb3ZpZGVyX2VtYWlsGAUgASgJUg1wcm92aWRlckVtYWlsEiEKDGRpc3BsYXlfbmFtZRgGIAEoCVILZGlzcGxheU5hbWUSLgoTcHJvZmlsZV9waWN0dXJlX3VybBgHIAEoCVIRcHJvZmlsZVBpY3R1cmVVcmwSHwoLcHJvZmlsZV91cmwYCCABKAlSCnByb2ZpbGVVcmwSFgoGc3RhdHVzGAkgASgJUgZzdGF0dXMSHQoKaXNfcHJpbWFyeRgKIAEoCFIJaXNQcmltYXJ5EhsKCWxpbmtlZF9hdBgLIAEoCVIIbGlua2VkQXQSIAoMbGFzdF91c2VkX2F0GAwgASgJUgpsYXN0VXNlZEF0');
+@$core.Deprecated('Use getLinkedSocialAccountsRequestDescriptor instead')
+const GetLinkedSocialAccountsRequest$json = const {
+  '1': 'GetLinkedSocialAccountsRequest',
+};
+
+/// Descriptor for `GetLinkedSocialAccountsRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getLinkedSocialAccountsRequestDescriptor = $convert.base64Decode('Ch5HZXRMaW5rZWRTb2NpYWxBY2NvdW50c1JlcXVlc3Q=');
+@$core.Deprecated('Use getLinkedSocialAccountsResponseDescriptor instead')
+const GetLinkedSocialAccountsResponse$json = const {
+  '1': 'GetLinkedSocialAccountsResponse',
+  '2': const [
+    const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    const {'1': 'accounts', '3': 2, '4': 3, '5': 11, '6': '.auth.LinkedSocialAccount', '10': 'accounts'},
+    const {'1': 'total_count', '3': 3, '4': 1, '5': 5, '10': 'totalCount'},
+  ],
+};
+
+/// Descriptor for `GetLinkedSocialAccountsResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getLinkedSocialAccountsResponseDescriptor = $convert.base64Decode('Ch9HZXRMaW5rZWRTb2NpYWxBY2NvdW50c1Jlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3MSNQoIYWNjb3VudHMYAiADKAsyGS5hdXRoLkxpbmtlZFNvY2lhbEFjY291bnRSCGFjY291bnRzEh8KC3RvdGFsX2NvdW50GAMgASgFUgp0b3RhbENvdW50');
+@$core.Deprecated('Use linkSocialAccountRequestDescriptor instead')
+const LinkSocialAccountRequest$json = const {
+  '1': 'LinkSocialAccountRequest',
+  '2': const [
+    const {'1': 'provider', '3': 1, '4': 1, '5': 9, '10': 'provider'},
+    const {'1': 'provider_token', '3': 2, '4': 1, '5': 9, '10': 'providerToken'},
+    const {'1': 'provider_user_id', '3': 3, '4': 1, '5': 9, '10': 'providerUserId'},
+    const {'1': 'provider_email', '3': 4, '4': 1, '5': 9, '10': 'providerEmail'},
+    const {'1': 'display_name', '3': 5, '4': 1, '5': 9, '10': 'displayName'},
+    const {'1': 'profile_picture_url', '3': 6, '4': 1, '5': 9, '10': 'profilePictureUrl'},
+    const {'1': 'profile_url', '3': 7, '4': 1, '5': 9, '10': 'profileUrl'},
+    const {'1': 'set_as_primary', '3': 8, '4': 1, '5': 8, '10': 'setAsPrimary'},
+  ],
+};
+
+/// Descriptor for `LinkSocialAccountRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List linkSocialAccountRequestDescriptor = $convert.base64Decode('ChhMaW5rU29jaWFsQWNjb3VudFJlcXVlc3QSGgoIcHJvdmlkZXIYASABKAlSCHByb3ZpZGVyEiUKDnByb3ZpZGVyX3Rva2VuGAIgASgJUg1wcm92aWRlclRva2VuEigKEHByb3ZpZGVyX3VzZXJfaWQYAyABKAlSDnByb3ZpZGVyVXNlcklkEiUKDnByb3ZpZGVyX2VtYWlsGAQgASgJUg1wcm92aWRlckVtYWlsEiEKDGRpc3BsYXlfbmFtZRgFIAEoCVILZGlzcGxheU5hbWUSLgoTcHJvZmlsZV9waWN0dXJlX3VybBgGIAEoCVIRcHJvZmlsZVBpY3R1cmVVcmwSHwoLcHJvZmlsZV91cmwYByABKAlSCnByb2ZpbGVVcmwSJAoOc2V0X2FzX3ByaW1hcnkYCCABKAhSDHNldEFzUHJpbWFyeQ==');
+@$core.Deprecated('Use linkSocialAccountResponseDescriptor instead')
+const LinkSocialAccountResponse$json = const {
+  '1': 'LinkSocialAccountResponse',
+  '2': const [
+    const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    const {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+    const {'1': 'account', '3': 3, '4': 1, '5': 11, '6': '.auth.LinkedSocialAccount', '10': 'account'},
+  ],
+};
+
+/// Descriptor for `LinkSocialAccountResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List linkSocialAccountResponseDescriptor = $convert.base64Decode('ChlMaW5rU29jaWFsQWNjb3VudFJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3MSGAoHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZRIzCgdhY2NvdW50GAMgASgLMhkuYXV0aC5MaW5rZWRTb2NpYWxBY2NvdW50UgdhY2NvdW50');
+@$core.Deprecated('Use unlinkSocialAccountRequestDescriptor instead')
+const UnlinkSocialAccountRequest$json = const {
+  '1': 'UnlinkSocialAccountRequest',
+  '2': const [
+    const {'1': 'account_id', '3': 1, '4': 1, '5': 9, '10': 'accountId'},
+  ],
+};
+
+/// Descriptor for `UnlinkSocialAccountRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List unlinkSocialAccountRequestDescriptor = $convert.base64Decode('ChpVbmxpbmtTb2NpYWxBY2NvdW50UmVxdWVzdBIdCgphY2NvdW50X2lkGAEgASgJUglhY2NvdW50SWQ=');
+@$core.Deprecated('Use unlinkSocialAccountResponseDescriptor instead')
+const UnlinkSocialAccountResponse$json = const {
+  '1': 'UnlinkSocialAccountResponse',
+  '2': const [
+    const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    const {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+  ],
+};
+
+/// Descriptor for `UnlinkSocialAccountResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List unlinkSocialAccountResponseDescriptor = $convert.base64Decode('ChtVbmxpbmtTb2NpYWxBY2NvdW50UmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2VzcxIYCgdtZXNzYWdlGAIgASgJUgdtZXNzYWdl');
+@$core.Deprecated('Use setPrimarySocialAccountRequestDescriptor instead')
+const SetPrimarySocialAccountRequest$json = const {
+  '1': 'SetPrimarySocialAccountRequest',
+  '2': const [
+    const {'1': 'account_id', '3': 1, '4': 1, '5': 9, '10': 'accountId'},
+  ],
+};
+
+/// Descriptor for `SetPrimarySocialAccountRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List setPrimarySocialAccountRequestDescriptor = $convert.base64Decode('Ch5TZXRQcmltYXJ5U29jaWFsQWNjb3VudFJlcXVlc3QSHQoKYWNjb3VudF9pZBgBIAEoCVIJYWNjb3VudElk');
+@$core.Deprecated('Use setPrimarySocialAccountResponseDescriptor instead')
+const SetPrimarySocialAccountResponse$json = const {
+  '1': 'SetPrimarySocialAccountResponse',
+  '2': const [
+    const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    const {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+    const {'1': 'account', '3': 3, '4': 1, '5': 11, '6': '.auth.LinkedSocialAccount', '10': 'account'},
+  ],
+};
+
+/// Descriptor for `SetPrimarySocialAccountResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List setPrimarySocialAccountResponseDescriptor = $convert.base64Decode('Ch9TZXRQcmltYXJ5U29jaWFsQWNjb3VudFJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3MSGAoHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZRIzCgdhY2NvdW50GAMgASgLMhkuYXV0aC5MaW5rZWRTb2NpYWxBY2NvdW50UgdhY2NvdW50');
+@$core.Deprecated('Use reauthorizeSocialAccountRequestDescriptor instead')
+const ReauthorizeSocialAccountRequest$json = const {
+  '1': 'ReauthorizeSocialAccountRequest',
+  '2': const [
+    const {'1': 'account_id', '3': 1, '4': 1, '5': 9, '10': 'accountId'},
+    const {'1': 'provider_token', '3': 2, '4': 1, '5': 9, '10': 'providerToken'},
+  ],
+};
+
+/// Descriptor for `ReauthorizeSocialAccountRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List reauthorizeSocialAccountRequestDescriptor = $convert.base64Decode('Ch9SZWF1dGhvcml6ZVNvY2lhbEFjY291bnRSZXF1ZXN0Eh0KCmFjY291bnRfaWQYASABKAlSCWFjY291bnRJZBIlCg5wcm92aWRlcl90b2tlbhgCIAEoCVINcHJvdmlkZXJUb2tlbg==');
+@$core.Deprecated('Use reauthorizeSocialAccountResponseDescriptor instead')
+const ReauthorizeSocialAccountResponse$json = const {
+  '1': 'ReauthorizeSocialAccountResponse',
+  '2': const [
+    const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    const {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+    const {'1': 'account', '3': 3, '4': 1, '5': 11, '6': '.auth.LinkedSocialAccount', '10': 'account'},
+  ],
+};
+
+/// Descriptor for `ReauthorizeSocialAccountResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List reauthorizeSocialAccountResponseDescriptor = $convert.base64Decode('CiBSZWF1dGhvcml6ZVNvY2lhbEFjY291bnRSZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZXNzEhgKB21lc3NhZ2UYAiABKAlSB21lc3NhZ2USMwoHYWNjb3VudBgDIAEoCzIZLmF1dGguTGlua2VkU29jaWFsQWNjb3VudFIHYWNjb3VudA==');
 @$core.Deprecated('Use enableTwoFactorRequestDescriptor instead')
 const EnableTwoFactorRequest$json = const {
   '1': 'EnableTwoFactorRequest',
@@ -1147,11 +1282,12 @@ const UserLookupResult$json = const {
     const {'1': 'profile_picture', '3': 5, '4': 1, '5': 9, '10': 'profilePicture'},
     const {'1': 'is_lazervault_user', '3': 6, '4': 1, '5': 8, '10': 'isLazervaultUser'},
     const {'1': 'phone_number', '3': 7, '4': 1, '5': 9, '10': 'phoneNumber'},
+    const {'1': 'email', '3': 8, '4': 1, '5': 9, '10': 'email'},
   ],
 };
 
 /// Descriptor for `UserLookupResult`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List userLookupResultDescriptor = $convert.base64Decode('ChBVc2VyTG9va3VwUmVzdWx0EhcKB3VzZXJfaWQYASABKAlSBnVzZXJJZBIaCgh1c2VybmFtZRgCIAEoCVIIdXNlcm5hbWUSHQoKZmlyc3RfbmFtZRgDIAEoCVIJZmlyc3ROYW1lEhsKCWxhc3RfbmFtZRgEIAEoCVIIbGFzdE5hbWUSJwoPcHJvZmlsZV9waWN0dXJlGAUgASgJUg5wcm9maWxlUGljdHVyZRIsChJpc19sYXplcnZhdWx0X3VzZXIYBiABKAhSEGlzTGF6ZXJ2YXVsdFVzZXISIQoMcGhvbmVfbnVtYmVyGAcgASgJUgtwaG9uZU51bWJlcg==');
+final $typed_data.Uint8List userLookupResultDescriptor = $convert.base64Decode('ChBVc2VyTG9va3VwUmVzdWx0EhcKB3VzZXJfaWQYASABKAlSBnVzZXJJZBIaCgh1c2VybmFtZRgCIAEoCVIIdXNlcm5hbWUSHQoKZmlyc3RfbmFtZRgDIAEoCVIJZmlyc3ROYW1lEhsKCWxhc3RfbmFtZRgEIAEoCVIIbGFzdE5hbWUSJwoPcHJvZmlsZV9waWN0dXJlGAUgASgJUg5wcm9maWxlUGljdHVyZRIsChJpc19sYXplcnZhdWx0X3VzZXIYBiABKAhSEGlzTGF6ZXJ2YXVsdFVzZXISIQoMcGhvbmVfbnVtYmVyGAcgASgJUgtwaG9uZU51bWJlchIUCgVlbWFpbBgIIAEoCVIFZW1haWw=');
 @$core.Deprecated('Use searchUsersByUsernameRequestDescriptor instead')
 const SearchUsersByUsernameRequest$json = const {
   '1': 'SearchUsersByUsernameRequest',

@@ -5,18 +5,38 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class ContactPickerBottomSheet extends StatefulWidget {
-  final Function(String name, String identifier, ContactIdentifierType type) onContactSelected;
+  final Function(String name, String identifier, ContactIdentifierType type)
+      onContactSelected;
+
+  /// Optional: Map of identifiers (email/phone) to indicate platform users
+  /// Key is normalized identifier, value is user info (userId, userName)
+  final Map<String, PlatformUserInfo>? platformUsers;
 
   const ContactPickerBottomSheet({
     super.key,
     required this.onContactSelected,
+    this.platformUsers,
   });
 
   @override
-  State<ContactPickerBottomSheet> createState() => _ContactPickerBottomSheetState();
+  State<ContactPickerBottomSheet> createState() =>
+      _ContactPickerBottomSheetState();
 }
 
 enum ContactIdentifierType { email, phone }
+
+/// Info about a platform user matched from contacts
+class PlatformUserInfo {
+  final String userId;
+  final String userName;
+  final String? profileImage;
+
+  const PlatformUserInfo({
+    required this.userId,
+    required this.userName,
+    this.profileImage,
+  });
+}
 
 class _ContactPickerBottomSheetState extends State<ContactPickerBottomSheet> {
   List<Contact> _contacts = [];
@@ -87,6 +107,33 @@ class _ContactPickerBottomSheetState extends State<ContactPickerBottomSheet> {
         return name.contains(query) || hasMatchingEmail || hasMatchingPhone;
       }).toList();
     });
+  }
+
+  /// Check if any of the contact's identifiers match a platform user
+  bool _isContactOnPlatform(Contact contact) {
+    if (widget.platformUsers == null) return false;
+
+    // Check emails
+    for (final email in contact.emails) {
+      final normalizedEmail = email.address.toLowerCase().trim();
+      if (widget.platformUsers!.containsKey(normalizedEmail)) {
+        return true;
+      }
+    }
+
+    // Check phones
+    for (final phone in contact.phones) {
+      final normalizedPhone = _normalizePhone(phone.number);
+      if (widget.platformUsers!.containsKey(normalizedPhone)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  String _normalizePhone(String phone) {
+    return phone.replaceAll(RegExp(r'[\s\-\(\)\+]'), '');
   }
 
   @override
@@ -216,15 +263,22 @@ class _ContactPickerBottomSheetState extends State<ContactPickerBottomSheet> {
           fillColor: const Color(0xFF0A0A0A),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12.r),
-            borderSide: BorderSide(
-              color: const Color(0xFF2D2D2D),
+            borderSide: const BorderSide(
+              color: Color(0xFF2D2D2D),
+              width: 1,
+            ),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12.r),
+            borderSide: const BorderSide(
+              color: Color(0xFF2D2D2D),
               width: 1,
             ),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12.r),
-            borderSide: BorderSide(
-              color: const Color.fromARGB(255, 78, 3, 208),
+            borderSide: const BorderSide(
+              color: Color.fromARGB(255, 78, 3, 208),
               width: 2,
             ),
           ),
@@ -274,24 +328,41 @@ class _ContactPickerBottomSheetState extends State<ContactPickerBottomSheet> {
       );
     }
 
+    // Sort contacts: platform users first, then alphabetically
+    final sortedContacts = List<Contact>.from(_filteredContacts);
+    if (widget.platformUsers != null && widget.platformUsers!.isNotEmpty) {
+      sortedContacts.sort((a, b) {
+        final aOnPlatform = _isContactOnPlatform(a);
+        final bOnPlatform = _isContactOnPlatform(b);
+
+        if (aOnPlatform && !bOnPlatform) return -1;
+        if (!aOnPlatform && bOnPlatform) return 1;
+        return a.displayName.compareTo(b.displayName);
+      });
+    }
+
     return ListView.builder(
       padding: EdgeInsets.symmetric(horizontal: 16.w),
-      itemCount: _filteredContacts.length,
+      itemCount: sortedContacts.length,
       itemBuilder: (context, index) {
-        final contact = _filteredContacts[index];
+        final contact = sortedContacts[index];
         return _buildContactCard(contact);
       },
     );
   }
 
   Widget _buildContactCard(Contact contact) {
+    final isOnPlatform = _isContactOnPlatform(contact);
+
     return Container(
       margin: EdgeInsets.only(bottom: 12.h),
       decoration: BoxDecoration(
         color: const Color(0xFF0A0A0A),
         borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
-          color: const Color(0xFF2D2D2D),
+          color: isOnPlatform
+              ? const Color(0xFF10B981).withValues(alpha: 0.3)
+              : const Color(0xFF2D2D2D),
           width: 1,
         ),
       ),
@@ -313,7 +384,8 @@ class _ContactPickerBottomSheetState extends State<ContactPickerBottomSheet> {
                       end: Alignment.bottomRight,
                       colors: [
                         const Color.fromARGB(255, 78, 3, 208),
-                        const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.7),
+                        const Color.fromARGB(255, 78, 3, 208)
+                            .withValues(alpha: 0.7),
                       ],
                     ),
                     borderRadius: BorderRadius.circular(24.r),
@@ -336,15 +408,41 @@ class _ContactPickerBottomSheetState extends State<ContactPickerBottomSheet> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        contact.displayName,
-                        style: GoogleFonts.inter(
-                          fontSize: 16.sp,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              contact.displayName,
+                              style: GoogleFonts.inter(
+                                fontSize: 16.sp,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          if (isOnPlatform) ...[
+                            SizedBox(width: 8.w),
+                            Container(
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 6.w, vertical: 2.h),
+                              decoration: BoxDecoration(
+                                color:
+                                    const Color(0xFF10B981).withValues(alpha: 0.2),
+                                borderRadius: BorderRadius.circular(4.r),
+                              ),
+                              child: Text(
+                                'On LazerVault',
+                                style: GoogleFonts.inter(
+                                  fontSize: 9.sp,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFF10B981),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
                       SizedBox(height: 4.h),
                       if (contact.emails.isNotEmpty)
@@ -384,6 +482,8 @@ class _ContactPickerBottomSheetState extends State<ContactPickerBottomSheet> {
   }
 
   void _showContactDetailsDialog(Contact contact) {
+    final isOnPlatform = _isContactOnPlatform(contact);
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -391,13 +491,51 @@ class _ContactPickerBottomSheetState extends State<ContactPickerBottomSheet> {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16.r),
         ),
-        title: Text(
-          'Select Contact Info',
-          style: GoogleFonts.inter(
-            fontSize: 18.sp,
-            fontWeight: FontWeight.w700,
-            color: Colors.white,
-          ),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Text(
+                  'Select Contact Info',
+                  style: GoogleFonts.inter(
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+            if (isOnPlatform) ...[
+              SizedBox(height: 8.h),
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF10B981).withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(6.r),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.check_circle,
+                      color: const Color(0xFF10B981),
+                      size: 14.sp,
+                    ),
+                    SizedBox(width: 4.w),
+                    Text(
+                      'On LazerVault',
+                      style: GoogleFonts.inter(
+                        fontSize: 11.sp,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF10B981),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ],
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -425,6 +563,9 @@ class _ContactPickerBottomSheetState extends State<ContactPickerBottomSheet> {
               ...contact.emails.map((email) => _buildSelectionTile(
                     icon: Icons.email,
                     label: email.address,
+                    isOnPlatform: widget.platformUsers
+                            ?.containsKey(email.address.toLowerCase().trim()) ??
+                        false,
                     onTap: () {
                       Navigator.pop(context);
                       Navigator.pop(context);
@@ -450,6 +591,9 @@ class _ContactPickerBottomSheetState extends State<ContactPickerBottomSheet> {
               ...contact.phones.map((phone) => _buildSelectionTile(
                     icon: Icons.phone,
                     label: phone.number,
+                    isOnPlatform: widget.platformUsers
+                            ?.containsKey(_normalizePhone(phone.number)) ??
+                        false,
                     onTap: () {
                       Navigator.pop(context);
                       Navigator.pop(context);
@@ -484,6 +628,7 @@ class _ContactPickerBottomSheetState extends State<ContactPickerBottomSheet> {
     required IconData icon,
     required String label,
     required VoidCallback onTap,
+    bool isOnPlatform = false,
   }) {
     return Container(
       margin: EdgeInsets.only(bottom: 8.h),
@@ -491,7 +636,9 @@ class _ContactPickerBottomSheetState extends State<ContactPickerBottomSheet> {
         color: const Color(0xFF0A0A0A),
         borderRadius: BorderRadius.circular(8.r),
         border: Border.all(
-          color: const Color(0xFF2D2D2D),
+          color: isOnPlatform
+              ? const Color(0xFF10B981).withValues(alpha: 0.3)
+              : const Color(0xFF2D2D2D),
           width: 1,
         ),
       ),
@@ -511,19 +658,41 @@ class _ContactPickerBottomSheetState extends State<ContactPickerBottomSheet> {
                 ),
                 SizedBox(width: 12.w),
                 Expanded(
-                  child: Text(
-                    label,
-                    style: GoogleFonts.inter(
-                      fontSize: 14.sp,
-                      color: Colors.white,
-                    ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        label,
+                        style: GoogleFonts.inter(
+                          fontSize: 14.sp,
+                          color: Colors.white,
+                        ),
+                      ),
+                      if (isOnPlatform) ...[
+                        SizedBox(height: 2.h),
+                        Text(
+                          'LazerVault user',
+                          style: GoogleFonts.inter(
+                            fontSize: 10.sp,
+                            color: const Color(0xFF10B981),
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                 ),
-                Icon(
-                  Icons.arrow_forward_ios,
-                  color: Colors.grey[600],
-                  size: 14.sp,
-                ),
+                if (isOnPlatform)
+                  Icon(
+                    Icons.check_circle,
+                    color: const Color(0xFF10B981),
+                    size: 16.sp,
+                  )
+                else
+                  Icon(
+                    Icons.arrow_forward_ios,
+                    color: Colors.grey[600],
+                    size: 14.sp,
+                  ),
               ],
             ),
           ),

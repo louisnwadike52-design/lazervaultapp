@@ -181,21 +181,11 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
         );
       }
 
-      // Sync country and currency to LocaleManager from user profile
+      // Reset locale/currency from registration country (in-memory, derived)
       final localeManager = serviceLocator<LocaleManager>();
       final country = profile.user.country;
-      final currency = profile.user.currency;
-      final language = profile.user.language ?? 'en';
-
       if (country != null && country.isNotEmpty) {
-        // Update locale with country from profile
-        await localeManager.updateLocale(
-          locale: '$language-${country.toUpperCase()}',
-          country: country.toUpperCase(),
-        );
-      }
-      if (currency != null && currency.isNotEmpty) {
-        await localeManager.setCurrency(currency);
+        localeManager.resetToCountry(country.toUpperCase());
       }
 
       _currentProfile = profile;
@@ -234,24 +224,26 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     final result = await _loginUseCase(email: email, password: password);
 
     if (isClosed) return;
-    result.fold(
-      (failure) {
-        print('❌ Login failed for email: $email - ${failure.message}');
-        // Show generic error message for security
-        const genericError = 'Invalid email or password';
-        emit(AuthenticationFailure(
-          genericError,
-          statusCode: failure.statusCode,
-        ));
-      },
-      (profile) async {
-        print('✅ Login successful for email: ${profile.user.email}');
-        await _saveSession(profile);
-        // Sync currency from server after successful login
-        await _currencySyncService.syncFromServer();
-        emit(AuthenticationSuccess(profile));
-      },
-    );
+
+    // Handle result properly - fold doesn't await async callbacks
+    if (result.isLeft()) {
+      final failure = result.fold((l) => l, (r) => throw StateError('unreachable'));
+      print('❌ Login failed for email: $email - ${failure.message}');
+      // Show generic error message for security
+      const genericError = 'Invalid email or password';
+      emit(AuthenticationFailure(
+        genericError,
+        statusCode: failure.statusCode,
+      ));
+    } else {
+      final profile = result.fold((l) => throw StateError('unreachable'), (r) => r);
+      print('✅ Login successful for email: ${profile.user.email}');
+      // IMPORTANT: Await session storage to ensure user data is persisted
+      // before emitting success and navigating away
+      await _saveSession(profile);
+      print('✅ Session saved for email: ${profile.user.email}');
+      emit(AuthenticationSuccess(profile));
+    }
   }
 
   Future<void> loginWithPasscode({
@@ -267,21 +259,20 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     );
 
     if (isClosed) return;
-    result.fold(
-      (failure) {
-        emit(AuthenticationError(failure.message));
-      },
-      (profile) async {
-        await _saveSession(profile);
-        // Store login method preference
-        await _storage.write(key: 'login_method', value: 'passcode');
-        await _storage.write(key: 'stored_email', value: email);
-        // Sync currency from server after successful login
-        await _currencySyncService.syncFromServer();
-        _showSuccessSnackbar('Welcome back!', '${profile.user.firstName} ${profile.user.lastName}');
-        emit(AuthenticationSuccess(profile));
-      },
-    );
+
+    // Handle result properly - fold doesn't await async callbacks
+    if (result.isLeft()) {
+      final failure = result.fold((l) => l, (r) => throw StateError('unreachable'));
+      emit(AuthenticationError(failure.message));
+    } else {
+      final profile = result.fold((l) => throw StateError('unreachable'), (r) => r);
+      // IMPORTANT: Await all storage operations before emitting success
+      await _saveSession(profile);
+      await _storage.write(key: 'login_method', value: 'passcode');
+      await _storage.write(key: 'stored_email', value: email);
+      _showSuccessSnackbar('Welcome back!', '${profile.user.firstName} ${profile.user.lastName}');
+      emit(AuthenticationSuccess(profile));
+    }
   }
 
   Future<void> registerPasscode({
@@ -293,26 +284,27 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     final result = await _registerPasscodeUseCase(passcode: passcode);
 
     if (isClosed) return;
-    result.fold(
-      (failure) {
-        _showErrorSnackbar('Passcode Registration Failed', failure.message);
-        emit(AuthenticationError(failure.message));
-      },
-      (_) async {
-        // Store login method preference after successful registration
-        await _storage.write(key: 'login_method', value: 'passcode');
-        if (_currentProfile != null) {
-          await _storage.write(key: 'stored_email', value: _currentProfile!.user.email);
-        }
-        _showSuccessSnackbar('Success!', 'Passcode registered successfully');
-        // Return to the current authenticated state
-        if (_currentProfile != null) {
-          emit(AuthenticationSuccess(_currentProfile!));
-        } else {
-          emit(AuthenticationInitial());
-        }
-      },
-    );
+
+    // Handle result properly - fold doesn't await async callbacks
+    if (result.isLeft()) {
+      final failure = result.fold((l) => l, (r) => throw StateError('unreachable'));
+      _showErrorSnackbar('Passcode Registration Failed', failure.message);
+      emit(AuthenticationError(failure.message));
+    } else {
+      // Store login method preference after successful registration
+      await _storage.write(key: 'login_method', value: 'passcode');
+      if (_currentProfile != null) {
+        await _storage.write(key: 'stored_email', value: _currentProfile!.user.email);
+        await _storage.write(key: 'user_first_name', value: _currentProfile!.user.firstName);
+      }
+      _showSuccessSnackbar('Success!', 'Passcode registered successfully');
+      // Return to the current authenticated state
+      if (_currentProfile != null) {
+        emit(AuthenticationSuccess(_currentProfile!));
+      } else {
+        emit(AuthenticationInitial());
+      }
+    }
   }
 
   Future<void> signUpUser({
@@ -350,8 +342,6 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       },
       (profile) async {
         await _saveSession(profile);
-        // Sync currency from server after successful registration
-        await _currencySyncService.syncFromServer();
 
         // Clear the local signup draft as account is now created
         // Backend will track progress from here
@@ -375,22 +365,21 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     final result = await _signInWithGoogleUseCase();
 
     if (isClosed) return;
-    result.fold(
-      (failure) {
-        _showErrorSnackbar('Google Sign-In Failed', failure.message);
-        emit(AuthenticationFailure(
-          failure.message,
-          statusCode: failure.statusCode,
-        ));
-      },
-      (profile) async {
-        await _saveSession(profile);
-        // Sync currency from server after successful login
-        await _currencySyncService.syncFromServer();
-        _showSuccessSnackbar('Welcome!', 'Signed in with Google');
-        emit(AuthenticationSuccess(profile));
-      },
-    );
+
+    // Handle result properly - fold doesn't await async callbacks
+    if (result.isLeft()) {
+      final failure = result.fold((l) => l, (r) => throw StateError('unreachable'));
+      _showErrorSnackbar('Google Sign-In Failed', failure.message);
+      emit(AuthenticationFailure(
+        failure.message,
+        statusCode: failure.statusCode,
+      ));
+    } else {
+      final profile = result.fold((l) => throw StateError('unreachable'), (r) => r);
+      await _saveSession(profile);
+      _showSuccessSnackbar('Welcome!', 'Signed in with Google');
+      emit(AuthenticationSuccess(profile));
+    }
   }
 
   Future<void> signInWithApple() async {
@@ -400,22 +389,21 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     final result = await _signInWithAppleUseCase();
 
     if (isClosed) return;
-    result.fold(
-      (failure) {
-        _showErrorSnackbar('Apple Sign-In Failed', failure.message);
-        emit(AuthenticationFailure(
-          failure.message,
-          statusCode: failure.statusCode,
-        ));
-      },
-      (profile) async {
-        await _saveSession(profile);
-        // Sync currency from server after successful login
-        await _currencySyncService.syncFromServer();
-        _showSuccessSnackbar('Welcome!', 'Signed in with Apple');
-        emit(AuthenticationSuccess(profile));
-      },
-    );
+
+    // Handle result properly - fold doesn't await async callbacks
+    if (result.isLeft()) {
+      final failure = result.fold((l) => l, (r) => throw StateError('unreachable'));
+      _showErrorSnackbar('Apple Sign-In Failed', failure.message);
+      emit(AuthenticationFailure(
+        failure.message,
+        statusCode: failure.statusCode,
+      ));
+    } else {
+      final profile = result.fold((l) => throw StateError('unreachable'), (r) => r);
+      await _saveSession(profile);
+      _showSuccessSnackbar('Welcome!', 'Signed in with Apple');
+      emit(AuthenticationSuccess(profile));
+    }
   }
 
   // --- Password Recovery Flow---

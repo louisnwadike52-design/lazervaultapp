@@ -318,10 +318,6 @@ class _SelectRecipientsState extends State<SelectRecipients> {
       final favoriteRecipients = allRecipients
           .where((recipient) => recipient.isFavorite)
           .toList();
-      final otherRecipients = allRecipients
-          .where((recipient) => !recipient.isFavorite)
-          .toList();
-
       // Handle case where there are no recipients at all
       if (allRecipients.isEmpty) {
         return RefreshIndicator(
@@ -1351,87 +1347,6 @@ class _SelectRecipientsState extends State<SelectRecipients> {
     Get.toNamed(AppRoutes.initiateSendFunds, arguments: temporaryRecipient);
   }
 
-  List<Color> _getBankGradientColors(String bankName) {
-    final lowerName = bankName.toLowerCase();
-
-    // Nigerian Banks
-    if (lowerName.contains('access')) return [Color(0xFFFF6600), Color(0xFFCC5200)];
-    if (lowerName.contains('gtbank') || lowerName.contains('guaranty trust')) return [Color(0xFFFF6600), Color(0xFFCC4400)];
-    if (lowerName.contains('first bank')) return [Color(0xFF003366), Color(0xFF002244)];
-    if (lowerName.contains('uba') || lowerName.contains('united bank for africa')) return [Color(0xFFCC0000), Color(0xFF990000)];
-    if (lowerName.contains('zenith')) return [Color(0xFFCC0000), Color(0xFF990000)];
-    if (lowerName.contains('kuda')) return [Color(0xFF6B47ED), Color(0xFF5533CC)];
-    if (lowerName.contains('opay')) return [Color(0xFF00C853), Color(0xFF009624)];
-    if (lowerName.contains('palmpay')) return [Color(0xFF6C63FF), Color(0xFF5046E5)];
-    if (lowerName.contains('fidelity')) return [Color(0xFF006B3F), Color(0xFF004D2D)];
-    if (lowerName.contains('fcmb') || lowerName.contains('first city monument')) return [Color(0xFF6B2D7B), Color(0xFF4A1F55)];
-    if (lowerName.contains('sterling')) return [Color(0xFFCC0000), Color(0xFF990000)];
-    if (lowerName.contains('stanbic')) return [Color(0xFF0033A1), Color(0xFF002277)];
-    if (lowerName.contains('ecobank')) return [Color(0xFF004C91), Color(0xFF003366)];
-    if (lowerName.contains('union bank')) return [Color(0xFF003087), Color(0xFF002266)];
-    if (lowerName.contains('wema') || lowerName.contains('alat')) return [Color(0xFF6B2D7B), Color(0xFF4A1F55)];
-    if (lowerName.contains('polaris')) return [Color(0xFF003399), Color(0xFF002266)];
-    if (lowerName.contains('keystone')) return [Color(0xFF0066CC), Color(0xFF004488)];
-    if (lowerName.contains('heritage')) return [Color(0xFF006633), Color(0xFF004422)];
-    if (lowerName.contains('moniepoint')) return [Color(0xFF0066FF), Color(0xFF0044CC)];
-    if (lowerName.contains('carbon')) return [Color(0xFF00C9A7), Color(0xFF00A386)];
-
-    // UK Banks
-    if (lowerName.contains('barclays')) return [Color(0xFF0071CE), Color(0xFF004A8F)];
-    if (lowerName.contains('hsbc')) return [Color(0xFFDB0011), Color(0xFFB8000E)];
-    if (lowerName.contains('lloyds')) return [Color(0xFF006A4E), Color(0xFF004D3A)];
-    if (lowerName.contains('natwest')) return [Color(0xFF5D2A8F), Color(0xFF4A1F75)];
-    if (lowerName.contains('santander')) return [Color(0xFFEC0000), Color(0xFFD10000)];
-    if (lowerName.contains('monzo')) return [Color(0xFFFF5A5F), Color(0xFFE64850)];
-    if (lowerName.contains('starling')) return [Color(0xFF6935D3), Color(0xFF5229A8)];
-    if (lowerName.contains('revolut')) return [Color(0xFF0073E6), Color(0xFF005BB5)];
-
-    // Default gradient
-    return [Color(0xFF78039C), Color(0xFF5F14E1)];
-  }
-
-  String _getBankInitials(String bankName) {
-    if (bankName.isEmpty) return '??';
-    final lowerName = bankName.toLowerCase();
-
-    // Nigerian Banks
-    if (lowerName.contains('access')) return 'AB';
-    if (lowerName.contains('gtbank') || lowerName.contains('guaranty trust')) return 'GT';
-    if (lowerName.contains('first bank')) return 'FB';
-    if (lowerName.contains('uba') || lowerName.contains('united bank for africa')) return 'UBA';
-    if (lowerName.contains('zenith')) return 'ZB';
-    if (lowerName.contains('kuda')) return 'KD';
-    if (lowerName.contains('opay')) return 'OP';
-    if (lowerName.contains('palmpay')) return 'PP';
-    if (lowerName.contains('fidelity')) return 'FD';
-    if (lowerName.contains('fcmb') || lowerName.contains('first city monument')) return 'FC';
-    if (lowerName.contains('sterling')) return 'SB';
-    if (lowerName.contains('stanbic')) return 'SI';
-    if (lowerName.contains('ecobank')) return 'EB';
-    if (lowerName.contains('union bank')) return 'UB';
-    if (lowerName.contains('wema')) return 'WB';
-    if (lowerName.contains('alat')) return 'AL';
-    if (lowerName.contains('moniepoint')) return 'MP';
-    if (lowerName.contains('carbon')) return 'CB';
-
-    // UK Banks
-    if (lowerName.contains('barclays')) return 'BC';
-    if (lowerName.contains('hsbc')) return 'HS';
-    if (lowerName.contains('lloyds')) return 'LB';
-    if (lowerName.contains('natwest')) return 'NW';
-    if (lowerName.contains('santander')) return 'SU';
-    if (lowerName.contains('monzo')) return 'MZ';
-    if (lowerName.contains('starling')) return 'SL';
-    if (lowerName.contains('revolut')) return 'RV';
-
-    // Default: first letters of first two words
-    final words = bankName.split(' ');
-    if (words.length >= 2) {
-      return '${words[0][0]}${words[1][0]}'.toUpperCase();
-    }
-    return bankName.substring(0, 2).toUpperCase();
-  }
-
   Widget _buildQuickAction({
     required IconData icon,
     required String label,
@@ -1501,67 +1416,6 @@ class _SelectRecipientsState extends State<SelectRecipients> {
         colorText: Colors.white,
       );
     }
-  }
-
-  Future<void> _launchScheduledTransfer() async {
-    // Show scheduled transfer dialog
-    final DateTime? selectedDate = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now().add(Duration(days: 1)),
-      firstDate: DateTime.now(),
-      lastDate: DateTime.now().add(Duration(days: 365)),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: ColorScheme.light(
-              primary: Color.fromARGB(255, 78, 3, 208),
-              onPrimary: Colors.white,
-              surface: Colors.white,
-              onSurface: Colors.black87,
-            ),
-          ),
-          child: child!,
-        );
-      },
-    );
-
-    if (!mounted || selectedDate == null) return;
-
-    // Show time picker
-    final TimeOfDay? selectedTime = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay(hour: 9, minute: 0),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: ColorScheme.light(
-              primary: Color.fromARGB(255, 78, 3, 208),
-              onPrimary: Colors.white,
-              surface: Colors.white,
-              onSurface: Colors.black87,
-            ),
-          ),
-          child: child!,
-        );
-      },
-    );
-
-    if (!mounted || selectedTime == null) return;
-
-    // Combine date and time
-    final scheduledDateTime = DateTime(
-      selectedDate.year,
-      selectedDate.month,
-      selectedDate.day,
-      selectedTime.hour,
-      selectedTime.minute,
-    );
-
-    // Navigate to send funds with scheduled time
-    Get.toNamed(
-      AppRoutes.initiateSendFunds,
-      arguments: {'scheduledAt': scheduledDateTime},
-    );
   }
 
   Future<void> _launchBankDetailsScan() async {

@@ -26,10 +26,11 @@ abstract class IProfileRepository {
     required String newPassword,
   });
 
-  // Search users by username
+  // Search users by username, email, phone, or name (unified search when searchType is empty)
   Future<List<UserSearchResultEntity>> searchUsersByUsername({
     required String query,
     int limit = 10,
+    String searchType = '', // "username", "name", "phone", "email", or "" for unified search
   });
 
   // Update preferences

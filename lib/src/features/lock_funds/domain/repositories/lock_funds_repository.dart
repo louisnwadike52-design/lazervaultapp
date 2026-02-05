@@ -17,6 +17,8 @@ abstract class LockFundsRepository {
     String? goalName,
     String? goalDescription,
     required String paymentMethod,
+    required String sourceAccountId,
+    String transactionPin = '',
   });
 
   /// Unlock a fund

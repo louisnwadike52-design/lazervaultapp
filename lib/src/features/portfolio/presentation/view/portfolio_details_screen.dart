@@ -21,8 +21,6 @@ class _PortfolioDetailsScreenState extends State<PortfolioDetailsScreen>
     with TickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
-  late Animation<double> _slideAnimation;
-
   String _selectedAssetType = 'all';
   String _selectedTimeframe = '1M';
   final List<String> _timeframes = ['1W', '1M', '3M', '6M', '1Y', 'ALL'];
@@ -40,10 +38,6 @@ class _PortfolioDetailsScreenState extends State<PortfolioDetailsScreen>
     );
 
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
-    );
-
-    _slideAnimation = Tween<double>(begin: 30.0, end: 0.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
     );
 

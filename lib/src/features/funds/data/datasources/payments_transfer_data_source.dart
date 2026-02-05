@@ -1,4 +1,3 @@
-import 'package:fixnum/fixnum.dart';
 import 'package:grpc/grpc.dart';
 import 'package:uuid/uuid.dart';
 
@@ -126,8 +125,6 @@ class BatchTransferItem {
 class PaymentsTransferDataSourceImpl implements IPaymentsTransferDataSource {
   final payments.PaymentsServiceClient _client;
   final GrpcCallOptionsHelper _callOptionsHelper;
-  final _uuid = const Uuid();
-
   PaymentsTransferDataSourceImpl(
     this._client,
     this._callOptionsHelper,

@@ -282,12 +282,7 @@ class ThemedDrawer extends StatelessWidget {
             color: Colors.grey.shade400,
             size: 20.sp,
           ),
-          onTap: item.onTap ?? () {
-            if (item.route != null) {
-              Navigator.pop(context);
-              Get.toNamed(item.route!);
-            }
-          },
+          onTap: item.onTap ?? () {},
         );
       },
     );
@@ -464,14 +459,12 @@ class _DrawerMenuItem {
   final IconData icon;
   final String title;
   final Color iconColor;
-  final String? route;
   final VoidCallback? onTap;
 
   _DrawerMenuItem({
     required this.icon,
     required this.title,
     required this.iconColor,
-    this.route,
     this.onTap,
   });
 }

@@ -26,6 +26,8 @@ enum LockStatus {
 }
 
 // Lock fund message
+// The LockFund record acts as a "virtual vault" holding the locked funds.
+// Funds are debited from source_account_id on creation and credited back on unlock.
 message LockFund {
   string id = 1;
   uint64 user_id = 2;
@@ -52,6 +54,10 @@ message LockFund {
   double progress_percent = 21;
   double total_value = 22; // amount + accrued_interest
   bool can_unlock_early = 23;
+
+  // Account tracking for fund flow
+  string source_account_id = 24;      // Account funds were debited from
+  string destination_account_id = 25; // Account to credit on unlock (defaults to source if empty)
 }
 
 // Lock transaction message
@@ -78,6 +84,8 @@ message CreateLockFundRequest {
   string goal_name = 6;
   string goal_description = 7;
   string payment_method = 8;
+  string source_account_id = 9;  // The account ID to debit funds from
+  string transaction_pin = 10;   // Transaction PIN for authorization
 }
 
 // Create lock fund response
@@ -123,6 +131,8 @@ message GetLockFundResponse {
 message UnlockFundRequest {
   string lock_fund_id = 1;
   bool force_early_unlock = 2;
+  string transaction_pin = 3;          // Required for authorization
+  string destination_account_id = 4;   // Optional: override where funds go (defaults to source_account_id)
 }
 
 // Unlock fund response
@@ -133,6 +143,7 @@ message UnlockFundResponse {
   double penalty_amount = 4;
   double interest_earned = 5;
   LockFund updated_lock_fund = 6;
+  string credited_account_id = 7;      // The account where funds were credited
 }
 
 // Get lock transactions request

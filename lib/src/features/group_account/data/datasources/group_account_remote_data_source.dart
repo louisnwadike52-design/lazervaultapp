@@ -20,6 +20,7 @@ abstract class GroupAccountRemoteDataSource {
     required String userName,
     required String email,
     String? profileImage,
+    String? username,  // LazerTag username for user lookup
     GroupMemberRole role = GroupMemberRole.member,
   });
   Future<GroupMemberModel> updateMemberRole({
@@ -57,7 +58,18 @@ abstract class GroupAccountRemoteDataSource {
   });
   Future<ContributionModel> updateContribution(ContributionModel contribution);
   Future<void> deleteContribution(String contributionId);
-  
+
+  // Contribution Member methods
+  Future<List<ContributionMemberModel>> addMembersToContribution({
+    required String contributionId,
+    required List<String> memberUserIds,
+  });
+  Future<List<ContributionMemberModel>> getContributionMembers(String contributionId);
+  Future<void> removeMemberFromContribution({
+    required String contributionId,
+    required String userId,
+  });
+
   Future<List<ContributionPaymentModel>> getContributionPayments(String contributionId);
   Future<ContributionPaymentModel> makeContributionPayment({
     required String contributionId,
@@ -67,6 +79,9 @@ abstract class GroupAccountRemoteDataSource {
     required double amount,
     required String currency,
     String? notes,
+    String? transactionPin,
+    String? sourceAccountId,
+    String? idempotencyKey,
   });
   Future<ContributionPaymentModel> updatePaymentStatus({
     required String paymentId,
@@ -106,6 +121,10 @@ abstract class GroupAccountRemoteDataSource {
   Future<Map<String, dynamic>> getGroupStatistics(String groupId);
   Future<Map<String, dynamic>> getUserContributionStats(String userId);
   Future<Map<String, dynamic>> getContributionAnalytics(String contributionId);
+
+  // Activity Log methods
+  Future<List<ActivityLogEntryModel>> getGroupActivityLogs(String groupId);
+  Future<List<ActivityLogEntryModel>> getContributionActivityLogs(String contributionId);
 }
 
 class GroupAccountRemoteDataSourceImpl implements GroupAccountRemoteDataSource {
@@ -225,10 +244,11 @@ class GroupAccountRemoteDataSourceImpl implements GroupAccountRemoteDataSource {
     required String userName,
     required String email,
     String? profileImage,
+    String? username,
     GroupMemberRole role = GroupMemberRole.member,
   }) async {
     await Future.delayed(const Duration(milliseconds: 500));
-    
+
     final member = GroupMemberModel(
       id: _generateId(),
       userId: userId,
@@ -238,6 +258,7 @@ class GroupAccountRemoteDataSourceImpl implements GroupAccountRemoteDataSource {
       role: role,
       joinedAt: DateTime.now(),
       status: GroupMemberStatus.active,
+      userUsername: username,
     );
     
     _groupMembers.putIfAbsent(groupId, () => []).add(member);
@@ -476,11 +497,96 @@ class GroupAccountRemoteDataSourceImpl implements GroupAccountRemoteDataSource {
   @override
   Future<void> deleteContribution(String contributionId) async {
     await Future.delayed(const Duration(milliseconds: 300));
-    
+
     for (final contributions in _groupContributions.values) {
       contributions.removeWhere((c) => c.id == contributionId);
     }
     _contributionPayments.remove(contributionId);
+  }
+
+  // Storage for contribution members
+  static final Map<String, List<ContributionMemberModel>> _contributionMembers = {};
+
+  @override
+  Future<List<ContributionMemberModel>> addMembersToContribution({
+    required String contributionId,
+    required List<String> memberUserIds,
+  }) async {
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    // Find the contribution to get group members
+    ContributionModel? contribution;
+    String? groupId;
+    for (final entry in _groupContributions.entries) {
+      groupId = entry.key;
+      contribution = entry.value.where((c) => c.id == contributionId).firstOrNull;
+      if (contribution != null) break;
+    }
+
+    if (contribution == null || groupId == null) {
+      throw Exception('Contribution not found');
+    }
+
+    final groupMembers = _groupMembers[groupId] ?? [];
+    final addedMembers = <ContributionMemberModel>[];
+
+    for (final userId in memberUserIds) {
+      // Find the group member
+      final groupMember = groupMembers.where((m) => m.userId == userId).firstOrNull;
+      if (groupMember == null) continue;
+
+      // Check if already a contribution member
+      final existingMembers = _contributionMembers[contributionId] ?? [];
+      if (existingMembers.any((m) => m.userId == userId)) continue;
+
+      final contributionMember = ContributionMemberModel(
+        id: _generateId(),
+        contributionId: contributionId,
+        userId: groupMember.userId,
+        userName: groupMember.userName,
+        email: groupMember.email,
+        profileImage: groupMember.profileImage,
+        joinedAt: DateTime.now(),
+        totalPaid: 0,
+        expectedAmount: contribution.regularAmount ?? (contribution.targetAmount / memberUserIds.length),
+        hasPaidCurrentCycle: false,
+      );
+
+      addedMembers.add(contributionMember);
+    }
+
+    _contributionMembers.putIfAbsent(contributionId, () => []).addAll(addedMembers);
+
+    // Update the contribution with members
+    final groupContributions = _groupContributions[groupId]!;
+    final contribIndex = groupContributions.indexWhere((c) => c.id == contributionId);
+    if (contribIndex != -1) {
+      final updatedContribution = contribution.copyWith(
+        members: _contributionMembers[contributionId] ?? [],
+      );
+      groupContributions[contribIndex] = updatedContribution;
+    }
+
+    return addedMembers;
+  }
+
+  @override
+  Future<List<ContributionMemberModel>> getContributionMembers(String contributionId) async {
+    await Future.delayed(const Duration(milliseconds: 300));
+    return _contributionMembers[contributionId] ?? [];
+  }
+
+  @override
+  Future<void> removeMemberFromContribution({
+    required String contributionId,
+    required String userId,
+  }) async {
+    await Future.delayed(const Duration(milliseconds: 300));
+
+    final members = _contributionMembers[contributionId];
+    if (members != null) {
+      members.removeWhere((m) => m.userId == userId);
+    }
   }
 
   @override
@@ -498,9 +604,12 @@ class GroupAccountRemoteDataSourceImpl implements GroupAccountRemoteDataSource {
     required double amount,
     required String currency,
     String? notes,
+    String? transactionPin,
+    String? sourceAccountId,
+    String? idempotencyKey,
   }) async {
     await Future.delayed(const Duration(milliseconds: 1000));
-    
+
     final payment = ContributionPaymentModel(
       id: _generateId(),
       contributionId: contributionId,
@@ -514,9 +623,9 @@ class GroupAccountRemoteDataSourceImpl implements GroupAccountRemoteDataSource {
       transactionId: 'TXN_${_generateId()}',
       notes: notes,
     );
-    
+
     _contributionPayments.putIfAbsent(contributionId, () => []).add(payment);
-    
+
     // Update contribution current amount
     final groupContributions = _groupContributions[groupId] ?? [];
     final contributionIndex = groupContributions.indexWhere((c) => c.id == contributionId);
@@ -528,7 +637,7 @@ class GroupAccountRemoteDataSourceImpl implements GroupAccountRemoteDataSource {
       );
       groupContributions[contributionIndex] = updatedContribution;
     }
-    
+
     return payment;
   }
 
@@ -1084,5 +1193,188 @@ class GroupAccountRemoteDataSourceImpl implements GroupAccountRemoteDataSource {
       },
       'memberStats': memberAmounts,
     };
+  }
+
+  // Activity log storage
+  static final Map<String, List<ActivityLogEntryModel>> _groupActivityLogs = {};
+  static final Map<String, List<ActivityLogEntryModel>> _contributionActivityLogs = {};
+
+  @override
+  Future<List<ActivityLogEntryModel>> getGroupActivityLogs(String groupId) async {
+    await Future.delayed(const Duration(milliseconds: 300));
+
+    // Return stored logs or generate mock data if empty
+    if (_groupActivityLogs[groupId] == null || _groupActivityLogs[groupId]!.isEmpty) {
+      _groupActivityLogs[groupId] = _generateMockActivityLogs(groupId, null);
+    }
+
+    return _groupActivityLogs[groupId]!;
+  }
+
+  @override
+  Future<List<ActivityLogEntryModel>> getContributionActivityLogs(String contributionId) async {
+    await Future.delayed(const Duration(milliseconds: 300));
+
+    // Find the contribution's group
+    String? groupId;
+    for (final entry in _groupContributions.entries) {
+      if (entry.value.any((c) => c.id == contributionId)) {
+        groupId = entry.key;
+        break;
+      }
+    }
+
+    // Return stored logs or generate mock data if empty
+    if (_contributionActivityLogs[contributionId] == null || _contributionActivityLogs[contributionId]!.isEmpty) {
+      _contributionActivityLogs[contributionId] = _generateMockActivityLogs(groupId ?? '', contributionId);
+    }
+
+    return _contributionActivityLogs[contributionId]!;
+  }
+
+  List<ActivityLogEntryModel> _generateMockActivityLogs(String groupId, String? contributionId) {
+    final now = DateTime.now();
+    final logs = <ActivityLogEntryModel>[];
+
+    // Generate mock activity logs
+    if (contributionId != null) {
+      // Contribution-specific logs
+      logs.addAll([
+        ActivityLogEntryModel(
+          id: _generateId(),
+          groupId: groupId,
+          contributionId: contributionId,
+          actorUserId: 'user1',
+          actorName: 'Current User',
+          actionType: 'payment_made',
+          details: {'amount': 5000, 'contribution_title': 'Contribution'},
+          createdAt: now.subtract(const Duration(hours: 2)),
+        ),
+        ActivityLogEntryModel(
+          id: _generateId(),
+          groupId: groupId,
+          contributionId: contributionId,
+          actorUserId: 'user2',
+          actorName: 'Member User',
+          actionType: 'payment_made',
+          details: {'amount': 3000, 'contribution_title': 'Contribution'},
+          createdAt: now.subtract(const Duration(hours: 5)),
+        ),
+        ActivityLogEntryModel(
+          id: _generateId(),
+          groupId: groupId,
+          contributionId: contributionId,
+          actorUserId: 'user1',
+          actorName: 'Current User',
+          actionType: 'contribution_created',
+          details: {'title': 'Contribution'},
+          createdAt: now.subtract(const Duration(days: 1)),
+        ),
+      ]);
+    } else {
+      // Group-level logs
+      logs.addAll([
+        ActivityLogEntryModel(
+          id: _generateId(),
+          groupId: groupId,
+          actorUserId: 'user1',
+          actorName: 'John Doe',
+          actionType: 'payment_made',
+          details: {'amount': 5000, 'contribution_title': 'Monthly Savings'},
+          createdAt: now.subtract(const Duration(hours: 2)),
+        ),
+        ActivityLogEntryModel(
+          id: _generateId(),
+          groupId: groupId,
+          actorUserId: 'user2',
+          actorName: 'Jane Smith',
+          actionType: 'member_added',
+          targetType: 'member',
+          details: {'member_name': 'Alex Johnson'},
+          createdAt: now.subtract(const Duration(hours: 5)),
+        ),
+        ActivityLogEntryModel(
+          id: _generateId(),
+          groupId: groupId,
+          actorUserId: 'user1',
+          actorName: 'John Doe',
+          actionType: 'contribution_created',
+          details: {'title': 'House Fund'},
+          createdAt: now.subtract(const Duration(days: 1)),
+        ),
+        ActivityLogEntryModel(
+          id: _generateId(),
+          groupId: groupId,
+          actorUserId: 'user3',
+          actorName: 'Bob Wilson',
+          actionType: 'payout_processed',
+          details: {'amount': 50000, 'recipient': 'Jane Smith'},
+          createdAt: now.subtract(const Duration(days: 2)),
+        ),
+        ActivityLogEntryModel(
+          id: _generateId(),
+          groupId: groupId,
+          actorUserId: 'user1',
+          actorName: 'John Doe',
+          actionType: 'settings_changed',
+          details: {'setting': 'auto_pay', 'value': true},
+          createdAt: now.subtract(const Duration(days: 3)),
+        ),
+        ActivityLogEntryModel(
+          id: _generateId(),
+          groupId: groupId,
+          actorUserId: 'user2',
+          actorName: 'Jane Smith',
+          actionType: 'member_role_changed',
+          targetType: 'member',
+          details: {'member_name': 'Alex Johnson', 'new_role': 'moderator'},
+          createdAt: now.subtract(const Duration(days: 4)),
+        ),
+      ]);
+    }
+
+    return logs;
+  }
+}
+
+// Activity Log Entry Model
+class ActivityLogEntryModel {
+  final String id;
+  final String groupId;
+  final String? contributionId;
+  final String actorUserId;
+  final String actorName;
+  final String actionType;
+  final String? targetType;
+  final String? targetId;
+  final Map<String, dynamic>? details;
+  final DateTime createdAt;
+
+  ActivityLogEntryModel({
+    required this.id,
+    required this.groupId,
+    this.contributionId,
+    required this.actorUserId,
+    required this.actorName,
+    required this.actionType,
+    this.targetType,
+    this.targetId,
+    this.details,
+    required this.createdAt,
+  });
+
+  ActivityLogEntry toEntity() {
+    return ActivityLogEntry(
+      id: id,
+      groupId: groupId,
+      contributionId: contributionId,
+      actorUserId: actorUserId,
+      actorName: actorName,
+      actionType: actionType,
+      targetType: targetType,
+      targetId: targetId,
+      details: details,
+      createdAt: createdAt,
+    );
   }
 } 

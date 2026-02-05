@@ -85,6 +85,7 @@ class GroupAccountRepositoryImpl implements GroupAccountRepository {
     required String userName,
     required String email,
     String? profileImage,
+    String? username,
     GroupMemberRole role = GroupMemberRole.member,
   }) async {
     try {
@@ -94,6 +95,7 @@ class GroupAccountRepositoryImpl implements GroupAccountRepository {
         userName: userName,
         email: email,
         profileImage: profileImage,
+        username: username,
         role: role,
       );
       return memberModel;
@@ -174,6 +176,17 @@ class GroupAccountRepositoryImpl implements GroupAccountRepository {
     required String currency,
     required DateTime deadline,
     required String createdBy,
+    ContributionType type = ContributionType.oneTime,
+    ContributionFrequency? frequency,
+    double? regularAmount,
+    DateTime? startDate,
+    int? totalCycles,
+    List<String>? memberRotationOrder,
+    bool autoPayEnabled = false,
+    double? penaltyAmount,
+    int? gracePeriodDays,
+    bool allowPartialPayments = true,
+    double? minimumBalance,
   }) async {
     try {
       final contributionModel = await remoteDataSource.createContribution(
@@ -184,6 +197,17 @@ class GroupAccountRepositoryImpl implements GroupAccountRepository {
         currency: currency,
         deadline: deadline,
         createdBy: createdBy,
+        type: type,
+        frequency: frequency,
+        regularAmount: regularAmount,
+        startDate: startDate,
+        totalCycles: totalCycles,
+        memberRotationOrder: memberRotationOrder,
+        autoPayEnabled: autoPayEnabled,
+        penaltyAmount: penaltyAmount,
+        gracePeriodDays: gracePeriodDays,
+        allowPartialPayments: allowPartialPayments,
+        minimumBalance: minimumBalance,
       );
       return contributionModel;
     } catch (e) {
@@ -212,6 +236,47 @@ class GroupAccountRepositoryImpl implements GroupAccountRepository {
   }
 
   @override
+  Future<List<ContributionMember>> addMembersToContribution({
+    required String contributionId,
+    required List<String> memberUserIds,
+  }) async {
+    try {
+      final memberModels = await remoteDataSource.addMembersToContribution(
+        contributionId: contributionId,
+        memberUserIds: memberUserIds,
+      );
+      return memberModels.cast<ContributionMember>();
+    } catch (e) {
+      throw Exception('Failed to add members to contribution: $e');
+    }
+  }
+
+  @override
+  Future<List<ContributionMember>> getContributionMembers(String contributionId) async {
+    try {
+      final memberModels = await remoteDataSource.getContributionMembers(contributionId);
+      return memberModels.cast<ContributionMember>();
+    } catch (e) {
+      throw Exception('Failed to get contribution members: $e');
+    }
+  }
+
+  @override
+  Future<void> removeMemberFromContribution({
+    required String contributionId,
+    required String userId,
+  }) async {
+    try {
+      await remoteDataSource.removeMemberFromContribution(
+        contributionId: contributionId,
+        userId: userId,
+      );
+    } catch (e) {
+      throw Exception('Failed to remove member from contribution: $e');
+    }
+  }
+
+  @override
   Future<List<ContributionPayment>> getContributionPayments(String contributionId) async {
     try {
       final paymentModels = await remoteDataSource.getContributionPayments(contributionId);
@@ -230,6 +295,9 @@ class GroupAccountRepositoryImpl implements GroupAccountRepository {
     required double amount,
     required String currency,
     String? notes,
+    String? transactionPin,
+    String? sourceAccountId,
+    String? idempotencyKey,
   }) async {
     try {
       final paymentModel = await remoteDataSource.makeContributionPayment(
@@ -240,6 +308,9 @@ class GroupAccountRepositoryImpl implements GroupAccountRepository {
         amount: amount,
         currency: currency,
         notes: notes,
+        transactionPin: transactionPin,
+        sourceAccountId: sourceAccountId,
+        idempotencyKey: idempotencyKey,
       );
       return paymentModel;
     } catch (e) {
@@ -310,6 +381,26 @@ class GroupAccountRepositoryImpl implements GroupAccountRepository {
       return await remoteDataSource.getUserContributionStats(userId);
     } catch (e) {
       throw Exception('Failed to get user contribution stats: $e');
+    }
+  }
+
+  @override
+  Future<List<ActivityLogEntry>> getGroupActivityLogs(String groupId) async {
+    try {
+      final logModels = await remoteDataSource.getGroupActivityLogs(groupId);
+      return logModels.map((m) => m.toEntity()).toList();
+    } catch (e) {
+      throw Exception('Failed to get group activity logs: $e');
+    }
+  }
+
+  @override
+  Future<List<ActivityLogEntry>> getContributionActivityLogs(String contributionId) async {
+    try {
+      final logModels = await remoteDataSource.getContributionActivityLogs(contributionId);
+      return logModels.map((m) => m.toEntity()).toList();
+    } catch (e) {
+      throw Exception('Failed to get contribution activity logs: $e');
     }
   }
 } 

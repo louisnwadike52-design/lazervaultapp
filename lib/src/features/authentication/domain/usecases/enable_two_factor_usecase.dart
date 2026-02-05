@@ -3,6 +3,7 @@ import 'package:lazervault/src/features/authentication/domain/repositories/i_aut
 
 /// Use case for enabling two-factor authentication
 class EnableTwoFactorUseCase {
+  // ignore: unused_field
   final IAuthRepository _repository;
 
   EnableTwoFactorUseCase(this._repository);
@@ -15,6 +16,7 @@ class EnableTwoFactorUseCase {
 
 /// Use case for completing two-factor authentication setup
 class CompleteTwoFactorSetupUseCase {
+  // ignore: unused_field
   final IAuthRepository _repository;
 
   CompleteTwoFactorSetupUseCase(this._repository);
@@ -27,6 +29,7 @@ class CompleteTwoFactorSetupUseCase {
 
 /// Use case for verifying two-factor authentication during login
 class VerifyTwoFactorUseCase {
+  // ignore: unused_field
   final IAuthRepository _repository;
 
   VerifyTwoFactorUseCase(this._repository);
@@ -39,6 +42,7 @@ class VerifyTwoFactorUseCase {
 
 /// Use case for disabling two-factor authentication
 class DisableTwoFactorUseCase {
+  // ignore: unused_field
   final IAuthRepository _repository;
 
   DisableTwoFactorUseCase(this._repository);
@@ -51,6 +55,7 @@ class DisableTwoFactorUseCase {
 
 /// Use case for getting two-factor authentication status
 class GetTwoFactorStatusUseCase {
+  // ignore: unused_field
   final IAuthRepository _repository;
 
   GetTwoFactorStatusUseCase(this._repository);
@@ -68,6 +73,7 @@ class GetTwoFactorStatusUseCase {
 
 /// Use case for regenerating backup codes
 class RegenerateBackupCodesUseCase {
+  // ignore: unused_field
   final IAuthRepository _repository;
 
   RegenerateBackupCodesUseCase(this._repository);
@@ -80,6 +86,7 @@ class RegenerateBackupCodesUseCase {
 
 /// Use case for sending a new two-factor authentication code
 class SendTwoFactorCodeUseCase {
+  // ignore: unused_field
   final IAuthRepository _repository;
 
   SendTwoFactorCodeUseCase(this._repository);

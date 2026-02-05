@@ -46,7 +46,6 @@ class _VoiceVerificationScreenState extends State<VoiceVerificationScreen>
   String? _currentRecordingPath;
   int _retryCount = 0;
   String? _errorMessage;
-  VoiceVerificationResult? _lastResult;
 
   @override
   void initState() {
@@ -250,7 +249,6 @@ class _VoiceVerificationScreenState extends State<VoiceVerificationScreen>
       if (!mounted) return;
 
       setState(() {
-        _lastResult = result;
         _isVerifying = false;
       });
 

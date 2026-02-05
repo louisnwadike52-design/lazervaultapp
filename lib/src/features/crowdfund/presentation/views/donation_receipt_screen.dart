@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get_it/get_it.dart';
 import 'package:intl/intl.dart';
+import '../../data/services/crowdfund_pdf_service.dart';
 import '../../domain/entities/crowdfund_entities.dart';
 
 class DonationReceiptScreen extends StatefulWidget {
@@ -23,9 +25,12 @@ class _DonationReceiptScreenState extends State<DonationReceiptScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _scaleAnimation;
+  late CrowdfundPdfService _pdfService;
+  bool _isProcessingPdf = false;
 
   @override
   void initState() {
+    _pdfService = GetIt.I<CrowdfundPdfService>();
     super.initState();
     _animationController = AnimationController(
       vsync: this,
@@ -48,24 +53,88 @@ class _DonationReceiptScreenState extends State<DonationReceiptScreen>
     super.dispose();
   }
 
-  void _downloadPDF() {
-    // TODO: Implement PDF download using PDF service
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Receipt downloaded successfully!'),
-        backgroundColor: Color(0xFF10B981),
-      ),
-    );
+  Future<void> _downloadPDF() async {
+    if (widget.receipt == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Receipt not available for download'),
+          backgroundColor: Color(0xFFEF4444),
+        ),
+      );
+      return;
+    }
+
+    if (_isProcessingPdf) return;
+
+    setState(() => _isProcessingPdf = true);
+
+    try {
+      final filePath = await _pdfService.downloadReceipt(
+        widget.receipt!,
+        widget.donation,
+        widget.crowdfund,
+      );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Receipt saved to: ${filePath.split('/').last}'),
+            backgroundColor: const Color(0xFF10B981),
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to download: ${e.toString().replaceAll('Exception: ', '')}'),
+            backgroundColor: const Color(0xFFEF4444),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isProcessingPdf = false);
+      }
+    }
   }
 
-  void _sharePDF() {
-    // TODO: Implement PDF share using PDF service
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Share functionality coming soon!'),
-        backgroundColor: Color(0xFF4E03D0),
-      ),
-    );
+  Future<void> _sharePDF() async {
+    if (widget.receipt == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Receipt not available for sharing'),
+          backgroundColor: Color(0xFFEF4444),
+        ),
+      );
+      return;
+    }
+
+    if (_isProcessingPdf) return;
+
+    setState(() => _isProcessingPdf = true);
+
+    try {
+      await _pdfService.shareReceipt(
+        widget.receipt!,
+        widget.donation,
+        widget.crowdfund,
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to share: ${e.toString().replaceAll('Exception: ', '')}'),
+            backgroundColor: const Color(0xFFEF4444),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isProcessingPdf = false);
+      }
+    }
   }
 
   @override
@@ -270,9 +339,18 @@ class _DonationReceiptScreenState extends State<DonationReceiptScreen>
                   children: [
                     Expanded(
                       child: OutlinedButton.icon(
-                        onPressed: _downloadPDF,
-                        icon: const Icon(Icons.download),
-                        label: const Text('Download PDF'),
+                        onPressed: _isProcessingPdf ? null : _downloadPDF,
+                        icon: _isProcessingPdf
+                            ? SizedBox(
+                                width: 16.w,
+                                height: 16.h,
+                                child: const CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Color(0xFF4E03D0),
+                                ),
+                              )
+                            : const Icon(Icons.download),
+                        label: Text(_isProcessingPdf ? 'Processing...' : 'Download PDF'),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: const Color(0xFF4E03D0),
                           side: const BorderSide(color: Color(0xFF4E03D0)),
@@ -286,9 +364,18 @@ class _DonationReceiptScreenState extends State<DonationReceiptScreen>
                     SizedBox(width: 12.w),
                     Expanded(
                       child: ElevatedButton.icon(
-                        onPressed: _sharePDF,
-                        icon: const Icon(Icons.share),
-                        label: const Text('Share'),
+                        onPressed: _isProcessingPdf ? null : _sharePDF,
+                        icon: _isProcessingPdf
+                            ? SizedBox(
+                                width: 16.w,
+                                height: 16.h,
+                                child: const CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : const Icon(Icons.share),
+                        label: Text(_isProcessingPdf ? 'Processing...' : 'Share'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF4E03D0),
                           padding: EdgeInsets.symmetric(vertical: 14.h),

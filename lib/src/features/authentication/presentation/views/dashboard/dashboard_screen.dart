@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:get/get.dart';
-import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/types/screen.dart';
 import 'package:lazervault/src/features/authentication/presentation/views/bottom_nav_menu.dart';
 import 'package:lazervault/src/features/widgets/themed_drawer.dart';
@@ -60,10 +58,6 @@ class _DashboardScreenState extends State<DashboardScreen>
     } else {
       _handleOnTabChange(_tabController.index);
     }
-  }
-
-  void _handleNavigateToScreen() {
-    Get.toNamed(AppRoutes.newCard);
   }
 
   @override

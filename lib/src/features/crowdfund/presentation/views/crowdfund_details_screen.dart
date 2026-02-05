@@ -9,6 +9,7 @@ import '../cubit/crowdfund_state.dart';
 import '../widgets/creator_profile_card.dart';
 import '../widgets/donor_card.dart';
 import '../widgets/progress_indicator_widget.dart';
+import 'crowdfund_report_screen.dart';
 import 'donation_payment_screen.dart';
 
 class CrowdfundDetailsScreen extends StatefulWidget {
@@ -124,6 +125,11 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen> {
             onPressed: () => Navigator.pop(context),
           ),
           actions: [
+            IconButton(
+              icon: const Icon(Icons.auto_awesome, color: Colors.white),
+              tooltip: 'Generate AI Report',
+              onPressed: () => _navigateToReport(crowdfund, donations, statistics),
+            ),
             IconButton(
               icon: const Icon(Icons.share, color: Colors.white),
               onPressed: () => _shareCrowdfund(crowdfund),
@@ -494,6 +500,25 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen> {
         content: const Text('Crowdfund code copied to clipboard'),
         backgroundColor: const Color(0xFF10B981),
         duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
+  void _navigateToReport(
+    Crowdfund crowdfund,
+    List<CrowdfundDonation> donations,
+    CrowdfundStatistics? statistics,
+  ) {
+    // Generate a campaign URL for sharing
+    final campaignUrl = 'https://app.lazervault.com/crowdfund/${crowdfund.crowdfundCode}';
+
+    Navigator.push(
+      context,
+      CrowdfundReportScreen.route(
+        crowdfund: crowdfund,
+        statistics: statistics,
+        donations: donations,
+        campaignUrl: campaignUrl,
       ),
     );
   }

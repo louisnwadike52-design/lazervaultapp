@@ -8,6 +8,7 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/types/unified_transaction.dart';
+import 'package:lazervault/src/features/funds/services/transfer_pdf_service.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:screenshot/screenshot.dart';
@@ -446,6 +447,9 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
     );
   }
 
+  /// Check if this transaction type supports PDF receipts
+  bool get _supportsPdfReceipt => tx.serviceType == TransactionServiceType.transfer;
+
   Widget _buildActionButtons() {
     return Padding(
       padding: EdgeInsets.fromLTRB(20.w, 4.h, 20.w, 8.h),
@@ -463,23 +467,54 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
                 ),
               ),
             )
-          : Row(
+          : Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Expanded(
-                  child: _actionButton(
-                    icon: Icons.download_outlined,
-                    label: 'Save',
-                    onTap: _downloadReceipt,
-                  ),
+                // Primary actions - PDF for transfers, screenshot for others
+                Row(
+                  children: [
+                    Expanded(
+                      child: _actionButton(
+                        icon: Icons.picture_as_pdf_outlined,
+                        label: _supportsPdfReceipt ? 'Save PDF' : 'Save',
+                        onTap: _supportsPdfReceipt ? _downloadPdfReceipt : _downloadReceipt,
+                      ),
+                    ),
+                    SizedBox(width: 12.w),
+                    Expanded(
+                      child: _actionButton(
+                        icon: Icons.share_outlined,
+                        label: _supportsPdfReceipt ? 'Share PDF' : 'Share',
+                        onTap: _supportsPdfReceipt ? _sharePdfReceipt : _shareReceipt,
+                      ),
+                    ),
+                  ],
                 ),
-                SizedBox(width: 12.w),
-                Expanded(
-                  child: _actionButton(
-                    icon: Icons.share_outlined,
-                    label: 'Share',
-                    onTap: _shareReceipt,
+                // Secondary action - image option for transfers
+                if (_supportsPdfReceipt) ...[
+                  SizedBox(height: 8.h),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _actionButton(
+                          icon: Icons.image_outlined,
+                          label: 'Save Image',
+                          onTap: _downloadReceipt,
+                          isSecondary: true,
+                        ),
+                      ),
+                      SizedBox(width: 12.w),
+                      Expanded(
+                        child: _actionButton(
+                          icon: Icons.photo_outlined,
+                          label: 'Share Image',
+                          onTap: _shareReceipt,
+                          isSecondary: true,
+                        ),
+                      ),
+                    ],
                   ),
-                ),
+                ],
               ],
             ),
     );
@@ -489,26 +524,27 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
     required IconData icon,
     required String label,
     required VoidCallback onTap,
+    bool isSecondary = false,
   }) {
     return Material(
-      color: _cardColor,
+      color: isSecondary ? _borderColor : _cardColor,
       borderRadius: BorderRadius.circular(12.r),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(12.r),
         child: Container(
-          padding: EdgeInsets.symmetric(vertical: 10.h),
+          padding: EdgeInsets.symmetric(vertical: isSecondary ? 8.h : 10.h),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, color: Colors.white, size: 18.sp),
+              Icon(icon, color: isSecondary ? _labelColor : Colors.white, size: isSecondary ? 16.sp : 18.sp),
               SizedBox(width: 8.w),
               Text(
                 label,
                 style: TextStyle(
-                  fontSize: 14.sp,
+                  fontSize: isSecondary ? 12.sp : 14.sp,
                   fontWeight: FontWeight.w600,
-                  color: Colors.white,
+                  color: isSecondary ? _labelColor : Colors.white,
                   fontFamily: 'Inter',
                 ),
               ),
@@ -657,6 +693,58 @@ class _UnifiedTransactionReceiptState extends State<UnifiedTransactionReceipt>
       );
     } catch (e) {
       _showSnackbar('Error sharing receipt: $e', isError: true);
+    } finally {
+      if (mounted) setState(() => _isBusy = false);
+    }
+  }
+
+  /// Download PDF receipt for transfers
+  Future<void> _downloadPdfReceipt() async {
+    if (_isBusy) return;
+    setState(() => _isBusy = true);
+    try {
+      // Request storage permission on Android
+      PermissionStatus status;
+      if (Platform.isAndroid) {
+        final deviceInfo = await DeviceInfoPlugin().androidInfo;
+        if (deviceInfo.version.sdkInt >= 33) {
+          status = PermissionStatus.granted;
+        } else {
+          status = await Permission.storage.request();
+        }
+      } else if (Platform.isIOS) {
+        status = PermissionStatus.granted; // iOS uses app documents
+      } else {
+        status = PermissionStatus.granted;
+      }
+
+      if (status.isDenied || status.isPermanentlyDenied) {
+        _showSnackbar('Storage permission is required', isError: true);
+        return;
+      }
+
+      final filePath = await TransferPdfService.downloadReceipt(
+        transaction: tx,
+      );
+
+      _showSnackbar('PDF receipt saved successfully');
+    } catch (e) {
+      _showSnackbar('Error saving PDF receipt: $e', isError: true);
+    } finally {
+      if (mounted) setState(() => _isBusy = false);
+    }
+  }
+
+  /// Share PDF receipt for transfers
+  Future<void> _sharePdfReceipt() async {
+    if (_isBusy) return;
+    setState(() => _isBusy = true);
+    try {
+      await TransferPdfService.shareReceipt(
+        transaction: tx,
+      );
+    } catch (e) {
+      _showSnackbar('Error sharing PDF receipt: $e', isError: true);
     } finally {
       if (mounted) setState(() => _isBusy = false);
     }

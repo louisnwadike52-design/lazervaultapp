@@ -589,15 +589,7 @@ class _IncomingTaggedInvoicesScreenState
   }
 
   void _showPaymentSuccess(TaggedInvoicePaymentSuccess state) {
-    Get.snackbar(
-      'Payment Successful!',
-      'Invoice paid: ${state.formattedAmount}',
-      backgroundColor: const Color(0xFF10B981),
-      colorText: Colors.white,
-      snackPosition: SnackPosition.TOP,
-      duration: const Duration(seconds: 3),
-      icon: const Icon(Icons.check_circle, color: Colors.white),
-    );
+    // Snackbar removed - user is navigated to receipt page which shows payment details
   }
 
   void _showError(String message) {

@@ -154,16 +154,13 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
                 }
               },
               builder: (context, state) {
-                String statusMessage = 'Initiating payment...';
                 double progress = 0.1;
                 String currentStep = 'Initializing...';
 
                 if (state is PaymentProcessing) {
-                  statusMessage = state.currentStep;
                   progress = state.progress;
                   currentStep = state.currentStep;
                 } else if (state is PaymentVerifying) {
-                  statusMessage = 'Verifying payment...';
                   progress = 0.7;
                   currentStep = 'Verifying payment...';
                 }

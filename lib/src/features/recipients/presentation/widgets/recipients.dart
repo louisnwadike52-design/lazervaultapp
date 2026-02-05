@@ -4,7 +4,6 @@ import 'package:get/get.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/recipients/data/models/recipient_model.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_cubit.dart';
-import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_state.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:share_plus/share_plus.dart';
@@ -28,16 +27,6 @@ class Recipients extends StatefulWidget {
 class _RecipientsState extends State<Recipients> {
   List<RecipientModel> selectedRecipients = [];
 
-  void _toggleSelection(RecipientModel recipient) {
-    setState(() {
-      if (selectedRecipients.contains(recipient)) {
-        selectedRecipients.remove(recipient);
-      } else {
-        selectedRecipients.add(recipient);
-      }
-    });
-  }
-
   String? _getAccessToken() {
     final authState = BlocProvider.of<AuthenticationCubit>(context, listen: false).state;
     if (authState is AuthenticationSuccess) {
@@ -49,9 +38,7 @@ class _RecipientsState extends State<Recipients> {
   void _shareRecipient(RecipientModel recipient) {
     var shareText =
         'Account details for:\nName: ${recipient.name}\nAccount Number: ${recipient.accountNumber}';
-    if (recipient.bankName != null) {
-      shareText += '\nBank: ${recipient.bankName}';
-    }
+    shareText += '\nBank: ${recipient.bankName}';
     if (recipient.countryCode != null) {
       shareText += '\nCountry: ${recipient.countryCode}';
     }
@@ -513,8 +500,6 @@ class _RecipientsState extends State<Recipients> {
       itemCount: widget.recipients.length,
       itemBuilder: (context, index) {
         final recipient = widget.recipients[index];
-        final isSelected = selectedRecipients.contains(recipient);
-
         return Container(
           margin: EdgeInsets.symmetric(vertical: 8.h, horizontal: 4.w),
           decoration: BoxDecoration(

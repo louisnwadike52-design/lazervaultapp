@@ -30,8 +30,6 @@ class _StockDetailsScreenState extends State<StockDetailsScreen> with TickerProv
   final List<String> _timeframes = ['1D', '1W', '1M', '3M', '6M', '1Y', '5Y', 'Max'];
   String _selectedTimeframe = '1M';
   bool _isInWatchlist = false;
-  final bool _showIndicators = false;
-  
   // Technical Indicators
   List<String> _selectedIndicators = [];
   final List<String> _availableIndicators = [

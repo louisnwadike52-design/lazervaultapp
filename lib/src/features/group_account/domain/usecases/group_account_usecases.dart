@@ -93,6 +93,7 @@ class AddMemberToGroup extends UseCase<GroupMember, AddMemberParams> {
       userName: params.userName,
       email: params.email,
       profileImage: params.profileImage,
+      username: params.username,
       role: params.role,
     );
   }
@@ -176,6 +177,17 @@ class CreateContribution extends UseCase<Contribution, CreateContributionParams>
       currency: params.currency,
       deadline: params.deadline,
       createdBy: params.createdBy,
+      type: params.type,
+      frequency: params.frequency,
+      regularAmount: params.regularAmount,
+      startDate: params.startDate,
+      totalCycles: params.totalCycles,
+      memberRotationOrder: params.memberRotationOrder,
+      autoPayEnabled: params.autoPayEnabled,
+      penaltyAmount: params.penaltyAmount,
+      gracePeriodDays: params.gracePeriodDays,
+      allowPartialPayments: params.allowPartialPayments,
+      minimumBalance: params.minimumBalance,
     );
   }
 }
@@ -199,6 +211,46 @@ class DeleteContribution extends UseCase<void, String> {
   @override
   Future<void> call(String contributionId) {
     return repository.deleteContribution(contributionId);
+  }
+}
+
+// Contribution Member Use Cases
+class AddMembersToContribution extends UseCase<List<ContributionMember>, AddMembersToContributionParams> {
+  final GroupAccountRepository repository;
+
+  AddMembersToContribution(this.repository);
+
+  @override
+  Future<List<ContributionMember>> call(AddMembersToContributionParams params) {
+    return repository.addMembersToContribution(
+      contributionId: params.contributionId,
+      memberUserIds: params.memberUserIds,
+    );
+  }
+}
+
+class GetContributionMembers extends UseCase<List<ContributionMember>, String> {
+  final GroupAccountRepository repository;
+
+  GetContributionMembers(this.repository);
+
+  @override
+  Future<List<ContributionMember>> call(String contributionId) {
+    return repository.getContributionMembers(contributionId);
+  }
+}
+
+class RemoveMemberFromContribution extends UseCase<void, RemoveMemberFromContributionParams> {
+  final GroupAccountRepository repository;
+
+  RemoveMemberFromContribution(this.repository);
+
+  @override
+  Future<void> call(RemoveMemberFromContributionParams params) {
+    return repository.removeMemberFromContribution(
+      contributionId: params.contributionId,
+      userId: params.userId,
+    );
   }
 }
 
@@ -229,6 +281,9 @@ class MakeContributionPayment extends UseCase<ContributionPayment, MakePaymentPa
       amount: params.amount,
       currency: params.currency,
       notes: params.notes,
+      transactionPin: params.transactionPin,
+      sourceAccountId: params.sourceAccountId,
+      idempotencyKey: params.idempotencyKey,
     );
   }
 }
@@ -325,6 +380,7 @@ class AddMemberParams {
   final String userName;
   final String email;
   final String? profileImage;
+  final String? username;  // LazerTag username for user lookup
   final GroupMemberRole role;
 
   AddMemberParams({
@@ -333,6 +389,7 @@ class AddMemberParams {
     required this.userName,
     required this.email,
     this.profileImage,
+    this.username,
     this.role = GroupMemberRole.member,
   });
 }
@@ -367,6 +424,17 @@ class CreateContributionParams {
   final String currency;
   final DateTime deadline;
   final String createdBy;
+  final ContributionType type;
+  final ContributionFrequency? frequency;
+  final double? regularAmount;
+  final DateTime? startDate;
+  final int? totalCycles;
+  final List<String>? memberRotationOrder;
+  final bool autoPayEnabled;
+  final double? penaltyAmount;
+  final int? gracePeriodDays;
+  final bool allowPartialPayments;
+  final double? minimumBalance;
 
   CreateContributionParams({
     required this.groupId,
@@ -376,6 +444,17 @@ class CreateContributionParams {
     required this.currency,
     required this.deadline,
     required this.createdBy,
+    this.type = ContributionType.oneTime,
+    this.frequency,
+    this.regularAmount,
+    this.startDate,
+    this.totalCycles,
+    this.memberRotationOrder,
+    this.autoPayEnabled = false,
+    this.penaltyAmount,
+    this.gracePeriodDays,
+    this.allowPartialPayments = true,
+    this.minimumBalance,
   });
 }
 
@@ -387,6 +466,9 @@ class MakePaymentParams {
   final double amount;
   final String currency;
   final String? notes;
+  final String? transactionPin;
+  final String? sourceAccountId;
+  final String? idempotencyKey;
 
   MakePaymentParams({
     required this.contributionId,
@@ -396,6 +478,9 @@ class MakePaymentParams {
     required this.amount,
     required this.currency,
     this.notes,
+    this.transactionPin,
+    this.sourceAccountId,
+    this.idempotencyKey,
   });
 }
 
@@ -409,4 +494,47 @@ class UpdatePaymentStatusParams {
     required this.status,
     this.transactionId,
   });
+}
+
+class AddMembersToContributionParams {
+  final String contributionId;
+  final List<String> memberUserIds;
+
+  AddMembersToContributionParams({
+    required this.contributionId,
+    required this.memberUserIds,
+  });
+}
+
+class RemoveMemberFromContributionParams {
+  final String contributionId;
+  final String userId;
+
+  RemoveMemberFromContributionParams({
+    required this.contributionId,
+    required this.userId,
+  });
+}
+
+// Activity Log Use Cases
+class GetGroupActivityLogs extends UseCase<List<ActivityLogEntry>, String> {
+  final GroupAccountRepository repository;
+
+  GetGroupActivityLogs(this.repository);
+
+  @override
+  Future<List<ActivityLogEntry>> call(String groupId) {
+    return repository.getGroupActivityLogs(groupId);
+  }
+}
+
+class GetContributionActivityLogs extends UseCase<List<ActivityLogEntry>, String> {
+  final GroupAccountRepository repository;
+
+  GetContributionActivityLogs(this.repository);
+
+  @override
+  Future<List<ActivityLogEntry>> call(String contributionId) {
+    return repository.getContributionActivityLogs(contributionId);
+  }
 } 

@@ -340,7 +340,6 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
   }
 
   Widget _buildIdNumberField(BuildContext context) {
-    final theme = Theme.of(context);
     final label = _selectedIdType.displayName;
     final hint = _getIdNumberHint(_selectedIdType);
     final controller = _getIdController(_selectedIdType);

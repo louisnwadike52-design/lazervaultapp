@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import '../../domain/entities/user_tag_entity.dart';
+import '../../domain/entities/user_search_result_entity.dart';
 import '../../services/tag_pay_pdf_service.dart';
 import '../../../../../core/types/app_routes.dart';
 
@@ -24,6 +25,38 @@ class TagDetailsBottomSheet extends StatefulWidget {
 class _TagDetailsBottomSheetState extends State<TagDetailsBottomSheet> {
   bool _isDownloadingInvoice = false;
   bool _isDownloadingReceipt = false;
+
+  /// Repeat/recreate this tag with the same recipient and amount
+  void _repeatTag() {
+    // Parse the name into first/last name
+    final nameParts = widget.tag.taggedUserName.split(' ');
+    final firstName = nameParts.isNotEmpty ? nameParts.first : widget.tag.taggedUserTagPay;
+    final lastName = nameParts.length > 1 ? nameParts.sublist(1).join(' ') : '';
+
+    // Create a UserSearchResultEntity from the tag's target user info
+    final targetUser = UserSearchResultEntity(
+      userId: widget.tag.taggedUserId,
+      username: widget.tag.taggedUserTagPay,
+      firstName: firstName,
+      lastName: lastName,
+      email: '', // Not available from tag
+      phoneNumber: '',
+      profilePicture: '',
+    );
+
+    Navigator.pop(context);
+
+    // Navigate to tag amount screen with pre-filled data
+    Get.toNamed(
+      AppRoutes.tagAmount,
+      arguments: {
+        'selectedUsers': [targetUser],
+        'prefillAmount': widget.tag.amount,
+        'prefillDescription': widget.tag.description,
+        'prefillCurrency': widget.tag.currency,
+      },
+    );
+  }
 
   Future<void> _downloadInvoice() async {
     if (_isDownloadingInvoice) return;
@@ -352,6 +385,34 @@ class _TagDetailsBottomSheetState extends State<TagDetailsBottomSheet> {
                   color: const Color(0xFF6B7280),
                   fontSize: 12.sp,
                   fontWeight: FontWeight.w400,
+                ),
+              ),
+            ),
+          ],
+
+          // Repeat Tag Button (only for outgoing/created tags)
+          if (widget.isOutgoing) ...[
+            SizedBox(height: 16.h),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: _repeatTag,
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  side: const BorderSide(color: Color(0xFFA78BFA), width: 1.5),
+                  padding: EdgeInsets.symmetric(vertical: 14.h),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                ),
+                icon: Icon(Icons.repeat, size: 18.sp, color: const Color(0xFFA78BFA)),
+                label: Text(
+                  'Repeat Tag',
+                  style: GoogleFonts.inter(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
                 ),
               ),
             ),

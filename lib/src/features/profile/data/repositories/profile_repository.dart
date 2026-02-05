@@ -232,13 +232,15 @@ class ProfileRepositoryImpl implements IProfileRepository {
   Future<List<UserSearchResultEntity>> searchUsersByUsername({
     required String query,
     int limit = 10,
+    String searchType = '', // Empty for unified search across username, name, phone, email
   }) async {
     try {
       final request = auth_pb.SearchUsersByUsernameRequest()
         ..query = query
-        ..limit = limit;
+        ..limit = limit
+        ..searchType = searchType;
 
-      print('[ProfileRepository] searchUsersByUsername: query="$query", limit=$limit');
+      print('[ProfileRepository] searchUsersByUsername: query="$query", limit=$limit, searchType="$searchType"');
       final options = await _callOptionsHelper.withAuth();
       final response = await _authServiceClient.searchUsersByUsername(
         request,
@@ -257,7 +259,8 @@ class ProfileRepositoryImpl implements IProfileRepository {
                 username: user.username,
                 firstName: user.firstName,
                 lastName: user.lastName,
-                email: '',
+                email: user.email,
+                phoneNumber: user.phoneNumber,
                 profilePicture: user.profilePicture,
               ))
           .toList();

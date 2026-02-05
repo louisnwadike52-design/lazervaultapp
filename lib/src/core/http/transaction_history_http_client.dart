@@ -34,15 +34,6 @@ class TransactionHistoryHttpClient {
     }
   }
 
-  /// Get current user ID
-  Future<String> _getUserId() async {
-    final userId = await storage.read(key: 'user_id');
-    if (userId == null || userId.isEmpty) {
-      throw Exception('User not authenticated');
-    }
-    return userId;
-  }
-
   /// Get transaction history
   Future<Map<String, dynamic>> getTransactionHistory({
     required String userId,

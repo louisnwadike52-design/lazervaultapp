@@ -72,6 +72,8 @@ class LockFundsCubit extends Cubit<LockFundsState> {
     String? goalName,
     String? goalDescription,
     required String paymentMethod,
+    required String sourceAccountId,
+    String transactionPin = '',
   }) async {
     try {
       if (isClosed) return;
@@ -86,6 +88,8 @@ class LockFundsCubit extends Cubit<LockFundsState> {
         goalName: goalName,
         goalDescription: goalDescription,
         paymentMethod: paymentMethod,
+        sourceAccountId: sourceAccountId,
+        transactionPin: transactionPin,
       );
       if (isClosed) return;
 

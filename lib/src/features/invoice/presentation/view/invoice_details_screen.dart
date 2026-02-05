@@ -558,7 +558,7 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
           SizedBox(height: 12.h),
         ],
 
-        // PAID: Show payment confirmation + receipt button
+        // PAID: Show payment confirmation
         if (invoice.status == InvoiceStatus.paid) ...[
           Container(
             width: double.infinity,
@@ -594,32 +594,6 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
                   ],
                 ),
               ],
-            ),
-          ),
-          SizedBox(height: 12.h),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton.icon(
-              onPressed: () => Get.toNamed(
-                AppRoutes.invoicePaymentReceipt,
-                arguments: {
-                  'invoice_id': invoice.id,
-                  'amount': invoice.totalAmount,
-                  'currency': invoice.currency,
-                  'transaction_id': invoice.paymentReference ?? '',
-                  'message': 'Invoice paid',
-                },
-              ),
-              icon: const Icon(Icons.receipt_long),
-              label: const Text('View Payment Receipt'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: InvoiceThemeColors.successGreen,
-                foregroundColor: Colors.white,
-                padding: EdgeInsets.symmetric(vertical: 16.h),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12.r),
-                ),
-              ),
             ),
           ),
           SizedBox(height: 12.h),
@@ -682,34 +656,6 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
             ),
             SizedBox(height: 12.h),
           ],
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton.icon(
-              onPressed: () => Get.toNamed(
-                AppRoutes.invoicePaymentReceipt,
-                arguments: {
-                  'invoice_id': invoice.id,
-                  'amount': invoice.paidAmount,
-                  'total_amount': invoice.totalAmount,
-                  'currency': invoice.currency,
-                  'transaction_id': invoice.paymentReference ?? '',
-                  'message': 'Partial payment - ${invoice.paidUsersCount} of ${invoice.taggedUsers?.length ?? 0} users paid',
-                  'is_partial': true,
-                },
-              ),
-              icon: const Icon(Icons.receipt_long),
-              label: const Text('View Partial Payment Receipt'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFF59E0B).withValues(alpha: 0.8),
-                foregroundColor: Colors.white,
-                padding: EdgeInsets.symmetric(vertical: 16.h),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12.r),
-                ),
-              ),
-            ),
-          ),
-          SizedBox(height: 12.h),
         ],
 
         // CANCELLED: Show cancelled info
@@ -741,61 +687,23 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
           SizedBox(height: 12.h),
         ],
 
-        // Pay + Preview side-by-side when Pay is shown (only for received tab), Preview full-width otherwise
+        // Pay button for receiver with pending invoice
         if (!isSender && invoice.status == InvoiceStatus.pending && widget.isFromReceivedTab) ...[
-          Row(
-            children: [
-              Expanded(
-                child: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [InvoiceThemeColors.primaryPurple, InvoiceThemeColors.gradientPurple],
-                    ),
-                    borderRadius: BorderRadius.circular(12.r),
-                  ),
-                  child: ElevatedButton.icon(
-                    onPressed: () => _payInvoice(invoice),
-                    icon: Icon(Icons.payment, size: 20.sp),
-                    label: Text('Pay $_currencySymbol${invoice.totalAmount.toStringAsFixed(2)}'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.transparent,
-                      shadowColor: Colors.transparent,
-                      foregroundColor: Colors.white,
-                      padding: EdgeInsets.symmetric(vertical: 16.h),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12.r),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(width: 12.w),
-              Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: () => _viewPreview(invoice),
-                  icon: const Icon(Icons.preview),
-                  label: const Text('Preview'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF3B82F6),
-                    foregroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(vertical: 16.h),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12.r),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ] else ...[
-          SizedBox(
+          Container(
             width: double.infinity,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [InvoiceThemeColors.primaryPurple, InvoiceThemeColors.gradientPurple],
+              ),
+              borderRadius: BorderRadius.circular(12.r),
+            ),
             child: ElevatedButton.icon(
-              onPressed: () => _viewPreview(invoice),
-              icon: const Icon(Icons.preview),
-              label: const Text('Preview Invoice'),
+              onPressed: () => _payInvoice(invoice),
+              icon: Icon(Icons.payment, size: 20.sp),
+              label: Text('Pay $_currencySymbol${invoice.totalAmount.toStringAsFixed(2)}'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF3B82F6),
+                backgroundColor: Colors.transparent,
+                shadowColor: Colors.transparent,
                 foregroundColor: Colors.white,
                 padding: EdgeInsets.symmetric(vertical: 16.h),
                 shape: RoundedRectangleBorder(
@@ -804,8 +712,95 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
               ),
             ),
           ),
+          SizedBox(height: 12.h),
         ],
+        // Invoice and Receipt navigation buttons - available for both sender and receiver
+        _buildInvoiceReceiptButtons(invoice),
       ],
+    );
+  }
+
+  Widget _buildInvoiceReceiptButtons(Invoice invoice) {
+    final isPaidOrPartiallyPaid = invoice.status == InvoiceStatus.paid ||
+        invoice.status == InvoiceStatus.partiallyPaid;
+
+    return Row(
+      children: [
+        // Invoice Button - navigates to invoice preview
+        Expanded(
+          child: OutlinedButton.icon(
+            onPressed: () => _viewPreview(invoice),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: Colors.white,
+              side: const BorderSide(color: Color(0xFF60A5FA), width: 1.5),
+              padding: EdgeInsets.symmetric(vertical: 14.h),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12.r),
+              ),
+            ),
+            icon: Icon(Icons.description_outlined, size: 18.sp, color: const Color(0xFF60A5FA)),
+            label: Text(
+              'Invoice',
+              style: GoogleFonts.inter(
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ),
+        SizedBox(width: 12.w),
+        // Receipt Button - navigates to payment receipt (only enabled for paid/partially paid invoices)
+        Expanded(
+          child: OutlinedButton.icon(
+            onPressed: isPaidOrPartiallyPaid
+                ? () => _viewPaymentReceipt(invoice)
+                : null,
+            style: OutlinedButton.styleFrom(
+              foregroundColor: Colors.white,
+              side: BorderSide(
+                color: isPaidOrPartiallyPaid ? const Color(0xFF34D399) : const Color(0xFF6B7280),
+                width: 1.5,
+              ),
+              padding: EdgeInsets.symmetric(vertical: 14.h),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12.r),
+              ),
+            ),
+            icon: Icon(
+              Icons.receipt_long_outlined,
+              size: 18.sp,
+              color: isPaidOrPartiallyPaid ? const Color(0xFF34D399) : const Color(0xFF6B7280),
+            ),
+            label: Text(
+              'Receipt',
+              style: GoogleFonts.inter(
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w600,
+                color: isPaidOrPartiallyPaid ? Colors.white : const Color(0xFF6B7280),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _viewPaymentReceipt(Invoice invoice) {
+    final isPartial = invoice.status == InvoiceStatus.partiallyPaid;
+    Get.toNamed(
+      AppRoutes.invoicePaymentReceipt,
+      arguments: {
+        'invoice_id': invoice.id,
+        'amount': isPartial ? invoice.paidAmount : invoice.totalAmount,
+        'total_amount': invoice.totalAmount,
+        'currency': invoice.currency,
+        'transaction_id': invoice.paymentReference ?? '',
+        'message': isPartial
+            ? 'Partial payment - ${invoice.paidUsersCount} of ${invoice.taggedUsers?.length ?? 0} users paid'
+            : 'Invoice paid',
+        'is_partial': isPartial,
+      },
     );
   }
 
@@ -1659,9 +1654,17 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
   }
 
   Widget _buildParticipantDetails(Invoice invoice) {
+    // Determine if current user is the sender (invoice creator)
+    final authState = context.read<AuthenticationCubit>().state;
+    final currentUserId = authState is AuthenticationAuthenticated ? authState.profile.userId : null;
+    final isSender = currentUserId != null && invoice.fromUserId == currentUserId;
+
+    // Get the current user's profile for fallback
+    final currentUserProfile = authState is AuthenticationAuthenticated ? authState.profile : null;
+
     return Column(
       children: [
-        // From (invoice creator / payer details)
+        // Invoice From (the invoice creator/sender)
         Container(
           width: double.infinity,
           padding: EdgeInsets.all(16.w),
@@ -1681,29 +1684,49 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
                       borderRadius: BorderRadius.circular(8.r),
                     ),
                     child: Icon(
-                      Icons.arrow_upward_rounded,
+                      Icons.business_outlined,
                       color: InvoiceThemeColors.successGreen,
                       size: 20.sp,
                     ),
                   ),
                   SizedBox(width: 12.w),
-                  Text(
-                    'From',
-                    style: GoogleFonts.inter(
-                      color: Colors.white,
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.w600,
-                    ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Invoice From',
+                        style: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      Text(
+                        isSender ? '(You)' : 'Sender',
+                        style: GoogleFonts.inter(
+                          color: const Color(0xFF9CA3AF),
+                          fontSize: 12.sp,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
               SizedBox(height: 16.h),
-              _buildParticipantInfo(invoice.payerDetails, null, null),
+              _buildParticipantInfo(
+                invoice.payerDetails,
+                isSender && currentUserProfile != null
+                    ? '${currentUserProfile.user.firstName} ${currentUserProfile.user.lastName}'.trim()
+                    : null,
+                isSender && currentUserProfile != null
+                    ? currentUserProfile.user.email
+                    : null,
+              ),
             ],
           ),
         ),
         SizedBox(height: 16.h),
-        // To (recipient details)
+        // Bill To (the recipient who should pay)
         Container(
           width: double.infinity,
           padding: EdgeInsets.all(16.w),
@@ -1723,27 +1746,43 @@ class _InvoiceDetailsScreenState extends State<InvoiceDetailsScreen> {
                       borderRadius: BorderRadius.circular(8.r),
                     ),
                     child: Icon(
-                      Icons.arrow_downward_rounded,
+                      Icons.person_outline_rounded,
                       color: const Color(0xFF3B82F6),
                       size: 20.sp,
                     ),
                   ),
                   SizedBox(width: 12.w),
-                  Text(
-                    'To',
-                    style: GoogleFonts.inter(
-                      color: Colors.white,
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.w600,
-                    ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Bill To',
+                        style: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      Text(
+                        !isSender ? '(You)' : 'Recipient',
+                        style: GoogleFonts.inter(
+                          color: const Color(0xFF9CA3AF),
+                          fontSize: 12.sp,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
               SizedBox(height: 16.h),
               _buildParticipantInfo(
                 invoice.recipientDetails,
-                invoice.toName,
-                invoice.toEmail,
+                !isSender && currentUserProfile != null
+                    ? '${currentUserProfile.user.firstName} ${currentUserProfile.user.lastName}'.trim()
+                    : invoice.toName,
+                !isSender && currentUserProfile != null
+                    ? currentUserProfile.user.email
+                    : invoice.toEmail,
               ),
             ],
           ),

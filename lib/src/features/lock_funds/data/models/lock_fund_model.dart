@@ -28,6 +28,8 @@ class LockFundModel {
       progressPercent: proto.progressPercent,
       totalValue: proto.totalValue,
       canUnlockEarly: proto.canUnlockEarly,
+      sourceAccountId: proto.sourceAccountId.isEmpty ? null : proto.sourceAccountId,
+      destinationAccountId: proto.destinationAccountId.isEmpty ? null : proto.destinationAccountId,
     );
   }
 
@@ -101,6 +103,8 @@ class LockFundModel {
     String? goalName,
     String? goalDescription,
     required String paymentMethod,
+    required String sourceAccountId,
+    String transactionPin = '',
   }) {
     return pb.CreateLockFundRequest()
       ..lockType = convertLockTypeToProto(lockType)
@@ -110,7 +114,9 @@ class LockFundModel {
       ..autoRenew = autoRenew
       ..goalName = goalName ?? ''
       ..goalDescription = goalDescription ?? ''
-      ..paymentMethod = paymentMethod;
+      ..paymentMethod = paymentMethod
+      ..sourceAccountId = sourceAccountId
+      ..transactionPin = transactionPin;
   }
 
   /// Convert protobuf LockTransaction to domain entity

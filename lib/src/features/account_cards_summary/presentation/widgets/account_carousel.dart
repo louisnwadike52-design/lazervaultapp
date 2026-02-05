@@ -44,8 +44,6 @@ class _AccountCarouselState extends State<AccountCarousel> {
 
   // Pending balance updates to apply when dashboard becomes visible
   final Map<String, double> _pendingBalanceUpdates = {};
-  bool _isCurrentRoute = true;
-
   // Helper to convert currency code to symbol
   String _getCurrencySymbol(String currency) {
     switch (currency.toUpperCase()) {
@@ -75,6 +73,8 @@ class _AccountCarouselState extends State<AccountCarousel> {
   @override
   void initState() {
     super.initState();
+    // Initialize carousel to show the active account if one is selected
+    _initializeCarouselPosition();
     // Set the first account as active if none is selected
     _initializeActiveAccount();
     // Check if there's a recent WebSocket balance update we missed
@@ -93,6 +93,17 @@ class _AccountCarouselState extends State<AccountCarousel> {
         }
       }
     });
+  }
+
+  /// Initialize carousel position to show the currently active account
+  void _initializeCarouselPosition() {
+    if (_accountManager.hasActiveAccount && widget.accountSummaries.isNotEmpty) {
+      final activeId = _accountManager.activeAccountId;
+      final index = widget.accountSummaries.indexWhere((a) => a.id == activeId);
+      if (index >= 0) {
+        _currentIndex = index;
+      }
+    }
   }
 
   Future<void> _initializeActiveAccount() async {
@@ -154,6 +165,7 @@ class _AccountCarouselState extends State<AccountCarousel> {
               height: 200.h,
               viewportFraction: 0.95, // Wider cards
               enlargeCenterPage: true,
+              initialPage: _currentIndex, // Start at active account position
               onPageChanged: _onPageChanged, // Automatically sets active account on swipe
             ),
             itemBuilder: (context, index, realIndex) {
@@ -251,8 +263,6 @@ class _AccountCarouselState extends State<AccountCarousel> {
       stream: _accountManager.accountIdStream,
       initialData: _accountManager.activeAccountId,
       builder: (context, snapshot) {
-        final isActiveAccount = snapshot.data == account.id;
-
         final currencySymbol = _getCurrencySymbol(account.currency);
 
         return Container(

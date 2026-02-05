@@ -29,8 +29,6 @@ class _CryptoDetailsScreenState extends State<CryptoDetailsScreen>
   final List<String> _timeframes = ['1H', '4H', '1D', '1W', '1M', '3M', '6M', '1Y', 'ALL'];
   String _selectedTimeframe = '1D';
   bool _isInWatchlist = false;
-  final bool _showIndicators = false;
-  
   // Technical Indicators
   final List<String> _selectedIndicators = [];
   final List<String> _availableIndicators = [

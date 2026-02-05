@@ -134,6 +134,56 @@ class FinancialProductsServiceClient extends $grpc.Client {
           ($0.CloseCrowdfundRequest value) => value.writeToBuffer(),
           ($core.List<$core.int> value) =>
               $0.CloseCrowdfundResponse.fromBuffer(value));
+  static final _$getCrowdfundStatistics = $grpc.ClientMethod<
+          $0.GetCrowdfundStatisticsRequest, $0.GetCrowdfundStatisticsResponse>(
+      '/financialproducts.FinancialProductsService/GetCrowdfundStatistics',
+      ($0.GetCrowdfundStatisticsRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $0.GetCrowdfundStatisticsResponse.fromBuffer(value));
+  static final _$searchCrowdfunds = $grpc.ClientMethod<
+          $0.SearchCrowdfundsRequest, $0.SearchCrowdfundsResponse>(
+      '/financialproducts.FinancialProductsService/SearchCrowdfunds',
+      ($0.SearchCrowdfundsRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $0.SearchCrowdfundsResponse.fromBuffer(value));
+  static final _$updateCrowdfund =
+      $grpc.ClientMethod<$0.UpdateCrowdfundRequest, $0.UpdateCrowdfundResponse>(
+          '/financialproducts.FinancialProductsService/UpdateCrowdfund',
+          ($0.UpdateCrowdfundRequest value) => value.writeToBuffer(),
+          ($core.List<$core.int> value) =>
+              $0.UpdateCrowdfundResponse.fromBuffer(value));
+  static final _$deleteCrowdfund =
+      $grpc.ClientMethod<$0.DeleteCrowdfundRequest, $0.DeleteCrowdfundResponse>(
+          '/financialproducts.FinancialProductsService/DeleteCrowdfund',
+          ($0.DeleteCrowdfundRequest value) => value.writeToBuffer(),
+          ($core.List<$core.int> value) =>
+              $0.DeleteCrowdfundResponse.fromBuffer(value));
+  static final _$getCrowdfundDonations = $grpc.ClientMethod<
+          $0.GetCrowdfundDonationsRequest, $0.GetCrowdfundDonationsResponse>(
+      '/financialproducts.FinancialProductsService/GetCrowdfundDonations',
+      ($0.GetCrowdfundDonationsRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $0.GetCrowdfundDonationsResponse.fromBuffer(value));
+  static final _$getUserDonations = $grpc.ClientMethod<
+          $0.GetUserDonationsRequest, $0.GetUserDonationsResponse>(
+      '/financialproducts.FinancialProductsService/GetUserDonations',
+      ($0.GetUserDonationsRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $0.GetUserDonationsResponse.fromBuffer(value));
+  static final _$generateDonationReceipt = $grpc.ClientMethod<
+          $0.GenerateDonationReceiptRequest,
+          $0.GenerateDonationReceiptResponse>(
+      '/financialproducts.FinancialProductsService/GenerateDonationReceipt',
+      ($0.GenerateDonationReceiptRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $0.GenerateDonationReceiptResponse.fromBuffer(value));
+  static final _$getUserCrowdfundReceipts = $grpc.ClientMethod<
+          $0.GetUserCrowdfundReceiptsRequest,
+          $0.GetUserCrowdfundReceiptsResponse>(
+      '/financialproducts.FinancialProductsService/GetUserCrowdfundReceipts',
+      ($0.GetUserCrowdfundReceiptsRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $0.GetUserCrowdfundReceiptsResponse.fromBuffer(value));
 
   FinancialProductsServiceClient($grpc.ClientChannel channel,
       {$grpc.CallOptions? options,
@@ -258,6 +308,57 @@ class FinancialProductsServiceClient extends $grpc.Client {
       $0.CloseCrowdfundRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$closeCrowdfund, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetCrowdfundStatisticsResponse>
+      getCrowdfundStatistics($0.GetCrowdfundStatisticsRequest request,
+          {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getCrowdfundStatistics, request,
+        options: options);
+  }
+
+  $grpc.ResponseFuture<$0.SearchCrowdfundsResponse> searchCrowdfunds(
+      $0.SearchCrowdfundsRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$searchCrowdfunds, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.UpdateCrowdfundResponse> updateCrowdfund(
+      $0.UpdateCrowdfundRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$updateCrowdfund, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.DeleteCrowdfundResponse> deleteCrowdfund(
+      $0.DeleteCrowdfundRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$deleteCrowdfund, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetCrowdfundDonationsResponse> getCrowdfundDonations(
+      $0.GetCrowdfundDonationsRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getCrowdfundDonations, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetUserDonationsResponse> getUserDonations(
+      $0.GetUserDonationsRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getUserDonations, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GenerateDonationReceiptResponse>
+      generateDonationReceipt($0.GenerateDonationReceiptRequest request,
+          {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$generateDonationReceipt, request,
+        options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetUserCrowdfundReceiptsResponse>
+      getUserCrowdfundReceipts($0.GetUserCrowdfundReceiptsRequest request,
+          {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getUserCrowdfundReceipts, request,
+        options: options);
   }
 }
 
@@ -445,6 +546,78 @@ abstract class FinancialProductsServiceBase extends $grpc.Service {
         ($core.List<$core.int> value) =>
             $0.CloseCrowdfundRequest.fromBuffer(value),
         ($0.CloseCrowdfundResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetCrowdfundStatisticsRequest,
+            $0.GetCrowdfundStatisticsResponse>(
+        'GetCrowdfundStatistics',
+        getCrowdfundStatistics_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.GetCrowdfundStatisticsRequest.fromBuffer(value),
+        ($0.GetCrowdfundStatisticsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.SearchCrowdfundsRequest,
+            $0.SearchCrowdfundsResponse>(
+        'SearchCrowdfunds',
+        searchCrowdfunds_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.SearchCrowdfundsRequest.fromBuffer(value),
+        ($0.SearchCrowdfundsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.UpdateCrowdfundRequest,
+            $0.UpdateCrowdfundResponse>(
+        'UpdateCrowdfund',
+        updateCrowdfund_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.UpdateCrowdfundRequest.fromBuffer(value),
+        ($0.UpdateCrowdfundResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.DeleteCrowdfundRequest,
+            $0.DeleteCrowdfundResponse>(
+        'DeleteCrowdfund',
+        deleteCrowdfund_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.DeleteCrowdfundRequest.fromBuffer(value),
+        ($0.DeleteCrowdfundResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetCrowdfundDonationsRequest,
+            $0.GetCrowdfundDonationsResponse>(
+        'GetCrowdfundDonations',
+        getCrowdfundDonations_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.GetCrowdfundDonationsRequest.fromBuffer(value),
+        ($0.GetCrowdfundDonationsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetUserDonationsRequest,
+            $0.GetUserDonationsResponse>(
+        'GetUserDonations',
+        getUserDonations_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.GetUserDonationsRequest.fromBuffer(value),
+        ($0.GetUserDonationsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GenerateDonationReceiptRequest,
+            $0.GenerateDonationReceiptResponse>(
+        'GenerateDonationReceipt',
+        generateDonationReceipt_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.GenerateDonationReceiptRequest.fromBuffer(value),
+        ($0.GenerateDonationReceiptResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetUserCrowdfundReceiptsRequest,
+            $0.GetUserCrowdfundReceiptsResponse>(
+        'GetUserCrowdfundReceipts',
+        getUserCrowdfundReceipts_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.GetUserCrowdfundReceiptsRequest.fromBuffer(value),
+        ($0.GetUserCrowdfundReceiptsResponse value) => value.writeToBuffer()));
   }
 
   $async.Future<$0.CreateGroupAccountResponse> createGroupAccount_Pre(
@@ -567,6 +740,54 @@ abstract class FinancialProductsServiceBase extends $grpc.Service {
     return closeCrowdfund(call, await request);
   }
 
+  $async.Future<$0.GetCrowdfundStatisticsResponse> getCrowdfundStatistics_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$0.GetCrowdfundStatisticsRequest> request) async {
+    return getCrowdfundStatistics(call, await request);
+  }
+
+  $async.Future<$0.SearchCrowdfundsResponse> searchCrowdfunds_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$0.SearchCrowdfundsRequest> request) async {
+    return searchCrowdfunds(call, await request);
+  }
+
+  $async.Future<$0.UpdateCrowdfundResponse> updateCrowdfund_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$0.UpdateCrowdfundRequest> request) async {
+    return updateCrowdfund(call, await request);
+  }
+
+  $async.Future<$0.DeleteCrowdfundResponse> deleteCrowdfund_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$0.DeleteCrowdfundRequest> request) async {
+    return deleteCrowdfund(call, await request);
+  }
+
+  $async.Future<$0.GetCrowdfundDonationsResponse> getCrowdfundDonations_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$0.GetCrowdfundDonationsRequest> request) async {
+    return getCrowdfundDonations(call, await request);
+  }
+
+  $async.Future<$0.GetUserDonationsResponse> getUserDonations_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$0.GetUserDonationsRequest> request) async {
+    return getUserDonations(call, await request);
+  }
+
+  $async.Future<$0.GenerateDonationReceiptResponse> generateDonationReceipt_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$0.GenerateDonationReceiptRequest> request) async {
+    return generateDonationReceipt(call, await request);
+  }
+
+  $async.Future<$0.GetUserCrowdfundReceiptsResponse>
+      getUserCrowdfundReceipts_Pre($grpc.ServiceCall call,
+          $async.Future<$0.GetUserCrowdfundReceiptsRequest> request) async {
+    return getUserCrowdfundReceipts(call, await request);
+  }
+
   $async.Future<$0.CreateGroupAccountResponse> createGroupAccount(
       $grpc.ServiceCall call, $0.CreateGroupAccountRequest request);
   $async.Future<$0.GetGroupAccountsResponse> getGroupAccounts(
@@ -607,4 +828,20 @@ abstract class FinancialProductsServiceBase extends $grpc.Service {
       $grpc.ServiceCall call, $0.WithdrawFromCrowdfundRequest request);
   $async.Future<$0.CloseCrowdfundResponse> closeCrowdfund(
       $grpc.ServiceCall call, $0.CloseCrowdfundRequest request);
+  $async.Future<$0.GetCrowdfundStatisticsResponse> getCrowdfundStatistics(
+      $grpc.ServiceCall call, $0.GetCrowdfundStatisticsRequest request);
+  $async.Future<$0.SearchCrowdfundsResponse> searchCrowdfunds(
+      $grpc.ServiceCall call, $0.SearchCrowdfundsRequest request);
+  $async.Future<$0.UpdateCrowdfundResponse> updateCrowdfund(
+      $grpc.ServiceCall call, $0.UpdateCrowdfundRequest request);
+  $async.Future<$0.DeleteCrowdfundResponse> deleteCrowdfund(
+      $grpc.ServiceCall call, $0.DeleteCrowdfundRequest request);
+  $async.Future<$0.GetCrowdfundDonationsResponse> getCrowdfundDonations(
+      $grpc.ServiceCall call, $0.GetCrowdfundDonationsRequest request);
+  $async.Future<$0.GetUserDonationsResponse> getUserDonations(
+      $grpc.ServiceCall call, $0.GetUserDonationsRequest request);
+  $async.Future<$0.GenerateDonationReceiptResponse> generateDonationReceipt(
+      $grpc.ServiceCall call, $0.GenerateDonationReceiptRequest request);
+  $async.Future<$0.GetUserCrowdfundReceiptsResponse> getUserCrowdfundReceipts(
+      $grpc.ServiceCall call, $0.GetUserCrowdfundReceiptsRequest request);
 }

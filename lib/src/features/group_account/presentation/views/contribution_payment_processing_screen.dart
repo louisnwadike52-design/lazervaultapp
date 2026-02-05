@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
 import '../../domain/entities/group_entities.dart';
-import '../../data/datasources/group_account_remote_data_source.dart';
-import '../../data/services/contribution_payment_service.dart';
-import '../../data/repositories/contribution_payment_repository_impl.dart';
+import '../cubit/group_account_cubit.dart';
+import '../cubit/group_account_state.dart';
 import 'contribution_payment_confirmation_screen.dart';
 
+/// Payment processing screen that shows progress while the backend processes the payment.
+/// This screen listens to the GroupAccountCubit for payment state changes.
 class ContributionPaymentProcessingScreen extends StatefulWidget {
   final String contributionId;
   final Contribution contribution;
@@ -15,6 +17,7 @@ class ContributionPaymentProcessingScreen extends StatefulWidget {
   final String currency;
   final String paymentMethod;
   final String? notes;
+  final ContributionPayment? payment; // Pre-existing payment from cubit
 
   const ContributionPaymentProcessingScreen({
     super.key,
@@ -24,6 +27,7 @@ class ContributionPaymentProcessingScreen extends StatefulWidget {
     required this.currency,
     required this.paymentMethod,
     this.notes,
+    this.payment,
   });
 
   @override
@@ -32,60 +36,34 @@ class ContributionPaymentProcessingScreen extends StatefulWidget {
 
 class _ContributionPaymentProcessingScreenState extends State<ContributionPaymentProcessingScreen>
     with TickerProviderStateMixin {
-  
-  late AnimationController _mainAnimationController;
+
   late AnimationController _pulseAnimationController;
   late AnimationController _rotationAnimationController;
-  
-  late Animation<double> _fadeAnimation;
-  late Animation<Offset> _slideAnimation;
+
   late Animation<double> _pulseAnimation;
   late Animation<double> _rotationAnimation;
-  
+
   int _currentStep = 0;
   bool _isComplete = false;
   bool _hasError = false;
   String _errorMessage = '';
-  
+
   late List<ProcessingStep> _steps;
-  late ContributionPaymentRepositoryImpl _paymentRepository;
 
   @override
   void initState() {
     super.initState();
     _initializeSteps();
     _initializeAnimations();
-    _initializeAndStartProcessing();
-  }
 
-  Future<void> _initializeAndStartProcessing() async {
-    try {
-      await _initializePaymentRepository();
-      
-      // Small delay to ensure UI is ready
-      await Future.delayed(const Duration(milliseconds: 500));
-      
-      if (mounted) {
-        _startProcessing();
-      }
-    } catch (e) {
-      print('❌ Storage initialization failed: $e');
-      if (mounted) {
-        // Don't show error state, just use fallback processing
-        print('🔄 Using fallback processing mode...');
-        _startProcessingFallback();
-      }
-    }
-  }
-
-  Future<void> _initializePaymentRepository() async {
-    try {
-      final remoteDataSource = GroupAccountRemoteDataSourceImpl();
-      final paymentService = ContributionPaymentServiceImpl(remoteDataSource: remoteDataSource);
-      _paymentRepository = ContributionPaymentRepositoryImpl(paymentService: paymentService);
-    } catch (e) {
-      print('❌ Repository initialization error: $e');
-      rethrow;
+    // If payment was already completed (passed via widget), show success immediately
+    if (widget.payment != null) {
+      _isComplete = true;
+      Future.delayed(const Duration(milliseconds: 500), () {
+        if (mounted) {
+          _navigateToConfirmation(widget.payment!);
+        }
+      });
     }
   }
 
@@ -94,27 +72,27 @@ class _ContributionPaymentProcessingScreenState extends State<ContributionPaymen
       ProcessingStep(
         title: 'Validating payment details',
         description: 'Checking payment information...',
-        duration: 1000,
+        duration: 800,
       ),
       ProcessingStep(
-        title: _getPaymentMethodStep(),
-        description: _getPaymentMethodDescription(),
-        duration: 2000,
+        title: 'Verifying account balance',
+        description: 'Checking available funds...',
+        duration: 600,
       ),
       ProcessingStep(
         title: 'Processing payment',
         description: 'Completing transaction...',
-        duration: 1500,
+        duration: 1000,
       ),
       ProcessingStep(
         title: 'Updating contribution',
         description: 'Recording your contribution...',
-        duration: 1000,
+        duration: 600,
       ),
       ProcessingStep(
         title: 'Generating receipt',
         description: 'Creating payment confirmation...',
-        duration: 800,
+        duration: 500,
       ),
     ];
   }
@@ -140,90 +118,34 @@ class _ContributionPaymentProcessingScreenState extends State<ContributionPaymen
     _rotationAnimationController.repeat();
   }
 
-  void _startProcessing() async {
-    for (int i = 0; i < _steps.length; i++) {
-      if (!mounted) {
-        return;
-      }
-      
+  void _advanceStep() {
+    if (!mounted || _isComplete || _hasError) return;
+
+    if (_currentStep < _steps.length - 1) {
       setState(() {
-        _currentStep = i;
+        _currentStep++;
       });
-      
-      await Future.delayed(Duration(milliseconds: _steps[i].duration));
-      
-      // Save payment on the processing step
-      if (i == 2) { // Processing payment step
-        try {
-          await _savePaymentToRepository();
-        } catch (e) {
-          print('❌ Payment save error: $e');
-          if (mounted) {
-            setState(() {
-              _hasError = true;
-              _errorMessage = 'Failed to process payment: ${e.toString()}';
-            });
-          }
-          return;
-        }
-      }
-    }
-    
-    if (mounted) {
-      setState(() {
-        _isComplete = true;
-      });
-      
-      await Future.delayed(const Duration(seconds: 1));
-      if (mounted) {
-        _navigateToConfirmation();
-      }
     }
   }
 
-  void _startProcessingFallback() async {
-    for (int i = 0; i < _steps.length; i++) {
-      if (!mounted) {
-        return;
-      }
-      
-      setState(() {
-        _currentStep = i;
-        _hasError = false; // Clear any error state
-      });
-      
-      await Future.delayed(Duration(milliseconds: _steps[i].duration));
-      
-      // Skip saving payment in fallback mode, just simulate
-      if (i == 2) {
-        print('⏭️ Payment simulated (storage unavailable)');
-      }
-    }
-    
-    if (mounted) {
-      setState(() {
-        _isComplete = true;
-        _hasError = false; // Ensure no error state
-      });
-      
-      await Future.delayed(const Duration(seconds: 1));
+  void _setComplete(ContributionPayment payment) {
+    if (!mounted) return;
+    setState(() {
+      _isComplete = true;
+    });
+    Future.delayed(const Duration(milliseconds: 800), () {
       if (mounted) {
-        _navigateToConfirmationWithMockPayment();
+        _navigateToConfirmation(payment);
       }
-    }
+    });
   }
 
-  Future<void> _savePaymentToRepository() async {
-    await _paymentRepository.savePayment(
-      contributionId: widget.contributionId,
-      groupId: widget.contribution.groupId,
-      userId: 'current_user_id', // TODO: Get from auth service
-      userName: 'You', // TODO: Get from auth service
-      amount: widget.amount,
-      currency: widget.currency,
-      notes: widget.notes,
-      paymentMethod: widget.paymentMethod,
-    );
+  void _setError(String message) {
+    if (!mounted) return;
+    setState(() {
+      _hasError = true;
+      _errorMessage = message;
+    });
   }
 
   @override
@@ -237,38 +159,50 @@ class _ContributionPaymentProcessingScreenState extends State<ContributionPaymen
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF0A0A0A),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              const Color(0xFF1F1F1F),
-              const Color(0xFF0A0A0A),
-              const Color(0xFF0F0F23),
-            ],
+      body: BlocListener<GroupAccountCubit, GroupAccountState>(
+        listener: (context, state) {
+          if (state is ContributionPaymentProcessing) {
+            // Advance step animation
+            _advanceStep();
+          } else if (state is ContributionPaymentSuccess) {
+            _setComplete(state.payment);
+          } else if (state is ContributionPaymentFailed) {
+            _setError(state.error);
+          }
+        },
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                const Color(0xFF1F1F1F),
+                const Color(0xFF0A0A0A),
+                const Color(0xFF0F0F23),
+              ],
+            ),
           ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              _buildHeader(),
-              Expanded(
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      _buildProcessingAnimation(),
-                      SizedBox(height: 48.h),
-                      _buildProcessingStatus(),
-                      SizedBox(height: 32.h),
-                      _buildProgressSteps(),
-                    ],
+          child: SafeArea(
+            child: Column(
+              children: [
+                _buildHeader(),
+                Expanded(
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        _buildProcessingAnimation(),
+                        SizedBox(height: 48.h),
+                        _buildProcessingStatus(),
+                        SizedBox(height: 32.h),
+                        _buildProgressSteps(),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              if (!_isComplete) _buildResultActions(),
-            ],
+                if (!_isComplete && _hasError) _buildResultActions(),
+              ],
+            ),
           ),
         ),
       ),
@@ -521,38 +455,29 @@ class _ContributionPaymentProcessingScreenState extends State<ContributionPaymen
     );
   }
 
+  /// Build error action buttons (only shown when there's an error)
   Widget _buildResultActions() {
     return Container(
       padding: EdgeInsets.all(20.w),
       child: SafeArea(
         top: false,
-        child: Column(
+        child: Row(
           children: [
-            if (_isComplete)
-              Container(
-                width: double.infinity,
+            Expanded(
+              child: Container(
                 height: 56.h,
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF6C5CE7), Color(0xFF8B5CF6)],
-                  ),
+                  color: const Color(0xFF2D2D2D),
                   borderRadius: BorderRadius.circular(16.r),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF6C5CE7).withValues(alpha: 0.3),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
                 ),
                 child: Material(
                   color: Colors.transparent,
                   child: InkWell(
-                    onTap: _navigateToConfirmation,
+                    onTap: () => Get.back(),
                     borderRadius: BorderRadius.circular(16.r),
                     child: Center(
                       child: Text(
-                        'View Confirmation',
+                        'Cancel',
                         style: GoogleFonts.inter(
                           fontSize: 16.sp,
                           fontWeight: FontWeight.w600,
@@ -562,166 +487,55 @@ class _ContributionPaymentProcessingScreenState extends State<ContributionPaymen
                     ),
                   ),
                 ),
-              )
-            else
-              Row(
-                children: [
-                  Expanded(
-                    child: Container(
-                      height: 56.h,
-                      decoration: BoxDecoration(                        borderRadius: BorderRadius.circular(16.r),
-                      ),
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          onTap: () => Get.back(),
-                          borderRadius: BorderRadius.circular(16.r),
-                          child: Center(
-                            child: Text(
-                              'Cancel',
-                              style: GoogleFonts.inter(
-                                fontSize: 16.sp,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  SizedBox(width: 16.w),
-                  Expanded(
-                    child: Container(
-                      height: 56.h,
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF6C5CE7), Color(0xFF8B5CF6)],
-                        ),
-                        borderRadius: BorderRadius.circular(16.r),
-                      ),
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          onTap: _retryPayment,
-                          borderRadius: BorderRadius.circular(16.r),
-                          child: Center(
-                            child: Text(
-                              'Retry',
-                              style: GoogleFonts.inter(
-                                fontSize: 16.sp,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
               ),
+            ),
+            SizedBox(width: 16.w),
+            Expanded(
+              child: Container(
+                height: 56.h,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF6C5CE7), Color(0xFF8B5CF6)],
+                  ),
+                  borderRadius: BorderRadius.circular(16.r),
+                ),
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: _retryPayment,
+                    borderRadius: BorderRadius.circular(16.r),
+                    child: Center(
+                      child: Text(
+                        'Retry',
+                        style: GoogleFonts.inter(
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 
-  void _navigateToConfirmation() async {
-    // Get the saved payment
-    final payments = await _paymentRepository.getPaymentsByContribution(widget.contributionId);
-    final latestPayment = payments.isNotEmpty ? payments.first : null;
-    
-    if (latestPayment != null) {
-      Get.off(
-        () => ContributionPaymentConfirmationScreen(
-          contribution: widget.contribution,
-          payment: latestPayment,
-          paymentMethod: widget.paymentMethod,
-        ),
-      );
-    } else {
-      // Fallback to mock payment if something went wrong
-      final mockPayment = ContributionPayment(
-        id: 'payment_${DateTime.now().millisecondsSinceEpoch}',
-        contributionId: widget.contributionId,
-        groupId: widget.contribution.groupId,
-        userId: 'current_user_id',
-        userName: 'You',
-        amount: widget.amount,
-        currency: widget.currency,
-        paymentDate: DateTime.now(),
-        status: PaymentStatus.completed,
-        transactionId: 'TXN${DateTime.now().millisecondsSinceEpoch}',
-        notes: widget.notes,
-      );
-      
-      Get.off(
-        () => ContributionPaymentConfirmationScreen(
-          contribution: widget.contribution,
-          payment: mockPayment,
-          paymentMethod: widget.paymentMethod,
-        ),
-      );
-    }
-  }
-
-  void _retryPayment() {
-    Get.back();
-  }
-
-  void _navigateToConfirmationWithMockPayment() {
-    final mockPayment = ContributionPayment(
-      id: 'payment_${DateTime.now().millisecondsSinceEpoch}',
-      contributionId: widget.contributionId,
-      groupId: widget.contribution.groupId,
-      userId: 'current_user_id',
-      userName: 'You',
-      amount: widget.amount,
-      currency: widget.currency,
-      paymentDate: DateTime.now(),
-      status: PaymentStatus.completed,
-      transactionId: 'TXN${DateTime.now().millisecondsSinceEpoch}',
-      notes: widget.notes,
-    );
-    
+  void _navigateToConfirmation(ContributionPayment payment) {
     Get.off(
       () => ContributionPaymentConfirmationScreen(
         contribution: widget.contribution,
-        payment: mockPayment,
+        payment: payment,
         paymentMethod: widget.paymentMethod,
       ),
     );
   }
 
-  String _getPaymentMethodStep() {
-    switch (widget.paymentMethod.toLowerCase()) {
-      case 'bank_transfer':
-        return 'Connecting to bank';
-      case 'card':
-        return 'Verifying card details';
-      case 'mobile_money':
-        return 'Connecting to mobile money';
-      case 'crypto':
-        return 'Connecting to blockchain';
-      default:
-        return 'Verifying payment method';
-    }
-  }
-
-  String _getPaymentMethodDescription() {
-    switch (widget.paymentMethod.toLowerCase()) {
-      case 'bank_transfer':
-        return 'Establishing secure bank connection...';
-      case 'card':
-        return 'Validating card information...';
-      case 'mobile_money':
-        return 'Connecting to mobile money service...';
-      case 'crypto':
-        return 'Connecting to blockchain network...';
-      default:
-        return 'Preparing payment...';
-    }
+  void _retryPayment() {
+    Get.back();
   }
 }
 

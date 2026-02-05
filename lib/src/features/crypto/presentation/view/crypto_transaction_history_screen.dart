@@ -806,17 +806,6 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
     }
   }
 
-  Color _getStatusBorderColor(CryptoTransactionStatus status) {
-    switch (status) {
-      case CryptoTransactionStatus.completed:
-        return Colors.green.withValues(alpha: 0.3);
-      case CryptoTransactionStatus.pending:
-        return Colors.orange.withValues(alpha: 0.3);
-      case CryptoTransactionStatus.failed:
-        return Colors.red.withValues(alpha: 0.3);
-    }
-  }
-
   String _getBlockchainNetwork(String symbol) {
     switch (symbol.toUpperCase()) {
       case 'BTC':

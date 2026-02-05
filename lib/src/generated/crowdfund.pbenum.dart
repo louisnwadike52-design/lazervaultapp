@@ -72,3 +72,78 @@ class DonationStatus extends $pb.ProtobufEnum {
   const DonationStatus._($core.int v, $core.String n) : super(v, n);
 }
 
+class NotificationChannelType extends $pb.ProtobufEnum {
+  static const NotificationChannelType NOTIFICATION_CHANNEL_TYPE_UNSPECIFIED = NotificationChannelType._(0, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'NOTIFICATION_CHANNEL_TYPE_UNSPECIFIED');
+  static const NotificationChannelType NOTIFICATION_CHANNEL_TYPE_TELEGRAM = NotificationChannelType._(1, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'NOTIFICATION_CHANNEL_TYPE_TELEGRAM');
+  static const NotificationChannelType NOTIFICATION_CHANNEL_TYPE_DISCORD = NotificationChannelType._(2, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'NOTIFICATION_CHANNEL_TYPE_DISCORD');
+  static const NotificationChannelType NOTIFICATION_CHANNEL_TYPE_WHATSAPP_BUSINESS = NotificationChannelType._(3, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'NOTIFICATION_CHANNEL_TYPE_WHATSAPP_BUSINESS');
+  static const NotificationChannelType NOTIFICATION_CHANNEL_TYPE_SLACK = NotificationChannelType._(4, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'NOTIFICATION_CHANNEL_TYPE_SLACK');
+
+  static const $core.List<NotificationChannelType> values = <NotificationChannelType> [
+    NOTIFICATION_CHANNEL_TYPE_UNSPECIFIED,
+    NOTIFICATION_CHANNEL_TYPE_TELEGRAM,
+    NOTIFICATION_CHANNEL_TYPE_DISCORD,
+    NOTIFICATION_CHANNEL_TYPE_WHATSAPP_BUSINESS,
+    NOTIFICATION_CHANNEL_TYPE_SLACK,
+  ];
+
+  static final $core.Map<$core.int, NotificationChannelType> _byValue = $pb.ProtobufEnum.initByValue(values);
+  static NotificationChannelType? valueOf($core.int value) => _byValue[value];
+
+  const NotificationChannelType._($core.int v, $core.String n) : super(v, n);
+}
+
+class NotificationChannelStatus extends $pb.ProtobufEnum {
+  static const NotificationChannelStatus NOTIFICATION_CHANNEL_STATUS_UNSPECIFIED = NotificationChannelStatus._(0, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'NOTIFICATION_CHANNEL_STATUS_UNSPECIFIED');
+  static const NotificationChannelStatus NOTIFICATION_CHANNEL_STATUS_PENDING = NotificationChannelStatus._(1, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'NOTIFICATION_CHANNEL_STATUS_PENDING');
+  static const NotificationChannelStatus NOTIFICATION_CHANNEL_STATUS_ACTIVE = NotificationChannelStatus._(2, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'NOTIFICATION_CHANNEL_STATUS_ACTIVE');
+  static const NotificationChannelStatus NOTIFICATION_CHANNEL_STATUS_PAUSED = NotificationChannelStatus._(3, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'NOTIFICATION_CHANNEL_STATUS_PAUSED');
+  static const NotificationChannelStatus NOTIFICATION_CHANNEL_STATUS_ERROR = NotificationChannelStatus._(4, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'NOTIFICATION_CHANNEL_STATUS_ERROR');
+  static const NotificationChannelStatus NOTIFICATION_CHANNEL_STATUS_DISCONNECTED = NotificationChannelStatus._(5, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'NOTIFICATION_CHANNEL_STATUS_DISCONNECTED');
+
+  static const $core.List<NotificationChannelStatus> values = <NotificationChannelStatus> [
+    NOTIFICATION_CHANNEL_STATUS_UNSPECIFIED,
+    NOTIFICATION_CHANNEL_STATUS_PENDING,
+    NOTIFICATION_CHANNEL_STATUS_ACTIVE,
+    NOTIFICATION_CHANNEL_STATUS_PAUSED,
+    NOTIFICATION_CHANNEL_STATUS_ERROR,
+    NOTIFICATION_CHANNEL_STATUS_DISCONNECTED,
+  ];
+
+  static final $core.Map<$core.int, NotificationChannelStatus> _byValue = $pb.ProtobufEnum.initByValue(values);
+  static NotificationChannelStatus? valueOf($core.int value) => _byValue[value];
+
+  const NotificationChannelStatus._($core.int v, $core.String n) : super(v, n);
+}
+
+class NotificationEventType extends $pb.ProtobufEnum {
+  static const NotificationEventType NOTIFICATION_EVENT_TYPE_UNSPECIFIED = NotificationEventType._(0, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'NOTIFICATION_EVENT_TYPE_UNSPECIFIED');
+  static const NotificationEventType NOTIFICATION_EVENT_TYPE_NEW_DONATION = NotificationEventType._(1, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'NOTIFICATION_EVENT_TYPE_NEW_DONATION');
+  static const NotificationEventType NOTIFICATION_EVENT_TYPE_MILESTONE_REACHED = NotificationEventType._(2, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'NOTIFICATION_EVENT_TYPE_MILESTONE_REACHED');
+  static const NotificationEventType NOTIFICATION_EVENT_TYPE_GOAL_REACHED = NotificationEventType._(3, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'NOTIFICATION_EVENT_TYPE_GOAL_REACHED');
+  static const NotificationEventType NOTIFICATION_EVENT_TYPE_NEW_CONTRIBUTOR = NotificationEventType._(4, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'NOTIFICATION_EVENT_TYPE_NEW_CONTRIBUTOR');
+  static const NotificationEventType NOTIFICATION_EVENT_TYPE_LARGE_DONATION = NotificationEventType._(5, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'NOTIFICATION_EVENT_TYPE_LARGE_DONATION');
+  static const NotificationEventType NOTIFICATION_EVENT_TYPE_DAILY_SUMMARY = NotificationEventType._(6, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'NOTIFICATION_EVENT_TYPE_DAILY_SUMMARY');
+  static const NotificationEventType NOTIFICATION_EVENT_TYPE_CAMPAIGN_ENDING = NotificationEventType._(7, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'NOTIFICATION_EVENT_TYPE_CAMPAIGN_ENDING');
+  static const NotificationEventType NOTIFICATION_EVENT_TYPE_CAMPAIGN_ENDED = NotificationEventType._(8, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'NOTIFICATION_EVENT_TYPE_CAMPAIGN_ENDED');
+  static const NotificationEventType NOTIFICATION_EVENT_TYPE_WITHDRAWAL = NotificationEventType._(9, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'NOTIFICATION_EVENT_TYPE_WITHDRAWAL');
+
+  static const $core.List<NotificationEventType> values = <NotificationEventType> [
+    NOTIFICATION_EVENT_TYPE_UNSPECIFIED,
+    NOTIFICATION_EVENT_TYPE_NEW_DONATION,
+    NOTIFICATION_EVENT_TYPE_MILESTONE_REACHED,
+    NOTIFICATION_EVENT_TYPE_GOAL_REACHED,
+    NOTIFICATION_EVENT_TYPE_NEW_CONTRIBUTOR,
+    NOTIFICATION_EVENT_TYPE_LARGE_DONATION,
+    NOTIFICATION_EVENT_TYPE_DAILY_SUMMARY,
+    NOTIFICATION_EVENT_TYPE_CAMPAIGN_ENDING,
+    NOTIFICATION_EVENT_TYPE_CAMPAIGN_ENDED,
+    NOTIFICATION_EVENT_TYPE_WITHDRAWAL,
+  ];
+
+  static final $core.Map<$core.int, NotificationEventType> _byValue = $pb.ProtobufEnum.initByValue(values);
+  static NotificationEventType? valueOf($core.int value) => _byValue[value];
+
+  const NotificationEventType._($core.int v, $core.String n) : super(v, n);
+}
+

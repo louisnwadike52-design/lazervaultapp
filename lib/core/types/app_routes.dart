@@ -223,6 +223,8 @@ static const String incomingTaggedInvoices = '/invoice/incoming-tagged';
   static const String crowdfundList = '/crowdfund/list';
   static const String crowdfundDetails = '/crowdfund/details';
   static const String createCrowdfund = '/crowdfund/create';
+  static const String crowdfundReport = '/crowdfund/report';
+  static const String crowdfundNotificationChannels = '/crowdfund/notification-channels';
   static const String donationPayment = '/crowdfund/donation-payment';
   static const String donationProcessing = '/crowdfund/donation-processing';
   static const String donationReceipt = '/crowdfund/donation-receipt';
@@ -247,6 +249,9 @@ static const String incomingTaggedInvoices = '/invoice/incoming-tagged';
   static const String openBankingCallback = '/open-banking/callback';
   static const String openBankingSync = '/open-banking/sync';
 
+  // Social Linking Routes
+  static const String linkedSocialAccounts = '/settings/linked-accounts';
+
   // Tag Pay Routes
   static const String tagPay = '/tag-pay';
   static const String createTagPay = '/tag-pay/create';
@@ -256,6 +261,7 @@ static const String incomingTaggedInvoices = '/invoice/incoming-tagged';
   static const String pendingRequests = '/tag-pay/requests';
   static const String searchUsers = '/tag-pay/search';
   static const String createTag = '/tag-pay/create-tag';
+  static const String tagAmount = '/tag-pay/tag-amount';
   static const String myTags = '/tag-pay/my-tags';
   static const String outgoingTags = '/tag-pay/outgoing-tags';
   static const String incomingTags = '/tag-pay/incoming-tags';
@@ -293,6 +299,7 @@ static const String incomingTaggedInvoices = '/invoice/incoming-tagged';
   static const String lockFunds = '/lock-funds';
   static const String createLockFund = '/lock-funds/create';
   static const String lockFundDetails = '/lock-funds/details';
+  static const String lockFundReceipt = '/lock-funds/receipt';
 
   // Voice Enrollment Routes
   static const String voiceEnrollment = '/voice/enrollment';

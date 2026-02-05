@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -6,8 +7,8 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../cubit/create_lock_cubit.dart';
 import '../../cubit/lock_funds_cubit.dart';
 import '../../cubit/lock_funds_state.dart';
-import '../../../../authentication/cubit/authentication_cubit.dart';
-import '../../../../authentication/cubit/authentication_state.dart';
+import '../../../../../../core/services/injection_container.dart';
+import '../../../../../../core/services/locale_manager.dart';
 
 /// Amount and duration selection screen - Step 2 of 5
 ///
@@ -22,29 +23,29 @@ class AmountDurationSelector extends StatefulWidget {
 
 class _AmountDurationSelectorState extends State<AmountDurationSelector> {
   final TextEditingController _amountController = TextEditingController();
-  final List<String> _currencies = ['USD', 'EUR', 'GBP', 'NGN'];
   final List<int> _durations = [7, 15, 30, 60, 90, 180, 365];
+  late String _userCurrency;
+  StreamSubscription<String>? _currencySubscription;
 
   @override
   void initState() {
     super.initState();
     final cubit = context.read<CreateLockCubit>();
 
-    // Initialize with user's currency if available
-    final authState = context.read<AuthenticationCubit>().state;
-    if (authState is AuthenticationSuccess) {
-      var userCurrency = authState.profile.user.currency;
+    // Initialize with user's active locale currency from global LocaleManager
+    final localeManager = serviceLocator<LocaleManager>();
+    _userCurrency = localeManager.currentCurrency;
+    cubit.initializeWithUserCurrency(_userCurrency);
 
-      // Validate that the user currency is in our supported list
-      if (userCurrency != null &&
-          userCurrency.isNotEmpty &&
-          _currencies.contains(userCurrency.toUpperCase())) {
-        cubit.initializeWithUserCurrency(userCurrency.toUpperCase());
-      } else if (userCurrency == null || userCurrency.isEmpty) {
-        // Default to USD if no currency set
-        cubit.initializeWithUserCurrency('USD');
+    // Listen for currency changes (reactive updates)
+    _currencySubscription = localeManager.currencyStream.listen((newCurrency) {
+      if (mounted && newCurrency != _userCurrency) {
+        setState(() {
+          _userCurrency = newCurrency;
+        });
+        cubit.initializeWithUserCurrency(newCurrency);
       }
-    }
+    });
 
     if (cubit.amount != null) {
       _amountController.text = cubit.amount!.toStringAsFixed(2);
@@ -53,8 +54,25 @@ class _AmountDurationSelectorState extends State<AmountDurationSelector> {
 
   @override
   void dispose() {
+    _currencySubscription?.cancel();
     _amountController.dispose();
     super.dispose();
+  }
+
+  /// Returns currency-aware quick amounts for lock funds
+  List<double> _quickAmounts() {
+    switch (_userCurrency) {
+      case 'NGN':
+        return [5000, 10000, 50000, 100000, 500000];
+      case 'GBP':
+      case 'EUR':
+      case 'USD':
+        return [100, 500, 1000, 5000, 10000];
+      case 'ZAR':
+        return [500, 1000, 5000, 10000, 50000];
+      default:
+        return [100, 500, 1000, 5000, 10000];
+    }
   }
 
   void _calculateInterest() {
@@ -77,7 +95,6 @@ class _AmountDurationSelectorState extends State<AmountDurationSelector> {
     return BlocBuilder<CreateLockCubit, CreateLockState>(
       builder: (context, createState) {
         final cubit = context.read<CreateLockCubit>();
-        final selectedCurrency = cubit.currency;
         final selectedDuration = cubit.lockDurationDays;
 
         return SingleChildScrollView(
@@ -104,61 +121,75 @@ class _AmountDurationSelectorState extends State<AmountDurationSelector> {
               ),
               SizedBox(height: 32.h),
 
-              // Currency Selector
-              Text(
-                'Currency',
-                style: GoogleFonts.inter(
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
+              // Currency Display (user's active currency)
+              Container(
+                padding: EdgeInsets.all(16.w),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      const Color(0xFF6366F1).withValues(alpha: 0.15),
+                      const Color(0xFF8B5CF6).withValues(alpha: 0.1),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(12.r),
                 ),
-              ),
-              SizedBox(height: 12.h),
-              Wrap(
-                spacing: 12.w,
-                runSpacing: 12.h,
-                children: _currencies.map((currency) {
-                  final isSelected = selectedCurrency == currency;
-                  return GestureDetector(
-                    onTap: () {
-                      cubit.updateCurrency(currency);
-                      _calculateInterest();
-                    },
-                    child: Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 20.w,
-                        vertical: 12.h,
-                      ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: EdgeInsets.all(10.w),
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: isSelected
-                              ? [const Color(0xFF6366F1), const Color(0xFF8B5CF6)]
-                              : [const Color(0xFF2A2A3E), const Color(0xFF1F1F35)],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        borderRadius: BorderRadius.circular(12.r),
-                        boxShadow: [
-                          BoxShadow(
-                            color: isSelected
-                                ? const Color(0xFF6366F1).withValues(alpha: 0.3)
-                                : Colors.black.withValues(alpha: 0.2),
-                            blurRadius: isSelected ? 12 : 8,
-                            offset: Offset(0, isSelected ? 6 : 4),
+                        color: const Color(0xFF6366F1).withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(8.r),
+                      ),
+                      child: Icon(
+                        Icons.account_balance_wallet_outlined,
+                        color: const Color(0xFF6366F1),
+                        size: 20.sp,
+                      ),
+                    ),
+                    SizedBox(width: 12.w),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Currency',
+                            style: GoogleFonts.inter(
+                              fontSize: 12.sp,
+                              color: const Color(0xFF9CA3AF),
+                            ),
+                          ),
+                          SizedBox(height: 2.h),
+                          Text(
+                            _userCurrency,
+                            style: GoogleFonts.inter(
+                              fontSize: 18.sp,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                            ),
                           ),
                         ],
                       ),
+                    ),
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(20.r),
+                      ),
                       child: Text(
-                        currency,
+                        'Your account currency',
                         style: GoogleFonts.inter(
-                          fontSize: 14.sp,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
+                          fontSize: 11.sp,
+                          fontWeight: FontWeight.w500,
+                          color: const Color(0xFF10B981),
                         ),
                       ),
                     ),
-                  );
-                }).toList(),
+                  ],
+                ),
               ),
               SizedBox(height: 24.h),
 
@@ -173,11 +204,11 @@ class _AmountDurationSelectorState extends State<AmountDurationSelector> {
               ),
               SizedBox(height: 12.h),
 
-              // Quick Amount Buttons
+              // Quick Amount Buttons (currency-aware)
               Wrap(
                 spacing: 8.w,
                 runSpacing: 8.h,
-                children: [100.0, 500.0, 1000.0, 5000.0, 10000.0].map((quickAmount) {
+                children: _quickAmounts().map((quickAmount) {
                   return GestureDetector(
                     onTap: () {
                       _amountController.text = quickAmount.toStringAsFixed(0);
@@ -206,8 +237,8 @@ class _AmountDurationSelectorState extends State<AmountDurationSelector> {
                       ),
                       child: Text(
                         quickAmount >= 1000
-                            ? '\$${(quickAmount / 1000).toStringAsFixed(0)}k'
-                            : '\$${quickAmount.toStringAsFixed(0)}',
+                            ? '$_userCurrency ${(quickAmount / 1000).toStringAsFixed(0)}k'
+                            : '$_userCurrency ${quickAmount.toStringAsFixed(0)}',
                         style: GoogleFonts.inter(
                           fontSize: 12.sp,
                           fontWeight: FontWeight.w600,
@@ -258,7 +289,7 @@ class _AmountDurationSelectorState extends State<AmountDurationSelector> {
                     prefixIcon: Padding(
                       padding: EdgeInsets.only(left: 8.w, right: 12.w, top: 14.h),
                       child: Text(
-                        selectedCurrency,
+                        _userCurrency,
                         style: GoogleFonts.inter(
                           fontSize: 18.sp,
                           fontWeight: FontWeight.w600,
@@ -445,14 +476,14 @@ class _AmountDurationSelectorState extends State<AmountDurationSelector> {
                           SizedBox(height: 8.h),
                           _buildCalculationRow(
                             'Interest Earned',
-                            '$selectedCurrency ${calc.interestAmount.toStringAsFixed(2)}',
+                            '$_userCurrency ${calc.interestAmount.toStringAsFixed(2)}',
                           ),
                           SizedBox(height: 8.h),
                           Divider(color: Colors.white.withValues(alpha: 0.2)),
                           SizedBox(height: 8.h),
                           _buildCalculationRow(
                             'Total at Maturity',
-                            '$selectedCurrency ${calc.totalAmount.toStringAsFixed(2)}',
+                            '$_userCurrency ${calc.totalAmount.toStringAsFixed(2)}',
                             isTotal: true,
                           ),
                         ],

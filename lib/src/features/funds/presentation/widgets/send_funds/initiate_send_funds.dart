@@ -38,8 +38,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
 
   // Recipient handling variables
   RecipientModel? _recipient;
-  bool _isTemporary = false;
-  bool _shouldSaveOnSuccess = false;
+
 
   String amount =
       ''; // Stores amount as string of MINOR units (e.g., "2000" for £20.00)
@@ -96,16 +95,12 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
     // First check if recipient was passed directly via widget parameter
     if (widget.recipient != null) {
       _recipient = widget.recipient;
-      _isTemporary = false;
-      _shouldSaveOnSuccess = false;
     } else {
       // Get arguments and determine recipient details
       final args = Get.arguments;
 
       if (args is Map<String, dynamic>) {
         _recipient = args['recipient'] as RecipientModel;
-        _isTemporary = args['isTemporary'] == true;
-        _shouldSaveOnSuccess = args['shouldSaveOnSuccess'] == true;
 
         // Prefill from recipient transaction history
         final prefillAmount = args['prefillAmount'] as int?;
@@ -116,8 +111,6 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
         _autoShowConfirm = args['autoShowConfirm'] == true;
       } else if (args is RecipientModel) {
         _recipient = args;
-        _isTemporary = false;
-        _shouldSaveOnSuccess = false;
       }
     }
 

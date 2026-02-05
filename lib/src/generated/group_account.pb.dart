@@ -10,7 +10,7 @@ import 'dart:core' as $core;
 import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'google/protobuf/timestamp.pb.dart' as $36;
+import 'google/protobuf/timestamp.pb.dart' as $1;
 
 import 'group_account.pbenum.dart';
 
@@ -21,10 +21,10 @@ class GroupAccountMessage extends $pb.GeneratedMessage {
     ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
     ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'name')
     ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
-    ..a<$fixnum.Int64>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'adminId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'adminId')
     ..e<GroupAccountStatus>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: GroupAccountStatus.GROUP_ACCOUNT_STATUS_UNSPECIFIED, valueOf: GroupAccountStatus.valueOf, enumValues: GroupAccountStatus.values)
-    ..aOM<$36.Timestamp>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $36.Timestamp.create)
-    ..aOM<$36.Timestamp>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $36.Timestamp.create)
+    ..aOM<$1.Timestamp>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $1.Timestamp.create)
     ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'metadata')
     ..pc<GroupMemberMessage>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'members', $pb.PbFieldType.PM, subBuilder: GroupMemberMessage.create)
     ..pc<ContributionMessage>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'contributions', $pb.PbFieldType.PM, subBuilder: ContributionMessage.create)
@@ -36,10 +36,10 @@ class GroupAccountMessage extends $pb.GeneratedMessage {
     $core.String? id,
     $core.String? name,
     $core.String? description,
-    $fixnum.Int64? adminId,
+    $core.String? adminId,
     GroupAccountStatus? status,
-    $36.Timestamp? createdAt,
-    $36.Timestamp? updatedAt,
+    $1.Timestamp? createdAt,
+    $1.Timestamp? updatedAt,
     $core.String? metadata,
     $core.Iterable<GroupMemberMessage>? members,
     $core.Iterable<ContributionMessage>? contributions,
@@ -126,9 +126,9 @@ class GroupAccountMessage extends $pb.GeneratedMessage {
   void clearDescription() => clearField(3);
 
   @$pb.TagNumber(4)
-  $fixnum.Int64 get adminId => $_getI64(3);
+  $core.String get adminId => $_getSZ(3);
   @$pb.TagNumber(4)
-  set adminId($fixnum.Int64 v) { $_setInt64(3, v); }
+  set adminId($core.String v) { $_setString(3, v); }
   @$pb.TagNumber(4)
   $core.bool hasAdminId() => $_has(3);
   @$pb.TagNumber(4)
@@ -144,26 +144,26 @@ class GroupAccountMessage extends $pb.GeneratedMessage {
   void clearStatus() => clearField(5);
 
   @$pb.TagNumber(6)
-  $36.Timestamp get createdAt => $_getN(5);
+  $1.Timestamp get createdAt => $_getN(5);
   @$pb.TagNumber(6)
-  set createdAt($36.Timestamp v) { setField(6, v); }
+  set createdAt($1.Timestamp v) { setField(6, v); }
   @$pb.TagNumber(6)
   $core.bool hasCreatedAt() => $_has(5);
   @$pb.TagNumber(6)
   void clearCreatedAt() => clearField(6);
   @$pb.TagNumber(6)
-  $36.Timestamp ensureCreatedAt() => $_ensure(5);
+  $1.Timestamp ensureCreatedAt() => $_ensure(5);
 
   @$pb.TagNumber(7)
-  $36.Timestamp get updatedAt => $_getN(6);
+  $1.Timestamp get updatedAt => $_getN(6);
   @$pb.TagNumber(7)
-  set updatedAt($36.Timestamp v) { setField(7, v); }
+  set updatedAt($1.Timestamp v) { setField(7, v); }
   @$pb.TagNumber(7)
   $core.bool hasUpdatedAt() => $_has(6);
   @$pb.TagNumber(7)
   void clearUpdatedAt() => clearField(7);
   @$pb.TagNumber(7)
-  $36.Timestamp ensureUpdatedAt() => $_ensure(6);
+  $1.Timestamp ensureUpdatedAt() => $_ensure(6);
 
   @$pb.TagNumber(8)
   $core.String get metadata => $_getSZ(7);
@@ -185,13 +185,13 @@ class GroupMemberMessage extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GroupMemberMessage', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
     ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
     ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'groupId')
-    ..a<$fixnum.Int64>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
     ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userName')
     ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'email')
     ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'profileImage')
     ..e<GroupMemberRole>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'role', $pb.PbFieldType.OE, defaultOrMaker: GroupMemberRole.GROUP_MEMBER_ROLE_UNSPECIFIED, valueOf: GroupMemberRole.valueOf, enumValues: GroupMemberRole.values)
     ..e<GroupMemberStatus>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: GroupMemberStatus.GROUP_MEMBER_STATUS_UNSPECIFIED, valueOf: GroupMemberStatus.valueOf, enumValues: GroupMemberStatus.values)
-    ..aOM<$36.Timestamp>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'joinedAt', subBuilder: $36.Timestamp.create)
+    ..aOM<$1.Timestamp>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'joinedAt', subBuilder: $1.Timestamp.create)
     ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'permissions')
     ..aOS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'phoneNumber')
     ..aOB(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isPartial')
@@ -203,13 +203,13 @@ class GroupMemberMessage extends $pb.GeneratedMessage {
   factory GroupMemberMessage({
     $core.String? id,
     $core.String? groupId,
-    $fixnum.Int64? userId,
+    $core.String? userId,
     $core.String? userName,
     $core.String? email,
     $core.String? profileImage,
     GroupMemberRole? role,
     GroupMemberStatus? status,
-    $36.Timestamp? joinedAt,
+    $1.Timestamp? joinedAt,
     $core.String? permissions,
     $core.String? phoneNumber,
     $core.bool? isPartial,
@@ -297,9 +297,9 @@ class GroupMemberMessage extends $pb.GeneratedMessage {
   void clearGroupId() => clearField(2);
 
   @$pb.TagNumber(3)
-  $fixnum.Int64 get userId => $_getI64(2);
+  $core.String get userId => $_getSZ(2);
   @$pb.TagNumber(3)
-  set userId($fixnum.Int64 v) { $_setInt64(2, v); }
+  set userId($core.String v) { $_setString(2, v); }
   @$pb.TagNumber(3)
   $core.bool hasUserId() => $_has(2);
   @$pb.TagNumber(3)
@@ -351,15 +351,15 @@ class GroupMemberMessage extends $pb.GeneratedMessage {
   void clearStatus() => clearField(8);
 
   @$pb.TagNumber(9)
-  $36.Timestamp get joinedAt => $_getN(8);
+  $1.Timestamp get joinedAt => $_getN(8);
   @$pb.TagNumber(9)
-  set joinedAt($36.Timestamp v) { setField(9, v); }
+  set joinedAt($1.Timestamp v) { setField(9, v); }
   @$pb.TagNumber(9)
   $core.bool hasJoinedAt() => $_has(8);
   @$pb.TagNumber(9)
   void clearJoinedAt() => clearField(9);
   @$pb.TagNumber(9)
-  $36.Timestamp ensureJoinedAt() => $_ensure(8);
+  $1.Timestamp ensureJoinedAt() => $_ensure(8);
 
   @$pb.TagNumber(10)
   $core.String get permissions => $_getSZ(9);
@@ -407,21 +407,21 @@ class ContributionMessage extends $pb.GeneratedMessage {
     ..a<$fixnum.Int64>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'targetAmount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..a<$fixnum.Int64>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currentAmount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
-    ..aOM<$36.Timestamp>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'deadline', subBuilder: $36.Timestamp.create)
+    ..aOM<$1.Timestamp>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'deadline', subBuilder: $1.Timestamp.create)
     ..e<ContributionStatus>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: ContributionStatus.CONTRIBUTION_STATUS_UNSPECIFIED, valueOf: ContributionStatus.valueOf, enumValues: ContributionStatus.values)
-    ..a<$fixnum.Int64>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdBy', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..aOM<$36.Timestamp>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $36.Timestamp.create)
-    ..aOM<$36.Timestamp>(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $36.Timestamp.create)
+    ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdBy')
+    ..aOM<$1.Timestamp>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $1.Timestamp.create)
     ..aOS(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'metadata')
     ..e<ContributionType>(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'type', $pb.PbFieldType.OE, defaultOrMaker: ContributionType.CONTRIBUTION_TYPE_UNSPECIFIED, valueOf: ContributionType.valueOf, enumValues: ContributionType.values)
     ..e<ContributionFrequency>(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'frequency', $pb.PbFieldType.OE, defaultOrMaker: ContributionFrequency.CONTRIBUTION_FREQUENCY_UNSPECIFIED, valueOf: ContributionFrequency.valueOf, enumValues: ContributionFrequency.values)
     ..a<$fixnum.Int64>(16, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'regularAmount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..aOM<$36.Timestamp>(17, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'nextPaymentDate', subBuilder: $36.Timestamp.create)
-    ..aOM<$36.Timestamp>(18, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'startDate', subBuilder: $36.Timestamp.create)
+    ..aOM<$1.Timestamp>(17, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'nextPaymentDate', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(18, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'startDate', subBuilder: $1.Timestamp.create)
     ..a<$core.int>(19, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalCycles', $pb.PbFieldType.O3)
     ..a<$core.int>(20, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currentCycle', $pb.PbFieldType.O3)
-    ..a<$fixnum.Int64>(21, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currentPayoutRecipient', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..aOM<$36.Timestamp>(22, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'nextPayoutDate', subBuilder: $36.Timestamp.create)
+    ..aOS(21, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currentPayoutRecipient')
+    ..aOM<$1.Timestamp>(22, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'nextPayoutDate', subBuilder: $1.Timestamp.create)
     ..aOB(23, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'autoPayEnabled')
     ..a<$fixnum.Int64>(24, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'penaltyAmount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..a<$core.int>(25, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'gracePeriodDays', $pb.PbFieldType.O3)
@@ -430,6 +430,7 @@ class ContributionMessage extends $pb.GeneratedMessage {
     ..pc<ContributionPaymentMessage>(28, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'payments', $pb.PbFieldType.PM, subBuilder: ContributionPaymentMessage.create)
     ..pc<PayoutScheduleMessage>(29, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'payoutSchedule', $pb.PbFieldType.PM, subBuilder: PayoutScheduleMessage.create)
     ..pc<PayoutTransactionMessage>(30, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'payoutHistory', $pb.PbFieldType.PM, subBuilder: PayoutTransactionMessage.create)
+    ..pc<ContributionMemberMessage>(31, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'members', $pb.PbFieldType.PM, subBuilder: ContributionMemberMessage.create)
     ..hasRequiredFields = false
   ;
 
@@ -442,21 +443,21 @@ class ContributionMessage extends $pb.GeneratedMessage {
     $fixnum.Int64? targetAmount,
     $fixnum.Int64? currentAmount,
     $core.String? currency,
-    $36.Timestamp? deadline,
+    $1.Timestamp? deadline,
     ContributionStatus? status,
-    $fixnum.Int64? createdBy,
-    $36.Timestamp? createdAt,
-    $36.Timestamp? updatedAt,
+    $core.String? createdBy,
+    $1.Timestamp? createdAt,
+    $1.Timestamp? updatedAt,
     $core.String? metadata,
     ContributionType? type,
     ContributionFrequency? frequency,
     $fixnum.Int64? regularAmount,
-    $36.Timestamp? nextPaymentDate,
-    $36.Timestamp? startDate,
+    $1.Timestamp? nextPaymentDate,
+    $1.Timestamp? startDate,
     $core.int? totalCycles,
     $core.int? currentCycle,
-    $fixnum.Int64? currentPayoutRecipient,
-    $36.Timestamp? nextPayoutDate,
+    $core.String? currentPayoutRecipient,
+    $1.Timestamp? nextPayoutDate,
     $core.bool? autoPayEnabled,
     $fixnum.Int64? penaltyAmount,
     $core.int? gracePeriodDays,
@@ -465,6 +466,7 @@ class ContributionMessage extends $pb.GeneratedMessage {
     $core.Iterable<ContributionPaymentMessage>? payments,
     $core.Iterable<PayoutScheduleMessage>? payoutSchedule,
     $core.Iterable<PayoutTransactionMessage>? payoutHistory,
+    $core.Iterable<ContributionMemberMessage>? members,
   }) {
     final _result = create();
     if (id != null) {
@@ -557,6 +559,9 @@ class ContributionMessage extends $pb.GeneratedMessage {
     if (payoutHistory != null) {
       _result.payoutHistory.addAll(payoutHistory);
     }
+    if (members != null) {
+      _result.members.addAll(members);
+    }
     return _result;
   }
   factory ContributionMessage.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
@@ -644,15 +649,15 @@ class ContributionMessage extends $pb.GeneratedMessage {
   void clearCurrency() => clearField(7);
 
   @$pb.TagNumber(8)
-  $36.Timestamp get deadline => $_getN(7);
+  $1.Timestamp get deadline => $_getN(7);
   @$pb.TagNumber(8)
-  set deadline($36.Timestamp v) { setField(8, v); }
+  set deadline($1.Timestamp v) { setField(8, v); }
   @$pb.TagNumber(8)
   $core.bool hasDeadline() => $_has(7);
   @$pb.TagNumber(8)
   void clearDeadline() => clearField(8);
   @$pb.TagNumber(8)
-  $36.Timestamp ensureDeadline() => $_ensure(7);
+  $1.Timestamp ensureDeadline() => $_ensure(7);
 
   @$pb.TagNumber(9)
   ContributionStatus get status => $_getN(8);
@@ -664,35 +669,35 @@ class ContributionMessage extends $pb.GeneratedMessage {
   void clearStatus() => clearField(9);
 
   @$pb.TagNumber(10)
-  $fixnum.Int64 get createdBy => $_getI64(9);
+  $core.String get createdBy => $_getSZ(9);
   @$pb.TagNumber(10)
-  set createdBy($fixnum.Int64 v) { $_setInt64(9, v); }
+  set createdBy($core.String v) { $_setString(9, v); }
   @$pb.TagNumber(10)
   $core.bool hasCreatedBy() => $_has(9);
   @$pb.TagNumber(10)
   void clearCreatedBy() => clearField(10);
 
   @$pb.TagNumber(11)
-  $36.Timestamp get createdAt => $_getN(10);
+  $1.Timestamp get createdAt => $_getN(10);
   @$pb.TagNumber(11)
-  set createdAt($36.Timestamp v) { setField(11, v); }
+  set createdAt($1.Timestamp v) { setField(11, v); }
   @$pb.TagNumber(11)
   $core.bool hasCreatedAt() => $_has(10);
   @$pb.TagNumber(11)
   void clearCreatedAt() => clearField(11);
   @$pb.TagNumber(11)
-  $36.Timestamp ensureCreatedAt() => $_ensure(10);
+  $1.Timestamp ensureCreatedAt() => $_ensure(10);
 
   @$pb.TagNumber(12)
-  $36.Timestamp get updatedAt => $_getN(11);
+  $1.Timestamp get updatedAt => $_getN(11);
   @$pb.TagNumber(12)
-  set updatedAt($36.Timestamp v) { setField(12, v); }
+  set updatedAt($1.Timestamp v) { setField(12, v); }
   @$pb.TagNumber(12)
   $core.bool hasUpdatedAt() => $_has(11);
   @$pb.TagNumber(12)
   void clearUpdatedAt() => clearField(12);
   @$pb.TagNumber(12)
-  $36.Timestamp ensureUpdatedAt() => $_ensure(11);
+  $1.Timestamp ensureUpdatedAt() => $_ensure(11);
 
   @$pb.TagNumber(13)
   $core.String get metadata => $_getSZ(12);
@@ -731,26 +736,26 @@ class ContributionMessage extends $pb.GeneratedMessage {
   void clearRegularAmount() => clearField(16);
 
   @$pb.TagNumber(17)
-  $36.Timestamp get nextPaymentDate => $_getN(16);
+  $1.Timestamp get nextPaymentDate => $_getN(16);
   @$pb.TagNumber(17)
-  set nextPaymentDate($36.Timestamp v) { setField(17, v); }
+  set nextPaymentDate($1.Timestamp v) { setField(17, v); }
   @$pb.TagNumber(17)
   $core.bool hasNextPaymentDate() => $_has(16);
   @$pb.TagNumber(17)
   void clearNextPaymentDate() => clearField(17);
   @$pb.TagNumber(17)
-  $36.Timestamp ensureNextPaymentDate() => $_ensure(16);
+  $1.Timestamp ensureNextPaymentDate() => $_ensure(16);
 
   @$pb.TagNumber(18)
-  $36.Timestamp get startDate => $_getN(17);
+  $1.Timestamp get startDate => $_getN(17);
   @$pb.TagNumber(18)
-  set startDate($36.Timestamp v) { setField(18, v); }
+  set startDate($1.Timestamp v) { setField(18, v); }
   @$pb.TagNumber(18)
   $core.bool hasStartDate() => $_has(17);
   @$pb.TagNumber(18)
   void clearStartDate() => clearField(18);
   @$pb.TagNumber(18)
-  $36.Timestamp ensureStartDate() => $_ensure(17);
+  $1.Timestamp ensureStartDate() => $_ensure(17);
 
   @$pb.TagNumber(19)
   $core.int get totalCycles => $_getIZ(18);
@@ -771,24 +776,24 @@ class ContributionMessage extends $pb.GeneratedMessage {
   void clearCurrentCycle() => clearField(20);
 
   @$pb.TagNumber(21)
-  $fixnum.Int64 get currentPayoutRecipient => $_getI64(20);
+  $core.String get currentPayoutRecipient => $_getSZ(20);
   @$pb.TagNumber(21)
-  set currentPayoutRecipient($fixnum.Int64 v) { $_setInt64(20, v); }
+  set currentPayoutRecipient($core.String v) { $_setString(20, v); }
   @$pb.TagNumber(21)
   $core.bool hasCurrentPayoutRecipient() => $_has(20);
   @$pb.TagNumber(21)
   void clearCurrentPayoutRecipient() => clearField(21);
 
   @$pb.TagNumber(22)
-  $36.Timestamp get nextPayoutDate => $_getN(21);
+  $1.Timestamp get nextPayoutDate => $_getN(21);
   @$pb.TagNumber(22)
-  set nextPayoutDate($36.Timestamp v) { setField(22, v); }
+  set nextPayoutDate($1.Timestamp v) { setField(22, v); }
   @$pb.TagNumber(22)
   $core.bool hasNextPayoutDate() => $_has(21);
   @$pb.TagNumber(22)
   void clearNextPayoutDate() => clearField(22);
   @$pb.TagNumber(22)
-  $36.Timestamp ensureNextPayoutDate() => $_ensure(21);
+  $1.Timestamp ensureNextPayoutDate() => $_ensure(21);
 
   @$pb.TagNumber(23)
   $core.bool get autoPayEnabled => $_getBF(22);
@@ -843,6 +848,184 @@ class ContributionMessage extends $pb.GeneratedMessage {
 
   @$pb.TagNumber(30)
   $core.List<PayoutTransactionMessage> get payoutHistory => $_getList(29);
+
+  @$pb.TagNumber(31)
+  $core.List<ContributionMemberMessage> get members => $_getList(30);
+}
+
+class ContributionMemberMessage extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ContributionMemberMessage', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'contributionId')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userName')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'email')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'profileImage')
+    ..aOM<$1.Timestamp>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'joinedAt', subBuilder: $1.Timestamp.create)
+    ..a<$fixnum.Int64>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalPaid', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'expectedAmount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOB(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'hasPaidCurrentCycle')
+    ..hasRequiredFields = false
+  ;
+
+  ContributionMemberMessage._() : super();
+  factory ContributionMemberMessage({
+    $core.String? id,
+    $core.String? contributionId,
+    $core.String? userId,
+    $core.String? userName,
+    $core.String? email,
+    $core.String? profileImage,
+    $1.Timestamp? joinedAt,
+    $fixnum.Int64? totalPaid,
+    $fixnum.Int64? expectedAmount,
+    $core.bool? hasPaidCurrentCycle,
+  }) {
+    final _result = create();
+    if (id != null) {
+      _result.id = id;
+    }
+    if (contributionId != null) {
+      _result.contributionId = contributionId;
+    }
+    if (userId != null) {
+      _result.userId = userId;
+    }
+    if (userName != null) {
+      _result.userName = userName;
+    }
+    if (email != null) {
+      _result.email = email;
+    }
+    if (profileImage != null) {
+      _result.profileImage = profileImage;
+    }
+    if (joinedAt != null) {
+      _result.joinedAt = joinedAt;
+    }
+    if (totalPaid != null) {
+      _result.totalPaid = totalPaid;
+    }
+    if (expectedAmount != null) {
+      _result.expectedAmount = expectedAmount;
+    }
+    if (hasPaidCurrentCycle != null) {
+      _result.hasPaidCurrentCycle = hasPaidCurrentCycle;
+    }
+    return _result;
+  }
+  factory ContributionMemberMessage.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory ContributionMemberMessage.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  ContributionMemberMessage clone() => ContributionMemberMessage()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  ContributionMemberMessage copyWith(void Function(ContributionMemberMessage) updates) => super.copyWith((message) => updates(message as ContributionMemberMessage)) as ContributionMemberMessage; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static ContributionMemberMessage create() => ContributionMemberMessage._();
+  ContributionMemberMessage createEmptyInstance() => create();
+  static $pb.PbList<ContributionMemberMessage> createRepeated() => $pb.PbList<ContributionMemberMessage>();
+  @$core.pragma('dart2js:noInline')
+  static ContributionMemberMessage getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ContributionMemberMessage>(create);
+  static ContributionMemberMessage? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get id => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set id($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get contributionId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set contributionId($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasContributionId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearContributionId() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get userId => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set userId($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasUserId() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearUserId() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get userName => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set userName($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasUserName() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearUserName() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get email => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set email($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasEmail() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearEmail() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get profileImage => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set profileImage($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasProfileImage() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearProfileImage() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $1.Timestamp get joinedAt => $_getN(6);
+  @$pb.TagNumber(7)
+  set joinedAt($1.Timestamp v) { setField(7, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasJoinedAt() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearJoinedAt() => clearField(7);
+  @$pb.TagNumber(7)
+  $1.Timestamp ensureJoinedAt() => $_ensure(6);
+
+  @$pb.TagNumber(8)
+  $fixnum.Int64 get totalPaid => $_getI64(7);
+  @$pb.TagNumber(8)
+  set totalPaid($fixnum.Int64 v) { $_setInt64(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasTotalPaid() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearTotalPaid() => clearField(8);
+
+  @$pb.TagNumber(9)
+  $fixnum.Int64 get expectedAmount => $_getI64(8);
+  @$pb.TagNumber(9)
+  set expectedAmount($fixnum.Int64 v) { $_setInt64(8, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasExpectedAmount() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearExpectedAmount() => clearField(9);
+
+  @$pb.TagNumber(10)
+  $core.bool get hasPaidCurrentCycle => $_getBF(9);
+  @$pb.TagNumber(10)
+  set hasPaidCurrentCycle($core.bool v) { $_setBool(9, v); }
+  @$pb.TagNumber(10)
+  $core.bool hasHasPaidCurrentCycle() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearHasPaidCurrentCycle() => clearField(10);
 }
 
 class ContributionPaymentMessage extends $pb.GeneratedMessage {
@@ -850,11 +1033,11 @@ class ContributionPaymentMessage extends $pb.GeneratedMessage {
     ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
     ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'contributionId')
     ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'groupId')
-    ..a<$fixnum.Int64>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
     ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userName')
     ..a<$fixnum.Int64>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
-    ..aOM<$36.Timestamp>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'paymentDate', subBuilder: $36.Timestamp.create)
+    ..aOM<$1.Timestamp>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'paymentDate', subBuilder: $1.Timestamp.create)
     ..e<PaymentStatus>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: PaymentStatus.PAYMENT_STATUS_UNSPECIFIED, valueOf: PaymentStatus.valueOf, enumValues: PaymentStatus.values)
     ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactionId')
     ..aOS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'receiptId')
@@ -868,11 +1051,11 @@ class ContributionPaymentMessage extends $pb.GeneratedMessage {
     $core.String? id,
     $core.String? contributionId,
     $core.String? groupId,
-    $fixnum.Int64? userId,
+    $core.String? userId,
     $core.String? userName,
     $fixnum.Int64? amount,
     $core.String? currency,
-    $36.Timestamp? paymentDate,
+    $1.Timestamp? paymentDate,
     PaymentStatus? status,
     $core.String? transactionId,
     $core.String? receiptId,
@@ -970,9 +1153,9 @@ class ContributionPaymentMessage extends $pb.GeneratedMessage {
   void clearGroupId() => clearField(3);
 
   @$pb.TagNumber(4)
-  $fixnum.Int64 get userId => $_getI64(3);
+  $core.String get userId => $_getSZ(3);
   @$pb.TagNumber(4)
-  set userId($fixnum.Int64 v) { $_setInt64(3, v); }
+  set userId($core.String v) { $_setString(3, v); }
   @$pb.TagNumber(4)
   $core.bool hasUserId() => $_has(3);
   @$pb.TagNumber(4)
@@ -1006,15 +1189,15 @@ class ContributionPaymentMessage extends $pb.GeneratedMessage {
   void clearCurrency() => clearField(7);
 
   @$pb.TagNumber(8)
-  $36.Timestamp get paymentDate => $_getN(7);
+  $1.Timestamp get paymentDate => $_getN(7);
   @$pb.TagNumber(8)
-  set paymentDate($36.Timestamp v) { setField(8, v); }
+  set paymentDate($1.Timestamp v) { setField(8, v); }
   @$pb.TagNumber(8)
   $core.bool hasPaymentDate() => $_has(7);
   @$pb.TagNumber(8)
   void clearPaymentDate() => clearField(8);
   @$pb.TagNumber(8)
-  $36.Timestamp ensurePaymentDate() => $_ensure(7);
+  $1.Timestamp ensurePaymentDate() => $_ensure(7);
 
   @$pb.TagNumber(9)
   PaymentStatus get status => $_getN(8);
@@ -1065,13 +1248,13 @@ class ContributionPaymentMessage extends $pb.GeneratedMessage {
 class PayoutScheduleMessage extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'PayoutScheduleMessage', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
     ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
-    ..a<$fixnum.Int64>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
     ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userName')
     ..a<$core.int>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'position', $pb.PbFieldType.O3)
-    ..aOM<$36.Timestamp>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'scheduledDate', subBuilder: $36.Timestamp.create)
+    ..aOM<$1.Timestamp>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'scheduledDate', subBuilder: $1.Timestamp.create)
     ..a<$fixnum.Int64>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'expectedAmount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..e<PayoutStatus>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: PayoutStatus.PAYOUT_STATUS_UNSPECIFIED, valueOf: PayoutStatus.valueOf, enumValues: PayoutStatus.values)
-    ..aOM<$36.Timestamp>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'receivedDate', subBuilder: $36.Timestamp.create)
+    ..aOM<$1.Timestamp>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'receivedDate', subBuilder: $1.Timestamp.create)
     ..a<$fixnum.Int64>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'actualAmount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'notes')
     ..hasRequiredFields = false
@@ -1080,13 +1263,13 @@ class PayoutScheduleMessage extends $pb.GeneratedMessage {
   PayoutScheduleMessage._() : super();
   factory PayoutScheduleMessage({
     $core.String? id,
-    $fixnum.Int64? userId,
+    $core.String? userId,
     $core.String? userName,
     $core.int? position,
-    $36.Timestamp? scheduledDate,
+    $1.Timestamp? scheduledDate,
     $fixnum.Int64? expectedAmount,
     PayoutStatus? status,
-    $36.Timestamp? receivedDate,
+    $1.Timestamp? receivedDate,
     $fixnum.Int64? actualAmount,
     $core.String? notes,
   }) {
@@ -1154,9 +1337,9 @@ class PayoutScheduleMessage extends $pb.GeneratedMessage {
   void clearId() => clearField(1);
 
   @$pb.TagNumber(2)
-  $fixnum.Int64 get userId => $_getI64(1);
+  $core.String get userId => $_getSZ(1);
   @$pb.TagNumber(2)
-  set userId($fixnum.Int64 v) { $_setInt64(1, v); }
+  set userId($core.String v) { $_setString(1, v); }
   @$pb.TagNumber(2)
   $core.bool hasUserId() => $_has(1);
   @$pb.TagNumber(2)
@@ -1181,15 +1364,15 @@ class PayoutScheduleMessage extends $pb.GeneratedMessage {
   void clearPosition() => clearField(4);
 
   @$pb.TagNumber(5)
-  $36.Timestamp get scheduledDate => $_getN(4);
+  $1.Timestamp get scheduledDate => $_getN(4);
   @$pb.TagNumber(5)
-  set scheduledDate($36.Timestamp v) { setField(5, v); }
+  set scheduledDate($1.Timestamp v) { setField(5, v); }
   @$pb.TagNumber(5)
   $core.bool hasScheduledDate() => $_has(4);
   @$pb.TagNumber(5)
   void clearScheduledDate() => clearField(5);
   @$pb.TagNumber(5)
-  $36.Timestamp ensureScheduledDate() => $_ensure(4);
+  $1.Timestamp ensureScheduledDate() => $_ensure(4);
 
   @$pb.TagNumber(6)
   $fixnum.Int64 get expectedAmount => $_getI64(5);
@@ -1210,15 +1393,15 @@ class PayoutScheduleMessage extends $pb.GeneratedMessage {
   void clearStatus() => clearField(7);
 
   @$pb.TagNumber(8)
-  $36.Timestamp get receivedDate => $_getN(7);
+  $1.Timestamp get receivedDate => $_getN(7);
   @$pb.TagNumber(8)
-  set receivedDate($36.Timestamp v) { setField(8, v); }
+  set receivedDate($1.Timestamp v) { setField(8, v); }
   @$pb.TagNumber(8)
   $core.bool hasReceivedDate() => $_has(7);
   @$pb.TagNumber(8)
   void clearReceivedDate() => clearField(8);
   @$pb.TagNumber(8)
-  $36.Timestamp ensureReceivedDate() => $_ensure(7);
+  $1.Timestamp ensureReceivedDate() => $_ensure(7);
 
   @$pb.TagNumber(9)
   $fixnum.Int64 get actualAmount => $_getI64(8);
@@ -1244,11 +1427,11 @@ class PayoutTransactionMessage extends $pb.GeneratedMessage {
     ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
     ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'contributionId')
     ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'groupId')
-    ..a<$fixnum.Int64>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recipientUserId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recipientUserId')
     ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recipientUserName')
     ..a<$fixnum.Int64>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
-    ..aOM<$36.Timestamp>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'payoutDate', subBuilder: $36.Timestamp.create)
+    ..aOM<$1.Timestamp>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'payoutDate', subBuilder: $1.Timestamp.create)
     ..e<PayoutTransactionStatus>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: PayoutTransactionStatus.PAYOUT_TRANSACTION_STATUS_UNSPECIFIED, valueOf: PayoutTransactionStatus.valueOf, enumValues: PayoutTransactionStatus.values)
     ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactionId')
     ..aOS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'paymentMethod')
@@ -1262,11 +1445,11 @@ class PayoutTransactionMessage extends $pb.GeneratedMessage {
     $core.String? id,
     $core.String? contributionId,
     $core.String? groupId,
-    $fixnum.Int64? recipientUserId,
+    $core.String? recipientUserId,
     $core.String? recipientUserName,
     $fixnum.Int64? amount,
     $core.String? currency,
-    $36.Timestamp? payoutDate,
+    $1.Timestamp? payoutDate,
     PayoutTransactionStatus? status,
     $core.String? transactionId,
     $core.String? paymentMethod,
@@ -1364,9 +1547,9 @@ class PayoutTransactionMessage extends $pb.GeneratedMessage {
   void clearGroupId() => clearField(3);
 
   @$pb.TagNumber(4)
-  $fixnum.Int64 get recipientUserId => $_getI64(3);
+  $core.String get recipientUserId => $_getSZ(3);
   @$pb.TagNumber(4)
-  set recipientUserId($fixnum.Int64 v) { $_setInt64(3, v); }
+  set recipientUserId($core.String v) { $_setString(3, v); }
   @$pb.TagNumber(4)
   $core.bool hasRecipientUserId() => $_has(3);
   @$pb.TagNumber(4)
@@ -1400,15 +1583,15 @@ class PayoutTransactionMessage extends $pb.GeneratedMessage {
   void clearCurrency() => clearField(7);
 
   @$pb.TagNumber(8)
-  $36.Timestamp get payoutDate => $_getN(7);
+  $1.Timestamp get payoutDate => $_getN(7);
   @$pb.TagNumber(8)
-  set payoutDate($36.Timestamp v) { setField(8, v); }
+  set payoutDate($1.Timestamp v) { setField(8, v); }
   @$pb.TagNumber(8)
   $core.bool hasPayoutDate() => $_has(7);
   @$pb.TagNumber(8)
   void clearPayoutDate() => clearField(8);
   @$pb.TagNumber(8)
-  $36.Timestamp ensurePayoutDate() => $_ensure(7);
+  $1.Timestamp ensurePayoutDate() => $_ensure(7);
 
   @$pb.TagNumber(9)
   PayoutTransactionStatus get status => $_getN(8);
@@ -1462,12 +1645,12 @@ class ContributionReceiptMessage extends $pb.GeneratedMessage {
     ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'paymentId')
     ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'contributionId')
     ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'groupId')
-    ..a<$fixnum.Int64>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
     ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userName')
     ..a<$fixnum.Int64>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
-    ..aOM<$36.Timestamp>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'paymentDate', subBuilder: $36.Timestamp.create)
-    ..aOM<$36.Timestamp>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'generatedAt', subBuilder: $36.Timestamp.create)
+    ..aOM<$1.Timestamp>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'paymentDate', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'generatedAt', subBuilder: $1.Timestamp.create)
     ..aOS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'receiptNumber')
     ..aOS(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'receiptData')
     ..hasRequiredFields = false
@@ -1479,12 +1662,12 @@ class ContributionReceiptMessage extends $pb.GeneratedMessage {
     $core.String? paymentId,
     $core.String? contributionId,
     $core.String? groupId,
-    $fixnum.Int64? userId,
+    $core.String? userId,
     $core.String? userName,
     $fixnum.Int64? amount,
     $core.String? currency,
-    $36.Timestamp? paymentDate,
-    $36.Timestamp? generatedAt,
+    $1.Timestamp? paymentDate,
+    $1.Timestamp? generatedAt,
     $core.String? receiptNumber,
     $core.String? receiptData,
   }) {
@@ -1585,9 +1768,9 @@ class ContributionReceiptMessage extends $pb.GeneratedMessage {
   void clearGroupId() => clearField(4);
 
   @$pb.TagNumber(5)
-  $fixnum.Int64 get userId => $_getI64(4);
+  $core.String get userId => $_getSZ(4);
   @$pb.TagNumber(5)
-  set userId($fixnum.Int64 v) { $_setInt64(4, v); }
+  set userId($core.String v) { $_setString(4, v); }
   @$pb.TagNumber(5)
   $core.bool hasUserId() => $_has(4);
   @$pb.TagNumber(5)
@@ -1621,26 +1804,26 @@ class ContributionReceiptMessage extends $pb.GeneratedMessage {
   void clearCurrency() => clearField(8);
 
   @$pb.TagNumber(9)
-  $36.Timestamp get paymentDate => $_getN(8);
+  $1.Timestamp get paymentDate => $_getN(8);
   @$pb.TagNumber(9)
-  set paymentDate($36.Timestamp v) { setField(9, v); }
+  set paymentDate($1.Timestamp v) { setField(9, v); }
   @$pb.TagNumber(9)
   $core.bool hasPaymentDate() => $_has(8);
   @$pb.TagNumber(9)
   void clearPaymentDate() => clearField(9);
   @$pb.TagNumber(9)
-  $36.Timestamp ensurePaymentDate() => $_ensure(8);
+  $1.Timestamp ensurePaymentDate() => $_ensure(8);
 
   @$pb.TagNumber(10)
-  $36.Timestamp get generatedAt => $_getN(9);
+  $1.Timestamp get generatedAt => $_getN(9);
   @$pb.TagNumber(10)
-  set generatedAt($36.Timestamp v) { setField(10, v); }
+  set generatedAt($1.Timestamp v) { setField(10, v); }
   @$pb.TagNumber(10)
   $core.bool hasGeneratedAt() => $_has(9);
   @$pb.TagNumber(10)
   void clearGeneratedAt() => clearField(10);
   @$pb.TagNumber(10)
-  $36.Timestamp ensureGeneratedAt() => $_ensure(9);
+  $1.Timestamp ensureGeneratedAt() => $_ensure(9);
 
   @$pb.TagNumber(11)
   $core.String get receiptNumber => $_getSZ(10);
@@ -1666,7 +1849,7 @@ class ContributionTranscriptMessage extends $pb.GeneratedMessage {
     ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
     ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'contributionId')
     ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'groupId')
-    ..aOM<$36.Timestamp>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'generatedAt', subBuilder: $36.Timestamp.create)
+    ..aOM<$1.Timestamp>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'generatedAt', subBuilder: $1.Timestamp.create)
     ..pc<ContributionPaymentMessage>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'payments', $pb.PbFieldType.PM, subBuilder: ContributionPaymentMessage.create)
     ..a<$fixnum.Int64>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalAmount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
@@ -1679,7 +1862,7 @@ class ContributionTranscriptMessage extends $pb.GeneratedMessage {
     $core.String? id,
     $core.String? contributionId,
     $core.String? groupId,
-    $36.Timestamp? generatedAt,
+    $1.Timestamp? generatedAt,
     $core.Iterable<ContributionPaymentMessage>? payments,
     $fixnum.Int64? totalAmount,
     $core.String? currency,
@@ -1761,15 +1944,15 @@ class ContributionTranscriptMessage extends $pb.GeneratedMessage {
   void clearGroupId() => clearField(3);
 
   @$pb.TagNumber(4)
-  $36.Timestamp get generatedAt => $_getN(3);
+  $1.Timestamp get generatedAt => $_getN(3);
   @$pb.TagNumber(4)
-  set generatedAt($36.Timestamp v) { setField(4, v); }
+  set generatedAt($1.Timestamp v) { setField(4, v); }
   @$pb.TagNumber(4)
   $core.bool hasGeneratedAt() => $_has(3);
   @$pb.TagNumber(4)
   void clearGeneratedAt() => clearField(4);
   @$pb.TagNumber(4)
-  $36.Timestamp ensureGeneratedAt() => $_ensure(3);
+  $1.Timestamp ensureGeneratedAt() => $_ensure(3);
 
   @$pb.TagNumber(5)
   $core.List<ContributionPaymentMessage> get payments => $_getList(4);
@@ -2477,7 +2660,7 @@ class GetGroupMembersResponse extends $pb.GeneratedMessage {
 class AddMemberRequest extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'AddMemberRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
     ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'groupId')
-    ..a<$fixnum.Int64>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
     ..e<GroupMemberRole>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'role', $pb.PbFieldType.OE, defaultOrMaker: GroupMemberRole.GROUP_MEMBER_ROLE_UNSPECIFIED, valueOf: GroupMemberRole.valueOf, enumValues: GroupMemberRole.values)
     ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'email')
     ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'phoneNumber')
@@ -2488,7 +2671,7 @@ class AddMemberRequest extends $pb.GeneratedMessage {
   AddMemberRequest._() : super();
   factory AddMemberRequest({
     $core.String? groupId,
-    $fixnum.Int64? userId,
+    $core.String? userId,
     GroupMemberRole? role,
     $core.String? email,
     $core.String? phoneNumber,
@@ -2546,9 +2729,9 @@ class AddMemberRequest extends $pb.GeneratedMessage {
   void clearGroupId() => clearField(1);
 
   @$pb.TagNumber(2)
-  $fixnum.Int64 get userId => $_getI64(1);
+  $core.String get userId => $_getSZ(1);
   @$pb.TagNumber(2)
-  set userId($fixnum.Int64 v) { $_setInt64(1, v); }
+  set userId($core.String v) { $_setString(1, v); }
   @$pb.TagNumber(2)
   $core.bool hasUserId() => $_has(1);
   @$pb.TagNumber(2)
@@ -2981,13 +3164,13 @@ class CreateContributionRequest extends $pb.GeneratedMessage {
     ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
     ..a<$fixnum.Int64>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'targetAmount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
-    ..aOM<$36.Timestamp>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'deadline', subBuilder: $36.Timestamp.create)
+    ..aOM<$1.Timestamp>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'deadline', subBuilder: $1.Timestamp.create)
     ..e<ContributionType>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'type', $pb.PbFieldType.OE, defaultOrMaker: ContributionType.CONTRIBUTION_TYPE_UNSPECIFIED, valueOf: ContributionType.valueOf, enumValues: ContributionType.values)
     ..e<ContributionFrequency>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'frequency', $pb.PbFieldType.OE, defaultOrMaker: ContributionFrequency.CONTRIBUTION_FREQUENCY_UNSPECIFIED, valueOf: ContributionFrequency.valueOf, enumValues: ContributionFrequency.values)
     ..a<$fixnum.Int64>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'regularAmount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..aOM<$36.Timestamp>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'startDate', subBuilder: $36.Timestamp.create)
+    ..aOM<$1.Timestamp>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'startDate', subBuilder: $1.Timestamp.create)
     ..a<$core.int>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalCycles', $pb.PbFieldType.O3)
-    ..p<$fixnum.Int64>(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'memberRotationOrder', $pb.PbFieldType.KU6)
+    ..pPS(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'memberRotationOrder')
     ..aOB(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'autoPayEnabled')
     ..a<$fixnum.Int64>(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'penaltyAmount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..a<$core.int>(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'gracePeriodDays', $pb.PbFieldType.O3)
@@ -3003,13 +3186,13 @@ class CreateContributionRequest extends $pb.GeneratedMessage {
     $core.String? description,
     $fixnum.Int64? targetAmount,
     $core.String? currency,
-    $36.Timestamp? deadline,
+    $1.Timestamp? deadline,
     ContributionType? type,
     ContributionFrequency? frequency,
     $fixnum.Int64? regularAmount,
-    $36.Timestamp? startDate,
+    $1.Timestamp? startDate,
     $core.int? totalCycles,
-    $core.Iterable<$fixnum.Int64>? memberRotationOrder,
+    $core.Iterable<$core.String>? memberRotationOrder,
     $core.bool? autoPayEnabled,
     $fixnum.Int64? penaltyAmount,
     $core.int? gracePeriodDays,
@@ -3137,15 +3320,15 @@ class CreateContributionRequest extends $pb.GeneratedMessage {
   void clearCurrency() => clearField(5);
 
   @$pb.TagNumber(6)
-  $36.Timestamp get deadline => $_getN(5);
+  $1.Timestamp get deadline => $_getN(5);
   @$pb.TagNumber(6)
-  set deadline($36.Timestamp v) { setField(6, v); }
+  set deadline($1.Timestamp v) { setField(6, v); }
   @$pb.TagNumber(6)
   $core.bool hasDeadline() => $_has(5);
   @$pb.TagNumber(6)
   void clearDeadline() => clearField(6);
   @$pb.TagNumber(6)
-  $36.Timestamp ensureDeadline() => $_ensure(5);
+  $1.Timestamp ensureDeadline() => $_ensure(5);
 
   @$pb.TagNumber(7)
   ContributionType get type => $_getN(6);
@@ -3175,15 +3358,15 @@ class CreateContributionRequest extends $pb.GeneratedMessage {
   void clearRegularAmount() => clearField(9);
 
   @$pb.TagNumber(10)
-  $36.Timestamp get startDate => $_getN(9);
+  $1.Timestamp get startDate => $_getN(9);
   @$pb.TagNumber(10)
-  set startDate($36.Timestamp v) { setField(10, v); }
+  set startDate($1.Timestamp v) { setField(10, v); }
   @$pb.TagNumber(10)
   $core.bool hasStartDate() => $_has(9);
   @$pb.TagNumber(10)
   void clearStartDate() => clearField(10);
   @$pb.TagNumber(10)
-  $36.Timestamp ensureStartDate() => $_ensure(9);
+  $1.Timestamp ensureStartDate() => $_ensure(9);
 
   @$pb.TagNumber(11)
   $core.int get totalCycles => $_getIZ(10);
@@ -3195,7 +3378,7 @@ class CreateContributionRequest extends $pb.GeneratedMessage {
   void clearTotalCycles() => clearField(11);
 
   @$pb.TagNumber(12)
-  $core.List<$fixnum.Int64> get memberRotationOrder => $_getList(11);
+  $core.List<$core.String> get memberRotationOrder => $_getList(11);
 
   @$pb.TagNumber(13)
   $core.bool get autoPayEnabled => $_getBF(12);
@@ -3540,7 +3723,7 @@ class UpdateContributionRequest extends $pb.GeneratedMessage {
     ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'title')
     ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
     ..a<$fixnum.Int64>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'targetAmount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..aOM<$36.Timestamp>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'deadline', subBuilder: $36.Timestamp.create)
+    ..aOM<$1.Timestamp>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'deadline', subBuilder: $1.Timestamp.create)
     ..e<ContributionStatus>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: ContributionStatus.CONTRIBUTION_STATUS_UNSPECIFIED, valueOf: ContributionStatus.valueOf, enumValues: ContributionStatus.values)
     ..hasRequiredFields = false
   ;
@@ -3551,7 +3734,7 @@ class UpdateContributionRequest extends $pb.GeneratedMessage {
     $core.String? title,
     $core.String? description,
     $fixnum.Int64? targetAmount,
-    $36.Timestamp? deadline,
+    $1.Timestamp? deadline,
     ContributionStatus? status,
   }) {
     final _result = create();
@@ -3633,15 +3816,15 @@ class UpdateContributionRequest extends $pb.GeneratedMessage {
   void clearTargetAmount() => clearField(4);
 
   @$pb.TagNumber(5)
-  $36.Timestamp get deadline => $_getN(4);
+  $1.Timestamp get deadline => $_getN(4);
   @$pb.TagNumber(5)
-  set deadline($36.Timestamp v) { setField(5, v); }
+  set deadline($1.Timestamp v) { setField(5, v); }
   @$pb.TagNumber(5)
   $core.bool hasDeadline() => $_has(4);
   @$pb.TagNumber(5)
   void clearDeadline() => clearField(5);
   @$pb.TagNumber(5)
-  $36.Timestamp ensureDeadline() => $_ensure(4);
+  $1.Timestamp ensureDeadline() => $_ensure(4);
 
   @$pb.TagNumber(6)
   ContributionStatus get status => $_getN(5);
@@ -3796,11 +3979,322 @@ class DeleteContributionResponse extends $pb.GeneratedMessage {
   void clearSuccess() => clearField(1);
 }
 
+class AddMembersToContributionRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'AddMembersToContributionRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'contributionId')
+    ..pPS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'memberUserIds')
+    ..hasRequiredFields = false
+  ;
+
+  AddMembersToContributionRequest._() : super();
+  factory AddMembersToContributionRequest({
+    $core.String? contributionId,
+    $core.Iterable<$core.String>? memberUserIds,
+  }) {
+    final _result = create();
+    if (contributionId != null) {
+      _result.contributionId = contributionId;
+    }
+    if (memberUserIds != null) {
+      _result.memberUserIds.addAll(memberUserIds);
+    }
+    return _result;
+  }
+  factory AddMembersToContributionRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory AddMembersToContributionRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  AddMembersToContributionRequest clone() => AddMembersToContributionRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  AddMembersToContributionRequest copyWith(void Function(AddMembersToContributionRequest) updates) => super.copyWith((message) => updates(message as AddMembersToContributionRequest)) as AddMembersToContributionRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static AddMembersToContributionRequest create() => AddMembersToContributionRequest._();
+  AddMembersToContributionRequest createEmptyInstance() => create();
+  static $pb.PbList<AddMembersToContributionRequest> createRepeated() => $pb.PbList<AddMembersToContributionRequest>();
+  @$core.pragma('dart2js:noInline')
+  static AddMembersToContributionRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<AddMembersToContributionRequest>(create);
+  static AddMembersToContributionRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get contributionId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set contributionId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasContributionId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearContributionId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.List<$core.String> get memberUserIds => $_getList(1);
+}
+
+class AddMembersToContributionResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'AddMembersToContributionResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOM<ContributionMessage>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'contribution', subBuilder: ContributionMessage.create)
+    ..pc<ContributionMemberMessage>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'addedMembers', $pb.PbFieldType.PM, subBuilder: ContributionMemberMessage.create)
+    ..hasRequiredFields = false
+  ;
+
+  AddMembersToContributionResponse._() : super();
+  factory AddMembersToContributionResponse({
+    ContributionMessage? contribution,
+    $core.Iterable<ContributionMemberMessage>? addedMembers,
+  }) {
+    final _result = create();
+    if (contribution != null) {
+      _result.contribution = contribution;
+    }
+    if (addedMembers != null) {
+      _result.addedMembers.addAll(addedMembers);
+    }
+    return _result;
+  }
+  factory AddMembersToContributionResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory AddMembersToContributionResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  AddMembersToContributionResponse clone() => AddMembersToContributionResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  AddMembersToContributionResponse copyWith(void Function(AddMembersToContributionResponse) updates) => super.copyWith((message) => updates(message as AddMembersToContributionResponse)) as AddMembersToContributionResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static AddMembersToContributionResponse create() => AddMembersToContributionResponse._();
+  AddMembersToContributionResponse createEmptyInstance() => create();
+  static $pb.PbList<AddMembersToContributionResponse> createRepeated() => $pb.PbList<AddMembersToContributionResponse>();
+  @$core.pragma('dart2js:noInline')
+  static AddMembersToContributionResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<AddMembersToContributionResponse>(create);
+  static AddMembersToContributionResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  ContributionMessage get contribution => $_getN(0);
+  @$pb.TagNumber(1)
+  set contribution(ContributionMessage v) { setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasContribution() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearContribution() => clearField(1);
+  @$pb.TagNumber(1)
+  ContributionMessage ensureContribution() => $_ensure(0);
+
+  @$pb.TagNumber(2)
+  $core.List<ContributionMemberMessage> get addedMembers => $_getList(1);
+}
+
+class RemoveMemberFromContributionRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'RemoveMemberFromContributionRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'contributionId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'memberUserId')
+    ..hasRequiredFields = false
+  ;
+
+  RemoveMemberFromContributionRequest._() : super();
+  factory RemoveMemberFromContributionRequest({
+    $core.String? contributionId,
+    $core.String? memberUserId,
+  }) {
+    final _result = create();
+    if (contributionId != null) {
+      _result.contributionId = contributionId;
+    }
+    if (memberUserId != null) {
+      _result.memberUserId = memberUserId;
+    }
+    return _result;
+  }
+  factory RemoveMemberFromContributionRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory RemoveMemberFromContributionRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  RemoveMemberFromContributionRequest clone() => RemoveMemberFromContributionRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  RemoveMemberFromContributionRequest copyWith(void Function(RemoveMemberFromContributionRequest) updates) => super.copyWith((message) => updates(message as RemoveMemberFromContributionRequest)) as RemoveMemberFromContributionRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static RemoveMemberFromContributionRequest create() => RemoveMemberFromContributionRequest._();
+  RemoveMemberFromContributionRequest createEmptyInstance() => create();
+  static $pb.PbList<RemoveMemberFromContributionRequest> createRepeated() => $pb.PbList<RemoveMemberFromContributionRequest>();
+  @$core.pragma('dart2js:noInline')
+  static RemoveMemberFromContributionRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<RemoveMemberFromContributionRequest>(create);
+  static RemoveMemberFromContributionRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get contributionId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set contributionId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasContributionId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearContributionId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get memberUserId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set memberUserId($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasMemberUserId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMemberUserId() => clearField(2);
+}
+
+class RemoveMemberFromContributionResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'RemoveMemberFromContributionResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..hasRequiredFields = false
+  ;
+
+  RemoveMemberFromContributionResponse._() : super();
+  factory RemoveMemberFromContributionResponse({
+    $core.bool? success,
+  }) {
+    final _result = create();
+    if (success != null) {
+      _result.success = success;
+    }
+    return _result;
+  }
+  factory RemoveMemberFromContributionResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory RemoveMemberFromContributionResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  RemoveMemberFromContributionResponse clone() => RemoveMemberFromContributionResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  RemoveMemberFromContributionResponse copyWith(void Function(RemoveMemberFromContributionResponse) updates) => super.copyWith((message) => updates(message as RemoveMemberFromContributionResponse)) as RemoveMemberFromContributionResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static RemoveMemberFromContributionResponse create() => RemoveMemberFromContributionResponse._();
+  RemoveMemberFromContributionResponse createEmptyInstance() => create();
+  static $pb.PbList<RemoveMemberFromContributionResponse> createRepeated() => $pb.PbList<RemoveMemberFromContributionResponse>();
+  @$core.pragma('dart2js:noInline')
+  static RemoveMemberFromContributionResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<RemoveMemberFromContributionResponse>(create);
+  static RemoveMemberFromContributionResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool v) { $_setBool(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => clearField(1);
+}
+
+class GetContributionMembersRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetContributionMembersRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'contributionId')
+    ..hasRequiredFields = false
+  ;
+
+  GetContributionMembersRequest._() : super();
+  factory GetContributionMembersRequest({
+    $core.String? contributionId,
+  }) {
+    final _result = create();
+    if (contributionId != null) {
+      _result.contributionId = contributionId;
+    }
+    return _result;
+  }
+  factory GetContributionMembersRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetContributionMembersRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetContributionMembersRequest clone() => GetContributionMembersRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetContributionMembersRequest copyWith(void Function(GetContributionMembersRequest) updates) => super.copyWith((message) => updates(message as GetContributionMembersRequest)) as GetContributionMembersRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GetContributionMembersRequest create() => GetContributionMembersRequest._();
+  GetContributionMembersRequest createEmptyInstance() => create();
+  static $pb.PbList<GetContributionMembersRequest> createRepeated() => $pb.PbList<GetContributionMembersRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetContributionMembersRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetContributionMembersRequest>(create);
+  static GetContributionMembersRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get contributionId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set contributionId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasContributionId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearContributionId() => clearField(1);
+}
+
+class GetContributionMembersResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetContributionMembersResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..pc<ContributionMemberMessage>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'members', $pb.PbFieldType.PM, subBuilder: ContributionMemberMessage.create)
+    ..hasRequiredFields = false
+  ;
+
+  GetContributionMembersResponse._() : super();
+  factory GetContributionMembersResponse({
+    $core.Iterable<ContributionMemberMessage>? members,
+  }) {
+    final _result = create();
+    if (members != null) {
+      _result.members.addAll(members);
+    }
+    return _result;
+  }
+  factory GetContributionMembersResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetContributionMembersResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetContributionMembersResponse clone() => GetContributionMembersResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetContributionMembersResponse copyWith(void Function(GetContributionMembersResponse) updates) => super.copyWith((message) => updates(message as GetContributionMembersResponse)) as GetContributionMembersResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GetContributionMembersResponse create() => GetContributionMembersResponse._();
+  GetContributionMembersResponse createEmptyInstance() => create();
+  static $pb.PbList<GetContributionMembersResponse> createRepeated() => $pb.PbList<GetContributionMembersResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetContributionMembersResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetContributionMembersResponse>(create);
+  static GetContributionMembersResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.List<ContributionMemberMessage> get members => $_getList(0);
+}
+
 class MakePaymentRequest extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'MakePaymentRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
     ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'contributionId')
     ..a<$fixnum.Int64>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'notes')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sourceAccountId')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactionPin')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'idempotencyKey')
     ..hasRequiredFields = false
   ;
 
@@ -3809,6 +4303,9 @@ class MakePaymentRequest extends $pb.GeneratedMessage {
     $core.String? contributionId,
     $fixnum.Int64? amount,
     $core.String? notes,
+    $core.String? sourceAccountId,
+    $core.String? transactionPin,
+    $core.String? idempotencyKey,
   }) {
     final _result = create();
     if (contributionId != null) {
@@ -3819,6 +4316,15 @@ class MakePaymentRequest extends $pb.GeneratedMessage {
     }
     if (notes != null) {
       _result.notes = notes;
+    }
+    if (sourceAccountId != null) {
+      _result.sourceAccountId = sourceAccountId;
+    }
+    if (transactionPin != null) {
+      _result.transactionPin = transactionPin;
+    }
+    if (idempotencyKey != null) {
+      _result.idempotencyKey = idempotencyKey;
     }
     return _result;
   }
@@ -3869,6 +4375,33 @@ class MakePaymentRequest extends $pb.GeneratedMessage {
   $core.bool hasNotes() => $_has(2);
   @$pb.TagNumber(3)
   void clearNotes() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get sourceAccountId => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set sourceAccountId($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasSourceAccountId() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearSourceAccountId() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get transactionPin => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set transactionPin($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasTransactionPin() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearTransactionPin() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get idempotencyKey => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set idempotencyKey($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasIdempotencyKey() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearIdempotencyKey() => clearField(6);
 }
 
 class MakePaymentResponse extends $pb.GeneratedMessage {
@@ -5500,7 +6033,7 @@ class GetContributionAnalyticsResponse_Schedule extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetContributionAnalyticsResponse.Schedule', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
     ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isOnSchedule')
     ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'daysBehindSchedule', $pb.PbFieldType.O3)
-    ..aOM<$36.Timestamp>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'nextPaymentDate', subBuilder: $36.Timestamp.create)
+    ..aOM<$1.Timestamp>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'nextPaymentDate', subBuilder: $1.Timestamp.create)
     ..a<$core.int>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currentCycle', $pb.PbFieldType.O3)
     ..a<$core.int>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalCycles', $pb.PbFieldType.O3)
     ..hasRequiredFields = false
@@ -5510,7 +6043,7 @@ class GetContributionAnalyticsResponse_Schedule extends $pb.GeneratedMessage {
   factory GetContributionAnalyticsResponse_Schedule({
     $core.bool? isOnSchedule,
     $core.int? daysBehindSchedule,
-    $36.Timestamp? nextPaymentDate,
+    $1.Timestamp? nextPaymentDate,
     $core.int? currentCycle,
     $core.int? totalCycles,
   }) {
@@ -5572,15 +6105,15 @@ class GetContributionAnalyticsResponse_Schedule extends $pb.GeneratedMessage {
   void clearDaysBehindSchedule() => clearField(2);
 
   @$pb.TagNumber(3)
-  $36.Timestamp get nextPaymentDate => $_getN(2);
+  $1.Timestamp get nextPaymentDate => $_getN(2);
   @$pb.TagNumber(3)
-  set nextPaymentDate($36.Timestamp v) { setField(3, v); }
+  set nextPaymentDate($1.Timestamp v) { setField(3, v); }
   @$pb.TagNumber(3)
   $core.bool hasNextPaymentDate() => $_has(2);
   @$pb.TagNumber(3)
   void clearNextPaymentDate() => clearField(3);
   @$pb.TagNumber(3)
-  $36.Timestamp ensureNextPaymentDate() => $_ensure(2);
+  $1.Timestamp ensureNextPaymentDate() => $_ensure(2);
 
   @$pb.TagNumber(4)
   $core.int get currentCycle => $_getIZ(3);
@@ -5603,8 +6136,8 @@ class GetContributionAnalyticsResponse_Schedule extends $pb.GeneratedMessage {
 
 class GetContributionAnalyticsResponse_Payout extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetContributionAnalyticsResponse.Payout', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..a<$fixnum.Int64>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currentRecipient', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..aOM<$36.Timestamp>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'nextPayoutDate', subBuilder: $36.Timestamp.create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currentRecipient')
+    ..aOM<$1.Timestamp>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'nextPayoutDate', subBuilder: $1.Timestamp.create)
     ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'completedPayouts', $pb.PbFieldType.O3)
     ..a<$core.int>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pendingPayouts', $pb.PbFieldType.O3)
     ..hasRequiredFields = false
@@ -5612,8 +6145,8 @@ class GetContributionAnalyticsResponse_Payout extends $pb.GeneratedMessage {
 
   GetContributionAnalyticsResponse_Payout._() : super();
   factory GetContributionAnalyticsResponse_Payout({
-    $fixnum.Int64? currentRecipient,
-    $36.Timestamp? nextPayoutDate,
+    $core.String? currentRecipient,
+    $1.Timestamp? nextPayoutDate,
     $core.int? completedPayouts,
     $core.int? pendingPayouts,
   }) {
@@ -5654,24 +6187,24 @@ class GetContributionAnalyticsResponse_Payout extends $pb.GeneratedMessage {
   static GetContributionAnalyticsResponse_Payout? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $fixnum.Int64 get currentRecipient => $_getI64(0);
+  $core.String get currentRecipient => $_getSZ(0);
   @$pb.TagNumber(1)
-  set currentRecipient($fixnum.Int64 v) { $_setInt64(0, v); }
+  set currentRecipient($core.String v) { $_setString(0, v); }
   @$pb.TagNumber(1)
   $core.bool hasCurrentRecipient() => $_has(0);
   @$pb.TagNumber(1)
   void clearCurrentRecipient() => clearField(1);
 
   @$pb.TagNumber(2)
-  $36.Timestamp get nextPayoutDate => $_getN(1);
+  $1.Timestamp get nextPayoutDate => $_getN(1);
   @$pb.TagNumber(2)
-  set nextPayoutDate($36.Timestamp v) { setField(2, v); }
+  set nextPayoutDate($1.Timestamp v) { setField(2, v); }
   @$pb.TagNumber(2)
   $core.bool hasNextPayoutDate() => $_has(1);
   @$pb.TagNumber(2)
   void clearNextPayoutDate() => clearField(2);
   @$pb.TagNumber(2)
-  $36.Timestamp ensureNextPayoutDate() => $_ensure(1);
+  $1.Timestamp ensureNextPayoutDate() => $_ensure(1);
 
   @$pb.TagNumber(3)
   $core.int get completedPayouts => $_getIZ(2);
@@ -6351,5 +6884,547 @@ class ReceiptPaginationInfo extends $pb.GeneratedMessage {
   $core.bool hasHasPrev() => $_has(5);
   @$pb.TagNumber(6)
   void clearHasPrev() => clearField(6);
+}
+
+class ActivityLogPaginationInfo extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ActivityLogPaginationInfo', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..a<$core.int>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currentPage', $pb.PbFieldType.O3)
+    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalPages', $pb.PbFieldType.O3)
+    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalCount', $pb.PbFieldType.O3)
+    ..aOB(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'hasMore')
+    ..hasRequiredFields = false
+  ;
+
+  ActivityLogPaginationInfo._() : super();
+  factory ActivityLogPaginationInfo({
+    $core.int? currentPage,
+    $core.int? totalPages,
+    $core.int? totalCount,
+    $core.bool? hasMore,
+  }) {
+    final _result = create();
+    if (currentPage != null) {
+      _result.currentPage = currentPage;
+    }
+    if (totalPages != null) {
+      _result.totalPages = totalPages;
+    }
+    if (totalCount != null) {
+      _result.totalCount = totalCount;
+    }
+    if (hasMore != null) {
+      _result.hasMore = hasMore;
+    }
+    return _result;
+  }
+  factory ActivityLogPaginationInfo.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory ActivityLogPaginationInfo.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  ActivityLogPaginationInfo clone() => ActivityLogPaginationInfo()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  ActivityLogPaginationInfo copyWith(void Function(ActivityLogPaginationInfo) updates) => super.copyWith((message) => updates(message as ActivityLogPaginationInfo)) as ActivityLogPaginationInfo; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static ActivityLogPaginationInfo create() => ActivityLogPaginationInfo._();
+  ActivityLogPaginationInfo createEmptyInstance() => create();
+  static $pb.PbList<ActivityLogPaginationInfo> createRepeated() => $pb.PbList<ActivityLogPaginationInfo>();
+  @$core.pragma('dart2js:noInline')
+  static ActivityLogPaginationInfo getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ActivityLogPaginationInfo>(create);
+  static ActivityLogPaginationInfo? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.int get currentPage => $_getIZ(0);
+  @$pb.TagNumber(1)
+  set currentPage($core.int v) { $_setSignedInt32(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasCurrentPage() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearCurrentPage() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.int get totalPages => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set totalPages($core.int v) { $_setSignedInt32(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasTotalPages() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearTotalPages() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.int get totalCount => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set totalCount($core.int v) { $_setSignedInt32(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasTotalCount() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearTotalCount() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.bool get hasMore => $_getBF(3);
+  @$pb.TagNumber(4)
+  set hasMore($core.bool v) { $_setBool(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasHasMore() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearHasMore() => clearField(4);
+}
+
+class GroupActivityLogMessage extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GroupActivityLogMessage', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'groupId')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'contributionId')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'actorUserId')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'actorName')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'actionType')
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'targetType')
+    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'targetId')
+    ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'details')
+    ..aOM<$1.Timestamp>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
+    ..hasRequiredFields = false
+  ;
+
+  GroupActivityLogMessage._() : super();
+  factory GroupActivityLogMessage({
+    $core.String? id,
+    $core.String? groupId,
+    $core.String? contributionId,
+    $core.String? actorUserId,
+    $core.String? actorName,
+    $core.String? actionType,
+    $core.String? targetType,
+    $core.String? targetId,
+    $core.String? details,
+    $1.Timestamp? createdAt,
+  }) {
+    final _result = create();
+    if (id != null) {
+      _result.id = id;
+    }
+    if (groupId != null) {
+      _result.groupId = groupId;
+    }
+    if (contributionId != null) {
+      _result.contributionId = contributionId;
+    }
+    if (actorUserId != null) {
+      _result.actorUserId = actorUserId;
+    }
+    if (actorName != null) {
+      _result.actorName = actorName;
+    }
+    if (actionType != null) {
+      _result.actionType = actionType;
+    }
+    if (targetType != null) {
+      _result.targetType = targetType;
+    }
+    if (targetId != null) {
+      _result.targetId = targetId;
+    }
+    if (details != null) {
+      _result.details = details;
+    }
+    if (createdAt != null) {
+      _result.createdAt = createdAt;
+    }
+    return _result;
+  }
+  factory GroupActivityLogMessage.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GroupActivityLogMessage.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GroupActivityLogMessage clone() => GroupActivityLogMessage()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GroupActivityLogMessage copyWith(void Function(GroupActivityLogMessage) updates) => super.copyWith((message) => updates(message as GroupActivityLogMessage)) as GroupActivityLogMessage; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GroupActivityLogMessage create() => GroupActivityLogMessage._();
+  GroupActivityLogMessage createEmptyInstance() => create();
+  static $pb.PbList<GroupActivityLogMessage> createRepeated() => $pb.PbList<GroupActivityLogMessage>();
+  @$core.pragma('dart2js:noInline')
+  static GroupActivityLogMessage getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GroupActivityLogMessage>(create);
+  static GroupActivityLogMessage? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get id => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set id($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get groupId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set groupId($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasGroupId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearGroupId() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get contributionId => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set contributionId($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasContributionId() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearContributionId() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get actorUserId => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set actorUserId($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasActorUserId() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearActorUserId() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get actorName => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set actorName($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasActorName() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearActorName() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get actionType => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set actionType($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasActionType() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearActionType() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.String get targetType => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set targetType($core.String v) { $_setString(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasTargetType() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearTargetType() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.String get targetId => $_getSZ(7);
+  @$pb.TagNumber(8)
+  set targetId($core.String v) { $_setString(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasTargetId() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearTargetId() => clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.String get details => $_getSZ(8);
+  @$pb.TagNumber(9)
+  set details($core.String v) { $_setString(8, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasDetails() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearDetails() => clearField(9);
+
+  @$pb.TagNumber(10)
+  $1.Timestamp get createdAt => $_getN(9);
+  @$pb.TagNumber(10)
+  set createdAt($1.Timestamp v) { setField(10, v); }
+  @$pb.TagNumber(10)
+  $core.bool hasCreatedAt() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearCreatedAt() => clearField(10);
+  @$pb.TagNumber(10)
+  $1.Timestamp ensureCreatedAt() => $_ensure(9);
+}
+
+class GetGroupActivityLogsRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetGroupActivityLogsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'groupId')
+    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'page', $pb.PbFieldType.O3)
+    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pageSize', $pb.PbFieldType.O3)
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'actionTypeFilter')
+    ..hasRequiredFields = false
+  ;
+
+  GetGroupActivityLogsRequest._() : super();
+  factory GetGroupActivityLogsRequest({
+    $core.String? groupId,
+    $core.int? page,
+    $core.int? pageSize,
+    $core.String? actionTypeFilter,
+  }) {
+    final _result = create();
+    if (groupId != null) {
+      _result.groupId = groupId;
+    }
+    if (page != null) {
+      _result.page = page;
+    }
+    if (pageSize != null) {
+      _result.pageSize = pageSize;
+    }
+    if (actionTypeFilter != null) {
+      _result.actionTypeFilter = actionTypeFilter;
+    }
+    return _result;
+  }
+  factory GetGroupActivityLogsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetGroupActivityLogsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetGroupActivityLogsRequest clone() => GetGroupActivityLogsRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetGroupActivityLogsRequest copyWith(void Function(GetGroupActivityLogsRequest) updates) => super.copyWith((message) => updates(message as GetGroupActivityLogsRequest)) as GetGroupActivityLogsRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GetGroupActivityLogsRequest create() => GetGroupActivityLogsRequest._();
+  GetGroupActivityLogsRequest createEmptyInstance() => create();
+  static $pb.PbList<GetGroupActivityLogsRequest> createRepeated() => $pb.PbList<GetGroupActivityLogsRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetGroupActivityLogsRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetGroupActivityLogsRequest>(create);
+  static GetGroupActivityLogsRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get groupId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set groupId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasGroupId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearGroupId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.int get page => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set page($core.int v) { $_setSignedInt32(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasPage() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearPage() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.int get pageSize => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set pageSize($core.int v) { $_setSignedInt32(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasPageSize() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearPageSize() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get actionTypeFilter => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set actionTypeFilter($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasActionTypeFilter() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearActionTypeFilter() => clearField(4);
+}
+
+class GetGroupActivityLogsResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetGroupActivityLogsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..pc<GroupActivityLogMessage>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'logs', $pb.PbFieldType.PM, subBuilder: GroupActivityLogMessage.create)
+    ..aOM<ActivityLogPaginationInfo>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pagination', subBuilder: ActivityLogPaginationInfo.create)
+    ..hasRequiredFields = false
+  ;
+
+  GetGroupActivityLogsResponse._() : super();
+  factory GetGroupActivityLogsResponse({
+    $core.Iterable<GroupActivityLogMessage>? logs,
+    ActivityLogPaginationInfo? pagination,
+  }) {
+    final _result = create();
+    if (logs != null) {
+      _result.logs.addAll(logs);
+    }
+    if (pagination != null) {
+      _result.pagination = pagination;
+    }
+    return _result;
+  }
+  factory GetGroupActivityLogsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetGroupActivityLogsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetGroupActivityLogsResponse clone() => GetGroupActivityLogsResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetGroupActivityLogsResponse copyWith(void Function(GetGroupActivityLogsResponse) updates) => super.copyWith((message) => updates(message as GetGroupActivityLogsResponse)) as GetGroupActivityLogsResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GetGroupActivityLogsResponse create() => GetGroupActivityLogsResponse._();
+  GetGroupActivityLogsResponse createEmptyInstance() => create();
+  static $pb.PbList<GetGroupActivityLogsResponse> createRepeated() => $pb.PbList<GetGroupActivityLogsResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetGroupActivityLogsResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetGroupActivityLogsResponse>(create);
+  static GetGroupActivityLogsResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.List<GroupActivityLogMessage> get logs => $_getList(0);
+
+  @$pb.TagNumber(2)
+  ActivityLogPaginationInfo get pagination => $_getN(1);
+  @$pb.TagNumber(2)
+  set pagination(ActivityLogPaginationInfo v) { setField(2, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasPagination() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearPagination() => clearField(2);
+  @$pb.TagNumber(2)
+  ActivityLogPaginationInfo ensurePagination() => $_ensure(1);
+}
+
+class GetContributionActivityLogsRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetContributionActivityLogsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'contributionId')
+    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'page', $pb.PbFieldType.O3)
+    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pageSize', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  GetContributionActivityLogsRequest._() : super();
+  factory GetContributionActivityLogsRequest({
+    $core.String? contributionId,
+    $core.int? page,
+    $core.int? pageSize,
+  }) {
+    final _result = create();
+    if (contributionId != null) {
+      _result.contributionId = contributionId;
+    }
+    if (page != null) {
+      _result.page = page;
+    }
+    if (pageSize != null) {
+      _result.pageSize = pageSize;
+    }
+    return _result;
+  }
+  factory GetContributionActivityLogsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetContributionActivityLogsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetContributionActivityLogsRequest clone() => GetContributionActivityLogsRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetContributionActivityLogsRequest copyWith(void Function(GetContributionActivityLogsRequest) updates) => super.copyWith((message) => updates(message as GetContributionActivityLogsRequest)) as GetContributionActivityLogsRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GetContributionActivityLogsRequest create() => GetContributionActivityLogsRequest._();
+  GetContributionActivityLogsRequest createEmptyInstance() => create();
+  static $pb.PbList<GetContributionActivityLogsRequest> createRepeated() => $pb.PbList<GetContributionActivityLogsRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetContributionActivityLogsRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetContributionActivityLogsRequest>(create);
+  static GetContributionActivityLogsRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get contributionId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set contributionId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasContributionId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearContributionId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.int get page => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set page($core.int v) { $_setSignedInt32(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasPage() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearPage() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.int get pageSize => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set pageSize($core.int v) { $_setSignedInt32(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasPageSize() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearPageSize() => clearField(3);
+}
+
+class GetContributionActivityLogsResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetContributionActivityLogsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..pc<GroupActivityLogMessage>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'logs', $pb.PbFieldType.PM, subBuilder: GroupActivityLogMessage.create)
+    ..aOM<ActivityLogPaginationInfo>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pagination', subBuilder: ActivityLogPaginationInfo.create)
+    ..hasRequiredFields = false
+  ;
+
+  GetContributionActivityLogsResponse._() : super();
+  factory GetContributionActivityLogsResponse({
+    $core.Iterable<GroupActivityLogMessage>? logs,
+    ActivityLogPaginationInfo? pagination,
+  }) {
+    final _result = create();
+    if (logs != null) {
+      _result.logs.addAll(logs);
+    }
+    if (pagination != null) {
+      _result.pagination = pagination;
+    }
+    return _result;
+  }
+  factory GetContributionActivityLogsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetContributionActivityLogsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetContributionActivityLogsResponse clone() => GetContributionActivityLogsResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetContributionActivityLogsResponse copyWith(void Function(GetContributionActivityLogsResponse) updates) => super.copyWith((message) => updates(message as GetContributionActivityLogsResponse)) as GetContributionActivityLogsResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GetContributionActivityLogsResponse create() => GetContributionActivityLogsResponse._();
+  GetContributionActivityLogsResponse createEmptyInstance() => create();
+  static $pb.PbList<GetContributionActivityLogsResponse> createRepeated() => $pb.PbList<GetContributionActivityLogsResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetContributionActivityLogsResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetContributionActivityLogsResponse>(create);
+  static GetContributionActivityLogsResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.List<GroupActivityLogMessage> get logs => $_getList(0);
+
+  @$pb.TagNumber(2)
+  ActivityLogPaginationInfo get pagination => $_getN(1);
+  @$pb.TagNumber(2)
+  set pagination(ActivityLogPaginationInfo v) { setField(2, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasPagination() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearPagination() => clearField(2);
+  @$pb.TagNumber(2)
+  ActivityLogPaginationInfo ensurePagination() => $_ensure(1);
 }
 

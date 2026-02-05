@@ -14,7 +14,6 @@ import 'package:lazervault/src/features/recipients/data/models/recipient_model.d
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/features/tag_pay/presentation/cubit/tag_pay_cubit.dart';
-import 'package:lazervault/src/features/tag_pay/domain/entities/user_search_result_entity.dart';
 
 // Model for lazertag user search results
 class LazertagUser {
@@ -22,6 +21,7 @@ class LazertagUser {
   final String username;
   final String name;
   final String? email;
+  final String? phoneNumber;
   final String? avatar;
   final bool isOnline;
   final bool isVerified;
@@ -32,11 +32,21 @@ class LazertagUser {
     required this.username,
     required this.name,
     this.email,
+    this.phoneNumber,
     this.avatar,
     this.isOnline = false,
     this.isVerified = false,
     this.currency,  // Default to null (will be fetched or default to NGN)
   });
+
+  /// Returns display info for search results showing what matched
+  String get searchMatchInfo {
+    final parts = <String>[];
+    if (username.isNotEmpty) parts.add(username);
+    if (email != null && email!.isNotEmpty) parts.add(email!);
+    if (phoneNumber != null && phoneNumber!.isNotEmpty) parts.add(phoneNumber!);
+    return parts.join(' • ');
+  }
 }
 
 enum RecipientSelectionTab { saved, lazertag, contacts }
@@ -170,6 +180,7 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
           username: '@${user.username}',
           name: '${user.firstName} ${user.lastName}'.trim(),
           email: user.email.isNotEmpty ? user.email : null,
+          phoneNumber: user.phoneNumber.isNotEmpty ? user.phoneNumber : null,
           avatar: user.profilePicture.isNotEmpty ? user.profilePicture : null,
           isVerified: true,
         )).toList();
@@ -1034,13 +1045,18 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
                 ),
               ],
             ),
-            if (user.email != null)
+            if (user.email != null || user.phoneNumber != null)
               Text(
-                user.email!,
+                [
+                  if (user.email != null) user.email!,
+                  if (user.phoneNumber != null) user.phoneNumber!,
+                ].join(' • '),
                 style: GoogleFonts.inter(
                   color: Colors.grey[500],
                   fontSize: 12.sp,
                 ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
           ],
         ),

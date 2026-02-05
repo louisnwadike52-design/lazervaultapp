@@ -206,6 +206,7 @@ import 'package:lazervault/src/features/tag_pay/presentation/view/tag_pay_transa
 import 'package:lazervault/src/features/tag_pay/presentation/view/pending_requests_screen.dart';
 import 'package:lazervault/src/features/tag_pay/presentation/view/search_users_screen.dart';
 import 'package:lazervault/src/features/tag_pay/presentation/view/create_tag_screen_redesigned.dart';
+import 'package:lazervault/src/features/tag_pay/presentation/view/tag_amount_screen.dart';
 import 'package:lazervault/src/features/tag_pay/presentation/view/my_tags_screen_redesigned.dart';
 import 'package:lazervault/src/features/tag_pay/presentation/view/outgoing_tags_screen.dart';
 import 'package:lazervault/src/features/tag_pay/presentation/view/incoming_tags_screen.dart';
@@ -291,9 +292,14 @@ import 'package:lazervault/src/features/kyc/presentation/cubits/kyc_cubit.dart';
 import 'package:lazervault/src/features/kyc/domain/entities/kyc_tier_entity.dart';
 import 'package:lazervault/src/features/presentation/views/debug_settings_screen.dart';
 
+// Social Linking imports
+import 'package:lazervault/src/features/social_linking/presentation/screens/linked_accounts_screen.dart';
+import 'package:lazervault/src/features/social_linking/presentation/cubit/social_linking_cubit.dart';
+
 // Lock Funds imports
 import 'package:lazervault/src/features/lock_funds/presentation/cubit/lock_funds_cubit.dart';
 import 'package:lazervault/src/features/lock_funds/presentation/screens/lock_funds_list_screen.dart';
+import 'package:lazervault/src/features/lock_funds/presentation/screens/lock_fund_receipt_screen.dart';
 
 // Family Account imports
 import 'package:lazervault/src/features/family_account/presentation/cubit/family_account_cubit.dart';
@@ -1267,10 +1273,14 @@ class AppRouter {
     // ),
     
     // Group Account routes
+    // Note: Using BlocProvider.value() instead of BlocProvider(create:) because
+    // GroupAccountCubit is a singleton. Using create: would dispose the singleton
+    // when navigating away, causing "cubit is closed" errors.
     GetPage(
       name: AppRoutes.groupAccount,
-      page: () => BlocProvider(
-        create: (_) => serviceLocator<GroupAccountCubit>()..loadUserGroups(),
+      page: () => BlocProvider.value(
+        value: serviceLocator<GroupAccountCubit>(),
+        // Note: loadUserGroups() is called by GroupAccountListScreen when auth state is available
         child: const GroupAccountListScreen(),
       ),
       transition: Transition.rightToLeft,
@@ -1279,8 +1289,9 @@ class AppRouter {
       name: AppRoutes.groupDetails,
       page: () {
         final groupId = Get.arguments as String;
-        return BlocProvider(
-          create: (_) => serviceLocator<GroupAccountCubit>()..loadGroupDetails(groupId),
+        // Note: loadGroupDetails is called in GroupDetailsScreen's initState
+        return BlocProvider.value(
+          value: serviceLocator<GroupAccountCubit>(),
           child: GroupDetailsScreen(groupId: groupId),
         );
       },
@@ -1288,8 +1299,8 @@ class AppRouter {
     ),
     GetPage(
       name: AppRoutes.createGroup,
-      page: () => BlocProvider(
-        create: (_) => serviceLocator<GroupAccountCubit>(),
+      page: () => BlocProvider.value(
+        value: serviceLocator<GroupAccountCubit>(),
         child: const GroupAccountListScreen(), // This will be replaced with CreateGroupScreen later
       ),
       transition: Transition.rightToLeft,
@@ -1300,8 +1311,8 @@ class AppRouter {
         final args = Get.arguments as Map<String, dynamic>;
         final contributionId = args['contributionId'] as String;
         final contribution = args['contribution'] as Contribution?;
-        return BlocProvider(
-          create: (_) => serviceLocator<GroupAccountCubit>(),
+        return BlocProvider.value(
+          value: serviceLocator<GroupAccountCubit>(),
           child: ContributionDetailsScreen(
             contributionId: contributionId,
             contribution: contribution,
@@ -1316,8 +1327,8 @@ class AppRouter {
         final args = Get.arguments as Map<String, dynamic>;
         final contributionId = args['contributionId'] as String;
         final contribution = args['contribution'] as Contribution?;
-        return BlocProvider(
-          create: (_) => serviceLocator<GroupAccountCubit>(),
+        return BlocProvider.value(
+          value: serviceLocator<GroupAccountCubit>(),
           child: MakePaymentScreen(
             contributionId: contributionId,
             contribution: contribution,
@@ -1669,6 +1680,14 @@ class AppRouter {
       page: () => BlocProvider(
         create: (context) => serviceLocator<TagPayCubit>(),
         child: const CreateTagScreenRedesigned(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.tagAmount,
+      page: () => BlocProvider(
+        create: (context) => serviceLocator<TagPayCubit>(),
+        child: const TagAmountScreen(),
       ),
       transition: Transition.rightToLeft,
     ),
@@ -2117,6 +2136,11 @@ class AppRouter {
       ),
       transition: Transition.rightToLeft,
     ),
+    GetPage(
+      name: AppRoutes.lockFundReceipt,
+      page: () => const LockFundReceiptScreen(),
+      transition: Transition.zoom,
+    ),
 
     // Voice Enrollment Routes
     GetPage(
@@ -2247,6 +2271,16 @@ class AppRouter {
     GetPage(
       name: AppRoutes.twoFactorSettings,
       page: () => const TwoFactorSettingsScreen(),
+      transition: Transition.rightToLeft,
+    ),
+
+    // Social Linking Routes
+    GetPage(
+      name: AppRoutes.linkedSocialAccounts,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<SocialLinkingCubit>(),
+        child: const LinkedAccountsScreen(),
+      ),
       transition: Transition.rightToLeft,
     ),
 

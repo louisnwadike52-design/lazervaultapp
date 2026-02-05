@@ -57,12 +57,9 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
   DrawingTool _selectedDrawingTool = DrawingTool.none;
   String _selectedTimeframe = '1D';
   final List<String> _selectedIndicators = [];
-  final List<Stock> _comparisonStocks = [];
-  
   // Pan and zoom variables
   double _currentScale = 1.0;
   double _baseScale = 1.0;
-  double _currentPanX = 0.0;
   int _visibleDataPoints = 50;
   int _startIndex = 0;
   
@@ -75,8 +72,6 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
   final List<DrawingElement> _drawings = [];
   DrawingElement? _currentDrawing;
   bool _isDrawing = false;
-  Offset? _drawingStartPoint;
-  
   // Add these new variables for dragging functionality
   DrawingElement? _selectedDrawing;
   bool _isDraggingDrawing = false;
@@ -86,8 +81,6 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
   // Crosshair
   bool _showCrosshair = false;
   Offset? _crosshairPosition;
-
-  final List<String> _timeframes = ['1m', '5m', '15m', '30m', '1H', '4H', '1D', '1W', '1M'];
 
   // Define indicator lists with proper constructor calls
   final List<IndicatorInfo> _trendIndicators = const [
@@ -266,7 +259,6 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
     _startIndex = 0;
     _currentScale = 1.0;
     _baseScale = 1.0;
-    _currentPanX = 0.0;
   }
 
   @override
@@ -1332,7 +1324,6 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
     setState(() {
       _currentScale = 1.0;
       _baseScale = 1.0;
-      _currentPanX = 0.0;
       _isDragging = false;
       _isScaling = false;
       _initializeChart();
@@ -1402,8 +1393,7 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
 
     setState(() {
       _isDrawing = true;
-      _drawingStartPoint = point;
-      
+
       // Convert screen coordinates to price/time coordinates
       final priceValue = _screenToPrice(point, priceHistory);
       final timeIndex = _screenToTimeIndex(point, priceHistory);
@@ -1561,8 +1551,7 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
       _drawings.add(_currentDrawing!);
       _currentDrawing = null;
       _isDrawing = false;
-      _drawingStartPoint = null;
-      
+
       // Auto-deselect tool after drawing (except for measure tool)
       if (_selectedDrawingTool != DrawingTool.measure) {
         _selectedDrawingTool = DrawingTool.none;
@@ -2012,10 +2001,6 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
         gridData: FlGridData(show: false),
       ),
     );
-  }
-
-  Widget _buildVolumeChart(List<StockPrice> priceHistory) {
-    return _buildFullVolumeChart(priceHistory);
   }
 
   Widget _buildCrosshair(Offset position, List<StockPrice> priceHistory) {
@@ -3867,39 +3852,6 @@ class _StockChartDetailsScreenState extends State<StockChartDetailsScreen> {
               ],
             ),
           ),
-        ),
-      ),
-    );
-  }
-
-  void _showAssetComparison() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        height: 300.h,
-        decoration: BoxDecoration(
-          color: Colors.grey[900],
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
-        ),
-        child: Column(
-          children: [
-            Container(
-              padding: EdgeInsets.all(16.w),
-              child: Text(
-                'Compare Assets',
-                style: GoogleFonts.inter(color: Colors.white, fontSize: 18.sp, fontWeight: FontWeight.bold),
-              ),
-            ),
-            Expanded(
-              child: Center(
-                child: Text(
-                  'Asset comparison feature coming soon',
-                  style: GoogleFonts.inter(color: Colors.grey[400], fontSize: 14.sp),
-                ),
-              ),
-            ),
-          ],
         ),
       ),
     );

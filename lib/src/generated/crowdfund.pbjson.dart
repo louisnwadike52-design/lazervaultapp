@@ -50,6 +50,54 @@ const DonationStatus$json = const {
 
 /// Descriptor for `DonationStatus`. Decode as a `google.protobuf.EnumDescriptorProto`.
 final $typed_data.Uint8List donationStatusDescriptor = $convert.base64Decode('Cg5Eb25hdGlvblN0YXR1cxIfChtET05BVElPTl9TVEFUVVNfVU5TUEVDSUZJRUQQABIbChdET05BVElPTl9TVEFUVVNfUEVORElORxABEh4KGkRPTkFUSU9OX1NUQVRVU19QUk9DRVNTSU5HEAISHQoZRE9OQVRJT05fU1RBVFVTX0NPTVBMRVRFRBADEhoKFkRPTkFUSU9OX1NUQVRVU19GQUlMRUQQBBIcChhET05BVElPTl9TVEFUVVNfUkVGVU5ERUQQBQ==');
+@$core.Deprecated('Use notificationChannelTypeDescriptor instead')
+const NotificationChannelType$json = const {
+  '1': 'NotificationChannelType',
+  '2': const [
+    const {'1': 'NOTIFICATION_CHANNEL_TYPE_UNSPECIFIED', '2': 0},
+    const {'1': 'NOTIFICATION_CHANNEL_TYPE_TELEGRAM', '2': 1},
+    const {'1': 'NOTIFICATION_CHANNEL_TYPE_DISCORD', '2': 2},
+    const {'1': 'NOTIFICATION_CHANNEL_TYPE_WHATSAPP_BUSINESS', '2': 3},
+    const {'1': 'NOTIFICATION_CHANNEL_TYPE_SLACK', '2': 4},
+  ],
+};
+
+/// Descriptor for `NotificationChannelType`. Decode as a `google.protobuf.EnumDescriptorProto`.
+final $typed_data.Uint8List notificationChannelTypeDescriptor = $convert.base64Decode('ChdOb3RpZmljYXRpb25DaGFubmVsVHlwZRIpCiVOT1RJRklDQVRJT05fQ0hBTk5FTF9UWVBFX1VOU1BFQ0lGSUVEEAASJgoiTk9USUZJQ0FUSU9OX0NIQU5ORUxfVFlQRV9URUxFR1JBTRABEiUKIU5PVElGSUNBVElPTl9DSEFOTkVMX1RZUEVfRElTQ09SRBACEi8KK05PVElGSUNBVElPTl9DSEFOTkVMX1RZUEVfV0hBVFNBUFBfQlVTSU5FU1MQAxIjCh9OT1RJRklDQVRJT05fQ0hBTk5FTF9UWVBFX1NMQUNLEAQ=');
+@$core.Deprecated('Use notificationChannelStatusDescriptor instead')
+const NotificationChannelStatus$json = const {
+  '1': 'NotificationChannelStatus',
+  '2': const [
+    const {'1': 'NOTIFICATION_CHANNEL_STATUS_UNSPECIFIED', '2': 0},
+    const {'1': 'NOTIFICATION_CHANNEL_STATUS_PENDING', '2': 1},
+    const {'1': 'NOTIFICATION_CHANNEL_STATUS_ACTIVE', '2': 2},
+    const {'1': 'NOTIFICATION_CHANNEL_STATUS_PAUSED', '2': 3},
+    const {'1': 'NOTIFICATION_CHANNEL_STATUS_ERROR', '2': 4},
+    const {'1': 'NOTIFICATION_CHANNEL_STATUS_DISCONNECTED', '2': 5},
+  ],
+};
+
+/// Descriptor for `NotificationChannelStatus`. Decode as a `google.protobuf.EnumDescriptorProto`.
+final $typed_data.Uint8List notificationChannelStatusDescriptor = $convert.base64Decode('ChlOb3RpZmljYXRpb25DaGFubmVsU3RhdHVzEisKJ05PVElGSUNBVElPTl9DSEFOTkVMX1NUQVRVU19VTlNQRUNJRklFRBAAEicKI05PVElGSUNBVElPTl9DSEFOTkVMX1NUQVRVU19QRU5ESU5HEAESJgoiTk9USUZJQ0FUSU9OX0NIQU5ORUxfU1RBVFVTX0FDVElWRRACEiYKIk5PVElGSUNBVElPTl9DSEFOTkVMX1NUQVRVU19QQVVTRUQQAxIlCiFOT1RJRklDQVRJT05fQ0hBTk5FTF9TVEFUVVNfRVJST1IQBBIsCihOT1RJRklDQVRJT05fQ0hBTk5FTF9TVEFUVVNfRElTQ09OTkVDVEVEEAU=');
+@$core.Deprecated('Use notificationEventTypeDescriptor instead')
+const NotificationEventType$json = const {
+  '1': 'NotificationEventType',
+  '2': const [
+    const {'1': 'NOTIFICATION_EVENT_TYPE_UNSPECIFIED', '2': 0},
+    const {'1': 'NOTIFICATION_EVENT_TYPE_NEW_DONATION', '2': 1},
+    const {'1': 'NOTIFICATION_EVENT_TYPE_MILESTONE_REACHED', '2': 2},
+    const {'1': 'NOTIFICATION_EVENT_TYPE_GOAL_REACHED', '2': 3},
+    const {'1': 'NOTIFICATION_EVENT_TYPE_NEW_CONTRIBUTOR', '2': 4},
+    const {'1': 'NOTIFICATION_EVENT_TYPE_LARGE_DONATION', '2': 5},
+    const {'1': 'NOTIFICATION_EVENT_TYPE_DAILY_SUMMARY', '2': 6},
+    const {'1': 'NOTIFICATION_EVENT_TYPE_CAMPAIGN_ENDING', '2': 7},
+    const {'1': 'NOTIFICATION_EVENT_TYPE_CAMPAIGN_ENDED', '2': 8},
+    const {'1': 'NOTIFICATION_EVENT_TYPE_WITHDRAWAL', '2': 9},
+  ],
+};
+
+/// Descriptor for `NotificationEventType`. Decode as a `google.protobuf.EnumDescriptorProto`.
+final $typed_data.Uint8List notificationEventTypeDescriptor = $convert.base64Decode('ChVOb3RpZmljYXRpb25FdmVudFR5cGUSJwojTk9USUZJQ0FUSU9OX0VWRU5UX1RZUEVfVU5TUEVDSUZJRUQQABIoCiROT1RJRklDQVRJT05fRVZFTlRfVFlQRV9ORVdfRE9OQVRJT04QARItCilOT1RJRklDQVRJT05fRVZFTlRfVFlQRV9NSUxFU1RPTkVfUkVBQ0hFRBACEigKJE5PVElGSUNBVElPTl9FVkVOVF9UWVBFX0dPQUxfUkVBQ0hFRBADEisKJ05PVElGSUNBVElPTl9FVkVOVF9UWVBFX05FV19DT05UUklCVVRPUhAEEioKJk5PVElGSUNBVElPTl9FVkVOVF9UWVBFX0xBUkdFX0RPTkFUSU9OEAUSKQolTk9USUZJQ0FUSU9OX0VWRU5UX1RZUEVfREFJTFlfU1VNTUFSWRAGEisKJ05PVElGSUNBVElPTl9FVkVOVF9UWVBFX0NBTVBBSUdOX0VORElORxAHEioKJk5PVElGSUNBVElPTl9FVkVOVF9UWVBFX0NBTVBBSUdOX0VOREVEEAgSJgoiTk9USUZJQ0FUSU9OX0VWRU5UX1RZUEVfV0lUSERSQVdBTBAJ');
 @$core.Deprecated('Use crowdfundCreatorMessageDescriptor instead')
 const CrowdfundCreatorMessage$json = const {
   '1': 'CrowdfundCreatorMessage',
@@ -433,11 +481,44 @@ const GetCrowdfundStatisticsResponse$json = const {
     const {'1': 'days_remaining', '3': 8, '4': 1, '5': 5, '10': 'daysRemaining'},
     const {'1': 'is_completed', '3': 9, '4': 1, '5': 8, '10': 'isCompleted'},
     const {'1': 'created_at', '3': 10, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
+    const {'1': 'unique_donors', '3': 11, '4': 1, '5': 5, '10': 'uniqueDonors'},
+    const {'1': 'smallest_donation', '3': 12, '4': 1, '5': 4, '10': 'smallestDonation'},
+    const {'1': 'top_contributors', '3': 13, '4': 3, '5': 11, '6': '.pb.ContributorLeaderboardEntry', '10': 'topContributors'},
+    const {'1': 'daily_progress', '3': 14, '4': 3, '5': 11, '6': '.pb.DailyProgressEntry', '10': 'dailyProgress'},
+    const {'1': 'funding_velocity', '3': 15, '4': 1, '5': 1, '10': 'fundingVelocity'},
+    const {'1': 'projected_completion_date', '3': 16, '4': 1, '5': 9, '10': 'projectedCompletionDate'},
   ],
 };
 
 /// Descriptor for `GetCrowdfundStatisticsResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getCrowdfundStatisticsResponseDescriptor = $convert.base64Decode('Ch5HZXRDcm93ZGZ1bmRTdGF0aXN0aWNzUmVzcG9uc2USIQoMY3Jvd2RmdW5kX2lkGAEgASgJUgtjcm93ZGZ1bmRJZBIhCgx0b3RhbF9yYWlzZWQYAiABKARSC3RvdGFsUmFpc2VkEiMKDXRhcmdldF9hbW91bnQYAyABKARSDHRhcmdldEFtb3VudBIvChNwcm9ncmVzc19wZXJjZW50YWdlGAQgASgBUhJwcm9ncmVzc1BlcmNlbnRhZ2USHwoLZG9ub3JfY291bnQYBSABKAVSCmRvbm9yQ291bnQSKQoQYXZlcmFnZV9kb25hdGlvbhgGIAEoBFIPYXZlcmFnZURvbmF0aW9uEikKEGxhcmdlc3RfZG9uYXRpb24YByABKARSD2xhcmdlc3REb25hdGlvbhIlCg5kYXlzX3JlbWFpbmluZxgIIAEoBVINZGF5c1JlbWFpbmluZxIhCgxpc19jb21wbGV0ZWQYCSABKAhSC2lzQ29tcGxldGVkEjkKCmNyZWF0ZWRfYXQYCiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUgljcmVhdGVkQXQ=');
+final $typed_data.Uint8List getCrowdfundStatisticsResponseDescriptor = $convert.base64Decode('Ch5HZXRDcm93ZGZ1bmRTdGF0aXN0aWNzUmVzcG9uc2USIQoMY3Jvd2RmdW5kX2lkGAEgASgJUgtjcm93ZGZ1bmRJZBIhCgx0b3RhbF9yYWlzZWQYAiABKARSC3RvdGFsUmFpc2VkEiMKDXRhcmdldF9hbW91bnQYAyABKARSDHRhcmdldEFtb3VudBIvChNwcm9ncmVzc19wZXJjZW50YWdlGAQgASgBUhJwcm9ncmVzc1BlcmNlbnRhZ2USHwoLZG9ub3JfY291bnQYBSABKAVSCmRvbm9yQ291bnQSKQoQYXZlcmFnZV9kb25hdGlvbhgGIAEoBFIPYXZlcmFnZURvbmF0aW9uEikKEGxhcmdlc3RfZG9uYXRpb24YByABKARSD2xhcmdlc3REb25hdGlvbhIlCg5kYXlzX3JlbWFpbmluZxgIIAEoBVINZGF5c1JlbWFpbmluZxIhCgxpc19jb21wbGV0ZWQYCSABKAhSC2lzQ29tcGxldGVkEjkKCmNyZWF0ZWRfYXQYCiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUgljcmVhdGVkQXQSIwoNdW5pcXVlX2Rvbm9ycxgLIAEoBVIMdW5pcXVlRG9ub3JzEisKEXNtYWxsZXN0X2RvbmF0aW9uGAwgASgEUhBzbWFsbGVzdERvbmF0aW9uEkoKEHRvcF9jb250cmlidXRvcnMYDSADKAsyHy5wYi5Db250cmlidXRvckxlYWRlcmJvYXJkRW50cnlSD3RvcENvbnRyaWJ1dG9ycxI9Cg5kYWlseV9wcm9ncmVzcxgOIAMoCzIWLnBiLkRhaWx5UHJvZ3Jlc3NFbnRyeVINZGFpbHlQcm9ncmVzcxIpChBmdW5kaW5nX3ZlbG9jaXR5GA8gASgBUg9mdW5kaW5nVmVsb2NpdHkSOgoZcHJvamVjdGVkX2NvbXBsZXRpb25fZGF0ZRgQIAEoCVIXcHJvamVjdGVkQ29tcGxldGlvbkRhdGU=');
+@$core.Deprecated('Use contributorLeaderboardEntryDescriptor instead')
+const ContributorLeaderboardEntry$json = const {
+  '1': 'ContributorLeaderboardEntry',
+  '2': const [
+    const {'1': 'rank', '3': 1, '4': 1, '5': 5, '10': 'rank'},
+    const {'1': 'display_name', '3': 2, '4': 1, '5': 9, '10': 'displayName'},
+    const {'1': 'total_amount', '3': 3, '4': 1, '5': 1, '10': 'totalAmount'},
+    const {'1': 'contribution_count', '3': 4, '4': 1, '5': 5, '10': 'contributionCount'},
+    const {'1': 'is_anonymous', '3': 5, '4': 1, '5': 8, '10': 'isAnonymous'},
+  ],
+};
+
+/// Descriptor for `ContributorLeaderboardEntry`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List contributorLeaderboardEntryDescriptor = $convert.base64Decode('ChtDb250cmlidXRvckxlYWRlcmJvYXJkRW50cnkSEgoEcmFuaxgBIAEoBVIEcmFuaxIhCgxkaXNwbGF5X25hbWUYAiABKAlSC2Rpc3BsYXlOYW1lEiEKDHRvdGFsX2Ftb3VudBgDIAEoAVILdG90YWxBbW91bnQSLQoSY29udHJpYnV0aW9uX2NvdW50GAQgASgFUhFjb250cmlidXRpb25Db3VudBIhCgxpc19hbm9ueW1vdXMYBSABKAhSC2lzQW5vbnltb3Vz');
+@$core.Deprecated('Use dailyProgressEntryDescriptor instead')
+const DailyProgressEntry$json = const {
+  '1': 'DailyProgressEntry',
+  '2': const [
+    const {'1': 'date', '3': 1, '4': 1, '5': 9, '10': 'date'},
+    const {'1': 'amount', '3': 2, '4': 1, '5': 1, '10': 'amount'},
+    const {'1': 'donation_count', '3': 3, '4': 1, '5': 5, '10': 'donationCount'},
+    const {'1': 'cumulative_amount', '3': 4, '4': 1, '5': 1, '10': 'cumulativeAmount'},
+  ],
+};
+
+/// Descriptor for `DailyProgressEntry`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List dailyProgressEntryDescriptor = $convert.base64Decode('ChJEYWlseVByb2dyZXNzRW50cnkSEgoEZGF0ZRgBIAEoCVIEZGF0ZRIWCgZhbW91bnQYAiABKAFSBmFtb3VudBIlCg5kb25hdGlvbl9jb3VudBgDIAEoBVINZG9uYXRpb25Db3VudBIrChFjdW11bGF0aXZlX2Ftb3VudBgEIAEoAVIQY3VtdWxhdGl2ZUFtb3VudA==');
 @$core.Deprecated('Use crowdfundPaginationInfoDescriptor instead')
 const CrowdfundPaginationInfo$json = const {
   '1': 'CrowdfundPaginationInfo',
@@ -483,3 +564,309 @@ const CrowdfundReceiptPaginationInfo$json = const {
 
 /// Descriptor for `CrowdfundReceiptPaginationInfo`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List crowdfundReceiptPaginationInfoDescriptor = $convert.base64Decode('Ch5Dcm93ZGZ1bmRSZWNlaXB0UGFnaW5hdGlvbkluZm8SIQoMY3VycmVudF9wYWdlGAEgASgFUgtjdXJyZW50UGFnZRIfCgt0b3RhbF9wYWdlcxgCIAEoBVIKdG90YWxQYWdlcxIfCgt0b3RhbF9pdGVtcxgDIAEoBVIKdG90YWxJdGVtcxIkCg5pdGVtc19wZXJfcGFnZRgEIAEoBVIMaXRlbXNQZXJQYWdlEhkKCGhhc19uZXh0GAUgASgIUgdoYXNOZXh0EhkKCGhhc19wcmV2GAYgASgIUgdoYXNQcmV2');
+@$core.Deprecated('Use notificationChannelMessageDescriptor instead')
+const NotificationChannelMessage$json = const {
+  '1': 'NotificationChannelMessage',
+  '2': const [
+    const {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
+    const {'1': 'crowdfund_id', '3': 2, '4': 1, '5': 9, '10': 'crowdfundId'},
+    const {'1': 'creator_user_id', '3': 3, '4': 1, '5': 9, '10': 'creatorUserId'},
+    const {'1': 'channel_type', '3': 4, '4': 1, '5': 14, '6': '.pb.NotificationChannelType', '10': 'channelType'},
+    const {'1': 'status', '3': 5, '4': 1, '5': 14, '6': '.pb.NotificationChannelStatus', '10': 'status'},
+    const {'1': 'channel_name', '3': 6, '4': 1, '5': 9, '10': 'channelName'},
+    const {'1': 'channel_username', '3': 7, '4': 1, '5': 9, '10': 'channelUsername'},
+    const {'1': 'enabled_events', '3': 8, '4': 3, '5': 14, '6': '.pb.NotificationEventType', '10': 'enabledEvents'},
+    const {'1': 'preferences', '3': 9, '4': 1, '5': 11, '6': '.pb.NotificationPreferencesMessage', '10': 'preferences'},
+    const {'1': 'last_notification_at', '3': 10, '4': 1, '5': 9, '10': 'lastNotificationAt'},
+    const {'1': 'notification_count', '3': 11, '4': 1, '5': 5, '10': 'notificationCount'},
+    const {'1': 'failure_count', '3': 12, '4': 1, '5': 5, '10': 'failureCount'},
+    const {'1': 'last_error', '3': 13, '4': 1, '5': 9, '10': 'lastError'},
+    const {'1': 'created_at', '3': 14, '4': 1, '5': 9, '10': 'createdAt'},
+    const {'1': 'updated_at', '3': 15, '4': 1, '5': 9, '10': 'updatedAt'},
+  ],
+};
+
+/// Descriptor for `NotificationChannelMessage`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List notificationChannelMessageDescriptor = $convert.base64Decode('ChpOb3RpZmljYXRpb25DaGFubmVsTWVzc2FnZRIOCgJpZBgBIAEoCVICaWQSIQoMY3Jvd2RmdW5kX2lkGAIgASgJUgtjcm93ZGZ1bmRJZBImCg9jcmVhdG9yX3VzZXJfaWQYAyABKAlSDWNyZWF0b3JVc2VySWQSPgoMY2hhbm5lbF90eXBlGAQgASgOMhsucGIuTm90aWZpY2F0aW9uQ2hhbm5lbFR5cGVSC2NoYW5uZWxUeXBlEjUKBnN0YXR1cxgFIAEoDjIdLnBiLk5vdGlmaWNhdGlvbkNoYW5uZWxTdGF0dXNSBnN0YXR1cxIhCgxjaGFubmVsX25hbWUYBiABKAlSC2NoYW5uZWxOYW1lEikKEGNoYW5uZWxfdXNlcm5hbWUYByABKAlSD2NoYW5uZWxVc2VybmFtZRJACg5lbmFibGVkX2V2ZW50cxgIIAMoDjIZLnBiLk5vdGlmaWNhdGlvbkV2ZW50VHlwZVINZW5hYmxlZEV2ZW50cxJECgtwcmVmZXJlbmNlcxgJIAEoCzIiLnBiLk5vdGlmaWNhdGlvblByZWZlcmVuY2VzTWVzc2FnZVILcHJlZmVyZW5jZXMSMAoUbGFzdF9ub3RpZmljYXRpb25fYXQYCiABKAlSEmxhc3ROb3RpZmljYXRpb25BdBItChJub3RpZmljYXRpb25fY291bnQYCyABKAVSEW5vdGlmaWNhdGlvbkNvdW50EiMKDWZhaWx1cmVfY291bnQYDCABKAVSDGZhaWx1cmVDb3VudBIdCgpsYXN0X2Vycm9yGA0gASgJUglsYXN0RXJyb3ISHQoKY3JlYXRlZF9hdBgOIAEoCVIJY3JlYXRlZEF0Eh0KCnVwZGF0ZWRfYXQYDyABKAlSCXVwZGF0ZWRBdA==');
+@$core.Deprecated('Use notificationPreferencesMessageDescriptor instead')
+const NotificationPreferencesMessage$json = const {
+  '1': 'NotificationPreferencesMessage',
+  '2': const [
+    const {'1': 'include_donor_name', '3': 1, '4': 1, '5': 8, '10': 'includeDonorName'},
+    const {'1': 'include_amount', '3': 2, '4': 1, '5': 8, '10': 'includeAmount'},
+    const {'1': 'include_message', '3': 3, '4': 1, '5': 8, '10': 'includeMessage'},
+    const {'1': 'include_progress', '3': 4, '4': 1, '5': 8, '10': 'includeProgress'},
+    const {'1': 'include_leaderboard', '3': 5, '4': 1, '5': 8, '10': 'includeLeaderboard'},
+    const {'1': 'large_donation_threshold', '3': 6, '4': 1, '5': 1, '10': 'largeDonationThreshold'},
+    const {'1': 'message_template', '3': 7, '4': 1, '5': 9, '10': 'messageTemplate'},
+    const {'1': 'language', '3': 8, '4': 1, '5': 9, '10': 'language'},
+    const {'1': 'quiet_hours_enabled', '3': 9, '4': 1, '5': 8, '10': 'quietHoursEnabled'},
+    const {'1': 'quiet_hours_start', '3': 10, '4': 1, '5': 9, '10': 'quietHoursStart'},
+    const {'1': 'quiet_hours_end', '3': 11, '4': 1, '5': 9, '10': 'quietHoursEnd'},
+    const {'1': 'timezone', '3': 12, '4': 1, '5': 9, '10': 'timezone'},
+  ],
+};
+
+/// Descriptor for `NotificationPreferencesMessage`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List notificationPreferencesMessageDescriptor = $convert.base64Decode('Ch5Ob3RpZmljYXRpb25QcmVmZXJlbmNlc01lc3NhZ2USLAoSaW5jbHVkZV9kb25vcl9uYW1lGAEgASgIUhBpbmNsdWRlRG9ub3JOYW1lEiUKDmluY2x1ZGVfYW1vdW50GAIgASgIUg1pbmNsdWRlQW1vdW50EicKD2luY2x1ZGVfbWVzc2FnZRgDIAEoCFIOaW5jbHVkZU1lc3NhZ2USKQoQaW5jbHVkZV9wcm9ncmVzcxgEIAEoCFIPaW5jbHVkZVByb2dyZXNzEi8KE2luY2x1ZGVfbGVhZGVyYm9hcmQYBSABKAhSEmluY2x1ZGVMZWFkZXJib2FyZBI4ChhsYXJnZV9kb25hdGlvbl90aHJlc2hvbGQYBiABKAFSFmxhcmdlRG9uYXRpb25UaHJlc2hvbGQSKQoQbWVzc2FnZV90ZW1wbGF0ZRgHIAEoCVIPbWVzc2FnZVRlbXBsYXRlEhoKCGxhbmd1YWdlGAggASgJUghsYW5ndWFnZRIuChNxdWlldF9ob3Vyc19lbmFibGVkGAkgASgIUhFxdWlldEhvdXJzRW5hYmxlZBIqChFxdWlldF9ob3Vyc19zdGFydBgKIAEoCVIPcXVpZXRIb3Vyc1N0YXJ0EiYKD3F1aWV0X2hvdXJzX2VuZBgLIAEoCVINcXVpZXRIb3Vyc0VuZBIaCgh0aW1lem9uZRgMIAEoCVIIdGltZXpvbmU=');
+@$core.Deprecated('Use notificationDeliveryMessageDescriptor instead')
+const NotificationDeliveryMessage$json = const {
+  '1': 'NotificationDeliveryMessage',
+  '2': const [
+    const {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
+    const {'1': 'channel_id', '3': 2, '4': 1, '5': 9, '10': 'channelId'},
+    const {'1': 'crowdfund_id', '3': 3, '4': 1, '5': 9, '10': 'crowdfundId'},
+    const {'1': 'event_type', '3': 4, '4': 1, '5': 14, '6': '.pb.NotificationEventType', '10': 'eventType'},
+    const {'1': 'event_data', '3': 5, '4': 1, '5': 9, '10': 'eventData'},
+    const {'1': 'message_content', '3': 6, '4': 1, '5': 9, '10': 'messageContent'},
+    const {'1': 'success', '3': 7, '4': 1, '5': 8, '10': 'success'},
+    const {'1': 'error_message', '3': 8, '4': 1, '5': 9, '10': 'errorMessage'},
+    const {'1': 'retry_count', '3': 9, '4': 1, '5': 5, '10': 'retryCount'},
+    const {'1': 'platform_message_id', '3': 10, '4': 1, '5': 9, '10': 'platformMessageId'},
+    const {'1': 'created_at', '3': 11, '4': 1, '5': 9, '10': 'createdAt'},
+    const {'1': 'delivered_at', '3': 12, '4': 1, '5': 9, '10': 'deliveredAt'},
+  ],
+};
+
+/// Descriptor for `NotificationDeliveryMessage`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List notificationDeliveryMessageDescriptor = $convert.base64Decode('ChtOb3RpZmljYXRpb25EZWxpdmVyeU1lc3NhZ2USDgoCaWQYASABKAlSAmlkEh0KCmNoYW5uZWxfaWQYAiABKAlSCWNoYW5uZWxJZBIhCgxjcm93ZGZ1bmRfaWQYAyABKAlSC2Nyb3dkZnVuZElkEjgKCmV2ZW50X3R5cGUYBCABKA4yGS5wYi5Ob3RpZmljYXRpb25FdmVudFR5cGVSCWV2ZW50VHlwZRIdCgpldmVudF9kYXRhGAUgASgJUglldmVudERhdGESJwoPbWVzc2FnZV9jb250ZW50GAYgASgJUg5tZXNzYWdlQ29udGVudBIYCgdzdWNjZXNzGAcgASgIUgdzdWNjZXNzEiMKDWVycm9yX21lc3NhZ2UYCCABKAlSDGVycm9yTWVzc2FnZRIfCgtyZXRyeV9jb3VudBgJIAEoBVIKcmV0cnlDb3VudBIuChNwbGF0Zm9ybV9tZXNzYWdlX2lkGAogASgJUhFwbGF0Zm9ybU1lc3NhZ2VJZBIdCgpjcmVhdGVkX2F0GAsgASgJUgljcmVhdGVkQXQSIQoMZGVsaXZlcmVkX2F0GAwgASgJUgtkZWxpdmVyZWRBdA==');
+@$core.Deprecated('Use telegramConnectionDataMessageDescriptor instead')
+const TelegramConnectionDataMessage$json = const {
+  '1': 'TelegramConnectionDataMessage',
+  '2': const [
+    const {'1': 'chat_id', '3': 1, '4': 1, '5': 9, '10': 'chatId'},
+    const {'1': 'verification_code', '3': 2, '4': 1, '5': 9, '10': 'verificationCode'},
+  ],
+};
+
+/// Descriptor for `TelegramConnectionDataMessage`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List telegramConnectionDataMessageDescriptor = $convert.base64Decode('Ch1UZWxlZ3JhbUNvbm5lY3Rpb25EYXRhTWVzc2FnZRIXCgdjaGF0X2lkGAEgASgJUgZjaGF0SWQSKwoRdmVyaWZpY2F0aW9uX2NvZGUYAiABKAlSEHZlcmlmaWNhdGlvbkNvZGU=');
+@$core.Deprecated('Use discordConnectionDataMessageDescriptor instead')
+const DiscordConnectionDataMessage$json = const {
+  '1': 'DiscordConnectionDataMessage',
+  '2': const [
+    const {'1': 'webhook_url', '3': 1, '4': 1, '5': 9, '10': 'webhookUrl'},
+    const {'1': 'server_name', '3': 2, '4': 1, '5': 9, '10': 'serverName'},
+    const {'1': 'channel_name', '3': 3, '4': 1, '5': 9, '10': 'channelName'},
+  ],
+};
+
+/// Descriptor for `DiscordConnectionDataMessage`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List discordConnectionDataMessageDescriptor = $convert.base64Decode('ChxEaXNjb3JkQ29ubmVjdGlvbkRhdGFNZXNzYWdlEh8KC3dlYmhvb2tfdXJsGAEgASgJUgp3ZWJob29rVXJsEh8KC3NlcnZlcl9uYW1lGAIgASgJUgpzZXJ2ZXJOYW1lEiEKDGNoYW5uZWxfbmFtZRgDIAEoCVILY2hhbm5lbE5hbWU=');
+@$core.Deprecated('Use whatsAppBusinessConnectionDataMessageDescriptor instead')
+const WhatsAppBusinessConnectionDataMessage$json = const {
+  '1': 'WhatsAppBusinessConnectionDataMessage',
+  '2': const [
+    const {'1': 'phone_number_id', '3': 1, '4': 1, '5': 9, '10': 'phoneNumberId'},
+    const {'1': 'access_token', '3': 2, '4': 1, '5': 9, '10': 'accessToken'},
+    const {'1': 'recipient_id', '3': 3, '4': 1, '5': 9, '10': 'recipientId'},
+  ],
+};
+
+/// Descriptor for `WhatsAppBusinessConnectionDataMessage`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List whatsAppBusinessConnectionDataMessageDescriptor = $convert.base64Decode('CiVXaGF0c0FwcEJ1c2luZXNzQ29ubmVjdGlvbkRhdGFNZXNzYWdlEiYKD3Bob25lX251bWJlcl9pZBgBIAEoCVINcGhvbmVOdW1iZXJJZBIhCgxhY2Nlc3NfdG9rZW4YAiABKAlSC2FjY2Vzc1Rva2VuEiEKDHJlY2lwaWVudF9pZBgDIAEoCVILcmVjaXBpZW50SWQ=');
+@$core.Deprecated('Use slackConnectionDataMessageDescriptor instead')
+const SlackConnectionDataMessage$json = const {
+  '1': 'SlackConnectionDataMessage',
+  '2': const [
+    const {'1': 'webhook_url', '3': 1, '4': 1, '5': 9, '10': 'webhookUrl'},
+    const {'1': 'workspace_name', '3': 2, '4': 1, '5': 9, '10': 'workspaceName'},
+    const {'1': 'channel_name', '3': 3, '4': 1, '5': 9, '10': 'channelName'},
+  ],
+};
+
+/// Descriptor for `SlackConnectionDataMessage`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List slackConnectionDataMessageDescriptor = $convert.base64Decode('ChpTbGFja0Nvbm5lY3Rpb25EYXRhTWVzc2FnZRIfCgt3ZWJob29rX3VybBgBIAEoCVIKd2ViaG9va1VybBIlCg53b3Jrc3BhY2VfbmFtZRgCIAEoCVINd29ya3NwYWNlTmFtZRIhCgxjaGFubmVsX25hbWUYAyABKAlSC2NoYW5uZWxOYW1l');
+@$core.Deprecated('Use connectNotificationChannelRequestDescriptor instead')
+const ConnectNotificationChannelRequest$json = const {
+  '1': 'ConnectNotificationChannelRequest',
+  '2': const [
+    const {'1': 'crowdfund_id', '3': 1, '4': 1, '5': 9, '10': 'crowdfundId'},
+    const {'1': 'channel_type', '3': 2, '4': 1, '5': 14, '6': '.pb.NotificationChannelType', '10': 'channelType'},
+    const {'1': 'channel_name', '3': 3, '4': 1, '5': 9, '10': 'channelName'},
+    const {'1': 'telegram', '3': 4, '4': 1, '5': 11, '6': '.pb.TelegramConnectionDataMessage', '9': 0, '10': 'telegram'},
+    const {'1': 'discord', '3': 5, '4': 1, '5': 11, '6': '.pb.DiscordConnectionDataMessage', '9': 0, '10': 'discord'},
+    const {'1': 'whatsapp_business', '3': 6, '4': 1, '5': 11, '6': '.pb.WhatsAppBusinessConnectionDataMessage', '9': 0, '10': 'whatsappBusiness'},
+    const {'1': 'slack', '3': 7, '4': 1, '5': 11, '6': '.pb.SlackConnectionDataMessage', '9': 0, '10': 'slack'},
+    const {'1': 'enabled_events', '3': 8, '4': 3, '5': 14, '6': '.pb.NotificationEventType', '10': 'enabledEvents'},
+    const {'1': 'preferences', '3': 9, '4': 1, '5': 11, '6': '.pb.NotificationPreferencesMessage', '10': 'preferences'},
+  ],
+  '8': const [
+    const {'1': 'connection_data'},
+  ],
+};
+
+/// Descriptor for `ConnectNotificationChannelRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List connectNotificationChannelRequestDescriptor = $convert.base64Decode('CiFDb25uZWN0Tm90aWZpY2F0aW9uQ2hhbm5lbFJlcXVlc3QSIQoMY3Jvd2RmdW5kX2lkGAEgASgJUgtjcm93ZGZ1bmRJZBI+CgxjaGFubmVsX3R5cGUYAiABKA4yGy5wYi5Ob3RpZmljYXRpb25DaGFubmVsVHlwZVILY2hhbm5lbFR5cGUSIQoMY2hhbm5lbF9uYW1lGAMgASgJUgtjaGFubmVsTmFtZRI/Cgh0ZWxlZ3JhbRgEIAEoCzIhLnBiLlRlbGVncmFtQ29ubmVjdGlvbkRhdGFNZXNzYWdlSABSCHRlbGVncmFtEjwKB2Rpc2NvcmQYBSABKAsyIC5wYi5EaXNjb3JkQ29ubmVjdGlvbkRhdGFNZXNzYWdlSABSB2Rpc2NvcmQSWAoRd2hhdHNhcHBfYnVzaW5lc3MYBiABKAsyKS5wYi5XaGF0c0FwcEJ1c2luZXNzQ29ubmVjdGlvbkRhdGFNZXNzYWdlSABSEHdoYXRzYXBwQnVzaW5lc3MSNgoFc2xhY2sYByABKAsyHi5wYi5TbGFja0Nvbm5lY3Rpb25EYXRhTWVzc2FnZUgAUgVzbGFjaxJACg5lbmFibGVkX2V2ZW50cxgIIAMoDjIZLnBiLk5vdGlmaWNhdGlvbkV2ZW50VHlwZVINZW5hYmxlZEV2ZW50cxJECgtwcmVmZXJlbmNlcxgJIAEoCzIiLnBiLk5vdGlmaWNhdGlvblByZWZlcmVuY2VzTWVzc2FnZVILcHJlZmVyZW5jZXNCEQoPY29ubmVjdGlvbl9kYXRh');
+@$core.Deprecated('Use connectNotificationChannelResponseDescriptor instead')
+const ConnectNotificationChannelResponse$json = const {
+  '1': 'ConnectNotificationChannelResponse',
+  '2': const [
+    const {'1': 'channel', '3': 1, '4': 1, '5': 11, '6': '.pb.NotificationChannelMessage', '10': 'channel'},
+    const {'1': 'requires_verification', '3': 2, '4': 1, '5': 8, '10': 'requiresVerification'},
+    const {'1': 'verification_instructions', '3': 3, '4': 1, '5': 9, '10': 'verificationInstructions'},
+    const {'1': 'message', '3': 4, '4': 1, '5': 9, '10': 'message'},
+  ],
+};
+
+/// Descriptor for `ConnectNotificationChannelResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List connectNotificationChannelResponseDescriptor = $convert.base64Decode('CiJDb25uZWN0Tm90aWZpY2F0aW9uQ2hhbm5lbFJlc3BvbnNlEjgKB2NoYW5uZWwYASABKAsyHi5wYi5Ob3RpZmljYXRpb25DaGFubmVsTWVzc2FnZVIHY2hhbm5lbBIzChVyZXF1aXJlc192ZXJpZmljYXRpb24YAiABKAhSFHJlcXVpcmVzVmVyaWZpY2F0aW9uEjsKGXZlcmlmaWNhdGlvbl9pbnN0cnVjdGlvbnMYAyABKAlSGHZlcmlmaWNhdGlvbkluc3RydWN0aW9ucxIYCgdtZXNzYWdlGAQgASgJUgdtZXNzYWdl');
+@$core.Deprecated('Use disconnectNotificationChannelRequestDescriptor instead')
+const DisconnectNotificationChannelRequest$json = const {
+  '1': 'DisconnectNotificationChannelRequest',
+  '2': const [
+    const {'1': 'channel_id', '3': 1, '4': 1, '5': 9, '10': 'channelId'},
+  ],
+};
+
+/// Descriptor for `DisconnectNotificationChannelRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List disconnectNotificationChannelRequestDescriptor = $convert.base64Decode('CiREaXNjb25uZWN0Tm90aWZpY2F0aW9uQ2hhbm5lbFJlcXVlc3QSHQoKY2hhbm5lbF9pZBgBIAEoCVIJY2hhbm5lbElk');
+@$core.Deprecated('Use disconnectNotificationChannelResponseDescriptor instead')
+const DisconnectNotificationChannelResponse$json = const {
+  '1': 'DisconnectNotificationChannelResponse',
+  '2': const [
+    const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    const {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+  ],
+};
+
+/// Descriptor for `DisconnectNotificationChannelResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List disconnectNotificationChannelResponseDescriptor = $convert.base64Decode('CiVEaXNjb25uZWN0Tm90aWZpY2F0aW9uQ2hhbm5lbFJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3MSGAoHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZQ==');
+@$core.Deprecated('Use getNotificationChannelsRequestDescriptor instead')
+const GetNotificationChannelsRequest$json = const {
+  '1': 'GetNotificationChannelsRequest',
+  '2': const [
+    const {'1': 'crowdfund_id', '3': 1, '4': 1, '5': 9, '10': 'crowdfundId'},
+  ],
+};
+
+/// Descriptor for `GetNotificationChannelsRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getNotificationChannelsRequestDescriptor = $convert.base64Decode('Ch5HZXROb3RpZmljYXRpb25DaGFubmVsc1JlcXVlc3QSIQoMY3Jvd2RmdW5kX2lkGAEgASgJUgtjcm93ZGZ1bmRJZA==');
+@$core.Deprecated('Use getNotificationChannelsResponseDescriptor instead')
+const GetNotificationChannelsResponse$json = const {
+  '1': 'GetNotificationChannelsResponse',
+  '2': const [
+    const {'1': 'channels', '3': 1, '4': 3, '5': 11, '6': '.pb.NotificationChannelMessage', '10': 'channels'},
+  ],
+};
+
+/// Descriptor for `GetNotificationChannelsResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getNotificationChannelsResponseDescriptor = $convert.base64Decode('Ch9HZXROb3RpZmljYXRpb25DaGFubmVsc1Jlc3BvbnNlEjoKCGNoYW5uZWxzGAEgAygLMh4ucGIuTm90aWZpY2F0aW9uQ2hhbm5lbE1lc3NhZ2VSCGNoYW5uZWxz');
+@$core.Deprecated('Use updateNotificationChannelRequestDescriptor instead')
+const UpdateNotificationChannelRequest$json = const {
+  '1': 'UpdateNotificationChannelRequest',
+  '2': const [
+    const {'1': 'channel_id', '3': 1, '4': 1, '5': 9, '10': 'channelId'},
+    const {'1': 'channel_name', '3': 2, '4': 1, '5': 9, '10': 'channelName'},
+    const {'1': 'enabled_events', '3': 3, '4': 3, '5': 14, '6': '.pb.NotificationEventType', '10': 'enabledEvents'},
+    const {'1': 'preferences', '3': 4, '4': 1, '5': 11, '6': '.pb.NotificationPreferencesMessage', '10': 'preferences'},
+    const {'1': 'status', '3': 5, '4': 1, '5': 14, '6': '.pb.NotificationChannelStatus', '10': 'status'},
+  ],
+};
+
+/// Descriptor for `UpdateNotificationChannelRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List updateNotificationChannelRequestDescriptor = $convert.base64Decode('CiBVcGRhdGVOb3RpZmljYXRpb25DaGFubmVsUmVxdWVzdBIdCgpjaGFubmVsX2lkGAEgASgJUgljaGFubmVsSWQSIQoMY2hhbm5lbF9uYW1lGAIgASgJUgtjaGFubmVsTmFtZRJACg5lbmFibGVkX2V2ZW50cxgDIAMoDjIZLnBiLk5vdGlmaWNhdGlvbkV2ZW50VHlwZVINZW5hYmxlZEV2ZW50cxJECgtwcmVmZXJlbmNlcxgEIAEoCzIiLnBiLk5vdGlmaWNhdGlvblByZWZlcmVuY2VzTWVzc2FnZVILcHJlZmVyZW5jZXMSNQoGc3RhdHVzGAUgASgOMh0ucGIuTm90aWZpY2F0aW9uQ2hhbm5lbFN0YXR1c1IGc3RhdHVz');
+@$core.Deprecated('Use updateNotificationChannelResponseDescriptor instead')
+const UpdateNotificationChannelResponse$json = const {
+  '1': 'UpdateNotificationChannelResponse',
+  '2': const [
+    const {'1': 'channel', '3': 1, '4': 1, '5': 11, '6': '.pb.NotificationChannelMessage', '10': 'channel'},
+    const {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+  ],
+};
+
+/// Descriptor for `UpdateNotificationChannelResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List updateNotificationChannelResponseDescriptor = $convert.base64Decode('CiFVcGRhdGVOb3RpZmljYXRpb25DaGFubmVsUmVzcG9uc2USOAoHY2hhbm5lbBgBIAEoCzIeLnBiLk5vdGlmaWNhdGlvbkNoYW5uZWxNZXNzYWdlUgdjaGFubmVsEhgKB21lc3NhZ2UYAiABKAlSB21lc3NhZ2U=');
+@$core.Deprecated('Use testNotificationChannelRequestDescriptor instead')
+const TestNotificationChannelRequest$json = const {
+  '1': 'TestNotificationChannelRequest',
+  '2': const [
+    const {'1': 'channel_id', '3': 1, '4': 1, '5': 9, '10': 'channelId'},
+  ],
+};
+
+/// Descriptor for `TestNotificationChannelRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List testNotificationChannelRequestDescriptor = $convert.base64Decode('Ch5UZXN0Tm90aWZpY2F0aW9uQ2hhbm5lbFJlcXVlc3QSHQoKY2hhbm5lbF9pZBgBIAEoCVIJY2hhbm5lbElk');
+@$core.Deprecated('Use testNotificationChannelResponseDescriptor instead')
+const TestNotificationChannelResponse$json = const {
+  '1': 'TestNotificationChannelResponse',
+  '2': const [
+    const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    const {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+    const {'1': 'platform_message_id', '3': 3, '4': 1, '5': 9, '10': 'platformMessageId'},
+  ],
+};
+
+/// Descriptor for `TestNotificationChannelResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List testNotificationChannelResponseDescriptor = $convert.base64Decode('Ch9UZXN0Tm90aWZpY2F0aW9uQ2hhbm5lbFJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3MSGAoHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZRIuChNwbGF0Zm9ybV9tZXNzYWdlX2lkGAMgASgJUhFwbGF0Zm9ybU1lc3NhZ2VJZA==');
+@$core.Deprecated('Use getTelegramBotInfoRequestDescriptor instead')
+const GetTelegramBotInfoRequest$json = const {
+  '1': 'GetTelegramBotInfoRequest',
+};
+
+/// Descriptor for `GetTelegramBotInfoRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getTelegramBotInfoRequestDescriptor = $convert.base64Decode('ChlHZXRUZWxlZ3JhbUJvdEluZm9SZXF1ZXN0');
+@$core.Deprecated('Use getTelegramBotInfoResponseDescriptor instead')
+const GetTelegramBotInfoResponse$json = const {
+  '1': 'GetTelegramBotInfoResponse',
+  '2': const [
+    const {'1': 'bot_username', '3': 1, '4': 1, '5': 9, '10': 'botUsername'},
+    const {'1': 'bot_name', '3': 2, '4': 1, '5': 9, '10': 'botName'},
+    const {'1': 'bot_link', '3': 3, '4': 1, '5': 9, '10': 'botLink'},
+    const {'1': 'instructions', '3': 4, '4': 1, '5': 9, '10': 'instructions'},
+  ],
+};
+
+/// Descriptor for `GetTelegramBotInfoResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getTelegramBotInfoResponseDescriptor = $convert.base64Decode('ChpHZXRUZWxlZ3JhbUJvdEluZm9SZXNwb25zZRIhCgxib3RfdXNlcm5hbWUYASABKAlSC2JvdFVzZXJuYW1lEhkKCGJvdF9uYW1lGAIgASgJUgdib3ROYW1lEhkKCGJvdF9saW5rGAMgASgJUgdib3RMaW5rEiIKDGluc3RydWN0aW9ucxgEIAEoCVIMaW5zdHJ1Y3Rpb25z');
+@$core.Deprecated('Use verifyTelegramChannelRequestDescriptor instead')
+const VerifyTelegramChannelRequest$json = const {
+  '1': 'VerifyTelegramChannelRequest',
+  '2': const [
+    const {'1': 'crowdfund_id', '3': 1, '4': 1, '5': 9, '10': 'crowdfundId'},
+    const {'1': 'chat_id', '3': 2, '4': 1, '5': 9, '10': 'chatId'},
+    const {'1': 'verification_code', '3': 3, '4': 1, '5': 9, '10': 'verificationCode'},
+  ],
+};
+
+/// Descriptor for `VerifyTelegramChannelRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List verifyTelegramChannelRequestDescriptor = $convert.base64Decode('ChxWZXJpZnlUZWxlZ3JhbUNoYW5uZWxSZXF1ZXN0EiEKDGNyb3dkZnVuZF9pZBgBIAEoCVILY3Jvd2RmdW5kSWQSFwoHY2hhdF9pZBgCIAEoCVIGY2hhdElkEisKEXZlcmlmaWNhdGlvbl9jb2RlGAMgASgJUhB2ZXJpZmljYXRpb25Db2Rl');
+@$core.Deprecated('Use verifyTelegramChannelResponseDescriptor instead')
+const VerifyTelegramChannelResponse$json = const {
+  '1': 'VerifyTelegramChannelResponse',
+  '2': const [
+    const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    const {'1': 'channel', '3': 2, '4': 1, '5': 11, '6': '.pb.NotificationChannelMessage', '10': 'channel'},
+    const {'1': 'message', '3': 3, '4': 1, '5': 9, '10': 'message'},
+  ],
+};
+
+/// Descriptor for `VerifyTelegramChannelResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List verifyTelegramChannelResponseDescriptor = $convert.base64Decode('Ch1WZXJpZnlUZWxlZ3JhbUNoYW5uZWxSZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZXNzEjgKB2NoYW5uZWwYAiABKAsyHi5wYi5Ob3RpZmljYXRpb25DaGFubmVsTWVzc2FnZVIHY2hhbm5lbBIYCgdtZXNzYWdlGAMgASgJUgdtZXNzYWdl');
+@$core.Deprecated('Use getNotificationHistoryRequestDescriptor instead')
+const GetNotificationHistoryRequest$json = const {
+  '1': 'GetNotificationHistoryRequest',
+  '2': const [
+    const {'1': 'crowdfund_id', '3': 1, '4': 1, '5': 9, '10': 'crowdfundId'},
+    const {'1': 'channel_id', '3': 2, '4': 1, '5': 9, '10': 'channelId'},
+    const {'1': 'page', '3': 3, '4': 1, '5': 5, '10': 'page'},
+    const {'1': 'page_size', '3': 4, '4': 1, '5': 5, '10': 'pageSize'},
+  ],
+};
+
+/// Descriptor for `GetNotificationHistoryRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getNotificationHistoryRequestDescriptor = $convert.base64Decode('Ch1HZXROb3RpZmljYXRpb25IaXN0b3J5UmVxdWVzdBIhCgxjcm93ZGZ1bmRfaWQYASABKAlSC2Nyb3dkZnVuZElkEh0KCmNoYW5uZWxfaWQYAiABKAlSCWNoYW5uZWxJZBISCgRwYWdlGAMgASgFUgRwYWdlEhsKCXBhZ2Vfc2l6ZRgEIAEoBVIIcGFnZVNpemU=');
+@$core.Deprecated('Use getNotificationHistoryResponseDescriptor instead')
+const GetNotificationHistoryResponse$json = const {
+  '1': 'GetNotificationHistoryResponse',
+  '2': const [
+    const {'1': 'deliveries', '3': 1, '4': 3, '5': 11, '6': '.pb.NotificationDeliveryMessage', '10': 'deliveries'},
+    const {'1': 'total', '3': 2, '4': 1, '5': 5, '10': 'total'},
+    const {'1': 'page', '3': 3, '4': 1, '5': 5, '10': 'page'},
+    const {'1': 'page_size', '3': 4, '4': 1, '5': 5, '10': 'pageSize'},
+    const {'1': 'has_more', '3': 5, '4': 1, '5': 8, '10': 'hasMore'},
+  ],
+};
+
+/// Descriptor for `GetNotificationHistoryResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getNotificationHistoryResponseDescriptor = $convert.base64Decode('Ch5HZXROb3RpZmljYXRpb25IaXN0b3J5UmVzcG9uc2USPwoKZGVsaXZlcmllcxgBIAMoCzIfLnBiLk5vdGlmaWNhdGlvbkRlbGl2ZXJ5TWVzc2FnZVIKZGVsaXZlcmllcxIUCgV0b3RhbBgCIAEoBVIFdG90YWwSEgoEcGFnZRgDIAEoBVIEcGFnZRIbCglwYWdlX3NpemUYBCABKAVSCHBhZ2VTaXplEhkKCGhhc19tb3JlGAUgASgIUgdoYXNNb3Jl');

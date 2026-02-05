@@ -2626,6 +2626,897 @@ class SocialLoginResponse extends $pb.GeneratedMessage {
   void clearIsNewUser() => clearField(5);
 }
 
+class LinkedSocialAccount extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'LinkedSocialAccount', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'auth'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'provider')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'providerUserId')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'providerEmail')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'displayName')
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'profilePictureUrl')
+    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'profileUrl')
+    ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status')
+    ..aOB(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isPrimary')
+    ..aOS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'linkedAt')
+    ..aOS(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastUsedAt')
+    ..hasRequiredFields = false
+  ;
+
+  LinkedSocialAccount._() : super();
+  factory LinkedSocialAccount({
+    $core.String? id,
+    $core.String? userId,
+    $core.String? provider,
+    $core.String? providerUserId,
+    $core.String? providerEmail,
+    $core.String? displayName,
+    $core.String? profilePictureUrl,
+    $core.String? profileUrl,
+    $core.String? status,
+    $core.bool? isPrimary,
+    $core.String? linkedAt,
+    $core.String? lastUsedAt,
+  }) {
+    final _result = create();
+    if (id != null) {
+      _result.id = id;
+    }
+    if (userId != null) {
+      _result.userId = userId;
+    }
+    if (provider != null) {
+      _result.provider = provider;
+    }
+    if (providerUserId != null) {
+      _result.providerUserId = providerUserId;
+    }
+    if (providerEmail != null) {
+      _result.providerEmail = providerEmail;
+    }
+    if (displayName != null) {
+      _result.displayName = displayName;
+    }
+    if (profilePictureUrl != null) {
+      _result.profilePictureUrl = profilePictureUrl;
+    }
+    if (profileUrl != null) {
+      _result.profileUrl = profileUrl;
+    }
+    if (status != null) {
+      _result.status = status;
+    }
+    if (isPrimary != null) {
+      _result.isPrimary = isPrimary;
+    }
+    if (linkedAt != null) {
+      _result.linkedAt = linkedAt;
+    }
+    if (lastUsedAt != null) {
+      _result.lastUsedAt = lastUsedAt;
+    }
+    return _result;
+  }
+  factory LinkedSocialAccount.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory LinkedSocialAccount.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  LinkedSocialAccount clone() => LinkedSocialAccount()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  LinkedSocialAccount copyWith(void Function(LinkedSocialAccount) updates) => super.copyWith((message) => updates(message as LinkedSocialAccount)) as LinkedSocialAccount; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static LinkedSocialAccount create() => LinkedSocialAccount._();
+  LinkedSocialAccount createEmptyInstance() => create();
+  static $pb.PbList<LinkedSocialAccount> createRepeated() => $pb.PbList<LinkedSocialAccount>();
+  @$core.pragma('dart2js:noInline')
+  static LinkedSocialAccount getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<LinkedSocialAccount>(create);
+  static LinkedSocialAccount? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get id => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set id($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get userId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set userId($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasUserId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearUserId() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get provider => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set provider($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasProvider() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearProvider() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get providerUserId => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set providerUserId($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasProviderUserId() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearProviderUserId() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get providerEmail => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set providerEmail($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasProviderEmail() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearProviderEmail() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get displayName => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set displayName($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasDisplayName() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearDisplayName() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.String get profilePictureUrl => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set profilePictureUrl($core.String v) { $_setString(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasProfilePictureUrl() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearProfilePictureUrl() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.String get profileUrl => $_getSZ(7);
+  @$pb.TagNumber(8)
+  set profileUrl($core.String v) { $_setString(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasProfileUrl() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearProfileUrl() => clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.String get status => $_getSZ(8);
+  @$pb.TagNumber(9)
+  set status($core.String v) { $_setString(8, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasStatus() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearStatus() => clearField(9);
+
+  @$pb.TagNumber(10)
+  $core.bool get isPrimary => $_getBF(9);
+  @$pb.TagNumber(10)
+  set isPrimary($core.bool v) { $_setBool(9, v); }
+  @$pb.TagNumber(10)
+  $core.bool hasIsPrimary() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearIsPrimary() => clearField(10);
+
+  @$pb.TagNumber(11)
+  $core.String get linkedAt => $_getSZ(10);
+  @$pb.TagNumber(11)
+  set linkedAt($core.String v) { $_setString(10, v); }
+  @$pb.TagNumber(11)
+  $core.bool hasLinkedAt() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearLinkedAt() => clearField(11);
+
+  @$pb.TagNumber(12)
+  $core.String get lastUsedAt => $_getSZ(11);
+  @$pb.TagNumber(12)
+  set lastUsedAt($core.String v) { $_setString(11, v); }
+  @$pb.TagNumber(12)
+  $core.bool hasLastUsedAt() => $_has(11);
+  @$pb.TagNumber(12)
+  void clearLastUsedAt() => clearField(12);
+}
+
+class GetLinkedSocialAccountsRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetLinkedSocialAccountsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'auth'), createEmptyInstance: create)
+    ..hasRequiredFields = false
+  ;
+
+  GetLinkedSocialAccountsRequest._() : super();
+  factory GetLinkedSocialAccountsRequest() => create();
+  factory GetLinkedSocialAccountsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetLinkedSocialAccountsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetLinkedSocialAccountsRequest clone() => GetLinkedSocialAccountsRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetLinkedSocialAccountsRequest copyWith(void Function(GetLinkedSocialAccountsRequest) updates) => super.copyWith((message) => updates(message as GetLinkedSocialAccountsRequest)) as GetLinkedSocialAccountsRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GetLinkedSocialAccountsRequest create() => GetLinkedSocialAccountsRequest._();
+  GetLinkedSocialAccountsRequest createEmptyInstance() => create();
+  static $pb.PbList<GetLinkedSocialAccountsRequest> createRepeated() => $pb.PbList<GetLinkedSocialAccountsRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetLinkedSocialAccountsRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetLinkedSocialAccountsRequest>(create);
+  static GetLinkedSocialAccountsRequest? _defaultInstance;
+}
+
+class GetLinkedSocialAccountsResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetLinkedSocialAccountsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'auth'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..pc<LinkedSocialAccount>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accounts', $pb.PbFieldType.PM, subBuilder: LinkedSocialAccount.create)
+    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalCount', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  GetLinkedSocialAccountsResponse._() : super();
+  factory GetLinkedSocialAccountsResponse({
+    $core.bool? success,
+    $core.Iterable<LinkedSocialAccount>? accounts,
+    $core.int? totalCount,
+  }) {
+    final _result = create();
+    if (success != null) {
+      _result.success = success;
+    }
+    if (accounts != null) {
+      _result.accounts.addAll(accounts);
+    }
+    if (totalCount != null) {
+      _result.totalCount = totalCount;
+    }
+    return _result;
+  }
+  factory GetLinkedSocialAccountsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetLinkedSocialAccountsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetLinkedSocialAccountsResponse clone() => GetLinkedSocialAccountsResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetLinkedSocialAccountsResponse copyWith(void Function(GetLinkedSocialAccountsResponse) updates) => super.copyWith((message) => updates(message as GetLinkedSocialAccountsResponse)) as GetLinkedSocialAccountsResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GetLinkedSocialAccountsResponse create() => GetLinkedSocialAccountsResponse._();
+  GetLinkedSocialAccountsResponse createEmptyInstance() => create();
+  static $pb.PbList<GetLinkedSocialAccountsResponse> createRepeated() => $pb.PbList<GetLinkedSocialAccountsResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetLinkedSocialAccountsResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetLinkedSocialAccountsResponse>(create);
+  static GetLinkedSocialAccountsResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool v) { $_setBool(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.List<LinkedSocialAccount> get accounts => $_getList(1);
+
+  @$pb.TagNumber(3)
+  $core.int get totalCount => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set totalCount($core.int v) { $_setSignedInt32(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasTotalCount() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearTotalCount() => clearField(3);
+}
+
+class LinkSocialAccountRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'LinkSocialAccountRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'auth'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'provider')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'providerToken')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'providerUserId')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'providerEmail')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'displayName')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'profilePictureUrl')
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'profileUrl')
+    ..aOB(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'setAsPrimary')
+    ..hasRequiredFields = false
+  ;
+
+  LinkSocialAccountRequest._() : super();
+  factory LinkSocialAccountRequest({
+    $core.String? provider,
+    $core.String? providerToken,
+    $core.String? providerUserId,
+    $core.String? providerEmail,
+    $core.String? displayName,
+    $core.String? profilePictureUrl,
+    $core.String? profileUrl,
+    $core.bool? setAsPrimary,
+  }) {
+    final _result = create();
+    if (provider != null) {
+      _result.provider = provider;
+    }
+    if (providerToken != null) {
+      _result.providerToken = providerToken;
+    }
+    if (providerUserId != null) {
+      _result.providerUserId = providerUserId;
+    }
+    if (providerEmail != null) {
+      _result.providerEmail = providerEmail;
+    }
+    if (displayName != null) {
+      _result.displayName = displayName;
+    }
+    if (profilePictureUrl != null) {
+      _result.profilePictureUrl = profilePictureUrl;
+    }
+    if (profileUrl != null) {
+      _result.profileUrl = profileUrl;
+    }
+    if (setAsPrimary != null) {
+      _result.setAsPrimary = setAsPrimary;
+    }
+    return _result;
+  }
+  factory LinkSocialAccountRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory LinkSocialAccountRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  LinkSocialAccountRequest clone() => LinkSocialAccountRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  LinkSocialAccountRequest copyWith(void Function(LinkSocialAccountRequest) updates) => super.copyWith((message) => updates(message as LinkSocialAccountRequest)) as LinkSocialAccountRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static LinkSocialAccountRequest create() => LinkSocialAccountRequest._();
+  LinkSocialAccountRequest createEmptyInstance() => create();
+  static $pb.PbList<LinkSocialAccountRequest> createRepeated() => $pb.PbList<LinkSocialAccountRequest>();
+  @$core.pragma('dart2js:noInline')
+  static LinkSocialAccountRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<LinkSocialAccountRequest>(create);
+  static LinkSocialAccountRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get provider => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set provider($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasProvider() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearProvider() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get providerToken => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set providerToken($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasProviderToken() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearProviderToken() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get providerUserId => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set providerUserId($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasProviderUserId() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearProviderUserId() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get providerEmail => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set providerEmail($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasProviderEmail() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearProviderEmail() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get displayName => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set displayName($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasDisplayName() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearDisplayName() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get profilePictureUrl => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set profilePictureUrl($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasProfilePictureUrl() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearProfilePictureUrl() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.String get profileUrl => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set profileUrl($core.String v) { $_setString(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasProfileUrl() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearProfileUrl() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.bool get setAsPrimary => $_getBF(7);
+  @$pb.TagNumber(8)
+  set setAsPrimary($core.bool v) { $_setBool(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasSetAsPrimary() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearSetAsPrimary() => clearField(8);
+}
+
+class LinkSocialAccountResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'LinkSocialAccountResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'auth'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..aOM<LinkedSocialAccount>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'account', subBuilder: LinkedSocialAccount.create)
+    ..hasRequiredFields = false
+  ;
+
+  LinkSocialAccountResponse._() : super();
+  factory LinkSocialAccountResponse({
+    $core.bool? success,
+    $core.String? message,
+    LinkedSocialAccount? account,
+  }) {
+    final _result = create();
+    if (success != null) {
+      _result.success = success;
+    }
+    if (message != null) {
+      _result.message = message;
+    }
+    if (account != null) {
+      _result.account = account;
+    }
+    return _result;
+  }
+  factory LinkSocialAccountResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory LinkSocialAccountResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  LinkSocialAccountResponse clone() => LinkSocialAccountResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  LinkSocialAccountResponse copyWith(void Function(LinkSocialAccountResponse) updates) => super.copyWith((message) => updates(message as LinkSocialAccountResponse)) as LinkSocialAccountResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static LinkSocialAccountResponse create() => LinkSocialAccountResponse._();
+  LinkSocialAccountResponse createEmptyInstance() => create();
+  static $pb.PbList<LinkSocialAccountResponse> createRepeated() => $pb.PbList<LinkSocialAccountResponse>();
+  @$core.pragma('dart2js:noInline')
+  static LinkSocialAccountResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<LinkSocialAccountResponse>(create);
+  static LinkSocialAccountResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool v) { $_setBool(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get message => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set message($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasMessage() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMessage() => clearField(2);
+
+  @$pb.TagNumber(3)
+  LinkedSocialAccount get account => $_getN(2);
+  @$pb.TagNumber(3)
+  set account(LinkedSocialAccount v) { setField(3, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasAccount() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearAccount() => clearField(3);
+  @$pb.TagNumber(3)
+  LinkedSocialAccount ensureAccount() => $_ensure(2);
+}
+
+class UnlinkSocialAccountRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UnlinkSocialAccountRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'auth'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accountId')
+    ..hasRequiredFields = false
+  ;
+
+  UnlinkSocialAccountRequest._() : super();
+  factory UnlinkSocialAccountRequest({
+    $core.String? accountId,
+  }) {
+    final _result = create();
+    if (accountId != null) {
+      _result.accountId = accountId;
+    }
+    return _result;
+  }
+  factory UnlinkSocialAccountRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory UnlinkSocialAccountRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  UnlinkSocialAccountRequest clone() => UnlinkSocialAccountRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  UnlinkSocialAccountRequest copyWith(void Function(UnlinkSocialAccountRequest) updates) => super.copyWith((message) => updates(message as UnlinkSocialAccountRequest)) as UnlinkSocialAccountRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static UnlinkSocialAccountRequest create() => UnlinkSocialAccountRequest._();
+  UnlinkSocialAccountRequest createEmptyInstance() => create();
+  static $pb.PbList<UnlinkSocialAccountRequest> createRepeated() => $pb.PbList<UnlinkSocialAccountRequest>();
+  @$core.pragma('dart2js:noInline')
+  static UnlinkSocialAccountRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<UnlinkSocialAccountRequest>(create);
+  static UnlinkSocialAccountRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get accountId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set accountId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasAccountId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearAccountId() => clearField(1);
+}
+
+class UnlinkSocialAccountResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UnlinkSocialAccountResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'auth'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
+  UnlinkSocialAccountResponse._() : super();
+  factory UnlinkSocialAccountResponse({
+    $core.bool? success,
+    $core.String? message,
+  }) {
+    final _result = create();
+    if (success != null) {
+      _result.success = success;
+    }
+    if (message != null) {
+      _result.message = message;
+    }
+    return _result;
+  }
+  factory UnlinkSocialAccountResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory UnlinkSocialAccountResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  UnlinkSocialAccountResponse clone() => UnlinkSocialAccountResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  UnlinkSocialAccountResponse copyWith(void Function(UnlinkSocialAccountResponse) updates) => super.copyWith((message) => updates(message as UnlinkSocialAccountResponse)) as UnlinkSocialAccountResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static UnlinkSocialAccountResponse create() => UnlinkSocialAccountResponse._();
+  UnlinkSocialAccountResponse createEmptyInstance() => create();
+  static $pb.PbList<UnlinkSocialAccountResponse> createRepeated() => $pb.PbList<UnlinkSocialAccountResponse>();
+  @$core.pragma('dart2js:noInline')
+  static UnlinkSocialAccountResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<UnlinkSocialAccountResponse>(create);
+  static UnlinkSocialAccountResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool v) { $_setBool(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get message => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set message($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasMessage() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMessage() => clearField(2);
+}
+
+class SetPrimarySocialAccountRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'SetPrimarySocialAccountRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'auth'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accountId')
+    ..hasRequiredFields = false
+  ;
+
+  SetPrimarySocialAccountRequest._() : super();
+  factory SetPrimarySocialAccountRequest({
+    $core.String? accountId,
+  }) {
+    final _result = create();
+    if (accountId != null) {
+      _result.accountId = accountId;
+    }
+    return _result;
+  }
+  factory SetPrimarySocialAccountRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory SetPrimarySocialAccountRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  SetPrimarySocialAccountRequest clone() => SetPrimarySocialAccountRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  SetPrimarySocialAccountRequest copyWith(void Function(SetPrimarySocialAccountRequest) updates) => super.copyWith((message) => updates(message as SetPrimarySocialAccountRequest)) as SetPrimarySocialAccountRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static SetPrimarySocialAccountRequest create() => SetPrimarySocialAccountRequest._();
+  SetPrimarySocialAccountRequest createEmptyInstance() => create();
+  static $pb.PbList<SetPrimarySocialAccountRequest> createRepeated() => $pb.PbList<SetPrimarySocialAccountRequest>();
+  @$core.pragma('dart2js:noInline')
+  static SetPrimarySocialAccountRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<SetPrimarySocialAccountRequest>(create);
+  static SetPrimarySocialAccountRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get accountId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set accountId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasAccountId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearAccountId() => clearField(1);
+}
+
+class SetPrimarySocialAccountResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'SetPrimarySocialAccountResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'auth'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..aOM<LinkedSocialAccount>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'account', subBuilder: LinkedSocialAccount.create)
+    ..hasRequiredFields = false
+  ;
+
+  SetPrimarySocialAccountResponse._() : super();
+  factory SetPrimarySocialAccountResponse({
+    $core.bool? success,
+    $core.String? message,
+    LinkedSocialAccount? account,
+  }) {
+    final _result = create();
+    if (success != null) {
+      _result.success = success;
+    }
+    if (message != null) {
+      _result.message = message;
+    }
+    if (account != null) {
+      _result.account = account;
+    }
+    return _result;
+  }
+  factory SetPrimarySocialAccountResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory SetPrimarySocialAccountResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  SetPrimarySocialAccountResponse clone() => SetPrimarySocialAccountResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  SetPrimarySocialAccountResponse copyWith(void Function(SetPrimarySocialAccountResponse) updates) => super.copyWith((message) => updates(message as SetPrimarySocialAccountResponse)) as SetPrimarySocialAccountResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static SetPrimarySocialAccountResponse create() => SetPrimarySocialAccountResponse._();
+  SetPrimarySocialAccountResponse createEmptyInstance() => create();
+  static $pb.PbList<SetPrimarySocialAccountResponse> createRepeated() => $pb.PbList<SetPrimarySocialAccountResponse>();
+  @$core.pragma('dart2js:noInline')
+  static SetPrimarySocialAccountResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<SetPrimarySocialAccountResponse>(create);
+  static SetPrimarySocialAccountResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool v) { $_setBool(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get message => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set message($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasMessage() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMessage() => clearField(2);
+
+  @$pb.TagNumber(3)
+  LinkedSocialAccount get account => $_getN(2);
+  @$pb.TagNumber(3)
+  set account(LinkedSocialAccount v) { setField(3, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasAccount() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearAccount() => clearField(3);
+  @$pb.TagNumber(3)
+  LinkedSocialAccount ensureAccount() => $_ensure(2);
+}
+
+class ReauthorizeSocialAccountRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ReauthorizeSocialAccountRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'auth'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accountId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'providerToken')
+    ..hasRequiredFields = false
+  ;
+
+  ReauthorizeSocialAccountRequest._() : super();
+  factory ReauthorizeSocialAccountRequest({
+    $core.String? accountId,
+    $core.String? providerToken,
+  }) {
+    final _result = create();
+    if (accountId != null) {
+      _result.accountId = accountId;
+    }
+    if (providerToken != null) {
+      _result.providerToken = providerToken;
+    }
+    return _result;
+  }
+  factory ReauthorizeSocialAccountRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory ReauthorizeSocialAccountRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  ReauthorizeSocialAccountRequest clone() => ReauthorizeSocialAccountRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  ReauthorizeSocialAccountRequest copyWith(void Function(ReauthorizeSocialAccountRequest) updates) => super.copyWith((message) => updates(message as ReauthorizeSocialAccountRequest)) as ReauthorizeSocialAccountRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static ReauthorizeSocialAccountRequest create() => ReauthorizeSocialAccountRequest._();
+  ReauthorizeSocialAccountRequest createEmptyInstance() => create();
+  static $pb.PbList<ReauthorizeSocialAccountRequest> createRepeated() => $pb.PbList<ReauthorizeSocialAccountRequest>();
+  @$core.pragma('dart2js:noInline')
+  static ReauthorizeSocialAccountRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ReauthorizeSocialAccountRequest>(create);
+  static ReauthorizeSocialAccountRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get accountId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set accountId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasAccountId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearAccountId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get providerToken => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set providerToken($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasProviderToken() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearProviderToken() => clearField(2);
+}
+
+class ReauthorizeSocialAccountResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ReauthorizeSocialAccountResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'auth'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..aOM<LinkedSocialAccount>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'account', subBuilder: LinkedSocialAccount.create)
+    ..hasRequiredFields = false
+  ;
+
+  ReauthorizeSocialAccountResponse._() : super();
+  factory ReauthorizeSocialAccountResponse({
+    $core.bool? success,
+    $core.String? message,
+    LinkedSocialAccount? account,
+  }) {
+    final _result = create();
+    if (success != null) {
+      _result.success = success;
+    }
+    if (message != null) {
+      _result.message = message;
+    }
+    if (account != null) {
+      _result.account = account;
+    }
+    return _result;
+  }
+  factory ReauthorizeSocialAccountResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory ReauthorizeSocialAccountResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  ReauthorizeSocialAccountResponse clone() => ReauthorizeSocialAccountResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  ReauthorizeSocialAccountResponse copyWith(void Function(ReauthorizeSocialAccountResponse) updates) => super.copyWith((message) => updates(message as ReauthorizeSocialAccountResponse)) as ReauthorizeSocialAccountResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static ReauthorizeSocialAccountResponse create() => ReauthorizeSocialAccountResponse._();
+  ReauthorizeSocialAccountResponse createEmptyInstance() => create();
+  static $pb.PbList<ReauthorizeSocialAccountResponse> createRepeated() => $pb.PbList<ReauthorizeSocialAccountResponse>();
+  @$core.pragma('dart2js:noInline')
+  static ReauthorizeSocialAccountResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ReauthorizeSocialAccountResponse>(create);
+  static ReauthorizeSocialAccountResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool v) { $_setBool(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get message => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set message($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasMessage() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMessage() => clearField(2);
+
+  @$pb.TagNumber(3)
+  LinkedSocialAccount get account => $_getN(2);
+  @$pb.TagNumber(3)
+  set account(LinkedSocialAccount v) { setField(3, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasAccount() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearAccount() => clearField(3);
+  @$pb.TagNumber(3)
+  LinkedSocialAccount ensureAccount() => $_ensure(2);
+}
+
 class EnableTwoFactorRequest extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'EnableTwoFactorRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'auth'), createEmptyInstance: create)
     ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
@@ -6599,6 +7490,7 @@ class UserLookupResult extends $pb.GeneratedMessage {
     ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'profilePicture')
     ..aOB(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isLazervaultUser')
     ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'phoneNumber')
+    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'email')
     ..hasRequiredFields = false
   ;
 
@@ -6611,6 +7503,7 @@ class UserLookupResult extends $pb.GeneratedMessage {
     $core.String? profilePicture,
     $core.bool? isLazervaultUser,
     $core.String? phoneNumber,
+    $core.String? email,
   }) {
     final _result = create();
     if (userId != null) {
@@ -6633,6 +7526,9 @@ class UserLookupResult extends $pb.GeneratedMessage {
     }
     if (phoneNumber != null) {
       _result.phoneNumber = phoneNumber;
+    }
+    if (email != null) {
+      _result.email = email;
     }
     return _result;
   }
@@ -6719,6 +7615,15 @@ class UserLookupResult extends $pb.GeneratedMessage {
   $core.bool hasPhoneNumber() => $_has(6);
   @$pb.TagNumber(7)
   void clearPhoneNumber() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.String get email => $_getSZ(7);
+  @$pb.TagNumber(8)
+  set email($core.String v) { $_setString(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasEmail() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearEmail() => clearField(8);
 }
 
 class SearchUsersByUsernameRequest extends $pb.GeneratedMessage {

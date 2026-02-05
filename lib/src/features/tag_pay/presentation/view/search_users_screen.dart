@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../../core/services/injection_container.dart';
 import '../../../../../core/types/app_routes.dart';
+import '../../../../../core/utils/debouncer.dart';
 import '../cubit/tag_pay_cubit.dart';
 import '../cubit/tag_pay_state.dart';
 
@@ -29,11 +30,13 @@ class _SearchUsersView extends StatefulWidget {
 
 class _SearchUsersViewState extends State<_SearchUsersView> {
   final _searchController = TextEditingController();
+  final _debouncer = Debouncer.search();
   bool _isSearching = false;
 
   @override
   void dispose() {
     _searchController.dispose();
+    _debouncer.dispose();
     super.dispose();
   }
 
@@ -316,8 +319,8 @@ class _SearchUsersViewState extends State<_SearchUsersView> {
           ),
         ),
         onChanged: (value) {
-          // Debounce the search
-          Future.delayed(const Duration(milliseconds: 500), () {
+          // Debounce the search using centralized utility
+          _debouncer.run(() {
             if (value == _searchController.text) {
               _searchUsers(value);
             }

@@ -24,6 +24,7 @@ import 'package:lazervault/src/generated/user.pbgrpc.dart';
 // import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 class AuthRepositoryImpl implements IAuthRepository {
+  // ignore: unused_field
   final UserServiceClient _userServiceClient;
   final AuthServiceClient _authServiceClient;
   final GrpcCallOptionsHelper _callOptionsHelper;

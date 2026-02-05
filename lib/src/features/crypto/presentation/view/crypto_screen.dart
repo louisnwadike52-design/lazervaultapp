@@ -1179,17 +1179,6 @@ class _CryptoScreenState extends State<CryptoScreen>
     }
   }
 
-  Color _getTransactionStatusBorderColor(CryptoTransactionStatus status) {
-    switch (status) {
-      case CryptoTransactionStatus.completed:
-        return Colors.green.withValues(alpha: 0.3);
-      case CryptoTransactionStatus.pending:
-        return Colors.orange.withValues(alpha: 0.3);
-      case CryptoTransactionStatus.failed:
-        return Colors.red.withValues(alpha: 0.3);
-    }
-  }
-
   String _formatTransactionDateTime(DateTime dateTime) {
     return '${dateTime.day}/${dateTime.month}/${dateTime.year} at ${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
   }

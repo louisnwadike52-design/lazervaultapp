@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../../../../core/types/app_routes.dart';
+import '../../../../../core/services/injection_container.dart';
 import '../../domain/entities/group_entities.dart';
 import '../../data/datasources/group_account_remote_data_source.dart';
 import '../../data/services/contribution_payment_service.dart';
@@ -36,7 +37,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
   late TabController _tabController;
   Contribution? _currentContribution;
   List<ContributionPayment> _localPayments = [];
-  bool _isLoadingPayments = false;
+
   late ContributionPaymentRepositoryImpl _paymentRepository;
 
   @override
@@ -70,14 +71,14 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
   }
 
   Future<void> _initializePaymentRepository() async {
-    final remoteDataSource = GroupAccountRemoteDataSourceImpl();
+    // Use service locator to get the gRPC data source instead of mock
+    final remoteDataSource = serviceLocator<GroupAccountRemoteDataSource>();
     final paymentService = ContributionPaymentServiceImpl(remoteDataSource: remoteDataSource);
     _paymentRepository = ContributionPaymentRepositoryImpl(paymentService: paymentService);
   }
 
   Future<void> _loadLocalPayments() async {
     setState(() {
-      _isLoadingPayments = true;
     });
 
     try {
@@ -85,13 +86,11 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
       if (mounted) {
         setState(() {
           _localPayments = payments;
-          _isLoadingPayments = false;
         });
       }
     } catch (e) {
       if (mounted) {
         setState(() {
-          _isLoadingPayments = false;
         });
       }
       print('Error loading local payments: $e');
@@ -123,6 +122,35 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                   behavior: SnackBarBehavior.floating,
                 ),
               );
+            } else if (state is GroupAccountGroupLoaded) {
+              // Update the current contribution from the loaded group data
+              // This ensures statistics update after payment
+              final updatedContribution = state.contributions
+                  .where((c) => c.id == widget.contributionId)
+                  .firstOrNull;
+              if (updatedContribution != null && mounted) {
+                setState(() {
+                  _currentContribution = updatedContribution;
+                });
+                // Also refresh local payments to ensure UI is up to date
+                _loadLocalPayments();
+              }
+            } else if (state is ContributionPaymentSuccess) {
+              // Show success message and refresh data
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.message),
+                  backgroundColor: const Color(0xFF10B981),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+              // Refresh payments list
+              _loadLocalPayments();
+            } else if (state is ContributionMembersAdded) {
+              // Members were added - the cubit already calls loadGroupDetails
+              // which will emit GroupAccountGroupLoaded and update _currentContribution
+              // Note: The dialog shows the snackbar, so we don't show one here to avoid duplicates
             }
           },
           builder: (context, state) {
@@ -229,10 +257,17 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
   }
 
   Widget _buildContributionDetailsView(Contribution contribution) {
+    // Get current user info for permission display
+    final currentUserId = context.read<GroupAccountCubit>().currentUserId;
+    final isCreator = currentUserId != null && contribution.createdBy == currentUserId;
+    final isMember = currentUserId != null &&
+        contribution.members.any((m) => m.userId == currentUserId);
+
     return Column(
       children: [
         _buildHeader(contribution),
         _buildContributionSummary(contribution),
+        _buildUserPermissionsBanner(contribution, isCreator, isMember),
         _buildTabBar(),
         Expanded(
           child: TabBarView(
@@ -245,6 +280,182 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildUserPermissionsBanner(Contribution contribution, bool isCreator, bool isMember) {
+    // Determine user's role in this contribution
+    String roleLabel;
+    Color roleColor;
+    IconData roleIcon;
+    List<String> permissions;
+
+    if (isCreator) {
+      roleLabel = 'Creator';
+      roleColor = const Color(0xFFEF4444); // Red
+      roleIcon = Icons.star;
+      permissions = [
+        'Edit contribution',
+        'Add members',
+        'View all payments',
+        'Delete contribution',
+      ];
+    } else if (isMember) {
+      roleLabel = 'Member';
+      roleColor = const Color(0xFF10B981); // Green
+      roleIcon = Icons.person;
+      permissions = [
+        'Make payments',
+        'View payments',
+        'Download receipts',
+      ];
+    } else {
+      roleLabel = 'Viewer';
+      roleColor = const Color(0xFF3B82F6); // Blue
+      roleIcon = Icons.visibility;
+      permissions = [
+        'View contribution',
+        'Request to join',
+      ];
+    }
+
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
+      padding: EdgeInsets.all(12.w),
+      decoration: BoxDecoration(
+        color: roleColor.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(
+          color: roleColor.withValues(alpha: 0.3),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: EdgeInsets.all(8.w),
+            decoration: BoxDecoration(
+              color: roleColor.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(8.r),
+            ),
+            child: Icon(
+              roleIcon,
+              color: roleColor,
+              size: 18.sp,
+            ),
+          ),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      'Your Role: ',
+                      style: GoogleFonts.inter(
+                        fontSize: 12.sp,
+                        color: Colors.grey[400],
+                      ),
+                    ),
+                    Text(
+                      roleLabel,
+                      style: GoogleFonts.inter(
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w700,
+                        color: roleColor,
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 4.h),
+                Wrap(
+                  spacing: 4.w,
+                  runSpacing: 4.h,
+                  children: permissions.take(3).map((p) => Text(
+                    '• $p',
+                    style: GoogleFonts.inter(
+                      fontSize: 10.sp,
+                      color: Colors.white.withValues(alpha: 0.8),
+                    ),
+                  )).toList(),
+                ),
+              ],
+            ),
+          ),
+          if (!isMember && !isCreator)
+            GestureDetector(
+              onTap: () => _showJoinContributionDialog(contribution),
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                decoration: BoxDecoration(
+                  color: roleColor,
+                  borderRadius: BorderRadius.circular(6.r),
+                ),
+                child: Text(
+                  'Join',
+                  style: GoogleFonts.inter(
+                    fontSize: 11.sp,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  void _showJoinContributionDialog(Contribution contribution) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF1F1F1F),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+        title: Text(
+          'Join Contribution',
+          style: GoogleFonts.inter(
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        content: Text(
+          'Would you like to join "${contribution.title}"? This will add you as a contributing member.',
+          style: GoogleFonts.inter(
+            color: Colors.grey[400],
+            fontSize: 14.sp,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'Cancel',
+              style: GoogleFonts.inter(color: Colors.grey[400]),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              // TODO: Implement join contribution functionality
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Request to join sent!'),
+                  backgroundColor: const Color(0xFF10B981),
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF6C5CE7),
+            ),
+            child: Text(
+              'Join',
+              style: GoogleFonts.inter(color: Colors.white),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -693,14 +904,14 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
   Widget _buildMembersTab(Contribution contribution) {
     // Group payments by user
     final userPayments = <String, List<ContributionPayment>>{};
-    
+
     // Combine local and static payments for member grouping
     final allPayments = <ContributionPayment>[];
     allPayments.addAll(_localPayments);
     for (final staticPayment in contribution.payments) {
-      final isDuplicate = allPayments.any((localPayment) => 
+      final isDuplicate = allPayments.any((localPayment) =>
         localPayment.id == staticPayment.id ||
-        (localPayment.transactionId != null && 
+        (localPayment.transactionId != null &&
          staticPayment.transactionId != null &&
          localPayment.transactionId == staticPayment.transactionId)
       );
@@ -708,126 +919,355 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
         allPayments.add(staticPayment);
       }
     }
-    
+
     for (final payment in allPayments) {
       userPayments.putIfAbsent(payment.userId, () => []).add(payment);
     }
 
-    return Column(
+    // Get all contribution members (assigned members)
+    final contributionMembers = contribution.members;
+    final hasMembers = contributionMembers.isNotEmpty || userPayments.isNotEmpty;
+
+    return ListView(
+      padding: EdgeInsets.all(20.w),
       children: [
-        // Add Members button
-        Container(
-          width: double.infinity,
-          margin: EdgeInsets.all(20.w),
-          child: ElevatedButton.icon(
-            onPressed: () => _showAddMembersDialog(contribution),
-            icon: Icon(Icons.person_add, size: 20.sp),
-            label: Text(
-              'Add Members to Contribution',
-              style: GoogleFonts.inter(
-                fontSize: 14.sp,
-                fontWeight: FontWeight.w600,
+        // Members header with add button
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Contribution Members',
+                    style: GoogleFonts.inter(
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                  SizedBox(height: 4.h),
+                  Text(
+                    hasMembers
+                        ? '${contributionMembers.length} member${contributionMembers.length == 1 ? '' : 's'} assigned'
+                        : 'Add group members to track their contributions',
+                    style: GoogleFonts.inter(
+                      fontSize: 13.sp,
+                      color: Colors.grey[400],
+                    ),
+                  ),
+                ],
               ),
             ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF6C5CE7),
-              foregroundColor: Colors.white,
-              padding: EdgeInsets.symmetric(vertical: 16.h),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12.r),
+            SizedBox(width: 12.w),
+            ElevatedButton.icon(
+              onPressed: () => _showAddMembersDialog(contribution),
+              icon: Icon(Icons.person_add_alt_1, size: 18.sp),
+              label: Text(
+                'Add',
+                style: GoogleFonts.inter(
+                  fontSize: 13.sp,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF6C5CE7),
+                foregroundColor: Colors.white,
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10.r),
+                ),
+                elevation: 0,
+              ),
+            ),
+          ],
+        ),
+
+        SizedBox(height: 20.h),
+
+        // Members list or empty state
+        if (!hasMembers)
+          _buildEmptyMembersInline()
+        else
+          ...List.generate(
+            contributionMembers.length + userPayments.entries.where((e) =>
+                !contributionMembers.any((m) => m.userId == e.key)).length,
+            (index) {
+              // Show assigned members first
+              if (index < contributionMembers.length) {
+                final member = contributionMembers[index];
+                final payments = userPayments[member.userId] ?? [];
+                final totalPaid = payments.fold<double>(0, (sum, p) => sum + p.amount);
+
+                return _buildMemberCard(
+                  userName: member.userName,
+                  email: member.email,
+                  profileImage: member.profileImage,
+                  totalPaid: totalPaid,
+                  expectedAmount: member.expectedAmount,
+                  paymentCount: payments.length,
+                  currency: contribution.currency,
+                  hasPaidCurrentCycle: member.hasPaidCurrentCycle,
+                  member: member,
+                  joinedAt: member.joinedAt,
+                );
+              }
+
+              // Show payers who aren't assigned members
+              final nonAssignedPayers = userPayments.entries
+                  .where((e) => !contributionMembers.any((m) => m.userId == e.key))
+                  .toList();
+              final payerIndex = index - contributionMembers.length;
+              if (payerIndex < nonAssignedPayers.length) {
+                final entry = nonAssignedPayers[payerIndex];
+                final payments = entry.value;
+                final totalAmount = payments.fold<double>(0, (sum, p) => sum + p.amount);
+
+                return _buildMemberCard(
+                  userName: payments.first.userName,
+                  email: null,
+                  profileImage: null,
+                  totalPaid: totalAmount,
+                  expectedAmount: contribution.targetAmount,
+                  paymentCount: payments.length,
+                  currency: contribution.currency,
+                  hasPaidCurrentCycle: true,
+                  joinedAt: payments.first.paymentDate,
+                );
+              }
+
+              return const SizedBox.shrink();
+            },
+          ),
+      ],
+    );
+  }
+
+  Widget _buildEmptyMembersInline() {
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: 40.h),
+      child: Column(
+        children: [
+          Container(
+            padding: EdgeInsets.all(16.w),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1F1F1F),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.people_outline,
+              size: 32.sp,
+              color: Colors.grey[600],
             ),
           ),
-        ),
-        
-        // Members list
-        Expanded(
-          child: userPayments.isEmpty 
-            ? _buildEmptyMembers()
-            : ListView.builder(
-                padding: EdgeInsets.symmetric(horizontal: 20.w),
-                itemCount: userPayments.length,
-                itemBuilder: (context, index) {
-                  final userId = userPayments.keys.elementAt(index);
-                  final payments = userPayments[userId]!;
-                  final totalAmount = payments.fold<double>(0, (sum, p) => sum + p.amount);
+          SizedBox(height: 16.h),
+          Text(
+            'No Members Added',
+            style: GoogleFonts.inter(
+              fontSize: 16.sp,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+            ),
+          ),
+          SizedBox(height: 8.h),
+          Text(
+            'Tap the Add button above to assign\ngroup members to this contribution',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.inter(
+              fontSize: 13.sp,
+              color: Colors.grey[500],
+              height: 1.4,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
-                  return Container(
-                    margin: EdgeInsets.only(bottom: 12.h),
-                    padding: EdgeInsets.all(16.w),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF1F1F1F),
-                      borderRadius: BorderRadius.circular(12.r),
-                      border: Border.all(color: const Color(0xFF2D2D2D)),
-                    ),
-                    child: Row(
-                      children: [
-                        CircleAvatar(
-                          radius: 20.r,
-                          backgroundColor: const Color(0xFF6C5CE7),
+  Widget _buildMemberCard({
+    required String userName,
+    String? email,
+    String? profileImage,
+    required double totalPaid,
+    required double expectedAmount,
+    required int paymentCount,
+    required String currency,
+    required bool hasPaidCurrentCycle,
+    ContributionMember? member,
+    DateTime? joinedAt,
+  }) {
+    final progressPercent = expectedAmount > 0 ? (totalPaid / expectedAmount * 100).clamp(0.0, 100.0) : 0.0;
+    final isPaid = totalPaid >= expectedAmount;
+
+    return GestureDetector(
+      onTap: () => _showMemberDetails(
+        userName: userName,
+        email: email,
+        profileImage: profileImage,
+        totalPaid: totalPaid,
+        expectedAmount: expectedAmount,
+        paymentCount: paymentCount,
+        currency: currency,
+        hasPaidCurrentCycle: hasPaidCurrentCycle,
+        joinedAt: joinedAt ?? member?.joinedAt ?? DateTime.now(),
+        member: member,
+      ),
+      child: Container(
+        margin: EdgeInsets.only(bottom: 12.h),
+        padding: EdgeInsets.all(16.w),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1F1F1F),
+          borderRadius: BorderRadius.circular(12.r),
+        ),
+        child: Row(
+          children: [
+            CircleAvatar(
+              radius: 20.r,
+              backgroundColor: const Color(0xFF6C5CE7),
+              backgroundImage: profileImage != null ? NetworkImage(profileImage) : null,
+              child: profileImage == null
+                  ? Text(
+                      userName.isNotEmpty ? userName[0].toUpperCase() : 'U',
+                      style: GoogleFonts.inter(
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    )
+                  : null,
+            ),
+            SizedBox(width: 16.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          userName,
+                          style: GoogleFonts.inter(
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      if (isPaid) ...[
+                        SizedBox(width: 8.w),
+                        Container(
+                          padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF10B981).withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(4.r),
+                          ),
                           child: Text(
-                            payments.first.userName.isNotEmpty
-                                ? payments.first.userName[0].toUpperCase()
-                                : 'U',
+                            'Paid',
                             style: GoogleFonts.inter(
-                              fontSize: 14.sp,
+                              fontSize: 10.sp,
                               fontWeight: FontWeight.w600,
-                              color: Colors.white,
+                              color: const Color(0xFF10B981),
                             ),
                           ),
                         ),
-                        SizedBox(width: 16.w),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                payments.first.userName,
-                                style: GoogleFonts.inter(
-                                  fontSize: 14.sp,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.white,
-                                ),
-                              ),
-                              SizedBox(height: 2.h),
-                              Text(
-                                '${payments.length} payment${payments.length == 1 ? '' : 's'}',
-                                style: GoogleFonts.inter(
-                                  fontSize: 12.sp,
-                                  color: Colors.grey[400],
-                                ),
-                              ),
-                            ],
+                      ] else if (hasPaidCurrentCycle) ...[
+                        SizedBox(width: 8.w),
+                        Container(
+                          padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF3B82F6).withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(4.r),
                           ),
-                        ),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Text(
-                              '${contribution.currency} ${totalAmount.toStringAsFixed(2)}',
-                              style: GoogleFonts.inter(
-                                fontSize: 14.sp,
-                                fontWeight: FontWeight.w700,
-                                color: Colors.white,
-                              ),
+                          child: Text(
+                            'Current',
+                            style: GoogleFonts.inter(
+                              fontSize: 10.sp,
+                              fontWeight: FontWeight.w600,
+                              color: const Color(0xFF3B82F6),
                             ),
-                            SizedBox(height: 2.h),
-                            Text(
-                              '${((totalAmount / contribution.targetAmount) * 100).toStringAsFixed(1)}%',
-                              style: GoogleFonts.inter(
-                                fontSize: 12.sp,
-                                color: const Color(0xFF6C5CE7),
-                              ),
-                            ),
-                          ],
+                          ),
                         ),
                       ],
+                    ],
+                  ),
+                  SizedBox(height: 2.h),
+                  Text(
+                    email ?? '$paymentCount payment${paymentCount == 1 ? '' : 's'}',
+                    style: GoogleFonts.inter(
+                      fontSize: 12.sp,
+                      color: Colors.grey[400],
                     ),
-                  );
-                },
+                  ),
+                ],
               ),
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  '$currency ${totalPaid.toStringAsFixed(2)}',
+                  style: GoogleFonts.inter(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
+                ),
+                SizedBox(height: 2.h),
+                Text(
+                  '${progressPercent.toStringAsFixed(1)}%',
+                  style: GoogleFonts.inter(
+                    fontSize: 12.sp,
+                    color: isPaid
+                        ? const Color(0xFF10B981)
+                        : const Color(0xFF6C5CE7),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(width: 8.w),
+            Icon(
+              Icons.chevron_right,
+              color: Colors.grey[600],
+              size: 20.sp,
+            ),
+          ],
         ),
-      ],
+      ),
+    );
+  }
+
+  void _showMemberDetails({
+    required String userName,
+    String? email,
+    String? profileImage,
+    required double totalPaid,
+    required double expectedAmount,
+    required int paymentCount,
+    required String currency,
+    required bool hasPaidCurrentCycle,
+    required DateTime joinedAt,
+    ContributionMember? member,
+  }) {
+    HapticFeedback.lightImpact();
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => _ContributionMemberDetailsSheet(
+        userName: userName,
+        email: email,
+        profileImage: profileImage,
+        totalPaid: totalPaid,
+        expectedAmount: expectedAmount,
+        paymentCount: paymentCount,
+        currency: currency,
+        hasPaidCurrentCycle: hasPaidCurrentCycle,
+        joinedAt: joinedAt,
+        member: member,
+      ),
     );
   }
 
@@ -909,38 +1349,6 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
           SizedBox(height: 8.h),
           Text(
             'Be the first to contribute to this goal',
-            style: GoogleFonts.inter(
-              fontSize: 14.sp,
-              color: Colors.grey[400],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildEmptyMembers() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.people_outline,
-            size: 64.sp,
-            color: Colors.grey[600],
-          ),
-          SizedBox(height: 16.h),
-          Text(
-            'No Contributors Yet',
-            style: GoogleFonts.inter(
-              fontSize: 18.sp,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
-            ),
-          ),
-          SizedBox(height: 8.h),
-          Text(
-            'Waiting for members to make payments',
             style: GoogleFonts.inter(
               fontSize: 14.sp,
               color: Colors.grey[400],
@@ -1850,5 +2258,295 @@ Powered by LazerVault 🚀
         );
       }
     }
+  }
+}
+
+/// Contribution member details bottom sheet
+class _ContributionMemberDetailsSheet extends StatelessWidget {
+  final String userName;
+  final String? email;
+  final String? profileImage;
+  final double totalPaid;
+  final double expectedAmount;
+  final int paymentCount;
+  final String currency;
+  final bool hasPaidCurrentCycle;
+  final DateTime joinedAt;
+  final ContributionMember? member;
+
+  const _ContributionMemberDetailsSheet({
+    required this.userName,
+    this.email,
+    this.profileImage,
+    required this.totalPaid,
+    required this.expectedAmount,
+    required this.paymentCount,
+    required this.currency,
+    required this.hasPaidCurrentCycle,
+    required this.joinedAt,
+    this.member,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final progressPercent = expectedAmount > 0
+        ? (totalPaid / expectedAmount * 100).clamp(0.0, 100.0)
+        : 0.0;
+    final isPaid = totalPaid >= expectedAmount;
+    final remaining = (expectedAmount - totalPaid).clamp(0.0, expectedAmount);
+
+    return Container(
+      padding: EdgeInsets.all(24.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1F1F1F),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Handle bar
+          Container(
+            width: 40.w,
+            height: 4.h,
+            decoration: BoxDecoration(
+              color: Colors.grey[600],
+              borderRadius: BorderRadius.circular(2.r),
+            ),
+          ),
+          SizedBox(height: 24.h),
+
+          // Avatar
+          CircleAvatar(
+            radius: 40.r,
+            backgroundColor: const Color(0xFF6C5CE7),
+            backgroundImage: profileImage != null
+                ? NetworkImage(profileImage!)
+                : null,
+            child: profileImage == null
+                ? Text(
+                    userName.isNotEmpty
+                        ? userName[0].toUpperCase()
+                        : 'U',
+                    style: GoogleFonts.inter(
+                      fontSize: 28.sp,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  )
+                : null,
+          ),
+          SizedBox(height: 16.h),
+
+          // Name
+          Text(
+            userName,
+            style: GoogleFonts.inter(
+              fontSize: 20.sp,
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
+            ),
+          ),
+          SizedBox(height: 4.h),
+
+          // Email
+          if (email != null && email!.isNotEmpty)
+            Text(
+              email!,
+              style: GoogleFonts.inter(
+                fontSize: 14.sp,
+                color: Colors.grey[400],
+              ),
+            ),
+          SizedBox(height: 12.h),
+
+          // Status badges
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                decoration: BoxDecoration(
+                  color: isPaid
+                      ? const Color(0xFF10B981).withValues(alpha: 0.1)
+                      : hasPaidCurrentCycle
+                          ? const Color(0xFF3B82F6).withValues(alpha: 0.1)
+                          : const Color(0xFFF59E0B).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8.r),
+                ),
+                child: Text(
+                  isPaid
+                      ? 'Fully Paid'
+                      : hasPaidCurrentCycle
+                          ? 'Current Cycle Paid'
+                          : 'Pending Payment',
+                  style: GoogleFonts.inter(
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w600,
+                    color: isPaid
+                        ? const Color(0xFF10B981)
+                        : hasPaidCurrentCycle
+                            ? const Color(0xFF3B82F6)
+                            : const Color(0xFFF59E0B),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 24.h),
+
+          // Progress bar
+          Container(
+            padding: EdgeInsets.all(16.w),
+            decoration: BoxDecoration(
+              color: const Color(0xFF2D2D2D),
+              borderRadius: BorderRadius.circular(12.r),
+            ),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Contribution Progress',
+                      style: GoogleFonts.inter(
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
+                    Text(
+                      '${progressPercent.toStringAsFixed(1)}%',
+                      style: GoogleFonts.inter(
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w700,
+                        color: isPaid
+                            ? const Color(0xFF10B981)
+                            : const Color(0xFF6C5CE7),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 12.h),
+                Container(
+                  height: 8.h,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[800],
+                    borderRadius: BorderRadius.circular(4.r),
+                  ),
+                  child: Stack(
+                    children: [
+                      FractionallySizedBox(
+                        widthFactor: progressPercent / 100,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: isPaid
+                                  ? [const Color(0xFF10B981), const Color(0xFF34D399)]
+                                  : [const Color(0xFF6C5CE7), const Color(0xFF8B5CF6)],
+                            ),
+                            borderRadius: BorderRadius.circular(4.r),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: 12.h),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Paid: $currency ${totalPaid.toStringAsFixed(2)}',
+                      style: GoogleFonts.inter(
+                        fontSize: 12.sp,
+                        color: Colors.grey[400],
+                      ),
+                    ),
+                    Text(
+                      'Target: $currency ${expectedAmount.toStringAsFixed(2)}',
+                      style: GoogleFonts.inter(
+                        fontSize: 12.sp,
+                        color: Colors.grey[400],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          SizedBox(height: 16.h),
+
+          // Details rows
+          _buildDetailRow(Icons.calendar_today, 'Joined', _formatDate(joinedAt)),
+          _buildDetailRow(Icons.payment, 'Payments Made', '$paymentCount payment${paymentCount == 1 ? '' : 's'}'),
+          _buildDetailRow(
+            Icons.account_balance_wallet,
+            'Remaining',
+            '$currency ${remaining.toStringAsFixed(2)}',
+            valueColor: remaining > 0 ? const Color(0xFFF59E0B) : const Color(0xFF10B981),
+          ),
+
+          SizedBox(height: 24.h),
+
+          // Close button
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () => Navigator.pop(context),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF6C5CE7),
+                foregroundColor: Colors.white,
+                padding: EdgeInsets.symmetric(vertical: 14.h),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+              ),
+              child: Text(
+                'Close',
+                style: GoogleFonts.inter(
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
+          SizedBox(height: MediaQuery.of(context).padding.bottom),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDetailRow(IconData icon, String label, String value, {Color? valueColor}) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: 12.h),
+      child: Row(
+        children: [
+          Icon(icon, color: Colors.grey[500], size: 18.sp),
+          SizedBox(width: 12.w),
+          Text(
+            label,
+            style: GoogleFonts.inter(
+              fontSize: 13.sp,
+              color: Colors.grey[400],
+            ),
+          ),
+          const Spacer(),
+          Text(
+            value,
+            style: GoogleFonts.inter(
+              fontSize: 13.sp,
+              fontWeight: FontWeight.w500,
+              color: valueColor ?? Colors.white,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _formatDate(DateTime date) {
+    final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return '${months[date.month - 1]} ${date.day}, ${date.year}';
   }
 } 

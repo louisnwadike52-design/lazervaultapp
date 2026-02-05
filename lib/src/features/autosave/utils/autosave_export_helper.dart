@@ -68,8 +68,6 @@ class AutoSaveExportHelper {
 
     // Generate filename with timestamp
     final String timestamp = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
-    final String filename = 'autosave_rules_$timestamp.csv';
-
     // Share the CSV file
     await SharePlus.instance.share(ShareParams(
       text: csv,
@@ -103,8 +101,6 @@ class AutoSaveExportHelper {
 
     // Generate filename with timestamp
     final String timestamp = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
-    final String filename = 'autosave_rules_$timestamp.json';
-
     // Share the JSON file
     await SharePlus.instance.share(ShareParams(
       text: jsonString,
