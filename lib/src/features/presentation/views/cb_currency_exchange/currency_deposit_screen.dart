@@ -29,7 +29,6 @@ class _CurrencyDepositScreenState extends State<CurrencyDepositScreen>
   
   // Mock bank account details for the selected currency
   Map<String, dynamic> get _depositDetails {
-    final currency = _getCurrencyData(widget.currencyCode);
     return {
       'GBP': {
         'accountName': 'LazerVault Ltd',

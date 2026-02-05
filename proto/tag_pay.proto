@@ -55,6 +55,9 @@ service TagPayService {
 
   // Search users by username or name for tagging
   rpc SearchUsers(SearchUsersForTagRequest) returns (SearchUsersForTagResponse);
+
+  // Batch create tags for multiple users at once
+  rpc BatchCreateTags(BatchCreateTagsRequest) returns (BatchCreateTagsResponse);
 }
 
 // Tag Pay Entity
@@ -340,4 +343,19 @@ message UserSearchResult {
 
 message SearchUsersForTagResponse {
   repeated UserSearchResult users = 1;
+}
+
+// Batch Create Tags
+message BatchCreateTagsRequest {
+  repeated string tagged_user_tag_pays = 1;
+  double amount = 2;
+  string currency = 3;
+  string description = 4;
+}
+
+message BatchCreateTagsResponse {
+  bool success = 1;
+  string message = 2;
+  repeated UserTag tags = 3;
+  repeated string failed_users = 4;
 }

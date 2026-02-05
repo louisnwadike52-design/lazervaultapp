@@ -236,6 +236,7 @@ class ContributionModel extends Contribution {
     super.gracePeriodDays,
     super.allowPartialPayments,
     super.minimumBalance,
+    super.members,
   });
 
   factory ContributionModel.fromJson(Map<String, dynamic> json) {
@@ -301,9 +302,13 @@ class ContributionModel extends Contribution {
           : null,
       gracePeriodDays: json['gracePeriodDays'] as int?,
       allowPartialPayments: json['allowPartialPayments'] as bool? ?? true,
-      minimumBalance: json['minimumBalance'] != null 
-          ? (json['minimumBalance'] as num).toDouble() 
+      minimumBalance: json['minimumBalance'] != null
+          ? (json['minimumBalance'] as num).toDouble()
           : null,
+      members: (json['members'] as List<dynamic>?)
+              ?.map((x) => ContributionMemberModel.fromJson(x as Map<String, dynamic>))
+              .toList() ??
+          [],
     );
   }
 
@@ -339,6 +344,7 @@ class ContributionModel extends Contribution {
       'gracePeriodDays': gracePeriodDays,
       'allowPartialPayments': allowPartialPayments,
       'minimumBalance': minimumBalance,
+      'members': members.map((x) => (x as ContributionMemberModel).toJson()).toList(),
     };
   }
 
@@ -357,6 +363,7 @@ class ContributionModel extends Contribution {
       status: entity.status,
       createdBy: entity.createdBy,
       payments: entity.payments,
+      members: entity.members,
       metadata: entity.metadata,
       type: entity.type,
       frequency: entity.frequency,
@@ -392,6 +399,7 @@ class ContributionModel extends Contribution {
     ContributionStatus? status,
     String? createdBy,
     List<ContributionPayment>? payments,
+    List<ContributionMember>? members,
     Map<String, dynamic>? metadata,
     ContributionType? type,
     ContributionFrequency? frequency,
@@ -424,6 +432,7 @@ class ContributionModel extends Contribution {
       status: status ?? this.status,
       createdBy: createdBy ?? this.createdBy,
       payments: payments ?? this.payments,
+      members: members ?? this.members,
       metadata: metadata ?? this.metadata,
       type: type ?? this.type,
       frequency: frequency ?? this.frequency,
@@ -442,6 +451,52 @@ class ContributionModel extends Contribution {
       allowPartialPayments: allowPartialPayments ?? this.allowPartialPayments,
       minimumBalance: minimumBalance ?? this.minimumBalance,
     );
+  }
+}
+
+// Contribution Member Model
+class ContributionMemberModel extends ContributionMember {
+  const ContributionMemberModel({
+    required super.id,
+    required super.contributionId,
+    required super.userId,
+    required super.userName,
+    required super.email,
+    super.profileImage,
+    required super.joinedAt,
+    super.totalPaid = 0,
+    super.expectedAmount = 0,
+    super.hasPaidCurrentCycle = false,
+  });
+
+  factory ContributionMemberModel.fromJson(Map<String, dynamic> json) {
+    return ContributionMemberModel(
+      id: json['id'] as String,
+      contributionId: json['contributionId'] as String,
+      userId: json['userId'] as String,
+      userName: json['userName'] as String,
+      email: json['email'] as String,
+      profileImage: json['profileImage'] as String?,
+      joinedAt: DateTime.parse(json['joinedAt'] as String),
+      totalPaid: (json['totalPaid'] as num?)?.toDouble() ?? 0,
+      expectedAmount: (json['expectedAmount'] as num?)?.toDouble() ?? 0,
+      hasPaidCurrentCycle: json['hasPaidCurrentCycle'] as bool? ?? false,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'contributionId': contributionId,
+      'userId': userId,
+      'userName': userName,
+      'email': email,
+      'profileImage': profileImage,
+      'joinedAt': joinedAt.toIso8601String(),
+      'totalPaid': totalPaid,
+      'expectedAmount': expectedAmount,
+      'hasPaidCurrentCycle': hasPaidCurrentCycle,
+    };
   }
 }
 

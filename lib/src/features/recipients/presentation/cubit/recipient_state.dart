@@ -14,11 +14,29 @@ class RecipientLoading extends RecipientState {}
 
 class RecipientLoaded extends RecipientState {
   final List<RecipientModel> recipients;
+  final bool isStale;
+  final bool isRevalidating;
 
-  const RecipientLoaded(this.recipients);
+  const RecipientLoaded(
+    this.recipients, {
+    this.isStale = false,
+    this.isRevalidating = false,
+  });
+
+  RecipientLoaded copyWith({
+    List<RecipientModel>? recipients,
+    bool? isStale,
+    bool? isRevalidating,
+  }) {
+    return RecipientLoaded(
+      recipients ?? this.recipients,
+      isStale: isStale ?? this.isStale,
+      isRevalidating: isRevalidating ?? this.isRevalidating,
+    );
+  }
 
   @override
-  List<Object> get props => [recipients];
+  List<Object> get props => [recipients, isStale, isRevalidating];
 }
 
 class RecipientError extends RecipientState {

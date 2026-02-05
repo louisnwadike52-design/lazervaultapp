@@ -33,16 +33,39 @@ class _TagAmountScreenState extends State<TagAmountScreen> {
         List<UserSearchResultEntity>.from(args['selectedUsers'] as List);
 
     final localeManager = serviceLocator<LocaleManager>();
-    _currency = localeManager.currentCurrency;
-    _currencySubscription =
-        localeManager.currencyStream.listen((newCurrency) {
-      if (mounted && newCurrency != _currency) {
-        setState(() {
-          _currency = newCurrency;
-          _amountController.clear();
-        });
-      }
-    });
+
+    // Check for pre-filled data (from repeat tag feature)
+    final prefillCurrency = args['prefillCurrency'] as String?;
+    final prefillAmount = args['prefillAmount'] as double?;
+    final prefillDescription = args['prefillDescription'] as String?;
+
+    // Use pre-filled currency if available, otherwise use locale default
+    _currency = prefillCurrency ?? localeManager.currentCurrency;
+
+    // Pre-fill amount if available
+    if (prefillAmount != null && prefillAmount > 0) {
+      _amountController.text = prefillAmount.toStringAsFixed(
+        prefillAmount == prefillAmount.roundToDouble() ? 0 : 2,
+      );
+    }
+
+    // Pre-fill description if available
+    if (prefillDescription != null && prefillDescription.isNotEmpty) {
+      _descriptionController.text = prefillDescription;
+    }
+
+    // Only listen to currency changes if not using a pre-filled currency
+    if (prefillCurrency == null) {
+      _currencySubscription =
+          localeManager.currencyStream.listen((newCurrency) {
+        if (mounted && newCurrency != _currency) {
+          setState(() {
+            _currency = newCurrency;
+            _amountController.clear();
+          });
+        }
+      });
+    }
   }
 
   @override

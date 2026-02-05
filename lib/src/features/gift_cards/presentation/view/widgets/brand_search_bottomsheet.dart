@@ -1,10 +1,10 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:lazervault/core/utils/debouncer.dart';
 import '../../../cubit/gift_card_cubit.dart';
 import '../../../cubit/gift_card_state.dart';
 import '../../../domain/entities/gift_card_entity.dart';
@@ -32,7 +32,7 @@ class _BrandSearchBottomSheetState extends State<BrandSearchBottomSheet>
   late Animation<Offset> _slideAnimation;
 
   final TextEditingController _searchController = TextEditingController();
-  Timer? _debounceTimer;
+  final Debouncer _debouncer = Debouncer.typing();
   GiftCardCategory? _selectedCategory;
   List<GiftCardBrand> _filteredBrands = [];
   List<GiftCardBrand> _allBrands = [];
@@ -68,16 +68,12 @@ class _BrandSearchBottomSheetState extends State<BrandSearchBottomSheet>
   void dispose() {
     _animationController.dispose();
     _searchController.dispose();
-    _debounceTimer?.cancel();
+    _debouncer.dispose();
     super.dispose();
   }
 
   void _onSearchChanged(String query) {
-    // Cancel previous timer
-    _debounceTimer?.cancel();
-
-    // Start new timer (300ms debounce)
-    _debounceTimer = Timer(const Duration(milliseconds: 300), () {
+    _debouncer.run(() {
       if (query.isEmpty) {
         setState(() {
           _filteredBrands = _selectedCategory == null

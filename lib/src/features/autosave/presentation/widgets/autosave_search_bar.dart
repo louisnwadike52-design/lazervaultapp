@@ -1,6 +1,6 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../../../../core/utils/debouncer.dart';
 
 class AutoSaveSearchBar extends StatefulWidget {
   final Function(String) onSearchChanged;
@@ -18,7 +18,7 @@ class AutoSaveSearchBar extends StatefulWidget {
 
 class _AutoSaveSearchBarState extends State<AutoSaveSearchBar> {
   late TextEditingController _controller;
-  Timer? _debounce;
+  final Debouncer _debouncer = Debouncer.search();
 
   @override
   void initState() {
@@ -28,14 +28,13 @@ class _AutoSaveSearchBarState extends State<AutoSaveSearchBar> {
 
   @override
   void dispose() {
-    _debounce?.cancel();
+    _debouncer.dispose();
     _controller.dispose();
     super.dispose();
   }
 
   void _onSearchChanged(String query) {
-    if (_debounce?.isActive ?? false) _debounce!.cancel();
-    _debounce = Timer(const Duration(milliseconds: 500), () {
+    _debouncer.run(() {
       widget.onSearchChanged(query);
     });
   }

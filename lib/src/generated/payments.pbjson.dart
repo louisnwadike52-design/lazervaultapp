@@ -71,11 +71,13 @@ const SendFundsRequest$json = const {
     const {'1': 'description', '3': 4, '4': 1, '5': 9, '10': 'description'},
     const {'1': 'transaction_id', '3': 5, '4': 1, '5': 9, '10': 'transactionId'},
     const {'1': 'verification_token', '3': 6, '4': 1, '5': 9, '10': 'verificationToken'},
+    const {'1': 'destination_bank_code', '3': 7, '4': 1, '5': 9, '10': 'destinationBankCode'},
+    const {'1': 'beneficiary_name', '3': 8, '4': 1, '5': 9, '10': 'beneficiaryName'},
   ],
 };
 
 /// Descriptor for `SendFundsRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List sendFundsRequestDescriptor = $convert.base64Decode('ChBTZW5kRnVuZHNSZXF1ZXN0EiYKD2Zyb21fYWNjb3VudF9pZBgBIAEoCVINZnJvbUFjY291bnRJZBIqChF0b19hY2NvdW50X251bWJlchgCIAEoCVIPdG9BY2NvdW50TnVtYmVyEhYKBmFtb3VudBgDIAEoAVIGYW1vdW50EiAKC2Rlc2NyaXB0aW9uGAQgASgJUgtkZXNjcmlwdGlvbhIlCg50cmFuc2FjdGlvbl9pZBgFIAEoCVINdHJhbnNhY3Rpb25JZBItChJ2ZXJpZmljYXRpb25fdG9rZW4YBiABKAlSEXZlcmlmaWNhdGlvblRva2Vu');
+final $typed_data.Uint8List sendFundsRequestDescriptor = $convert.base64Decode('ChBTZW5kRnVuZHNSZXF1ZXN0EiYKD2Zyb21fYWNjb3VudF9pZBgBIAEoCVINZnJvbUFjY291bnRJZBIqChF0b19hY2NvdW50X251bWJlchgCIAEoCVIPdG9BY2NvdW50TnVtYmVyEhYKBmFtb3VudBgDIAEoAVIGYW1vdW50EiAKC2Rlc2NyaXB0aW9uGAQgASgJUgtkZXNjcmlwdGlvbhIlCg50cmFuc2FjdGlvbl9pZBgFIAEoCVINdHJhbnNhY3Rpb25JZBItChJ2ZXJpZmljYXRpb25fdG9rZW4YBiABKAlSEXZlcmlmaWNhdGlvblRva2VuEjIKFWRlc3RpbmF0aW9uX2JhbmtfY29kZRgHIAEoCVITZGVzdGluYXRpb25CYW5rQ29kZRIpChBiZW5lZmljaWFyeV9uYW1lGAggASgJUg9iZW5lZmljaWFyeU5hbWU=');
 @$core.Deprecated('Use sendFundsResponseDescriptor instead')
 const SendFundsResponse$json = const {
   '1': 'SendFundsResponse',
@@ -499,3 +501,445 @@ const VerifyBankAccountResponse$json = const {
 
 /// Descriptor for `VerifyBankAccountResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List verifyBankAccountResponseDescriptor = $convert.base64Decode('ChlWZXJpZnlCYW5rQWNjb3VudFJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3MSJQoOYWNjb3VudF9udW1iZXIYAiABKAlSDWFjY291bnROdW1iZXISIQoMYWNjb3VudF9uYW1lGAMgASgJUgthY2NvdW50TmFtZRIbCgliYW5rX25hbWUYBCABKAlSCGJhbmtOYW1lEhsKCWJhbmtfY29kZRgFIAEoCVIIYmFua0NvZGUSLwoTdmVyaWZpY2F0aW9uX3N0YXR1cxgGIAEoCVISdmVyaWZpY2F0aW9uU3RhdHVzEh0KCmVycm9yX2NvZGUYByABKAlSCWVycm9yQ29kZRIjCg1lcnJvcl9tZXNzYWdlGAggASgJUgxlcnJvck1lc3NhZ2USIQoMdXNlcl9tZXNzYWdlGAkgASgJUgt1c2VyTWVzc2FnZQ==');
+@$core.Deprecated('Use initiateDomesticTransferRequestDescriptor instead')
+const InitiateDomesticTransferRequest$json = const {
+  '1': 'InitiateDomesticTransferRequest',
+  '2': const [
+    const {'1': 'source_account_id', '3': 1, '4': 1, '5': 9, '10': 'sourceAccountId'},
+    const {'1': 'amount', '3': 2, '4': 1, '5': 3, '10': 'amount'},
+    const {'1': 'currency', '3': 3, '4': 1, '5': 9, '10': 'currency'},
+    const {'1': 'destination_account', '3': 4, '4': 1, '5': 9, '10': 'destinationAccount'},
+    const {'1': 'destination_bank_code', '3': 5, '4': 1, '5': 9, '10': 'destinationBankCode'},
+    const {'1': 'destination_name', '3': 6, '4': 1, '5': 9, '10': 'destinationName'},
+    const {'1': 'narration', '3': 7, '4': 1, '5': 9, '10': 'narration'},
+    const {'1': 'reference', '3': 8, '4': 1, '5': 9, '10': 'reference'},
+    const {'1': 'idempotency_key', '3': 9, '4': 1, '5': 9, '10': 'idempotencyKey'},
+    const {'1': 'verification_token', '3': 10, '4': 1, '5': 9, '10': 'verificationToken'},
+    const {'1': 'transaction_id', '3': 11, '4': 1, '5': 9, '10': 'transactionId'},
+  ],
+};
+
+/// Descriptor for `InitiateDomesticTransferRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List initiateDomesticTransferRequestDescriptor = $convert.base64Decode('Ch9Jbml0aWF0ZURvbWVzdGljVHJhbnNmZXJSZXF1ZXN0EioKEXNvdXJjZV9hY2NvdW50X2lkGAEgASgJUg9zb3VyY2VBY2NvdW50SWQSFgoGYW1vdW50GAIgASgDUgZhbW91bnQSGgoIY3VycmVuY3kYAyABKAlSCGN1cnJlbmN5Ei8KE2Rlc3RpbmF0aW9uX2FjY291bnQYBCABKAlSEmRlc3RpbmF0aW9uQWNjb3VudBIyChVkZXN0aW5hdGlvbl9iYW5rX2NvZGUYBSABKAlSE2Rlc3RpbmF0aW9uQmFua0NvZGUSKQoQZGVzdGluYXRpb25fbmFtZRgGIAEoCVIPZGVzdGluYXRpb25OYW1lEhwKCW5hcnJhdGlvbhgHIAEoCVIJbmFycmF0aW9uEhwKCXJlZmVyZW5jZRgIIAEoCVIJcmVmZXJlbmNlEicKD2lkZW1wb3RlbmN5X2tleRgJIAEoCVIOaWRlbXBvdGVuY3lLZXkSLQoSdmVyaWZpY2F0aW9uX3Rva2VuGAogASgJUhF2ZXJpZmljYXRpb25Ub2tlbhIlCg50cmFuc2FjdGlvbl9pZBgLIAEoCVINdHJhbnNhY3Rpb25JZA==');
+@$core.Deprecated('Use initiateInternalTransferRequestDescriptor instead')
+const InitiateInternalTransferRequest$json = const {
+  '1': 'InitiateInternalTransferRequest',
+  '2': const [
+    const {'1': 'from_account_id', '3': 1, '4': 1, '5': 9, '10': 'fromAccountId'},
+    const {'1': 'to_account_id', '3': 2, '4': 1, '5': 9, '10': 'toAccountId'},
+    const {'1': 'to_username', '3': 3, '4': 1, '5': 9, '10': 'toUsername'},
+    const {'1': 'amount', '3': 4, '4': 1, '5': 3, '10': 'amount'},
+    const {'1': 'currency', '3': 5, '4': 1, '5': 9, '10': 'currency'},
+    const {'1': 'narration', '3': 6, '4': 1, '5': 9, '10': 'narration'},
+    const {'1': 'reference', '3': 7, '4': 1, '5': 9, '10': 'reference'},
+    const {'1': 'idempotency_key', '3': 8, '4': 1, '5': 9, '10': 'idempotencyKey'},
+    const {'1': 'verification_token', '3': 9, '4': 1, '5': 9, '10': 'verificationToken'},
+    const {'1': 'transaction_id', '3': 10, '4': 1, '5': 9, '10': 'transactionId'},
+    const {'1': 'recipient_info', '3': 11, '4': 1, '5': 11, '6': '.payments.RecipientInfo', '10': 'recipientInfo'},
+  ],
+};
+
+/// Descriptor for `InitiateInternalTransferRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List initiateInternalTransferRequestDescriptor = $convert.base64Decode('Ch9Jbml0aWF0ZUludGVybmFsVHJhbnNmZXJSZXF1ZXN0EiYKD2Zyb21fYWNjb3VudF9pZBgBIAEoCVINZnJvbUFjY291bnRJZBIiCg10b19hY2NvdW50X2lkGAIgASgJUgt0b0FjY291bnRJZBIfCgt0b191c2VybmFtZRgDIAEoCVIKdG9Vc2VybmFtZRIWCgZhbW91bnQYBCABKANSBmFtb3VudBIaCghjdXJyZW5jeRgFIAEoCVIIY3VycmVuY3kSHAoJbmFycmF0aW9uGAYgASgJUgluYXJyYXRpb24SHAoJcmVmZXJlbmNlGAcgASgJUglyZWZlcmVuY2USJwoPaWRlbXBvdGVuY3lfa2V5GAggASgJUg5pZGVtcG90ZW5jeUtleRItChJ2ZXJpZmljYXRpb25fdG9rZW4YCSABKAlSEXZlcmlmaWNhdGlvblRva2VuEiUKDnRyYW5zYWN0aW9uX2lkGAogASgJUg10cmFuc2FjdGlvbklkEj4KDnJlY2lwaWVudF9pbmZvGAsgASgLMhcucGF5bWVudHMuUmVjaXBpZW50SW5mb1INcmVjaXBpZW50SW5mbw==');
+@$core.Deprecated('Use recipientInfoDescriptor instead')
+const RecipientInfo$json = const {
+  '1': 'RecipientInfo',
+  '2': const [
+    const {'1': 'name', '3': 1, '4': 1, '5': 9, '10': 'name'},
+    const {'1': 'recipient_type', '3': 2, '4': 1, '5': 9, '10': 'recipientType'},
+    const {'1': 'recipient_source', '3': 3, '4': 1, '5': 9, '10': 'recipientSource'},
+    const {'1': 'username', '3': 4, '4': 1, '5': 9, '10': 'username'},
+    const {'1': 'user_id', '3': 5, '4': 1, '5': 9, '10': 'userId'},
+    const {'1': 'account_number', '3': 6, '4': 1, '5': 9, '10': 'accountNumber'},
+    const {'1': 'bank_code', '3': 7, '4': 1, '5': 9, '10': 'bankCode'},
+    const {'1': 'bank_name', '3': 8, '4': 1, '5': 9, '10': 'bankName'},
+    const {'1': 'phone_number', '3': 9, '4': 1, '5': 9, '10': 'phoneNumber'},
+  ],
+};
+
+/// Descriptor for `RecipientInfo`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List recipientInfoDescriptor = $convert.base64Decode('Cg1SZWNpcGllbnRJbmZvEhIKBG5hbWUYASABKAlSBG5hbWUSJQoOcmVjaXBpZW50X3R5cGUYAiABKAlSDXJlY2lwaWVudFR5cGUSKQoQcmVjaXBpZW50X3NvdXJjZRgDIAEoCVIPcmVjaXBpZW50U291cmNlEhoKCHVzZXJuYW1lGAQgASgJUgh1c2VybmFtZRIXCgd1c2VyX2lkGAUgASgJUgZ1c2VySWQSJQoOYWNjb3VudF9udW1iZXIYBiABKAlSDWFjY291bnROdW1iZXISGwoJYmFua19jb2RlGAcgASgJUghiYW5rQ29kZRIbCgliYW5rX25hbWUYCCABKAlSCGJhbmtOYW1lEiEKDHBob25lX251bWJlchgJIAEoCVILcGhvbmVOdW1iZXI=');
+@$core.Deprecated('Use initiateInternationalTransferRequestDescriptor instead')
+const InitiateInternationalTransferRequest$json = const {
+  '1': 'InitiateInternationalTransferRequest',
+  '2': const [
+    const {'1': 'source_account_id', '3': 1, '4': 1, '5': 9, '10': 'sourceAccountId'},
+    const {'1': 'amount', '3': 2, '4': 1, '5': 3, '10': 'amount'},
+    const {'1': 'source_currency', '3': 3, '4': 1, '5': 9, '10': 'sourceCurrency'},
+    const {'1': 'destination_currency', '3': 4, '4': 1, '5': 9, '10': 'destinationCurrency'},
+    const {'1': 'destination_country', '3': 5, '4': 1, '5': 9, '10': 'destinationCountry'},
+    const {'1': 'recipient_type', '3': 6, '4': 1, '5': 9, '10': 'recipientType'},
+    const {'1': 'recipient_details', '3': 7, '4': 3, '5': 11, '6': '.payments.InitiateInternationalTransferRequest.RecipientDetailsEntry', '10': 'recipientDetails'},
+    const {'1': 'narration', '3': 8, '4': 1, '5': 9, '10': 'narration'},
+    const {'1': 'reference', '3': 9, '4': 1, '5': 9, '10': 'reference'},
+    const {'1': 'idempotency_key', '3': 10, '4': 1, '5': 9, '10': 'idempotencyKey'},
+    const {'1': 'verification_token', '3': 11, '4': 1, '5': 9, '10': 'verificationToken'},
+    const {'1': 'transaction_id', '3': 12, '4': 1, '5': 9, '10': 'transactionId'},
+  ],
+  '3': const [InitiateInternationalTransferRequest_RecipientDetailsEntry$json],
+};
+
+@$core.Deprecated('Use initiateInternationalTransferRequestDescriptor instead')
+const InitiateInternationalTransferRequest_RecipientDetailsEntry$json = const {
+  '1': 'RecipientDetailsEntry',
+  '2': const [
+    const {'1': 'key', '3': 1, '4': 1, '5': 9, '10': 'key'},
+    const {'1': 'value', '3': 2, '4': 1, '5': 9, '10': 'value'},
+  ],
+  '7': const {'7': true},
+};
+
+/// Descriptor for `InitiateInternationalTransferRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List initiateInternationalTransferRequestDescriptor = $convert.base64Decode('CiRJbml0aWF0ZUludGVybmF0aW9uYWxUcmFuc2ZlclJlcXVlc3QSKgoRc291cmNlX2FjY291bnRfaWQYASABKAlSD3NvdXJjZUFjY291bnRJZBIWCgZhbW91bnQYAiABKANSBmFtb3VudBInCg9zb3VyY2VfY3VycmVuY3kYAyABKAlSDnNvdXJjZUN1cnJlbmN5EjEKFGRlc3RpbmF0aW9uX2N1cnJlbmN5GAQgASgJUhNkZXN0aW5hdGlvbkN1cnJlbmN5Ei8KE2Rlc3RpbmF0aW9uX2NvdW50cnkYBSABKAlSEmRlc3RpbmF0aW9uQ291bnRyeRIlCg5yZWNpcGllbnRfdHlwZRgGIAEoCVINcmVjaXBpZW50VHlwZRJxChFyZWNpcGllbnRfZGV0YWlscxgHIAMoCzJELnBheW1lbnRzLkluaXRpYXRlSW50ZXJuYXRpb25hbFRyYW5zZmVyUmVxdWVzdC5SZWNpcGllbnREZXRhaWxzRW50cnlSEHJlY2lwaWVudERldGFpbHMSHAoJbmFycmF0aW9uGAggASgJUgluYXJyYXRpb24SHAoJcmVmZXJlbmNlGAkgASgJUglyZWZlcmVuY2USJwoPaWRlbXBvdGVuY3lfa2V5GAogASgJUg5pZGVtcG90ZW5jeUtleRItChJ2ZXJpZmljYXRpb25fdG9rZW4YCyABKAlSEXZlcmlmaWNhdGlvblRva2VuEiUKDnRyYW5zYWN0aW9uX2lkGAwgASgJUg10cmFuc2FjdGlvbklkGkMKFVJlY2lwaWVudERldGFpbHNFbnRyeRIQCgNrZXkYASABKAlSA2tleRIUCgV2YWx1ZRgCIAEoCVIFdmFsdWU6AjgB');
+@$core.Deprecated('Use initiateUsernameTransferRequestDescriptor instead')
+const InitiateUsernameTransferRequest$json = const {
+  '1': 'InitiateUsernameTransferRequest',
+  '2': const [
+    const {'1': 'to_username', '3': 1, '4': 1, '5': 9, '10': 'toUsername'},
+    const {'1': 'amount', '3': 2, '4': 1, '5': 3, '10': 'amount'},
+    const {'1': 'currency', '3': 3, '4': 1, '5': 9, '10': 'currency'},
+    const {'1': 'narration', '3': 4, '4': 1, '5': 9, '10': 'narration'},
+    const {'1': 'idempotency_key', '3': 5, '4': 1, '5': 9, '10': 'idempotencyKey'},
+    const {'1': 'verification_token', '3': 6, '4': 1, '5': 9, '10': 'verificationToken'},
+    const {'1': 'transaction_id', '3': 7, '4': 1, '5': 9, '10': 'transactionId'},
+  ],
+};
+
+/// Descriptor for `InitiateUsernameTransferRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List initiateUsernameTransferRequestDescriptor = $convert.base64Decode('Ch9Jbml0aWF0ZVVzZXJuYW1lVHJhbnNmZXJSZXF1ZXN0Eh8KC3RvX3VzZXJuYW1lGAEgASgJUgp0b1VzZXJuYW1lEhYKBmFtb3VudBgCIAEoA1IGYW1vdW50EhoKCGN1cnJlbmN5GAMgASgJUghjdXJyZW5jeRIcCgluYXJyYXRpb24YBCABKAlSCW5hcnJhdGlvbhInCg9pZGVtcG90ZW5jeV9rZXkYBSABKAlSDmlkZW1wb3RlbmN5S2V5Ei0KEnZlcmlmaWNhdGlvbl90b2tlbhgGIAEoCVIRdmVyaWZpY2F0aW9uVG9rZW4SJQoOdHJhbnNhY3Rpb25faWQYByABKAlSDXRyYW5zYWN0aW9uSWQ=');
+@$core.Deprecated('Use initiatePhoneTransferRequestDescriptor instead')
+const InitiatePhoneTransferRequest$json = const {
+  '1': 'InitiatePhoneTransferRequest',
+  '2': const [
+    const {'1': 'to_phone', '3': 1, '4': 1, '5': 9, '10': 'toPhone'},
+    const {'1': 'amount', '3': 2, '4': 1, '5': 3, '10': 'amount'},
+    const {'1': 'currency', '3': 3, '4': 1, '5': 9, '10': 'currency'},
+    const {'1': 'narration', '3': 4, '4': 1, '5': 9, '10': 'narration'},
+    const {'1': 'idempotency_key', '3': 5, '4': 1, '5': 9, '10': 'idempotencyKey'},
+    const {'1': 'verification_token', '3': 6, '4': 1, '5': 9, '10': 'verificationToken'},
+    const {'1': 'transaction_id', '3': 7, '4': 1, '5': 9, '10': 'transactionId'},
+  ],
+};
+
+/// Descriptor for `InitiatePhoneTransferRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List initiatePhoneTransferRequestDescriptor = $convert.base64Decode('ChxJbml0aWF0ZVBob25lVHJhbnNmZXJSZXF1ZXN0EhkKCHRvX3Bob25lGAEgASgJUgd0b1Bob25lEhYKBmFtb3VudBgCIAEoA1IGYW1vdW50EhoKCGN1cnJlbmN5GAMgASgJUghjdXJyZW5jeRIcCgluYXJyYXRpb24YBCABKAlSCW5hcnJhdGlvbhInCg9pZGVtcG90ZW5jeV9rZXkYBSABKAlSDmlkZW1wb3RlbmN5S2V5Ei0KEnZlcmlmaWNhdGlvbl90b2tlbhgGIAEoCVIRdmVyaWZpY2F0aW9uVG9rZW4SJQoOdHJhbnNhY3Rpb25faWQYByABKAlSDXRyYW5zYWN0aW9uSWQ=');
+@$core.Deprecated('Use initiateTransferResponseDescriptor instead')
+const InitiateTransferResponse$json = const {
+  '1': 'InitiateTransferResponse',
+  '2': const [
+    const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    const {'1': 'error_code', '3': 2, '4': 1, '5': 9, '10': 'errorCode'},
+    const {'1': 'error_message', '3': 3, '4': 1, '5': 9, '10': 'errorMessage'},
+    const {'1': 'transfer', '3': 4, '4': 1, '5': 11, '6': '.payments.TransferDetail', '10': 'transfer'},
+  ],
+};
+
+/// Descriptor for `InitiateTransferResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List initiateTransferResponseDescriptor = $convert.base64Decode('ChhJbml0aWF0ZVRyYW5zZmVyUmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2VzcxIdCgplcnJvcl9jb2RlGAIgASgJUgllcnJvckNvZGUSIwoNZXJyb3JfbWVzc2FnZRgDIAEoCVIMZXJyb3JNZXNzYWdlEjQKCHRyYW5zZmVyGAQgASgLMhgucGF5bWVudHMuVHJhbnNmZXJEZXRhaWxSCHRyYW5zZmVy');
+@$core.Deprecated('Use transferDetailDescriptor instead')
+const TransferDetail$json = const {
+  '1': 'TransferDetail',
+  '2': const [
+    const {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
+    const {'1': 'user_id', '3': 2, '4': 1, '5': 9, '10': 'userId'},
+    const {'1': 'type', '3': 3, '4': 1, '5': 9, '10': 'type'},
+    const {'1': 'status', '3': 4, '4': 1, '5': 9, '10': 'status'},
+    const {'1': 'amount', '3': 5, '4': 1, '5': 3, '10': 'amount'},
+    const {'1': 'currency', '3': 6, '4': 1, '5': 9, '10': 'currency'},
+    const {'1': 'fee', '3': 7, '4': 1, '5': 3, '10': 'fee'},
+    const {'1': 'source_account_id', '3': 8, '4': 1, '5': 9, '10': 'sourceAccountId'},
+    const {'1': 'destination_account', '3': 9, '4': 1, '5': 9, '10': 'destinationAccount'},
+    const {'1': 'destination_bank_code', '3': 10, '4': 1, '5': 9, '10': 'destinationBankCode'},
+    const {'1': 'destination_bank_name', '3': 11, '4': 1, '5': 9, '10': 'destinationBankName'},
+    const {'1': 'destination_name', '3': 12, '4': 1, '5': 9, '10': 'destinationName'},
+    const {'1': 'destination_country', '3': 13, '4': 1, '5': 9, '10': 'destinationCountry'},
+    const {'1': 'reference', '3': 14, '4': 1, '5': 9, '10': 'reference'},
+    const {'1': 'provider_ref', '3': 15, '4': 1, '5': 9, '10': 'providerRef'},
+    const {'1': 'provider', '3': 16, '4': 1, '5': 9, '10': 'provider'},
+    const {'1': 'narration', '3': 17, '4': 1, '5': 9, '10': 'narration'},
+    const {'1': 'failure_reason', '3': 18, '4': 1, '5': 9, '10': 'failureReason'},
+    const {'1': 'created_at', '3': 19, '4': 1, '5': 9, '10': 'createdAt'},
+    const {'1': 'completed_at', '3': 20, '4': 1, '5': 9, '10': 'completedAt'},
+  ],
+};
+
+/// Descriptor for `TransferDetail`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List transferDetailDescriptor = $convert.base64Decode('Cg5UcmFuc2ZlckRldGFpbBIOCgJpZBgBIAEoCVICaWQSFwoHdXNlcl9pZBgCIAEoCVIGdXNlcklkEhIKBHR5cGUYAyABKAlSBHR5cGUSFgoGc3RhdHVzGAQgASgJUgZzdGF0dXMSFgoGYW1vdW50GAUgASgDUgZhbW91bnQSGgoIY3VycmVuY3kYBiABKAlSCGN1cnJlbmN5EhAKA2ZlZRgHIAEoA1IDZmVlEioKEXNvdXJjZV9hY2NvdW50X2lkGAggASgJUg9zb3VyY2VBY2NvdW50SWQSLwoTZGVzdGluYXRpb25fYWNjb3VudBgJIAEoCVISZGVzdGluYXRpb25BY2NvdW50EjIKFWRlc3RpbmF0aW9uX2JhbmtfY29kZRgKIAEoCVITZGVzdGluYXRpb25CYW5rQ29kZRIyChVkZXN0aW5hdGlvbl9iYW5rX25hbWUYCyABKAlSE2Rlc3RpbmF0aW9uQmFua05hbWUSKQoQZGVzdGluYXRpb25fbmFtZRgMIAEoCVIPZGVzdGluYXRpb25OYW1lEi8KE2Rlc3RpbmF0aW9uX2NvdW50cnkYDSABKAlSEmRlc3RpbmF0aW9uQ291bnRyeRIcCglyZWZlcmVuY2UYDiABKAlSCXJlZmVyZW5jZRIhCgxwcm92aWRlcl9yZWYYDyABKAlSC3Byb3ZpZGVyUmVmEhoKCHByb3ZpZGVyGBAgASgJUghwcm92aWRlchIcCgluYXJyYXRpb24YESABKAlSCW5hcnJhdGlvbhIlCg5mYWlsdXJlX3JlYXNvbhgSIAEoCVINZmFpbHVyZVJlYXNvbhIdCgpjcmVhdGVkX2F0GBMgASgJUgljcmVhdGVkQXQSIQoMY29tcGxldGVkX2F0GBQgASgJUgtjb21wbGV0ZWRBdA==');
+@$core.Deprecated('Use getTransferStatusRequestDescriptor instead')
+const GetTransferStatusRequest$json = const {
+  '1': 'GetTransferStatusRequest',
+  '2': const [
+    const {'1': 'reference', '3': 1, '4': 1, '5': 9, '10': 'reference'},
+  ],
+};
+
+/// Descriptor for `GetTransferStatusRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getTransferStatusRequestDescriptor = $convert.base64Decode('ChhHZXRUcmFuc2ZlclN0YXR1c1JlcXVlc3QSHAoJcmVmZXJlbmNlGAEgASgJUglyZWZlcmVuY2U=');
+@$core.Deprecated('Use getTransferStatusResponseDescriptor instead')
+const GetTransferStatusResponse$json = const {
+  '1': 'GetTransferStatusResponse',
+  '2': const [
+    const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    const {'1': 'error_code', '3': 2, '4': 1, '5': 9, '10': 'errorCode'},
+    const {'1': 'error_message', '3': 3, '4': 1, '5': 9, '10': 'errorMessage'},
+    const {'1': 'transfer', '3': 4, '4': 1, '5': 11, '6': '.payments.TransferDetail', '10': 'transfer'},
+  ],
+};
+
+/// Descriptor for `GetTransferStatusResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getTransferStatusResponseDescriptor = $convert.base64Decode('ChlHZXRUcmFuc2ZlclN0YXR1c1Jlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3MSHQoKZXJyb3JfY29kZRgCIAEoCVIJZXJyb3JDb2RlEiMKDWVycm9yX21lc3NhZ2UYAyABKAlSDGVycm9yTWVzc2FnZRI0Cgh0cmFuc2ZlchgEIAEoCzIYLnBheW1lbnRzLlRyYW5zZmVyRGV0YWlsUgh0cmFuc2Zlcg==');
+@$core.Deprecated('Use getUserTransfersRequestDescriptor instead')
+const GetUserTransfersRequest$json = const {
+  '1': 'GetUserTransfersRequest',
+  '2': const [
+    const {'1': 'limit', '3': 1, '4': 1, '5': 5, '10': 'limit'},
+    const {'1': 'offset', '3': 2, '4': 1, '5': 5, '10': 'offset'},
+    const {'1': 'transfer_type', '3': 3, '4': 1, '5': 9, '10': 'transferType'},
+    const {'1': 'status', '3': 4, '4': 1, '5': 9, '10': 'status'},
+  ],
+};
+
+/// Descriptor for `GetUserTransfersRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getUserTransfersRequestDescriptor = $convert.base64Decode('ChdHZXRVc2VyVHJhbnNmZXJzUmVxdWVzdBIUCgVsaW1pdBgBIAEoBVIFbGltaXQSFgoGb2Zmc2V0GAIgASgFUgZvZmZzZXQSIwoNdHJhbnNmZXJfdHlwZRgDIAEoCVIMdHJhbnNmZXJUeXBlEhYKBnN0YXR1cxgEIAEoCVIGc3RhdHVz');
+@$core.Deprecated('Use getUserTransfersResponseDescriptor instead')
+const GetUserTransfersResponse$json = const {
+  '1': 'GetUserTransfersResponse',
+  '2': const [
+    const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    const {'1': 'error_code', '3': 2, '4': 1, '5': 9, '10': 'errorCode'},
+    const {'1': 'error_message', '3': 3, '4': 1, '5': 9, '10': 'errorMessage'},
+    const {'1': 'transfers', '3': 4, '4': 3, '5': 11, '6': '.payments.TransferDetail', '10': 'transfers'},
+    const {'1': 'total', '3': 5, '4': 1, '5': 5, '10': 'total'},
+  ],
+};
+
+/// Descriptor for `GetUserTransfersResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getUserTransfersResponseDescriptor = $convert.base64Decode('ChhHZXRVc2VyVHJhbnNmZXJzUmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2VzcxIdCgplcnJvcl9jb2RlGAIgASgJUgllcnJvckNvZGUSIwoNZXJyb3JfbWVzc2FnZRgDIAEoCVIMZXJyb3JNZXNzYWdlEjYKCXRyYW5zZmVycxgEIAMoCzIYLnBheW1lbnRzLlRyYW5zZmVyRGV0YWlsUgl0cmFuc2ZlcnMSFAoFdG90YWwYBSABKAVSBXRvdGFs');
+@$core.Deprecated('Use getTransferFeeRequestDescriptor instead')
+const GetTransferFeeRequest$json = const {
+  '1': 'GetTransferFeeRequest',
+  '2': const [
+    const {'1': 'transfer_type', '3': 1, '4': 1, '5': 9, '10': 'transferType'},
+    const {'1': 'amount', '3': 2, '4': 1, '5': 3, '10': 'amount'},
+    const {'1': 'currency', '3': 3, '4': 1, '5': 9, '10': 'currency'},
+    const {'1': 'destination_country', '3': 4, '4': 1, '5': 9, '10': 'destinationCountry'},
+  ],
+};
+
+/// Descriptor for `GetTransferFeeRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getTransferFeeRequestDescriptor = $convert.base64Decode('ChVHZXRUcmFuc2ZlckZlZVJlcXVlc3QSIwoNdHJhbnNmZXJfdHlwZRgBIAEoCVIMdHJhbnNmZXJUeXBlEhYKBmFtb3VudBgCIAEoA1IGYW1vdW50EhoKCGN1cnJlbmN5GAMgASgJUghjdXJyZW5jeRIvChNkZXN0aW5hdGlvbl9jb3VudHJ5GAQgASgJUhJkZXN0aW5hdGlvbkNvdW50cnk=');
+@$core.Deprecated('Use getTransferFeeResponseDescriptor instead')
+const GetTransferFeeResponse$json = const {
+  '1': 'GetTransferFeeResponse',
+  '2': const [
+    const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    const {'1': 'error_code', '3': 2, '4': 1, '5': 9, '10': 'errorCode'},
+    const {'1': 'error_message', '3': 3, '4': 1, '5': 9, '10': 'errorMessage'},
+    const {'1': 'fee', '3': 4, '4': 1, '5': 3, '10': 'fee'},
+    const {'1': 'currency', '3': 5, '4': 1, '5': 9, '10': 'currency'},
+  ],
+};
+
+/// Descriptor for `GetTransferFeeResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getTransferFeeResponseDescriptor = $convert.base64Decode('ChZHZXRUcmFuc2ZlckZlZVJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3MSHQoKZXJyb3JfY29kZRgCIAEoCVIJZXJyb3JDb2RlEiMKDWVycm9yX21lc3NhZ2UYAyABKAlSDGVycm9yTWVzc2FnZRIQCgNmZWUYBCABKANSA2ZlZRIaCghjdXJyZW5jeRgFIAEoCVIIY3VycmVuY3k=');
+@$core.Deprecated('Use getDailyUsageRequestDescriptor instead')
+const GetDailyUsageRequest$json = const {
+  '1': 'GetDailyUsageRequest',
+};
+
+/// Descriptor for `GetDailyUsageRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getDailyUsageRequestDescriptor = $convert.base64Decode('ChRHZXREYWlseVVzYWdlUmVxdWVzdA==');
+@$core.Deprecated('Use getDailyUsageResponseDescriptor instead')
+const GetDailyUsageResponse$json = const {
+  '1': 'GetDailyUsageResponse',
+  '2': const [
+    const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    const {'1': 'error_code', '3': 2, '4': 1, '5': 9, '10': 'errorCode'},
+    const {'1': 'error_message', '3': 3, '4': 1, '5': 9, '10': 'errorMessage'},
+    const {'1': 'total_transferred', '3': 4, '4': 1, '5': 3, '10': 'totalTransferred'},
+    const {'1': 'transfer_count', '3': 5, '4': 1, '5': 5, '10': 'transferCount'},
+    const {'1': 'daily_limit', '3': 6, '4': 1, '5': 3, '10': 'dailyLimit'},
+    const {'1': 'remaining_limit', '3': 7, '4': 1, '5': 3, '10': 'remainingLimit'},
+  ],
+};
+
+/// Descriptor for `GetDailyUsageResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getDailyUsageResponseDescriptor = $convert.base64Decode('ChVHZXREYWlseVVzYWdlUmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2VzcxIdCgplcnJvcl9jb2RlGAIgASgJUgllcnJvckNvZGUSIwoNZXJyb3JfbWVzc2FnZRgDIAEoCVIMZXJyb3JNZXNzYWdlEisKEXRvdGFsX3RyYW5zZmVycmVkGAQgASgDUhB0b3RhbFRyYW5zZmVycmVkEiUKDnRyYW5zZmVyX2NvdW50GAUgASgFUg10cmFuc2ZlckNvdW50Eh8KC2RhaWx5X2xpbWl0GAYgASgDUgpkYWlseUxpbWl0EicKD3JlbWFpbmluZ19saW1pdBgHIAEoA1IOcmVtYWluaW5nTGltaXQ=');
+@$core.Deprecated('Use getExchangeRateRequestDescriptor instead')
+const GetExchangeRateRequest$json = const {
+  '1': 'GetExchangeRateRequest',
+  '2': const [
+    const {'1': 'source_currency', '3': 1, '4': 1, '5': 9, '10': 'sourceCurrency'},
+    const {'1': 'destination_currency', '3': 2, '4': 1, '5': 9, '10': 'destinationCurrency'},
+    const {'1': 'amount', '3': 3, '4': 1, '5': 3, '10': 'amount'},
+  ],
+};
+
+/// Descriptor for `GetExchangeRateRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getExchangeRateRequestDescriptor = $convert.base64Decode('ChZHZXRFeGNoYW5nZVJhdGVSZXF1ZXN0EicKD3NvdXJjZV9jdXJyZW5jeRgBIAEoCVIOc291cmNlQ3VycmVuY3kSMQoUZGVzdGluYXRpb25fY3VycmVuY3kYAiABKAlSE2Rlc3RpbmF0aW9uQ3VycmVuY3kSFgoGYW1vdW50GAMgASgDUgZhbW91bnQ=');
+@$core.Deprecated('Use getExchangeRateResponseDescriptor instead')
+const GetExchangeRateResponse$json = const {
+  '1': 'GetExchangeRateResponse',
+  '2': const [
+    const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    const {'1': 'error_code', '3': 2, '4': 1, '5': 9, '10': 'errorCode'},
+    const {'1': 'error_message', '3': 3, '4': 1, '5': 9, '10': 'errorMessage'},
+    const {'1': 'source_currency', '3': 4, '4': 1, '5': 9, '10': 'sourceCurrency'},
+    const {'1': 'destination_currency', '3': 5, '4': 1, '5': 9, '10': 'destinationCurrency'},
+    const {'1': 'rate', '3': 6, '4': 1, '5': 1, '10': 'rate'},
+    const {'1': 'fee', '3': 7, '4': 1, '5': 3, '10': 'fee'},
+    const {'1': 'destination_amount', '3': 8, '4': 1, '5': 3, '10': 'destinationAmount'},
+  ],
+};
+
+/// Descriptor for `GetExchangeRateResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getExchangeRateResponseDescriptor = $convert.base64Decode('ChdHZXRFeGNoYW5nZVJhdGVSZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZXNzEh0KCmVycm9yX2NvZGUYAiABKAlSCWVycm9yQ29kZRIjCg1lcnJvcl9tZXNzYWdlGAMgASgJUgxlcnJvck1lc3NhZ2USJwoPc291cmNlX2N1cnJlbmN5GAQgASgJUg5zb3VyY2VDdXJyZW5jeRIxChRkZXN0aW5hdGlvbl9jdXJyZW5jeRgFIAEoCVITZGVzdGluYXRpb25DdXJyZW5jeRISCgRyYXRlGAYgASgBUgRyYXRlEhAKA2ZlZRgHIAEoA1IDZmVlEi0KEmRlc3RpbmF0aW9uX2Ftb3VudBgIIAEoA1IRZGVzdGluYXRpb25BbW91bnQ=');
+@$core.Deprecated('Use handleTransferWebhookRequestDescriptor instead')
+const HandleTransferWebhookRequest$json = const {
+  '1': 'HandleTransferWebhookRequest',
+  '2': const [
+    const {'1': 'provider', '3': 1, '4': 1, '5': 9, '10': 'provider'},
+    const {'1': 'payload', '3': 2, '4': 1, '5': 12, '10': 'payload'},
+    const {'1': 'signature', '3': 3, '4': 1, '5': 9, '10': 'signature'},
+  ],
+};
+
+/// Descriptor for `HandleTransferWebhookRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List handleTransferWebhookRequestDescriptor = $convert.base64Decode('ChxIYW5kbGVUcmFuc2ZlcldlYmhvb2tSZXF1ZXN0EhoKCHByb3ZpZGVyGAEgASgJUghwcm92aWRlchIYCgdwYXlsb2FkGAIgASgMUgdwYXlsb2FkEhwKCXNpZ25hdHVyZRgDIAEoCVIJc2lnbmF0dXJl');
+@$core.Deprecated('Use handleTransferWebhookResponseDescriptor instead')
+const HandleTransferWebhookResponse$json = const {
+  '1': 'HandleTransferWebhookResponse',
+  '2': const [
+    const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    const {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+  ],
+};
+
+/// Descriptor for `HandleTransferWebhookResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List handleTransferWebhookResponseDescriptor = $convert.base64Decode('Ch1IYW5kbGVUcmFuc2ZlcldlYmhvb2tSZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZXNzEhgKB21lc3NhZ2UYAiABKAlSB21lc3NhZ2U=');
+@$core.Deprecated('Use payPlatformFeeRequestDescriptor instead')
+const PayPlatformFeeRequest$json = const {
+  '1': 'PayPlatformFeeRequest',
+  '2': const [
+    const {'1': 'user_account_id', '3': 1, '4': 1, '5': 9, '10': 'userAccountId'},
+    const {'1': 'user_id', '3': 2, '4': 1, '5': 9, '10': 'userId'},
+    const {'1': 'amount', '3': 3, '4': 1, '5': 3, '10': 'amount'},
+    const {'1': 'currency', '3': 4, '4': 1, '5': 9, '10': 'currency'},
+    const {'1': 'category', '3': 5, '4': 1, '5': 9, '10': 'category'},
+    const {'1': 'description', '3': 6, '4': 1, '5': 9, '10': 'description'},
+    const {'1': 'reference', '3': 7, '4': 1, '5': 9, '10': 'reference'},
+    const {'1': 'idempotency_key', '3': 8, '4': 1, '5': 9, '10': 'idempotencyKey'},
+    const {'1': 'verification_token', '3': 9, '4': 1, '5': 9, '10': 'verificationToken'},
+    const {'1': 'transaction_id', '3': 10, '4': 1, '5': 9, '10': 'transactionId'},
+    const {'1': 'wallet_code', '3': 11, '4': 1, '5': 9, '10': 'walletCode'},
+  ],
+};
+
+/// Descriptor for `PayPlatformFeeRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List payPlatformFeeRequestDescriptor = $convert.base64Decode('ChVQYXlQbGF0Zm9ybUZlZVJlcXVlc3QSJgoPdXNlcl9hY2NvdW50X2lkGAEgASgJUg11c2VyQWNjb3VudElkEhcKB3VzZXJfaWQYAiABKAlSBnVzZXJJZBIWCgZhbW91bnQYAyABKANSBmFtb3VudBIaCghjdXJyZW5jeRgEIAEoCVIIY3VycmVuY3kSGgoIY2F0ZWdvcnkYBSABKAlSCGNhdGVnb3J5EiAKC2Rlc2NyaXB0aW9uGAYgASgJUgtkZXNjcmlwdGlvbhIcCglyZWZlcmVuY2UYByABKAlSCXJlZmVyZW5jZRInCg9pZGVtcG90ZW5jeV9rZXkYCCABKAlSDmlkZW1wb3RlbmN5S2V5Ei0KEnZlcmlmaWNhdGlvbl90b2tlbhgJIAEoCVIRdmVyaWZpY2F0aW9uVG9rZW4SJQoOdHJhbnNhY3Rpb25faWQYCiABKAlSDXRyYW5zYWN0aW9uSWQSHwoLd2FsbGV0X2NvZGUYCyABKAlSCndhbGxldENvZGU=');
+@$core.Deprecated('Use payPlatformFeeResponseDescriptor instead')
+const PayPlatformFeeResponse$json = const {
+  '1': 'PayPlatformFeeResponse',
+  '2': const [
+    const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    const {'1': 'error_code', '3': 2, '4': 1, '5': 9, '10': 'errorCode'},
+    const {'1': 'error_message', '3': 3, '4': 1, '5': 9, '10': 'errorMessage'},
+    const {'1': 'debit_transaction_id', '3': 4, '4': 1, '5': 9, '10': 'debitTransactionId'},
+    const {'1': 'platform_transaction_id', '3': 5, '4': 1, '5': 9, '10': 'platformTransactionId'},
+    const {'1': 'user_new_balance', '3': 6, '4': 1, '5': 3, '10': 'userNewBalance'},
+    const {'1': 'reference', '3': 7, '4': 1, '5': 9, '10': 'reference'},
+  ],
+};
+
+/// Descriptor for `PayPlatformFeeResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List payPlatformFeeResponseDescriptor = $convert.base64Decode('ChZQYXlQbGF0Zm9ybUZlZVJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3MSHQoKZXJyb3JfY29kZRgCIAEoCVIJZXJyb3JDb2RlEiMKDWVycm9yX21lc3NhZ2UYAyABKAlSDGVycm9yTWVzc2FnZRIwChRkZWJpdF90cmFuc2FjdGlvbl9pZBgEIAEoCVISZGViaXRUcmFuc2FjdGlvbklkEjYKF3BsYXRmb3JtX3RyYW5zYWN0aW9uX2lkGAUgASgJUhVwbGF0Zm9ybVRyYW5zYWN0aW9uSWQSKAoQdXNlcl9uZXdfYmFsYW5jZRgGIAEoA1IOdXNlck5ld0JhbGFuY2USHAoJcmVmZXJlbmNlGAcgASgJUglyZWZlcmVuY2U=');
+@$core.Deprecated('Use refundFromPlatformWalletRequestDescriptor instead')
+const RefundFromPlatformWalletRequest$json = const {
+  '1': 'RefundFromPlatformWalletRequest',
+  '2': const [
+    const {'1': 'user_account_id', '3': 1, '4': 1, '5': 9, '10': 'userAccountId'},
+    const {'1': 'user_id', '3': 2, '4': 1, '5': 9, '10': 'userId'},
+    const {'1': 'amount', '3': 3, '4': 1, '5': 3, '10': 'amount'},
+    const {'1': 'currency', '3': 4, '4': 1, '5': 9, '10': 'currency'},
+    const {'1': 'category', '3': 5, '4': 1, '5': 9, '10': 'category'},
+    const {'1': 'description', '3': 6, '4': 1, '5': 9, '10': 'description'},
+    const {'1': 'reference', '3': 7, '4': 1, '5': 9, '10': 'reference'},
+    const {'1': 'idempotency_key', '3': 8, '4': 1, '5': 9, '10': 'idempotencyKey'},
+    const {'1': 'wallet_code', '3': 9, '4': 1, '5': 9, '10': 'walletCode'},
+  ],
+};
+
+/// Descriptor for `RefundFromPlatformWalletRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List refundFromPlatformWalletRequestDescriptor = $convert.base64Decode('Ch9SZWZ1bmRGcm9tUGxhdGZvcm1XYWxsZXRSZXF1ZXN0EiYKD3VzZXJfYWNjb3VudF9pZBgBIAEoCVINdXNlckFjY291bnRJZBIXCgd1c2VyX2lkGAIgASgJUgZ1c2VySWQSFgoGYW1vdW50GAMgASgDUgZhbW91bnQSGgoIY3VycmVuY3kYBCABKAlSCGN1cnJlbmN5EhoKCGNhdGVnb3J5GAUgASgJUghjYXRlZ29yeRIgCgtkZXNjcmlwdGlvbhgGIAEoCVILZGVzY3JpcHRpb24SHAoJcmVmZXJlbmNlGAcgASgJUglyZWZlcmVuY2USJwoPaWRlbXBvdGVuY3lfa2V5GAggASgJUg5pZGVtcG90ZW5jeUtleRIfCgt3YWxsZXRfY29kZRgJIAEoCVIKd2FsbGV0Q29kZQ==');
+@$core.Deprecated('Use refundFromPlatformWalletResponseDescriptor instead')
+const RefundFromPlatformWalletResponse$json = const {
+  '1': 'RefundFromPlatformWalletResponse',
+  '2': const [
+    const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    const {'1': 'error_code', '3': 2, '4': 1, '5': 9, '10': 'errorCode'},
+    const {'1': 'error_message', '3': 3, '4': 1, '5': 9, '10': 'errorMessage'},
+    const {'1': 'credit_transaction_id', '3': 4, '4': 1, '5': 9, '10': 'creditTransactionId'},
+    const {'1': 'user_new_balance', '3': 5, '4': 1, '5': 3, '10': 'userNewBalance'},
+    const {'1': 'reference', '3': 6, '4': 1, '5': 9, '10': 'reference'},
+  ],
+};
+
+/// Descriptor for `RefundFromPlatformWalletResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List refundFromPlatformWalletResponseDescriptor = $convert.base64Decode('CiBSZWZ1bmRGcm9tUGxhdGZvcm1XYWxsZXRSZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZXNzEh0KCmVycm9yX2NvZGUYAiABKAlSCWVycm9yQ29kZRIjCg1lcnJvcl9tZXNzYWdlGAMgASgJUgxlcnJvck1lc3NhZ2USMgoVY3JlZGl0X3RyYW5zYWN0aW9uX2lkGAQgASgJUhNjcmVkaXRUcmFuc2FjdGlvbklkEigKEHVzZXJfbmV3X2JhbGFuY2UYBSABKANSDnVzZXJOZXdCYWxhbmNlEhwKCXJlZmVyZW5jZRgGIAEoCVIJcmVmZXJlbmNl');
+@$core.Deprecated('Use generateQRTokenRequestDescriptor instead')
+const GenerateQRTokenRequest$json = const {
+  '1': 'GenerateQRTokenRequest',
+  '2': const [
+    const {'1': 'amount', '3': 1, '4': 1, '5': 3, '10': 'amount'},
+    const {'1': 'currency', '3': 2, '4': 1, '5': 9, '10': 'currency'},
+    const {'1': 'description', '3': 3, '4': 1, '5': 9, '10': 'description'},
+    const {'1': 'expiry_minutes', '3': 4, '4': 1, '5': 5, '10': 'expiryMinutes'},
+  ],
+};
+
+/// Descriptor for `GenerateQRTokenRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List generateQRTokenRequestDescriptor = $convert.base64Decode('ChZHZW5lcmF0ZVFSVG9rZW5SZXF1ZXN0EhYKBmFtb3VudBgBIAEoA1IGYW1vdW50EhoKCGN1cnJlbmN5GAIgASgJUghjdXJyZW5jeRIgCgtkZXNjcmlwdGlvbhgDIAEoCVILZGVzY3JpcHRpb24SJQoOZXhwaXJ5X21pbnV0ZXMYBCABKAVSDWV4cGlyeU1pbnV0ZXM=');
+@$core.Deprecated('Use generateQRTokenResponseDescriptor instead')
+const GenerateQRTokenResponse$json = const {
+  '1': 'GenerateQRTokenResponse',
+  '2': const [
+    const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    const {'1': 'error_code', '3': 2, '4': 1, '5': 9, '10': 'errorCode'},
+    const {'1': 'error_message', '3': 3, '4': 1, '5': 9, '10': 'errorMessage'},
+    const {'1': 'qr_token', '3': 4, '4': 1, '5': 9, '10': 'qrToken'},
+    const {'1': 'qr_data', '3': 5, '4': 1, '5': 9, '10': 'qrData'},
+    const {'1': 'expires_at', '3': 6, '4': 1, '5': 9, '10': 'expiresAt'},
+  ],
+};
+
+/// Descriptor for `GenerateQRTokenResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List generateQRTokenResponseDescriptor = $convert.base64Decode('ChdHZW5lcmF0ZVFSVG9rZW5SZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZXNzEh0KCmVycm9yX2NvZGUYAiABKAlSCWVycm9yQ29kZRIjCg1lcnJvcl9tZXNzYWdlGAMgASgJUgxlcnJvck1lc3NhZ2USGQoIcXJfdG9rZW4YBCABKAlSB3FyVG9rZW4SFwoHcXJfZGF0YRgFIAEoCVIGcXJEYXRhEh0KCmV4cGlyZXNfYXQYBiABKAlSCWV4cGlyZXNBdA==');
+@$core.Deprecated('Use validateQRTokenRequestDescriptor instead')
+const ValidateQRTokenRequest$json = const {
+  '1': 'ValidateQRTokenRequest',
+  '2': const [
+    const {'1': 'qr_token', '3': 1, '4': 1, '5': 9, '10': 'qrToken'},
+  ],
+};
+
+/// Descriptor for `ValidateQRTokenRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List validateQRTokenRequestDescriptor = $convert.base64Decode('ChZWYWxpZGF0ZVFSVG9rZW5SZXF1ZXN0EhkKCHFyX3Rva2VuGAEgASgJUgdxclRva2Vu');
+@$core.Deprecated('Use validateQRTokenResponseDescriptor instead')
+const ValidateQRTokenResponse$json = const {
+  '1': 'ValidateQRTokenResponse',
+  '2': const [
+    const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    const {'1': 'error_code', '3': 2, '4': 1, '5': 9, '10': 'errorCode'},
+    const {'1': 'error_message', '3': 3, '4': 1, '5': 9, '10': 'errorMessage'},
+    const {'1': 'recipient_user_id', '3': 4, '4': 1, '5': 9, '10': 'recipientUserId'},
+    const {'1': 'recipient_username', '3': 5, '4': 1, '5': 9, '10': 'recipientUsername'},
+    const {'1': 'recipient_name', '3': 6, '4': 1, '5': 9, '10': 'recipientName'},
+    const {'1': 'recipient_account_id', '3': 7, '4': 1, '5': 9, '10': 'recipientAccountId'},
+    const {'1': 'amount', '3': 8, '4': 1, '5': 3, '10': 'amount'},
+    const {'1': 'currency', '3': 9, '4': 1, '5': 9, '10': 'currency'},
+    const {'1': 'is_expired', '3': 10, '4': 1, '5': 8, '10': 'isExpired'},
+  ],
+};
+
+/// Descriptor for `ValidateQRTokenResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List validateQRTokenResponseDescriptor = $convert.base64Decode('ChdWYWxpZGF0ZVFSVG9rZW5SZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZXNzEh0KCmVycm9yX2NvZGUYAiABKAlSCWVycm9yQ29kZRIjCg1lcnJvcl9tZXNzYWdlGAMgASgJUgxlcnJvck1lc3NhZ2USKgoRcmVjaXBpZW50X3VzZXJfaWQYBCABKAlSD3JlY2lwaWVudFVzZXJJZBItChJyZWNpcGllbnRfdXNlcm5hbWUYBSABKAlSEXJlY2lwaWVudFVzZXJuYW1lEiUKDnJlY2lwaWVudF9uYW1lGAYgASgJUg1yZWNpcGllbnROYW1lEjAKFHJlY2lwaWVudF9hY2NvdW50X2lkGAcgASgJUhJyZWNpcGllbnRBY2NvdW50SWQSFgoGYW1vdW50GAggASgDUgZhbW91bnQSGgoIY3VycmVuY3kYCSABKAlSCGN1cnJlbmN5Eh0KCmlzX2V4cGlyZWQYCiABKAhSCWlzRXhwaXJlZA==');

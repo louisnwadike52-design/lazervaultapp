@@ -353,7 +353,6 @@ class CreatePolicyCubit extends Cubit<CreatePolicyState> {
   /// Generate a unique policy number
   String _generatePolicyNumber() {
     final random = Random();
-    final timestamp = DateTime.now().millisecondsSinceEpoch;
     final randomNum = random.nextInt(9999);
 
     // Format: INS-YYYYMMDD-XXXX

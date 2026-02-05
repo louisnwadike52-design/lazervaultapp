@@ -60,6 +60,38 @@ class _TagPaymentConfirmationScreenState
       return;
     }
 
+    // Validate account has sufficient balance (safety check)
+    final accountState = context.read<AccountCardsSummaryCubit>().state;
+    if (accountState is AccountCardsSummaryLoaded) {
+      final selectedAccount = accountState.accountSummaries.firstWhere(
+        (a) => a.id.toString() == _selectedAccountId,
+        orElse: () => throw Exception('Account not found'),
+      );
+
+      if (selectedAccount.currency.toUpperCase() != widget.tag.currency.toUpperCase()) {
+        Get.snackbar(
+          'Currency Mismatch',
+          'Please select a ${widget.tag.currency} account',
+          backgroundColor: const Color(0xFFEF4444),
+          colorText: Colors.white,
+          snackPosition: SnackPosition.TOP,
+        );
+        return;
+      }
+
+      if (selectedAccount.balance < widget.tag.amount) {
+        Get.snackbar(
+          'Insufficient Balance',
+          'Your account balance (${selectedAccount.currency} ${selectedAccount.balance.toStringAsFixed(2)}) is less than the payment amount (${widget.tag.formattedAmount})',
+          backgroundColor: const Color(0xFFEF4444),
+          colorText: Colors.white,
+          snackPosition: SnackPosition.TOP,
+          duration: const Duration(seconds: 4),
+        );
+        return;
+      }
+    }
+
     HapticFeedback.mediumImpact();
 
     final idPrefix = widget.tag.id.length >= 8
@@ -284,6 +316,16 @@ class _TagPaymentConfirmationScreenState
     );
   }
 
+  /// Check if an account has sufficient balance for the tag payment
+  bool _hasSufficientBalance(dynamic account) {
+    // Only accounts with matching currency can pay
+    if (account.currency.toUpperCase() != widget.tag.currency.toUpperCase()) {
+      return false;
+    }
+    // Check if balance is sufficient
+    return account.balance >= widget.tag.amount;
+  }
+
   Widget _buildAccountSelector() {
     return BlocBuilder<AccountCardsSummaryCubit, AccountCardsSummaryState>(
       builder: (context, state) {
@@ -299,6 +341,15 @@ class _TagPaymentConfirmationScreenState
         }
 
         if (state is AccountCardsSummaryLoaded) {
+          // Filter to only show accounts with matching currency
+          final matchingCurrencyAccounts = state.accountSummaries
+              .where((a) => a.currency.toUpperCase() == widget.tag.currency.toUpperCase())
+              .toList();
+
+          final otherCurrencyAccounts = state.accountSummaries
+              .where((a) => a.currency.toUpperCase() != widget.tag.currency.toUpperCase())
+              .toList();
+
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -310,26 +361,54 @@ class _TagPaymentConfirmationScreenState
                   fontWeight: FontWeight.w600,
                 ),
               ),
+              SizedBox(height: 4.h),
+              Text(
+                'Only ${widget.tag.currency} accounts with sufficient balance can be used',
+                style: GoogleFonts.inter(
+                  color: const Color(0xFF9CA3AF),
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
               SizedBox(height: 12.h),
-              ...state.accountSummaries.map((account) {
+
+              // Show matching currency accounts first
+              ...matchingCurrencyAccounts.map((account) {
                 final isSelected = _selectedAccountId == account.id.toString();
+                final hasSufficientBalance = _hasSufficientBalance(account);
+
                 return GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _selectedAccountId = account.id.toString();
-                    });
-                  },
+                  onTap: hasSufficientBalance
+                      ? () {
+                          setState(() {
+                            _selectedAccountId = account.id.toString();
+                          });
+                        }
+                      : () {
+                          // Show insufficient balance message
+                          Get.snackbar(
+                            'Insufficient Balance',
+                            'This account does not have enough funds. You need ${widget.tag.currency} ${widget.tag.amount.toStringAsFixed(2)}',
+                            backgroundColor: const Color(0xFFFB923C),
+                            colorText: Colors.white,
+                            snackPosition: SnackPosition.TOP,
+                          );
+                        },
                   child: Container(
                     margin: EdgeInsets.only(bottom: 12.h),
                     padding: EdgeInsets.all(16.w),
                     decoration: BoxDecoration(
-                      color: isSelected
-                          ? const Color(0xFF3B82F6).withValues(alpha: 0.1)
-                          : const Color(0xFF1F1F1F),
+                      color: !hasSufficientBalance
+                          ? const Color(0xFF1F1F1F).withValues(alpha: 0.5)
+                          : isSelected
+                              ? const Color(0xFF3B82F6).withValues(alpha: 0.1)
+                              : const Color(0xFF1F1F1F),
                       border: Border.all(
-                        color: isSelected
-                            ? const Color(0xFF3B82F6)
-                            : Colors.transparent,
+                        color: !hasSufficientBalance
+                            ? const Color(0xFFEF4444).withValues(alpha: 0.3)
+                            : isSelected
+                                ? const Color(0xFF3B82F6)
+                                : Colors.transparent,
                         width: 2,
                       ),
                       borderRadius: BorderRadius.circular(12.r),
@@ -340,12 +419,120 @@ class _TagPaymentConfirmationScreenState
                           width: 40.w,
                           height: 40.w,
                           decoration: BoxDecoration(
-                            color: const Color(0xFF3B82F6).withValues(alpha: 0.2),
+                            color: !hasSufficientBalance
+                                ? const Color(0xFFEF4444).withValues(alpha: 0.2)
+                                : const Color(0xFF3B82F6).withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(20.r),
                           ),
                           child: Icon(
                             Icons.account_balance_wallet,
+                            color: !hasSufficientBalance
+                                ? const Color(0xFFEF4444)
+                                : const Color(0xFF3B82F6),
+                            size: 20.sp,
+                          ),
+                        ),
+                        SizedBox(width: 12.w),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      account.accountType,
+                                      style: GoogleFonts.inter(
+                                        color: !hasSufficientBalance
+                                            ? Colors.white.withValues(alpha: 0.5)
+                                            : Colors.white,
+                                        fontSize: 14.sp,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                  if (!hasSufficientBalance)
+                                    Container(
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: 8.w,
+                                        vertical: 2.h,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFEF4444).withValues(alpha: 0.2),
+                                        borderRadius: BorderRadius.circular(4.r),
+                                      ),
+                                      child: Text(
+                                        'Insufficient',
+                                        style: GoogleFonts.inter(
+                                          color: const Color(0xFFEF4444),
+                                          fontSize: 10.sp,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                              Text(
+                                '${account.currency} ${account.balance.toStringAsFixed(2)}',
+                                style: GoogleFonts.inter(
+                                  color: !hasSufficientBalance
+                                      ? const Color(0xFF9CA3AF).withValues(alpha: 0.5)
+                                      : const Color(0xFF9CA3AF),
+                                  fontSize: 12.sp,
+                                  fontWeight: FontWeight.w400,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        if (isSelected && hasSufficientBalance)
+                          Icon(
+                            Icons.check_circle,
                             color: const Color(0xFF3B82F6),
+                            size: 24.sp,
+                          ),
+                      ],
+                    ),
+                  ),
+                );
+              }),
+
+              // Show other currency accounts as disabled
+              if (otherCurrencyAccounts.isNotEmpty) ...[
+                SizedBox(height: 8.h),
+                Text(
+                  'Other Currencies (not available for this payment)',
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF9CA3AF).withValues(alpha: 0.6),
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                SizedBox(height: 8.h),
+                ...otherCurrencyAccounts.map((account) {
+                  return Container(
+                    margin: EdgeInsets.only(bottom: 12.h),
+                    padding: EdgeInsets.all(16.w),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1F1F1F).withValues(alpha: 0.3),
+                      border: Border.all(
+                        color: const Color(0xFF2D2D2D).withValues(alpha: 0.5),
+                        width: 1,
+                      ),
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 40.w,
+                          height: 40.w,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF2D2D2D).withValues(alpha: 0.5),
+                            borderRadius: BorderRadius.circular(20.r),
+                          ),
+                          child: Icon(
+                            Icons.account_balance_wallet,
+                            color: const Color(0xFF9CA3AF).withValues(alpha: 0.5),
                             size: 20.sp,
                           ),
                         ),
@@ -357,7 +544,7 @@ class _TagPaymentConfirmationScreenState
                               Text(
                                 account.accountType,
                                 style: GoogleFonts.inter(
-                                  color: Colors.white,
+                                  color: Colors.white.withValues(alpha: 0.4),
                                   fontSize: 14.sp,
                                   fontWeight: FontWeight.w600,
                                 ),
@@ -365,7 +552,7 @@ class _TagPaymentConfirmationScreenState
                               Text(
                                 '${account.currency} ${account.balance.toStringAsFixed(2)}',
                                 style: GoogleFonts.inter(
-                                  color: const Color(0xFF9CA3AF),
+                                  color: const Color(0xFF9CA3AF).withValues(alpha: 0.4),
                                   fontSize: 12.sp,
                                   fontWeight: FontWeight.w400,
                                 ),
@@ -373,17 +560,29 @@ class _TagPaymentConfirmationScreenState
                             ],
                           ),
                         ),
-                        if (isSelected)
-                          Icon(
-                            Icons.check_circle,
-                            color: const Color(0xFF3B82F6),
-                            size: 24.sp,
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 8.w,
+                            vertical: 2.h,
                           ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF2D2D2D),
+                            borderRadius: BorderRadius.circular(4.r),
+                          ),
+                          child: Text(
+                            'Wrong Currency',
+                            style: GoogleFonts.inter(
+                              color: const Color(0xFF9CA3AF),
+                              fontSize: 10.sp,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
                       ],
                     ),
-                  ),
-                );
-              }),
+                  );
+                }),
+              ],
             ],
           );
         }

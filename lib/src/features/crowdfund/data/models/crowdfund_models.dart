@@ -100,19 +100,6 @@ class CrowdfundModel extends Crowdfund {
     }
   }
 
-  static pb.CrowdfundStatus _statusToProto(CrowdfundStatus status) {
-    switch (status) {
-      case CrowdfundStatus.active:
-        return pb.CrowdfundStatus.CROWDFUND_STATUS_ACTIVE;
-      case CrowdfundStatus.paused:
-        return pb.CrowdfundStatus.CROWDFUND_STATUS_PAUSED;
-      case CrowdfundStatus.completed:
-        return pb.CrowdfundStatus.CROWDFUND_STATUS_COMPLETED;
-      case CrowdfundStatus.cancelled:
-        return pb.CrowdfundStatus.CROWDFUND_STATUS_CANCELLED;
-    }
-  }
-
   static CrowdfundVisibility _visibilityFromProto(
       pb.CrowdfundVisibility visibility) {
     switch (visibility) {
@@ -127,17 +114,6 @@ class CrowdfundModel extends Crowdfund {
     }
   }
 
-  static pb.CrowdfundVisibility _visibilityToProto(
-      CrowdfundVisibility visibility) {
-    switch (visibility) {
-      case CrowdfundVisibility.public:
-        return pb.CrowdfundVisibility.CROWDFUND_VISIBILITY_PUBLIC;
-      case CrowdfundVisibility.private:
-        return pb.CrowdfundVisibility.CROWDFUND_VISIBILITY_PRIVATE;
-      case CrowdfundVisibility.unlisted:
-        return pb.CrowdfundVisibility.CROWDFUND_VISIBILITY_UNLISTED;
-    }
-  }
 }
 
 class CrowdfundDonorModel extends CrowdfundDonor {

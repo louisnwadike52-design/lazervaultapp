@@ -55,6 +55,46 @@ class RecipientModel {
     );
   }
 
+  factory RecipientModel.fromJson(Map<String, dynamic> json) {
+    return RecipientModel(
+      id: json['id']?.toString() ?? '',
+      name: json['name'] as String? ?? '',
+      accountNumber: json['accountNumber'] as String? ?? '',
+      bankName: json['bankName'] as String? ?? '',
+      profileImageUrl: json['profileImageUrl'] as String?,
+      isFavorite: json['isFavorite'] as bool? ?? false,
+      sortCode: json['sortCode'] as String? ?? '',
+      countryCode: json['countryCode'] as String?,
+      email: json['email'] as String?,
+      phoneNumber: json['phoneNumber'] as String?,
+      currency: json['currency'] as String?,
+      swiftCode: json['swiftCode'] as String?,
+      iban: json['iban'] as String?,
+      alias: json['alias'] as String?,
+      type: json['type'] as String?,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'accountNumber': accountNumber,
+      'bankName': bankName,
+      'profileImageUrl': profileImageUrl,
+      'isFavorite': isFavorite,
+      'sortCode': sortCode,
+      'countryCode': countryCode,
+      'email': email,
+      'phoneNumber': phoneNumber,
+      'currency': currency,
+      'swiftCode': swiftCode,
+      'iban': iban,
+      'alias': alias,
+      'type': type,
+    };
+  }
+
   proto.Recipient toProto() {
     return proto.Recipient()
       ..id = Int64.parseInt(id)

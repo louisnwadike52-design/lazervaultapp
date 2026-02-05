@@ -171,3 +171,61 @@ class CrowdfundError extends CrowdfundState {
   @override
   List<Object?> get props => [message, errorCode];
 }
+
+// ============================================================================
+// REPORT STATES
+// ============================================================================
+
+/// Report is being generated
+class CrowdfundReportLoading extends CrowdfundState {
+  final String? message;
+
+  const CrowdfundReportLoading({this.message});
+
+  @override
+  List<Object?> get props => [message];
+}
+
+/// Report generated successfully
+class CrowdfundReportGenerated extends CrowdfundState {
+  final CrowdfundReport report;
+  final Crowdfund crowdfund;
+  final String? campaignUrl;
+
+  const CrowdfundReportGenerated({
+    required this.report,
+    required this.crowdfund,
+    this.campaignUrl,
+  });
+
+  @override
+  List<Object?> get props => [report, crowdfund, campaignUrl];
+}
+
+/// Report shared successfully
+class CrowdfundReportShared extends CrowdfundState {
+  final String platform;
+  final String? message;
+
+  const CrowdfundReportShared({
+    required this.platform,
+    this.message,
+  });
+
+  @override
+  List<Object?> get props => [platform, message];
+}
+
+/// Report share failed
+class CrowdfundReportShareError extends CrowdfundState {
+  final String message;
+  final String platform;
+
+  const CrowdfundReportShareError({
+    required this.message,
+    required this.platform,
+  });
+
+  @override
+  List<Object?> get props => [message, platform];
+}

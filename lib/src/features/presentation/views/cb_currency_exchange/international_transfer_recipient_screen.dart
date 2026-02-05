@@ -37,7 +37,6 @@ class _InternationalTransferRecipientScreenState extends State<InternationalTran
   
   Map<String, dynamic>? _selectedRecipient;
   bool _isAddingNew = false;
-  String _searchQuery = '';
 
   @override
   void initState() {
@@ -411,9 +410,7 @@ class _InternationalTransferRecipientScreenState extends State<InternationalTran
                 ),
               ),
               onChanged: (value) {
-                setState(() {
-                  _searchQuery = value;
-                });
+                setState(() {});
               },
             ),
           ),

@@ -7,6 +7,7 @@ import 'package:lazervault/core/services/grpc_call_options_helper.dart';
 import 'package:lazervault/core/services/grpc_channel_factory.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/core/services/account_manager.dart';
+import 'package:lazervault/core/services/dashboard_state_manager.dart';
 import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:lazervault/core/services/voice_biometrics_service.dart';
 import 'package:lazervault/core/services/currency_sync_service.dart';
@@ -16,6 +17,12 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:lazervault/core/types/electricity_bill_details.dart';
 import 'package:lazervault/core/types/recipient.dart' as core_recipient;
 import 'package:lazervault/core/types/transaction.dart';
+// Network Optimization: Cache & Offline Queue
+import 'package:lazervault/core/cache/swr_cache_manager.dart';
+import 'package:lazervault/core/offline/mutation_queue.dart';
+import 'package:lazervault/core/offline/mutation_executor.dart';
+import 'package:lazervault/core/offline/mutation.dart';
+import 'package:lazervault/src/features/invoice/domain/entities/invoice_entity.dart';
 import 'package:lazervault/src/generated/auth.pbgrpc.dart' as auth_proto;
 import 'package:lazervault/src/features/transaction_pin/cubit/pin_management_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
@@ -69,6 +76,8 @@ import 'package:lazervault/src/features/whatsapp_banking/domain/usecases/update_
 import 'package:lazervault/src/features/whatsapp_banking/cubit/whatsapp_banking_cubit.dart';
 import 'package:lazervault/src/features/authentication/domain/repositories/i_face_recognition_repository.dart';
 import 'package:lazervault/src/features/authentication/presentation/views/email_sign_in_screen.dart';
+import 'package:lazervault/src/features/social_linking/data/datasources/social_linking_grpc_datasource.dart';
+import 'package:lazervault/src/features/social_linking/presentation/cubit/social_linking_cubit.dart';
 import 'package:lazervault/src/features/profile/data/repositories/profile_repository.dart';
 import 'package:lazervault/src/features/profile/domain/repositories/i_profile_repository.dart';
 import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
@@ -282,6 +291,7 @@ import 'package:lazervault/src/generated/crowdfund.pbgrpc.dart' as crowdfund_grp
 import 'package:lazervault/src/features/crowdfund/data/datasources/crowdfund_grpc_data_source.dart';
 import 'package:lazervault/src/features/crowdfund/data/repositories/crowdfund_repository_impl.dart';
 import 'package:lazervault/src/features/crowdfund/data/services/crowdfund_pdf_service.dart';
+import 'package:lazervault/src/features/crowdfund/data/services/crowdfund_report_service.dart';
 import 'package:lazervault/src/features/crowdfund/domain/repositories/crowdfund_repository.dart';
 import 'package:lazervault/src/features/crowdfund/domain/usecases/crowdfund_usecases.dart';
 import 'package:lazervault/src/features/crowdfund/presentation/cubit/crowdfund_cubit.dart';
@@ -535,7 +545,7 @@ Future<void> init() async {
 
   // Register LocaleManager for centralized locale/country state management
   serviceLocator.registerLazySingleton<LocaleManager>(
-    () => LocaleManager(serviceLocator<FlutterSecureStorage>()),
+    () => LocaleManager(),
   );
 
   // Register CurrencySyncService for currency synchronization between local and server
@@ -551,6 +561,11 @@ Future<void> init() async {
   // Note: Active account is NOT persisted - it's kept in memory only to prevent stale data
   serviceLocator.registerLazySingleton<AccountManager>(
     () => AccountManager(),
+  );
+
+  // Register DashboardStateManager for preserving carousel positions across navigation
+  serviceLocator.registerLazySingleton<DashboardStateManager>(
+    () => DashboardStateManager(),
   );
 
   // Register gRPC Call Options Helper with LocaleManager and AccountManager
@@ -609,7 +624,8 @@ Future<void> init() async {
     instanceName: 'bankingChannel',
   );
 
-  // Products Gateway Channel - For group accounts, autosave, crowdfund
+  // Products Gateway Channel - For autosave, crowdfund, insurance
+  // Note: Group Accounts are routed through Commerce Gateway
   serviceLocator.registerLazySingleton<ClientChannel>(
     () => GrpcChannelFactory.createProductsChannel(),
     instanceName: 'productsChannel',
@@ -677,9 +693,10 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton<ContactSyncServiceClient>(
     () => ContactSyncServiceClient(serviceLocator<ClientChannel>()),
   );
+  // Group Account Service - Uses Commerce Gateway (50071) which routes to group-accounts-service (50066)
   serviceLocator.registerLazySingleton<GroupAccountServiceClient>(
     () => GroupAccountServiceClient(
-      serviceLocator<ClientChannel>(instanceName: 'productsChannel'),
+      serviceLocator<ClientChannel>(instanceName: 'commerceChannel'),
     ),
   );
   serviceLocator.registerLazySingleton<AutoSaveServiceClient>(
@@ -863,6 +880,21 @@ Future<void> init() async {
         repository: serviceLocator<KYCRepository>(),
       ));
 
+  // ================== Feature: Social Linking ==================
+
+  // Data Sources
+  serviceLocator.registerLazySingleton<SocialLinkingGrpcDataSource>(
+    () => SocialLinkingGrpcDataSource(
+      serviceLocator<auth_proto.AuthServiceClient>(),
+      serviceLocator<GrpcCallOptionsHelper>(),
+    ),
+  );
+
+  // Blocs/Cubits
+  serviceLocator.registerFactory(() => SocialLinkingCubit(
+    serviceLocator<SocialLinkingGrpcDataSource>(),
+  ));
+
   // ================== Feature: Support & Help ==================
 
   // Repositories
@@ -1031,6 +1063,7 @@ Future<void> init() async {
     toggleFavoriteUseCase: serviceLocator<ToggleFavoriteUseCase>(),
     updateAliasUseCase: serviceLocator<UpdateAliasUseCase>(),
     deleteRecipientUseCase: serviceLocator<DeleteRecipientUseCase>(),
+    cacheManager: serviceLocator<SWRCacheManager>(),
   ));
 
 
@@ -1100,6 +1133,7 @@ Future<void> init() async {
   // Blocs/Cubits
   serviceLocator.registerFactory(() => TransferCubit(
     paymentsTransferDataSource: serviceLocator<IPaymentsTransferDataSource>(),
+    mutationQueue: serviceLocator<MutationQueue>(),
   ));
 
 
@@ -1297,6 +1331,19 @@ Future<void> init() async {
     () => CrowdfundPdfService(),
   );
 
+  // Report Service (for AI-generated campaign reports)
+  serviceLocator.registerLazySingleton<CrowdfundReportService>(
+    () => CrowdfundReportService(
+      dio: serviceLocator<Dio>(),
+      baseUrl: dotenv.env['CHAT_GATEWAY_URL'] ?? 'http://localhost:3011',
+      getAccessToken: () async {
+        final token = await serviceLocator<SecureStorageService>().getAccessToken();
+        return token ?? '';
+      },
+      getUserId: () => '', // User ID is extracted from auth token server-side
+    ),
+  );
+
   // Use Cases
   serviceLocator.registerLazySingleton(() => CreateCrowdfundUseCase(serviceLocator<CrowdfundRepository>()));
   serviceLocator.registerLazySingleton(() => GetCrowdfundUseCase(serviceLocator<CrowdfundRepository>()));
@@ -1325,6 +1372,7 @@ Future<void> init() async {
     generateDonationReceiptUseCase: serviceLocator<GenerateDonationReceiptUseCase>(),
     getUserReceiptsUseCase: serviceLocator<GetUserReceiptsUseCase>(),
     getCrowdfundStatisticsUseCase: serviceLocator<GetCrowdfundStatisticsUseCase>(),
+    reportService: serviceLocator<CrowdfundReportService>(),
   ));
 
 
@@ -1369,6 +1417,8 @@ Future<void> init() async {
   // Blocs/Cubits
   serviceLocator.registerFactory(() => InvoiceCubit(
     repository: serviceLocator<InvoiceRepository>(),
+    cacheManager: serviceLocator<SWRCacheManager>(),
+    mutationQueue: serviceLocator<MutationQueue>(),
     // User ID is now set dynamically via setUserId() from auth state
   ));
 
@@ -1401,6 +1451,7 @@ Future<void> init() async {
   // Blocs/Cubits
   serviceLocator.registerFactory(() => TagPayCubit(
     repository: serviceLocator<TagPayRepository>(),
+    mutationQueue: serviceLocator<MutationQueue>(),
   ));
 
   // ================== Feature: Barcode QuickPay ==================
@@ -1711,6 +1762,8 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton(() => CreateContribution(serviceLocator<GroupAccountRepository>()));
   serviceLocator.registerLazySingleton(() => UpdateContribution(serviceLocator<GroupAccountRepository>()));
   serviceLocator.registerLazySingleton(() => DeleteContribution(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(() => AddMembersToContribution(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(() => GetContributionMembers(serviceLocator<GroupAccountRepository>()));
   serviceLocator.registerLazySingleton(() => GetContributionPayments(serviceLocator<GroupAccountRepository>()));
   serviceLocator.registerLazySingleton(() => MakeContributionPayment(serviceLocator<GroupAccountRepository>()));
   serviceLocator.registerLazySingleton(() => UpdatePaymentStatus(serviceLocator<GroupAccountRepository>()));
@@ -1719,9 +1772,12 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton(() => GenerateContributionTranscript(serviceLocator<GroupAccountRepository>()));
   serviceLocator.registerLazySingleton(() => GetGroupStatistics(serviceLocator<GroupAccountRepository>()));
   serviceLocator.registerLazySingleton(() => GetUserContributionStats(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(() => GetGroupActivityLogs(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(() => GetContributionActivityLogs(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(() => RemoveMemberFromContribution(serviceLocator<GroupAccountRepository>()));
 
-  // Blocs/Cubits
-  serviceLocator.registerFactory(() => GroupAccountCubit(
+  // Blocs/Cubits - Use singleton to preserve user ID across screens
+  serviceLocator.registerLazySingleton(() => GroupAccountCubit(
     getUserGroups: serviceLocator<GetUserGroups>(),
     getGroupById: serviceLocator<GetGroupById>(),
     createGroup: serviceLocator<CreateGroup>(),
@@ -1737,6 +1793,8 @@ Future<void> init() async {
     createContribution: serviceLocator<CreateContribution>(),
     updateContribution: serviceLocator<UpdateContribution>(),
     deleteContribution: serviceLocator<DeleteContribution>(),
+    addMembersToContribution: serviceLocator<AddMembersToContribution>(),
+    getContributionMembers: serviceLocator<GetContributionMembers>(),
     getContributionPayments: serviceLocator<GetContributionPayments>(),
     makeContributionPayment: serviceLocator<MakeContributionPayment>(),
     updatePaymentStatus: serviceLocator<UpdatePaymentStatus>(),
@@ -1745,6 +1803,11 @@ Future<void> init() async {
     generateContributionTranscript: serviceLocator<GenerateContributionTranscript>(),
     getGroupStatistics: serviceLocator<GetGroupStatistics>(),
     getUserContributionStats: serviceLocator<GetUserContributionStats>(),
+    getGroupActivityLogs: serviceLocator<GetGroupActivityLogs>(),
+    getContributionActivityLogs: serviceLocator<GetContributionActivityLogs>(),
+    removeMemberFromContribution: serviceLocator<RemoveMemberFromContribution>(),
+    cacheManager: serviceLocator<SWRCacheManager>(),
+    mutationQueue: serviceLocator<MutationQueue>(),
   ));
 
   // ================== Feature: Insurance ==================
@@ -2059,6 +2122,84 @@ Future<void> init() async {
   serviceLocator.registerFactoryParam<ServiceTransactionHistoryScreen, TransactionServiceType, void>(
     (serviceType, _) => ServiceTransactionHistoryScreen(serviceType: serviceType),
   );
+
+  // ================== Network Optimization: Cache & Offline Queue ==================
+  // These services enable offline-first patterns for low-network regions
+
+  // SWR Cache Manager - Stale-While-Revalidate caching for list data
+  serviceLocator.registerLazySingleton<SWRCacheManager>(() => SWRCacheManager());
+
+  // Mutation Queue - Queues failed operations for retry when online
+  serviceLocator.registerLazySingleton<MutationQueue>(() => MutationQueue());
+
+  // Mutation Executor - Processes queued mutations using registered handlers
+  serviceLocator.registerLazySingleton<MutationExecutor>(() {
+    final executor = MutationExecutor(
+      mutationQueue: serviceLocator<MutationQueue>(),
+    );
+
+    // Register TagPay mutation handlers (creation only - payments are NOT queued offline)
+    executor.registerHandler(
+      MutationType.tagCreation,
+      (mutation) async {
+        final repository = serviceLocator<TagPayRepository>();
+        await repository.createTag(
+          taggedUserTagPay: mutation.payload['taggedUserTagPay'] as String,
+          amount: (mutation.payload['amount'] as num).toDouble(),
+          currency: mutation.payload['currency'] as String,
+          description: mutation.payload['description'] as String?,
+        );
+      },
+    );
+
+    // Register invoice creation mutation handler (creation only - payments are NOT queued offline)
+    executor.registerHandler(
+      MutationType.invoiceCreation,
+      (mutation) async {
+        final repository = serviceLocator<InvoiceRepository>();
+        // Reconstruct items from payload
+        final itemsJson = mutation.payload['items'] as List;
+        final items = itemsJson.map((item) => InvoiceItem.fromJson(item as Map<String, dynamic>)).toList();
+
+        final typeStr = mutation.payload['type'] as String;
+        final type = InvoiceType.values.firstWhere(
+          (e) => e.name == typeStr,
+          orElse: () => InvoiceType.invoice,
+        );
+
+        final invoice = Invoice(
+          id: '',
+          title: mutation.payload['title'] as String,
+          description: mutation.payload['description'] as String,
+          items: items,
+          type: type,
+          currency: mutation.payload['currency'] as String,
+          amount: (mutation.payload['totalAmount'] as num).toDouble(),
+          totalAmount: (mutation.payload['totalAmount'] as num).toDouble(),
+          status: (mutation.payload['sendImmediately'] as bool?) == true
+              ? InvoiceStatus.pending
+              : InvoiceStatus.draft,
+          createdAt: DateTime.now(),
+          dueDate: mutation.payload['dueDate'] != null
+              ? DateTime.parse(mutation.payload['dueDate'] as String)
+              : null,
+          taxAmount: (mutation.payload['taxAmount'] as num?)?.toDouble(),
+          discountAmount: (mutation.payload['discountAmount'] as num?)?.toDouble(),
+          notes: mutation.payload['notes'] as String?,
+          toEmail: mutation.payload['toEmail'] as String?,
+          toName: mutation.payload['toName'] as String?,
+          fromUserId: '', // Will be set from auth token
+        );
+        await repository.createInvoice(invoice);
+      },
+    );
+
+    // NOTE: Payment mutation handlers (tagPayment, transfer, invoicePayment, groupContribution)
+    // are intentionally NOT registered. Financial operations should NEVER be queued offline
+    // due to security risks (stale balances, expired tokens, regulatory concerns).
+
+    return executor;
+  });
 
   print("Dependency Injection Initialized with Hierarchical Order");
 }

@@ -1,18 +1,24 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../../core/services/injection_container.dart';
+import '../../../../../core/services/locale_manager.dart';
 import '../../domain/entities/lock_fund_entity.dart';
 
 class CreateLockCubit extends Cubit<CreateLockState> {
-  CreateLockCubit() : super(CreateLockState());
+  CreateLockCubit() : super(CreateLockState()) {
+    // Initialize currency from global LocaleManager
+    _currency = serviceLocator<LocaleManager>().currentCurrency;
+  }
 
   // Form data
   LockType? _lockType;
   double? _amount;
-  String _currency = 'USD';
+  late String _currency;
   int? _lockDurationDays;
   bool _autoRenew = false;
   String? _goalName;
   String? _goalDescription;
   String? _paymentMethod;
+  String? _selectedAccountId;
 
   // Getters
   LockType? get lockType => _lockType;
@@ -23,6 +29,7 @@ class CreateLockCubit extends Cubit<CreateLockState> {
   String? get goalName => _goalName;
   String? get goalDescription => _goalDescription;
   String? get paymentMethod => _paymentMethod;
+  String? get selectedAccountId => _selectedAccountId;
 
   // Interest calculation fields
   InterestCalculation? _interestCalculation;
@@ -84,6 +91,12 @@ class CreateLockCubit extends Cubit<CreateLockState> {
     emit(CreateLockState());
   }
 
+  void updateSelectedAccount(String accountId) {
+    _selectedAccountId = accountId;
+    if (isClosed) return;
+    emit(CreateLockState());
+  }
+
   void updateInterestCalculation(InterestCalculation calculation) {
     _interestCalculation = calculation;
     if (isClosed) return;
@@ -132,6 +145,11 @@ class CreateLockCubit extends Cubit<CreateLockState> {
   }
 
   bool validateStep5() {
+    if (_selectedAccountId == null || _selectedAccountId!.isEmpty) {
+      if (isClosed) return false;
+      emit(CreateLockValidationError('Please select an account to fund your lock'));
+      return false;
+    }
     if (_paymentMethod == null || _paymentMethod!.isEmpty) {
       if (isClosed) return false;
       emit(CreateLockValidationError('Please select a payment method'));
@@ -150,12 +168,13 @@ class CreateLockCubit extends Cubit<CreateLockState> {
   void reset() {
     _lockType = null;
     _amount = null;
-    _currency = 'USD';
+    _currency = serviceLocator<LocaleManager>().currentCurrency;
     _lockDurationDays = null;
     _autoRenew = false;
     _goalName = null;
     _goalDescription = null;
     _paymentMethod = null;
+    _selectedAccountId = null;
     _interestCalculation = null;
     if (isClosed) return;
     emit(CreateLockState());

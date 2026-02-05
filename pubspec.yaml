@@ -104,6 +104,7 @@ dependencies:
   web_socket_channel: ^3.0.1
   json_annotation: ^4.8.1
   uuid: ^4.5.1
+  crypto: ^3.0.3  # SHA256 hashing for mutation queue deduplication
   device_info_plus: ^11.4.0
   livekit_components: ^1.2.1
   shared_preferences: ^2.5.3

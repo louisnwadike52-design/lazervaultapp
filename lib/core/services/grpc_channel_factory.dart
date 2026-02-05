@@ -5,11 +5,11 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 ///
 /// LazerVault uses independent API gateways with dual servers (HTTP + gRPC):
 /// 1. Core Gateway - gRPC: 50070, HTTP: 7878 (Auth, Accounts, Users, Support, Referrals)
-/// 2. Commerce Gateway - gRPC: 50071, HTTP: 8080 (Utility Payments, GiftCards)
+/// 2. Commerce Gateway - gRPC: 50071, HTTP: 8080 (Utility Payments, GiftCards, Group Accounts, TagPay, Invoices)
 /// 3. Investment Gateway - gRPC: 50072, HTTP: 9090 (Stocks, Crypto, Portfolio, Analytics)
 /// 4. Transfer Gateway - gRPC: 50076 (Payments, Transfers)
-/// 5. Banking Gateway - gRPC: 50077 (Banking, Virtual Accounts, Bank Verification, Invoices)
-/// 6. Products Gateway - gRPC: 50078 (Group Accounts, AutoSave, Crowdfund)
+/// 5. Banking Gateway - gRPC: 50077 (Banking, Virtual Accounts, Bank Verification)
+/// 6. Products Gateway - gRPC: 50078 (AutoSave, Crowdfund, Insurance)
 class GrpcChannelFactory {
   /// Creates Core Gateway gRPC channel (Auth, Accounts, Users, Deposits, Withdrawals, etc.)
   /// gRPC Port: 50070
@@ -37,7 +37,7 @@ class GrpcChannelFactory {
     return _createChannel(host, port, 'Investment Gateway');
   }
 
-  /// Creates Commerce Gateway gRPC channel (Utility Payments, GiftCards, Invoices)
+  /// Creates Commerce Gateway gRPC channel (Utility Payments, GiftCards, Group Accounts, TagPay, Invoices)
   /// gRPC Port: 50071
   static ClientChannel createCommerceChannel() {
     final host = dotenv.env['PAYMENT_GRPC_HOST'] ??
@@ -75,7 +75,8 @@ class GrpcChannelFactory {
     return _createChannel(host, port, 'Banking Gateway');
   }
 
-  /// Creates Products Gateway gRPC channel (Group Accounts, AutoSave, Crowdfund)
+  /// Creates Products Gateway gRPC channel (AutoSave, Crowdfund, Insurance)
+  /// Note: Group Accounts are routed through Commerce Gateway (50071)
   /// gRPC Port: 50078
   static ClientChannel createProductsChannel() {
     final host = dotenv.env['PRODUCTS_GRPC_HOST'] ?? '10.0.2.2';
@@ -104,19 +105,21 @@ class GrpcChannelFactory {
   }
 
   /// Internal method to create channel with standard production-grade options
+  /// Includes gzip compression for 60-80% payload reduction on low-bandwidth networks
   static ClientChannel _createChannel(String host, int port, String name) {
     return ClientChannel(
       host,
       port: port,
-      options: const ChannelOptions(
-        credentials: ChannelCredentials.insecure(), // Use TLS in production
-        keepAlive: ClientKeepAliveOptions(
+      options: ChannelOptions(
+        credentials: const ChannelCredentials.insecure(), // Use TLS in production
+        codecRegistry: CodecRegistry(codecs: const [GzipCodec()]), // Enable gzip compression
+        keepAlive: const ClientKeepAliveOptions(
           pingInterval: Duration(seconds: 30), // Keep connection alive
           timeout: Duration(seconds: 10), // Ping timeout
           permitWithoutCalls: true, // Allow pings even when idle
         ),
-        connectionTimeout: Duration(seconds: 10), // Connection establishment timeout
-        idleTimeout: Duration(minutes: 5), // Close idle connections after 5 minutes
+        connectionTimeout: const Duration(seconds: 10), // Connection establishment timeout
+        idleTimeout: const Duration(minutes: 5), // Close idle connections after 5 minutes
       ),
     );
   }

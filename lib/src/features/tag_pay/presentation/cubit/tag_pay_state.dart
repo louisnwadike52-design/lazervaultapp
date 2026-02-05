@@ -252,3 +252,23 @@ class TagPaidSuccess extends TagPayState {
   @override
   List<Object?> get props => [transaction, message];
 }
+
+/// State emitted when a tag creation is queued for offline retry.
+class TagCreationQueued extends TagPayState {
+  final String taggedUserTagPay;
+  final double amount;
+  final String currency;
+  final String message;
+  final String? mutationId;
+
+  const TagCreationQueued({
+    required this.taggedUserTagPay,
+    required this.amount,
+    required this.currency,
+    required this.message,
+    this.mutationId,
+  });
+
+  @override
+  List<Object?> get props => [taggedUserTagPay, amount, currency, message, mutationId];
+}

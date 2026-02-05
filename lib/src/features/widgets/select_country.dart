@@ -238,7 +238,7 @@ class _SelectCountryState extends State<SelectCountry> {
         // Save to signup draft
         await signupStateService.updateDraftLocale(locale);
         // Also persist to LocaleManager for immediate access
-        await localeManager.setCountry(countryCode);
+        localeManager.setCountry(countryCode);
       }
     } catch (e) {
       // Silently fail - country selection is best effort

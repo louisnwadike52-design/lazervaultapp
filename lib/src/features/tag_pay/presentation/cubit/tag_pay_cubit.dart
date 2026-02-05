@@ -1,4 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:grpc/grpc.dart';
+import '../../../../../core/offline/mutation_queue.dart';
+import '../../../../../core/offline/mutation.dart';
 import '../../domain/entities/user_tag_entity.dart';
 import '../../domain/repositories/tag_pay_repository.dart';
 import '../../domain/entities/user_search_result_entity.dart';
@@ -6,8 +9,30 @@ import 'tag_pay_state.dart';
 
 class TagPayCubit extends Cubit<TagPayState> {
   final TagPayRepository repository;
+  final MutationQueue? mutationQueue;
 
-  TagPayCubit({required this.repository}) : super(TagPayInitial());
+  TagPayCubit({
+    required this.repository,
+    this.mutationQueue,
+  }) : super(TagPayInitial());
+
+  /// Check if an error is a network-related error that should trigger offline queuing
+  bool _isNetworkError(dynamic error) {
+    if (error is GrpcError) {
+      return error.code == StatusCode.unavailable ||
+          error.code == StatusCode.deadlineExceeded ||
+          error.code == StatusCode.unknown;
+    }
+    // Also handle string errors that indicate network issues
+    final errorStr = error.toString().toLowerCase();
+    return errorStr.contains('network') ||
+        errorStr.contains('connection') ||
+        errorStr.contains('timeout') ||
+        errorStr.contains('unavailable') ||
+        errorStr.contains('failed to connect') ||
+        errorStr.contains('socket') ||
+        errorStr.contains('unreachable');
+  }
 
   Future<void> createTagPay({
     required String tagPay,
@@ -263,6 +288,34 @@ class TagPayCubit extends Cubit<TagPayState> {
       ));
     } catch (e) {
       if (isClosed) return;
+
+      // Check if this is a network error and we can queue for offline retry
+      if (_isNetworkError(e) && mutationQueue != null) {
+        print('📴 [TagPayCubit] Network error detected, queuing tag creation for offline retry');
+        try {
+          final mutation = await mutationQueue!.enqueue(QueuedMutation.create(
+            type: MutationType.tagCreation,
+            payload: {
+              'taggedUserTagPay': taggedUserTagPay,
+              'amount': amount,
+              'currency': currency,
+              'description': description,
+            },
+          ));
+          emit(TagCreationQueued(
+            taggedUserTagPay: taggedUserTagPay,
+            amount: amount,
+            currency: currency,
+            message: 'Tag creation queued. Will retry when you\'re back online.',
+            mutationId: mutation?.id,
+          ));
+          return;
+        } catch (queueError) {
+          print('❌ [TagPayCubit] Failed to queue tag creation: $queueError');
+          // Fall through to emit regular error
+        }
+      }
+
       emit(TagPayError(e.toString()));
     }
   }
@@ -329,7 +382,14 @@ class TagPayCubit extends Cubit<TagPayState> {
     } catch (e) {
       print('❌ [TagPayCubit] Tag payment failed: $e');
       if (isClosed) return;
-      emit(TagPayError(e.toString()));
+
+      // For financial operations, show clear error and let user retry manually
+      // NEVER queue payments offline - security tokens expire, balances change
+      if (_isNetworkError(e)) {
+        emit(const TagPayError('No internet connection. Please check your network and try again.'));
+      } else {
+        emit(TagPayError(e.toString()));
+      }
     }
   }
 
@@ -363,7 +423,7 @@ class TagPayCubit extends Cubit<TagPayState> {
     return await repository.searchUsers(query: query, limit: limit);
   }
 
-  /// Load home screen data: incoming tags for default tab.
+  /// Load home screen data: both incoming and outgoing tags for both tabs.
   /// Profile badge is read directly from ProfileCubit in the UI.
   Future<void> loadHomeData({int page = 1, int limit = 20, String? status}) async {
     try {
@@ -371,22 +431,42 @@ class TagPayCubit extends Cubit<TagPayState> {
       emit(TagPayLoading());
 
       final isPendingFilter = status == 'pending';
-      final result = await repository.getMyIncomingTags(
-        page: page,
-        limit: limit,
-        status: isPendingFilter ? null : status,
-      );
 
-      final tags = isPendingFilter
-          ? result.tags.where((t) => t.status == TagStatus.pending).toList()
-          : result.tags;
+      // Load both incoming and outgoing tags in parallel for better UX
+      final results = await Future.wait([
+        repository.getMyIncomingTags(
+          page: page,
+          limit: limit,
+          status: isPendingFilter ? null : status,
+        ),
+        repository.getMyOutgoingTags(
+          page: page,
+          limit: limit,
+          status: isPendingFilter ? null : status,
+        ),
+      ]);
+
+      final incomingResult = results[0];
+      final outgoingResult = results[1];
+
+      final incomingTags = isPendingFilter
+          ? incomingResult.tags.where((t) => t.status == TagStatus.pending).toList()
+          : incomingResult.tags;
+
+      final outgoingTags = isPendingFilter
+          ? outgoingResult.tags.where((t) => t.status == TagStatus.pending).toList()
+          : outgoingResult.tags;
 
       if (isClosed) return;
       emit(TagPayHomeLoaded(
-        incomingTags: tags,
-        incomingTotal: result.total,
-        incomingPage: result.page,
-        incomingTotalPages: result.totalPages,
+        incomingTags: incomingTags,
+        incomingTotal: incomingResult.total,
+        incomingPage: incomingResult.page,
+        incomingTotalPages: incomingResult.totalPages,
+        outgoingTags: outgoingTags,
+        outgoingTotal: outgoingResult.total,
+        outgoingPage: outgoingResult.page,
+        outgoingTotalPages: outgoingResult.totalPages,
       ));
     } catch (e) {
       if (isClosed) return;

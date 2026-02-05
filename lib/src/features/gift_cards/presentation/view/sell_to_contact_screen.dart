@@ -18,7 +18,7 @@ class _SellToContactScreenState extends State<SellToContactScreen> {
   final TextEditingController _searchController = TextEditingController();
   final TextEditingController _priceController = TextEditingController();
   GiftCard? _selectedGiftCard;
-  final String _selectedContact = '';
+
 
   @override
   void initState() {

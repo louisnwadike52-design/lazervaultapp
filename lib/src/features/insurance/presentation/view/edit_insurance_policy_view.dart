@@ -70,59 +70,6 @@ class _EditInsurancePolicyViewState extends State<EditInsurancePolicyView> {
   ];
 
   // Predefined data for dialogs
-  final List<String> _availableProviders = [
-    'SafeGuard Insurance',
-    'Allstate Insurance',
-    'State Farm Insurance',
-    'Progressive Insurance',
-    'GEICO Insurance',
-    'Nationwide Insurance',
-    'Liberty Mutual',
-    'Farmers Insurance',
-    'Travelers Insurance',
-    'American Family Insurance',
-    'USAA Insurance',
-    'Aetna Health Insurance',
-    'Blue Cross Blue Shield',
-    'Cigna Health Insurance',
-    'UnitedHealth Group',
-    'Humana Health Insurance',
-  ];
-
-  final List<String> _availableFeatures = [
-    '24/7 Customer Support',
-    'Online Claims Processing',
-    'Mobile App Access',
-    'Roadside Assistance',
-    'Telemedicine Services',
-    'Emergency Medical Coverage',
-    'Worldwide Coverage',
-    'No Deductible for Preventive Care',
-    'Prescription Drug Coverage',
-    'Mental Health Coverage',
-    'Dental Coverage',
-    'Vision Coverage',
-    'Maternity Coverage',
-    'Emergency Room Coverage',
-    'Specialist Consultations',
-    'Physical Therapy Coverage',
-    'Home Health Care',
-    'Ambulance Coverage',
-    'Rehabilitation Services',
-    'Chronic Disease Management',
-  ];
-
-  final List<String> _commonBeneficiaryRelations = [
-    'Spouse',
-    'Child',
-    'Parent',
-    'Sibling',
-    'Partner',
-    'Guardian',
-    'Other Family Member',
-    'Trust',
-    'Estate',
-  ];
 
   @override
   void initState() {

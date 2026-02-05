@@ -29,7 +29,6 @@ class _VoiceAssistantScreenWithPINState extends State<VoiceAssistantScreenWithPI
   bool _isProcessing = false;
   final List<VoiceResponse> _messages = [];
   String? _currentService;
-  String? _currentIntent;
   bool _awaitingPIN = false;
 
   PINWorkflowManager? _pinWorkflowManager;
@@ -50,7 +49,6 @@ class _VoiceAssistantScreenWithPINState extends State<VoiceAssistantScreenWithPI
       onRoutingStart: (service, intent) {
         setState(() {
           _currentService = service;
-          _currentIntent = intent;
           _isProcessing = true;
         });
       },
@@ -76,7 +74,6 @@ class _VoiceAssistantScreenWithPINState extends State<VoiceAssistantScreenWithPI
         // Show PIN entry screen
         setState(() {
           _awaitingPIN = true;
-          _currentIntent = intent;
           _currentService = service;
         });
 

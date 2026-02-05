@@ -8,7 +8,6 @@ import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/src/features/funds/domain/entities/batch_transfer_entity.dart';
 import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
-import 'package:get_it/get_it.dart';
 import 'package:uuid/uuid.dart';
 
 class BatchTransferReviewScreen extends StatefulWidget {

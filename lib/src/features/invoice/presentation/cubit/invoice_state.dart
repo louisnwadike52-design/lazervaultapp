@@ -22,6 +22,8 @@ class InvoicesLoaded extends InvoiceState {
   final bool hasNext;
   final bool hasPrevious;
   final String? currentFilter;
+  final bool isStale;
+  final bool isRevalidating;
 
   const InvoicesLoaded({
     required this.invoices,
@@ -33,10 +35,40 @@ class InvoicesLoaded extends InvoiceState {
     this.hasNext = false,
     this.hasPrevious = false,
     this.currentFilter,
+    this.isStale = false,
+    this.isRevalidating = false,
   });
 
+  InvoicesLoaded copyWith({
+    List<Invoice>? invoices,
+    Map<String, dynamic>? statistics,
+    int? currentPage,
+    int? totalPages,
+    int? totalCount,
+    int? pageSize,
+    bool? hasNext,
+    bool? hasPrevious,
+    String? currentFilter,
+    bool? isStale,
+    bool? isRevalidating,
+  }) {
+    return InvoicesLoaded(
+      invoices: invoices ?? this.invoices,
+      statistics: statistics ?? this.statistics,
+      currentPage: currentPage ?? this.currentPage,
+      totalPages: totalPages ?? this.totalPages,
+      totalCount: totalCount ?? this.totalCount,
+      pageSize: pageSize ?? this.pageSize,
+      hasNext: hasNext ?? this.hasNext,
+      hasPrevious: hasPrevious ?? this.hasPrevious,
+      currentFilter: currentFilter ?? this.currentFilter,
+      isStale: isStale ?? this.isStale,
+      isRevalidating: isRevalidating ?? this.isRevalidating,
+    );
+  }
+
   @override
-  List<Object?> get props => [invoices, statistics, currentPage, totalPages, totalCount, pageSize, hasNext, hasPrevious, currentFilter];
+  List<Object?> get props => [invoices, statistics, currentPage, totalPages, totalCount, pageSize, hasNext, hasPrevious, currentFilter, isStale, isRevalidating];
 }
 
 class InvoiceDetailsLoaded extends InvoiceState {
@@ -163,4 +195,24 @@ class InvoiceUnlockSuccess extends InvoiceState {
 
   @override
   List<Object?> get props => [message, invoice];
+}
+
+/// State emitted when an invoice creation is queued for offline retry.
+class InvoiceCreationQueued extends InvoiceState {
+  final String title;
+  final double totalAmount;
+  final String currency;
+  final String message;
+  final String? mutationId;
+
+  const InvoiceCreationQueued({
+    required this.title,
+    required this.totalAmount,
+    required this.currency,
+    required this.message,
+    this.mutationId,
+  });
+
+  @override
+  List<Object?> get props => [title, totalAmount, currency, message, mutationId];
 }

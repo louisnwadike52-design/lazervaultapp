@@ -18,6 +18,8 @@ class PasscodeSetupScreen extends StatefulWidget {
 
 class _PasscodeSetupScreenState extends State<PasscodeSetupScreen> {
   final int _passcodeLength = 6;
+  bool _skipped = false;
+  bool get _fromLoginFlow => (Get.arguments as Map<String, dynamic>?)?['fromLoginFlow'] == true;
 
   @override
   void initState() {
@@ -44,6 +46,7 @@ class _PasscodeSetupScreenState extends State<PasscodeSetupScreen> {
   }
 
   void _skipPasscode() {
+    _skipped = true;
     context.read<AuthenticationCubit>().skipPasscodeSetup();
   }
 
@@ -57,12 +60,24 @@ class _PasscodeSetupScreenState extends State<PasscodeSetupScreen> {
     return BlocConsumer<AuthenticationCubit, AuthenticationState>(
       listener: (context, state) {
         if (state is AuthenticationSuccess) {
-          // Navigate to Transaction PIN setup after successful passcode setup
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (mounted) {
-              Get.offNamed(AppRoutes.transactionPinSetup);
-            }
-          });
+          if (_skipped) {
+            // Skip was pressed, go directly to dashboard
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) {
+                Get.offAllNamed(AppRoutes.dashboard);
+              }
+            });
+          } else {
+            // Navigate to Transaction PIN setup after successful passcode setup
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) {
+                Get.offNamed(
+                  AppRoutes.transactionPinSetup,
+                  arguments: _fromLoginFlow ? {'fromLoginFlow': true} : null,
+                );
+              }
+            });
+          }
         }
       },
       builder: (context, state) {

@@ -30,7 +30,6 @@ class _WithdrawFundsProcessingScreenState extends State<WithdrawFundsProcessingS
   late Animation<double> _rotationAnimation;
 
   double _progress = 0.0;
-  String _currentStep = 'Initializing...';
   int _currentStepIndex = 0;
 
   final List<String> _processingSteps = [
@@ -85,7 +84,6 @@ class _WithdrawFundsProcessingScreenState extends State<WithdrawFundsProcessingS
 
         setState(() {
           _currentStepIndex = i;
-          _currentStep = _processingSteps[i];
           _progress = (i + 1) / _processingSteps.length;
         });
 

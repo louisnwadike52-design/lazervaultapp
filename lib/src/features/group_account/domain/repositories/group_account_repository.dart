@@ -20,6 +20,7 @@ abstract class GroupAccountRepository {
     required String userName,
     required String email,
     String? profileImage,
+    String? username,
     GroupMemberRole role = GroupMemberRole.member,
   });
   Future<GroupMember> updateMemberRole({
@@ -44,9 +45,31 @@ abstract class GroupAccountRepository {
     required String currency,
     required DateTime deadline,
     required String createdBy,
+    ContributionType type = ContributionType.oneTime,
+    ContributionFrequency? frequency,
+    double? regularAmount,
+    DateTime? startDate,
+    int? totalCycles,
+    List<String>? memberRotationOrder,
+    bool autoPayEnabled = false,
+    double? penaltyAmount,
+    int? gracePeriodDays,
+    bool allowPartialPayments = true,
+    double? minimumBalance,
   });
   Future<Contribution> updateContribution(Contribution contribution);
   Future<void> deleteContribution(String contributionId);
+
+  // Contribution Member methods
+  Future<List<ContributionMember>> addMembersToContribution({
+    required String contributionId,
+    required List<String> memberUserIds,
+  });
+  Future<List<ContributionMember>> getContributionMembers(String contributionId);
+  Future<void> removeMemberFromContribution({
+    required String contributionId,
+    required String userId,
+  });
 
   // Payment methods
   Future<List<ContributionPayment>> getContributionPayments(String contributionId);
@@ -58,6 +81,9 @@ abstract class GroupAccountRepository {
     required double amount,
     required String currency,
     String? notes,
+    String? transactionPin,
+    String? sourceAccountId,
+    String? idempotencyKey,
   });
   Future<ContributionPayment> updatePaymentStatus({
     required String paymentId,
@@ -75,4 +101,8 @@ abstract class GroupAccountRepository {
   // Statistics methods
   Future<Map<String, dynamic>> getGroupStatistics(String groupId);
   Future<Map<String, dynamic>> getUserContributionStats(String userId);
+
+  // Activity Log methods
+  Future<List<ActivityLogEntry>> getGroupActivityLogs(String groupId);
+  Future<List<ActivityLogEntry>> getContributionActivityLogs(String contributionId);
 } 

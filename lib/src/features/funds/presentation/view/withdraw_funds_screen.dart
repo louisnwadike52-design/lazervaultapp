@@ -31,22 +31,8 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen> {
   bool _isListening = false;
   String _recognizedText = '';
   bool _isVoiceEnabled = false;
-  bool _wasSelectedFromBottomSheet = false;
-  bool _isLoadingBanks = false;
-
   // Dynamic bank list loaded from API
   List<Map<String, dynamic>> _banks = [];
-
-  List<Map<String, dynamic>> get _displayedBanks {
-    if (_banks.isEmpty) return [];
-    if (_selectedBank.isEmpty) return _banks.take(4).toList();
-    final selectedBank =
-        _banks.firstWhere((bank) => bank['name'] == _selectedBank, orElse: () => <String, dynamic>{});
-    if (selectedBank.isEmpty) return _banks.take(4).toList();
-    final List<Map<String, dynamic>> reorderedBanks = [selectedBank];
-    reorderedBanks.addAll(_banks.where((bank) => bank['name'] != _selectedBank).take(3));
-    return reorderedBanks;
-  }
 
   @override
   void initState() {
@@ -57,7 +43,7 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen> {
 
   /// Load supported banks from local configuration
   Future<void> _loadBanks() async {
-    setState(() => _isLoadingBanks = true);
+    setState(() {});
     try {
       // Get country from selected card or default to NG
       final String country = _getCountryFromCard();
@@ -73,13 +59,12 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen> {
             'icon': Icons.account_balance,
             'color': _getBankColor(bank['name'] ?? bank['bankName'] ?? ''),
           }).toList();
-          _isLoadingBanks = false;
         });
       }
     } catch (e) {
       print('Error loading banks: $e');
       if (mounted) {
-        setState(() => _isLoadingBanks = false);
+        setState(() {});
       }
     }
   }
@@ -119,7 +104,7 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen> {
   void _selectBank(String bankName, {bool fromBottomSheet = false}) {
     setState(() {
       _selectedBank = bankName;
-      _wasSelectedFromBottomSheet = fromBottomSheet;
+
     });
   }
 
@@ -347,7 +332,7 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen> {
                 _amountController.clear();
                 setState(() {
                   _selectedBank = '';
-                  _wasSelectedFromBottomSheet = false;
+
                 });
 
                 // Refresh account balances

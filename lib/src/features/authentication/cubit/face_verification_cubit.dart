@@ -146,14 +146,4 @@ class FaceVerificationCubit extends Cubit<FaceVerificationState> {
     );
   }
 
-  void _showInfoSnackbar(String title, String message) {
-    Get.snackbar(
-      title,
-      message,
-      snackPosition: SnackPosition.TOP,
-      backgroundColor: Color(0xFF2196F3),
-      colorText: Color(0xFFFFFFFF),
-      duration: const Duration(seconds: 3),
-    );
-  }
 }

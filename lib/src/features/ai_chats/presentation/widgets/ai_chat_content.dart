@@ -60,7 +60,6 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
     "How to manage my spending?",
     "Set up recurring payments",
   ];
-  final bool _isListening = false; 
   // --- End State Variables ---
 
   @override

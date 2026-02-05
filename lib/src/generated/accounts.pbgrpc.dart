@@ -116,6 +116,33 @@ class AccountsServiceClient extends $grpc.Client {
           ($0.ReleaseHoldRequest value) => value.writeToBuffer(),
           ($core.List<$core.int> value) =>
               $0.ReleaseHoldResponse.fromBuffer(value));
+  static final _$transferToPlatformWallet = $grpc.ClientMethod<
+          $0.TransferToPlatformWalletRequest,
+          $0.TransferToPlatformWalletResponse>(
+      '/accounts.AccountsService/TransferToPlatformWallet',
+      ($0.TransferToPlatformWalletRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $0.TransferToPlatformWalletResponse.fromBuffer(value));
+  static final _$transferFromPlatformWallet = $grpc.ClientMethod<
+          $0.TransferFromPlatformWalletRequest,
+          $0.TransferFromPlatformWalletResponse>(
+      '/accounts.AccountsService/TransferFromPlatformWallet',
+      ($0.TransferFromPlatformWalletRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $0.TransferFromPlatformWalletResponse.fromBuffer(value));
+  static final _$getPlatformWallet = $grpc.ClientMethod<
+          $0.GetPlatformWalletRequest, $0.GetPlatformWalletResponse>(
+      '/accounts.AccountsService/GetPlatformWallet',
+      ($0.GetPlatformWalletRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $0.GetPlatformWalletResponse.fromBuffer(value));
+  static final _$getPlatformWalletTransactions = $grpc.ClientMethod<
+          $0.GetPlatformWalletTransactionsRequest,
+          $0.GetPlatformWalletTransactionsResponse>(
+      '/accounts.AccountsService/GetPlatformWalletTransactions',
+      ($0.GetPlatformWalletTransactionsRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $0.GetPlatformWalletTransactionsResponse.fromBuffer(value));
   static final _$getAccountByNumber = $grpc.ClientMethod<
           $0.GetAccountByNumberRequest, $0.GetAccountByNumberResponse>(
       '/accounts.AccountsService/GetAccountByNumber',
@@ -141,6 +168,13 @@ class AccountsServiceClient extends $grpc.Client {
       ($0.GetTransactionStatisticsRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
           $0.GetTransactionStatisticsResponse.fromBuffer(value));
+  static final _$updateTransactionStatus = $grpc.ClientMethod<
+          $0.UpdateTransactionStatusRequest,
+          $0.UpdateTransactionStatusResponse>(
+      '/accounts.AccountsService/UpdateTransactionStatus',
+      ($0.UpdateTransactionStatusRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $0.UpdateTransactionStatusResponse.fromBuffer(value));
   static final _$createAutoSave =
       $grpc.ClientMethod<$0.CreateAutoSaveRequest, $0.CreateAutoSaveResponse>(
           '/accounts.AccountsService/CreateAutoSave',
@@ -309,6 +343,34 @@ class AccountsServiceClient extends $grpc.Client {
     return $createUnaryCall(_$releaseHold, request, options: options);
   }
 
+  $grpc.ResponseFuture<$0.TransferToPlatformWalletResponse>
+      transferToPlatformWallet($0.TransferToPlatformWalletRequest request,
+          {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$transferToPlatformWallet, request,
+        options: options);
+  }
+
+  $grpc.ResponseFuture<$0.TransferFromPlatformWalletResponse>
+      transferFromPlatformWallet($0.TransferFromPlatformWalletRequest request,
+          {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$transferFromPlatformWallet, request,
+        options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetPlatformWalletResponse> getPlatformWallet(
+      $0.GetPlatformWalletRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getPlatformWallet, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetPlatformWalletTransactionsResponse>
+      getPlatformWalletTransactions(
+          $0.GetPlatformWalletTransactionsRequest request,
+          {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getPlatformWalletTransactions, request,
+        options: options);
+  }
+
   $grpc.ResponseFuture<$0.GetAccountByNumberResponse> getAccountByNumber(
       $0.GetAccountByNumberRequest request,
       {$grpc.CallOptions? options}) {
@@ -331,6 +393,13 @@ class AccountsServiceClient extends $grpc.Client {
       getTransactionStatistics($0.GetTransactionStatisticsRequest request,
           {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getTransactionStatistics, request,
+        options: options);
+  }
+
+  $grpc.ResponseFuture<$0.UpdateTransactionStatusResponse>
+      updateTransactionStatus($0.UpdateTransactionStatusRequest request,
+          {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$updateTransactionStatus, request,
         options: options);
   }
 
@@ -546,6 +615,44 @@ abstract class AccountsServiceBase extends $grpc.Service {
             ($core.List<$core.int> value) =>
                 $0.ReleaseHoldRequest.fromBuffer(value),
             ($0.ReleaseHoldResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.TransferToPlatformWalletRequest,
+            $0.TransferToPlatformWalletResponse>(
+        'TransferToPlatformWallet',
+        transferToPlatformWallet_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.TransferToPlatformWalletRequest.fromBuffer(value),
+        ($0.TransferToPlatformWalletResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.TransferFromPlatformWalletRequest,
+            $0.TransferFromPlatformWalletResponse>(
+        'TransferFromPlatformWallet',
+        transferFromPlatformWallet_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.TransferFromPlatformWalletRequest.fromBuffer(value),
+        ($0.TransferFromPlatformWalletResponse value) =>
+            value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetPlatformWalletRequest,
+            $0.GetPlatformWalletResponse>(
+        'GetPlatformWallet',
+        getPlatformWallet_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.GetPlatformWalletRequest.fromBuffer(value),
+        ($0.GetPlatformWalletResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetPlatformWalletTransactionsRequest,
+            $0.GetPlatformWalletTransactionsResponse>(
+        'GetPlatformWalletTransactions',
+        getPlatformWalletTransactions_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.GetPlatformWalletTransactionsRequest.fromBuffer(value),
+        ($0.GetPlatformWalletTransactionsResponse value) =>
+            value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.GetAccountByNumberRequest,
             $0.GetAccountByNumberResponse>(
         'GetAccountByNumber',
@@ -582,6 +689,15 @@ abstract class AccountsServiceBase extends $grpc.Service {
         ($core.List<$core.int> value) =>
             $0.GetTransactionStatisticsRequest.fromBuffer(value),
         ($0.GetTransactionStatisticsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.UpdateTransactionStatusRequest,
+            $0.UpdateTransactionStatusResponse>(
+        'UpdateTransactionStatus',
+        updateTransactionStatus_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.UpdateTransactionStatusRequest.fromBuffer(value),
+        ($0.UpdateTransactionStatusResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.CreateAutoSaveRequest,
             $0.CreateAutoSaveResponse>(
         'CreateAutoSave',
@@ -770,6 +886,32 @@ abstract class AccountsServiceBase extends $grpc.Service {
     return releaseHold(call, await request);
   }
 
+  $async.Future<$0.TransferToPlatformWalletResponse>
+      transferToPlatformWallet_Pre($grpc.ServiceCall call,
+          $async.Future<$0.TransferToPlatformWalletRequest> request) async {
+    return transferToPlatformWallet(call, await request);
+  }
+
+  $async.Future<$0.TransferFromPlatformWalletResponse>
+      transferFromPlatformWallet_Pre($grpc.ServiceCall call,
+          $async.Future<$0.TransferFromPlatformWalletRequest> request) async {
+    return transferFromPlatformWallet(call, await request);
+  }
+
+  $async.Future<$0.GetPlatformWalletResponse> getPlatformWallet_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$0.GetPlatformWalletRequest> request) async {
+    return getPlatformWallet(call, await request);
+  }
+
+  $async.Future<$0.GetPlatformWalletTransactionsResponse>
+      getPlatformWalletTransactions_Pre(
+          $grpc.ServiceCall call,
+          $async.Future<$0.GetPlatformWalletTransactionsRequest>
+              request) async {
+    return getPlatformWalletTransactions(call, await request);
+  }
+
   $async.Future<$0.GetAccountByNumberResponse> getAccountByNumber_Pre(
       $grpc.ServiceCall call,
       $async.Future<$0.GetAccountByNumberRequest> request) async {
@@ -792,6 +934,12 @@ abstract class AccountsServiceBase extends $grpc.Service {
       getTransactionStatistics_Pre($grpc.ServiceCall call,
           $async.Future<$0.GetTransactionStatisticsRequest> request) async {
     return getTransactionStatistics(call, await request);
+  }
+
+  $async.Future<$0.UpdateTransactionStatusResponse> updateTransactionStatus_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$0.UpdateTransactionStatusRequest> request) async {
+    return updateTransactionStatus(call, await request);
   }
 
   $async.Future<$0.CreateAutoSaveResponse> createAutoSave_Pre(
@@ -886,6 +1034,16 @@ abstract class AccountsServiceBase extends $grpc.Service {
       $grpc.ServiceCall call, $0.CaptureHoldRequest request);
   $async.Future<$0.ReleaseHoldResponse> releaseHold(
       $grpc.ServiceCall call, $0.ReleaseHoldRequest request);
+  $async.Future<$0.TransferToPlatformWalletResponse> transferToPlatformWallet(
+      $grpc.ServiceCall call, $0.TransferToPlatformWalletRequest request);
+  $async.Future<$0.TransferFromPlatformWalletResponse>
+      transferFromPlatformWallet(
+          $grpc.ServiceCall call, $0.TransferFromPlatformWalletRequest request);
+  $async.Future<$0.GetPlatformWalletResponse> getPlatformWallet(
+      $grpc.ServiceCall call, $0.GetPlatformWalletRequest request);
+  $async.Future<$0.GetPlatformWalletTransactionsResponse>
+      getPlatformWalletTransactions($grpc.ServiceCall call,
+          $0.GetPlatformWalletTransactionsRequest request);
   $async.Future<$0.GetAccountByNumberResponse> getAccountByNumber(
       $grpc.ServiceCall call, $0.GetAccountByNumberRequest request);
   $async.Future<$0.CreateTransactionResponse> createTransaction(
@@ -894,6 +1052,8 @@ abstract class AccountsServiceBase extends $grpc.Service {
       $grpc.ServiceCall call, $0.GetTransactionHistoryRequest request);
   $async.Future<$0.GetTransactionStatisticsResponse> getTransactionStatistics(
       $grpc.ServiceCall call, $0.GetTransactionStatisticsRequest request);
+  $async.Future<$0.UpdateTransactionStatusResponse> updateTransactionStatus(
+      $grpc.ServiceCall call, $0.UpdateTransactionStatusRequest request);
   $async.Future<$0.CreateAutoSaveResponse> createAutoSave(
       $grpc.ServiceCall call, $0.CreateAutoSaveRequest request);
   $async.Future<$0.GetAutoSavesResponse> getAutoSaves(

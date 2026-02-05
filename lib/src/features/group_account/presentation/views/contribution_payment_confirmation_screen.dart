@@ -4,8 +4,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:share_plus/share_plus.dart';
 import '../../domain/entities/group_entities.dart';
+import '../../services/group_contribution_pdf_service.dart';
 import '../../../../../core/types/app_routes.dart';
 
 class ContributionPaymentConfirmationScreen extends StatefulWidget {
@@ -684,15 +684,12 @@ class _ContributionPaymentConfirmationScreenState extends State<ContributionPaym
               child: Container(
                 height: 56.h,
                 decoration: BoxDecoration(
-                  boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+                  color: Colors.transparent,
                   borderRadius: BorderRadius.circular(16.r),
+                  border: Border.all(
+                    color: const Color(0xFF6366F1),
+                    width: 1.5,
+                  ),
                 ),
                 child: Material(
                   color: Colors.transparent,
@@ -729,17 +726,12 @@ class _ContributionPaymentConfirmationScreenState extends State<ContributionPaym
               child: Container(
                 height: 56.h,
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
-                  ),
+                  color: Colors.transparent,
                   borderRadius: BorderRadius.circular(16.r),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF6366F1).withValues(alpha: 0.3),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
+                  border: Border.all(
+                    color: const Color(0xFF6366F1),
+                    width: 1.5,
+                  ),
                 ),
                 child: Material(
                   color: Colors.transparent,
@@ -752,7 +744,7 @@ class _ContributionPaymentConfirmationScreenState extends State<ContributionPaym
                               width: 20.w,
                               height: 20.w,
                               child: CircularProgressIndicator(
-                                color: Colors.white,
+                                color: const Color(0xFF6366F1),
                                 strokeWidth: 2,
                               ),
                             )
@@ -761,7 +753,7 @@ class _ContributionPaymentConfirmationScreenState extends State<ContributionPaym
                               children: [
                                 Icon(
                                   Icons.download,
-                                  color: Colors.white,
+                                  color: const Color(0xFF6366F1),
                                   size: 20.sp,
                                 ),
                                 SizedBox(width: 8.w),
@@ -770,7 +762,7 @@ class _ContributionPaymentConfirmationScreenState extends State<ContributionPaym
                                   style: GoogleFonts.inter(
                                     fontSize: 16.sp,
                                     fontWeight: FontWeight.w600,
-                                    color: Colors.white,
+                                    color: const Color(0xFF6366F1),
                                   ),
                                 ),
                               ],
@@ -851,49 +843,73 @@ class _ContributionPaymentConfirmationScreenState extends State<ContributionPaym
     }
   }
 
-  void _shareReceipt() {
+  Future<void> _shareReceipt() async {
     HapticFeedback.lightImpact();
-    
-    final receiptText = '''
-🎉 Contribution Payment Receipt 🎉
 
-Amount: ${widget.payment.currency} ${widget.payment.amount.toStringAsFixed(2)}
-To: ${widget.contribution.title}
-Transaction ID: ${widget.payment.transactionId ?? 'N/A'}
-Date: ${DateFormat('MMM dd, yyyy HH:mm').format(widget.payment.paymentDate)}
-Status: Completed
-
-Thank you for your contribution!
-Powered by LazerVault
-''';
-
-    SharePlus.instance.share(ShareParams(text: receiptText, subject: 'Contribution Payment Receipt - ${widget.contribution.title}'));
-  }
-
-  void _downloadReceipt() {
-    HapticFeedback.lightImpact();
-    
-    setState(() {
-      _isDownloading = true;
-    });
-
-    // TODO: Implement PDF generation and download
-    Future.delayed(const Duration(seconds: 2), () {
+    try {
+      await GroupContributionPdfService.shareReceipt(
+        contribution: widget.contribution,
+        payment: widget.payment,
+        paymentMethod: widget.paymentMethod,
+      );
+    } catch (e) {
       if (mounted) {
-        setState(() {
-          _isDownloading = false;
-        });
-        
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Receipt download will be available soon'),
-            backgroundColor: const Color(0xFF6366F1),
+            content: Text('Failed to share receipt: ${e.toString()}'),
+            backgroundColor: const Color(0xFFEF4444),
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
           ),
         );
       }
+    }
+  }
+
+  Future<void> _downloadReceipt() async {
+    HapticFeedback.lightImpact();
+
+    setState(() {
+      _isDownloading = true;
     });
+
+    try {
+      final filePath = await GroupContributionPdfService.downloadReceipt(
+        contribution: widget.contribution,
+        payment: widget.payment,
+        paymentMethod: widget.paymentMethod,
+      );
+
+      if (mounted) {
+        setState(() {
+          _isDownloading = false;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Receipt saved to $filePath'),
+            backgroundColor: const Color(0xFF10B981),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isDownloading = false;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to download receipt: ${e.toString()}'),
+            backgroundColor: const Color(0xFFEF4444),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+          ),
+        );
+      }
+    }
   }
 
   void _navigateToContributionsList() {

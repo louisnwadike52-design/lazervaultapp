@@ -33,7 +33,6 @@ class _AdvancedChartWidgetState extends State<AdvancedChartWidget> {
   // Pan and zoom variables
   double _currentScale = 1.0;
   double _baseScale = 1.0;
-  double _currentPanX = 0.0;
   int _visibleDataPoints = 30;
   int _startIndex = 0;
   
@@ -65,7 +64,6 @@ class _AdvancedChartWidgetState extends State<AdvancedChartWidget> {
     _startIndex = (priceHistory.length - _visibleDataPoints).clamp(0, priceHistory.length - 1);
     _currentScale = 1.0;
     _baseScale = 1.0;
-    _currentPanX = 0.0;
   }
 
   @override
@@ -271,8 +269,7 @@ class _AdvancedChartWidgetState extends State<AdvancedChartWidget> {
             _isDragging = false;
             
             final newScale = (_baseScale * details.scale).clamp(0.3, 8.0);
-            final scaleDelta = newScale / _currentScale;
-            
+
             // Calculate new visible data points based on scale
             final newVisiblePoints = (priceHistory.length / newScale).round().clamp(5, priceHistory.length);
             
@@ -331,7 +328,6 @@ class _AdvancedChartWidgetState extends State<AdvancedChartWidget> {
     setState(() {
       _currentScale = 1.0;
       _baseScale = 1.0;
-      _currentPanX = 0.0;
       _isDragging = false;
       _isScaling = false;
       _initializeChart();

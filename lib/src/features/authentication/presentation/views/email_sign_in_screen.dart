@@ -99,9 +99,15 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
               BlocListener<AuthenticationCubit, AuthenticationState>(
                 listener: (context, state) async {
                   switch (state) {
-                  case AuthenticationSuccess():
+                  case AuthenticationSuccess(profile: final profile):
                     // Load user profile after successful authentication
                     context.read<ProfileCubit>().getUserProfile();
+
+                    // Update local storage with latest email and name for passcode login screen
+                    // IMPORTANT: Await these writes to ensure they complete before navigation
+                    await _storage.write(key: 'stored_email', value: profile.user.email);
+                    await _storage.write(key: 'user_first_name', value: profile.user.firstName);
+                    await _storage.write(key: 'user_avatar_url', value: profile.user.profilePicture ?? '');
 
                     Get.snackbar(
                       'Success',
@@ -116,9 +122,10 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
                     // Handle navigation based on scenario
                     if (fromForgotPasscode) {
                       // Always go to passcode setup when resetting
-                      Get.offAllNamed(AppRoutes.passcodeSetup);
+                      Get.offAllNamed(AppRoutes.passcodeSetup, arguments: {'fromLoginFlow': true});
                     } else {
-                      // Check backend for passcode status
+                      // Always check backend for passcode status (never rely on local storage)
+                      print('🔐 Checking backend for passcode status...');
                       context.read<IdentityCubit>().checkPasscodeExists();
                     }
                     break;
@@ -146,28 +153,22 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
                       Get.offAllNamed(AppRoutes.dashboard);
                     } else {
                       // No passcode set, prompt to set up
-                      Get.offAllNamed(AppRoutes.passcodeSetup);
+                      Get.offAllNamed(AppRoutes.passcodeSetup, arguments: {'fromLoginFlow': true});
                     }
                   } else if (state is IdentityError) {
-                    // API error - check local storage as fallback
-                    final storedPasscode = await _storage.read(key: 'user_passcode');
-
-                    if (storedPasscode != null && storedPasscode.isNotEmpty) {
-                      // User has passcode locally, allow them to proceed to dashboard
-                      Get.offAllNamed(AppRoutes.dashboard);
-                    } else {
-                      // No local passcode found, prompt to set up
-                      Get.snackbar(
-                        'Warning',
-                        'Could not verify passcode status. Please set up your passcode.',
-                        snackPosition: SnackPosition.TOP,
-                        backgroundColor: Colors.orange,
-                        colorText: Colors.white,
-                        margin: EdgeInsets.all(15.w),
-                        borderRadius: 10.r,
-                      );
-                      Get.offAllNamed(AppRoutes.passcodeSetup);
-                    }
+                    // API error checking passcode - show error and retry, or default to passcode setup
+                    print('🔐 Error checking passcode status from backend: ${state.message}');
+                    Get.snackbar(
+                      'Error',
+                      'Could not verify passcode status. Please set up a passcode.',
+                      snackPosition: SnackPosition.TOP,
+                      backgroundColor: Colors.orange,
+                      colorText: Colors.white,
+                      margin: EdgeInsets.all(15.w),
+                      borderRadius: 10.r,
+                    );
+                    // Default to passcode setup on error (safe default)
+                    Get.offAllNamed(AppRoutes.passcodeSetup, arguments: {'fromLoginFlow': true});
                   }
                 },
               ),

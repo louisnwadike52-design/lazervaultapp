@@ -385,10 +385,6 @@ class _BarcodePaymentConfirmationScreenState
     );
   }
 
-  Widget _buildAccountOption(Account account) {
-    return const SizedBox(); // Placeholder - not used for now
-  }
-
   Widget _buildDescriptionCard(BarcodePaymentEntity barcode) {
     return Container(
       padding: EdgeInsets.all(20.w),

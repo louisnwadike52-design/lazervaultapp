@@ -74,12 +74,9 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
   DrawingTool _selectedDrawingTool = DrawingTool.none;
   String _selectedTimeframe = '1D';
   final List<String> _selectedIndicators = [];
-  final List<Crypto> _comparisonCryptos = [];
-  
   // Pan and zoom variables
   double _currentScale = 1.0;
   double _baseScale = 1.0;
-  double _currentPanX = 0.0;
   int _visibleDataPoints = 50;
   int _startIndex = 0;
   
@@ -92,195 +89,17 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
   final List<DrawingElement> _drawings = [];
   DrawingElement? _currentDrawing;
   final bool _isDrawing = false;
-  Offset? _drawingStartPoint;
-  
+
   // Drawing selection and dragging
   DrawingElement? _selectedDrawing;
   bool _isDraggingDrawing = false;
   Offset? _dragStartPoint;
-  int? _selectedDrawingIndex;
 
   // Crosshair
   bool _showCrosshair = false;
   Offset? _crosshairPosition;
 
   final List<String> _timeframes = ['1m', '5m', '15m', '30m', '1H', '4H', '1D', '1W', '1M'];
-
-  // Crypto-specific indicator lists
-  final List<IndicatorInfo> _trendIndicators = const [
-    IndicatorInfo(
-      name: 'Moving Average',
-      description: 'Simple moving average line',
-      parameters: '20, 50, 200',
-    ),
-    IndicatorInfo(
-      name: 'EMA',
-      description: 'Exponential moving average',
-      parameters: '12, 26, 50',
-    ),
-    IndicatorInfo(
-      name: 'VWAP',
-      description: 'Volume weighted average price',
-      parameters: 'Session',
-    ),
-    IndicatorInfo(
-      name: 'Ichimoku',
-      description: 'Ichimoku cloud indicator',
-      parameters: '9, 26, 52',
-    ),
-    IndicatorInfo(
-      name: 'Parabolic SAR',
-      description: 'Stop and reverse indicator',
-      parameters: '0.02, 0.2',
-    ),
-    IndicatorInfo(
-      name: 'Supertrend',
-      description: 'Trend following indicator',
-      parameters: '10, 3.0',
-    ),
-  ];
-
-  final List<IndicatorInfo> _momentumIndicators = const [
-    IndicatorInfo(
-      name: 'RSI',
-      description: 'Relative strength index',
-      parameters: '14',
-    ),
-    IndicatorInfo(
-      name: 'MACD',
-      description: 'Moving average convergence divergence',
-      parameters: '12, 26, 9',
-    ),
-    IndicatorInfo(
-      name: 'Stochastic',
-      description: 'Stochastic oscillator',
-      parameters: '14, 3, 3',
-    ),
-    IndicatorInfo(
-      name: 'Williams %R',
-      description: 'Williams percent range',
-      parameters: '14',
-    ),
-    IndicatorInfo(
-      name: 'CCI',
-      description: 'Commodity channel index',
-      parameters: '20',
-    ),
-    IndicatorInfo(
-      name: 'ROC',
-      description: 'Rate of change',
-      parameters: '12',
-    ),
-    IndicatorInfo(
-      name: 'Fear & Greed',
-      description: 'Crypto fear and greed index',
-      parameters: 'Daily',
-    ),
-  ];
-
-  final List<IndicatorInfo> _volumeIndicators = const [
-    IndicatorInfo(
-      name: 'Volume',
-      description: 'Trading volume bars',
-      parameters: 'Session',
-    ),
-    IndicatorInfo(
-      name: 'Volume Profile',
-      description: 'Volume at price levels',
-      parameters: 'Session',
-    ),
-    IndicatorInfo(
-      name: 'OBV',
-      description: 'On-balance volume',
-      parameters: 'Cumulative',
-    ),
-    IndicatorInfo(
-      name: 'A/D Line',
-      description: 'Accumulation/distribution line',
-      parameters: 'Cumulative',
-    ),
-    IndicatorInfo(
-      name: 'Money Flow',
-      description: 'Chaikin money flow',
-      parameters: '20',
-    ),
-    IndicatorInfo(
-      name: 'VWMA',
-      description: 'Volume weighted moving average',
-      parameters: '20',
-    ),
-    IndicatorInfo(
-      name: 'Whale Movements',
-      description: 'Large transaction tracking',
-      parameters: 'Real-time',
-    ),
-  ];
-
-  final List<IndicatorInfo> _volatilityIndicators = const [
-    IndicatorInfo(
-      name: 'Bollinger Bands',
-      description: 'Price volatility bands',
-      parameters: '20, 2.0',
-    ),
-    IndicatorInfo(
-      name: 'ATR',
-      description: 'Average true range',
-      parameters: '14',
-    ),
-    IndicatorInfo(
-      name: 'Keltner Channel',
-      description: 'Volatility-based channel',
-      parameters: '20, 2.0',
-    ),
-    IndicatorInfo(
-      name: 'Donchian Channel',
-      description: 'Price channel indicator',
-      parameters: '20',
-    ),
-    IndicatorInfo(
-      name: 'Standard Deviation',
-      description: 'Price standard deviation',
-      parameters: '20',
-    ),
-    IndicatorInfo(
-      name: 'Crypto Volatility',
-      description: 'Crypto-specific volatility',
-      parameters: 'Market',
-    ),
-  ];
-
-  final List<IndicatorInfo> _supportResistanceIndicators = const [
-    IndicatorInfo(
-      name: 'Pivot Points',
-      description: 'Standard pivot levels',
-      parameters: 'Daily',
-    ),
-    IndicatorInfo(
-      name: 'Fibonacci',
-      description: 'Fibonacci retracement levels',
-      parameters: 'High/Low',
-    ),
-    IndicatorInfo(
-      name: 'Support/Resistance',
-      description: 'Key price levels',
-      parameters: 'Auto',
-    ),
-    IndicatorInfo(
-      name: 'Camarilla',
-      description: 'Camarilla pivot points',
-      parameters: 'Daily',
-    ),
-    IndicatorInfo(
-      name: 'Hash Ribbons',
-      description: 'Mining difficulty ribbons',
-      parameters: 'Network',
-    ),
-    IndicatorInfo(
-      name: 'Stock-to-Flow',
-      description: 'Bitcoin scarcity model',
-      parameters: 'BTC Only',
-    ),
-  ];
 
   @override
   void initState() {
@@ -293,7 +112,6 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
     _startIndex = 0;
     _currentScale = 1.0;
     _baseScale = 1.0;
-    _currentPanX = 0.0;
   }
 
   @override
@@ -852,7 +670,6 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
           if (tappedDrawing != null) {
             setState(() {
               _selectedDrawing = tappedDrawing;
-              _selectedDrawingIndex = _drawings.indexOf(tappedDrawing);
             });
             return;
           }
@@ -1442,16 +1259,6 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
   bool _isPointNearDrawing(Offset point, DrawingElement drawing, List<CryptoPrice> priceHistory) {
     // Implementation for checking if point is near drawing
     return false;
-  }
-
-  double _screenToPrice(Offset point, List<CryptoPrice> priceHistory) {
-    // Implementation for converting screen to price
-    return 0.0;
-  }
-
-  int _screenToTimeIndex(Offset point, List<CryptoPrice> priceHistory) {
-    // Implementation for converting screen to time index
-    return 0;
   }
 
   void _showTimeframeBottomSheet() {

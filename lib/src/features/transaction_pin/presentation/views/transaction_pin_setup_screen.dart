@@ -29,6 +29,7 @@ class _TransactionPinSetupScreenState extends State<TransactionPinSetupScreen> {
   bool _isChangePinMode = false; // true when user already has PIN and wants to change
   bool _hasEnteredCurrentPin = false; // for change flow
   String? _errorMessage;
+  bool get _fromLoginFlow => (Get.arguments as Map<String, dynamic>?)?['fromLoginFlow'] == true;
 
   late TransactionPinCubit _transactionPinCubit;
 
@@ -53,9 +54,16 @@ class _TransactionPinSetupScreenState extends State<TransactionPinSetupScreen> {
     try {
       await _transactionPinCubit.checkUserHasPin();
       if (mounted) {
+        final hasPin = _transactionPinCubit.state.hasPin;
+        if (_fromLoginFlow && hasPin) {
+          // User already has a PIN during login flow — skip directly
+          _proceedToNextStep();
+          return;
+        }
         setState(() {
-          _userHasPin = _transactionPinCubit.state.hasPin;
-          _isChangePinMode = _userHasPin;
+          _userHasPin = hasPin;
+          // Only enter change-PIN mode if NOT in login flow
+          _isChangePinMode = hasPin && !_fromLoginFlow;
           _isLoading = false;
         });
       }
@@ -315,6 +323,12 @@ class _TransactionPinSetupScreenState extends State<TransactionPinSetupScreen> {
   }
 
   void _proceedToNextStep() {
+    if (_fromLoginFlow) {
+      // Login flow — go to face registration prompt or dashboard
+      _showFaceRegistrationPrompt();
+      return;
+    }
+
     // If user already had a PIN (change flow from settings), just go back
     if (_userHasPin) {
       Get.back();

@@ -267,6 +267,30 @@ message GetCrowdfundStatisticsResponse {
   int32 days_remaining = 8;
   bool is_completed = 9;
   google.protobuf.Timestamp created_at = 10;
+  // Enhanced statistics fields
+  int32 unique_donors = 11;
+  uint64 smallest_donation = 12;
+  repeated ContributorLeaderboardEntry top_contributors = 13;
+  repeated DailyProgressEntry daily_progress = 14;
+  double funding_velocity = 15;
+  string projected_completion_date = 16;
+}
+
+// Leaderboard entry for top contributors
+message ContributorLeaderboardEntry {
+  int32 rank = 1;
+  string display_name = 2;
+  double total_amount = 3;
+  int32 contribution_count = 4;
+  bool is_anonymous = 5;
+}
+
+// Daily progress tracking
+message DailyProgressEntry {
+  string date = 1;
+  double amount = 2;
+  int32 donation_count = 3;
+  double cumulative_amount = 4;
 }
 
 // ============================================================================
@@ -384,4 +408,267 @@ service CrowdfundService {
       get: "/v1/crowdfunds/{crowdfund_id}/statistics"
     };
   }
+
+  // Notification Channel Operations
+  rpc ConnectNotificationChannel(ConnectNotificationChannelRequest) returns (ConnectNotificationChannelResponse) {
+    option (google.api.http) = {
+      post: "/v1/crowdfunds/notification-channels/connect"
+      body: "*"
+    };
+  }
+
+  rpc DisconnectNotificationChannel(DisconnectNotificationChannelRequest) returns (DisconnectNotificationChannelResponse) {
+    option (google.api.http) = {
+      delete: "/v1/crowdfunds/notification-channels/{channel_id}"
+    };
+  }
+
+  rpc GetNotificationChannels(GetNotificationChannelsRequest) returns (GetNotificationChannelsResponse) {
+    option (google.api.http) = {
+      get: "/v1/crowdfunds/{crowdfund_id}/notification-channels"
+    };
+  }
+
+  rpc UpdateNotificationChannel(UpdateNotificationChannelRequest) returns (UpdateNotificationChannelResponse) {
+    option (google.api.http) = {
+      put: "/v1/crowdfunds/notification-channels/{channel_id}"
+      body: "*"
+    };
+  }
+
+  rpc TestNotificationChannel(TestNotificationChannelRequest) returns (TestNotificationChannelResponse) {
+    option (google.api.http) = {
+      post: "/v1/crowdfunds/notification-channels/{channel_id}/test"
+      body: "*"
+    };
+  }
+
+  rpc GetTelegramBotInfo(GetTelegramBotInfoRequest) returns (GetTelegramBotInfoResponse) {
+    option (google.api.http) = {
+      get: "/v1/crowdfunds/notification-channels/telegram/bot-info"
+    };
+  }
+
+  rpc VerifyTelegramChannel(VerifyTelegramChannelRequest) returns (VerifyTelegramChannelResponse) {
+    option (google.api.http) = {
+      post: "/v1/crowdfunds/notification-channels/telegram/verify"
+      body: "*"
+    };
+  }
+
+  rpc GetNotificationHistory(GetNotificationHistoryRequest) returns (GetNotificationHistoryResponse) {
+    option (google.api.http) = {
+      get: "/v1/crowdfunds/{crowdfund_id}/notification-history"
+    };
+  }
+}
+
+// ============================================================================
+// NOTIFICATION CHANNEL ENUMS
+// ============================================================================
+
+enum NotificationChannelType {
+  NOTIFICATION_CHANNEL_TYPE_UNSPECIFIED = 0;
+  NOTIFICATION_CHANNEL_TYPE_TELEGRAM = 1;
+  NOTIFICATION_CHANNEL_TYPE_DISCORD = 2;
+  NOTIFICATION_CHANNEL_TYPE_WHATSAPP_BUSINESS = 3;
+  NOTIFICATION_CHANNEL_TYPE_SLACK = 4;
+}
+
+enum NotificationChannelStatus {
+  NOTIFICATION_CHANNEL_STATUS_UNSPECIFIED = 0;
+  NOTIFICATION_CHANNEL_STATUS_PENDING = 1;
+  NOTIFICATION_CHANNEL_STATUS_ACTIVE = 2;
+  NOTIFICATION_CHANNEL_STATUS_PAUSED = 3;
+  NOTIFICATION_CHANNEL_STATUS_ERROR = 4;
+  NOTIFICATION_CHANNEL_STATUS_DISCONNECTED = 5;
+}
+
+enum NotificationEventType {
+  NOTIFICATION_EVENT_TYPE_UNSPECIFIED = 0;
+  NOTIFICATION_EVENT_TYPE_NEW_DONATION = 1;
+  NOTIFICATION_EVENT_TYPE_MILESTONE_REACHED = 2;
+  NOTIFICATION_EVENT_TYPE_GOAL_REACHED = 3;
+  NOTIFICATION_EVENT_TYPE_NEW_CONTRIBUTOR = 4;
+  NOTIFICATION_EVENT_TYPE_LARGE_DONATION = 5;
+  NOTIFICATION_EVENT_TYPE_DAILY_SUMMARY = 6;
+  NOTIFICATION_EVENT_TYPE_CAMPAIGN_ENDING = 7;
+  NOTIFICATION_EVENT_TYPE_CAMPAIGN_ENDED = 8;
+  NOTIFICATION_EVENT_TYPE_WITHDRAWAL = 9;
+}
+
+// ============================================================================
+// NOTIFICATION CHANNEL MESSAGES
+// ============================================================================
+
+message NotificationChannelMessage {
+  string id = 1;
+  string crowdfund_id = 2;
+  string creator_user_id = 3;
+  NotificationChannelType channel_type = 4;
+  NotificationChannelStatus status = 5;
+  string channel_name = 6;
+  string channel_username = 7;
+  repeated NotificationEventType enabled_events = 8;
+  NotificationPreferencesMessage preferences = 9;
+  string last_notification_at = 10;
+  int32 notification_count = 11;
+  int32 failure_count = 12;
+  string last_error = 13;
+  string created_at = 14;
+  string updated_at = 15;
+}
+
+message NotificationPreferencesMessage {
+  bool include_donor_name = 1;
+  bool include_amount = 2;
+  bool include_message = 3;
+  bool include_progress = 4;
+  bool include_leaderboard = 5;
+  double large_donation_threshold = 6;
+  string message_template = 7;
+  string language = 8;
+  bool quiet_hours_enabled = 9;
+  string quiet_hours_start = 10;
+  string quiet_hours_end = 11;
+  string timezone = 12;
+}
+
+message NotificationDeliveryMessage {
+  string id = 1;
+  string channel_id = 2;
+  string crowdfund_id = 3;
+  NotificationEventType event_type = 4;
+  string event_data = 5;
+  string message_content = 6;
+  bool success = 7;
+  string error_message = 8;
+  int32 retry_count = 9;
+  string platform_message_id = 10;
+  string created_at = 11;
+  string delivered_at = 12;
+}
+
+// ============================================================================
+// NOTIFICATION CHANNEL REQUESTS/RESPONSES
+// ============================================================================
+
+message TelegramConnectionDataMessage {
+  string chat_id = 1;
+  string verification_code = 2;
+}
+
+message DiscordConnectionDataMessage {
+  string webhook_url = 1;
+  string server_name = 2;
+  string channel_name = 3;
+}
+
+message WhatsAppBusinessConnectionDataMessage {
+  string phone_number_id = 1;
+  string access_token = 2;
+  string recipient_id = 3;
+}
+
+message SlackConnectionDataMessage {
+  string webhook_url = 1;
+  string workspace_name = 2;
+  string channel_name = 3;
+}
+
+message ConnectNotificationChannelRequest {
+  string crowdfund_id = 1;
+  NotificationChannelType channel_type = 2;
+  string channel_name = 3;
+  oneof connection_data {
+    TelegramConnectionDataMessage telegram = 4;
+    DiscordConnectionDataMessage discord = 5;
+    WhatsAppBusinessConnectionDataMessage whatsapp_business = 6;
+    SlackConnectionDataMessage slack = 7;
+  }
+  repeated NotificationEventType enabled_events = 8;
+  NotificationPreferencesMessage preferences = 9;
+}
+
+message ConnectNotificationChannelResponse {
+  NotificationChannelMessage channel = 1;
+  bool requires_verification = 2;
+  string verification_instructions = 3;
+  string message = 4;
+}
+
+message DisconnectNotificationChannelRequest {
+  string channel_id = 1;
+}
+
+message DisconnectNotificationChannelResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message GetNotificationChannelsRequest {
+  string crowdfund_id = 1;
+}
+
+message GetNotificationChannelsResponse {
+  repeated NotificationChannelMessage channels = 1;
+}
+
+message UpdateNotificationChannelRequest {
+  string channel_id = 1;
+  string channel_name = 2;
+  repeated NotificationEventType enabled_events = 3;
+  NotificationPreferencesMessage preferences = 4;
+  NotificationChannelStatus status = 5;
+}
+
+message UpdateNotificationChannelResponse {
+  NotificationChannelMessage channel = 1;
+  string message = 2;
+}
+
+message TestNotificationChannelRequest {
+  string channel_id = 1;
+}
+
+message TestNotificationChannelResponse {
+  bool success = 1;
+  string message = 2;
+  string platform_message_id = 3;
+}
+
+message GetTelegramBotInfoRequest {}
+
+message GetTelegramBotInfoResponse {
+  string bot_username = 1;
+  string bot_name = 2;
+  string bot_link = 3;
+  string instructions = 4;
+}
+
+message VerifyTelegramChannelRequest {
+  string crowdfund_id = 1;
+  string chat_id = 2;
+  string verification_code = 3;
+}
+
+message VerifyTelegramChannelResponse {
+  bool success = 1;
+  NotificationChannelMessage channel = 2;
+  string message = 3;
+}
+
+message GetNotificationHistoryRequest {
+  string crowdfund_id = 1;
+  string channel_id = 2;
+  int32 page = 3;
+  int32 page_size = 4;
+}
+
+message GetNotificationHistoryResponse {
+  repeated NotificationDeliveryMessage deliveries = 1;
+  int32 total = 2;
+  int32 page = 3;
+  int32 page_size = 4;
+  bool has_more = 5;
 }

@@ -43,7 +43,6 @@ class _VoiceRegistrationScreenState extends State<VoiceRegistrationScreen>
   bool _isRecording = false;
   bool _isProcessing = false;
   bool _isCheckingStatus = true;
-  bool _isAlreadyEnrolled = false;
   bool _hasPermission = false;
   bool _permissionPermanentlyDenied = false;
   double _recordingProgress = 0.0;
@@ -89,7 +88,6 @@ class _VoiceRegistrationScreenState extends State<VoiceRegistrationScreen>
 
       if (mounted && status.isEnrolled) {
         setState(() {
-          _isAlreadyEnrolled = true;
           _isCheckingStatus = false;
         });
         _showAlreadyEnrolledDialog();
@@ -237,7 +235,6 @@ class _VoiceRegistrationScreenState extends State<VoiceRegistrationScreen>
       if (mounted) {
         if (deleted) {
           setState(() {
-            _isAlreadyEnrolled = false;
             _isProcessing = false;
           });
           _showSuccess('Previous enrollment deleted. You can now re-register.');
@@ -445,8 +442,6 @@ class _VoiceRegistrationScreenState extends State<VoiceRegistrationScreen>
   Future<bool> _checkStorageSpace() async {
     try {
       final tempDir = await getTemporaryDirectory();
-      // Estimate needed space: ~128KB per 4-second sample
-      final neededSpace = 128 * 1024 * requiredSamples;
 
       // Try to create a test file to check if we have space
       final testFile = File('${tempDir.path}/test_space_check.tmp');

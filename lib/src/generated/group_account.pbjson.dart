@@ -141,7 +141,7 @@ const GroupAccountMessage$json = const {
     const {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
     const {'1': 'name', '3': 2, '4': 1, '5': 9, '10': 'name'},
     const {'1': 'description', '3': 3, '4': 1, '5': 9, '10': 'description'},
-    const {'1': 'admin_id', '3': 4, '4': 1, '5': 4, '10': 'adminId'},
+    const {'1': 'admin_id', '3': 4, '4': 1, '5': 9, '10': 'adminId'},
     const {'1': 'status', '3': 5, '4': 1, '5': 14, '6': '.pb.GroupAccountStatus', '10': 'status'},
     const {'1': 'created_at', '3': 6, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
     const {'1': 'updated_at', '3': 7, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'updatedAt'},
@@ -152,14 +152,14 @@ const GroupAccountMessage$json = const {
 };
 
 /// Descriptor for `GroupAccountMessage`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List groupAccountMessageDescriptor = $convert.base64Decode('ChNHcm91cEFjY291bnRNZXNzYWdlEg4KAmlkGAEgASgJUgJpZBISCgRuYW1lGAIgASgJUgRuYW1lEiAKC2Rlc2NyaXB0aW9uGAMgASgJUgtkZXNjcmlwdGlvbhIZCghhZG1pbl9pZBgEIAEoBFIHYWRtaW5JZBIuCgZzdGF0dXMYBSABKA4yFi5wYi5Hcm91cEFjY291bnRTdGF0dXNSBnN0YXR1cxI5CgpjcmVhdGVkX2F0GAYgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcFIJY3JlYXRlZEF0EjkKCnVwZGF0ZWRfYXQYByABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUgl1cGRhdGVkQXQSGgoIbWV0YWRhdGEYCCABKAlSCG1ldGFkYXRhEjAKB21lbWJlcnMYCSADKAsyFi5wYi5Hcm91cE1lbWJlck1lc3NhZ2VSB21lbWJlcnMSPQoNY29udHJpYnV0aW9ucxgKIAMoCzIXLnBiLkNvbnRyaWJ1dGlvbk1lc3NhZ2VSDWNvbnRyaWJ1dGlvbnM=');
+final $typed_data.Uint8List groupAccountMessageDescriptor = $convert.base64Decode('ChNHcm91cEFjY291bnRNZXNzYWdlEg4KAmlkGAEgASgJUgJpZBISCgRuYW1lGAIgASgJUgRuYW1lEiAKC2Rlc2NyaXB0aW9uGAMgASgJUgtkZXNjcmlwdGlvbhIZCghhZG1pbl9pZBgEIAEoCVIHYWRtaW5JZBIuCgZzdGF0dXMYBSABKA4yFi5wYi5Hcm91cEFjY291bnRTdGF0dXNSBnN0YXR1cxI5CgpjcmVhdGVkX2F0GAYgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcFIJY3JlYXRlZEF0EjkKCnVwZGF0ZWRfYXQYByABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUgl1cGRhdGVkQXQSGgoIbWV0YWRhdGEYCCABKAlSCG1ldGFkYXRhEjAKB21lbWJlcnMYCSADKAsyFi5wYi5Hcm91cE1lbWJlck1lc3NhZ2VSB21lbWJlcnMSPQoNY29udHJpYnV0aW9ucxgKIAMoCzIXLnBiLkNvbnRyaWJ1dGlvbk1lc3NhZ2VSDWNvbnRyaWJ1dGlvbnM=');
 @$core.Deprecated('Use groupMemberMessageDescriptor instead')
 const GroupMemberMessage$json = const {
   '1': 'GroupMemberMessage',
   '2': const [
     const {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
     const {'1': 'group_id', '3': 2, '4': 1, '5': 9, '10': 'groupId'},
-    const {'1': 'user_id', '3': 3, '4': 1, '5': 4, '10': 'userId'},
+    const {'1': 'user_id', '3': 3, '4': 1, '5': 9, '10': 'userId'},
     const {'1': 'user_name', '3': 4, '4': 1, '5': 9, '10': 'userName'},
     const {'1': 'email', '3': 5, '4': 1, '5': 9, '10': 'email'},
     const {'1': 'profile_image', '3': 6, '4': 1, '5': 9, '10': 'profileImage'},
@@ -174,7 +174,7 @@ const GroupMemberMessage$json = const {
 };
 
 /// Descriptor for `GroupMemberMessage`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List groupMemberMessageDescriptor = $convert.base64Decode('ChJHcm91cE1lbWJlck1lc3NhZ2USDgoCaWQYASABKAlSAmlkEhkKCGdyb3VwX2lkGAIgASgJUgdncm91cElkEhcKB3VzZXJfaWQYAyABKARSBnVzZXJJZBIbCgl1c2VyX25hbWUYBCABKAlSCHVzZXJOYW1lEhQKBWVtYWlsGAUgASgJUgVlbWFpbBIjCg1wcm9maWxlX2ltYWdlGAYgASgJUgxwcm9maWxlSW1hZ2USJwoEcm9sZRgHIAEoDjITLnBiLkdyb3VwTWVtYmVyUm9sZVIEcm9sZRItCgZzdGF0dXMYCCABKA4yFS5wYi5Hcm91cE1lbWJlclN0YXR1c1IGc3RhdHVzEjcKCWpvaW5lZF9hdBgJIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXBSCGpvaW5lZEF0EiAKC3Blcm1pc3Npb25zGAogASgJUgtwZXJtaXNzaW9ucxIhCgxwaG9uZV9udW1iZXIYCyABKAlSC3Bob25lTnVtYmVyEh0KCmlzX3BhcnRpYWwYDCABKAhSCWlzUGFydGlhbBIjCg11c2VyX3VzZXJuYW1lGA0gASgJUgx1c2VyVXNlcm5hbWU=');
+final $typed_data.Uint8List groupMemberMessageDescriptor = $convert.base64Decode('ChJHcm91cE1lbWJlck1lc3NhZ2USDgoCaWQYASABKAlSAmlkEhkKCGdyb3VwX2lkGAIgASgJUgdncm91cElkEhcKB3VzZXJfaWQYAyABKAlSBnVzZXJJZBIbCgl1c2VyX25hbWUYBCABKAlSCHVzZXJOYW1lEhQKBWVtYWlsGAUgASgJUgVlbWFpbBIjCg1wcm9maWxlX2ltYWdlGAYgASgJUgxwcm9maWxlSW1hZ2USJwoEcm9sZRgHIAEoDjITLnBiLkdyb3VwTWVtYmVyUm9sZVIEcm9sZRItCgZzdGF0dXMYCCABKA4yFS5wYi5Hcm91cE1lbWJlclN0YXR1c1IGc3RhdHVzEjcKCWpvaW5lZF9hdBgJIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXBSCGpvaW5lZEF0EiAKC3Blcm1pc3Npb25zGAogASgJUgtwZXJtaXNzaW9ucxIhCgxwaG9uZV9udW1iZXIYCyABKAlSC3Bob25lTnVtYmVyEh0KCmlzX3BhcnRpYWwYDCABKAhSCWlzUGFydGlhbBIjCg11c2VyX3VzZXJuYW1lGA0gASgJUgx1c2VyVXNlcm5hbWU=');
 @$core.Deprecated('Use contributionMessageDescriptor instead')
 const ContributionMessage$json = const {
   '1': 'ContributionMessage',
@@ -188,7 +188,7 @@ const ContributionMessage$json = const {
     const {'1': 'currency', '3': 7, '4': 1, '5': 9, '10': 'currency'},
     const {'1': 'deadline', '3': 8, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'deadline'},
     const {'1': 'status', '3': 9, '4': 1, '5': 14, '6': '.pb.ContributionStatus', '10': 'status'},
-    const {'1': 'created_by', '3': 10, '4': 1, '5': 4, '10': 'createdBy'},
+    const {'1': 'created_by', '3': 10, '4': 1, '5': 9, '10': 'createdBy'},
     const {'1': 'created_at', '3': 11, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
     const {'1': 'updated_at', '3': 12, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'updatedAt'},
     const {'1': 'metadata', '3': 13, '4': 1, '5': 9, '10': 'metadata'},
@@ -199,7 +199,7 @@ const ContributionMessage$json = const {
     const {'1': 'start_date', '3': 18, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'startDate'},
     const {'1': 'total_cycles', '3': 19, '4': 1, '5': 5, '10': 'totalCycles'},
     const {'1': 'current_cycle', '3': 20, '4': 1, '5': 5, '10': 'currentCycle'},
-    const {'1': 'current_payout_recipient', '3': 21, '4': 1, '5': 4, '10': 'currentPayoutRecipient'},
+    const {'1': 'current_payout_recipient', '3': 21, '4': 1, '5': 9, '10': 'currentPayoutRecipient'},
     const {'1': 'next_payout_date', '3': 22, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'nextPayoutDate'},
     const {'1': 'auto_pay_enabled', '3': 23, '4': 1, '5': 8, '10': 'autoPayEnabled'},
     const {'1': 'penalty_amount', '3': 24, '4': 1, '5': 4, '10': 'penaltyAmount'},
@@ -209,11 +209,31 @@ const ContributionMessage$json = const {
     const {'1': 'payments', '3': 28, '4': 3, '5': 11, '6': '.pb.ContributionPaymentMessage', '10': 'payments'},
     const {'1': 'payout_schedule', '3': 29, '4': 3, '5': 11, '6': '.pb.PayoutScheduleMessage', '10': 'payoutSchedule'},
     const {'1': 'payout_history', '3': 30, '4': 3, '5': 11, '6': '.pb.PayoutTransactionMessage', '10': 'payoutHistory'},
+    const {'1': 'members', '3': 31, '4': 3, '5': 11, '6': '.pb.ContributionMemberMessage', '10': 'members'},
   ],
 };
 
 /// Descriptor for `ContributionMessage`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List contributionMessageDescriptor = $convert.base64Decode('ChNDb250cmlidXRpb25NZXNzYWdlEg4KAmlkGAEgASgJUgJpZBIZCghncm91cF9pZBgCIAEoCVIHZ3JvdXBJZBIUCgV0aXRsZRgDIAEoCVIFdGl0bGUSIAoLZGVzY3JpcHRpb24YBCABKAlSC2Rlc2NyaXB0aW9uEiMKDXRhcmdldF9hbW91bnQYBSABKARSDHRhcmdldEFtb3VudBIlCg5jdXJyZW50X2Ftb3VudBgGIAEoBFINY3VycmVudEFtb3VudBIaCghjdXJyZW5jeRgHIAEoCVIIY3VycmVuY3kSNgoIZGVhZGxpbmUYCCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUghkZWFkbGluZRIuCgZzdGF0dXMYCSABKA4yFi5wYi5Db250cmlidXRpb25TdGF0dXNSBnN0YXR1cxIdCgpjcmVhdGVkX2J5GAogASgEUgljcmVhdGVkQnkSOQoKY3JlYXRlZF9hdBgLIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXBSCWNyZWF0ZWRBdBI5Cgp1cGRhdGVkX2F0GAwgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcFIJdXBkYXRlZEF0EhoKCG1ldGFkYXRhGA0gASgJUghtZXRhZGF0YRIoCgR0eXBlGA4gASgOMhQucGIuQ29udHJpYnV0aW9uVHlwZVIEdHlwZRI3CglmcmVxdWVuY3kYDyABKA4yGS5wYi5Db250cmlidXRpb25GcmVxdWVuY3lSCWZyZXF1ZW5jeRIlCg5yZWd1bGFyX2Ftb3VudBgQIAEoBFINcmVndWxhckFtb3VudBJGChFuZXh0X3BheW1lbnRfZGF0ZRgRIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXBSD25leHRQYXltZW50RGF0ZRI5CgpzdGFydF9kYXRlGBIgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcFIJc3RhcnREYXRlEiEKDHRvdGFsX2N5Y2xlcxgTIAEoBVILdG90YWxDeWNsZXMSIwoNY3VycmVudF9jeWNsZRgUIAEoBVIMY3VycmVudEN5Y2xlEjgKGGN1cnJlbnRfcGF5b3V0X3JlY2lwaWVudBgVIAEoBFIWY3VycmVudFBheW91dFJlY2lwaWVudBJEChBuZXh0X3BheW91dF9kYXRlGBYgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcFIObmV4dFBheW91dERhdGUSKAoQYXV0b19wYXlfZW5hYmxlZBgXIAEoCFIOYXV0b1BheUVuYWJsZWQSJQoOcGVuYWx0eV9hbW91bnQYGCABKARSDXBlbmFsdHlBbW91bnQSKgoRZ3JhY2VfcGVyaW9kX2RheXMYGSABKAVSD2dyYWNlUGVyaW9kRGF5cxI0ChZhbGxvd19wYXJ0aWFsX3BheW1lbnRzGBogASgIUhRhbGxvd1BhcnRpYWxQYXltZW50cxInCg9taW5pbXVtX2JhbGFuY2UYGyABKARSDm1pbmltdW1CYWxhbmNlEjoKCHBheW1lbnRzGBwgAygLMh4ucGIuQ29udHJpYnV0aW9uUGF5bWVudE1lc3NhZ2VSCHBheW1lbnRzEkIKD3BheW91dF9zY2hlZHVsZRgdIAMoCzIZLnBiLlBheW91dFNjaGVkdWxlTWVzc2FnZVIOcGF5b3V0U2NoZWR1bGUSQwoOcGF5b3V0X2hpc3RvcnkYHiADKAsyHC5wYi5QYXlvdXRUcmFuc2FjdGlvbk1lc3NhZ2VSDXBheW91dEhpc3Rvcnk=');
+final $typed_data.Uint8List contributionMessageDescriptor = $convert.base64Decode('ChNDb250cmlidXRpb25NZXNzYWdlEg4KAmlkGAEgASgJUgJpZBIZCghncm91cF9pZBgCIAEoCVIHZ3JvdXBJZBIUCgV0aXRsZRgDIAEoCVIFdGl0bGUSIAoLZGVzY3JpcHRpb24YBCABKAlSC2Rlc2NyaXB0aW9uEiMKDXRhcmdldF9hbW91bnQYBSABKARSDHRhcmdldEFtb3VudBIlCg5jdXJyZW50X2Ftb3VudBgGIAEoBFINY3VycmVudEFtb3VudBIaCghjdXJyZW5jeRgHIAEoCVIIY3VycmVuY3kSNgoIZGVhZGxpbmUYCCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUghkZWFkbGluZRIuCgZzdGF0dXMYCSABKA4yFi5wYi5Db250cmlidXRpb25TdGF0dXNSBnN0YXR1cxIdCgpjcmVhdGVkX2J5GAogASgJUgljcmVhdGVkQnkSOQoKY3JlYXRlZF9hdBgLIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXBSCWNyZWF0ZWRBdBI5Cgp1cGRhdGVkX2F0GAwgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcFIJdXBkYXRlZEF0EhoKCG1ldGFkYXRhGA0gASgJUghtZXRhZGF0YRIoCgR0eXBlGA4gASgOMhQucGIuQ29udHJpYnV0aW9uVHlwZVIEdHlwZRI3CglmcmVxdWVuY3kYDyABKA4yGS5wYi5Db250cmlidXRpb25GcmVxdWVuY3lSCWZyZXF1ZW5jeRIlCg5yZWd1bGFyX2Ftb3VudBgQIAEoBFINcmVndWxhckFtb3VudBJGChFuZXh0X3BheW1lbnRfZGF0ZRgRIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXBSD25leHRQYXltZW50RGF0ZRI5CgpzdGFydF9kYXRlGBIgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcFIJc3RhcnREYXRlEiEKDHRvdGFsX2N5Y2xlcxgTIAEoBVILdG90YWxDeWNsZXMSIwoNY3VycmVudF9jeWNsZRgUIAEoBVIMY3VycmVudEN5Y2xlEjgKGGN1cnJlbnRfcGF5b3V0X3JlY2lwaWVudBgVIAEoCVIWY3VycmVudFBheW91dFJlY2lwaWVudBJEChBuZXh0X3BheW91dF9kYXRlGBYgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcFIObmV4dFBheW91dERhdGUSKAoQYXV0b19wYXlfZW5hYmxlZBgXIAEoCFIOYXV0b1BheUVuYWJsZWQSJQoOcGVuYWx0eV9hbW91bnQYGCABKARSDXBlbmFsdHlBbW91bnQSKgoRZ3JhY2VfcGVyaW9kX2RheXMYGSABKAVSD2dyYWNlUGVyaW9kRGF5cxI0ChZhbGxvd19wYXJ0aWFsX3BheW1lbnRzGBogASgIUhRhbGxvd1BhcnRpYWxQYXltZW50cxInCg9taW5pbXVtX2JhbGFuY2UYGyABKARSDm1pbmltdW1CYWxhbmNlEjoKCHBheW1lbnRzGBwgAygLMh4ucGIuQ29udHJpYnV0aW9uUGF5bWVudE1lc3NhZ2VSCHBheW1lbnRzEkIKD3BheW91dF9zY2hlZHVsZRgdIAMoCzIZLnBiLlBheW91dFNjaGVkdWxlTWVzc2FnZVIOcGF5b3V0U2NoZWR1bGUSQwoOcGF5b3V0X2hpc3RvcnkYHiADKAsyHC5wYi5QYXlvdXRUcmFuc2FjdGlvbk1lc3NhZ2VSDXBheW91dEhpc3RvcnkSNwoHbWVtYmVycxgfIAMoCzIdLnBiLkNvbnRyaWJ1dGlvbk1lbWJlck1lc3NhZ2VSB21lbWJlcnM=');
+@$core.Deprecated('Use contributionMemberMessageDescriptor instead')
+const ContributionMemberMessage$json = const {
+  '1': 'ContributionMemberMessage',
+  '2': const [
+    const {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
+    const {'1': 'contribution_id', '3': 2, '4': 1, '5': 9, '10': 'contributionId'},
+    const {'1': 'user_id', '3': 3, '4': 1, '5': 9, '10': 'userId'},
+    const {'1': 'user_name', '3': 4, '4': 1, '5': 9, '10': 'userName'},
+    const {'1': 'email', '3': 5, '4': 1, '5': 9, '10': 'email'},
+    const {'1': 'profile_image', '3': 6, '4': 1, '5': 9, '10': 'profileImage'},
+    const {'1': 'joined_at', '3': 7, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'joinedAt'},
+    const {'1': 'total_paid', '3': 8, '4': 1, '5': 4, '10': 'totalPaid'},
+    const {'1': 'expected_amount', '3': 9, '4': 1, '5': 4, '10': 'expectedAmount'},
+    const {'1': 'has_paid_current_cycle', '3': 10, '4': 1, '5': 8, '10': 'hasPaidCurrentCycle'},
+  ],
+};
+
+/// Descriptor for `ContributionMemberMessage`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List contributionMemberMessageDescriptor = $convert.base64Decode('ChlDb250cmlidXRpb25NZW1iZXJNZXNzYWdlEg4KAmlkGAEgASgJUgJpZBInCg9jb250cmlidXRpb25faWQYAiABKAlSDmNvbnRyaWJ1dGlvbklkEhcKB3VzZXJfaWQYAyABKAlSBnVzZXJJZBIbCgl1c2VyX25hbWUYBCABKAlSCHVzZXJOYW1lEhQKBWVtYWlsGAUgASgJUgVlbWFpbBIjCg1wcm9maWxlX2ltYWdlGAYgASgJUgxwcm9maWxlSW1hZ2USNwoJam9pbmVkX2F0GAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcFIIam9pbmVkQXQSHQoKdG90YWxfcGFpZBgIIAEoBFIJdG90YWxQYWlkEicKD2V4cGVjdGVkX2Ftb3VudBgJIAEoBFIOZXhwZWN0ZWRBbW91bnQSMwoWaGFzX3BhaWRfY3VycmVudF9jeWNsZRgKIAEoCFITaGFzUGFpZEN1cnJlbnRDeWNsZQ==');
 @$core.Deprecated('Use contributionPaymentMessageDescriptor instead')
 const ContributionPaymentMessage$json = const {
   '1': 'ContributionPaymentMessage',
@@ -221,7 +241,7 @@ const ContributionPaymentMessage$json = const {
     const {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
     const {'1': 'contribution_id', '3': 2, '4': 1, '5': 9, '10': 'contributionId'},
     const {'1': 'group_id', '3': 3, '4': 1, '5': 9, '10': 'groupId'},
-    const {'1': 'user_id', '3': 4, '4': 1, '5': 4, '10': 'userId'},
+    const {'1': 'user_id', '3': 4, '4': 1, '5': 9, '10': 'userId'},
     const {'1': 'user_name', '3': 5, '4': 1, '5': 9, '10': 'userName'},
     const {'1': 'amount', '3': 6, '4': 1, '5': 4, '10': 'amount'},
     const {'1': 'currency', '3': 7, '4': 1, '5': 9, '10': 'currency'},
@@ -235,13 +255,13 @@ const ContributionPaymentMessage$json = const {
 };
 
 /// Descriptor for `ContributionPaymentMessage`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List contributionPaymentMessageDescriptor = $convert.base64Decode('ChpDb250cmlidXRpb25QYXltZW50TWVzc2FnZRIOCgJpZBgBIAEoCVICaWQSJwoPY29udHJpYnV0aW9uX2lkGAIgASgJUg5jb250cmlidXRpb25JZBIZCghncm91cF9pZBgDIAEoCVIHZ3JvdXBJZBIXCgd1c2VyX2lkGAQgASgEUgZ1c2VySWQSGwoJdXNlcl9uYW1lGAUgASgJUgh1c2VyTmFtZRIWCgZhbW91bnQYBiABKARSBmFtb3VudBIaCghjdXJyZW5jeRgHIAEoCVIIY3VycmVuY3kSPQoMcGF5bWVudF9kYXRlGAggASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcFILcGF5bWVudERhdGUSKQoGc3RhdHVzGAkgASgOMhEucGIuUGF5bWVudFN0YXR1c1IGc3RhdHVzEiUKDnRyYW5zYWN0aW9uX2lkGAogASgJUg10cmFuc2FjdGlvbklkEh0KCnJlY2VpcHRfaWQYCyABKAlSCXJlY2VpcHRJZBIUCgVub3RlcxgMIAEoCVIFbm90ZXMSGgoIbWV0YWRhdGEYDSABKAlSCG1ldGFkYXRh');
+final $typed_data.Uint8List contributionPaymentMessageDescriptor = $convert.base64Decode('ChpDb250cmlidXRpb25QYXltZW50TWVzc2FnZRIOCgJpZBgBIAEoCVICaWQSJwoPY29udHJpYnV0aW9uX2lkGAIgASgJUg5jb250cmlidXRpb25JZBIZCghncm91cF9pZBgDIAEoCVIHZ3JvdXBJZBIXCgd1c2VyX2lkGAQgASgJUgZ1c2VySWQSGwoJdXNlcl9uYW1lGAUgASgJUgh1c2VyTmFtZRIWCgZhbW91bnQYBiABKARSBmFtb3VudBIaCghjdXJyZW5jeRgHIAEoCVIIY3VycmVuY3kSPQoMcGF5bWVudF9kYXRlGAggASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcFILcGF5bWVudERhdGUSKQoGc3RhdHVzGAkgASgOMhEucGIuUGF5bWVudFN0YXR1c1IGc3RhdHVzEiUKDnRyYW5zYWN0aW9uX2lkGAogASgJUg10cmFuc2FjdGlvbklkEh0KCnJlY2VpcHRfaWQYCyABKAlSCXJlY2VpcHRJZBIUCgVub3RlcxgMIAEoCVIFbm90ZXMSGgoIbWV0YWRhdGEYDSABKAlSCG1ldGFkYXRh');
 @$core.Deprecated('Use payoutScheduleMessageDescriptor instead')
 const PayoutScheduleMessage$json = const {
   '1': 'PayoutScheduleMessage',
   '2': const [
     const {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
-    const {'1': 'user_id', '3': 2, '4': 1, '5': 4, '10': 'userId'},
+    const {'1': 'user_id', '3': 2, '4': 1, '5': 9, '10': 'userId'},
     const {'1': 'user_name', '3': 3, '4': 1, '5': 9, '10': 'userName'},
     const {'1': 'position', '3': 4, '4': 1, '5': 5, '10': 'position'},
     const {'1': 'scheduled_date', '3': 5, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'scheduledDate'},
@@ -254,7 +274,7 @@ const PayoutScheduleMessage$json = const {
 };
 
 /// Descriptor for `PayoutScheduleMessage`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List payoutScheduleMessageDescriptor = $convert.base64Decode('ChVQYXlvdXRTY2hlZHVsZU1lc3NhZ2USDgoCaWQYASABKAlSAmlkEhcKB3VzZXJfaWQYAiABKARSBnVzZXJJZBIbCgl1c2VyX25hbWUYAyABKAlSCHVzZXJOYW1lEhoKCHBvc2l0aW9uGAQgASgFUghwb3NpdGlvbhJBCg5zY2hlZHVsZWRfZGF0ZRgFIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXBSDXNjaGVkdWxlZERhdGUSJwoPZXhwZWN0ZWRfYW1vdW50GAYgASgEUg5leHBlY3RlZEFtb3VudBIoCgZzdGF0dXMYByABKA4yEC5wYi5QYXlvdXRTdGF0dXNSBnN0YXR1cxI/Cg1yZWNlaXZlZF9kYXRlGAggASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcFIMcmVjZWl2ZWREYXRlEiMKDWFjdHVhbF9hbW91bnQYCSABKARSDGFjdHVhbEFtb3VudBIUCgVub3RlcxgKIAEoCVIFbm90ZXM=');
+final $typed_data.Uint8List payoutScheduleMessageDescriptor = $convert.base64Decode('ChVQYXlvdXRTY2hlZHVsZU1lc3NhZ2USDgoCaWQYASABKAlSAmlkEhcKB3VzZXJfaWQYAiABKAlSBnVzZXJJZBIbCgl1c2VyX25hbWUYAyABKAlSCHVzZXJOYW1lEhoKCHBvc2l0aW9uGAQgASgFUghwb3NpdGlvbhJBCg5zY2hlZHVsZWRfZGF0ZRgFIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXBSDXNjaGVkdWxlZERhdGUSJwoPZXhwZWN0ZWRfYW1vdW50GAYgASgEUg5leHBlY3RlZEFtb3VudBIoCgZzdGF0dXMYByABKA4yEC5wYi5QYXlvdXRTdGF0dXNSBnN0YXR1cxI/Cg1yZWNlaXZlZF9kYXRlGAggASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcFIMcmVjZWl2ZWREYXRlEiMKDWFjdHVhbF9hbW91bnQYCSABKARSDGFjdHVhbEFtb3VudBIUCgVub3RlcxgKIAEoCVIFbm90ZXM=');
 @$core.Deprecated('Use payoutTransactionMessageDescriptor instead')
 const PayoutTransactionMessage$json = const {
   '1': 'PayoutTransactionMessage',
@@ -262,7 +282,7 @@ const PayoutTransactionMessage$json = const {
     const {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
     const {'1': 'contribution_id', '3': 2, '4': 1, '5': 9, '10': 'contributionId'},
     const {'1': 'group_id', '3': 3, '4': 1, '5': 9, '10': 'groupId'},
-    const {'1': 'recipient_user_id', '3': 4, '4': 1, '5': 4, '10': 'recipientUserId'},
+    const {'1': 'recipient_user_id', '3': 4, '4': 1, '5': 9, '10': 'recipientUserId'},
     const {'1': 'recipient_user_name', '3': 5, '4': 1, '5': 9, '10': 'recipientUserName'},
     const {'1': 'amount', '3': 6, '4': 1, '5': 4, '10': 'amount'},
     const {'1': 'currency', '3': 7, '4': 1, '5': 9, '10': 'currency'},
@@ -276,7 +296,7 @@ const PayoutTransactionMessage$json = const {
 };
 
 /// Descriptor for `PayoutTransactionMessage`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List payoutTransactionMessageDescriptor = $convert.base64Decode('ChhQYXlvdXRUcmFuc2FjdGlvbk1lc3NhZ2USDgoCaWQYASABKAlSAmlkEicKD2NvbnRyaWJ1dGlvbl9pZBgCIAEoCVIOY29udHJpYnV0aW9uSWQSGQoIZ3JvdXBfaWQYAyABKAlSB2dyb3VwSWQSKgoRcmVjaXBpZW50X3VzZXJfaWQYBCABKARSD3JlY2lwaWVudFVzZXJJZBIuChNyZWNpcGllbnRfdXNlcl9uYW1lGAUgASgJUhFyZWNpcGllbnRVc2VyTmFtZRIWCgZhbW91bnQYBiABKARSBmFtb3VudBIaCghjdXJyZW5jeRgHIAEoCVIIY3VycmVuY3kSOwoLcGF5b3V0X2RhdGUYCCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUgpwYXlvdXREYXRlEjMKBnN0YXR1cxgJIAEoDjIbLnBiLlBheW91dFRyYW5zYWN0aW9uU3RhdHVzUgZzdGF0dXMSJQoOdHJhbnNhY3Rpb25faWQYCiABKAlSDXRyYW5zYWN0aW9uSWQSJQoOcGF5bWVudF9tZXRob2QYCyABKAlSDXBheW1lbnRNZXRob2QSJQoOZmFpbHVyZV9yZWFzb24YDCABKAlSDWZhaWx1cmVSZWFzb24SGgoIbWV0YWRhdGEYDSABKAlSCG1ldGFkYXRh');
+final $typed_data.Uint8List payoutTransactionMessageDescriptor = $convert.base64Decode('ChhQYXlvdXRUcmFuc2FjdGlvbk1lc3NhZ2USDgoCaWQYASABKAlSAmlkEicKD2NvbnRyaWJ1dGlvbl9pZBgCIAEoCVIOY29udHJpYnV0aW9uSWQSGQoIZ3JvdXBfaWQYAyABKAlSB2dyb3VwSWQSKgoRcmVjaXBpZW50X3VzZXJfaWQYBCABKAlSD3JlY2lwaWVudFVzZXJJZBIuChNyZWNpcGllbnRfdXNlcl9uYW1lGAUgASgJUhFyZWNpcGllbnRVc2VyTmFtZRIWCgZhbW91bnQYBiABKARSBmFtb3VudBIaCghjdXJyZW5jeRgHIAEoCVIIY3VycmVuY3kSOwoLcGF5b3V0X2RhdGUYCCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUgpwYXlvdXREYXRlEjMKBnN0YXR1cxgJIAEoDjIbLnBiLlBheW91dFRyYW5zYWN0aW9uU3RhdHVzUgZzdGF0dXMSJQoOdHJhbnNhY3Rpb25faWQYCiABKAlSDXRyYW5zYWN0aW9uSWQSJQoOcGF5bWVudF9tZXRob2QYCyABKAlSDXBheW1lbnRNZXRob2QSJQoOZmFpbHVyZV9yZWFzb24YDCABKAlSDWZhaWx1cmVSZWFzb24SGgoIbWV0YWRhdGEYDSABKAlSCG1ldGFkYXRh');
 @$core.Deprecated('Use contributionReceiptMessageDescriptor instead')
 const ContributionReceiptMessage$json = const {
   '1': 'ContributionReceiptMessage',
@@ -285,7 +305,7 @@ const ContributionReceiptMessage$json = const {
     const {'1': 'payment_id', '3': 2, '4': 1, '5': 9, '10': 'paymentId'},
     const {'1': 'contribution_id', '3': 3, '4': 1, '5': 9, '10': 'contributionId'},
     const {'1': 'group_id', '3': 4, '4': 1, '5': 9, '10': 'groupId'},
-    const {'1': 'user_id', '3': 5, '4': 1, '5': 4, '10': 'userId'},
+    const {'1': 'user_id', '3': 5, '4': 1, '5': 9, '10': 'userId'},
     const {'1': 'user_name', '3': 6, '4': 1, '5': 9, '10': 'userName'},
     const {'1': 'amount', '3': 7, '4': 1, '5': 4, '10': 'amount'},
     const {'1': 'currency', '3': 8, '4': 1, '5': 9, '10': 'currency'},
@@ -297,7 +317,7 @@ const ContributionReceiptMessage$json = const {
 };
 
 /// Descriptor for `ContributionReceiptMessage`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List contributionReceiptMessageDescriptor = $convert.base64Decode('ChpDb250cmlidXRpb25SZWNlaXB0TWVzc2FnZRIOCgJpZBgBIAEoCVICaWQSHQoKcGF5bWVudF9pZBgCIAEoCVIJcGF5bWVudElkEicKD2NvbnRyaWJ1dGlvbl9pZBgDIAEoCVIOY29udHJpYnV0aW9uSWQSGQoIZ3JvdXBfaWQYBCABKAlSB2dyb3VwSWQSFwoHdXNlcl9pZBgFIAEoBFIGdXNlcklkEhsKCXVzZXJfbmFtZRgGIAEoCVIIdXNlck5hbWUSFgoGYW1vdW50GAcgASgEUgZhbW91bnQSGgoIY3VycmVuY3kYCCABKAlSCGN1cnJlbmN5Ej0KDHBheW1lbnRfZGF0ZRgJIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXBSC3BheW1lbnREYXRlEj0KDGdlbmVyYXRlZF9hdBgKIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXBSC2dlbmVyYXRlZEF0EiUKDnJlY2VpcHRfbnVtYmVyGAsgASgJUg1yZWNlaXB0TnVtYmVyEiEKDHJlY2VpcHRfZGF0YRgMIAEoCVILcmVjZWlwdERhdGE=');
+final $typed_data.Uint8List contributionReceiptMessageDescriptor = $convert.base64Decode('ChpDb250cmlidXRpb25SZWNlaXB0TWVzc2FnZRIOCgJpZBgBIAEoCVICaWQSHQoKcGF5bWVudF9pZBgCIAEoCVIJcGF5bWVudElkEicKD2NvbnRyaWJ1dGlvbl9pZBgDIAEoCVIOY29udHJpYnV0aW9uSWQSGQoIZ3JvdXBfaWQYBCABKAlSB2dyb3VwSWQSFwoHdXNlcl9pZBgFIAEoCVIGdXNlcklkEhsKCXVzZXJfbmFtZRgGIAEoCVIIdXNlck5hbWUSFgoGYW1vdW50GAcgASgEUgZhbW91bnQSGgoIY3VycmVuY3kYCCABKAlSCGN1cnJlbmN5Ej0KDHBheW1lbnRfZGF0ZRgJIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXBSC3BheW1lbnREYXRlEj0KDGdlbmVyYXRlZF9hdBgKIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXBSC2dlbmVyYXRlZEF0EiUKDnJlY2VpcHRfbnVtYmVyGAsgASgJUg1yZWNlaXB0TnVtYmVyEiEKDHJlY2VpcHRfZGF0YRgMIAEoCVILcmVjZWlwdERhdGE=');
 @$core.Deprecated('Use contributionTranscriptMessageDescriptor instead')
 const ContributionTranscriptMessage$json = const {
   '1': 'ContributionTranscriptMessage',
@@ -448,7 +468,7 @@ const AddMemberRequest$json = const {
   '1': 'AddMemberRequest',
   '2': const [
     const {'1': 'group_id', '3': 1, '4': 1, '5': 9, '10': 'groupId'},
-    const {'1': 'user_id', '3': 2, '4': 1, '5': 4, '10': 'userId'},
+    const {'1': 'user_id', '3': 2, '4': 1, '5': 9, '10': 'userId'},
     const {'1': 'role', '3': 3, '4': 1, '5': 14, '6': '.pb.GroupMemberRole', '10': 'role'},
     const {'1': 'email', '3': 4, '4': 1, '5': 9, '10': 'email'},
     const {'1': 'phone_number', '3': 5, '4': 1, '5': 9, '10': 'phoneNumber'},
@@ -457,7 +477,7 @@ const AddMemberRequest$json = const {
 };
 
 /// Descriptor for `AddMemberRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List addMemberRequestDescriptor = $convert.base64Decode('ChBBZGRNZW1iZXJSZXF1ZXN0EhkKCGdyb3VwX2lkGAEgASgJUgdncm91cElkEhcKB3VzZXJfaWQYAiABKARSBnVzZXJJZBInCgRyb2xlGAMgASgOMhMucGIuR3JvdXBNZW1iZXJSb2xlUgRyb2xlEhQKBWVtYWlsGAQgASgJUgVlbWFpbBIhCgxwaG9uZV9udW1iZXIYBSABKAlSC3Bob25lTnVtYmVyEicKD2xvb2t1cF91c2VybmFtZRgGIAEoCVIObG9va3VwVXNlcm5hbWU=');
+final $typed_data.Uint8List addMemberRequestDescriptor = $convert.base64Decode('ChBBZGRNZW1iZXJSZXF1ZXN0EhkKCGdyb3VwX2lkGAEgASgJUgdncm91cElkEhcKB3VzZXJfaWQYAiABKAlSBnVzZXJJZBInCgRyb2xlGAMgASgOMhMucGIuR3JvdXBNZW1iZXJSb2xlUgRyb2xlEhQKBWVtYWlsGAQgASgJUgVlbWFpbBIhCgxwaG9uZV9udW1iZXIYBSABKAlSC3Bob25lTnVtYmVyEicKD2xvb2t1cF91c2VybmFtZRgGIAEoCVIObG9va3VwVXNlcm5hbWU=');
 @$core.Deprecated('Use addMemberResponseDescriptor instead')
 const AddMemberResponse$json = const {
   '1': 'AddMemberResponse',
@@ -547,7 +567,7 @@ const CreateContributionRequest$json = const {
     const {'1': 'regular_amount', '3': 9, '4': 1, '5': 4, '10': 'regularAmount'},
     const {'1': 'start_date', '3': 10, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'startDate'},
     const {'1': 'total_cycles', '3': 11, '4': 1, '5': 5, '10': 'totalCycles'},
-    const {'1': 'member_rotation_order', '3': 12, '4': 3, '5': 4, '10': 'memberRotationOrder'},
+    const {'1': 'member_rotation_order', '3': 12, '4': 3, '5': 9, '10': 'memberRotationOrder'},
     const {'1': 'auto_pay_enabled', '3': 13, '4': 1, '5': 8, '10': 'autoPayEnabled'},
     const {'1': 'penalty_amount', '3': 14, '4': 1, '5': 4, '10': 'penaltyAmount'},
     const {'1': 'grace_period_days', '3': 15, '4': 1, '5': 5, '10': 'gracePeriodDays'},
@@ -557,7 +577,7 @@ const CreateContributionRequest$json = const {
 };
 
 /// Descriptor for `CreateContributionRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List createContributionRequestDescriptor = $convert.base64Decode('ChlDcmVhdGVDb250cmlidXRpb25SZXF1ZXN0EhkKCGdyb3VwX2lkGAEgASgJUgdncm91cElkEhQKBXRpdGxlGAIgASgJUgV0aXRsZRIgCgtkZXNjcmlwdGlvbhgDIAEoCVILZGVzY3JpcHRpb24SIwoNdGFyZ2V0X2Ftb3VudBgEIAEoBFIMdGFyZ2V0QW1vdW50EhoKCGN1cnJlbmN5GAUgASgJUghjdXJyZW5jeRI2CghkZWFkbGluZRgGIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXBSCGRlYWRsaW5lEigKBHR5cGUYByABKA4yFC5wYi5Db250cmlidXRpb25UeXBlUgR0eXBlEjcKCWZyZXF1ZW5jeRgIIAEoDjIZLnBiLkNvbnRyaWJ1dGlvbkZyZXF1ZW5jeVIJZnJlcXVlbmN5EiUKDnJlZ3VsYXJfYW1vdW50GAkgASgEUg1yZWd1bGFyQW1vdW50EjkKCnN0YXJ0X2RhdGUYCiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUglzdGFydERhdGUSIQoMdG90YWxfY3ljbGVzGAsgASgFUgt0b3RhbEN5Y2xlcxIyChVtZW1iZXJfcm90YXRpb25fb3JkZXIYDCADKARSE21lbWJlclJvdGF0aW9uT3JkZXISKAoQYXV0b19wYXlfZW5hYmxlZBgNIAEoCFIOYXV0b1BheUVuYWJsZWQSJQoOcGVuYWx0eV9hbW91bnQYDiABKARSDXBlbmFsdHlBbW91bnQSKgoRZ3JhY2VfcGVyaW9kX2RheXMYDyABKAVSD2dyYWNlUGVyaW9kRGF5cxI0ChZhbGxvd19wYXJ0aWFsX3BheW1lbnRzGBAgASgIUhRhbGxvd1BhcnRpYWxQYXltZW50cxInCg9taW5pbXVtX2JhbGFuY2UYESABKARSDm1pbmltdW1CYWxhbmNl');
+final $typed_data.Uint8List createContributionRequestDescriptor = $convert.base64Decode('ChlDcmVhdGVDb250cmlidXRpb25SZXF1ZXN0EhkKCGdyb3VwX2lkGAEgASgJUgdncm91cElkEhQKBXRpdGxlGAIgASgJUgV0aXRsZRIgCgtkZXNjcmlwdGlvbhgDIAEoCVILZGVzY3JpcHRpb24SIwoNdGFyZ2V0X2Ftb3VudBgEIAEoBFIMdGFyZ2V0QW1vdW50EhoKCGN1cnJlbmN5GAUgASgJUghjdXJyZW5jeRI2CghkZWFkbGluZRgGIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXBSCGRlYWRsaW5lEigKBHR5cGUYByABKA4yFC5wYi5Db250cmlidXRpb25UeXBlUgR0eXBlEjcKCWZyZXF1ZW5jeRgIIAEoDjIZLnBiLkNvbnRyaWJ1dGlvbkZyZXF1ZW5jeVIJZnJlcXVlbmN5EiUKDnJlZ3VsYXJfYW1vdW50GAkgASgEUg1yZWd1bGFyQW1vdW50EjkKCnN0YXJ0X2RhdGUYCiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUglzdGFydERhdGUSIQoMdG90YWxfY3ljbGVzGAsgASgFUgt0b3RhbEN5Y2xlcxIyChVtZW1iZXJfcm90YXRpb25fb3JkZXIYDCADKAlSE21lbWJlclJvdGF0aW9uT3JkZXISKAoQYXV0b19wYXlfZW5hYmxlZBgNIAEoCFIOYXV0b1BheUVuYWJsZWQSJQoOcGVuYWx0eV9hbW91bnQYDiABKARSDXBlbmFsdHlBbW91bnQSKgoRZ3JhY2VfcGVyaW9kX2RheXMYDyABKAVSD2dyYWNlUGVyaW9kRGF5cxI0ChZhbGxvd19wYXJ0aWFsX3BheW1lbnRzGBAgASgIUhRhbGxvd1BhcnRpYWxQYXltZW50cxInCg9taW5pbXVtX2JhbGFuY2UYESABKARSDm1pbmltdW1CYWxhbmNl');
 @$core.Deprecated('Use createContributionResponseDescriptor instead')
 const CreateContributionResponse$json = const {
   '1': 'CreateContributionResponse',
@@ -657,6 +677,69 @@ const DeleteContributionResponse$json = const {
 
 /// Descriptor for `DeleteContributionResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List deleteContributionResponseDescriptor = $convert.base64Decode('ChpEZWxldGVDb250cmlidXRpb25SZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZXNz');
+@$core.Deprecated('Use addMembersToContributionRequestDescriptor instead')
+const AddMembersToContributionRequest$json = const {
+  '1': 'AddMembersToContributionRequest',
+  '2': const [
+    const {'1': 'contribution_id', '3': 1, '4': 1, '5': 9, '10': 'contributionId'},
+    const {'1': 'member_user_ids', '3': 2, '4': 3, '5': 9, '10': 'memberUserIds'},
+  ],
+};
+
+/// Descriptor for `AddMembersToContributionRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List addMembersToContributionRequestDescriptor = $convert.base64Decode('Ch9BZGRNZW1iZXJzVG9Db250cmlidXRpb25SZXF1ZXN0EicKD2NvbnRyaWJ1dGlvbl9pZBgBIAEoCVIOY29udHJpYnV0aW9uSWQSJgoPbWVtYmVyX3VzZXJfaWRzGAIgAygJUg1tZW1iZXJVc2VySWRz');
+@$core.Deprecated('Use addMembersToContributionResponseDescriptor instead')
+const AddMembersToContributionResponse$json = const {
+  '1': 'AddMembersToContributionResponse',
+  '2': const [
+    const {'1': 'contribution', '3': 1, '4': 1, '5': 11, '6': '.pb.ContributionMessage', '10': 'contribution'},
+    const {'1': 'added_members', '3': 2, '4': 3, '5': 11, '6': '.pb.ContributionMemberMessage', '10': 'addedMembers'},
+  ],
+};
+
+/// Descriptor for `AddMembersToContributionResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List addMembersToContributionResponseDescriptor = $convert.base64Decode('CiBBZGRNZW1iZXJzVG9Db250cmlidXRpb25SZXNwb25zZRI7Cgxjb250cmlidXRpb24YASABKAsyFy5wYi5Db250cmlidXRpb25NZXNzYWdlUgxjb250cmlidXRpb24SQgoNYWRkZWRfbWVtYmVycxgCIAMoCzIdLnBiLkNvbnRyaWJ1dGlvbk1lbWJlck1lc3NhZ2VSDGFkZGVkTWVtYmVycw==');
+@$core.Deprecated('Use removeMemberFromContributionRequestDescriptor instead')
+const RemoveMemberFromContributionRequest$json = const {
+  '1': 'RemoveMemberFromContributionRequest',
+  '2': const [
+    const {'1': 'contribution_id', '3': 1, '4': 1, '5': 9, '10': 'contributionId'},
+    const {'1': 'member_user_id', '3': 2, '4': 1, '5': 9, '10': 'memberUserId'},
+  ],
+};
+
+/// Descriptor for `RemoveMemberFromContributionRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List removeMemberFromContributionRequestDescriptor = $convert.base64Decode('CiNSZW1vdmVNZW1iZXJGcm9tQ29udHJpYnV0aW9uUmVxdWVzdBInCg9jb250cmlidXRpb25faWQYASABKAlSDmNvbnRyaWJ1dGlvbklkEiQKDm1lbWJlcl91c2VyX2lkGAIgASgJUgxtZW1iZXJVc2VySWQ=');
+@$core.Deprecated('Use removeMemberFromContributionResponseDescriptor instead')
+const RemoveMemberFromContributionResponse$json = const {
+  '1': 'RemoveMemberFromContributionResponse',
+  '2': const [
+    const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+  ],
+};
+
+/// Descriptor for `RemoveMemberFromContributionResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List removeMemberFromContributionResponseDescriptor = $convert.base64Decode('CiRSZW1vdmVNZW1iZXJGcm9tQ29udHJpYnV0aW9uUmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2Vzcw==');
+@$core.Deprecated('Use getContributionMembersRequestDescriptor instead')
+const GetContributionMembersRequest$json = const {
+  '1': 'GetContributionMembersRequest',
+  '2': const [
+    const {'1': 'contribution_id', '3': 1, '4': 1, '5': 9, '10': 'contributionId'},
+  ],
+};
+
+/// Descriptor for `GetContributionMembersRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getContributionMembersRequestDescriptor = $convert.base64Decode('Ch1HZXRDb250cmlidXRpb25NZW1iZXJzUmVxdWVzdBInCg9jb250cmlidXRpb25faWQYASABKAlSDmNvbnRyaWJ1dGlvbklk');
+@$core.Deprecated('Use getContributionMembersResponseDescriptor instead')
+const GetContributionMembersResponse$json = const {
+  '1': 'GetContributionMembersResponse',
+  '2': const [
+    const {'1': 'members', '3': 1, '4': 3, '5': 11, '6': '.pb.ContributionMemberMessage', '10': 'members'},
+  ],
+};
+
+/// Descriptor for `GetContributionMembersResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getContributionMembersResponseDescriptor = $convert.base64Decode('Ch5HZXRDb250cmlidXRpb25NZW1iZXJzUmVzcG9uc2USNwoHbWVtYmVycxgBIAMoCzIdLnBiLkNvbnRyaWJ1dGlvbk1lbWJlck1lc3NhZ2VSB21lbWJlcnM=');
 @$core.Deprecated('Use makePaymentRequestDescriptor instead')
 const MakePaymentRequest$json = const {
   '1': 'MakePaymentRequest',
@@ -664,11 +747,14 @@ const MakePaymentRequest$json = const {
     const {'1': 'contribution_id', '3': 1, '4': 1, '5': 9, '10': 'contributionId'},
     const {'1': 'amount', '3': 2, '4': 1, '5': 4, '10': 'amount'},
     const {'1': 'notes', '3': 3, '4': 1, '5': 9, '10': 'notes'},
+    const {'1': 'source_account_id', '3': 4, '4': 1, '5': 9, '10': 'sourceAccountId'},
+    const {'1': 'transaction_pin', '3': 5, '4': 1, '5': 9, '10': 'transactionPin'},
+    const {'1': 'idempotency_key', '3': 6, '4': 1, '5': 9, '10': 'idempotencyKey'},
   ],
 };
 
 /// Descriptor for `MakePaymentRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List makePaymentRequestDescriptor = $convert.base64Decode('ChJNYWtlUGF5bWVudFJlcXVlc3QSJwoPY29udHJpYnV0aW9uX2lkGAEgASgJUg5jb250cmlidXRpb25JZBIWCgZhbW91bnQYAiABKARSBmFtb3VudBIUCgVub3RlcxgDIAEoCVIFbm90ZXM=');
+final $typed_data.Uint8List makePaymentRequestDescriptor = $convert.base64Decode('ChJNYWtlUGF5bWVudFJlcXVlc3QSJwoPY29udHJpYnV0aW9uX2lkGAEgASgJUg5jb250cmlidXRpb25JZBIWCgZhbW91bnQYAiABKARSBmFtb3VudBIUCgVub3RlcxgDIAEoCVIFbm90ZXMSKgoRc291cmNlX2FjY291bnRfaWQYBCABKAlSD3NvdXJjZUFjY291bnRJZBInCg90cmFuc2FjdGlvbl9waW4YBSABKAlSDnRyYW5zYWN0aW9uUGluEicKD2lkZW1wb3RlbmN5X2tleRgGIAEoCVIOaWRlbXBvdGVuY3lLZXk=');
 @$core.Deprecated('Use makePaymentResponseDescriptor instead')
 const MakePaymentResponse$json = const {
   '1': 'MakePaymentResponse',
@@ -1008,7 +1094,7 @@ const GetContributionAnalyticsResponse_Schedule$json = const {
 const GetContributionAnalyticsResponse_Payout$json = const {
   '1': 'Payout',
   '2': const [
-    const {'1': 'current_recipient', '3': 1, '4': 1, '5': 4, '10': 'currentRecipient'},
+    const {'1': 'current_recipient', '3': 1, '4': 1, '5': 9, '10': 'currentRecipient'},
     const {'1': 'next_payout_date', '3': 2, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'nextPayoutDate'},
     const {'1': 'completed_payouts', '3': 3, '4': 1, '5': 5, '10': 'completedPayouts'},
     const {'1': 'pending_payouts', '3': 4, '4': 1, '5': 5, '10': 'pendingPayouts'},
@@ -1016,7 +1102,7 @@ const GetContributionAnalyticsResponse_Payout$json = const {
 };
 
 /// Descriptor for `GetContributionAnalyticsResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getContributionAnalyticsResponseDescriptor = $convert.base64Decode('CiBHZXRDb250cmlidXRpb25BbmFseXRpY3NSZXNwb25zZRInCg9jb250cmlidXRpb25faWQYASABKAlSDmNvbnRyaWJ1dGlvbklkEhIKBHR5cGUYAiABKAlSBHR5cGUSLwoTcHJvZ3Jlc3NfcGVyY2VudGFnZRgDIAEoAVIScHJvZ3Jlc3NQZXJjZW50YWdlEiUKDnRvdGFsX3BheW1lbnRzGAQgASgFUg10b3RhbFBheW1lbnRzEicKD2F2ZXJhZ2VfcGF5bWVudBgFIAEoAVIOYXZlcmFnZVBheW1lbnQSJQoOY3VycmVudF9hbW91bnQYBiABKARSDWN1cnJlbnRBbW91bnQSIwoNdGFyZ2V0X2Ftb3VudBgHIAEoBFIMdGFyZ2V0QW1vdW50EmsKFG1lbWJlcl9wYXJ0aWNpcGF0aW9uGAggASgLMjgucGIuR2V0Q29udHJpYnV0aW9uQW5hbHl0aWNzUmVzcG9uc2UuTWVtYmVyUGFydGljaXBhdGlvblITbWVtYmVyUGFydGljaXBhdGlvbhJJCghzY2hlZHVsZRgJIAEoCzItLnBiLkdldENvbnRyaWJ1dGlvbkFuYWx5dGljc1Jlc3BvbnNlLlNjaGVkdWxlUghzY2hlZHVsZRJDCgZwYXlvdXQYCiABKAsyKy5wYi5HZXRDb250cmlidXRpb25BbmFseXRpY3NSZXNwb25zZS5QYXlvdXRSBnBheW91dBIhCgxtZW1iZXJfc3RhdHMYCyABKAlSC21lbWJlclN0YXRzGp4BChNNZW1iZXJQYXJ0aWNpcGF0aW9uEiMKDXRvdGFsX21lbWJlcnMYASABKAVSDHRvdGFsTWVtYmVycxIzChVwYXJ0aWNpcGF0aW5nX21lbWJlcnMYAiABKAVSFHBhcnRpY2lwYXRpbmdNZW1iZXJzEi0KEnBhcnRpY2lwYXRpb25fcmF0ZRgDIAEoAVIRcGFydGljaXBhdGlvblJhdGUa8gEKCFNjaGVkdWxlEiQKDmlzX29uX3NjaGVkdWxlGAEgASgIUgxpc09uU2NoZWR1bGUSMAoUZGF5c19iZWhpbmRfc2NoZWR1bGUYAiABKAVSEmRheXNCZWhpbmRTY2hlZHVsZRJGChFuZXh0X3BheW1lbnRfZGF0ZRgDIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXBSD25leHRQYXltZW50RGF0ZRIjCg1jdXJyZW50X2N5Y2xlGAQgASgFUgxjdXJyZW50Q3ljbGUSIQoMdG90YWxfY3ljbGVzGAUgASgFUgt0b3RhbEN5Y2xlcxrRAQoGUGF5b3V0EisKEWN1cnJlbnRfcmVjaXBpZW50GAEgASgEUhBjdXJyZW50UmVjaXBpZW50EkQKEG5leHRfcGF5b3V0X2RhdGUYAiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUg5uZXh0UGF5b3V0RGF0ZRIrChFjb21wbGV0ZWRfcGF5b3V0cxgDIAEoBVIQY29tcGxldGVkUGF5b3V0cxInCg9wZW5kaW5nX3BheW91dHMYBCABKAVSDnBlbmRpbmdQYXlvdXRz');
+final $typed_data.Uint8List getContributionAnalyticsResponseDescriptor = $convert.base64Decode('CiBHZXRDb250cmlidXRpb25BbmFseXRpY3NSZXNwb25zZRInCg9jb250cmlidXRpb25faWQYASABKAlSDmNvbnRyaWJ1dGlvbklkEhIKBHR5cGUYAiABKAlSBHR5cGUSLwoTcHJvZ3Jlc3NfcGVyY2VudGFnZRgDIAEoAVIScHJvZ3Jlc3NQZXJjZW50YWdlEiUKDnRvdGFsX3BheW1lbnRzGAQgASgFUg10b3RhbFBheW1lbnRzEicKD2F2ZXJhZ2VfcGF5bWVudBgFIAEoAVIOYXZlcmFnZVBheW1lbnQSJQoOY3VycmVudF9hbW91bnQYBiABKARSDWN1cnJlbnRBbW91bnQSIwoNdGFyZ2V0X2Ftb3VudBgHIAEoBFIMdGFyZ2V0QW1vdW50EmsKFG1lbWJlcl9wYXJ0aWNpcGF0aW9uGAggASgLMjgucGIuR2V0Q29udHJpYnV0aW9uQW5hbHl0aWNzUmVzcG9uc2UuTWVtYmVyUGFydGljaXBhdGlvblITbWVtYmVyUGFydGljaXBhdGlvbhJJCghzY2hlZHVsZRgJIAEoCzItLnBiLkdldENvbnRyaWJ1dGlvbkFuYWx5dGljc1Jlc3BvbnNlLlNjaGVkdWxlUghzY2hlZHVsZRJDCgZwYXlvdXQYCiABKAsyKy5wYi5HZXRDb250cmlidXRpb25BbmFseXRpY3NSZXNwb25zZS5QYXlvdXRSBnBheW91dBIhCgxtZW1iZXJfc3RhdHMYCyABKAlSC21lbWJlclN0YXRzGp4BChNNZW1iZXJQYXJ0aWNpcGF0aW9uEiMKDXRvdGFsX21lbWJlcnMYASABKAVSDHRvdGFsTWVtYmVycxIzChVwYXJ0aWNpcGF0aW5nX21lbWJlcnMYAiABKAVSFHBhcnRpY2lwYXRpbmdNZW1iZXJzEi0KEnBhcnRpY2lwYXRpb25fcmF0ZRgDIAEoAVIRcGFydGljaXBhdGlvblJhdGUa8gEKCFNjaGVkdWxlEiQKDmlzX29uX3NjaGVkdWxlGAEgASgIUgxpc09uU2NoZWR1bGUSMAoUZGF5c19iZWhpbmRfc2NoZWR1bGUYAiABKAVSEmRheXNCZWhpbmRTY2hlZHVsZRJGChFuZXh0X3BheW1lbnRfZGF0ZRgDIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXBSD25leHRQYXltZW50RGF0ZRIjCg1jdXJyZW50X2N5Y2xlGAQgASgFUgxjdXJyZW50Q3ljbGUSIQoMdG90YWxfY3ljbGVzGAUgASgFUgt0b3RhbEN5Y2xlcxrRAQoGUGF5b3V0EisKEWN1cnJlbnRfcmVjaXBpZW50GAEgASgJUhBjdXJyZW50UmVjaXBpZW50EkQKEG5leHRfcGF5b3V0X2RhdGUYAiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUg5uZXh0UGF5b3V0RGF0ZRIrChFjb21wbGV0ZWRfcGF5b3V0cxgDIAEoBVIQY29tcGxldGVkUGF5b3V0cxInCg9wZW5kaW5nX3BheW91dHMYBCABKAVSDnBlbmRpbmdQYXlvdXRz');
 @$core.Deprecated('Use groupPaginationInfoDescriptor instead')
 const GroupPaginationInfo$json = const {
   '1': 'GroupPaginationInfo',
@@ -1077,3 +1163,86 @@ const ReceiptPaginationInfo$json = const {
 
 /// Descriptor for `ReceiptPaginationInfo`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List receiptPaginationInfoDescriptor = $convert.base64Decode('ChVSZWNlaXB0UGFnaW5hdGlvbkluZm8SIQoMY3VycmVudF9wYWdlGAEgASgFUgtjdXJyZW50UGFnZRIfCgt0b3RhbF9wYWdlcxgCIAEoBVIKdG90YWxQYWdlcxIfCgt0b3RhbF9pdGVtcxgDIAEoBVIKdG90YWxJdGVtcxIkCg5pdGVtc19wZXJfcGFnZRgEIAEoBVIMaXRlbXNQZXJQYWdlEhkKCGhhc19uZXh0GAUgASgIUgdoYXNOZXh0EhkKCGhhc19wcmV2GAYgASgIUgdoYXNQcmV2');
+@$core.Deprecated('Use activityLogPaginationInfoDescriptor instead')
+const ActivityLogPaginationInfo$json = const {
+  '1': 'ActivityLogPaginationInfo',
+  '2': const [
+    const {'1': 'current_page', '3': 1, '4': 1, '5': 5, '10': 'currentPage'},
+    const {'1': 'total_pages', '3': 2, '4': 1, '5': 5, '10': 'totalPages'},
+    const {'1': 'total_count', '3': 3, '4': 1, '5': 5, '10': 'totalCount'},
+    const {'1': 'has_more', '3': 4, '4': 1, '5': 8, '10': 'hasMore'},
+  ],
+};
+
+/// Descriptor for `ActivityLogPaginationInfo`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List activityLogPaginationInfoDescriptor = $convert.base64Decode('ChlBY3Rpdml0eUxvZ1BhZ2luYXRpb25JbmZvEiEKDGN1cnJlbnRfcGFnZRgBIAEoBVILY3VycmVudFBhZ2USHwoLdG90YWxfcGFnZXMYAiABKAVSCnRvdGFsUGFnZXMSHwoLdG90YWxfY291bnQYAyABKAVSCnRvdGFsQ291bnQSGQoIaGFzX21vcmUYBCABKAhSB2hhc01vcmU=');
+@$core.Deprecated('Use groupActivityLogMessageDescriptor instead')
+const GroupActivityLogMessage$json = const {
+  '1': 'GroupActivityLogMessage',
+  '2': const [
+    const {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
+    const {'1': 'group_id', '3': 2, '4': 1, '5': 9, '10': 'groupId'},
+    const {'1': 'contribution_id', '3': 3, '4': 1, '5': 9, '9': 0, '10': 'contributionId', '17': true},
+    const {'1': 'actor_user_id', '3': 4, '4': 1, '5': 9, '10': 'actorUserId'},
+    const {'1': 'actor_name', '3': 5, '4': 1, '5': 9, '10': 'actorName'},
+    const {'1': 'action_type', '3': 6, '4': 1, '5': 9, '10': 'actionType'},
+    const {'1': 'target_type', '3': 7, '4': 1, '5': 9, '10': 'targetType'},
+    const {'1': 'target_id', '3': 8, '4': 1, '5': 9, '9': 1, '10': 'targetId', '17': true},
+    const {'1': 'details', '3': 9, '4': 1, '5': 9, '10': 'details'},
+    const {'1': 'created_at', '3': 10, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
+  ],
+  '8': const [
+    const {'1': '_contribution_id'},
+    const {'1': '_target_id'},
+  ],
+};
+
+/// Descriptor for `GroupActivityLogMessage`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List groupActivityLogMessageDescriptor = $convert.base64Decode('ChdHcm91cEFjdGl2aXR5TG9nTWVzc2FnZRIOCgJpZBgBIAEoCVICaWQSGQoIZ3JvdXBfaWQYAiABKAlSB2dyb3VwSWQSLAoPY29udHJpYnV0aW9uX2lkGAMgASgJSABSDmNvbnRyaWJ1dGlvbklkiAEBEiIKDWFjdG9yX3VzZXJfaWQYBCABKAlSC2FjdG9yVXNlcklkEh0KCmFjdG9yX25hbWUYBSABKAlSCWFjdG9yTmFtZRIfCgthY3Rpb25fdHlwZRgGIAEoCVIKYWN0aW9uVHlwZRIfCgt0YXJnZXRfdHlwZRgHIAEoCVIKdGFyZ2V0VHlwZRIgCgl0YXJnZXRfaWQYCCABKAlIAVIIdGFyZ2V0SWSIAQESGAoHZGV0YWlscxgJIAEoCVIHZGV0YWlscxI5CgpjcmVhdGVkX2F0GAogASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcFIJY3JlYXRlZEF0QhIKEF9jb250cmlidXRpb25faWRCDAoKX3RhcmdldF9pZA==');
+@$core.Deprecated('Use getGroupActivityLogsRequestDescriptor instead')
+const GetGroupActivityLogsRequest$json = const {
+  '1': 'GetGroupActivityLogsRequest',
+  '2': const [
+    const {'1': 'group_id', '3': 1, '4': 1, '5': 9, '10': 'groupId'},
+    const {'1': 'page', '3': 2, '4': 1, '5': 5, '10': 'page'},
+    const {'1': 'page_size', '3': 3, '4': 1, '5': 5, '10': 'pageSize'},
+    const {'1': 'action_type_filter', '3': 4, '4': 1, '5': 9, '10': 'actionTypeFilter'},
+  ],
+};
+
+/// Descriptor for `GetGroupActivityLogsRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getGroupActivityLogsRequestDescriptor = $convert.base64Decode('ChtHZXRHcm91cEFjdGl2aXR5TG9nc1JlcXVlc3QSGQoIZ3JvdXBfaWQYASABKAlSB2dyb3VwSWQSEgoEcGFnZRgCIAEoBVIEcGFnZRIbCglwYWdlX3NpemUYAyABKAVSCHBhZ2VTaXplEiwKEmFjdGlvbl90eXBlX2ZpbHRlchgEIAEoCVIQYWN0aW9uVHlwZUZpbHRlcg==');
+@$core.Deprecated('Use getGroupActivityLogsResponseDescriptor instead')
+const GetGroupActivityLogsResponse$json = const {
+  '1': 'GetGroupActivityLogsResponse',
+  '2': const [
+    const {'1': 'logs', '3': 1, '4': 3, '5': 11, '6': '.pb.GroupActivityLogMessage', '10': 'logs'},
+    const {'1': 'pagination', '3': 2, '4': 1, '5': 11, '6': '.pb.ActivityLogPaginationInfo', '10': 'pagination'},
+  ],
+};
+
+/// Descriptor for `GetGroupActivityLogsResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getGroupActivityLogsResponseDescriptor = $convert.base64Decode('ChxHZXRHcm91cEFjdGl2aXR5TG9nc1Jlc3BvbnNlEi8KBGxvZ3MYASADKAsyGy5wYi5Hcm91cEFjdGl2aXR5TG9nTWVzc2FnZVIEbG9ncxI9CgpwYWdpbmF0aW9uGAIgASgLMh0ucGIuQWN0aXZpdHlMb2dQYWdpbmF0aW9uSW5mb1IKcGFnaW5hdGlvbg==');
+@$core.Deprecated('Use getContributionActivityLogsRequestDescriptor instead')
+const GetContributionActivityLogsRequest$json = const {
+  '1': 'GetContributionActivityLogsRequest',
+  '2': const [
+    const {'1': 'contribution_id', '3': 1, '4': 1, '5': 9, '10': 'contributionId'},
+    const {'1': 'page', '3': 2, '4': 1, '5': 5, '10': 'page'},
+    const {'1': 'page_size', '3': 3, '4': 1, '5': 5, '10': 'pageSize'},
+  ],
+};
+
+/// Descriptor for `GetContributionActivityLogsRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getContributionActivityLogsRequestDescriptor = $convert.base64Decode('CiJHZXRDb250cmlidXRpb25BY3Rpdml0eUxvZ3NSZXF1ZXN0EicKD2NvbnRyaWJ1dGlvbl9pZBgBIAEoCVIOY29udHJpYnV0aW9uSWQSEgoEcGFnZRgCIAEoBVIEcGFnZRIbCglwYWdlX3NpemUYAyABKAVSCHBhZ2VTaXpl');
+@$core.Deprecated('Use getContributionActivityLogsResponseDescriptor instead')
+const GetContributionActivityLogsResponse$json = const {
+  '1': 'GetContributionActivityLogsResponse',
+  '2': const [
+    const {'1': 'logs', '3': 1, '4': 3, '5': 11, '6': '.pb.GroupActivityLogMessage', '10': 'logs'},
+    const {'1': 'pagination', '3': 2, '4': 1, '5': 11, '6': '.pb.ActivityLogPaginationInfo', '10': 'pagination'},
+  ],
+};
+
+/// Descriptor for `GetContributionActivityLogsResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getContributionActivityLogsResponseDescriptor = $convert.base64Decode('CiNHZXRDb250cmlidXRpb25BY3Rpdml0eUxvZ3NSZXNwb25zZRIvCgRsb2dzGAEgAygLMhsucGIuR3JvdXBBY3Rpdml0eUxvZ01lc3NhZ2VSBGxvZ3MSPQoKcGFnaW5hdGlvbhgCIAEoCzIdLnBiLkFjdGl2aXR5TG9nUGFnaW5hdGlvbkluZm9SCnBhZ2luYXRpb24=');

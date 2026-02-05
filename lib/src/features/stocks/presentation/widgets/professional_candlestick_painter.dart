@@ -167,9 +167,6 @@ class ProfessionalCandlestickPainter extends CustomPainter {
       textDirection: TextDirection.ltr,
     );
 
-    final labelPaint = Paint()
-      ..color = Colors.grey.withValues(alpha: 0.6);
-
     // Draw price labels on the right side
     const labelCount = 5;
     for (int i = 0; i <= labelCount; i++) {

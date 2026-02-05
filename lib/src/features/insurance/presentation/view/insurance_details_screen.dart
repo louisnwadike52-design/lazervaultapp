@@ -1124,39 +1124,6 @@ class _InsuranceDetailsScreenState extends State<InsuranceDetailsScreen> with Ti
     );
   }
 
-  Widget _buildEmptyState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.shield_outlined,
-            size: 64.sp,
-            color: const Color(0xFF6366F1),
-          ),
-          SizedBox(height: 16.h),
-          Text(
-            'Policy Not Found',
-            style: GoogleFonts.inter(
-              color: Colors.white,
-              fontSize: 18.sp,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          SizedBox(height: 8.h),
-          Text(
-            'The requested policy could not be found',
-            style: GoogleFonts.inter(
-              color: const Color(0xFF9CA3AF),
-              fontSize: 14.sp,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildPaymentFAB() {
     return BlocBuilder<InsuranceCubit, InsuranceState>(
       builder: (context, state) {

@@ -642,6 +642,9 @@ class Transaction extends $pb.GeneratedMessage {
     ..aOS(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'locale')
     ..aOS(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'serviceName')
     ..aOS(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt')
+    ..aOS(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'counterpartyName')
+    ..aOS(16, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'counterpartyAccount')
+    ..aOS(17, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt')
     ..hasRequiredFields = false
   ;
 
@@ -661,6 +664,9 @@ class Transaction extends $pb.GeneratedMessage {
     $core.String? locale,
     $core.String? serviceName,
     $core.String? createdAt,
+    $core.String? counterpartyName,
+    $core.String? counterpartyAccount,
+    $core.String? updatedAt,
   }) {
     final _result = create();
     if (id != null) {
@@ -704,6 +710,15 @@ class Transaction extends $pb.GeneratedMessage {
     }
     if (createdAt != null) {
       _result.createdAt = createdAt;
+    }
+    if (counterpartyName != null) {
+      _result.counterpartyName = counterpartyName;
+    }
+    if (counterpartyAccount != null) {
+      _result.counterpartyAccount = counterpartyAccount;
+    }
+    if (updatedAt != null) {
+      _result.updatedAt = updatedAt;
     }
     return _result;
   }
@@ -853,6 +868,33 @@ class Transaction extends $pb.GeneratedMessage {
   $core.bool hasCreatedAt() => $_has(13);
   @$pb.TagNumber(14)
   void clearCreatedAt() => clearField(14);
+
+  @$pb.TagNumber(15)
+  $core.String get counterpartyName => $_getSZ(14);
+  @$pb.TagNumber(15)
+  set counterpartyName($core.String v) { $_setString(14, v); }
+  @$pb.TagNumber(15)
+  $core.bool hasCounterpartyName() => $_has(14);
+  @$pb.TagNumber(15)
+  void clearCounterpartyName() => clearField(15);
+
+  @$pb.TagNumber(16)
+  $core.String get counterpartyAccount => $_getSZ(15);
+  @$pb.TagNumber(16)
+  set counterpartyAccount($core.String v) { $_setString(15, v); }
+  @$pb.TagNumber(16)
+  $core.bool hasCounterpartyAccount() => $_has(15);
+  @$pb.TagNumber(16)
+  void clearCounterpartyAccount() => clearField(16);
+
+  @$pb.TagNumber(17)
+  $core.String get updatedAt => $_getSZ(16);
+  @$pb.TagNumber(17)
+  set updatedAt($core.String v) { $_setString(16, v); }
+  @$pb.TagNumber(17)
+  $core.bool hasUpdatedAt() => $_has(16);
+  @$pb.TagNumber(17)
+  void clearUpdatedAt() => clearField(17);
 }
 
 class CreateAccountRequest extends $pb.GeneratedMessage {
@@ -4053,6 +4095,9 @@ class CreateTransactionRequest extends $pb.GeneratedMessage {
     ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'metadata')
     ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'serviceName')
     ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'reference')
+    ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status')
+    ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'counterpartyName')
+    ..aOS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'counterpartyAccount')
     ..hasRequiredFields = false
   ;
 
@@ -4066,6 +4111,9 @@ class CreateTransactionRequest extends $pb.GeneratedMessage {
     $core.String? metadata,
     $core.String? serviceName,
     $core.String? reference,
+    $core.String? status,
+    $core.String? counterpartyName,
+    $core.String? counterpartyAccount,
   }) {
     final _result = create();
     if (accountId != null) {
@@ -4091,6 +4139,15 @@ class CreateTransactionRequest extends $pb.GeneratedMessage {
     }
     if (reference != null) {
       _result.reference = reference;
+    }
+    if (status != null) {
+      _result.status = status;
+    }
+    if (counterpartyName != null) {
+      _result.counterpartyName = counterpartyName;
+    }
+    if (counterpartyAccount != null) {
+      _result.counterpartyAccount = counterpartyAccount;
     }
     return _result;
   }
@@ -4186,6 +4243,33 @@ class CreateTransactionRequest extends $pb.GeneratedMessage {
   $core.bool hasReference() => $_has(7);
   @$pb.TagNumber(8)
   void clearReference() => clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.String get status => $_getSZ(8);
+  @$pb.TagNumber(9)
+  set status($core.String v) { $_setString(8, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasStatus() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearStatus() => clearField(9);
+
+  @$pb.TagNumber(10)
+  $core.String get counterpartyName => $_getSZ(9);
+  @$pb.TagNumber(10)
+  set counterpartyName($core.String v) { $_setString(9, v); }
+  @$pb.TagNumber(10)
+  $core.bool hasCounterpartyName() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearCounterpartyName() => clearField(10);
+
+  @$pb.TagNumber(11)
+  $core.String get counterpartyAccount => $_getSZ(10);
+  @$pb.TagNumber(11)
+  set counterpartyAccount($core.String v) { $_setString(10, v); }
+  @$pb.TagNumber(11)
+  $core.bool hasCounterpartyAccount() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearCounterpartyAccount() => clearField(11);
 }
 
 class CreateTransactionResponse extends $pb.GeneratedMessage {
@@ -4240,6 +4324,142 @@ class CreateTransactionResponse extends $pb.GeneratedMessage {
   void clearTransaction() => clearField(1);
   @$pb.TagNumber(1)
   Transaction ensureTransaction() => $_ensure(0);
+
+  @$pb.TagNumber(2)
+  $core.String get message => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set message($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasMessage() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMessage() => clearField(2);
+}
+
+class UpdateTransactionStatusRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UpdateTransactionStatusRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'accounts'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'reference')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'failureReason')
+    ..hasRequiredFields = false
+  ;
+
+  UpdateTransactionStatusRequest._() : super();
+  factory UpdateTransactionStatusRequest({
+    $core.String? reference,
+    $core.String? status,
+    $core.String? failureReason,
+  }) {
+    final _result = create();
+    if (reference != null) {
+      _result.reference = reference;
+    }
+    if (status != null) {
+      _result.status = status;
+    }
+    if (failureReason != null) {
+      _result.failureReason = failureReason;
+    }
+    return _result;
+  }
+  factory UpdateTransactionStatusRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory UpdateTransactionStatusRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  UpdateTransactionStatusRequest clone() => UpdateTransactionStatusRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  UpdateTransactionStatusRequest copyWith(void Function(UpdateTransactionStatusRequest) updates) => super.copyWith((message) => updates(message as UpdateTransactionStatusRequest)) as UpdateTransactionStatusRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static UpdateTransactionStatusRequest create() => UpdateTransactionStatusRequest._();
+  UpdateTransactionStatusRequest createEmptyInstance() => create();
+  static $pb.PbList<UpdateTransactionStatusRequest> createRepeated() => $pb.PbList<UpdateTransactionStatusRequest>();
+  @$core.pragma('dart2js:noInline')
+  static UpdateTransactionStatusRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<UpdateTransactionStatusRequest>(create);
+  static UpdateTransactionStatusRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get reference => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set reference($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasReference() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearReference() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get status => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set status($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasStatus() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearStatus() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get failureReason => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set failureReason($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasFailureReason() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearFailureReason() => clearField(3);
+}
+
+class UpdateTransactionStatusResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UpdateTransactionStatusResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'accounts'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
+  UpdateTransactionStatusResponse._() : super();
+  factory UpdateTransactionStatusResponse({
+    $core.bool? success,
+    $core.String? message,
+  }) {
+    final _result = create();
+    if (success != null) {
+      _result.success = success;
+    }
+    if (message != null) {
+      _result.message = message;
+    }
+    return _result;
+  }
+  factory UpdateTransactionStatusResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory UpdateTransactionStatusResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  UpdateTransactionStatusResponse clone() => UpdateTransactionStatusResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  UpdateTransactionStatusResponse copyWith(void Function(UpdateTransactionStatusResponse) updates) => super.copyWith((message) => updates(message as UpdateTransactionStatusResponse)) as UpdateTransactionStatusResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static UpdateTransactionStatusResponse create() => UpdateTransactionStatusResponse._();
+  UpdateTransactionStatusResponse createEmptyInstance() => create();
+  static $pb.PbList<UpdateTransactionStatusResponse> createRepeated() => $pb.PbList<UpdateTransactionStatusResponse>();
+  @$core.pragma('dart2js:noInline')
+  static UpdateTransactionStatusResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<UpdateTransactionStatusResponse>(create);
+  static UpdateTransactionStatusResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool v) { $_setBool(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => clearField(1);
 
   @$pb.TagNumber(2)
   $core.String get message => $_getSZ(1);
@@ -7068,5 +7288,1367 @@ class ReleaseHoldResponse extends $pb.GeneratedMessage {
   $core.bool hasNewAvailableBalance() => $_has(3);
   @$pb.TagNumber(4)
   void clearNewAvailableBalance() => clearField(4);
+}
+
+class PlatformWalletMsg extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'PlatformWalletMsg', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'accounts'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'walletCode')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'walletName')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
+    ..aInt64(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'balance')
+    ..aInt64(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'availableBalance')
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status')
+    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
+    ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt')
+    ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt')
+    ..hasRequiredFields = false
+  ;
+
+  PlatformWalletMsg._() : super();
+  factory PlatformWalletMsg({
+    $core.String? id,
+    $core.String? walletCode,
+    $core.String? walletName,
+    $core.String? currency,
+    $fixnum.Int64? balance,
+    $fixnum.Int64? availableBalance,
+    $core.String? status,
+    $core.String? description,
+    $core.String? createdAt,
+    $core.String? updatedAt,
+  }) {
+    final _result = create();
+    if (id != null) {
+      _result.id = id;
+    }
+    if (walletCode != null) {
+      _result.walletCode = walletCode;
+    }
+    if (walletName != null) {
+      _result.walletName = walletName;
+    }
+    if (currency != null) {
+      _result.currency = currency;
+    }
+    if (balance != null) {
+      _result.balance = balance;
+    }
+    if (availableBalance != null) {
+      _result.availableBalance = availableBalance;
+    }
+    if (status != null) {
+      _result.status = status;
+    }
+    if (description != null) {
+      _result.description = description;
+    }
+    if (createdAt != null) {
+      _result.createdAt = createdAt;
+    }
+    if (updatedAt != null) {
+      _result.updatedAt = updatedAt;
+    }
+    return _result;
+  }
+  factory PlatformWalletMsg.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory PlatformWalletMsg.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  PlatformWalletMsg clone() => PlatformWalletMsg()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  PlatformWalletMsg copyWith(void Function(PlatformWalletMsg) updates) => super.copyWith((message) => updates(message as PlatformWalletMsg)) as PlatformWalletMsg; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static PlatformWalletMsg create() => PlatformWalletMsg._();
+  PlatformWalletMsg createEmptyInstance() => create();
+  static $pb.PbList<PlatformWalletMsg> createRepeated() => $pb.PbList<PlatformWalletMsg>();
+  @$core.pragma('dart2js:noInline')
+  static PlatformWalletMsg getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<PlatformWalletMsg>(create);
+  static PlatformWalletMsg? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get id => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set id($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get walletCode => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set walletCode($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasWalletCode() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearWalletCode() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get walletName => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set walletName($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasWalletName() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearWalletName() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get currency => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set currency($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasCurrency() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearCurrency() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $fixnum.Int64 get balance => $_getI64(4);
+  @$pb.TagNumber(5)
+  set balance($fixnum.Int64 v) { $_setInt64(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasBalance() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearBalance() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $fixnum.Int64 get availableBalance => $_getI64(5);
+  @$pb.TagNumber(6)
+  set availableBalance($fixnum.Int64 v) { $_setInt64(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasAvailableBalance() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearAvailableBalance() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.String get status => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set status($core.String v) { $_setString(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasStatus() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearStatus() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.String get description => $_getSZ(7);
+  @$pb.TagNumber(8)
+  set description($core.String v) { $_setString(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasDescription() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearDescription() => clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.String get createdAt => $_getSZ(8);
+  @$pb.TagNumber(9)
+  set createdAt($core.String v) { $_setString(8, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasCreatedAt() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearCreatedAt() => clearField(9);
+
+  @$pb.TagNumber(10)
+  $core.String get updatedAt => $_getSZ(9);
+  @$pb.TagNumber(10)
+  set updatedAt($core.String v) { $_setString(9, v); }
+  @$pb.TagNumber(10)
+  $core.bool hasUpdatedAt() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearUpdatedAt() => clearField(10);
+}
+
+class PlatformWalletTransactionMsg extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'PlatformWalletTransactionMsg', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'accounts'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'walletId')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'reference')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'type')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'category')
+    ..aInt64(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount')
+    ..aInt64(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'balanceBefore')
+    ..aInt64(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'balanceAfter')
+    ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'counterpartyAccountId')
+    ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'counterpartyUserId')
+    ..aOS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
+    ..aOS(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'metadata')
+    ..aOS(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'serviceName')
+    ..aOS(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status')
+    ..aOS(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt')
+    ..hasRequiredFields = false
+  ;
+
+  PlatformWalletTransactionMsg._() : super();
+  factory PlatformWalletTransactionMsg({
+    $core.String? id,
+    $core.String? walletId,
+    $core.String? reference,
+    $core.String? type,
+    $core.String? category,
+    $fixnum.Int64? amount,
+    $fixnum.Int64? balanceBefore,
+    $fixnum.Int64? balanceAfter,
+    $core.String? counterpartyAccountId,
+    $core.String? counterpartyUserId,
+    $core.String? description,
+    $core.String? metadata,
+    $core.String? serviceName,
+    $core.String? status,
+    $core.String? createdAt,
+  }) {
+    final _result = create();
+    if (id != null) {
+      _result.id = id;
+    }
+    if (walletId != null) {
+      _result.walletId = walletId;
+    }
+    if (reference != null) {
+      _result.reference = reference;
+    }
+    if (type != null) {
+      _result.type = type;
+    }
+    if (category != null) {
+      _result.category = category;
+    }
+    if (amount != null) {
+      _result.amount = amount;
+    }
+    if (balanceBefore != null) {
+      _result.balanceBefore = balanceBefore;
+    }
+    if (balanceAfter != null) {
+      _result.balanceAfter = balanceAfter;
+    }
+    if (counterpartyAccountId != null) {
+      _result.counterpartyAccountId = counterpartyAccountId;
+    }
+    if (counterpartyUserId != null) {
+      _result.counterpartyUserId = counterpartyUserId;
+    }
+    if (description != null) {
+      _result.description = description;
+    }
+    if (metadata != null) {
+      _result.metadata = metadata;
+    }
+    if (serviceName != null) {
+      _result.serviceName = serviceName;
+    }
+    if (status != null) {
+      _result.status = status;
+    }
+    if (createdAt != null) {
+      _result.createdAt = createdAt;
+    }
+    return _result;
+  }
+  factory PlatformWalletTransactionMsg.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory PlatformWalletTransactionMsg.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  PlatformWalletTransactionMsg clone() => PlatformWalletTransactionMsg()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  PlatformWalletTransactionMsg copyWith(void Function(PlatformWalletTransactionMsg) updates) => super.copyWith((message) => updates(message as PlatformWalletTransactionMsg)) as PlatformWalletTransactionMsg; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static PlatformWalletTransactionMsg create() => PlatformWalletTransactionMsg._();
+  PlatformWalletTransactionMsg createEmptyInstance() => create();
+  static $pb.PbList<PlatformWalletTransactionMsg> createRepeated() => $pb.PbList<PlatformWalletTransactionMsg>();
+  @$core.pragma('dart2js:noInline')
+  static PlatformWalletTransactionMsg getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<PlatformWalletTransactionMsg>(create);
+  static PlatformWalletTransactionMsg? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get id => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set id($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get walletId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set walletId($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasWalletId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearWalletId() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get reference => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set reference($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasReference() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearReference() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get type => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set type($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasType() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearType() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get category => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set category($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasCategory() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearCategory() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $fixnum.Int64 get amount => $_getI64(5);
+  @$pb.TagNumber(6)
+  set amount($fixnum.Int64 v) { $_setInt64(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasAmount() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearAmount() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $fixnum.Int64 get balanceBefore => $_getI64(6);
+  @$pb.TagNumber(7)
+  set balanceBefore($fixnum.Int64 v) { $_setInt64(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasBalanceBefore() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearBalanceBefore() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $fixnum.Int64 get balanceAfter => $_getI64(7);
+  @$pb.TagNumber(8)
+  set balanceAfter($fixnum.Int64 v) { $_setInt64(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasBalanceAfter() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearBalanceAfter() => clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.String get counterpartyAccountId => $_getSZ(8);
+  @$pb.TagNumber(9)
+  set counterpartyAccountId($core.String v) { $_setString(8, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasCounterpartyAccountId() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearCounterpartyAccountId() => clearField(9);
+
+  @$pb.TagNumber(10)
+  $core.String get counterpartyUserId => $_getSZ(9);
+  @$pb.TagNumber(10)
+  set counterpartyUserId($core.String v) { $_setString(9, v); }
+  @$pb.TagNumber(10)
+  $core.bool hasCounterpartyUserId() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearCounterpartyUserId() => clearField(10);
+
+  @$pb.TagNumber(11)
+  $core.String get description => $_getSZ(10);
+  @$pb.TagNumber(11)
+  set description($core.String v) { $_setString(10, v); }
+  @$pb.TagNumber(11)
+  $core.bool hasDescription() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearDescription() => clearField(11);
+
+  @$pb.TagNumber(12)
+  $core.String get metadata => $_getSZ(11);
+  @$pb.TagNumber(12)
+  set metadata($core.String v) { $_setString(11, v); }
+  @$pb.TagNumber(12)
+  $core.bool hasMetadata() => $_has(11);
+  @$pb.TagNumber(12)
+  void clearMetadata() => clearField(12);
+
+  @$pb.TagNumber(13)
+  $core.String get serviceName => $_getSZ(12);
+  @$pb.TagNumber(13)
+  set serviceName($core.String v) { $_setString(12, v); }
+  @$pb.TagNumber(13)
+  $core.bool hasServiceName() => $_has(12);
+  @$pb.TagNumber(13)
+  void clearServiceName() => clearField(13);
+
+  @$pb.TagNumber(14)
+  $core.String get status => $_getSZ(13);
+  @$pb.TagNumber(14)
+  set status($core.String v) { $_setString(13, v); }
+  @$pb.TagNumber(14)
+  $core.bool hasStatus() => $_has(13);
+  @$pb.TagNumber(14)
+  void clearStatus() => clearField(14);
+
+  @$pb.TagNumber(15)
+  $core.String get createdAt => $_getSZ(14);
+  @$pb.TagNumber(15)
+  set createdAt($core.String v) { $_setString(14, v); }
+  @$pb.TagNumber(15)
+  $core.bool hasCreatedAt() => $_has(14);
+  @$pb.TagNumber(15)
+  void clearCreatedAt() => clearField(15);
+}
+
+class TransferToPlatformWalletRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'TransferToPlatformWalletRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'accounts'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userAccountId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'walletCode')
+    ..aInt64(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'reference')
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'category')
+    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
+    ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'metadata')
+    ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'serviceName')
+    ..aOS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'idempotencyKey')
+    ..hasRequiredFields = false
+  ;
+
+  TransferToPlatformWalletRequest._() : super();
+  factory TransferToPlatformWalletRequest({
+    $core.String? userAccountId,
+    $core.String? userId,
+    $core.String? walletCode,
+    $fixnum.Int64? amount,
+    $core.String? currency,
+    $core.String? reference,
+    $core.String? category,
+    $core.String? description,
+    $core.String? metadata,
+    $core.String? serviceName,
+    $core.String? idempotencyKey,
+  }) {
+    final _result = create();
+    if (userAccountId != null) {
+      _result.userAccountId = userAccountId;
+    }
+    if (userId != null) {
+      _result.userId = userId;
+    }
+    if (walletCode != null) {
+      _result.walletCode = walletCode;
+    }
+    if (amount != null) {
+      _result.amount = amount;
+    }
+    if (currency != null) {
+      _result.currency = currency;
+    }
+    if (reference != null) {
+      _result.reference = reference;
+    }
+    if (category != null) {
+      _result.category = category;
+    }
+    if (description != null) {
+      _result.description = description;
+    }
+    if (metadata != null) {
+      _result.metadata = metadata;
+    }
+    if (serviceName != null) {
+      _result.serviceName = serviceName;
+    }
+    if (idempotencyKey != null) {
+      _result.idempotencyKey = idempotencyKey;
+    }
+    return _result;
+  }
+  factory TransferToPlatformWalletRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory TransferToPlatformWalletRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  TransferToPlatformWalletRequest clone() => TransferToPlatformWalletRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  TransferToPlatformWalletRequest copyWith(void Function(TransferToPlatformWalletRequest) updates) => super.copyWith((message) => updates(message as TransferToPlatformWalletRequest)) as TransferToPlatformWalletRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static TransferToPlatformWalletRequest create() => TransferToPlatformWalletRequest._();
+  TransferToPlatformWalletRequest createEmptyInstance() => create();
+  static $pb.PbList<TransferToPlatformWalletRequest> createRepeated() => $pb.PbList<TransferToPlatformWalletRequest>();
+  @$core.pragma('dart2js:noInline')
+  static TransferToPlatformWalletRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<TransferToPlatformWalletRequest>(create);
+  static TransferToPlatformWalletRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get userAccountId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set userAccountId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasUserAccountId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearUserAccountId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get userId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set userId($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasUserId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearUserId() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get walletCode => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set walletCode($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasWalletCode() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearWalletCode() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $fixnum.Int64 get amount => $_getI64(3);
+  @$pb.TagNumber(4)
+  set amount($fixnum.Int64 v) { $_setInt64(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasAmount() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearAmount() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get currency => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set currency($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasCurrency() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearCurrency() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get reference => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set reference($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasReference() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearReference() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.String get category => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set category($core.String v) { $_setString(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasCategory() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearCategory() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.String get description => $_getSZ(7);
+  @$pb.TagNumber(8)
+  set description($core.String v) { $_setString(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasDescription() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearDescription() => clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.String get metadata => $_getSZ(8);
+  @$pb.TagNumber(9)
+  set metadata($core.String v) { $_setString(8, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasMetadata() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearMetadata() => clearField(9);
+
+  @$pb.TagNumber(10)
+  $core.String get serviceName => $_getSZ(9);
+  @$pb.TagNumber(10)
+  set serviceName($core.String v) { $_setString(9, v); }
+  @$pb.TagNumber(10)
+  $core.bool hasServiceName() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearServiceName() => clearField(10);
+
+  @$pb.TagNumber(11)
+  $core.String get idempotencyKey => $_getSZ(10);
+  @$pb.TagNumber(11)
+  set idempotencyKey($core.String v) { $_setString(10, v); }
+  @$pb.TagNumber(11)
+  $core.bool hasIdempotencyKey() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearIdempotencyKey() => clearField(11);
+}
+
+class TransferToPlatformWalletResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'TransferToPlatformWalletResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'accounts'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'errorCode')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'errorMessage')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'debitTransactionId')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'platformTransactionId')
+    ..aInt64(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userNewBalance')
+    ..aInt64(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'walletNewBalance')
+    ..hasRequiredFields = false
+  ;
+
+  TransferToPlatformWalletResponse._() : super();
+  factory TransferToPlatformWalletResponse({
+    $core.bool? success,
+    $core.String? errorCode,
+    $core.String? errorMessage,
+    $core.String? debitTransactionId,
+    $core.String? platformTransactionId,
+    $fixnum.Int64? userNewBalance,
+    $fixnum.Int64? walletNewBalance,
+  }) {
+    final _result = create();
+    if (success != null) {
+      _result.success = success;
+    }
+    if (errorCode != null) {
+      _result.errorCode = errorCode;
+    }
+    if (errorMessage != null) {
+      _result.errorMessage = errorMessage;
+    }
+    if (debitTransactionId != null) {
+      _result.debitTransactionId = debitTransactionId;
+    }
+    if (platformTransactionId != null) {
+      _result.platformTransactionId = platformTransactionId;
+    }
+    if (userNewBalance != null) {
+      _result.userNewBalance = userNewBalance;
+    }
+    if (walletNewBalance != null) {
+      _result.walletNewBalance = walletNewBalance;
+    }
+    return _result;
+  }
+  factory TransferToPlatformWalletResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory TransferToPlatformWalletResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  TransferToPlatformWalletResponse clone() => TransferToPlatformWalletResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  TransferToPlatformWalletResponse copyWith(void Function(TransferToPlatformWalletResponse) updates) => super.copyWith((message) => updates(message as TransferToPlatformWalletResponse)) as TransferToPlatformWalletResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static TransferToPlatformWalletResponse create() => TransferToPlatformWalletResponse._();
+  TransferToPlatformWalletResponse createEmptyInstance() => create();
+  static $pb.PbList<TransferToPlatformWalletResponse> createRepeated() => $pb.PbList<TransferToPlatformWalletResponse>();
+  @$core.pragma('dart2js:noInline')
+  static TransferToPlatformWalletResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<TransferToPlatformWalletResponse>(create);
+  static TransferToPlatformWalletResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool v) { $_setBool(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get errorCode => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set errorCode($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasErrorCode() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearErrorCode() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get errorMessage => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set errorMessage($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasErrorMessage() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearErrorMessage() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get debitTransactionId => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set debitTransactionId($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasDebitTransactionId() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearDebitTransactionId() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get platformTransactionId => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set platformTransactionId($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasPlatformTransactionId() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearPlatformTransactionId() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $fixnum.Int64 get userNewBalance => $_getI64(5);
+  @$pb.TagNumber(6)
+  set userNewBalance($fixnum.Int64 v) { $_setInt64(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasUserNewBalance() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearUserNewBalance() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $fixnum.Int64 get walletNewBalance => $_getI64(6);
+  @$pb.TagNumber(7)
+  set walletNewBalance($fixnum.Int64 v) { $_setInt64(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasWalletNewBalance() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearWalletNewBalance() => clearField(7);
+}
+
+class TransferFromPlatformWalletRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'TransferFromPlatformWalletRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'accounts'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'walletCode')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userAccountId')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
+    ..aInt64(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'reference')
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'category')
+    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
+    ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'metadata')
+    ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'serviceName')
+    ..aOS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'idempotencyKey')
+    ..hasRequiredFields = false
+  ;
+
+  TransferFromPlatformWalletRequest._() : super();
+  factory TransferFromPlatformWalletRequest({
+    $core.String? walletCode,
+    $core.String? userAccountId,
+    $core.String? userId,
+    $fixnum.Int64? amount,
+    $core.String? currency,
+    $core.String? reference,
+    $core.String? category,
+    $core.String? description,
+    $core.String? metadata,
+    $core.String? serviceName,
+    $core.String? idempotencyKey,
+  }) {
+    final _result = create();
+    if (walletCode != null) {
+      _result.walletCode = walletCode;
+    }
+    if (userAccountId != null) {
+      _result.userAccountId = userAccountId;
+    }
+    if (userId != null) {
+      _result.userId = userId;
+    }
+    if (amount != null) {
+      _result.amount = amount;
+    }
+    if (currency != null) {
+      _result.currency = currency;
+    }
+    if (reference != null) {
+      _result.reference = reference;
+    }
+    if (category != null) {
+      _result.category = category;
+    }
+    if (description != null) {
+      _result.description = description;
+    }
+    if (metadata != null) {
+      _result.metadata = metadata;
+    }
+    if (serviceName != null) {
+      _result.serviceName = serviceName;
+    }
+    if (idempotencyKey != null) {
+      _result.idempotencyKey = idempotencyKey;
+    }
+    return _result;
+  }
+  factory TransferFromPlatformWalletRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory TransferFromPlatformWalletRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  TransferFromPlatformWalletRequest clone() => TransferFromPlatformWalletRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  TransferFromPlatformWalletRequest copyWith(void Function(TransferFromPlatformWalletRequest) updates) => super.copyWith((message) => updates(message as TransferFromPlatformWalletRequest)) as TransferFromPlatformWalletRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static TransferFromPlatformWalletRequest create() => TransferFromPlatformWalletRequest._();
+  TransferFromPlatformWalletRequest createEmptyInstance() => create();
+  static $pb.PbList<TransferFromPlatformWalletRequest> createRepeated() => $pb.PbList<TransferFromPlatformWalletRequest>();
+  @$core.pragma('dart2js:noInline')
+  static TransferFromPlatformWalletRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<TransferFromPlatformWalletRequest>(create);
+  static TransferFromPlatformWalletRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get walletCode => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set walletCode($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasWalletCode() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearWalletCode() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get userAccountId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set userAccountId($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasUserAccountId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearUserAccountId() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get userId => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set userId($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasUserId() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearUserId() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $fixnum.Int64 get amount => $_getI64(3);
+  @$pb.TagNumber(4)
+  set amount($fixnum.Int64 v) { $_setInt64(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasAmount() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearAmount() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get currency => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set currency($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasCurrency() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearCurrency() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get reference => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set reference($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasReference() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearReference() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.String get category => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set category($core.String v) { $_setString(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasCategory() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearCategory() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.String get description => $_getSZ(7);
+  @$pb.TagNumber(8)
+  set description($core.String v) { $_setString(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasDescription() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearDescription() => clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.String get metadata => $_getSZ(8);
+  @$pb.TagNumber(9)
+  set metadata($core.String v) { $_setString(8, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasMetadata() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearMetadata() => clearField(9);
+
+  @$pb.TagNumber(10)
+  $core.String get serviceName => $_getSZ(9);
+  @$pb.TagNumber(10)
+  set serviceName($core.String v) { $_setString(9, v); }
+  @$pb.TagNumber(10)
+  $core.bool hasServiceName() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearServiceName() => clearField(10);
+
+  @$pb.TagNumber(11)
+  $core.String get idempotencyKey => $_getSZ(10);
+  @$pb.TagNumber(11)
+  set idempotencyKey($core.String v) { $_setString(10, v); }
+  @$pb.TagNumber(11)
+  $core.bool hasIdempotencyKey() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearIdempotencyKey() => clearField(11);
+}
+
+class TransferFromPlatformWalletResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'TransferFromPlatformWalletResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'accounts'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'errorCode')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'errorMessage')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'creditTransactionId')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'platformTransactionId')
+    ..aInt64(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userNewBalance')
+    ..aInt64(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'walletNewBalance')
+    ..hasRequiredFields = false
+  ;
+
+  TransferFromPlatformWalletResponse._() : super();
+  factory TransferFromPlatformWalletResponse({
+    $core.bool? success,
+    $core.String? errorCode,
+    $core.String? errorMessage,
+    $core.String? creditTransactionId,
+    $core.String? platformTransactionId,
+    $fixnum.Int64? userNewBalance,
+    $fixnum.Int64? walletNewBalance,
+  }) {
+    final _result = create();
+    if (success != null) {
+      _result.success = success;
+    }
+    if (errorCode != null) {
+      _result.errorCode = errorCode;
+    }
+    if (errorMessage != null) {
+      _result.errorMessage = errorMessage;
+    }
+    if (creditTransactionId != null) {
+      _result.creditTransactionId = creditTransactionId;
+    }
+    if (platformTransactionId != null) {
+      _result.platformTransactionId = platformTransactionId;
+    }
+    if (userNewBalance != null) {
+      _result.userNewBalance = userNewBalance;
+    }
+    if (walletNewBalance != null) {
+      _result.walletNewBalance = walletNewBalance;
+    }
+    return _result;
+  }
+  factory TransferFromPlatformWalletResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory TransferFromPlatformWalletResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  TransferFromPlatformWalletResponse clone() => TransferFromPlatformWalletResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  TransferFromPlatformWalletResponse copyWith(void Function(TransferFromPlatformWalletResponse) updates) => super.copyWith((message) => updates(message as TransferFromPlatformWalletResponse)) as TransferFromPlatformWalletResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static TransferFromPlatformWalletResponse create() => TransferFromPlatformWalletResponse._();
+  TransferFromPlatformWalletResponse createEmptyInstance() => create();
+  static $pb.PbList<TransferFromPlatformWalletResponse> createRepeated() => $pb.PbList<TransferFromPlatformWalletResponse>();
+  @$core.pragma('dart2js:noInline')
+  static TransferFromPlatformWalletResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<TransferFromPlatformWalletResponse>(create);
+  static TransferFromPlatformWalletResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool v) { $_setBool(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get errorCode => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set errorCode($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasErrorCode() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearErrorCode() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get errorMessage => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set errorMessage($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasErrorMessage() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearErrorMessage() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get creditTransactionId => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set creditTransactionId($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasCreditTransactionId() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearCreditTransactionId() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get platformTransactionId => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set platformTransactionId($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasPlatformTransactionId() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearPlatformTransactionId() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $fixnum.Int64 get userNewBalance => $_getI64(5);
+  @$pb.TagNumber(6)
+  set userNewBalance($fixnum.Int64 v) { $_setInt64(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasUserNewBalance() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearUserNewBalance() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $fixnum.Int64 get walletNewBalance => $_getI64(6);
+  @$pb.TagNumber(7)
+  set walletNewBalance($fixnum.Int64 v) { $_setInt64(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasWalletNewBalance() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearWalletNewBalance() => clearField(7);
+}
+
+class GetPlatformWalletRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetPlatformWalletRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'accounts'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'walletId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'walletCode')
+    ..hasRequiredFields = false
+  ;
+
+  GetPlatformWalletRequest._() : super();
+  factory GetPlatformWalletRequest({
+    $core.String? walletId,
+    $core.String? walletCode,
+  }) {
+    final _result = create();
+    if (walletId != null) {
+      _result.walletId = walletId;
+    }
+    if (walletCode != null) {
+      _result.walletCode = walletCode;
+    }
+    return _result;
+  }
+  factory GetPlatformWalletRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetPlatformWalletRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetPlatformWalletRequest clone() => GetPlatformWalletRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetPlatformWalletRequest copyWith(void Function(GetPlatformWalletRequest) updates) => super.copyWith((message) => updates(message as GetPlatformWalletRequest)) as GetPlatformWalletRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GetPlatformWalletRequest create() => GetPlatformWalletRequest._();
+  GetPlatformWalletRequest createEmptyInstance() => create();
+  static $pb.PbList<GetPlatformWalletRequest> createRepeated() => $pb.PbList<GetPlatformWalletRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetPlatformWalletRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetPlatformWalletRequest>(create);
+  static GetPlatformWalletRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get walletId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set walletId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasWalletId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearWalletId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get walletCode => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set walletCode($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasWalletCode() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearWalletCode() => clearField(2);
+}
+
+class GetPlatformWalletResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetPlatformWalletResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'accounts'), createEmptyInstance: create)
+    ..aOM<PlatformWalletMsg>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'wallet', subBuilder: PlatformWalletMsg.create)
+    ..hasRequiredFields = false
+  ;
+
+  GetPlatformWalletResponse._() : super();
+  factory GetPlatformWalletResponse({
+    PlatformWalletMsg? wallet,
+  }) {
+    final _result = create();
+    if (wallet != null) {
+      _result.wallet = wallet;
+    }
+    return _result;
+  }
+  factory GetPlatformWalletResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetPlatformWalletResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetPlatformWalletResponse clone() => GetPlatformWalletResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetPlatformWalletResponse copyWith(void Function(GetPlatformWalletResponse) updates) => super.copyWith((message) => updates(message as GetPlatformWalletResponse)) as GetPlatformWalletResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GetPlatformWalletResponse create() => GetPlatformWalletResponse._();
+  GetPlatformWalletResponse createEmptyInstance() => create();
+  static $pb.PbList<GetPlatformWalletResponse> createRepeated() => $pb.PbList<GetPlatformWalletResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetPlatformWalletResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetPlatformWalletResponse>(create);
+  static GetPlatformWalletResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  PlatformWalletMsg get wallet => $_getN(0);
+  @$pb.TagNumber(1)
+  set wallet(PlatformWalletMsg v) { setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasWallet() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearWallet() => clearField(1);
+  @$pb.TagNumber(1)
+  PlatformWalletMsg ensureWallet() => $_ensure(0);
+}
+
+class GetPlatformWalletTransactionsRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetPlatformWalletTransactionsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'accounts'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'walletId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'walletCode')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'type')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'category')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'startDate')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'endDate')
+    ..a<$core.int>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'limit', $pb.PbFieldType.O3)
+    ..a<$core.int>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'offset', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  GetPlatformWalletTransactionsRequest._() : super();
+  factory GetPlatformWalletTransactionsRequest({
+    $core.String? walletId,
+    $core.String? walletCode,
+    $core.String? type,
+    $core.String? category,
+    $core.String? startDate,
+    $core.String? endDate,
+    $core.int? limit,
+    $core.int? offset,
+  }) {
+    final _result = create();
+    if (walletId != null) {
+      _result.walletId = walletId;
+    }
+    if (walletCode != null) {
+      _result.walletCode = walletCode;
+    }
+    if (type != null) {
+      _result.type = type;
+    }
+    if (category != null) {
+      _result.category = category;
+    }
+    if (startDate != null) {
+      _result.startDate = startDate;
+    }
+    if (endDate != null) {
+      _result.endDate = endDate;
+    }
+    if (limit != null) {
+      _result.limit = limit;
+    }
+    if (offset != null) {
+      _result.offset = offset;
+    }
+    return _result;
+  }
+  factory GetPlatformWalletTransactionsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetPlatformWalletTransactionsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetPlatformWalletTransactionsRequest clone() => GetPlatformWalletTransactionsRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetPlatformWalletTransactionsRequest copyWith(void Function(GetPlatformWalletTransactionsRequest) updates) => super.copyWith((message) => updates(message as GetPlatformWalletTransactionsRequest)) as GetPlatformWalletTransactionsRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GetPlatformWalletTransactionsRequest create() => GetPlatformWalletTransactionsRequest._();
+  GetPlatformWalletTransactionsRequest createEmptyInstance() => create();
+  static $pb.PbList<GetPlatformWalletTransactionsRequest> createRepeated() => $pb.PbList<GetPlatformWalletTransactionsRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetPlatformWalletTransactionsRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetPlatformWalletTransactionsRequest>(create);
+  static GetPlatformWalletTransactionsRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get walletId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set walletId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasWalletId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearWalletId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get walletCode => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set walletCode($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasWalletCode() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearWalletCode() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get type => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set type($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasType() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearType() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get category => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set category($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasCategory() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearCategory() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get startDate => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set startDate($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasStartDate() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearStartDate() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get endDate => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set endDate($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasEndDate() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearEndDate() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.int get limit => $_getIZ(6);
+  @$pb.TagNumber(7)
+  set limit($core.int v) { $_setSignedInt32(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasLimit() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearLimit() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.int get offset => $_getIZ(7);
+  @$pb.TagNumber(8)
+  set offset($core.int v) { $_setSignedInt32(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasOffset() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearOffset() => clearField(8);
+}
+
+class GetPlatformWalletTransactionsResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetPlatformWalletTransactionsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'accounts'), createEmptyInstance: create)
+    ..pc<PlatformWalletTransactionMsg>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactions', $pb.PbFieldType.PM, subBuilder: PlatformWalletTransactionMsg.create)
+    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'total', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  GetPlatformWalletTransactionsResponse._() : super();
+  factory GetPlatformWalletTransactionsResponse({
+    $core.Iterable<PlatformWalletTransactionMsg>? transactions,
+    $core.int? total,
+  }) {
+    final _result = create();
+    if (transactions != null) {
+      _result.transactions.addAll(transactions);
+    }
+    if (total != null) {
+      _result.total = total;
+    }
+    return _result;
+  }
+  factory GetPlatformWalletTransactionsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetPlatformWalletTransactionsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetPlatformWalletTransactionsResponse clone() => GetPlatformWalletTransactionsResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetPlatformWalletTransactionsResponse copyWith(void Function(GetPlatformWalletTransactionsResponse) updates) => super.copyWith((message) => updates(message as GetPlatformWalletTransactionsResponse)) as GetPlatformWalletTransactionsResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GetPlatformWalletTransactionsResponse create() => GetPlatformWalletTransactionsResponse._();
+  GetPlatformWalletTransactionsResponse createEmptyInstance() => create();
+  static $pb.PbList<GetPlatformWalletTransactionsResponse> createRepeated() => $pb.PbList<GetPlatformWalletTransactionsResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetPlatformWalletTransactionsResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetPlatformWalletTransactionsResponse>(create);
+  static GetPlatformWalletTransactionsResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.List<PlatformWalletTransactionMsg> get transactions => $_getList(0);
+
+  @$pb.TagNumber(2)
+  $core.int get total => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set total($core.int v) { $_setSignedInt32(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasTotal() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearTotal() => clearField(2);
 }
 

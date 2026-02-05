@@ -186,15 +186,13 @@ class OTPChannelInfo {
 class TransactionPinService implements ITransactionPinService {
   final TransactionPinServiceClient _client;
   final GrpcCallOptionsHelper _callOptionsHelper;
-  final AccountManager _accountManager;
 
   TransactionPinService({
     required TransactionPinServiceClient client,
     required GrpcCallOptionsHelper callOptionsHelper,
     required AccountManager accountManager,
   })  : _client = client,
-        _callOptionsHelper = callOptionsHelper,
-        _accountManager = accountManager;
+        _callOptionsHelper = callOptionsHelper;
 
   Future<String> _getUserId() async {
     // Get USER ID from secure storage (not account ID)

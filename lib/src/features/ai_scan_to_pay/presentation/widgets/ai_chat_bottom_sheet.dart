@@ -28,8 +28,6 @@ class AiChatBottomSheet extends StatefulWidget {
 class _AiChatBottomSheetState extends State<AiChatBottomSheet> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  bool _isKeyboardVisible = false;
-  
   // Store the cubit reference to ensure context preservation
   AiScanCubit? _aiScanCubit;
 
@@ -61,9 +59,6 @@ class _AiChatBottomSheetState extends State<AiChatBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
-    _isKeyboardVisible = keyboardHeight > 0;
-
     return Container(
       height: MediaQuery.of(context).size.height * 0.85,
       decoration: BoxDecoration(

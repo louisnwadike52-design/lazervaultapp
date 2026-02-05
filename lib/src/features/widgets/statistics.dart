@@ -3,7 +3,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lazervault/core/extensions/app_colors.dart';
-import 'package:lazervault/core/types/typedef.dart';
 import 'package:lazervault/src/features/statistics/cubit/statistics_cubit.dart';
 import 'package:lazervault/src/features/statistics/cubit/statistics_state.dart';
 import 'package:lazervault/src/generated/statistics.pb.dart';
@@ -18,7 +17,6 @@ class Statistics extends StatefulWidget {
 class _StatisticsState extends State<Statistics> {
   int activeTab = 0;
   final List<String> cashFlow = ["Total Income", "Total Expenses"];
-  String _activeCashFlowType = "Total Income";
   final List<String> timePeriods = ["Week", "Month", "Quarter", "Year"];
   String selectedPeriod = "Month";
 
@@ -103,7 +101,6 @@ class _StatisticsState extends State<Statistics> {
   @override
   void initState() {
     super.initState();
-    _activeCashFlowType = cashFlow[activeTab];
 
     // Load statistics data and AI insights from backend
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -115,15 +112,6 @@ class _StatisticsState extends State<Statistics> {
         financialGoals: ['Emergency Fund', 'Save for Vacation', 'Invest'],
         riskTolerance: 'moderate',
       );
-    });
-  }
-
-  void _handleOnTimePeriodSelected(TimePeriod timePeriod) {}
-
-  void _handleOnTabChanged(int value) {
-    setState(() {
-      activeTab = value;
-      _activeCashFlowType = cashFlow[value];
     });
   }
 
@@ -697,60 +685,6 @@ class _StatisticsState extends State<Statistics> {
         .split(' ')
         .map((word) => word.isNotEmpty ? word[0].toUpperCase() + word.substring(1) : '')
         .join(' ');
-  }
-
-  Widget _buildCategoryItem(String category, double amount, Color color) {
-    final total = expenseCategories.values.reduce((a, b) => a + b);
-    final percentage = (amount / total * 100).toStringAsFixed(1);
-
-    return Container(
-      margin: EdgeInsets.only(bottom: 12.h),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    width: 12.w,
-                    height: 12.w,
-                    decoration: BoxDecoration(
-                      color: color,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                  SizedBox(width: 8.w),
-                  Text(
-                    category,
-                    style: TextStyle(
-                      color: Colors.white70,
-                      fontSize: 14.sp,
-                    ),
-                  ),
-                ],
-              ),
-              Text(
-                '\$${amount.toStringAsFixed(2)}',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 8.h),
-          LinearProgressIndicator(
-            value: amount / total,
-            backgroundColor: Colors.white10,
-            valueColor: AlwaysStoppedAnimation<Color>(color),
-            minHeight: 4.h,
-            borderRadius: BorderRadius.circular(2.r),
-          ),
-        ],
-      ),
-    );
   }
 
   Widget _buildBudgetProgress(StatisticsState state) {
@@ -1932,7 +1866,6 @@ class _StatisticsState extends State<Statistics> {
 
   Widget _buildIncomeCategoryItem(String category, double amount, Color color) {
     final total = incomeCategories.values.reduce((a, b) => a + b);
-    final percentage = (amount / total * 100).toStringAsFixed(1);
 
     return Container(
       margin: EdgeInsets.only(bottom: 12.h),

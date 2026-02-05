@@ -1,8 +1,8 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/utils/debouncer.dart';
 import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
 
 import 'package:lazervault/src/features/tag_pay/domain/entities/user_search_result_entity.dart';
@@ -46,7 +46,7 @@ class UsernameSearchBottomSheet extends StatefulWidget {
 class _UsernameSearchBottomSheetState extends State<UsernameSearchBottomSheet> {
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _focusNode = FocusNode();
-  Timer? _debounceTimer;
+  final Debouncer _debouncer = Debouncer.search();
   List<UserSearchResultEntity> _searchResults = [];
   bool _isSearching = false;
   String? _errorMessage;
@@ -64,13 +64,13 @@ class _UsernameSearchBottomSheetState extends State<UsernameSearchBottomSheet> {
   void dispose() {
     _searchController.dispose();
     _focusNode.dispose();
-    _debounceTimer?.cancel();
+    _debouncer.dispose();
     super.dispose();
   }
 
   void _onSearchChanged(String query) {
-    // Cancel previous timer
-    _debounceTimer?.cancel();
+    // Cancel any pending search
+    _debouncer.cancel();
 
     // Clean the query - remove @ and $ symbols
     final cleanQuery = query.replaceAll('@', '').replaceAll('\$', '').trim();
@@ -101,9 +101,7 @@ class _UsernameSearchBottomSheetState extends State<UsernameSearchBottomSheet> {
     });
 
     // Debounce the search - wait 500ms after user stops typing
-    _debounceTimer = Timer(const Duration(milliseconds: 500), () {
-      _performSearch(cleanQuery);
-    });
+    _debouncer.run(() => _performSearch(cleanQuery));
   }
 
   Future<void> _performSearch(String query) async {
@@ -172,7 +170,7 @@ class _UsernameSearchBottomSheetState extends State<UsernameSearchBottomSheet> {
                     ),
                     SizedBox(width: 16.w),
                     Text(
-                      'Search Username',
+                      'Search Users',
                       style: TextStyle(
                         color: Colors.black87,
                         fontSize: 20.sp,
@@ -183,7 +181,7 @@ class _UsernameSearchBottomSheetState extends State<UsernameSearchBottomSheet> {
                 ),
                 SizedBox(height: 8.h),
                 Text(
-                  'Find LazerVault users by their username',
+                  'Find LazerVault users by username, email, or phone',
                   style: TextStyle(
                     color: Colors.grey[600],
                     fontSize: 14.sp,
@@ -211,7 +209,7 @@ class _UsernameSearchBottomSheetState extends State<UsernameSearchBottomSheet> {
                   fontSize: 16.sp,
                 ),
                 decoration: InputDecoration(
-                  hintText: 'Enter username to search',
+                  hintText: 'Search by username, email, or phone',
                   hintStyle: TextStyle(
                     color: Colors.grey[500],
                     fontSize: 16.sp,
@@ -405,12 +403,14 @@ class _UsernameSearchBottomSheetState extends State<UsernameSearchBottomSheet> {
                   ),
                   SizedBox(height: 4.h),
                   Text(
-                    '@${user.username}',
+                    user.searchMatchInfo,
                     style: TextStyle(
                       color: const Color.fromARGB(255, 78, 3, 208),
                       fontSize: 14.sp,
                       fontWeight: FontWeight.w500,
                     ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),

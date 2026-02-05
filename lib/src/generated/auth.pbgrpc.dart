@@ -276,6 +276,39 @@ class AuthServiceClient extends $grpc.Client {
       ($0.SearchUsersByUsernameRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
           $0.SearchUsersByUsernameResponse.fromBuffer(value));
+  static final _$getLinkedSocialAccounts = $grpc.ClientMethod<
+          $0.GetLinkedSocialAccountsRequest,
+          $0.GetLinkedSocialAccountsResponse>(
+      '/auth.AuthService/GetLinkedSocialAccounts',
+      ($0.GetLinkedSocialAccountsRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $0.GetLinkedSocialAccountsResponse.fromBuffer(value));
+  static final _$linkSocialAccount = $grpc.ClientMethod<
+          $0.LinkSocialAccountRequest, $0.LinkSocialAccountResponse>(
+      '/auth.AuthService/LinkSocialAccount',
+      ($0.LinkSocialAccountRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $0.LinkSocialAccountResponse.fromBuffer(value));
+  static final _$unlinkSocialAccount = $grpc.ClientMethod<
+          $0.UnlinkSocialAccountRequest, $0.UnlinkSocialAccountResponse>(
+      '/auth.AuthService/UnlinkSocialAccount',
+      ($0.UnlinkSocialAccountRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $0.UnlinkSocialAccountResponse.fromBuffer(value));
+  static final _$setPrimarySocialAccount = $grpc.ClientMethod<
+          $0.SetPrimarySocialAccountRequest,
+          $0.SetPrimarySocialAccountResponse>(
+      '/auth.AuthService/SetPrimarySocialAccount',
+      ($0.SetPrimarySocialAccountRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $0.SetPrimarySocialAccountResponse.fromBuffer(value));
+  static final _$reauthorizeSocialAccount = $grpc.ClientMethod<
+          $0.ReauthorizeSocialAccountRequest,
+          $0.ReauthorizeSocialAccountResponse>(
+      '/auth.AuthService/ReauthorizeSocialAccount',
+      ($0.ReauthorizeSocialAccountRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $0.ReauthorizeSocialAccountResponse.fromBuffer(value));
 
   AuthServiceClient($grpc.ClientChannel channel,
       {$grpc.CallOptions? options,
@@ -549,6 +582,39 @@ class AuthServiceClient extends $grpc.Client {
       $0.SearchUsersByUsernameRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$searchUsersByUsername, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetLinkedSocialAccountsResponse>
+      getLinkedSocialAccounts($0.GetLinkedSocialAccountsRequest request,
+          {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getLinkedSocialAccounts, request,
+        options: options);
+  }
+
+  $grpc.ResponseFuture<$0.LinkSocialAccountResponse> linkSocialAccount(
+      $0.LinkSocialAccountRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$linkSocialAccount, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.UnlinkSocialAccountResponse> unlinkSocialAccount(
+      $0.UnlinkSocialAccountRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$unlinkSocialAccount, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.SetPrimarySocialAccountResponse>
+      setPrimarySocialAccount($0.SetPrimarySocialAccountRequest request,
+          {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$setPrimarySocialAccount, request,
+        options: options);
+  }
+
+  $grpc.ResponseFuture<$0.ReauthorizeSocialAccountResponse>
+      reauthorizeSocialAccount($0.ReauthorizeSocialAccountRequest request,
+          {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$reauthorizeSocialAccount, request,
+        options: options);
   }
 }
 
@@ -945,6 +1011,51 @@ abstract class AuthServiceBase extends $grpc.Service {
         ($core.List<$core.int> value) =>
             $0.SearchUsersByUsernameRequest.fromBuffer(value),
         ($0.SearchUsersByUsernameResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetLinkedSocialAccountsRequest,
+            $0.GetLinkedSocialAccountsResponse>(
+        'GetLinkedSocialAccounts',
+        getLinkedSocialAccounts_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.GetLinkedSocialAccountsRequest.fromBuffer(value),
+        ($0.GetLinkedSocialAccountsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.LinkSocialAccountRequest,
+            $0.LinkSocialAccountResponse>(
+        'LinkSocialAccount',
+        linkSocialAccount_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.LinkSocialAccountRequest.fromBuffer(value),
+        ($0.LinkSocialAccountResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.UnlinkSocialAccountRequest,
+            $0.UnlinkSocialAccountResponse>(
+        'UnlinkSocialAccount',
+        unlinkSocialAccount_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.UnlinkSocialAccountRequest.fromBuffer(value),
+        ($0.UnlinkSocialAccountResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.SetPrimarySocialAccountRequest,
+            $0.SetPrimarySocialAccountResponse>(
+        'SetPrimarySocialAccount',
+        setPrimarySocialAccount_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.SetPrimarySocialAccountRequest.fromBuffer(value),
+        ($0.SetPrimarySocialAccountResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.ReauthorizeSocialAccountRequest,
+            $0.ReauthorizeSocialAccountResponse>(
+        'ReauthorizeSocialAccount',
+        reauthorizeSocialAccount_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.ReauthorizeSocialAccountRequest.fromBuffer(value),
+        ($0.ReauthorizeSocialAccountResponse value) => value.writeToBuffer()));
   }
 
   $async.Future<$0.SignupResponse> signup_Pre(
@@ -1203,6 +1314,36 @@ abstract class AuthServiceBase extends $grpc.Service {
     return searchUsersByUsername(call, await request);
   }
 
+  $async.Future<$0.GetLinkedSocialAccountsResponse> getLinkedSocialAccounts_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$0.GetLinkedSocialAccountsRequest> request) async {
+    return getLinkedSocialAccounts(call, await request);
+  }
+
+  $async.Future<$0.LinkSocialAccountResponse> linkSocialAccount_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$0.LinkSocialAccountRequest> request) async {
+    return linkSocialAccount(call, await request);
+  }
+
+  $async.Future<$0.UnlinkSocialAccountResponse> unlinkSocialAccount_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$0.UnlinkSocialAccountRequest> request) async {
+    return unlinkSocialAccount(call, await request);
+  }
+
+  $async.Future<$0.SetPrimarySocialAccountResponse> setPrimarySocialAccount_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$0.SetPrimarySocialAccountRequest> request) async {
+    return setPrimarySocialAccount(call, await request);
+  }
+
+  $async.Future<$0.ReauthorizeSocialAccountResponse>
+      reauthorizeSocialAccount_Pre($grpc.ServiceCall call,
+          $async.Future<$0.ReauthorizeSocialAccountRequest> request) async {
+    return reauthorizeSocialAccount(call, await request);
+  }
+
   $async.Future<$0.SignupResponse> signup(
       $grpc.ServiceCall call, $0.SignupRequest request);
   $async.Future<$0.LoginResponse> login(
@@ -1292,4 +1433,14 @@ abstract class AuthServiceBase extends $grpc.Service {
       $grpc.ServiceCall call, $0.LookupUserByPhoneRequest request);
   $async.Future<$0.SearchUsersByUsernameResponse> searchUsersByUsername(
       $grpc.ServiceCall call, $0.SearchUsersByUsernameRequest request);
+  $async.Future<$0.GetLinkedSocialAccountsResponse> getLinkedSocialAccounts(
+      $grpc.ServiceCall call, $0.GetLinkedSocialAccountsRequest request);
+  $async.Future<$0.LinkSocialAccountResponse> linkSocialAccount(
+      $grpc.ServiceCall call, $0.LinkSocialAccountRequest request);
+  $async.Future<$0.UnlinkSocialAccountResponse> unlinkSocialAccount(
+      $grpc.ServiceCall call, $0.UnlinkSocialAccountRequest request);
+  $async.Future<$0.SetPrimarySocialAccountResponse> setPrimarySocialAccount(
+      $grpc.ServiceCall call, $0.SetPrimarySocialAccountRequest request);
+  $async.Future<$0.ReauthorizeSocialAccountResponse> reauthorizeSocialAccount(
+      $grpc.ServiceCall call, $0.ReauthorizeSocialAccountRequest request);
 }

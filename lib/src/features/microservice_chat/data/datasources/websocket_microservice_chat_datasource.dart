@@ -17,8 +17,6 @@ class WebSocketMicroserviceChatDataSourceImpl implements WebSocketMicroserviceCh
   final String baseUrl;
   WebSocketChannel? _channel;
   final StreamController<ChatResponse> _messageController = StreamController<ChatResponse>.broadcast();
-  String? _sessionId;
-  String? _accessToken;
   bool _isConnected = false;
 
   WebSocketMicroserviceChatDataSourceImpl({
@@ -40,9 +38,6 @@ class WebSocketMicroserviceChatDataSourceImpl implements WebSocketMicroserviceCh
     if (_isConnected) {
       await disconnect();
     }
-
-    _sessionId = sessionId;
-    _accessToken = accessToken;
 
     try {
       final wsUrl = Uri.parse('$baseUrl/ws/chat');

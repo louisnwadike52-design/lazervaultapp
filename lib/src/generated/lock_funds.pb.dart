@@ -10,7 +10,7 @@ import 'dart:core' as $core;
 import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'google/protobuf/timestamp.pb.dart' as $36;
+import 'google/protobuf/timestamp.pb.dart' as $1;
 
 import 'lock_funds.pbenum.dart';
 
@@ -25,8 +25,8 @@ class LockFund extends $pb.GeneratedMessage {
     ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
     ..a<$core.int>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lockDurationDays', $pb.PbFieldType.O3)
     ..a<$core.double>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'interestRate', $pb.PbFieldType.OD)
-    ..aOM<$36.Timestamp>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lockedAt', subBuilder: $36.Timestamp.create)
-    ..aOM<$36.Timestamp>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'unlockAt', subBuilder: $36.Timestamp.create)
+    ..aOM<$1.Timestamp>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lockedAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'unlockAt', subBuilder: $1.Timestamp.create)
     ..e<LockStatus>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: LockStatus.LOCK_STATUS_UNSPECIFIED, valueOf: LockStatus.valueOf, enumValues: LockStatus.values)
     ..aOB(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'autoRenew')
     ..aOS(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'goalName')
@@ -35,12 +35,14 @@ class LockFund extends $pb.GeneratedMessage {
     ..a<$core.double>(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accruedInterest', $pb.PbFieldType.OD)
     ..aOS(16, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'paymentMethod')
     ..aOS(17, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactionId')
-    ..aOM<$36.Timestamp>(18, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $36.Timestamp.create)
-    ..aOM<$36.Timestamp>(19, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $36.Timestamp.create)
+    ..aOM<$1.Timestamp>(18, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(19, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $1.Timestamp.create)
     ..a<$core.int>(20, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'daysRemaining', $pb.PbFieldType.O3)
     ..a<$core.double>(21, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'progressPercent', $pb.PbFieldType.OD)
     ..a<$core.double>(22, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalValue', $pb.PbFieldType.OD)
     ..aOB(23, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'canUnlockEarly')
+    ..aOS(24, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sourceAccountId')
+    ..aOS(25, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'destinationAccountId')
     ..hasRequiredFields = false
   ;
 
@@ -53,8 +55,8 @@ class LockFund extends $pb.GeneratedMessage {
     $core.String? currency,
     $core.int? lockDurationDays,
     $core.double? interestRate,
-    $36.Timestamp? lockedAt,
-    $36.Timestamp? unlockAt,
+    $1.Timestamp? lockedAt,
+    $1.Timestamp? unlockAt,
     LockStatus? status,
     $core.bool? autoRenew,
     $core.String? goalName,
@@ -63,12 +65,14 @@ class LockFund extends $pb.GeneratedMessage {
     $core.double? accruedInterest,
     $core.String? paymentMethod,
     $core.String? transactionId,
-    $36.Timestamp? createdAt,
-    $36.Timestamp? updatedAt,
+    $1.Timestamp? createdAt,
+    $1.Timestamp? updatedAt,
     $core.int? daysRemaining,
     $core.double? progressPercent,
     $core.double? totalValue,
     $core.bool? canUnlockEarly,
+    $core.String? sourceAccountId,
+    $core.String? destinationAccountId,
   }) {
     final _result = create();
     if (id != null) {
@@ -139,6 +143,12 @@ class LockFund extends $pb.GeneratedMessage {
     }
     if (canUnlockEarly != null) {
       _result.canUnlockEarly = canUnlockEarly;
+    }
+    if (sourceAccountId != null) {
+      _result.sourceAccountId = sourceAccountId;
+    }
+    if (destinationAccountId != null) {
+      _result.destinationAccountId = destinationAccountId;
     }
     return _result;
   }
@@ -227,26 +237,26 @@ class LockFund extends $pb.GeneratedMessage {
   void clearInterestRate() => clearField(7);
 
   @$pb.TagNumber(8)
-  $36.Timestamp get lockedAt => $_getN(7);
+  $1.Timestamp get lockedAt => $_getN(7);
   @$pb.TagNumber(8)
-  set lockedAt($36.Timestamp v) { setField(8, v); }
+  set lockedAt($1.Timestamp v) { setField(8, v); }
   @$pb.TagNumber(8)
   $core.bool hasLockedAt() => $_has(7);
   @$pb.TagNumber(8)
   void clearLockedAt() => clearField(8);
   @$pb.TagNumber(8)
-  $36.Timestamp ensureLockedAt() => $_ensure(7);
+  $1.Timestamp ensureLockedAt() => $_ensure(7);
 
   @$pb.TagNumber(9)
-  $36.Timestamp get unlockAt => $_getN(8);
+  $1.Timestamp get unlockAt => $_getN(8);
   @$pb.TagNumber(9)
-  set unlockAt($36.Timestamp v) { setField(9, v); }
+  set unlockAt($1.Timestamp v) { setField(9, v); }
   @$pb.TagNumber(9)
   $core.bool hasUnlockAt() => $_has(8);
   @$pb.TagNumber(9)
   void clearUnlockAt() => clearField(9);
   @$pb.TagNumber(9)
-  $36.Timestamp ensureUnlockAt() => $_ensure(8);
+  $1.Timestamp ensureUnlockAt() => $_ensure(8);
 
   @$pb.TagNumber(10)
   LockStatus get status => $_getN(9);
@@ -321,26 +331,26 @@ class LockFund extends $pb.GeneratedMessage {
   void clearTransactionId() => clearField(17);
 
   @$pb.TagNumber(18)
-  $36.Timestamp get createdAt => $_getN(17);
+  $1.Timestamp get createdAt => $_getN(17);
   @$pb.TagNumber(18)
-  set createdAt($36.Timestamp v) { setField(18, v); }
+  set createdAt($1.Timestamp v) { setField(18, v); }
   @$pb.TagNumber(18)
   $core.bool hasCreatedAt() => $_has(17);
   @$pb.TagNumber(18)
   void clearCreatedAt() => clearField(18);
   @$pb.TagNumber(18)
-  $36.Timestamp ensureCreatedAt() => $_ensure(17);
+  $1.Timestamp ensureCreatedAt() => $_ensure(17);
 
   @$pb.TagNumber(19)
-  $36.Timestamp get updatedAt => $_getN(18);
+  $1.Timestamp get updatedAt => $_getN(18);
   @$pb.TagNumber(19)
-  set updatedAt($36.Timestamp v) { setField(19, v); }
+  set updatedAt($1.Timestamp v) { setField(19, v); }
   @$pb.TagNumber(19)
   $core.bool hasUpdatedAt() => $_has(18);
   @$pb.TagNumber(19)
   void clearUpdatedAt() => clearField(19);
   @$pb.TagNumber(19)
-  $36.Timestamp ensureUpdatedAt() => $_ensure(18);
+  $1.Timestamp ensureUpdatedAt() => $_ensure(18);
 
   @$pb.TagNumber(20)
   $core.int get daysRemaining => $_getIZ(19);
@@ -377,6 +387,24 @@ class LockFund extends $pb.GeneratedMessage {
   $core.bool hasCanUnlockEarly() => $_has(22);
   @$pb.TagNumber(23)
   void clearCanUnlockEarly() => clearField(23);
+
+  @$pb.TagNumber(24)
+  $core.String get sourceAccountId => $_getSZ(23);
+  @$pb.TagNumber(24)
+  set sourceAccountId($core.String v) { $_setString(23, v); }
+  @$pb.TagNumber(24)
+  $core.bool hasSourceAccountId() => $_has(23);
+  @$pb.TagNumber(24)
+  void clearSourceAccountId() => clearField(24);
+
+  @$pb.TagNumber(25)
+  $core.String get destinationAccountId => $_getSZ(24);
+  @$pb.TagNumber(25)
+  set destinationAccountId($core.String v) { $_setString(24, v); }
+  @$pb.TagNumber(25)
+  $core.bool hasDestinationAccountId() => $_has(24);
+  @$pb.TagNumber(25)
+  void clearDestinationAccountId() => clearField(25);
 }
 
 class LockTransaction extends $pb.GeneratedMessage {
@@ -389,7 +417,7 @@ class LockTransaction extends $pb.GeneratedMessage {
     ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
     ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'paymentMethod')
     ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status')
-    ..aOM<$36.Timestamp>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactionDate', subBuilder: $36.Timestamp.create)
+    ..aOM<$1.Timestamp>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactionDate', subBuilder: $1.Timestamp.create)
     ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
     ..hasRequiredFields = false
   ;
@@ -404,7 +432,7 @@ class LockTransaction extends $pb.GeneratedMessage {
     $core.String? currency,
     $core.String? paymentMethod,
     $core.String? status,
-    $36.Timestamp? transactionDate,
+    $1.Timestamp? transactionDate,
     $core.String? description,
   }) {
     final _result = create();
@@ -534,15 +562,15 @@ class LockTransaction extends $pb.GeneratedMessage {
   void clearStatus() => clearField(8);
 
   @$pb.TagNumber(9)
-  $36.Timestamp get transactionDate => $_getN(8);
+  $1.Timestamp get transactionDate => $_getN(8);
   @$pb.TagNumber(9)
-  set transactionDate($36.Timestamp v) { setField(9, v); }
+  set transactionDate($1.Timestamp v) { setField(9, v); }
   @$pb.TagNumber(9)
   $core.bool hasTransactionDate() => $_has(8);
   @$pb.TagNumber(9)
   void clearTransactionDate() => clearField(9);
   @$pb.TagNumber(9)
-  $36.Timestamp ensureTransactionDate() => $_ensure(8);
+  $1.Timestamp ensureTransactionDate() => $_ensure(8);
 
   @$pb.TagNumber(10)
   $core.String get description => $_getSZ(9);
@@ -564,6 +592,8 @@ class CreateLockFundRequest extends $pb.GeneratedMessage {
     ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'goalName')
     ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'goalDescription')
     ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'paymentMethod')
+    ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sourceAccountId')
+    ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactionPin')
     ..hasRequiredFields = false
   ;
 
@@ -577,6 +607,8 @@ class CreateLockFundRequest extends $pb.GeneratedMessage {
     $core.String? goalName,
     $core.String? goalDescription,
     $core.String? paymentMethod,
+    $core.String? sourceAccountId,
+    $core.String? transactionPin,
   }) {
     final _result = create();
     if (lockType != null) {
@@ -602,6 +634,12 @@ class CreateLockFundRequest extends $pb.GeneratedMessage {
     }
     if (paymentMethod != null) {
       _result.paymentMethod = paymentMethod;
+    }
+    if (sourceAccountId != null) {
+      _result.sourceAccountId = sourceAccountId;
+    }
+    if (transactionPin != null) {
+      _result.transactionPin = transactionPin;
     }
     return _result;
   }
@@ -697,6 +735,24 @@ class CreateLockFundRequest extends $pb.GeneratedMessage {
   $core.bool hasPaymentMethod() => $_has(7);
   @$pb.TagNumber(8)
   void clearPaymentMethod() => clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.String get sourceAccountId => $_getSZ(8);
+  @$pb.TagNumber(9)
+  set sourceAccountId($core.String v) { $_setString(8, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasSourceAccountId() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearSourceAccountId() => clearField(9);
+
+  @$pb.TagNumber(10)
+  $core.String get transactionPin => $_getSZ(9);
+  @$pb.TagNumber(10)
+  set transactionPin($core.String v) { $_setString(9, v); }
+  @$pb.TagNumber(10)
+  $core.bool hasTransactionPin() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearTransactionPin() => clearField(10);
 }
 
 class CreateLockFundResponse extends $pb.GeneratedMessage {
@@ -1104,6 +1160,8 @@ class UnlockFundRequest extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UnlockFundRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
     ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lockFundId')
     ..aOB(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'forceEarlyUnlock')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactionPin')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'destinationAccountId')
     ..hasRequiredFields = false
   ;
 
@@ -1111,6 +1169,8 @@ class UnlockFundRequest extends $pb.GeneratedMessage {
   factory UnlockFundRequest({
     $core.String? lockFundId,
     $core.bool? forceEarlyUnlock,
+    $core.String? transactionPin,
+    $core.String? destinationAccountId,
   }) {
     final _result = create();
     if (lockFundId != null) {
@@ -1118,6 +1178,12 @@ class UnlockFundRequest extends $pb.GeneratedMessage {
     }
     if (forceEarlyUnlock != null) {
       _result.forceEarlyUnlock = forceEarlyUnlock;
+    }
+    if (transactionPin != null) {
+      _result.transactionPin = transactionPin;
+    }
+    if (destinationAccountId != null) {
+      _result.destinationAccountId = destinationAccountId;
     }
     return _result;
   }
@@ -1159,6 +1225,24 @@ class UnlockFundRequest extends $pb.GeneratedMessage {
   $core.bool hasForceEarlyUnlock() => $_has(1);
   @$pb.TagNumber(2)
   void clearForceEarlyUnlock() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get transactionPin => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set transactionPin($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasTransactionPin() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearTransactionPin() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get destinationAccountId => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set destinationAccountId($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasDestinationAccountId() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearDestinationAccountId() => clearField(4);
 }
 
 class UnlockFundResponse extends $pb.GeneratedMessage {
@@ -1169,6 +1253,7 @@ class UnlockFundResponse extends $pb.GeneratedMessage {
     ..a<$core.double>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'penaltyAmount', $pb.PbFieldType.OD)
     ..a<$core.double>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'interestEarned', $pb.PbFieldType.OD)
     ..aOM<LockFund>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedLockFund', subBuilder: LockFund.create)
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'creditedAccountId')
     ..hasRequiredFields = false
   ;
 
@@ -1180,6 +1265,7 @@ class UnlockFundResponse extends $pb.GeneratedMessage {
     $core.double? penaltyAmount,
     $core.double? interestEarned,
     LockFund? updatedLockFund,
+    $core.String? creditedAccountId,
   }) {
     final _result = create();
     if (success != null) {
@@ -1199,6 +1285,9 @@ class UnlockFundResponse extends $pb.GeneratedMessage {
     }
     if (updatedLockFund != null) {
       _result.updatedLockFund = updatedLockFund;
+    }
+    if (creditedAccountId != null) {
+      _result.creditedAccountId = creditedAccountId;
     }
     return _result;
   }
@@ -1278,6 +1367,15 @@ class UnlockFundResponse extends $pb.GeneratedMessage {
   void clearUpdatedLockFund() => clearField(6);
   @$pb.TagNumber(6)
   LockFund ensureUpdatedLockFund() => $_ensure(5);
+
+  @$pb.TagNumber(7)
+  $core.String get creditedAccountId => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set creditedAccountId($core.String v) { $_setString(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasCreditedAccountId() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearCreditedAccountId() => clearField(7);
 }
 
 class GetLockTransactionsRequest extends $pb.GeneratedMessage {

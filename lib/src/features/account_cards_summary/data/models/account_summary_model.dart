@@ -1,3 +1,4 @@
+import 'dart:developer' as developer;
 import 'package:lazervault/src/features/account_cards_summary/domain/entities/account_summary_entity.dart';
 import 'package:lazervault/src/generated/accounts.pb.dart' as pb; // Use accounts.proto from backend
 
@@ -26,9 +27,23 @@ class AccountSummaryModel extends AccountSummaryEntity {
       return '????'; // Return placeholder if empty
     }
 
+    // Debug logging to understand what backend is returning
+    developer.log(
+      'AccountSummary.fromProto: uuid="${proto.uuid}", id=${proto.id}, accountType="${proto.accountType}"',
+      name: 'AccountSummary',
+    );
+
     // Use UUID for cross-service communication (banking-service expects UUID)
     // Fall back to numeric ID if UUID is not available (backward compatibility)
     final accountId = proto.uuid.isNotEmpty ? proto.uuid : proto.id.toString();
+
+    // Warn if we're using a potentially invalid ID
+    if (accountId.isEmpty || accountId == '0') {
+      developer.log(
+        'WARNING: Account "${proto.accountType}" has invalid ID: "$accountId"',
+        name: 'AccountSummary',
+      );
+    }
 
     return AccountSummaryModel(
       id: accountId,

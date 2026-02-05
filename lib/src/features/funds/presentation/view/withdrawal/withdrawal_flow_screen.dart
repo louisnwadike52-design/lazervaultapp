@@ -54,7 +54,7 @@ class _WithdrawalFlowScreenState extends State<WithdrawalFlowScreen> {
   bool _isLoadingRecipients = false;
   bool _isVerifyingAccount = false;
   String? _banksError;
-  String? _recipientsError;
+
 
   @override
   void initState() {
@@ -98,7 +98,6 @@ class _WithdrawalFlowScreenState extends State<WithdrawalFlowScreen> {
 
     setState(() {
       _isLoadingRecipients = true;
-      _recipientsError = null;
     });
 
     try {
@@ -109,7 +108,6 @@ class _WithdrawalFlowScreenState extends State<WithdrawalFlowScreen> {
     } catch (e) {
       if (mounted) {
         setState(() {
-          _recipientsError = e.toString();
           _isLoadingRecipients = false;
         });
       }
@@ -177,7 +175,6 @@ class _WithdrawalFlowScreenState extends State<WithdrawalFlowScreen> {
                 });
               } else if (state is RecipientError) {
                 setState(() {
-                  _recipientsError = state.message;
                   _isLoadingRecipients = false;
                 });
               }

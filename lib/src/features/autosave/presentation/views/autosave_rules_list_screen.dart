@@ -24,7 +24,6 @@ class AutoSaveRulesListScreen extends StatefulWidget {
 }
 
 class _AutoSaveRulesListScreenState extends State<AutoSaveRulesListScreen> {
-  AutoSaveStatus? _selectedFilter;
   RuleSortOption _selectedSort = RuleSortOption.dateCreatedDesc;
   bool _selectionMode = false;
   Set<String> _selectedRuleIds = {};
@@ -301,7 +300,6 @@ class _AutoSaveRulesListScreenState extends State<AutoSaveRulesListScreen> {
         AutoSaveFilterTabs(
           selectedStatus: state.appliedFilter,
           onStatusChanged: (status) {
-            setState(() => _selectedFilter = status);
             context.read<AutoSaveCubit>().filterRules(status);
           },
           counts: _calculateStatusCounts(state.rules),

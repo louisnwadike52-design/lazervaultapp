@@ -462,6 +462,96 @@ service AuthService {
       };
     };
   }
+
+  // ===== Social Account Linking =====
+
+  // Get all linked social accounts for current user
+  rpc GetLinkedSocialAccounts(GetLinkedSocialAccountsRequest) returns (GetLinkedSocialAccountsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/auth/social/linked"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Get Linked Social Accounts";
+      description: "Get all social media accounts linked to the current user";
+      tags: ["Social Accounts"];
+      security: {
+        security_requirement: {
+          key: "bearer";
+        }
+      };
+    };
+  }
+
+  // Link a new social account
+  rpc LinkSocialAccount(LinkSocialAccountRequest) returns (LinkSocialAccountResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/auth/social/link"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Link Social Account";
+      description: "Link a social media account to the current user profile";
+      tags: ["Social Accounts"];
+      security: {
+        security_requirement: {
+          key: "bearer";
+        }
+      };
+    };
+  }
+
+  // Unlink a social account
+  rpc UnlinkSocialAccount(UnlinkSocialAccountRequest) returns (UnlinkSocialAccountResponse) {
+    option (google.api.http) = {
+      delete: "/api/v1/auth/social/linked/{account_id}"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Unlink Social Account";
+      description: "Remove a linked social media account from the user profile";
+      tags: ["Social Accounts"];
+      security: {
+        security_requirement: {
+          key: "bearer";
+        }
+      };
+    };
+  }
+
+  // Set a social account as primary for login
+  rpc SetPrimarySocialAccount(SetPrimarySocialAccountRequest) returns (SetPrimarySocialAccountResponse) {
+    option (google.api.http) = {
+      put: "/api/v1/auth/social/linked/{account_id}/primary"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Set Primary Social Account";
+      description: "Set a linked social account as the primary account for social login";
+      tags: ["Social Accounts"];
+      security: {
+        security_requirement: {
+          key: "bearer";
+        }
+      };
+    };
+  }
+
+  // Reauthorize a social account (refresh tokens)
+  rpc ReauthorizeSocialAccount(ReauthorizeSocialAccountRequest) returns (ReauthorizeSocialAccountResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/auth/social/linked/{account_id}/reauthorize"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Reauthorize Social Account";
+      description: "Refresh the authorization tokens for a linked social account";
+      tags: ["Social Accounts"];
+      security: {
+        security_requirement: {
+          key: "bearer";
+        }
+      };
+    };
+  }
 }
 
 // ===== Signup =====
@@ -920,4 +1010,77 @@ message VerifyIdentityResponse {
   string error_message = 4;           // Human-readable error message
   VerifiedIdentity identity = 5;      // Verified identity details
   VirtualAccountInfo virtual_account = 6; // Virtual account created after verification
+}
+
+// ===== Social Account Linking =====
+message LinkedSocialAccount {
+  string id = 1;
+  string user_id = 2;
+  string provider = 3;              // "google", "facebook", "apple", "x", "linkedin", "instagram"
+  string provider_user_id = 4;
+  string provider_email = 5;
+  string display_name = 6;
+  string profile_picture_url = 7;
+  string profile_url = 8;           // Link to social profile
+  string status = 9;                // "active", "inactive", "needs_reauth"
+  bool is_primary = 10;
+  string linked_at = 11;
+  string last_used_at = 12;
+}
+
+message GetLinkedSocialAccountsRequest {
+  // User ID extracted from JWT
+}
+
+message GetLinkedSocialAccountsResponse {
+  bool success = 1;
+  repeated LinkedSocialAccount accounts = 2;
+  int32 total_count = 3;
+}
+
+message LinkSocialAccountRequest {
+  string provider = 1;              // "google", "facebook", "apple", "x", "linkedin", "instagram"
+  string provider_token = 2;        // OAuth access token from provider
+  string provider_user_id = 3;
+  string provider_email = 4;
+  string display_name = 5;
+  string profile_picture_url = 6;
+  string profile_url = 7;
+  bool set_as_primary = 8;
+}
+
+message LinkSocialAccountResponse {
+  bool success = 1;
+  string message = 2;
+  LinkedSocialAccount account = 3;
+}
+
+message UnlinkSocialAccountRequest {
+  string account_id = 1;
+}
+
+message UnlinkSocialAccountResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message SetPrimarySocialAccountRequest {
+  string account_id = 1;
+}
+
+message SetPrimarySocialAccountResponse {
+  bool success = 1;
+  string message = 2;
+  LinkedSocialAccount account = 3;
+}
+
+message ReauthorizeSocialAccountRequest {
+  string account_id = 1;
+  string provider_token = 2;        // New OAuth access token from provider
+}
+
+message ReauthorizeSocialAccountResponse {
+  bool success = 1;
+  string message = 2;
+  LinkedSocialAccount account = 3;
 }

@@ -102,10 +102,11 @@ abstract class TagPayRepository {
     String transactionPin = '',
   });
 
-  /// Search users by username or name for tagging
+  /// Search users by username, email, phone, or name for tagging (unified search when searchType is empty)
   Future<List<UserSearchResultEntity>> searchUsers({
     required String query,
     int limit = 10,
+    String searchType = '', // "username", "name", "phone", "email", or "" for unified search
   });
 
   /// Batch create tags for multiple users

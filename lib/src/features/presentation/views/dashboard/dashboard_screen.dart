@@ -121,10 +121,6 @@ class _DashboardScreenState extends State<DashboardScreen>
     }
   }
 
-  void _handleNavigateToScreen() {
-    Get.toNamed(AppRoutes.newCard);
-  }
-
   @override
   void dispose() {
     _tabController.dispose();

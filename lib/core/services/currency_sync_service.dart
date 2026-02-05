@@ -52,49 +52,39 @@ class CurrencySyncService {
   /// Check if the service has been initialized with server data
   bool get isInitialized => _isInitialized;
 
-  /// Synchronize currency from server to local storage
+  /// Synchronize currency state.
   ///
-  /// Call this on user login or app start to ensure local currency
-  /// matches the server. Handles offline scenarios gracefully.
-  ///
-  /// Returns:
-  /// - Right(String): The synced currency code
-  /// - Left(Failure): If sync fails and local currency is used as fallback
+  /// Currency is now derived from the user's country (set via
+  /// LocaleManager.resetToCountry on login), so this no longer
+  /// overwrites local currency from server preferences. It only
+  /// records the server value for rollback purposes.
   Future<Either<dynamic, String>> syncFromServer() async {
     try {
-      _logger.i('Syncing currency from server...');
+      _logger.i('Syncing currency metadata from server...');
 
       final result = await _profileRepository.getUserProfile();
 
       return result.fold(
         (failure) {
-          _logger.w('Failed to sync currency from server: ${failure.message}');
-          _logger.i('Using locally cached currency: $currentCurrency');
-
-          // Return local currency as fallback
+          _logger.w('Failed to fetch profile from server: ${failure.message}');
           return Right(currentCurrency);
         },
         (data) {
           final preferences = data['preferences'] as UserPreferences?;
           final serverCurrency = preferences?.currency ?? 'USD';
 
-          _logger.i('Server currency: $serverCurrency, Local currency: $currentCurrency');
+          _logger.i('Server currency: $serverCurrency, Local (country-derived) currency: $currentCurrency');
 
-          // Update local storage if server currency is different
-          if (serverCurrency != currentCurrency) {
-            _localeManager.setCurrency(serverCurrency);
-            _logger.i('Updated local currency to match server: $serverCurrency');
-          }
-
+          // Record server value for rollback in updateCurrency, but do NOT
+          // overwrite local currency — it is derived from the user's country.
           _lastKnownServerCurrency = serverCurrency;
           _isInitialized = true;
 
-          return Right(serverCurrency);
+          return Right(currentCurrency);
         },
       );
     } catch (e) {
       _logger.e('Error syncing currency from server: $e');
-      _logger.i('Using locally cached currency: $currentCurrency');
       return Right(currentCurrency);
     }
   }
@@ -115,7 +105,7 @@ class CurrencySyncService {
       _logger.i('Updating currency to: $currencyCode');
 
       // First, update local storage for instant UI feedback
-      await _localeManager.setCurrency(currencyCode);
+      _localeManager.setCurrency(currencyCode);
 
       // Then, sync to server
       final result = await _profileRepository.updatePreferences(
@@ -155,7 +145,7 @@ class CurrencySyncService {
   /// Note: This bypasses server validation and may cause conflicts.
   Future<void> updateCurrencyLocalOnly(String currencyCode) async {
     _logger.w('Updating currency locally only (no server sync): $currencyCode');
-    await _localeManager.setCurrency(currencyCode);
+    _localeManager.setCurrency(currencyCode);
   }
 
   /// Get recommended currency for current country

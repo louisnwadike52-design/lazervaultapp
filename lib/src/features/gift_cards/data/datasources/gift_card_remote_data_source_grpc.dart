@@ -348,7 +348,7 @@ class GiftCardRemoteDataSourceGrpc implements IGiftCardRemoteDataSource {
         ..askingPrice = sellingPrice;
       final options = await grpcClient.callOptions;
 
-      final response = await grpcClient.giftCardClient.sellGiftCard(
+      await grpcClient.giftCardClient.sellGiftCard(
         request,
         options: options,
       );

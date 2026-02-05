@@ -1,17 +1,24 @@
+import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
+import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../cubit/create_lock_cubit.dart';
 import '../cubit/lock_funds_cubit.dart';
 import '../cubit/lock_funds_state.dart';
 import '../../../authentication/cubit/authentication_cubit.dart';
 import '../../../authentication/cubit/authentication_state.dart';
+import '../../../transaction_pin/mixins/transaction_pin_mixin.dart';
+import '../../../transaction_pin/services/transaction_pin_service.dart';
 import '../widgets/create_lock_steps/lock_type_selector.dart';
 import '../widgets/create_lock_steps/amount_duration_selector.dart';
 import '../widgets/create_lock_steps/goal_details_screen.dart';
 import '../widgets/create_lock_steps/review_screen.dart';
 import '../widgets/create_lock_steps/payment_method_selector.dart';
+import 'package:lazervault/core/types/app_routes.dart';
 
 /// Main carousel controller for lock fund creation
 ///
@@ -23,10 +30,16 @@ class CreateLockCarousel extends StatefulWidget {
   State<CreateLockCarousel> createState() => _CreateLockCarouselState();
 }
 
-class _CreateLockCarouselState extends State<CreateLockCarousel> {
+class _CreateLockCarouselState extends State<CreateLockCarousel>
+    with TransactionPinMixin {
+  @override
+  ITransactionPinService get transactionPinService =>
+      GetIt.I<ITransactionPinService>();
+
   late PageController _pageController;
   int _currentPage = 0;
   final int _totalPages = 5;
+  bool _isProcessing = false;
 
   final List<String> _pageNames = [
     'Lock Type',
@@ -103,10 +116,16 @@ class _CreateLockCarouselState extends State<CreateLockCarousel> {
     }
   }
 
-  void _proceedToCreateLock() {
+  Future<void> _proceedToCreateLock() async {
     final createCubit = context.read<CreateLockCubit>();
     final lockFundsCubit = context.read<LockFundsCubit>();
     final authCubit = context.read<AuthenticationCubit>();
+
+    // Debug logging
+    developer.log(
+      'CreateLock: selectedAccountId = "${createCubit.selectedAccountId}"',
+      name: 'LockFunds',
+    );
 
     // Verify authentication before creating lock
     final authState = authCubit.state;
@@ -115,6 +134,75 @@ class _CreateLockCarouselState extends State<CreateLockCarousel> {
       Navigator.of(context).pop(); // Close carousel
       return;
     }
+
+    // Verify account is selected with better validation
+    final selectedAccountId = createCubit.selectedAccountId;
+    if (selectedAccountId == null || selectedAccountId.isEmpty) {
+      developer.log(
+        'CreateLock: ERROR - selectedAccountId is null or empty',
+        name: 'LockFunds',
+      );
+      _showErrorSnackBar('Please select an account to fund your lock');
+      return;
+    }
+
+    // Additional validation - ensure it's a valid UUID format or numeric ID
+    if (selectedAccountId == '0') {
+      developer.log(
+        'CreateLock: ERROR - selectedAccountId is "0" (invalid)',
+        name: 'LockFunds',
+      );
+      _showErrorSnackBar('Invalid account selected. Please select a different account.');
+      return;
+    }
+
+    HapticFeedback.mediumImpact();
+
+    // Store values BEFORE showing PIN dialog (in case of state changes during async operation)
+    final lockType = createCubit.lockType!;
+    final amount = createCubit.amount!;
+    final currency = createCubit.currency;
+    final lockDurationDays = createCubit.lockDurationDays!;
+    final autoRenew = createCubit.autoRenew;
+    final goalName = createCubit.goalName;
+    final goalDescription = createCubit.goalDescription;
+    final paymentMethod = createCubit.paymentMethod!;
+    // Use the already validated selectedAccountId
+    final sourceAccountId = selectedAccountId;
+
+    developer.log(
+      'CreateLock: Stored sourceAccountId = "$sourceAccountId" before PIN validation',
+      name: 'LockFunds',
+    );
+
+    // Generate a unique transaction ID for PIN validation
+    final transactionId =
+        'LOCK-${DateTime.now().millisecondsSinceEpoch.toString().substring(5)}';
+
+    // Validate transaction PIN
+    final pinResult = await validatePinOnly(
+      context: context,
+      transactionId: transactionId,
+      transactionType: 'lock_fund',
+      amount: amount,
+      currency: currency,
+    );
+
+    if (pinResult == null || !pinResult.success) {
+      return; // User cancelled or PIN validation failed
+    }
+
+    if (!mounted) return;
+
+    // Verify the account ID is still valid after PIN validation
+    developer.log(
+      'CreateLock: After PIN validation, using sourceAccountId = "$sourceAccountId"',
+      name: 'LockFunds',
+    );
+
+    setState(() {
+      _isProcessing = true;
+    });
 
     // Show loading dialog
     showDialog(
@@ -149,16 +237,19 @@ class _CreateLockCarouselState extends State<CreateLockCarousel> {
       ),
     );
 
-    // Create lock fund
+    // Create lock fund with source account and transaction PIN
+    // Use the stored values to ensure consistency
     lockFundsCubit.createLockFund(
-      lockType: createCubit.lockType!,
-      amount: createCubit.amount!,
-      currency: createCubit.currency,
-      lockDurationDays: createCubit.lockDurationDays!,
-      autoRenew: createCubit.autoRenew,
-      goalName: createCubit.goalName,
-      goalDescription: createCubit.goalDescription,
-      paymentMethod: createCubit.paymentMethod!,
+      lockType: lockType,
+      amount: amount,
+      currency: currency,
+      lockDurationDays: lockDurationDays,
+      autoRenew: autoRenew,
+      goalName: goalName,
+      goalDescription: goalDescription,
+      paymentMethod: paymentMethod,
+      sourceAccountId: sourceAccountId,
+      transactionPin: pinResult.verificationToken ?? '',
     );
   }
 
@@ -188,135 +279,44 @@ class _CreateLockCarouselState extends State<CreateLockCarousel> {
     return BlocListener<LockFundsCubit, LockFundsState>(
       listener: (context, state) {
         if (state is LockFundCreated) {
-          // Close loading dialog
-          Navigator.of(context).pop();
+          setState(() {
+            _isProcessing = false;
+          });
 
-          // Show success dialog
-          showDialog(
-            context: context,
-            barrierDismissible: false,
-            builder: (dialogContext) => Center(
-              child: Container(
-                padding: EdgeInsets.all(24.w),
-                margin: EdgeInsets.symmetric(horizontal: 40.w),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF10B981), Color(0xFF059669)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(16.r),
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.check_circle_rounded,
-                      color: Colors.white,
-                      size: 64.sp,
-                    ),
-                    SizedBox(height: 16.h),
-                    Text(
-                      'Lock Fund Created!',
-                      style: GoogleFonts.inter(
-                        fontSize: 20.sp,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white,
-                      ),
-                    ),
-                    SizedBox(height: 8.h),
-                    Text(
-                      'Your funds have been locked successfully',
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.inter(
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.white.withValues(alpha: 0.9),
-                      ),
-                    ),
-                    SizedBox(height: 24.h),
-                    GestureDetector(
-                      onTap: () {
-                        // Close success dialog
-                        Navigator.of(dialogContext).pop();
-                        // Close carousel
-                        Navigator.of(context).pop();
-                      },
-                      child: Container(
-                        width: double.infinity,
-                        padding: EdgeInsets.symmetric(vertical: 12.h),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(8.r),
-                        ),
-                        child: Center(
-                          child: Text(
-                            'Done',
-                            style: GoogleFonts.inter(
-                              fontSize: 16.sp,
-                              fontWeight: FontWeight.w700,
-                              color: const Color(0xFF10B981),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+          // Close loading dialog if open
+          if (ModalRoute.of(context)?.isCurrent == false) {
+            Navigator.of(context).pop();
+          }
+
+          // Get the create cubit to pass interest calculation to receipt
+          final createCubit = context.read<CreateLockCubit>();
+
+          // Navigate to receipt screen
+          Get.offAllNamed(
+            AppRoutes.lockFundReceipt,
+            arguments: {
+              'lockFund': state.lockFund,
+              'interestCalculation': createCubit.interestCalculation,
+            },
           );
         } else if (state is LockFundsError) {
+          setState(() {
+            _isProcessing = false;
+          });
+
           // Check if loading dialog is open before popping
           if (ModalRoute.of(context)?.isCurrent == false) {
             Navigator.of(context).pop();
           }
 
-          // Show error dialog
-          showDialog(
-            context: context,
-            builder: (dialogContext) => AlertDialog(
-              backgroundColor: const Color(0xFF1F1F35),
-              title: Row(
-                children: [
-                  Icon(
-                    Icons.error_outline,
-                    color: Colors.red,
-                    size: 24.sp,
-                  ),
-                  SizedBox(width: 12.w),
-                  Text(
-                    'Error',
-                    style: GoogleFonts.inter(
-                      fontSize: 18.sp,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                    ),
-                  ),
-                ],
-              ),
-              content: Text(
-                state.message,
-                style: GoogleFonts.inter(
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.white.withValues(alpha: 0.8),
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(dialogContext).pop(),
-                  child: Text(
-                    'OK',
-                    style: GoogleFonts.inter(
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFF6366F1),
-                    ),
-                  ),
-                ),
-              ],
-            ),
+          // Show error snackbar
+          Get.snackbar(
+            'Lock Fund Failed',
+            state.message,
+            backgroundColor: const Color(0xFFEF4444),
+            colorText: Colors.white,
+            snackPosition: SnackPosition.TOP,
+            duration: const Duration(seconds: 4),
           );
         }
       },

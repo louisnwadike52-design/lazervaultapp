@@ -79,4 +79,40 @@ class RecipientRepositoryImpl implements IRecipientRepository {
           Failure(message: 'Failed to toggle favorite: $e', statusCode: 500));
     }
   }
+
+  @override
+  Future<Either<Failure, RecipientModel>> updateAlias(
+      {required String recipientId, required String? alias, required String accessToken}) async {
+    try {
+      final request = grpc.UpdateRecipientRequest()
+        ..recipientId = Int64.parseInt(recipientId);
+
+      final response = await _client.updateRecipient(
+        request,
+        options: _getAuthOptions(accessToken),
+      );
+      return Right(RecipientModel.fromProto(response.recipient));
+    } catch (e) {
+      return Left(
+          Failure(message: 'Failed to update alias: $e', statusCode: 500));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> deleteRecipient(
+      {required String recipientId, required String accessToken}) async {
+    try {
+      final request = grpc.DeleteRecipientRequest()
+        ..recipientId = Int64.parseInt(recipientId);
+
+      await _client.deleteRecipient(
+        request,
+        options: _getAuthOptions(accessToken),
+      );
+      return Right(null);
+    } catch (e) {
+      return Left(
+          Failure(message: 'Failed to delete recipient: $e', statusCode: 500));
+    }
+  }
 } 

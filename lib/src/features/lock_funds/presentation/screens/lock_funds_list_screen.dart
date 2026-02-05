@@ -5,11 +5,13 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../authentication/cubit/authentication_cubit.dart';
 import '../../../authentication/cubit/authentication_state.dart';
+import '../../../account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import '../../domain/entities/lock_fund_entity.dart';
 import '../cubit/lock_funds_cubit.dart';
 import '../cubit/lock_funds_state.dart';
 import '../cubit/create_lock_cubit.dart';
 import 'create_lock_carousel.dart';
+import 'lock_fund_details_screen.dart';
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 
 class LockFundsListScreen extends StatefulWidget {
@@ -419,9 +421,7 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
             : const Color(0xFF6B7280);
 
     return GestureDetector(
-      onTap: () {
-        // TODO: Navigate to lock details
-      },
+      onTap: () => _navigateToLockDetails(lock),
       child: Container(
         padding: EdgeInsets.all(20.w),
         decoration: BoxDecoration(
@@ -472,21 +472,43 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        lock.lockType.displayName,
+                        lock.displayName,
                         style: GoogleFonts.inter(
                           fontSize: 18.sp,
                           fontWeight: FontWeight.w600,
                           color: Colors.white,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                       SizedBox(height: 4.h),
-                      Text(
-                        '${lock.interestRate.toStringAsFixed(2)}% APY',
-                        style: GoogleFonts.inter(
-                          fontSize: 14.sp,
-                          color: const Color(0xFF10B981),
-                          fontWeight: FontWeight.w600,
-                        ),
+                      Row(
+                        children: [
+                          Text(
+                            lock.lockType.displayName,
+                            style: GoogleFonts.inter(
+                              fontSize: 13.sp,
+                              color: const Color(0xFF9CA3AF),
+                            ),
+                          ),
+                          Container(
+                            margin: EdgeInsets.symmetric(horizontal: 8.w),
+                            width: 4.w,
+                            height: 4.w,
+                            decoration: const BoxDecoration(
+                              color: Color(0xFF6B7280),
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          Text(
+                            '${lock.interestRate.toStringAsFixed(1)}% p.a.',
+                            style: GoogleFonts.inter(
+                              fontSize: 13.sp,
+                              color: const Color(0xFF10B981),
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -598,38 +620,58 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
               ],
             ),
             SizedBox(height: 12.h),
-            Container(
-              padding: EdgeInsets.all(12.w),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.05),
-                borderRadius: BorderRadius.circular(8.r),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Days Remaining: ${lock.daysRemaining}',
-                    style: GoogleFonts.inter(
-                      fontSize: 12.sp,
-                      color: const Color(0xFF9CA3AF),
-                      fontWeight: FontWeight.w500,
-                    ),
+            Row(
+              children: [
+                Icon(
+                  Icons.schedule,
+                  color: const Color(0xFF9CA3AF),
+                  size: 14.sp,
+                ),
+                SizedBox(width: 6.w),
+                Text(
+                  lock.daysRemainingText,
+                  style: GoogleFonts.inter(
+                    fontSize: 12.sp,
+                    color: const Color(0xFF9CA3AF),
+                    fontWeight: FontWeight.w500,
                   ),
-                  Text(
-                    'Total: \$${lock.totalValue.toStringAsFixed(2)}',
-                    style: GoogleFonts.inter(
-                      fontSize: 12.sp,
-                      color: const Color(0xFF10B981),
-                      fontWeight: FontWeight.w600,
-                    ),
+                ),
+                const Spacer(),
+                Text(
+                  'Total: ${lock.currency} ${lock.totalValue.toStringAsFixed(2)}',
+                  style: GoogleFonts.inter(
+                    fontSize: 13.sp,
+                    color: const Color(0xFF10B981),
+                    fontWeight: FontWeight.w600,
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ],
         ),
       ),
     );
+  }
+
+  void _navigateToLockDetails(LockFund lock) {
+    final lockFundsCubit = context.read<LockFundsCubit>();
+    final authCubit = context.read<AuthenticationCubit>();
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MultiBlocProvider(
+          providers: [
+            BlocProvider.value(value: lockFundsCubit),
+            BlocProvider.value(value: authCubit),
+          ],
+          child: LockFundDetailsScreen(lockFund: lock),
+        ),
+      ),
+    ).then((_) {
+      // Refresh list when returning from details
+      lockFundsCubit.loadLockFunds();
+    });
   }
 
   Widget _buildStatusBadge(LockStatus status) {
@@ -867,6 +909,7 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
     // Capture cubits from current context before navigation
     final lockFundsCubit = context.read<LockFundsCubit>();
     final authCubit = context.read<AuthenticationCubit>();
+    final accountCardsCubit = context.read<AccountCardsSummaryCubit>();
 
     Navigator.push(
       context,
@@ -875,6 +918,7 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
           providers: [
             BlocProvider.value(value: lockFundsCubit),
             BlocProvider.value(value: authCubit),
+            BlocProvider.value(value: accountCardsCubit),
             BlocProvider(create: (context) => CreateLockCubit()),
           ],
           child: const CreateLockCarousel(),

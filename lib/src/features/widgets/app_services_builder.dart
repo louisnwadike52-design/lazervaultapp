@@ -1,6 +1,8 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/services/dashboard_state_manager.dart';
 import 'package:lazervault/core/types/services.dart';
 import 'package:lazervault/src/features/widgets/app_service_builder.dart';
 import 'package:lazervault/src/features/widgets/all_services_bottom_sheet.dart';
@@ -14,7 +16,8 @@ class AppServicesBuilder extends StatefulWidget {
 }
 
 class _AppServicesBuilderState extends State<AppServicesBuilder> {
-  int _currentIndex = 0;
+  late int _currentIndex;
+  final DashboardStateManager _stateManager = serviceLocator<DashboardStateManager>();
   static const int _itemsPerRow = 4;
   static const int _maxRows = 3;
   static const int _itemsPerPage = _itemsPerRow * _maxRows; // 12 items per page
@@ -77,6 +80,13 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
         serviceName: AppServiceName.whatsappIntegration,
         serviceImg: AppServiceImg.whatsappIntegration),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    // Restore carousel position from state manager
+    _currentIndex = _stateManager.servicesCarouselIndex;
+  }
 
   // Split services into pages
   List<List<AppService>> _getServicePages() {
@@ -200,8 +210,11 @@ class _AppServicesBuilderState extends State<AppServicesBuilder> {
               viewportFraction: 1.0,
               enlargeCenterPage: false,
               enableInfiniteScroll: false,
+              initialPage: _currentIndex,
               onPageChanged: (index, reason) {
                 setState(() => _currentIndex = index);
+                // Persist carousel position for navigation restoration
+                _stateManager.setServicesCarouselIndex(index);
               },
             ),
             itemBuilder: (context, pageIndex, realIndex) {

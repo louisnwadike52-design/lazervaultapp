@@ -25,8 +25,6 @@ class FamilyAccountCard extends StatelessWidget {
     final totalBalance = familyAccount.totalBalance;
     final memberAllocated = currentUserMember?.allocatedBalance ?? 0;
     final memberRemaining = currentUserMember?.remainingBalance ?? 0;
-    final memberCount = familyAccount.activeMemberCount;
-
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 8.w),
       padding: EdgeInsets.all(20.w),

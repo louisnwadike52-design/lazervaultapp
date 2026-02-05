@@ -10,14 +10,12 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 /// Shows setup prompt when user tries to access voice/microphone features
 class VoiceSetupGuard {
   final VoiceActivationManager _voiceManager;
-  final VoiceSetupManager _setupManager;
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
 
   VoiceSetupGuard({
     required VoiceActivationManager voiceManager,
     required VoiceSetupManager setupManager,
-  })  : _voiceManager = voiceManager,
-        _setupManager = setupManager;
+  })  : _voiceManager = voiceManager;
 
   /// Check if user can access voice feature
   /// Returns true if enrolled, false otherwise
@@ -47,7 +45,7 @@ class VoiceSetupGuard {
       if (!shouldSetup) return false;
 
       // Navigate to voice setup
-      final result = await Get.toNamed(AppRoutes.voiceActivationPrompt);
+      await Get.toNamed(AppRoutes.voiceActivationPrompt);
 
       // Check if setup was completed
       return await _voiceManager.isVoiceEnrolled(userId);

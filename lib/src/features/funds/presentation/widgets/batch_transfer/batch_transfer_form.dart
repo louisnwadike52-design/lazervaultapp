@@ -748,14 +748,6 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
       itemCount: _lazertagResults.length,
       itemBuilder: (context, index) {
         final user = _lazertagResults[index];
-        final recipient = RecipientModel(
-          id: user.id,
-          name: user.name,
-          accountNumber: user.username,
-          bankName: 'LazerVault',
-          sortCode: '',
-          isFavorite: false,
-        );
         final isSelected = _tempSelectedRecipients.any((r) => r.id == user.id);
         final isAlreadyAdded = widget.alreadySelectedIds.contains(user.id);
         

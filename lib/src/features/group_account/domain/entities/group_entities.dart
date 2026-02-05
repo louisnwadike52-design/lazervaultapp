@@ -209,6 +209,107 @@ class GroupMember extends Equatable {
       userUsername: userUsername ?? this.userUsername,
     );
   }
+
+  // Permission helper methods
+  bool get isAdmin => role == GroupMemberRole.admin;
+  bool get isModerator => role == GroupMemberRole.moderator;
+  bool get isMember => role == GroupMemberRole.member;
+  bool get isActive => status == GroupMemberStatus.active;
+
+  /// Can manage group settings, members, and contributions
+  bool get canManageGroup => isAdmin && isActive;
+
+  /// Can add new members to the group
+  bool get canAddMembers => (isAdmin || isModerator) && isActive;
+
+  /// Can remove members from the group (admin only)
+  bool get canRemoveMembers => isAdmin && isActive;
+
+  /// Can create contributions in the group
+  bool get canCreateContribution => isActive;
+
+  /// Can manage (edit/delete) contributions they created
+  bool get canManageOwnContribution => isActive;
+
+  /// Can manage any contribution in the group (admin only)
+  bool get canManageAnyContribution => isAdmin && isActive;
+}
+
+/// Extension on GroupAccount for permission checking
+extension GroupAccountPermissions on GroupAccount {
+  /// Get the member object for a given user ID
+  GroupMember? getMember(String userId) {
+    try {
+      return members.firstWhere((m) => m.userId == userId);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Check if user is the group admin (by adminId field)
+  bool isGroupAdmin(String userId) {
+    return adminId == userId;
+  }
+
+  /// Check if user has admin role in the group
+  bool isUserAdmin(String userId) {
+    final member = getMember(userId);
+    return member?.isAdmin ?? false;
+  }
+
+  /// Check if user has moderator role
+  bool isUserModerator(String userId) {
+    final member = getMember(userId);
+    return member?.isModerator ?? false;
+  }
+
+  /// Check if user is an active member
+  bool isUserActiveMember(String userId) {
+    final member = getMember(userId);
+    return member?.isActive ?? false;
+  }
+
+  /// Check if user can manage the group (admin or group creator)
+  bool canUserManageGroup(String userId) {
+    return isGroupAdmin(userId) || isUserAdmin(userId);
+  }
+
+  /// Check if user can add members
+  bool canUserAddMembers(String userId) {
+    final member = getMember(userId);
+    return member?.canAddMembers ?? isGroupAdmin(userId);
+  }
+
+  /// Check if user can remove members
+  bool canUserRemoveMembers(String userId) {
+    final member = getMember(userId);
+    return member?.canRemoveMembers ?? isGroupAdmin(userId);
+  }
+
+  /// Check if user can create contributions
+  bool canUserCreateContribution(String userId) {
+    final member = getMember(userId);
+    return member?.canCreateContribution ?? false;
+  }
+
+  /// Get the user's role in the group
+  GroupMemberRole? getUserRole(String userId) {
+    return getMember(userId)?.role;
+  }
+
+  /// Get display name for user's role
+  String getUserRoleDisplay(String userId) {
+    final role = getUserRole(userId);
+    if (role == null) return 'Not a member';
+    switch (role) {
+      case GroupMemberRole.admin:
+        return 'Admin';
+      case GroupMemberRole.moderator:
+        return 'Moderator';
+      case GroupMemberRole.member:
+        return 'Member';
+    }
+  }
 }
 
 // Contribution entity with enhanced scheduling and payout features
@@ -250,6 +351,9 @@ class Contribution extends Equatable {
   final bool allowPartialPayments;
   final double? minimumBalance; // Minimum balance required for payout
 
+  // Members assigned to this contribution
+  final List<ContributionMember> members;
+
   const Contribution({
     required this.id,
     required this.groupId,
@@ -281,6 +385,7 @@ class Contribution extends Equatable {
     this.gracePeriodDays,
     this.allowPartialPayments = true,
     this.minimumBalance,
+    this.members = const [],
   });
 
   @override
@@ -315,6 +420,7 @@ class Contribution extends Equatable {
         gracePeriodDays,
         allowPartialPayments,
         minimumBalance,
+        members,
       ];
 
   bool get isCompleted => status == ContributionStatus.completed;
@@ -361,6 +467,7 @@ class Contribution extends Equatable {
     int? gracePeriodDays,
     bool? allowPartialPayments,
     double? minimumBalance,
+    List<ContributionMember>? members,
   }) {
     return Contribution(
       id: id ?? this.id,
@@ -393,6 +500,137 @@ class Contribution extends Equatable {
       gracePeriodDays: gracePeriodDays ?? this.gracePeriodDays,
       allowPartialPayments: allowPartialPayments ?? this.allowPartialPayments,
       minimumBalance: minimumBalance ?? this.minimumBalance,
+      members: members ?? this.members,
+    );
+  }
+}
+
+/// Extension on Contribution for permission checking
+extension ContributionPermissions on Contribution {
+  /// Check if user is the creator of the contribution
+  bool isCreator(String userId) => createdBy == userId;
+
+  /// Check if user is a member of this contribution
+  bool isMember(String userId) {
+    return members.any((m) => m.userId == userId);
+  }
+
+  /// Check if contribution can be edited (not completed or cancelled)
+  bool get canBeEdited =>
+      status != ContributionStatus.completed &&
+      status != ContributionStatus.cancelled;
+
+  /// Check if contribution can be deleted
+  bool get canBeDeleted =>
+      currentAmount == 0 &&
+      status != ContributionStatus.completed &&
+      payments.isEmpty;
+
+  /// Check if user can edit this contribution
+  bool canUserEdit(String userId) {
+    return isCreator(userId) && canBeEdited;
+  }
+
+  /// Check if user can delete this contribution
+  bool canUserDelete(String userId) {
+    return isCreator(userId) && canBeDeleted;
+  }
+
+  /// Check if user can make payments to this contribution
+  bool canUserPay(String userId) {
+    return isMember(userId) && status == ContributionStatus.active;
+  }
+
+  /// Get progress percentage
+  double get progressPercentage {
+    if (targetAmount <= 0) return 0;
+    return (currentAmount / targetAmount * 100).clamp(0, 100);
+  }
+
+  /// Check if contribution is overdue
+  bool get isOverdue =>
+      status == ContributionStatus.active && DateTime.now().isAfter(deadline);
+
+  /// Get user's contribution member record
+  ContributionMember? getMember(String userId) {
+    try {
+      return members.firstWhere((m) => m.userId == userId);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Get user's payment progress in this contribution
+  double getUserProgress(String userId) {
+    final member = getMember(userId);
+    if (member == null || member.expectedAmount <= 0) return 0;
+    return (member.totalPaid / member.expectedAmount * 100).clamp(0, 100);
+  }
+}
+
+// Contribution Member entity - a member assigned to a contribution
+class ContributionMember extends Equatable {
+  final String id;
+  final String contributionId;
+  final String userId;
+  final String userName;
+  final String email;
+  final String? profileImage;
+  final DateTime joinedAt;
+  final double totalPaid;
+  final double expectedAmount;
+  final bool hasPaidCurrentCycle;
+
+  const ContributionMember({
+    required this.id,
+    required this.contributionId,
+    required this.userId,
+    required this.userName,
+    required this.email,
+    this.profileImage,
+    required this.joinedAt,
+    this.totalPaid = 0,
+    this.expectedAmount = 0,
+    this.hasPaidCurrentCycle = false,
+  });
+
+  @override
+  List<Object?> get props => [
+        id,
+        contributionId,
+        userId,
+        userName,
+        email,
+        profileImage,
+        joinedAt,
+        totalPaid,
+        expectedAmount,
+        hasPaidCurrentCycle,
+      ];
+
+  ContributionMember copyWith({
+    String? id,
+    String? contributionId,
+    String? userId,
+    String? userName,
+    String? email,
+    String? profileImage,
+    DateTime? joinedAt,
+    double? totalPaid,
+    double? expectedAmount,
+    bool? hasPaidCurrentCycle,
+  }) {
+    return ContributionMember(
+      id: id ?? this.id,
+      contributionId: contributionId ?? this.contributionId,
+      userId: userId ?? this.userId,
+      userName: userName ?? this.userName,
+      email: email ?? this.email,
+      profileImage: profileImage ?? this.profileImage,
+      joinedAt: joinedAt ?? this.joinedAt,
+      totalPaid: totalPaid ?? this.totalPaid,
+      expectedAmount: expectedAmount ?? this.expectedAmount,
+      hasPaidCurrentCycle: hasPaidCurrentCycle ?? this.hasPaidCurrentCycle,
     );
   }
 }
@@ -867,4 +1105,136 @@ extension ContributionTypeExtension on ContributionType {
         return 'Regular contributions toward an ongoing goal';
     }
   }
+}
+
+/// Activity log entry representing an action in a group or contribution
+class ActivityLogEntry extends Equatable {
+  final String id;
+  final String groupId;
+  final String? contributionId;
+  final String actorUserId;
+  final String actorName;
+  final String actionType;
+  final String? targetType;
+  final String? targetId;
+  final Map<String, dynamic>? details;
+  final DateTime createdAt;
+
+  const ActivityLogEntry({
+    required this.id,
+    required this.groupId,
+    this.contributionId,
+    required this.actorUserId,
+    required this.actorName,
+    required this.actionType,
+    this.targetType,
+    this.targetId,
+    this.details,
+    required this.createdAt,
+  });
+
+  @override
+  List<Object?> get props => [
+        id,
+        groupId,
+        contributionId,
+        actorUserId,
+        actorName,
+        actionType,
+        targetType,
+        targetId,
+        details,
+        createdAt,
+      ];
+
+  ActivityLogEntry copyWith({
+    String? id,
+    String? groupId,
+    String? contributionId,
+    String? actorUserId,
+    String? actorName,
+    String? actionType,
+    String? targetType,
+    String? targetId,
+    Map<String, dynamic>? details,
+    DateTime? createdAt,
+  }) {
+    return ActivityLogEntry(
+      id: id ?? this.id,
+      groupId: groupId ?? this.groupId,
+      contributionId: contributionId ?? this.contributionId,
+      actorUserId: actorUserId ?? this.actorUserId,
+      actorName: actorName ?? this.actorName,
+      actionType: actionType ?? this.actionType,
+      targetType: targetType ?? this.targetType,
+      targetId: targetId ?? this.targetId,
+      details: details ?? this.details,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
+}
+
+/// Activity action types
+class ActivityActionType {
+  // Member actions
+  static const String memberAdded = 'member_added';
+  static const String memberRemoved = 'member_removed';
+  static const String memberRoleChanged = 'member_role_changed';
+  static const String memberInvited = 'member_invited';
+
+  // Payment actions
+  static const String paymentMade = 'payment_made';
+  static const String paymentFailed = 'payment_failed';
+  static const String paymentRefunded = 'payment_refunded';
+
+  // Contribution actions
+  static const String contributionCreated = 'contribution_created';
+  static const String contributionUpdated = 'contribution_updated';
+  static const String contributionDeleted = 'contribution_deleted';
+  static const String contributionPaused = 'contribution_paused';
+
+  // Payout actions
+  static const String payoutProcessed = 'payout_processed';
+  static const String payoutRotationAdvanced = 'payout_rotation_advanced';
+
+  // Group actions
+  static const String groupCreated = 'group_created';
+  static const String groupUpdated = 'group_updated';
+  static const String settingsChanged = 'settings_changed';
+
+  /// Get all member-related action types
+  static List<String> get memberActions => [
+        memberAdded,
+        memberRemoved,
+        memberRoleChanged,
+        memberInvited,
+      ];
+
+  /// Get all payment-related action types
+  static List<String> get paymentActions => [
+        paymentMade,
+        paymentFailed,
+        paymentRefunded,
+      ];
+
+  /// Get all contribution-related action types
+  static List<String> get contributionActions => [
+        contributionCreated,
+        contributionUpdated,
+        contributionDeleted,
+        contributionPaused,
+      ];
+
+  /// Get all payout-related action types
+  static List<String> get payoutActions => [
+        payoutProcessed,
+        payoutRotationAdvanced,
+      ];
+
+  /// Get all settings-related action types
+  static List<String> get settingsActions => [
+        groupCreated,
+        groupUpdated,
+        settingsChanged,
+      ];
 } 

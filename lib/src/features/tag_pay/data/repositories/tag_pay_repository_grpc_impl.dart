@@ -592,6 +592,7 @@ class TagPayRepositoryGrpcImpl implements TagPayRepository {
   Future<List<UserSearchResultEntity>> searchUsers({
     required String query,
     int limit = 10,
+    String searchType = '', // Empty for unified search across username, name, phone, email
   }) async {
     // User search is decoupled from TagPay - use AuthService instead
     // This follows proper architecture where user search is handled by UserService/AuthService
@@ -599,9 +600,10 @@ class TagPayRepositoryGrpcImpl implements TagPayRepository {
       operation: () async {
         final request = auth_pb.SearchUsersByUsernameRequest()
           ..query = query
-          ..limit = limit;
+          ..limit = limit
+          ..searchType = searchType;
 
-        print('[TagPayRepository] searchUsers: query="$query", limit=$limit');
+        print('[TagPayRepository] searchUsers: query="$query", limit=$limit, searchType="$searchType"');
         final options = await callOptionsHelper.withAuth();
         final response = await authServiceClient.searchUsersByUsername(
           request,
@@ -620,7 +622,8 @@ class TagPayRepositoryGrpcImpl implements TagPayRepository {
                   username: user.username,
                   firstName: user.firstName,
                   lastName: user.lastName,
-                  email: '', // UserLookupResult doesn't have email field
+                  email: user.email,
+                  phoneNumber: user.phoneNumber,
                   profilePicture: user.profilePicture,
                 ))
             .toList();

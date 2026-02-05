@@ -496,3 +496,29 @@ const SearchUsersForTagResponse$json = const {
 
 /// Descriptor for `SearchUsersForTagResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List searchUsersForTagResponseDescriptor = $convert.base64Decode('ChlTZWFyY2hVc2Vyc0ZvclRhZ1Jlc3BvbnNlEioKBXVzZXJzGAEgAygLMhQucGIuVXNlclNlYXJjaFJlc3VsdFIFdXNlcnM=');
+@$core.Deprecated('Use batchCreateTagsRequestDescriptor instead')
+const BatchCreateTagsRequest$json = const {
+  '1': 'BatchCreateTagsRequest',
+  '2': const [
+    const {'1': 'tagged_user_tag_pays', '3': 1, '4': 3, '5': 9, '10': 'taggedUserTagPays'},
+    const {'1': 'amount', '3': 2, '4': 1, '5': 1, '10': 'amount'},
+    const {'1': 'currency', '3': 3, '4': 1, '5': 9, '10': 'currency'},
+    const {'1': 'description', '3': 4, '4': 1, '5': 9, '10': 'description'},
+  ],
+};
+
+/// Descriptor for `BatchCreateTagsRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List batchCreateTagsRequestDescriptor = $convert.base64Decode('ChZCYXRjaENyZWF0ZVRhZ3NSZXF1ZXN0Ei8KFHRhZ2dlZF91c2VyX3RhZ19wYXlzGAEgAygJUhF0YWdnZWRVc2VyVGFnUGF5cxIWCgZhbW91bnQYAiABKAFSBmFtb3VudBIaCghjdXJyZW5jeRgDIAEoCVIIY3VycmVuY3kSIAoLZGVzY3JpcHRpb24YBCABKAlSC2Rlc2NyaXB0aW9u');
+@$core.Deprecated('Use batchCreateTagsResponseDescriptor instead')
+const BatchCreateTagsResponse$json = const {
+  '1': 'BatchCreateTagsResponse',
+  '2': const [
+    const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    const {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+    const {'1': 'tags', '3': 3, '4': 3, '5': 11, '6': '.pb.UserTag', '10': 'tags'},
+    const {'1': 'failed_users', '3': 4, '4': 3, '5': 9, '10': 'failedUsers'},
+  ],
+};
+
+/// Descriptor for `BatchCreateTagsResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List batchCreateTagsResponseDescriptor = $convert.base64Decode('ChdCYXRjaENyZWF0ZVRhZ3NSZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZXNzEhgKB21lc3NhZ2UYAiABKAlSB21lc3NhZ2USHwoEdGFncxgDIAMoCzILLnBiLlVzZXJUYWdSBHRhZ3MSIQoMZmFpbGVkX3VzZXJzGAQgAygJUgtmYWlsZWRVc2Vycw==');

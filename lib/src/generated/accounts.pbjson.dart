@@ -100,11 +100,14 @@ const Transaction$json = const {
     const {'1': 'locale', '3': 12, '4': 1, '5': 9, '10': 'locale'},
     const {'1': 'service_name', '3': 13, '4': 1, '5': 9, '10': 'serviceName'},
     const {'1': 'created_at', '3': 14, '4': 1, '5': 9, '10': 'createdAt'},
+    const {'1': 'counterparty_name', '3': 15, '4': 1, '5': 9, '10': 'counterpartyName'},
+    const {'1': 'counterparty_account', '3': 16, '4': 1, '5': 9, '10': 'counterpartyAccount'},
+    const {'1': 'updated_at', '3': 17, '4': 1, '5': 9, '10': 'updatedAt'},
   ],
 };
 
 /// Descriptor for `Transaction`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List transactionDescriptor = $convert.base64Decode('CgtUcmFuc2FjdGlvbhIOCgJpZBgBIAEoCVICaWQSHQoKYWNjb3VudF9pZBgCIAEoCVIJYWNjb3VudElkEhwKCXJlZmVyZW5jZRgDIAEoCVIJcmVmZXJlbmNlEhIKBHR5cGUYBCABKAlSBHR5cGUSGgoIY2F0ZWdvcnkYBSABKAlSCGNhdGVnb3J5EhYKBmFtb3VudBgGIAEoAVIGYW1vdW50EiUKDmJhbGFuY2VfYmVmb3JlGAcgASgBUg1iYWxhbmNlQmVmb3JlEiMKDWJhbGFuY2VfYWZ0ZXIYCCABKAFSDGJhbGFuY2VBZnRlchIgCgtkZXNjcmlwdGlvbhgJIAEoCVILZGVzY3JpcHRpb24SGgoIbWV0YWRhdGEYCiABKAlSCG1ldGFkYXRhEhYKBnN0YXR1cxgLIAEoCVIGc3RhdHVzEhYKBmxvY2FsZRgMIAEoCVIGbG9jYWxlEiEKDHNlcnZpY2VfbmFtZRgNIAEoCVILc2VydmljZU5hbWUSHQoKY3JlYXRlZF9hdBgOIAEoCVIJY3JlYXRlZEF0');
+final $typed_data.Uint8List transactionDescriptor = $convert.base64Decode('CgtUcmFuc2FjdGlvbhIOCgJpZBgBIAEoCVICaWQSHQoKYWNjb3VudF9pZBgCIAEoCVIJYWNjb3VudElkEhwKCXJlZmVyZW5jZRgDIAEoCVIJcmVmZXJlbmNlEhIKBHR5cGUYBCABKAlSBHR5cGUSGgoIY2F0ZWdvcnkYBSABKAlSCGNhdGVnb3J5EhYKBmFtb3VudBgGIAEoAVIGYW1vdW50EiUKDmJhbGFuY2VfYmVmb3JlGAcgASgBUg1iYWxhbmNlQmVmb3JlEiMKDWJhbGFuY2VfYWZ0ZXIYCCABKAFSDGJhbGFuY2VBZnRlchIgCgtkZXNjcmlwdGlvbhgJIAEoCVILZGVzY3JpcHRpb24SGgoIbWV0YWRhdGEYCiABKAlSCG1ldGFkYXRhEhYKBnN0YXR1cxgLIAEoCVIGc3RhdHVzEhYKBmxvY2FsZRgMIAEoCVIGbG9jYWxlEiEKDHNlcnZpY2VfbmFtZRgNIAEoCVILc2VydmljZU5hbWUSHQoKY3JlYXRlZF9hdBgOIAEoCVIJY3JlYXRlZEF0EisKEWNvdW50ZXJwYXJ0eV9uYW1lGA8gASgJUhBjb3VudGVycGFydHlOYW1lEjEKFGNvdW50ZXJwYXJ0eV9hY2NvdW50GBAgASgJUhNjb3VudGVycGFydHlBY2NvdW50Eh0KCnVwZGF0ZWRfYXQYESABKAlSCXVwZGF0ZWRBdA==');
 @$core.Deprecated('Use createAccountRequestDescriptor instead')
 const CreateAccountRequest$json = const {
   '1': 'CreateAccountRequest',
@@ -597,11 +600,14 @@ const CreateTransactionRequest$json = const {
     const {'1': 'metadata', '3': 6, '4': 1, '5': 9, '10': 'metadata'},
     const {'1': 'service_name', '3': 7, '4': 1, '5': 9, '10': 'serviceName'},
     const {'1': 'reference', '3': 8, '4': 1, '5': 9, '10': 'reference'},
+    const {'1': 'status', '3': 9, '4': 1, '5': 9, '10': 'status'},
+    const {'1': 'counterparty_name', '3': 10, '4': 1, '5': 9, '10': 'counterpartyName'},
+    const {'1': 'counterparty_account', '3': 11, '4': 1, '5': 9, '10': 'counterpartyAccount'},
   ],
 };
 
 /// Descriptor for `CreateTransactionRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List createTransactionRequestDescriptor = $convert.base64Decode('ChhDcmVhdGVUcmFuc2FjdGlvblJlcXVlc3QSHQoKYWNjb3VudF9pZBgBIAEoCVIJYWNjb3VudElkEhIKBHR5cGUYAiABKAlSBHR5cGUSGgoIY2F0ZWdvcnkYAyABKAlSCGNhdGVnb3J5EhYKBmFtb3VudBgEIAEoAVIGYW1vdW50EiAKC2Rlc2NyaXB0aW9uGAUgASgJUgtkZXNjcmlwdGlvbhIaCghtZXRhZGF0YRgGIAEoCVIIbWV0YWRhdGESIQoMc2VydmljZV9uYW1lGAcgASgJUgtzZXJ2aWNlTmFtZRIcCglyZWZlcmVuY2UYCCABKAlSCXJlZmVyZW5jZQ==');
+final $typed_data.Uint8List createTransactionRequestDescriptor = $convert.base64Decode('ChhDcmVhdGVUcmFuc2FjdGlvblJlcXVlc3QSHQoKYWNjb3VudF9pZBgBIAEoCVIJYWNjb3VudElkEhIKBHR5cGUYAiABKAlSBHR5cGUSGgoIY2F0ZWdvcnkYAyABKAlSCGNhdGVnb3J5EhYKBmFtb3VudBgEIAEoAVIGYW1vdW50EiAKC2Rlc2NyaXB0aW9uGAUgASgJUgtkZXNjcmlwdGlvbhIaCghtZXRhZGF0YRgGIAEoCVIIbWV0YWRhdGESIQoMc2VydmljZV9uYW1lGAcgASgJUgtzZXJ2aWNlTmFtZRIcCglyZWZlcmVuY2UYCCABKAlSCXJlZmVyZW5jZRIWCgZzdGF0dXMYCSABKAlSBnN0YXR1cxIrChFjb3VudGVycGFydHlfbmFtZRgKIAEoCVIQY291bnRlcnBhcnR5TmFtZRIxChRjb3VudGVycGFydHlfYWNjb3VudBgLIAEoCVITY291bnRlcnBhcnR5QWNjb3VudA==');
 @$core.Deprecated('Use createTransactionResponseDescriptor instead')
 const CreateTransactionResponse$json = const {
   '1': 'CreateTransactionResponse',
@@ -613,6 +619,29 @@ const CreateTransactionResponse$json = const {
 
 /// Descriptor for `CreateTransactionResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List createTransactionResponseDescriptor = $convert.base64Decode('ChlDcmVhdGVUcmFuc2FjdGlvblJlc3BvbnNlEjcKC3RyYW5zYWN0aW9uGAEgASgLMhUuYWNjb3VudHMuVHJhbnNhY3Rpb25SC3RyYW5zYWN0aW9uEhgKB21lc3NhZ2UYAiABKAlSB21lc3NhZ2U=');
+@$core.Deprecated('Use updateTransactionStatusRequestDescriptor instead')
+const UpdateTransactionStatusRequest$json = const {
+  '1': 'UpdateTransactionStatusRequest',
+  '2': const [
+    const {'1': 'reference', '3': 1, '4': 1, '5': 9, '10': 'reference'},
+    const {'1': 'status', '3': 2, '4': 1, '5': 9, '10': 'status'},
+    const {'1': 'failure_reason', '3': 3, '4': 1, '5': 9, '10': 'failureReason'},
+  ],
+};
+
+/// Descriptor for `UpdateTransactionStatusRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List updateTransactionStatusRequestDescriptor = $convert.base64Decode('Ch5VcGRhdGVUcmFuc2FjdGlvblN0YXR1c1JlcXVlc3QSHAoJcmVmZXJlbmNlGAEgASgJUglyZWZlcmVuY2USFgoGc3RhdHVzGAIgASgJUgZzdGF0dXMSJQoOZmFpbHVyZV9yZWFzb24YAyABKAlSDWZhaWx1cmVSZWFzb24=');
+@$core.Deprecated('Use updateTransactionStatusResponseDescriptor instead')
+const UpdateTransactionStatusResponse$json = const {
+  '1': 'UpdateTransactionStatusResponse',
+  '2': const [
+    const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    const {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+  ],
+};
+
+/// Descriptor for `UpdateTransactionStatusResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List updateTransactionStatusResponseDescriptor = $convert.base64Decode('Ch9VcGRhdGVUcmFuc2FjdGlvblN0YXR1c1Jlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3MSGAoHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZQ==');
 @$core.Deprecated('Use getTransactionHistoryRequestDescriptor instead')
 const GetTransactionHistoryRequest$json = const {
   '1': 'GetTransactionHistoryRequest',
@@ -989,3 +1018,167 @@ const ReleaseHoldResponse$json = const {
 
 /// Descriptor for `ReleaseHoldResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List releaseHoldResponseDescriptor = $convert.base64Decode('ChNSZWxlYXNlSG9sZFJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3MSHQoKZXJyb3JfY29kZRgCIAEoCVIJZXJyb3JDb2RlEiMKDWVycm9yX21lc3NhZ2UYAyABKAlSDGVycm9yTWVzc2FnZRIyChVuZXdfYXZhaWxhYmxlX2JhbGFuY2UYBCABKANSE25ld0F2YWlsYWJsZUJhbGFuY2U=');
+@$core.Deprecated('Use platformWalletMsgDescriptor instead')
+const PlatformWalletMsg$json = const {
+  '1': 'PlatformWalletMsg',
+  '2': const [
+    const {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
+    const {'1': 'wallet_code', '3': 2, '4': 1, '5': 9, '10': 'walletCode'},
+    const {'1': 'wallet_name', '3': 3, '4': 1, '5': 9, '10': 'walletName'},
+    const {'1': 'currency', '3': 4, '4': 1, '5': 9, '10': 'currency'},
+    const {'1': 'balance', '3': 5, '4': 1, '5': 3, '10': 'balance'},
+    const {'1': 'available_balance', '3': 6, '4': 1, '5': 3, '10': 'availableBalance'},
+    const {'1': 'status', '3': 7, '4': 1, '5': 9, '10': 'status'},
+    const {'1': 'description', '3': 8, '4': 1, '5': 9, '10': 'description'},
+    const {'1': 'created_at', '3': 9, '4': 1, '5': 9, '10': 'createdAt'},
+    const {'1': 'updated_at', '3': 10, '4': 1, '5': 9, '10': 'updatedAt'},
+  ],
+};
+
+/// Descriptor for `PlatformWalletMsg`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List platformWalletMsgDescriptor = $convert.base64Decode('ChFQbGF0Zm9ybVdhbGxldE1zZxIOCgJpZBgBIAEoCVICaWQSHwoLd2FsbGV0X2NvZGUYAiABKAlSCndhbGxldENvZGUSHwoLd2FsbGV0X25hbWUYAyABKAlSCndhbGxldE5hbWUSGgoIY3VycmVuY3kYBCABKAlSCGN1cnJlbmN5EhgKB2JhbGFuY2UYBSABKANSB2JhbGFuY2USKwoRYXZhaWxhYmxlX2JhbGFuY2UYBiABKANSEGF2YWlsYWJsZUJhbGFuY2USFgoGc3RhdHVzGAcgASgJUgZzdGF0dXMSIAoLZGVzY3JpcHRpb24YCCABKAlSC2Rlc2NyaXB0aW9uEh0KCmNyZWF0ZWRfYXQYCSABKAlSCWNyZWF0ZWRBdBIdCgp1cGRhdGVkX2F0GAogASgJUgl1cGRhdGVkQXQ=');
+@$core.Deprecated('Use platformWalletTransactionMsgDescriptor instead')
+const PlatformWalletTransactionMsg$json = const {
+  '1': 'PlatformWalletTransactionMsg',
+  '2': const [
+    const {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
+    const {'1': 'wallet_id', '3': 2, '4': 1, '5': 9, '10': 'walletId'},
+    const {'1': 'reference', '3': 3, '4': 1, '5': 9, '10': 'reference'},
+    const {'1': 'type', '3': 4, '4': 1, '5': 9, '10': 'type'},
+    const {'1': 'category', '3': 5, '4': 1, '5': 9, '10': 'category'},
+    const {'1': 'amount', '3': 6, '4': 1, '5': 3, '10': 'amount'},
+    const {'1': 'balance_before', '3': 7, '4': 1, '5': 3, '10': 'balanceBefore'},
+    const {'1': 'balance_after', '3': 8, '4': 1, '5': 3, '10': 'balanceAfter'},
+    const {'1': 'counterparty_account_id', '3': 9, '4': 1, '5': 9, '10': 'counterpartyAccountId'},
+    const {'1': 'counterparty_user_id', '3': 10, '4': 1, '5': 9, '10': 'counterpartyUserId'},
+    const {'1': 'description', '3': 11, '4': 1, '5': 9, '10': 'description'},
+    const {'1': 'metadata', '3': 12, '4': 1, '5': 9, '10': 'metadata'},
+    const {'1': 'service_name', '3': 13, '4': 1, '5': 9, '10': 'serviceName'},
+    const {'1': 'status', '3': 14, '4': 1, '5': 9, '10': 'status'},
+    const {'1': 'created_at', '3': 15, '4': 1, '5': 9, '10': 'createdAt'},
+  ],
+};
+
+/// Descriptor for `PlatformWalletTransactionMsg`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List platformWalletTransactionMsgDescriptor = $convert.base64Decode('ChxQbGF0Zm9ybVdhbGxldFRyYW5zYWN0aW9uTXNnEg4KAmlkGAEgASgJUgJpZBIbCgl3YWxsZXRfaWQYAiABKAlSCHdhbGxldElkEhwKCXJlZmVyZW5jZRgDIAEoCVIJcmVmZXJlbmNlEhIKBHR5cGUYBCABKAlSBHR5cGUSGgoIY2F0ZWdvcnkYBSABKAlSCGNhdGVnb3J5EhYKBmFtb3VudBgGIAEoA1IGYW1vdW50EiUKDmJhbGFuY2VfYmVmb3JlGAcgASgDUg1iYWxhbmNlQmVmb3JlEiMKDWJhbGFuY2VfYWZ0ZXIYCCABKANSDGJhbGFuY2VBZnRlchI2Chdjb3VudGVycGFydHlfYWNjb3VudF9pZBgJIAEoCVIVY291bnRlcnBhcnR5QWNjb3VudElkEjAKFGNvdW50ZXJwYXJ0eV91c2VyX2lkGAogASgJUhJjb3VudGVycGFydHlVc2VySWQSIAoLZGVzY3JpcHRpb24YCyABKAlSC2Rlc2NyaXB0aW9uEhoKCG1ldGFkYXRhGAwgASgJUghtZXRhZGF0YRIhCgxzZXJ2aWNlX25hbWUYDSABKAlSC3NlcnZpY2VOYW1lEhYKBnN0YXR1cxgOIAEoCVIGc3RhdHVzEh0KCmNyZWF0ZWRfYXQYDyABKAlSCWNyZWF0ZWRBdA==');
+@$core.Deprecated('Use transferToPlatformWalletRequestDescriptor instead')
+const TransferToPlatformWalletRequest$json = const {
+  '1': 'TransferToPlatformWalletRequest',
+  '2': const [
+    const {'1': 'user_account_id', '3': 1, '4': 1, '5': 9, '10': 'userAccountId'},
+    const {'1': 'user_id', '3': 2, '4': 1, '5': 9, '10': 'userId'},
+    const {'1': 'wallet_code', '3': 3, '4': 1, '5': 9, '10': 'walletCode'},
+    const {'1': 'amount', '3': 4, '4': 1, '5': 3, '10': 'amount'},
+    const {'1': 'currency', '3': 5, '4': 1, '5': 9, '10': 'currency'},
+    const {'1': 'reference', '3': 6, '4': 1, '5': 9, '10': 'reference'},
+    const {'1': 'category', '3': 7, '4': 1, '5': 9, '10': 'category'},
+    const {'1': 'description', '3': 8, '4': 1, '5': 9, '10': 'description'},
+    const {'1': 'metadata', '3': 9, '4': 1, '5': 9, '10': 'metadata'},
+    const {'1': 'service_name', '3': 10, '4': 1, '5': 9, '10': 'serviceName'},
+    const {'1': 'idempotency_key', '3': 11, '4': 1, '5': 9, '10': 'idempotencyKey'},
+  ],
+};
+
+/// Descriptor for `TransferToPlatformWalletRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List transferToPlatformWalletRequestDescriptor = $convert.base64Decode('Ch9UcmFuc2ZlclRvUGxhdGZvcm1XYWxsZXRSZXF1ZXN0EiYKD3VzZXJfYWNjb3VudF9pZBgBIAEoCVINdXNlckFjY291bnRJZBIXCgd1c2VyX2lkGAIgASgJUgZ1c2VySWQSHwoLd2FsbGV0X2NvZGUYAyABKAlSCndhbGxldENvZGUSFgoGYW1vdW50GAQgASgDUgZhbW91bnQSGgoIY3VycmVuY3kYBSABKAlSCGN1cnJlbmN5EhwKCXJlZmVyZW5jZRgGIAEoCVIJcmVmZXJlbmNlEhoKCGNhdGVnb3J5GAcgASgJUghjYXRlZ29yeRIgCgtkZXNjcmlwdGlvbhgIIAEoCVILZGVzY3JpcHRpb24SGgoIbWV0YWRhdGEYCSABKAlSCG1ldGFkYXRhEiEKDHNlcnZpY2VfbmFtZRgKIAEoCVILc2VydmljZU5hbWUSJwoPaWRlbXBvdGVuY3lfa2V5GAsgASgJUg5pZGVtcG90ZW5jeUtleQ==');
+@$core.Deprecated('Use transferToPlatformWalletResponseDescriptor instead')
+const TransferToPlatformWalletResponse$json = const {
+  '1': 'TransferToPlatformWalletResponse',
+  '2': const [
+    const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    const {'1': 'error_code', '3': 2, '4': 1, '5': 9, '10': 'errorCode'},
+    const {'1': 'error_message', '3': 3, '4': 1, '5': 9, '10': 'errorMessage'},
+    const {'1': 'debit_transaction_id', '3': 4, '4': 1, '5': 9, '10': 'debitTransactionId'},
+    const {'1': 'platform_transaction_id', '3': 5, '4': 1, '5': 9, '10': 'platformTransactionId'},
+    const {'1': 'user_new_balance', '3': 6, '4': 1, '5': 3, '10': 'userNewBalance'},
+    const {'1': 'wallet_new_balance', '3': 7, '4': 1, '5': 3, '10': 'walletNewBalance'},
+  ],
+};
+
+/// Descriptor for `TransferToPlatformWalletResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List transferToPlatformWalletResponseDescriptor = $convert.base64Decode('CiBUcmFuc2ZlclRvUGxhdGZvcm1XYWxsZXRSZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZXNzEh0KCmVycm9yX2NvZGUYAiABKAlSCWVycm9yQ29kZRIjCg1lcnJvcl9tZXNzYWdlGAMgASgJUgxlcnJvck1lc3NhZ2USMAoUZGViaXRfdHJhbnNhY3Rpb25faWQYBCABKAlSEmRlYml0VHJhbnNhY3Rpb25JZBI2ChdwbGF0Zm9ybV90cmFuc2FjdGlvbl9pZBgFIAEoCVIVcGxhdGZvcm1UcmFuc2FjdGlvbklkEigKEHVzZXJfbmV3X2JhbGFuY2UYBiABKANSDnVzZXJOZXdCYWxhbmNlEiwKEndhbGxldF9uZXdfYmFsYW5jZRgHIAEoA1IQd2FsbGV0TmV3QmFsYW5jZQ==');
+@$core.Deprecated('Use transferFromPlatformWalletRequestDescriptor instead')
+const TransferFromPlatformWalletRequest$json = const {
+  '1': 'TransferFromPlatformWalletRequest',
+  '2': const [
+    const {'1': 'wallet_code', '3': 1, '4': 1, '5': 9, '10': 'walletCode'},
+    const {'1': 'user_account_id', '3': 2, '4': 1, '5': 9, '10': 'userAccountId'},
+    const {'1': 'user_id', '3': 3, '4': 1, '5': 9, '10': 'userId'},
+    const {'1': 'amount', '3': 4, '4': 1, '5': 3, '10': 'amount'},
+    const {'1': 'currency', '3': 5, '4': 1, '5': 9, '10': 'currency'},
+    const {'1': 'reference', '3': 6, '4': 1, '5': 9, '10': 'reference'},
+    const {'1': 'category', '3': 7, '4': 1, '5': 9, '10': 'category'},
+    const {'1': 'description', '3': 8, '4': 1, '5': 9, '10': 'description'},
+    const {'1': 'metadata', '3': 9, '4': 1, '5': 9, '10': 'metadata'},
+    const {'1': 'service_name', '3': 10, '4': 1, '5': 9, '10': 'serviceName'},
+    const {'1': 'idempotency_key', '3': 11, '4': 1, '5': 9, '10': 'idempotencyKey'},
+  ],
+};
+
+/// Descriptor for `TransferFromPlatformWalletRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List transferFromPlatformWalletRequestDescriptor = $convert.base64Decode('CiFUcmFuc2ZlckZyb21QbGF0Zm9ybVdhbGxldFJlcXVlc3QSHwoLd2FsbGV0X2NvZGUYASABKAlSCndhbGxldENvZGUSJgoPdXNlcl9hY2NvdW50X2lkGAIgASgJUg11c2VyQWNjb3VudElkEhcKB3VzZXJfaWQYAyABKAlSBnVzZXJJZBIWCgZhbW91bnQYBCABKANSBmFtb3VudBIaCghjdXJyZW5jeRgFIAEoCVIIY3VycmVuY3kSHAoJcmVmZXJlbmNlGAYgASgJUglyZWZlcmVuY2USGgoIY2F0ZWdvcnkYByABKAlSCGNhdGVnb3J5EiAKC2Rlc2NyaXB0aW9uGAggASgJUgtkZXNjcmlwdGlvbhIaCghtZXRhZGF0YRgJIAEoCVIIbWV0YWRhdGESIQoMc2VydmljZV9uYW1lGAogASgJUgtzZXJ2aWNlTmFtZRInCg9pZGVtcG90ZW5jeV9rZXkYCyABKAlSDmlkZW1wb3RlbmN5S2V5');
+@$core.Deprecated('Use transferFromPlatformWalletResponseDescriptor instead')
+const TransferFromPlatformWalletResponse$json = const {
+  '1': 'TransferFromPlatformWalletResponse',
+  '2': const [
+    const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    const {'1': 'error_code', '3': 2, '4': 1, '5': 9, '10': 'errorCode'},
+    const {'1': 'error_message', '3': 3, '4': 1, '5': 9, '10': 'errorMessage'},
+    const {'1': 'credit_transaction_id', '3': 4, '4': 1, '5': 9, '10': 'creditTransactionId'},
+    const {'1': 'platform_transaction_id', '3': 5, '4': 1, '5': 9, '10': 'platformTransactionId'},
+    const {'1': 'user_new_balance', '3': 6, '4': 1, '5': 3, '10': 'userNewBalance'},
+    const {'1': 'wallet_new_balance', '3': 7, '4': 1, '5': 3, '10': 'walletNewBalance'},
+  ],
+};
+
+/// Descriptor for `TransferFromPlatformWalletResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List transferFromPlatformWalletResponseDescriptor = $convert.base64Decode('CiJUcmFuc2ZlckZyb21QbGF0Zm9ybVdhbGxldFJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3MSHQoKZXJyb3JfY29kZRgCIAEoCVIJZXJyb3JDb2RlEiMKDWVycm9yX21lc3NhZ2UYAyABKAlSDGVycm9yTWVzc2FnZRIyChVjcmVkaXRfdHJhbnNhY3Rpb25faWQYBCABKAlSE2NyZWRpdFRyYW5zYWN0aW9uSWQSNgoXcGxhdGZvcm1fdHJhbnNhY3Rpb25faWQYBSABKAlSFXBsYXRmb3JtVHJhbnNhY3Rpb25JZBIoChB1c2VyX25ld19iYWxhbmNlGAYgASgDUg51c2VyTmV3QmFsYW5jZRIsChJ3YWxsZXRfbmV3X2JhbGFuY2UYByABKANSEHdhbGxldE5ld0JhbGFuY2U=');
+@$core.Deprecated('Use getPlatformWalletRequestDescriptor instead')
+const GetPlatformWalletRequest$json = const {
+  '1': 'GetPlatformWalletRequest',
+  '2': const [
+    const {'1': 'wallet_id', '3': 1, '4': 1, '5': 9, '10': 'walletId'},
+    const {'1': 'wallet_code', '3': 2, '4': 1, '5': 9, '10': 'walletCode'},
+  ],
+};
+
+/// Descriptor for `GetPlatformWalletRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getPlatformWalletRequestDescriptor = $convert.base64Decode('ChhHZXRQbGF0Zm9ybVdhbGxldFJlcXVlc3QSGwoJd2FsbGV0X2lkGAEgASgJUgh3YWxsZXRJZBIfCgt3YWxsZXRfY29kZRgCIAEoCVIKd2FsbGV0Q29kZQ==');
+@$core.Deprecated('Use getPlatformWalletResponseDescriptor instead')
+const GetPlatformWalletResponse$json = const {
+  '1': 'GetPlatformWalletResponse',
+  '2': const [
+    const {'1': 'wallet', '3': 1, '4': 1, '5': 11, '6': '.accounts.PlatformWalletMsg', '10': 'wallet'},
+  ],
+};
+
+/// Descriptor for `GetPlatformWalletResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getPlatformWalletResponseDescriptor = $convert.base64Decode('ChlHZXRQbGF0Zm9ybVdhbGxldFJlc3BvbnNlEjMKBndhbGxldBgBIAEoCzIbLmFjY291bnRzLlBsYXRmb3JtV2FsbGV0TXNnUgZ3YWxsZXQ=');
+@$core.Deprecated('Use getPlatformWalletTransactionsRequestDescriptor instead')
+const GetPlatformWalletTransactionsRequest$json = const {
+  '1': 'GetPlatformWalletTransactionsRequest',
+  '2': const [
+    const {'1': 'wallet_id', '3': 1, '4': 1, '5': 9, '10': 'walletId'},
+    const {'1': 'wallet_code', '3': 2, '4': 1, '5': 9, '10': 'walletCode'},
+    const {'1': 'type', '3': 3, '4': 1, '5': 9, '10': 'type'},
+    const {'1': 'category', '3': 4, '4': 1, '5': 9, '10': 'category'},
+    const {'1': 'start_date', '3': 5, '4': 1, '5': 9, '10': 'startDate'},
+    const {'1': 'end_date', '3': 6, '4': 1, '5': 9, '10': 'endDate'},
+    const {'1': 'limit', '3': 7, '4': 1, '5': 5, '10': 'limit'},
+    const {'1': 'offset', '3': 8, '4': 1, '5': 5, '10': 'offset'},
+  ],
+};
+
+/// Descriptor for `GetPlatformWalletTransactionsRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getPlatformWalletTransactionsRequestDescriptor = $convert.base64Decode('CiRHZXRQbGF0Zm9ybVdhbGxldFRyYW5zYWN0aW9uc1JlcXVlc3QSGwoJd2FsbGV0X2lkGAEgASgJUgh3YWxsZXRJZBIfCgt3YWxsZXRfY29kZRgCIAEoCVIKd2FsbGV0Q29kZRISCgR0eXBlGAMgASgJUgR0eXBlEhoKCGNhdGVnb3J5GAQgASgJUghjYXRlZ29yeRIdCgpzdGFydF9kYXRlGAUgASgJUglzdGFydERhdGUSGQoIZW5kX2RhdGUYBiABKAlSB2VuZERhdGUSFAoFbGltaXQYByABKAVSBWxpbWl0EhYKBm9mZnNldBgIIAEoBVIGb2Zmc2V0');
+@$core.Deprecated('Use getPlatformWalletTransactionsResponseDescriptor instead')
+const GetPlatformWalletTransactionsResponse$json = const {
+  '1': 'GetPlatformWalletTransactionsResponse',
+  '2': const [
+    const {'1': 'transactions', '3': 1, '4': 3, '5': 11, '6': '.accounts.PlatformWalletTransactionMsg', '10': 'transactions'},
+    const {'1': 'total', '3': 2, '4': 1, '5': 5, '10': 'total'},
+  ],
+};
+
+/// Descriptor for `GetPlatformWalletTransactionsResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getPlatformWalletTransactionsResponseDescriptor = $convert.base64Decode('CiVHZXRQbGF0Zm9ybVdhbGxldFRyYW5zYWN0aW9uc1Jlc3BvbnNlEkoKDHRyYW5zYWN0aW9ucxgBIAMoCzImLmFjY291bnRzLlBsYXRmb3JtV2FsbGV0VHJhbnNhY3Rpb25Nc2dSDHRyYW5zYWN0aW9ucxIUCgV0b3RhbBgCIAEoBVIFdG90YWw=');

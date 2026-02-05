@@ -116,18 +116,6 @@ class SupportTicketModel extends SupportTicket {
     }
   }
 
-  static support_pb.TicketPriority _mapPriorityToProto(TicketPriority priority) {
-    switch (priority) {
-      case TicketPriority.low:
-        return support_pb.TicketPriority.LOW;
-      case TicketPriority.medium:
-        return support_pb.TicketPriority.MEDIUM;
-      case TicketPriority.high:
-        return support_pb.TicketPriority.HIGH;
-      case TicketPriority.urgent:
-        return support_pb.TicketPriority.URGENT;
-    }
-  }
 }
 
 class TicketReplyModel extends TicketReply {

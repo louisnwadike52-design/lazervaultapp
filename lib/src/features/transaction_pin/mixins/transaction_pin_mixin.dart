@@ -323,18 +323,6 @@ mixin TransactionPinMixin<T extends StatefulWidget> on State<T> {
     );
   }
 
-  /// Show payment execution error
-  void _showPaymentError(BuildContext context, String error) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Payment failed: $error'),
-        backgroundColor: Theme.of(context).colorScheme.error,
-        duration: const Duration(seconds: 3),
-      ),
-    );
-  }
-
   /// Validate PIN (simplified version without payment execution)
   Future<TransactionPinVerificationResult?> validatePinOnly({
     required BuildContext context,
@@ -366,8 +354,6 @@ mixin TransactionPinMixin<T extends StatefulWidget> on State<T> {
           return null;
         }
 
-        // Show loading inline
-        final pinModalKey = GlobalKey<TransactionPinModalState>();
         // For validatePinOnly, use the simple loading dialog
         showDialog(
           context: context,

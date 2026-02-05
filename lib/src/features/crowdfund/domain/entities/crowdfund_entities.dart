@@ -320,3 +320,174 @@ class CrowdfundStatistics extends Equatable {
         createdAt,
       ];
 }
+
+/// Milestone entry for crowdfund reports
+class CrowdfundMilestone extends Equatable {
+  final String title;
+  final String description;
+  final double targetAmount;
+  final bool isReached;
+  final DateTime? reachedAt;
+
+  const CrowdfundMilestone({
+    required this.title,
+    required this.description,
+    required this.targetAmount,
+    required this.isReached,
+    this.reachedAt,
+  });
+
+  factory CrowdfundMilestone.fromJson(Map<String, dynamic> json) {
+    return CrowdfundMilestone(
+      title: json['title'] as String? ?? '',
+      description: json['description'] as String? ?? '',
+      targetAmount: (json['target_amount'] as num?)?.toDouble() ?? 0.0,
+      isReached: json['is_reached'] as bool? ?? false,
+      reachedAt: json['reached_at'] != null
+          ? DateTime.tryParse(json['reached_at'] as String)
+          : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'title': title,
+        'description': description,
+        'target_amount': targetAmount,
+        'is_reached': isReached,
+        'reached_at': reachedAt?.toIso8601String(),
+      };
+
+  @override
+  List<Object?> get props => [
+        title,
+        description,
+        targetAmount,
+        isReached,
+        reachedAt,
+      ];
+}
+
+/// AI-generated crowdfund campaign report
+/// Used for shareable progress updates and impact stories
+class CrowdfundReport extends Equatable {
+  final String title;
+  final String summary;
+  final String impactStory;
+  final List<String> contributorHighlights;
+  final List<CrowdfundMilestone> milestones;
+  final String callToAction;
+  final CrowdfundSharingText sharingText;
+  final List<String> hashtags;
+  final bool success;
+  final DateTime generatedAt;
+  final String? error;
+
+  const CrowdfundReport({
+    required this.title,
+    required this.summary,
+    required this.impactStory,
+    required this.contributorHighlights,
+    required this.milestones,
+    required this.callToAction,
+    required this.sharingText,
+    required this.hashtags,
+    required this.success,
+    required this.generatedAt,
+    this.error,
+  });
+
+  factory CrowdfundReport.fromJson(Map<String, dynamic> json) {
+    return CrowdfundReport(
+      title: json['title'] as String? ?? '',
+      summary: json['summary'] as String? ?? '',
+      impactStory: json['impact_story'] as String? ?? '',
+      contributorHighlights: (json['contributor_highlights'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          [],
+      milestones: (json['milestones'] as List<dynamic>?)
+              ?.map((e) => CrowdfundMilestone.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          [],
+      callToAction: json['call_to_action'] as String? ?? '',
+      sharingText: CrowdfundSharingText.fromJson(
+          json['sharing_text'] as Map<String, dynamic>? ?? {}),
+      hashtags: (json['hashtags'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          [],
+      success: json['success'] as bool? ?? false,
+      generatedAt: json['generated_at'] != null
+          ? DateTime.parse(json['generated_at'] as String)
+          : DateTime.now(),
+      error: json['error'] as String?,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'title': title,
+        'summary': summary,
+        'impact_story': impactStory,
+        'contributor_highlights': contributorHighlights,
+        'milestones': milestones.map((e) => e.toJson()).toList(),
+        'call_to_action': callToAction,
+        'sharing_text': sharingText.toJson(),
+        'hashtags': hashtags,
+        'success': success,
+        'generated_at': generatedAt.toIso8601String(),
+        'error': error,
+      };
+
+  @override
+  List<Object?> get props => [
+        title,
+        summary,
+        impactStory,
+        contributorHighlights,
+        milestones,
+        callToAction,
+        sharingText,
+        hashtags,
+        success,
+        generatedAt,
+        error,
+      ];
+}
+
+/// Platform-specific sharing text for crowdfund reports
+class CrowdfundSharingText extends Equatable {
+  final String whatsapp;
+  final String facebook;
+  final String telegram;
+  final String twitter;
+  final String general;
+
+  const CrowdfundSharingText({
+    required this.whatsapp,
+    required this.facebook,
+    required this.telegram,
+    required this.twitter,
+    required this.general,
+  });
+
+  factory CrowdfundSharingText.fromJson(Map<String, dynamic> json) {
+    return CrowdfundSharingText(
+      whatsapp: json['whatsapp'] as String? ?? '',
+      facebook: json['facebook'] as String? ?? '',
+      telegram: json['telegram'] as String? ?? '',
+      twitter: json['twitter'] as String? ?? '',
+      general: json['general'] as String? ?? json['whatsapp'] as String? ?? '',
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'whatsapp': whatsapp,
+        'facebook': facebook,
+        'telegram': telegram,
+        'twitter': twitter,
+        'general': general,
+      };
+
+  @override
+  List<Object?> get props => [whatsapp, facebook, telegram, twitter, general];
+}

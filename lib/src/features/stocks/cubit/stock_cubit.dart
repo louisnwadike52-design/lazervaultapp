@@ -860,8 +860,8 @@ class StockCubit extends Cubit<StockState> {
       await Future.delayed(Duration(milliseconds: 500));
       
       // Generate mock chart data based on timeframe
-      final chartData = _generateChartData(symbol, timeframe);
-      
+      _generateChartData(symbol, timeframe);
+
       // For now, we'll just complete the future since we're using mock data
       // In a real implementation, you would emit a new state with updated chart data
 

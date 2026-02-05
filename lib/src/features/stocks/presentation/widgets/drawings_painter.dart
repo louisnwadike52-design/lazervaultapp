@@ -124,8 +124,7 @@ class DrawingsPainter extends CustomPainter {
       // Calculate measurements
       final priceDiff = (element.pricePoints.last - element.pricePoints.first).abs();
       final timeDiff = (element.timeIndices.last - element.timeIndices.first).abs();
-      final distance = (end - start).distance;
-      
+
       // Draw measurement labels
       final midPoint = Offset(
         (start.dx + end.dx) / 2,

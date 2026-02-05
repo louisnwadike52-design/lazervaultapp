@@ -92,8 +92,6 @@ class _DashboardCardSummaryViewState extends State<_DashboardCardSummaryView> {
 
     // Always fetch fresh data on dashboard init to ensure balance is current
     // (e.g., after invoice payment, transfer, etc.)
-    final cubit = context.read<AccountCardsSummaryCubit>();
-
       // Get active country from ProfileCubit
       final profileState = context.read<ProfileCubit>().state;
       String? activeCountry;
@@ -312,8 +310,6 @@ class _DashboardCardSummaryViewState extends State<_DashboardCardSummaryView> {
 
                     // Show family setup card for users without family account
                     // Since signup is now Nigeria-only, all users can set up family accounts
-                    final isNigeriaUser = EmptyAccountState.isCountrySupported(countryCode);
-
                     return AccountCarousel(
                       accountSummaries: accountSummaries,
                       onShowDetails: _showCardDetailsSheet,

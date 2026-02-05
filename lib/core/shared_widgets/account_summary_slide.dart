@@ -427,7 +427,7 @@ class _AccountSummarySlideContentState extends State<AccountSummarySlideContent>
 
   Future<void> _selectLocale(CountryLocale countryLocale) async {
     try {
-      await _localeManager.updateLocale(
+      _localeManager.updateLocale(
         locale: countryLocale.locale,
         country: countryLocale.countryCode,
       );

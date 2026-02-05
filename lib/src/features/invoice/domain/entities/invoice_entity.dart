@@ -505,6 +505,30 @@ class InvoiceItem extends Equatable {
         category,
       ];
 
+  factory InvoiceItem.fromJson(Map<String, dynamic> json) {
+    return InvoiceItem(
+      id: json['id'] as String? ?? '',
+      name: json['name'] as String? ?? '',
+      description: json['description'] as String?,
+      quantity: (json['quantity'] as num?)?.toDouble() ?? 1.0,
+      unitPrice: (json['unitPrice'] as num?)?.toDouble() ?? 0.0,
+      totalPrice: (json['totalPrice'] as num?)?.toDouble() ?? 0.0,
+      category: json['category'] as String?,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'description': description,
+      'quantity': quantity,
+      'unitPrice': unitPrice,
+      'totalPrice': totalPrice,
+      'category': category,
+    };
+  }
+
   InvoiceItem copyWith({
     String? id,
     String? name,

@@ -320,12 +320,10 @@ class _AirtimePaymentProcessingScreenState extends State<AirtimePaymentProcessin
   Widget _buildProcessingText(AirtimeState state) {
     String title = 'Processing Payment';
     String subtitle = 'Please wait while we process your airtime purchase.\nThis may take a few moments.';
-    double progress = _progressAnimation.value;
     String currentStep = 'Initializing payment...';
 
     if (state is AirtimePaymentProcessing) {
       title = 'Processing Payment';
-      progress = state.progress;
       currentStep = state.currentStep;
     } else if (state is AirtimePaymentSuccess) {
       title = 'Payment Successful!';
@@ -424,32 +422,6 @@ class _AirtimePaymentProcessingScreenState extends State<AirtimePaymentProcessin
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildLoadingDots() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: List.generate(3, (index) {
-        return AnimatedBuilder(
-          animation: _pulseController,
-          builder: (context, child) {
-            final delay = index * 0.3;
-            final animationValue = (_pulseController.value + delay) % 1.0;
-            final opacity = (animationValue < 0.5) ? animationValue * 2 : (1 - animationValue) * 2;
-
-            return Container(
-              margin: EdgeInsets.symmetric(horizontal: 4.w),
-              width: 8.w,
-              height: 8.w,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Color(0xFF3B82F6).withValues(alpha: opacity),
-              ),
-            );
-          },
-        );
-      }),
     );
   }
 

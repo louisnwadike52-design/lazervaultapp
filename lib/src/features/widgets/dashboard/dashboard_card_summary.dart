@@ -1755,7 +1755,6 @@ class _DashboardCardSummaryState extends State<DashboardCardSummary> {
   void _showBlockCardDialog(
       {required bool isTemporary, bool isStolen = false}) {
     final TextEditingController reasonController = TextEditingController();
-    bool isManualReason = false;
 
     if (isStolen) {
       _processBlockCard(

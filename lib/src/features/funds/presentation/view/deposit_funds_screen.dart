@@ -41,7 +41,6 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
   String _recognizedText = '';
   bool _isVoiceEnabled = false;
   bool _wasSelectedFromBottomSheet = false;
-  bool _isLoadingBanks = false;
   bool _isMonoLoading = false; // Loading state for Mono Connect
 
   // Dynamic bank list loaded from Mono supported banks
@@ -71,12 +70,6 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
     final List<Map<String, dynamic>> reorderedBanks = [selectedBankData];
     reorderedBanks.addAll(_banks.where((bank) => bank['name'] != _selectedBank).take(3));
     return reorderedBanks;
-  }
-
-  /// Check if deposit can proceed
-  bool get _isDepositValid {
-    final amount = double.tryParse(_amountController.text) ?? 0;
-    return _selectedBank.isNotEmpty && amount > 0;
   }
 
   /// Get currency from selected card
@@ -126,7 +119,6 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
   /// Fetches the list of banks/institutions that Mono actually supports.
   /// This ensures users only see banks that will work with the deposit flow.
   Future<void> _loadBanks() async {
-    setState(() => _isLoadingBanks = true);
     try {
       // Fetch banks from Mono API (cached)
       final monoInstitutions = await MonoInstitutionsService.instance.getInstitutions();
@@ -161,7 +153,6 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
               'monoSupported': true,
             }).toList();
           }
-          _isLoadingBanks = false;
         });
       }
     } catch (e) {
@@ -170,7 +161,6 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
         // Fallback to letting Mono show its own bank selector
         setState(() {
           _banks = [];
-          _isLoadingBanks = false;
         });
       }
     }

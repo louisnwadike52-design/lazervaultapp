@@ -88,8 +88,8 @@ class DashboardHeader extends StatelessWidget {
             );
 
             if (selectedCountry != null) {
-              // Update locale in LocaleManager (app-wide)
-              await localeManager.updateLocale(
+              // Update locale in LocaleManager (app-wide) — also auto-derives currency
+              localeManager.updateLocale(
                 locale: selectedCountry.locale,
                 country: selectedCountry.countryCode,
               );

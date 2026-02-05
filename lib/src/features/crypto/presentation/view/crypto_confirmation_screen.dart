@@ -29,45 +29,6 @@ class _CryptoConfirmationScreenState extends State<CryptoConfirmationScreen>
   bool _isCompleted = false;
   String _transactionId = '';
 
-  // Mock recent transactions for dashboard
-  final List<CryptoTransactionHistory> _recentTransactions = [
-    CryptoTransactionHistory(
-      id: 'TXN001',
-      type: CryptoTransactionType.buy,
-      cryptoName: 'Bitcoin',
-      cryptoSymbol: 'BTC',
-      amount: '0.005432',
-      gbpAmount: 350.00,
-      status: CryptoTransactionStatus.completed,
-      timestamp: DateTime.now().subtract(const Duration(hours: 2)),
-      fee: 5.25,
-    ),
-    CryptoTransactionHistory(
-      id: 'TXN002',
-      type: CryptoTransactionType.sell,
-      cryptoName: 'Ethereum',
-      cryptoSymbol: 'ETH',
-      amount: '0.2145',
-      gbpAmount: 331.25,
-      status: CryptoTransactionStatus.completed,
-      timestamp: DateTime.now().subtract(const Duration(days: 1)),
-      fee: 4.97,
-    ),
-    CryptoTransactionHistory(
-      id: 'TXN003',
-      type: CryptoTransactionType.swap,
-      cryptoName: 'Solana',
-      cryptoSymbol: 'SOL',
-      amount: '2.5',
-      gbpAmount: 392.50,
-      status: CryptoTransactionStatus.pending,
-      timestamp: DateTime.now().subtract(const Duration(days: 2)),
-      fee: 3.92,
-      fromCrypto: 'ETH',
-      toCrypto: 'SOL',
-    ),
-  ];
-
   @override
   void initState() {
     super.initState();
