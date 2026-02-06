@@ -1,22 +1,27 @@
-///
+//
 //  Generated code. Do not modify.
 //  source: support.proto
 //
 // @dart = 2.12
-// ignore_for_file: annotate_overrides,camel_case_types,constant_identifier_names,directives_ordering,library_prefixes,non_constant_identifier_names,prefer_final_fields,return_of_invalid_type,unnecessary_const,unnecessary_import,unnecessary_this,unused_import,unused_shown_name
 
-// ignore_for_file: UNDEFINED_SHOWN_NAME
+// ignore_for_file: annotate_overrides, camel_case_types, comment_references
+// ignore_for_file: constant_identifier_names, library_prefixes
+// ignore_for_file: non_constant_identifier_names, prefer_final_fields
+// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
+
 import 'dart:core' as $core;
+
 import 'package:protobuf/protobuf.dart' as $pb;
 
+/// Enums
 class TicketCategory extends $pb.ProtobufEnum {
-  static const TicketCategory TICKET_CATEGORY_UNSPECIFIED = TicketCategory._(0, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'TICKET_CATEGORY_UNSPECIFIED');
-  static const TicketCategory GENERAL_INQUIRY = TicketCategory._(1, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'GENERAL_INQUIRY');
-  static const TicketCategory TRANSACTION_ISSUE = TicketCategory._(2, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'TRANSACTION_ISSUE');
-  static const TicketCategory ACCOUNT_PROBLEM = TicketCategory._(3, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'ACCOUNT_PROBLEM');
-  static const TicketCategory TECHNICAL_SUPPORT = TicketCategory._(4, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'TECHNICAL_SUPPORT');
-  static const TicketCategory SECURITY_CONCERN = TicketCategory._(5, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'SECURITY_CONCERN');
-  static const TicketCategory OTHER = TicketCategory._(6, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'OTHER');
+  static const TicketCategory TICKET_CATEGORY_UNSPECIFIED = TicketCategory._(0, _omitEnumNames ? '' : 'TICKET_CATEGORY_UNSPECIFIED');
+  static const TicketCategory GENERAL_INQUIRY = TicketCategory._(1, _omitEnumNames ? '' : 'GENERAL_INQUIRY');
+  static const TicketCategory TRANSACTION_ISSUE = TicketCategory._(2, _omitEnumNames ? '' : 'TRANSACTION_ISSUE');
+  static const TicketCategory ACCOUNT_PROBLEM = TicketCategory._(3, _omitEnumNames ? '' : 'ACCOUNT_PROBLEM');
+  static const TicketCategory TECHNICAL_SUPPORT = TicketCategory._(4, _omitEnumNames ? '' : 'TECHNICAL_SUPPORT');
+  static const TicketCategory SECURITY_CONCERN = TicketCategory._(5, _omitEnumNames ? '' : 'SECURITY_CONCERN');
+  static const TicketCategory OTHER = TicketCategory._(6, _omitEnumNames ? '' : 'OTHER');
 
   static const $core.List<TicketCategory> values = <TicketCategory> [
     TICKET_CATEGORY_UNSPECIFIED,
@@ -35,12 +40,12 @@ class TicketCategory extends $pb.ProtobufEnum {
 }
 
 class TicketStatus extends $pb.ProtobufEnum {
-  static const TicketStatus TICKET_STATUS_UNSPECIFIED = TicketStatus._(0, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'TICKET_STATUS_UNSPECIFIED');
-  static const TicketStatus OPEN = TicketStatus._(1, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'OPEN');
-  static const TicketStatus IN_PROGRESS = TicketStatus._(2, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'IN_PROGRESS');
-  static const TicketStatus WAITING_FOR_CUSTOMER = TicketStatus._(3, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'WAITING_FOR_CUSTOMER');
-  static const TicketStatus RESOLVED = TicketStatus._(4, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'RESOLVED');
-  static const TicketStatus CLOSED = TicketStatus._(5, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'CLOSED');
+  static const TicketStatus TICKET_STATUS_UNSPECIFIED = TicketStatus._(0, _omitEnumNames ? '' : 'TICKET_STATUS_UNSPECIFIED');
+  static const TicketStatus OPEN = TicketStatus._(1, _omitEnumNames ? '' : 'OPEN');
+  static const TicketStatus IN_PROGRESS = TicketStatus._(2, _omitEnumNames ? '' : 'IN_PROGRESS');
+  static const TicketStatus WAITING_FOR_CUSTOMER = TicketStatus._(3, _omitEnumNames ? '' : 'WAITING_FOR_CUSTOMER');
+  static const TicketStatus RESOLVED = TicketStatus._(4, _omitEnumNames ? '' : 'RESOLVED');
+  static const TicketStatus CLOSED = TicketStatus._(5, _omitEnumNames ? '' : 'CLOSED');
 
   static const $core.List<TicketStatus> values = <TicketStatus> [
     TICKET_STATUS_UNSPECIFIED,
@@ -58,11 +63,11 @@ class TicketStatus extends $pb.ProtobufEnum {
 }
 
 class TicketPriority extends $pb.ProtobufEnum {
-  static const TicketPriority TICKET_PRIORITY_UNSPECIFIED = TicketPriority._(0, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'TICKET_PRIORITY_UNSPECIFIED');
-  static const TicketPriority LOW = TicketPriority._(1, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'LOW');
-  static const TicketPriority MEDIUM = TicketPriority._(2, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'MEDIUM');
-  static const TicketPriority HIGH = TicketPriority._(3, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'HIGH');
-  static const TicketPriority URGENT = TicketPriority._(4, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'URGENT');
+  static const TicketPriority TICKET_PRIORITY_UNSPECIFIED = TicketPriority._(0, _omitEnumNames ? '' : 'TICKET_PRIORITY_UNSPECIFIED');
+  static const TicketPriority LOW = TicketPriority._(1, _omitEnumNames ? '' : 'LOW');
+  static const TicketPriority MEDIUM = TicketPriority._(2, _omitEnumNames ? '' : 'MEDIUM');
+  static const TicketPriority HIGH = TicketPriority._(3, _omitEnumNames ? '' : 'HIGH');
+  static const TicketPriority URGENT = TicketPriority._(4, _omitEnumNames ? '' : 'URGENT');
 
   static const $core.List<TicketPriority> values = <TicketPriority> [
     TICKET_PRIORITY_UNSPECIFIED,
@@ -78,3 +83,5 @@ class TicketPriority extends $pb.ProtobufEnum {
   const TicketPriority._($core.int v, $core.String n) : super(v, n);
 }
 
+
+const _omitEnumNames = $core.bool.fromEnvironment('protobuf.omit_enum_names');

@@ -1356,6 +1356,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
 
             String sourceAccountInfo = 'Unknown Card';
             String senderCurrency = 'NGN';
+            String sourceAccountName = '';
             final summaries = switch (accountState) {
               AccountCardsSummaryLoaded(:final accountSummaries) => accountSummaries,
               AccountBalanceUpdated(:final accountSummaries) => accountSummaries,
@@ -1369,6 +1370,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
               String sourceLast4 = selectedAccount.accountNumberLast4;
               sourceAccountInfo = '$sourceCardType •••• $sourceLast4';
               senderCurrency = selectedAccount.currency;
+              sourceAccountName = selectedAccount.accountName ?? '';
             }
 
             String recipientAccountMasked = _recipient!.accountNumber.length >
@@ -1382,7 +1384,9 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
               'totalAmount': totalAmount,
               'recipientName': _recipient!.name,
               'recipientAccountMasked': recipientAccountMasked,
+              'recipientBankName': _recipient!.bankName,
               'sourceAccountInfo': sourceAccountInfo,
+              'sourceAccountName': sourceAccountName,
               'currency': senderCurrency,
               'transferId':
                   transferState.response.transferId.toString(),

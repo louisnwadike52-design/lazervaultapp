@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../domain/entities/crowdfund_entities.dart';
 import '../cubit/crowdfund_cubit.dart';
 import 'donation_processing_screen.dart';
@@ -23,11 +24,31 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen> {
   final _messageController = TextEditingController();
 
   double? _selectedSuggestedAmount;
-  int? _selectedAccountId;
   bool _isAnonymous = false;
   bool _isCustomAmount = false;
+  bool _accountSelected = false;
 
-  final List<double> _suggestedAmounts = [10, 25, 50, 100];
+  /// Returns currency-aware suggested amounts for donations
+  List<double> get _suggestedAmounts {
+    final currency = widget.crowdfund.currency.toUpperCase();
+    switch (currency) {
+      case 'NGN':
+        return [500, 1000, 2000, 5000, 10000, 20000];
+      case 'GBP':
+      case 'EUR':
+      case 'USD':
+        return [10, 25, 50, 100, 200, 500];
+      case 'ZAR':
+        return [100, 250, 500, 1000, 2000, 5000];
+      case 'INR':
+        return [500, 1000, 2500, 5000, 10000, 25000];
+      case 'CAD':
+      case 'AUD':
+        return [15, 30, 60, 120, 250, 500];
+      default:
+        return [10, 25, 50, 100, 200, 500];
+    }
+  }
 
   @override
   void dispose() {
@@ -49,7 +70,7 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen> {
                 ? null
                 : _messageController.text.trim(),
             isAnonymous: _isAnonymous,
-            sourceAccountId: _selectedAccountId,
+            sourceAccountId: null, // Will use default account
           );
 
       Navigator.pushReplacement(
@@ -68,7 +89,7 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFF0A0A0A),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1F1F1F),
+        backgroundColor: const Color(0xFF0A0A0A),
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
@@ -76,10 +97,10 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen> {
         ),
         title: Text(
           'Make a Donation',
-          style: TextStyle(
+          style: GoogleFonts.inter(
             color: Colors.white,
             fontSize: 18.sp,
-            fontWeight: FontWeight.bold,
+            fontWeight: FontWeight.w700,
           ),
         ),
       ),
@@ -96,10 +117,10 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen> {
               // Amount section
               Text(
                 'Select Amount',
-                style: TextStyle(
+                style: GoogleFonts.inter(
                   color: Colors.white,
                   fontSize: 18.sp,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
               SizedBox(height: 12.h),
@@ -114,10 +135,10 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen> {
               // Source account section
               Text(
                 'Source Account',
-                style: TextStyle(
+                style: GoogleFonts.inter(
                   color: Colors.white,
                   fontSize: 18.sp,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
               SizedBox(height: 12.h),
@@ -126,10 +147,10 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen> {
               // Optional message
               Text(
                 'Message (Optional)',
-                style: TextStyle(
+                style: GoogleFonts.inter(
                   color: Colors.white,
                   fontSize: 18.sp,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
               SizedBox(height: 12.h),
@@ -145,17 +166,18 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen> {
                   onPressed: (_selectedSuggestedAmount != null ||
                           (_isCustomAmount &&
                               _amountController.text.isNotEmpty)) &&
-                      _selectedAccountId != null
+                      _accountSelected
                       ? _processDonation
                       : null,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF4E03D0),
+                    backgroundColor: const Color(0xFF6366F1),
                     padding: EdgeInsets.symmetric(vertical: 16.h),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12.r),
                     ),
                     disabledBackgroundColor:
-                        const Color(0xFF4E03D0).withValues(alpha: 0.3),
+                        const Color(0xFF6366F1).withValues(alpha: 0.3),
+                    elevation: 0,
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -168,10 +190,10 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen> {
                       SizedBox(width: 8.w),
                       Text(
                         'Donate ${widget.crowdfund.currency} ${_getDonationAmount().toStringAsFixed(2)}',
-                        style: TextStyle(
+                        style: GoogleFonts.inter(
                           color: Colors.white,
                           fontSize: 16.sp,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ],
@@ -189,9 +211,15 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen> {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
+        gradient: const LinearGradient(
+          colors: [
+            Color(0xFF1A1A3E),
+            Color(0xFF0A0E27),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: const Color(0xFF2D2D2D)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -200,17 +228,17 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen> {
             children: [
               CircleAvatar(
                 radius: 24.r,
-                backgroundColor: const Color(0xFF4E03D0).withValues(alpha: 0.2),
+                backgroundColor: const Color(0xFF6366F1).withValues(alpha: 0.2),
                 backgroundImage: widget.crowdfund.creator.profilePicture != null
                     ? NetworkImage(widget.crowdfund.creator.profilePicture!)
                     : null,
                 child: widget.crowdfund.creator.profilePicture == null
                     ? Text(
                         '${widget.crowdfund.creator.firstName[0]}${widget.crowdfund.creator.lastName[0]}',
-                        style: TextStyle(
-                          color: const Color(0xFF4E03D0),
+                        style: GoogleFonts.inter(
+                          color: const Color(0xFF6366F1),
                           fontSize: 14.sp,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w700,
                         ),
                       )
                     : null,
@@ -222,10 +250,10 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen> {
                   children: [
                     Text(
                       widget.crowdfund.title,
-                      style: TextStyle(
+                      style: GoogleFonts.inter(
                         color: Colors.white,
                         fontSize: 16.sp,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w700,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -235,8 +263,8 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen> {
                       children: [
                         Text(
                           '${widget.crowdfund.creator.firstName} ${widget.crowdfund.creator.lastName}',
-                          style: TextStyle(
-                            color: Colors.grey[400],
+                          style: GoogleFonts.inter(
+                            color: const Color(0xFF9CA3AF),
                             fontSize: 13.sp,
                           ),
                         ),
@@ -256,21 +284,24 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen> {
             ],
           ),
           SizedBox(height: 12.h),
-          Divider(color: const Color(0xFF2D2D2D)),
+          Container(
+            height: 1,
+            color: Colors.white.withValues(alpha: 0.1),
+          ),
           SizedBox(height: 12.h),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
                 'Target',
-                style: TextStyle(
-                  color: Colors.grey[500],
+                style: GoogleFonts.inter(
+                  color: const Color(0xFF6B7280),
                   fontSize: 12.sp,
                 ),
               ),
               Text(
                 '${widget.crowdfund.currency} ${widget.crowdfund.targetAmount.toStringAsFixed(2)}',
-                style: TextStyle(
+                style: GoogleFonts.inter(
                   color: Colors.white,
                   fontSize: 14.sp,
                   fontWeight: FontWeight.w600,
@@ -284,17 +315,17 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen> {
             children: [
               Text(
                 'Raised',
-                style: TextStyle(
-                  color: Colors.grey[500],
+                style: GoogleFonts.inter(
+                  color: const Color(0xFF6B7280),
                   fontSize: 12.sp,
                 ),
               ),
               Text(
                 '${widget.crowdfund.currency} ${widget.crowdfund.currentAmount.toStringAsFixed(2)}',
-                style: TextStyle(
-                  color: const Color(0xFF4E03D0),
+                style: GoogleFonts.inter(
+                  color: const Color(0xFF6366F1),
                   fontSize: 14.sp,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
             ],
@@ -329,24 +360,23 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen> {
           borderRadius: BorderRadius.circular(12.r),
           child: Container(
             decoration: BoxDecoration(
-              color: isSelected
-                  ? const Color(0xFF4E03D0)
-                  : const Color(0xFF1F1F1F),
+              gradient: isSelected
+                  ? const LinearGradient(
+                      colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    )
+                  : null,
+              color: isSelected ? null : const Color(0xFF1F1F1F),
               borderRadius: BorderRadius.circular(12.r),
-              border: Border.all(
-                color: isSelected
-                    ? const Color(0xFF4E03D0)
-                    : const Color(0xFF2D2D2D),
-                width: isSelected ? 2 : 1,
-              ),
             ),
             child: Center(
               child: Text(
                 '${widget.crowdfund.currency} ${amount.toInt()}',
-                style: TextStyle(
-                  color: isSelected ? Colors.white : Colors.grey[400],
+                style: GoogleFonts.inter(
+                  color: isSelected ? Colors.white : const Color(0xFF9CA3AF),
                   fontSize: 14.sp,
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
                 ),
               ),
             ),
@@ -370,24 +400,23 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen> {
       child: Container(
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
-          color: _isCustomAmount
-              ? const Color(0xFF4E03D0)
-              : const Color(0xFF1F1F1F),
+          gradient: _isCustomAmount
+              ? const LinearGradient(
+                  colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                )
+              : null,
+          color: _isCustomAmount ? null : const Color(0xFF1F1F1F),
           borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(
-            color: _isCustomAmount
-                ? const Color(0xFF4E03D0)
-                : const Color(0xFF2D2D2D),
-            width: _isCustomAmount ? 2 : 1,
-          ),
         ),
         child: Center(
           child: Text(
             'Custom Amount',
-            style: TextStyle(
-              color: _isCustomAmount ? Colors.white : Colors.grey[400],
+            style: GoogleFonts.inter(
+              color: _isCustomAmount ? Colors.white : const Color(0xFF9CA3AF),
               fontSize: 14.sp,
-              fontWeight: _isCustomAmount ? FontWeight.bold : FontWeight.w600,
+              fontWeight: _isCustomAmount ? FontWeight.w700 : FontWeight.w600,
             ),
           ),
         ),
@@ -400,7 +429,7 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen> {
       controller: _amountController,
       keyboardType: TextInputType.number,
       autofocus: true,
-      style: TextStyle(
+      style: GoogleFonts.inter(
         color: Colors.white,
         fontSize: 16.sp,
       ),
@@ -421,18 +450,18 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen> {
       },
       decoration: InputDecoration(
         hintText: 'Enter amount',
-        hintStyle: TextStyle(
-          color: Colors.grey[600],
+        hintStyle: GoogleFonts.inter(
+          color: const Color(0xFF6B7280),
           fontSize: 16.sp,
         ),
         prefixIcon: Padding(
           padding: EdgeInsets.only(left: 16.w, top: 14.h),
           child: Text(
             widget.crowdfund.currency,
-            style: TextStyle(
-              color: const Color(0xFF4E03D0),
+            style: GoogleFonts.inter(
+              color: const Color(0xFF6366F1),
               fontSize: 16.sp,
-              fontWeight: FontWeight.bold,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ),
@@ -440,18 +469,15 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen> {
         fillColor: const Color(0xFF1F1F1F),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.r),
-          borderSide: const BorderSide(color: Color(0xFF2D2D2D)),
+          borderSide: BorderSide.none,
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.r),
-          borderSide: const BorderSide(color: Color(0xFF2D2D2D)),
+          borderSide: BorderSide.none,
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.r),
-          borderSide: const BorderSide(
-            color: Color(0xFF4E03D0),
-            width: 2,
-          ),
+          borderSide: BorderSide.none,
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.r),
@@ -469,20 +495,17 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen> {
   }
 
   Widget _buildAccountSelector() {
-    // Mock accounts - replace with real account data
+    // Mock accounts for UI display
     final accounts = [
-      {'id': 1, 'name': 'Main Account', 'balance': 1000.0},
-      {'id': 2, 'name': 'Savings Account', 'balance': 5000.0},
-      {'id': 3, 'name': 'Business Account', 'balance': 2500.0},
+      {'name': 'Default Account', 'currency': widget.crowdfund.currency},
     ];
 
     return Column(
       children: accounts.map((account) {
-        final isSelected = _selectedAccountId == account['id'];
         return InkWell(
           onTap: () {
             setState(() {
-              _selectedAccountId = account['id'] as int;
+              _accountSelected = true;
             });
           },
           borderRadius: BorderRadius.circular(12.r),
@@ -490,26 +513,25 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen> {
             margin: EdgeInsets.only(bottom: 8.h),
             padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
-              color: isSelected
-                  ? const Color(0xFF4E03D0).withValues(alpha: 0.1)
-                  : const Color(0xFF1F1F1F),
+              gradient: _accountSelected
+                  ? const LinearGradient(
+                      colors: [Color(0xFF1A1A3E), Color(0xFF0A0E27)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    )
+                  : null,
+              color: _accountSelected ? null : const Color(0xFF1F1F1F),
               borderRadius: BorderRadius.circular(12.r),
-              border: Border.all(
-                color: isSelected
-                    ? const Color(0xFF4E03D0)
-                    : const Color(0xFF2D2D2D),
-                width: isSelected ? 2 : 1,
-              ),
             ),
             child: Row(
               children: [
                 Icon(
-                  isSelected
+                  _accountSelected
                       ? Icons.radio_button_checked
                       : Icons.radio_button_unchecked,
-                  color: isSelected
-                      ? const Color(0xFF4E03D0)
-                      : Colors.grey[500],
+                  color: _accountSelected
+                      ? const Color(0xFF6366F1)
+                      : const Color(0xFF6B7280),
                 ),
                 SizedBox(width: 12.w),
                 Expanded(
@@ -518,7 +540,7 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen> {
                     children: [
                       Text(
                         account['name'] as String,
-                        style: TextStyle(
+                        style: GoogleFonts.inter(
                           color: Colors.white,
                           fontSize: 14.sp,
                           fontWeight: FontWeight.w600,
@@ -526,9 +548,9 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen> {
                       ),
                       SizedBox(height: 2.h),
                       Text(
-                        'Balance: ${widget.crowdfund.currency} ${(account['balance'] as double).toStringAsFixed(2)}',
-                        style: TextStyle(
-                          color: Colors.grey[500],
+                        'Donation will use your default account',
+                        style: GoogleFonts.inter(
+                          color: const Color(0xFF6B7280),
                           fontSize: 12.sp,
                         ),
                       ),
@@ -548,35 +570,32 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen> {
       controller: _messageController,
       maxLines: 3,
       maxLength: 200,
-      style: TextStyle(
+      style: GoogleFonts.inter(
         color: Colors.white,
         fontSize: 14.sp,
       ),
       decoration: InputDecoration(
         hintText: 'Add a message of support (optional)',
-        hintStyle: TextStyle(
-          color: Colors.grey[600],
+        hintStyle: GoogleFonts.inter(
+          color: const Color(0xFF6B7280),
           fontSize: 14.sp,
         ),
         filled: true,
         fillColor: const Color(0xFF1F1F1F),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.r),
-          borderSide: const BorderSide(color: Color(0xFF2D2D2D)),
+          borderSide: BorderSide.none,
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.r),
-          borderSide: const BorderSide(color: Color(0xFF2D2D2D)),
+          borderSide: BorderSide.none,
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.r),
-          borderSide: const BorderSide(
-            color: Color(0xFF4E03D0),
-            width: 2,
-          ),
+          borderSide: BorderSide.none,
         ),
-        counterStyle: TextStyle(
-          color: Colors.grey[600],
+        counterStyle: GoogleFonts.inter(
+          color: const Color(0xFF6B7280),
           fontSize: 11.sp,
         ),
       ),
@@ -595,7 +614,6 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen> {
         decoration: BoxDecoration(
           color: const Color(0xFF1F1F1F),
           borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(color: const Color(0xFF2D2D2D)),
         ),
         child: Row(
           children: [
@@ -606,7 +624,7 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen> {
                   _isAnonymous = value ?? false;
                 });
               },
-              activeColor: const Color(0xFF4E03D0),
+              activeColor: const Color(0xFF6366F1),
             ),
             SizedBox(width: 8.w),
             Expanded(
@@ -615,7 +633,7 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen> {
                 children: [
                   Text(
                     'Donate anonymously',
-                    style: TextStyle(
+                    style: GoogleFonts.inter(
                       color: Colors.white,
                       fontSize: 14.sp,
                       fontWeight: FontWeight.w600,
@@ -624,8 +642,8 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen> {
                   SizedBox(height: 2.h),
                   Text(
                     'Your name will not be shown publicly',
-                    style: TextStyle(
-                      color: Colors.grey[500],
+                    style: GoogleFonts.inter(
+                      color: const Color(0xFF6B7280),
                       fontSize: 12.sp,
                     ),
                   ),

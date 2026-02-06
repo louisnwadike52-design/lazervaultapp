@@ -58,7 +58,7 @@ class _PendingMutationsWidgetState extends State<PendingMutationsWidget> {
     _statusSubscription = widget.mutationQueue.statusStream.listen((event) {
       _loadMutations();
       setState(() {
-        _isProcessing = event.status == MutationStatus.processing;
+        _isProcessing = event.type == MutationEventType.processing;
       });
     });
   }
@@ -70,7 +70,9 @@ class _PendingMutationsWidgetState extends State<PendingMutationsWidget> {
   }
 
   void _loadMutations() {
-    final all = widget.mutationQueue.getPendingMutations();
+    final all = widget.mutationQueue.queue
+        .where((m) => m.status == MutationStatus.pending)
+        .toList();
     setState(() {
       if (widget.filterTypes != null) {
         _mutations = all
@@ -118,37 +120,21 @@ class _PendingMutationsWidgetState extends State<PendingMutationsWidget> {
 
   String _getMutationDescription(QueuedMutation mutation) {
     switch (mutation.type) {
-      case MutationType.tagPayment:
-        return 'tag payment';
       case MutationType.tagCreation:
         final amount = mutation.payload['amount'];
         final currency = mutation.payload['currency'] ?? '';
         return 'tag creation ($currency ${amount?.toStringAsFixed(2) ?? '?'})';
-      case MutationType.invoicePayment:
-        return 'invoice payment';
-      case MutationType.transfer:
-        return 'money transfer';
-      case MutationType.groupContribution:
-        return 'group contribution';
       case MutationType.invoiceCreation:
         return 'invoice creation';
       case MutationType.generic:
-        return 'operation';
+        return mutation.description ?? 'operation';
     }
   }
 
   String _getMutationIcon(MutationType type) {
     switch (type) {
-      case MutationType.tagPayment:
-        return '🏷️';
       case MutationType.tagCreation:
         return '📝';
-      case MutationType.invoicePayment:
-        return '📄';
-      case MutationType.transfer:
-        return '💸';
-      case MutationType.groupContribution:
-        return '👥';
       case MutationType.invoiceCreation:
         return '📋';
       case MutationType.generic:
@@ -419,7 +405,9 @@ class _PendingMutationsBadgeState extends State<PendingMutationsBadge> {
   }
 
   void _updateCount() {
-    final mutations = widget.mutationQueue.getPendingMutations();
+    final mutations = widget.mutationQueue.queue
+        .where((m) => m.status == MutationStatus.pending)
+        .toList();
     setState(() {
       if (widget.filterTypes != null) {
         _count = mutations.where((m) => widget.filterTypes!.contains(m.type)).length;

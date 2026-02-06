@@ -50,34 +50,83 @@ class RecipientTransactionHistoryCubit extends Cubit<RecipientTransactionHistory
     emit(const RecipientTransactionHistoryLoading());
 
     try {
-      final response = await repository.fetchServiceTransactions(
-        TransactionServiceType.transfer,
+      // Fetch ALL transactions (not just transfers) since payments could be categorized differently
+      final response = await repository.fetchAllTransactions(
         page: 1,
         limit: 100,
       );
 
-      final accountLower = recipientAccountNumber.toLowerCase();
-      final nameLower = recipientName.toLowerCase();
+      final nameLower = recipientName.toLowerCase().trim();
+      final nameWords = nameLower.split(' ').where((w) => w.isNotEmpty).toList();
 
+      // For outgoing transfers/payments, match by recipient name
       final filtered = response.transactions.where((tx) {
-        // Match by counterparty account
-        if (tx.counterpartyAccount?.toLowerCase() == accountLower) return true;
+        // Only include outgoing transactions (money sent to this recipient)
+        if (tx.flow != TransactionFlow.outgoing) return false;
+
+        // Match by title containing recipient name (most reliable)
+        if (tx.title.toLowerCase().contains(nameLower)) {
+          return true;
+        }
+
+        // Match by any word of recipient name in title (handles name variations)
+        if (nameWords.isNotEmpty) {
+          for (final word in nameWords) {
+            if (word.length > 2 && tx.title.toLowerCase().contains(word)) {
+              return true;
+            }
+          }
+        }
+
         // Match by counterparty name
-        if (tx.counterpartyName?.toLowerCase() == nameLower) return true;
-        // Match by description containing account number or name
+        if (tx.counterpartyName?.toLowerCase().contains(nameLower) == true) {
+          return true;
+        }
+
+        // Match by counterparty name containing any word of recipient name
+        if (tx.counterpartyName != null && nameWords.isNotEmpty) {
+          for (final word in nameWords) {
+            if (word.length > 2 && tx.counterpartyName!.toLowerCase().contains(word)) {
+              return true;
+            }
+          }
+        }
+
+        // Match by description containing recipient name
         final desc = tx.description?.toLowerCase() ?? '';
-        if (desc.contains(accountLower)) return true;
-        if (accountLower.isNotEmpty && desc.contains(accountLower)) return true;
-        // Match by metadata
+        if (desc.contains(nameLower)) {
+          return true;
+        }
+
+        // Match by metadata - check all metadata values for recipient name
         final meta = tx.metadata;
         if (meta != null) {
-          final metaRecipient = (meta['recipient_name'] as String?)?.toLowerCase();
-          final metaAccount = (meta['recipient_account'] as String?)?.toLowerCase();
-          if (metaRecipient == nameLower) return true;
-          if (metaAccount == accountLower) return true;
+          for (final value in meta.values) {
+            if (value?.toString().toLowerCase().contains(nameLower) == true) {
+              return true;
+            }
+          }
         }
+
+        // Match transfers by checking title keywords
+        if (tx.title.toLowerCase().contains('transfer') ||
+            tx.title.toLowerCase().contains('sent')) {
+          // Check if account number matches
+          if (recipientAccountNumber.isNotEmpty) {
+            final accountDigits = recipientAccountNumber.replaceAll(RegExp(r'[^\d]'), '');
+            final txDesc = (tx.description ?? '').toLowerCase();
+            final txMeta = tx.metadata.toString().toLowerCase();
+            if (txDesc.contains(accountDigits) || txMeta.contains(accountDigits)) {
+              return true;
+            }
+          }
+        }
+
         return false;
       }).toList();
+
+      // Sort by date, newest first
+      filtered.sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
       if (filtered.isEmpty) {
         emit(const RecipientTransactionHistoryEmpty());

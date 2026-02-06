@@ -97,11 +97,17 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
     required String name,
     required String description,
     required String adminId,
+    Map<String, dynamic>? metadata,
   }) async {
     try {
       final request = pb.CreateGroupRequest()
         ..name = name
         ..description = description;
+
+      // Add metadata if provided
+      if (metadata != null && metadata.isNotEmpty) {
+        request.metadata = _encodeMetadata(metadata);
+      }
 
       final callOptions = await _callOptionsHelper.withAuth();
       final response = await _client.createGroup(request, options: callOptions);
@@ -119,7 +125,13 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
       final request = pb.UpdateGroupRequest()
         ..groupId = group.id
         ..name = group.name
-        ..description = group.description;
+        ..description = group.description
+        ..status = _mapGroupStatusToProto(group.status);
+
+      // Include metadata if present
+      if (group.metadata != null && group.metadata!.isNotEmpty) {
+        request.metadata = _encodeMetadata(group.metadata!);
+      }
 
       final callOptions = await _callOptionsHelper.withAuth();
       final response = await _client.updateGroup(request, options: callOptions);
@@ -342,6 +354,7 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
     int? gracePeriodDays,
     bool allowPartialPayments = true,
     double? minimumBalance,
+    Map<String, dynamic>? metadata,
   }) async {
     print('🔵 GroupAccountGrpcDataSource: createContribution called');
     print('🔵 createContribution params: groupId=$groupId, title=$title, type=$type, createdBy=$createdBy');
@@ -375,6 +388,12 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
       if (penaltyAmount != null) {
         request.penaltyAmount = _amountToInt64(penaltyAmount);
       }
+
+      // Add metadata if provided
+      if (metadata != null && metadata.isNotEmpty) {
+        request.metadata = _encodeMetadata(metadata);
+      }
+
       if (gracePeriodDays != null) {
         request.gracePeriodDays = gracePeriodDays;
       }
@@ -402,6 +421,11 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
         ..description = contribution.description
         ..targetAmount = _amountToInt64(contribution.targetAmount)
         ..status = _mapContributionStatusToProto(contribution.status);
+
+      // Include metadata if present
+      if (contribution.metadata != null && contribution.metadata!.isNotEmpty) {
+        request.metadata = _encodeMetadata(contribution.metadata!);
+      }
 
       final callOptions = await _callOptionsHelper.withAuth();
       final response = await _client.updateContribution(request, options: callOptions);
@@ -882,6 +906,7 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
       createdAt: _timestampToDateTime(group.createdAt),
       updatedAt: _timestampToDateTime(group.updatedAt),
       status: _mapGroupStatusFromProto(group.status),
+      metadata: group.metadata.isNotEmpty ? _decodeMetadata(group.metadata) : null,
     );
   }
 
@@ -1047,6 +1072,17 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
         return GroupAccountStatus.suspended; // closed not in domain
       default:
         return GroupAccountStatus.active;
+    }
+  }
+
+  pb_enum.GroupAccountStatus _mapGroupStatusToProto(GroupAccountStatus status) {
+    switch (status) {
+      case GroupAccountStatus.active:
+        return pb_enum.GroupAccountStatus.GROUP_ACCOUNT_STATUS_ACTIVE;
+      case GroupAccountStatus.suspended:
+        return pb_enum.GroupAccountStatus.GROUP_ACCOUNT_STATUS_SUSPENDED;
+      case GroupAccountStatus.deleted:
+        return pb_enum.GroupAccountStatus.GROUP_ACCOUNT_STATUS_CLOSED;
     }
   }
 
@@ -1220,10 +1256,14 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
     switch (status) {
       case pb_enum.PayoutTransactionStatus.PAYOUT_TRANSACTION_STATUS_PENDING:
         return PayoutTransactionStatus.pending;
+      case pb_enum.PayoutTransactionStatus.PAYOUT_TRANSACTION_STATUS_PROCESSING:
+        return PayoutTransactionStatus.processing;
       case pb_enum.PayoutTransactionStatus.PAYOUT_TRANSACTION_STATUS_COMPLETED:
         return PayoutTransactionStatus.completed;
       case pb_enum.PayoutTransactionStatus.PAYOUT_TRANSACTION_STATUS_FAILED:
         return PayoutTransactionStatus.failed;
+      case pb_enum.PayoutTransactionStatus.PAYOUT_TRANSACTION_STATUS_REFUNDED:
+        return PayoutTransactionStatus.refunded;
       default:
         return PayoutTransactionStatus.pending;
     }
@@ -1241,6 +1281,8 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
         return pb_enum.PayoutTransactionStatus.PAYOUT_TRANSACTION_STATUS_FAILED;
       case PayoutTransactionStatus.cancelled:
         return pb_enum.PayoutTransactionStatus.PAYOUT_TRANSACTION_STATUS_FAILED; // Map to failed as fallback
+      case PayoutTransactionStatus.refunded:
+        return pb_enum.PayoutTransactionStatus.PAYOUT_TRANSACTION_STATUS_REFUNDED;
     }
   }
 
@@ -1321,4 +1363,33 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
       createdAt: log.hasCreatedAt() ? _timestampToDateTime(log.createdAt) : DateTime.now(),
     );
   }
+
+  // ============================================================================
+  // METADATA HELPERS
+  // ============================================================================
+
+  /// Encode metadata Map to JSON string for gRPC transmission
+  String _encodeMetadata(Map<String, dynamic> metadata) {
+    try {
+      return jsonEncode(metadata);
+    } catch (e) {
+      print('🔴 GroupAccountGrpcDataSource: Failed to encode metadata - $e');
+      return '{}';
+    }
+  }
+
+  /// Decode metadata JSON string from gRPC to Map
+  Map<String, dynamic> _decodeMetadata(String metadataJson) {
+    try {
+      if (metadataJson.isEmpty) return {};
+      final decoded = jsonDecode(metadataJson) as Map<String, dynamic>;
+      return decoded;
+    } catch (e) {
+      print('🔴 GroupAccountGrpcDataSource: Failed to decode metadata - $e');
+      return {};
+    }
+  }
+
+  // ============================================================================
+  // ENUM MAPPING HELPERS
 }

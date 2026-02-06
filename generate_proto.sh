@@ -86,6 +86,14 @@ protoc --dart_out=grpc:lib/src/generated \
   -Iproto \
   ../microservices/banking-service/proto/banking.proto
 
+# Generate invoice.proto from invoice-service
+echo "Generating Dart code from invoice.proto..."
+protoc --dart_out=grpc:lib/src/generated \
+  -I../microservices/invoice-service/invoice-microservice/proto \
+  -I../services/core-gateway/proto \
+  -Iproto \
+  ../microservices/invoice-service/invoice-microservice/proto/invoice.proto
+
 if [ $? -eq 0 ]; then
     echo "Dart code generation successful."
 else

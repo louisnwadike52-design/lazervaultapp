@@ -1,28 +1,22 @@
-///
+//
 //  Generated code. Do not modify.
 //  source: contactless_payment.proto
 //
 // @dart = 2.12
-// ignore_for_file: annotate_overrides,camel_case_types,constant_identifier_names,directives_ordering,library_prefixes,non_constant_identifier_names,prefer_final_fields,return_of_invalid_type,unnecessary_const,unnecessary_import,unnecessary_this,unused_import,unused_shown_name
+
+// ignore_for_file: annotate_overrides, camel_case_types, comment_references
+// ignore_for_file: constant_identifier_names, library_prefixes
+// ignore_for_file: non_constant_identifier_names, prefer_final_fields
+// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
 
 import 'dart:core' as $core;
 
 import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'google/protobuf/timestamp.pb.dart' as $1;
+import 'google/protobuf/timestamp.pb.dart' as $42;
 
 class CreatePaymentSessionRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CreatePaymentSessionRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'contactless_payment'), createEmptyInstance: create)
-    ..a<$core.double>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'category')
-    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
-    ..a<$core.int>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'validitySeconds', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
-
-  CreatePaymentSessionRequest._() : super();
   factory CreatePaymentSessionRequest({
     $core.double? amount,
     $core.String? currency,
@@ -30,26 +24,37 @@ class CreatePaymentSessionRequest extends $pb.GeneratedMessage {
     $core.String? description,
     $core.int? validitySeconds,
   }) {
-    final _result = create();
+    final $result = create();
     if (amount != null) {
-      _result.amount = amount;
+      $result.amount = amount;
     }
     if (currency != null) {
-      _result.currency = currency;
+      $result.currency = currency;
     }
     if (category != null) {
-      _result.category = category;
+      $result.category = category;
     }
     if (description != null) {
-      _result.description = description;
+      $result.description = description;
     }
     if (validitySeconds != null) {
-      _result.validitySeconds = validitySeconds;
+      $result.validitySeconds = validitySeconds;
     }
-    return _result;
+    return $result;
   }
+  CreatePaymentSessionRequest._() : super();
   factory CreatePaymentSessionRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CreatePaymentSessionRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreatePaymentSessionRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'contactless_payment'), createEmptyInstance: create)
+    ..a<$core.double>(1, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
+    ..aOS(2, _omitFieldNames ? '' : 'currency')
+    ..aOS(3, _omitFieldNames ? '' : 'category')
+    ..aOS(4, _omitFieldNames ? '' : 'description')
+    ..a<$core.int>(5, _omitFieldNames ? '' : 'validitySeconds', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -59,8 +64,10 @@ class CreatePaymentSessionRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CreatePaymentSessionRequest copyWith(void Function(CreatePaymentSessionRequest) updates) => super.copyWith((message) => updates(message as CreatePaymentSessionRequest)) as CreatePaymentSessionRequest; // ignore: deprecated_member_use
+  CreatePaymentSessionRequest copyWith(void Function(CreatePaymentSessionRequest) updates) => super.copyWith((message) => updates(message as CreatePaymentSessionRequest)) as CreatePaymentSessionRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static CreatePaymentSessionRequest create() => CreatePaymentSessionRequest._();
   CreatePaymentSessionRequest createEmptyInstance() => create();
@@ -116,33 +123,34 @@ class CreatePaymentSessionRequest extends $pb.GeneratedMessage {
 }
 
 class CreatePaymentSessionResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CreatePaymentSessionResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'contactless_payment'), createEmptyInstance: create)
-    ..aOM<PaymentSession>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'session', subBuilder: PaymentSession.create)
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'nfcPayload')
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
-    ..hasRequiredFields = false
-  ;
-
-  CreatePaymentSessionResponse._() : super();
   factory CreatePaymentSessionResponse({
     PaymentSession? session,
     $core.String? nfcPayload,
     $core.String? message,
   }) {
-    final _result = create();
+    final $result = create();
     if (session != null) {
-      _result.session = session;
+      $result.session = session;
     }
     if (nfcPayload != null) {
-      _result.nfcPayload = nfcPayload;
+      $result.nfcPayload = nfcPayload;
     }
     if (message != null) {
-      _result.message = message;
+      $result.message = message;
     }
-    return _result;
+    return $result;
   }
+  CreatePaymentSessionResponse._() : super();
   factory CreatePaymentSessionResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CreatePaymentSessionResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreatePaymentSessionResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'contactless_payment'), createEmptyInstance: create)
+    ..aOM<PaymentSession>(1, _omitFieldNames ? '' : 'session', subBuilder: PaymentSession.create)
+    ..aOS(2, _omitFieldNames ? '' : 'nfcPayload')
+    ..aOS(3, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -152,8 +160,10 @@ class CreatePaymentSessionResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CreatePaymentSessionResponse copyWith(void Function(CreatePaymentSessionResponse) updates) => super.copyWith((message) => updates(message as CreatePaymentSessionResponse)) as CreatePaymentSessionResponse; // ignore: deprecated_member_use
+  CreatePaymentSessionResponse copyWith(void Function(CreatePaymentSessionResponse) updates) => super.copyWith((message) => updates(message as CreatePaymentSessionResponse)) as CreatePaymentSessionResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static CreatePaymentSessionResponse create() => CreatePaymentSessionResponse._();
   CreatePaymentSessionResponse createEmptyInstance() => create();
@@ -193,23 +203,24 @@ class CreatePaymentSessionResponse extends $pb.GeneratedMessage {
 }
 
 class GetPaymentSessionRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetPaymentSessionRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'contactless_payment'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sessionId')
-    ..hasRequiredFields = false
-  ;
-
-  GetPaymentSessionRequest._() : super();
   factory GetPaymentSessionRequest({
     $core.String? sessionId,
   }) {
-    final _result = create();
+    final $result = create();
     if (sessionId != null) {
-      _result.sessionId = sessionId;
+      $result.sessionId = sessionId;
     }
-    return _result;
+    return $result;
   }
+  GetPaymentSessionRequest._() : super();
   factory GetPaymentSessionRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetPaymentSessionRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetPaymentSessionRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'contactless_payment'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'sessionId')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -219,8 +230,10 @@ class GetPaymentSessionRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetPaymentSessionRequest copyWith(void Function(GetPaymentSessionRequest) updates) => super.copyWith((message) => updates(message as GetPaymentSessionRequest)) as GetPaymentSessionRequest; // ignore: deprecated_member_use
+  GetPaymentSessionRequest copyWith(void Function(GetPaymentSessionRequest) updates) => super.copyWith((message) => updates(message as GetPaymentSessionRequest)) as GetPaymentSessionRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetPaymentSessionRequest create() => GetPaymentSessionRequest._();
   GetPaymentSessionRequest createEmptyInstance() => create();
@@ -240,23 +253,24 @@ class GetPaymentSessionRequest extends $pb.GeneratedMessage {
 }
 
 class GetPaymentSessionResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetPaymentSessionResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'contactless_payment'), createEmptyInstance: create)
-    ..aOM<PaymentSession>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'session', subBuilder: PaymentSession.create)
-    ..hasRequiredFields = false
-  ;
-
-  GetPaymentSessionResponse._() : super();
   factory GetPaymentSessionResponse({
     PaymentSession? session,
   }) {
-    final _result = create();
+    final $result = create();
     if (session != null) {
-      _result.session = session;
+      $result.session = session;
     }
-    return _result;
+    return $result;
   }
+  GetPaymentSessionResponse._() : super();
   factory GetPaymentSessionResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetPaymentSessionResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetPaymentSessionResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'contactless_payment'), createEmptyInstance: create)
+    ..aOM<PaymentSession>(1, _omitFieldNames ? '' : 'session', subBuilder: PaymentSession.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -266,8 +280,10 @@ class GetPaymentSessionResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetPaymentSessionResponse copyWith(void Function(GetPaymentSessionResponse) updates) => super.copyWith((message) => updates(message as GetPaymentSessionResponse)) as GetPaymentSessionResponse; // ignore: deprecated_member_use
+  GetPaymentSessionResponse copyWith(void Function(GetPaymentSessionResponse) updates) => super.copyWith((message) => updates(message as GetPaymentSessionResponse)) as GetPaymentSessionResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetPaymentSessionResponse create() => GetPaymentSessionResponse._();
   GetPaymentSessionResponse createEmptyInstance() => create();
@@ -289,38 +305,39 @@ class GetPaymentSessionResponse extends $pb.GeneratedMessage {
 }
 
 class ProcessContactlessPaymentRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ProcessContactlessPaymentRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'contactless_payment'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sessionId')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sourceAccountId')
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactionId')
-    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'verificationToken')
-    ..hasRequiredFields = false
-  ;
-
-  ProcessContactlessPaymentRequest._() : super();
   factory ProcessContactlessPaymentRequest({
     $core.String? sessionId,
     $core.String? sourceAccountId,
     $core.String? transactionId,
     $core.String? verificationToken,
   }) {
-    final _result = create();
+    final $result = create();
     if (sessionId != null) {
-      _result.sessionId = sessionId;
+      $result.sessionId = sessionId;
     }
     if (sourceAccountId != null) {
-      _result.sourceAccountId = sourceAccountId;
+      $result.sourceAccountId = sourceAccountId;
     }
     if (transactionId != null) {
-      _result.transactionId = transactionId;
+      $result.transactionId = transactionId;
     }
     if (verificationToken != null) {
-      _result.verificationToken = verificationToken;
+      $result.verificationToken = verificationToken;
     }
-    return _result;
+    return $result;
   }
+  ProcessContactlessPaymentRequest._() : super();
   factory ProcessContactlessPaymentRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ProcessContactlessPaymentRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ProcessContactlessPaymentRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'contactless_payment'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'sessionId')
+    ..aOS(2, _omitFieldNames ? '' : 'sourceAccountId')
+    ..aOS(3, _omitFieldNames ? '' : 'transactionId')
+    ..aOS(4, _omitFieldNames ? '' : 'verificationToken')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -330,8 +347,10 @@ class ProcessContactlessPaymentRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ProcessContactlessPaymentRequest copyWith(void Function(ProcessContactlessPaymentRequest) updates) => super.copyWith((message) => updates(message as ProcessContactlessPaymentRequest)) as ProcessContactlessPaymentRequest; // ignore: deprecated_member_use
+  ProcessContactlessPaymentRequest copyWith(void Function(ProcessContactlessPaymentRequest) updates) => super.copyWith((message) => updates(message as ProcessContactlessPaymentRequest)) as ProcessContactlessPaymentRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static ProcessContactlessPaymentRequest create() => ProcessContactlessPaymentRequest._();
   ProcessContactlessPaymentRequest createEmptyInstance() => create();
@@ -378,33 +397,34 @@ class ProcessContactlessPaymentRequest extends $pb.GeneratedMessage {
 }
 
 class ProcessContactlessPaymentResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ProcessContactlessPaymentResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'contactless_payment'), createEmptyInstance: create)
-    ..aOM<ContactlessTransaction>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transaction', subBuilder: ContactlessTransaction.create)
-    ..a<$core.double>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'newBalance', $pb.PbFieldType.OD)
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
-    ..hasRequiredFields = false
-  ;
-
-  ProcessContactlessPaymentResponse._() : super();
   factory ProcessContactlessPaymentResponse({
     ContactlessTransaction? transaction,
     $core.double? newBalance,
     $core.String? message,
   }) {
-    final _result = create();
+    final $result = create();
     if (transaction != null) {
-      _result.transaction = transaction;
+      $result.transaction = transaction;
     }
     if (newBalance != null) {
-      _result.newBalance = newBalance;
+      $result.newBalance = newBalance;
     }
     if (message != null) {
-      _result.message = message;
+      $result.message = message;
     }
-    return _result;
+    return $result;
   }
+  ProcessContactlessPaymentResponse._() : super();
   factory ProcessContactlessPaymentResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ProcessContactlessPaymentResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ProcessContactlessPaymentResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'contactless_payment'), createEmptyInstance: create)
+    ..aOM<ContactlessTransaction>(1, _omitFieldNames ? '' : 'transaction', subBuilder: ContactlessTransaction.create)
+    ..a<$core.double>(2, _omitFieldNames ? '' : 'newBalance', $pb.PbFieldType.OD)
+    ..aOS(3, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -414,8 +434,10 @@ class ProcessContactlessPaymentResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ProcessContactlessPaymentResponse copyWith(void Function(ProcessContactlessPaymentResponse) updates) => super.copyWith((message) => updates(message as ProcessContactlessPaymentResponse)) as ProcessContactlessPaymentResponse; // ignore: deprecated_member_use
+  ProcessContactlessPaymentResponse copyWith(void Function(ProcessContactlessPaymentResponse) updates) => super.copyWith((message) => updates(message as ProcessContactlessPaymentResponse)) as ProcessContactlessPaymentResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static ProcessContactlessPaymentResponse create() => ProcessContactlessPaymentResponse._();
   ProcessContactlessPaymentResponse createEmptyInstance() => create();
@@ -455,23 +477,24 @@ class ProcessContactlessPaymentResponse extends $pb.GeneratedMessage {
 }
 
 class CancelPaymentSessionRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CancelPaymentSessionRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'contactless_payment'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sessionId')
-    ..hasRequiredFields = false
-  ;
-
-  CancelPaymentSessionRequest._() : super();
   factory CancelPaymentSessionRequest({
     $core.String? sessionId,
   }) {
-    final _result = create();
+    final $result = create();
     if (sessionId != null) {
-      _result.sessionId = sessionId;
+      $result.sessionId = sessionId;
     }
-    return _result;
+    return $result;
   }
+  CancelPaymentSessionRequest._() : super();
   factory CancelPaymentSessionRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CancelPaymentSessionRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CancelPaymentSessionRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'contactless_payment'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'sessionId')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -481,8 +504,10 @@ class CancelPaymentSessionRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CancelPaymentSessionRequest copyWith(void Function(CancelPaymentSessionRequest) updates) => super.copyWith((message) => updates(message as CancelPaymentSessionRequest)) as CancelPaymentSessionRequest; // ignore: deprecated_member_use
+  CancelPaymentSessionRequest copyWith(void Function(CancelPaymentSessionRequest) updates) => super.copyWith((message) => updates(message as CancelPaymentSessionRequest)) as CancelPaymentSessionRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static CancelPaymentSessionRequest create() => CancelPaymentSessionRequest._();
   CancelPaymentSessionRequest createEmptyInstance() => create();
@@ -502,23 +527,24 @@ class CancelPaymentSessionRequest extends $pb.GeneratedMessage {
 }
 
 class CancelPaymentSessionResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CancelPaymentSessionResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'contactless_payment'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
-    ..hasRequiredFields = false
-  ;
-
-  CancelPaymentSessionResponse._() : super();
   factory CancelPaymentSessionResponse({
     $core.String? message,
   }) {
-    final _result = create();
+    final $result = create();
     if (message != null) {
-      _result.message = message;
+      $result.message = message;
     }
-    return _result;
+    return $result;
   }
+  CancelPaymentSessionResponse._() : super();
   factory CancelPaymentSessionResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CancelPaymentSessionResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CancelPaymentSessionResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'contactless_payment'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -528,8 +554,10 @@ class CancelPaymentSessionResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CancelPaymentSessionResponse copyWith(void Function(CancelPaymentSessionResponse) updates) => super.copyWith((message) => updates(message as CancelPaymentSessionResponse)) as CancelPaymentSessionResponse; // ignore: deprecated_member_use
+  CancelPaymentSessionResponse copyWith(void Function(CancelPaymentSessionResponse) updates) => super.copyWith((message) => updates(message as CancelPaymentSessionResponse)) as CancelPaymentSessionResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static CancelPaymentSessionResponse create() => CancelPaymentSessionResponse._();
   CancelPaymentSessionResponse createEmptyInstance() => create();
@@ -549,33 +577,34 @@ class CancelPaymentSessionResponse extends $pb.GeneratedMessage {
 }
 
 class GetMyPaymentSessionsRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetMyPaymentSessionsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'contactless_payment'), createEmptyInstance: create)
-    ..a<$core.int>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'limit', $pb.PbFieldType.O3)
-    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'offset', $pb.PbFieldType.O3)
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'statusFilter')
-    ..hasRequiredFields = false
-  ;
-
-  GetMyPaymentSessionsRequest._() : super();
   factory GetMyPaymentSessionsRequest({
     $core.int? limit,
     $core.int? offset,
     $core.String? statusFilter,
   }) {
-    final _result = create();
+    final $result = create();
     if (limit != null) {
-      _result.limit = limit;
+      $result.limit = limit;
     }
     if (offset != null) {
-      _result.offset = offset;
+      $result.offset = offset;
     }
     if (statusFilter != null) {
-      _result.statusFilter = statusFilter;
+      $result.statusFilter = statusFilter;
     }
-    return _result;
+    return $result;
   }
+  GetMyPaymentSessionsRequest._() : super();
   factory GetMyPaymentSessionsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetMyPaymentSessionsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetMyPaymentSessionsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'contactless_payment'), createEmptyInstance: create)
+    ..a<$core.int>(1, _omitFieldNames ? '' : 'limit', $pb.PbFieldType.O3)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'offset', $pb.PbFieldType.O3)
+    ..aOS(3, _omitFieldNames ? '' : 'statusFilter')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -585,8 +614,10 @@ class GetMyPaymentSessionsRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetMyPaymentSessionsRequest copyWith(void Function(GetMyPaymentSessionsRequest) updates) => super.copyWith((message) => updates(message as GetMyPaymentSessionsRequest)) as GetMyPaymentSessionsRequest; // ignore: deprecated_member_use
+  GetMyPaymentSessionsRequest copyWith(void Function(GetMyPaymentSessionsRequest) updates) => super.copyWith((message) => updates(message as GetMyPaymentSessionsRequest)) as GetMyPaymentSessionsRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetMyPaymentSessionsRequest create() => GetMyPaymentSessionsRequest._();
   GetMyPaymentSessionsRequest createEmptyInstance() => create();
@@ -624,28 +655,29 @@ class GetMyPaymentSessionsRequest extends $pb.GeneratedMessage {
 }
 
 class GetMyPaymentSessionsResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetMyPaymentSessionsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'contactless_payment'), createEmptyInstance: create)
-    ..pc<PaymentSession>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sessions', $pb.PbFieldType.PM, subBuilder: PaymentSession.create)
-    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'total', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
-
-  GetMyPaymentSessionsResponse._() : super();
   factory GetMyPaymentSessionsResponse({
     $core.Iterable<PaymentSession>? sessions,
     $core.int? total,
   }) {
-    final _result = create();
+    final $result = create();
     if (sessions != null) {
-      _result.sessions.addAll(sessions);
+      $result.sessions.addAll(sessions);
     }
     if (total != null) {
-      _result.total = total;
+      $result.total = total;
     }
-    return _result;
+    return $result;
   }
+  GetMyPaymentSessionsResponse._() : super();
   factory GetMyPaymentSessionsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetMyPaymentSessionsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetMyPaymentSessionsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'contactless_payment'), createEmptyInstance: create)
+    ..pc<PaymentSession>(1, _omitFieldNames ? '' : 'sessions', $pb.PbFieldType.PM, subBuilder: PaymentSession.create)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'total', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -655,8 +687,10 @@ class GetMyPaymentSessionsResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetMyPaymentSessionsResponse copyWith(void Function(GetMyPaymentSessionsResponse) updates) => super.copyWith((message) => updates(message as GetMyPaymentSessionsResponse)) as GetMyPaymentSessionsResponse; // ignore: deprecated_member_use
+  GetMyPaymentSessionsResponse copyWith(void Function(GetMyPaymentSessionsResponse) updates) => super.copyWith((message) => updates(message as GetMyPaymentSessionsResponse)) as GetMyPaymentSessionsResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetMyPaymentSessionsResponse create() => GetMyPaymentSessionsResponse._();
   GetMyPaymentSessionsResponse createEmptyInstance() => create();
@@ -679,33 +713,34 @@ class GetMyPaymentSessionsResponse extends $pb.GeneratedMessage {
 }
 
 class GetMyContactlessPaymentsRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetMyContactlessPaymentsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'contactless_payment'), createEmptyInstance: create)
-    ..a<$core.int>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'limit', $pb.PbFieldType.O3)
-    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'offset', $pb.PbFieldType.O3)
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'roleFilter')
-    ..hasRequiredFields = false
-  ;
-
-  GetMyContactlessPaymentsRequest._() : super();
   factory GetMyContactlessPaymentsRequest({
     $core.int? limit,
     $core.int? offset,
     $core.String? roleFilter,
   }) {
-    final _result = create();
+    final $result = create();
     if (limit != null) {
-      _result.limit = limit;
+      $result.limit = limit;
     }
     if (offset != null) {
-      _result.offset = offset;
+      $result.offset = offset;
     }
     if (roleFilter != null) {
-      _result.roleFilter = roleFilter;
+      $result.roleFilter = roleFilter;
     }
-    return _result;
+    return $result;
   }
+  GetMyContactlessPaymentsRequest._() : super();
   factory GetMyContactlessPaymentsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetMyContactlessPaymentsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetMyContactlessPaymentsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'contactless_payment'), createEmptyInstance: create)
+    ..a<$core.int>(1, _omitFieldNames ? '' : 'limit', $pb.PbFieldType.O3)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'offset', $pb.PbFieldType.O3)
+    ..aOS(3, _omitFieldNames ? '' : 'roleFilter')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -715,8 +750,10 @@ class GetMyContactlessPaymentsRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetMyContactlessPaymentsRequest copyWith(void Function(GetMyContactlessPaymentsRequest) updates) => super.copyWith((message) => updates(message as GetMyContactlessPaymentsRequest)) as GetMyContactlessPaymentsRequest; // ignore: deprecated_member_use
+  GetMyContactlessPaymentsRequest copyWith(void Function(GetMyContactlessPaymentsRequest) updates) => super.copyWith((message) => updates(message as GetMyContactlessPaymentsRequest)) as GetMyContactlessPaymentsRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetMyContactlessPaymentsRequest create() => GetMyContactlessPaymentsRequest._();
   GetMyContactlessPaymentsRequest createEmptyInstance() => create();
@@ -754,28 +791,29 @@ class GetMyContactlessPaymentsRequest extends $pb.GeneratedMessage {
 }
 
 class GetMyContactlessPaymentsResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetMyContactlessPaymentsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'contactless_payment'), createEmptyInstance: create)
-    ..pc<ContactlessTransaction>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactions', $pb.PbFieldType.PM, subBuilder: ContactlessTransaction.create)
-    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'total', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
-
-  GetMyContactlessPaymentsResponse._() : super();
   factory GetMyContactlessPaymentsResponse({
     $core.Iterable<ContactlessTransaction>? transactions,
     $core.int? total,
   }) {
-    final _result = create();
+    final $result = create();
     if (transactions != null) {
-      _result.transactions.addAll(transactions);
+      $result.transactions.addAll(transactions);
     }
     if (total != null) {
-      _result.total = total;
+      $result.total = total;
     }
-    return _result;
+    return $result;
   }
+  GetMyContactlessPaymentsResponse._() : super();
   factory GetMyContactlessPaymentsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetMyContactlessPaymentsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetMyContactlessPaymentsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'contactless_payment'), createEmptyInstance: create)
+    ..pc<ContactlessTransaction>(1, _omitFieldNames ? '' : 'transactions', $pb.PbFieldType.PM, subBuilder: ContactlessTransaction.create)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'total', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -785,8 +823,10 @@ class GetMyContactlessPaymentsResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetMyContactlessPaymentsResponse copyWith(void Function(GetMyContactlessPaymentsResponse) updates) => super.copyWith((message) => updates(message as GetMyContactlessPaymentsResponse)) as GetMyContactlessPaymentsResponse; // ignore: deprecated_member_use
+  GetMyContactlessPaymentsResponse copyWith(void Function(GetMyContactlessPaymentsResponse) updates) => super.copyWith((message) => updates(message as GetMyContactlessPaymentsResponse)) as GetMyContactlessPaymentsResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetMyContactlessPaymentsResponse create() => GetMyContactlessPaymentsResponse._();
   GetMyContactlessPaymentsResponse createEmptyInstance() => create();
@@ -809,23 +849,24 @@ class GetMyContactlessPaymentsResponse extends $pb.GeneratedMessage {
 }
 
 class CheckSessionStatusRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CheckSessionStatusRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'contactless_payment'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sessionId')
-    ..hasRequiredFields = false
-  ;
-
-  CheckSessionStatusRequest._() : super();
   factory CheckSessionStatusRequest({
     $core.String? sessionId,
   }) {
-    final _result = create();
+    final $result = create();
     if (sessionId != null) {
-      _result.sessionId = sessionId;
+      $result.sessionId = sessionId;
     }
-    return _result;
+    return $result;
   }
+  CheckSessionStatusRequest._() : super();
   factory CheckSessionStatusRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CheckSessionStatusRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CheckSessionStatusRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'contactless_payment'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'sessionId')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -835,8 +876,10 @@ class CheckSessionStatusRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CheckSessionStatusRequest copyWith(void Function(CheckSessionStatusRequest) updates) => super.copyWith((message) => updates(message as CheckSessionStatusRequest)) as CheckSessionStatusRequest; // ignore: deprecated_member_use
+  CheckSessionStatusRequest copyWith(void Function(CheckSessionStatusRequest) updates) => super.copyWith((message) => updates(message as CheckSessionStatusRequest)) as CheckSessionStatusRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static CheckSessionStatusRequest create() => CheckSessionStatusRequest._();
   CheckSessionStatusRequest createEmptyInstance() => create();
@@ -856,33 +899,34 @@ class CheckSessionStatusRequest extends $pb.GeneratedMessage {
 }
 
 class CheckSessionStatusResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CheckSessionStatusResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'contactless_payment'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'payerName')
-    ..aOM<$1.Timestamp>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $1.Timestamp.create)
-    ..hasRequiredFields = false
-  ;
-
-  CheckSessionStatusResponse._() : super();
   factory CheckSessionStatusResponse({
     $core.String? status,
     $core.String? payerName,
-    $1.Timestamp? updatedAt,
+    $42.Timestamp? updatedAt,
   }) {
-    final _result = create();
+    final $result = create();
     if (status != null) {
-      _result.status = status;
+      $result.status = status;
     }
     if (payerName != null) {
-      _result.payerName = payerName;
+      $result.payerName = payerName;
     }
     if (updatedAt != null) {
-      _result.updatedAt = updatedAt;
+      $result.updatedAt = updatedAt;
     }
-    return _result;
+    return $result;
   }
+  CheckSessionStatusResponse._() : super();
   factory CheckSessionStatusResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CheckSessionStatusResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CheckSessionStatusResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'contactless_payment'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'status')
+    ..aOS(2, _omitFieldNames ? '' : 'payerName')
+    ..aOM<$42.Timestamp>(3, _omitFieldNames ? '' : 'updatedAt', subBuilder: $42.Timestamp.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -892,8 +936,10 @@ class CheckSessionStatusResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CheckSessionStatusResponse copyWith(void Function(CheckSessionStatusResponse) updates) => super.copyWith((message) => updates(message as CheckSessionStatusResponse)) as CheckSessionStatusResponse; // ignore: deprecated_member_use
+  CheckSessionStatusResponse copyWith(void Function(CheckSessionStatusResponse) updates) => super.copyWith((message) => updates(message as CheckSessionStatusResponse)) as CheckSessionStatusResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static CheckSessionStatusResponse create() => CheckSessionStatusResponse._();
   CheckSessionStatusResponse createEmptyInstance() => create();
@@ -921,35 +967,36 @@ class CheckSessionStatusResponse extends $pb.GeneratedMessage {
   void clearPayerName() => clearField(2);
 
   @$pb.TagNumber(3)
-  $1.Timestamp get updatedAt => $_getN(2);
+  $42.Timestamp get updatedAt => $_getN(2);
   @$pb.TagNumber(3)
-  set updatedAt($1.Timestamp v) { setField(3, v); }
+  set updatedAt($42.Timestamp v) { setField(3, v); }
   @$pb.TagNumber(3)
   $core.bool hasUpdatedAt() => $_has(2);
   @$pb.TagNumber(3)
   void clearUpdatedAt() => clearField(3);
   @$pb.TagNumber(3)
-  $1.Timestamp ensureUpdatedAt() => $_ensure(2);
+  $42.Timestamp ensureUpdatedAt() => $_ensure(2);
 }
 
 class AcknowledgeSessionReadRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'AcknowledgeSessionReadRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'contactless_payment'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sessionId')
-    ..hasRequiredFields = false
-  ;
-
-  AcknowledgeSessionReadRequest._() : super();
   factory AcknowledgeSessionReadRequest({
     $core.String? sessionId,
   }) {
-    final _result = create();
+    final $result = create();
     if (sessionId != null) {
-      _result.sessionId = sessionId;
+      $result.sessionId = sessionId;
     }
-    return _result;
+    return $result;
   }
+  AcknowledgeSessionReadRequest._() : super();
   factory AcknowledgeSessionReadRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory AcknowledgeSessionReadRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'AcknowledgeSessionReadRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'contactless_payment'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'sessionId')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -959,8 +1006,10 @@ class AcknowledgeSessionReadRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  AcknowledgeSessionReadRequest copyWith(void Function(AcknowledgeSessionReadRequest) updates) => super.copyWith((message) => updates(message as AcknowledgeSessionReadRequest)) as AcknowledgeSessionReadRequest; // ignore: deprecated_member_use
+  AcknowledgeSessionReadRequest copyWith(void Function(AcknowledgeSessionReadRequest) updates) => super.copyWith((message) => updates(message as AcknowledgeSessionReadRequest)) as AcknowledgeSessionReadRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static AcknowledgeSessionReadRequest create() => AcknowledgeSessionReadRequest._();
   AcknowledgeSessionReadRequest createEmptyInstance() => create();
@@ -980,28 +1029,29 @@ class AcknowledgeSessionReadRequest extends $pb.GeneratedMessage {
 }
 
 class AcknowledgeSessionReadResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'AcknowledgeSessionReadResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'contactless_payment'), createEmptyInstance: create)
-    ..aOM<PaymentSession>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'session', subBuilder: PaymentSession.create)
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
-    ..hasRequiredFields = false
-  ;
-
-  AcknowledgeSessionReadResponse._() : super();
   factory AcknowledgeSessionReadResponse({
     PaymentSession? session,
     $core.String? message,
   }) {
-    final _result = create();
+    final $result = create();
     if (session != null) {
-      _result.session = session;
+      $result.session = session;
     }
     if (message != null) {
-      _result.message = message;
+      $result.message = message;
     }
-    return _result;
+    return $result;
   }
+  AcknowledgeSessionReadResponse._() : super();
   factory AcknowledgeSessionReadResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory AcknowledgeSessionReadResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'AcknowledgeSessionReadResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'contactless_payment'), createEmptyInstance: create)
+    ..aOM<PaymentSession>(1, _omitFieldNames ? '' : 'session', subBuilder: PaymentSession.create)
+    ..aOS(2, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1011,8 +1061,10 @@ class AcknowledgeSessionReadResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  AcknowledgeSessionReadResponse copyWith(void Function(AcknowledgeSessionReadResponse) updates) => super.copyWith((message) => updates(message as AcknowledgeSessionReadResponse)) as AcknowledgeSessionReadResponse; // ignore: deprecated_member_use
+  AcknowledgeSessionReadResponse copyWith(void Function(AcknowledgeSessionReadResponse) updates) => super.copyWith((message) => updates(message as AcknowledgeSessionReadResponse)) as AcknowledgeSessionReadResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static AcknowledgeSessionReadResponse create() => AcknowledgeSessionReadResponse._();
   AcknowledgeSessionReadResponse createEmptyInstance() => create();
@@ -1042,28 +1094,8 @@ class AcknowledgeSessionReadResponse extends $pb.GeneratedMessage {
   void clearMessage() => clearField(2);
 }
 
+/// PaymentSession represents a pending NFC payment request created by receiver
 class PaymentSession extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'PaymentSession', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'contactless_payment'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'receiverId')
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'receiverUsername')
-    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'receiverName')
-    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'receiverAccountId')
-    ..a<$core.double>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
-    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
-    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'category')
-    ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
-    ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status')
-    ..aOS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'payerId')
-    ..aOS(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'payerName')
-    ..aOM<$1.Timestamp>(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
-    ..aOM<$1.Timestamp>(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'expiresAt', subBuilder: $1.Timestamp.create)
-    ..aOM<$1.Timestamp>(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'readAt', subBuilder: $1.Timestamp.create)
-    ..aOM<$1.Timestamp>(16, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'completedAt', subBuilder: $1.Timestamp.create)
-    ..hasRequiredFields = false
-  ;
-
-  PaymentSession._() : super();
   factory PaymentSession({
     $core.String? id,
     $core.String? receiverId,
@@ -1077,64 +1109,86 @@ class PaymentSession extends $pb.GeneratedMessage {
     $core.String? status,
     $core.String? payerId,
     $core.String? payerName,
-    $1.Timestamp? createdAt,
-    $1.Timestamp? expiresAt,
-    $1.Timestamp? readAt,
-    $1.Timestamp? completedAt,
+    $42.Timestamp? createdAt,
+    $42.Timestamp? expiresAt,
+    $42.Timestamp? readAt,
+    $42.Timestamp? completedAt,
   }) {
-    final _result = create();
+    final $result = create();
     if (id != null) {
-      _result.id = id;
+      $result.id = id;
     }
     if (receiverId != null) {
-      _result.receiverId = receiverId;
+      $result.receiverId = receiverId;
     }
     if (receiverUsername != null) {
-      _result.receiverUsername = receiverUsername;
+      $result.receiverUsername = receiverUsername;
     }
     if (receiverName != null) {
-      _result.receiverName = receiverName;
+      $result.receiverName = receiverName;
     }
     if (receiverAccountId != null) {
-      _result.receiverAccountId = receiverAccountId;
+      $result.receiverAccountId = receiverAccountId;
     }
     if (amount != null) {
-      _result.amount = amount;
+      $result.amount = amount;
     }
     if (currency != null) {
-      _result.currency = currency;
+      $result.currency = currency;
     }
     if (category != null) {
-      _result.category = category;
+      $result.category = category;
     }
     if (description != null) {
-      _result.description = description;
+      $result.description = description;
     }
     if (status != null) {
-      _result.status = status;
+      $result.status = status;
     }
     if (payerId != null) {
-      _result.payerId = payerId;
+      $result.payerId = payerId;
     }
     if (payerName != null) {
-      _result.payerName = payerName;
+      $result.payerName = payerName;
     }
     if (createdAt != null) {
-      _result.createdAt = createdAt;
+      $result.createdAt = createdAt;
     }
     if (expiresAt != null) {
-      _result.expiresAt = expiresAt;
+      $result.expiresAt = expiresAt;
     }
     if (readAt != null) {
-      _result.readAt = readAt;
+      $result.readAt = readAt;
     }
     if (completedAt != null) {
-      _result.completedAt = completedAt;
+      $result.completedAt = completedAt;
     }
-    return _result;
+    return $result;
   }
+  PaymentSession._() : super();
   factory PaymentSession.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory PaymentSession.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'PaymentSession', package: const $pb.PackageName(_omitMessageNames ? '' : 'contactless_payment'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'id')
+    ..aOS(2, _omitFieldNames ? '' : 'receiverId')
+    ..aOS(3, _omitFieldNames ? '' : 'receiverUsername')
+    ..aOS(4, _omitFieldNames ? '' : 'receiverName')
+    ..aOS(5, _omitFieldNames ? '' : 'receiverAccountId')
+    ..a<$core.double>(6, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
+    ..aOS(7, _omitFieldNames ? '' : 'currency')
+    ..aOS(8, _omitFieldNames ? '' : 'category')
+    ..aOS(9, _omitFieldNames ? '' : 'description')
+    ..aOS(10, _omitFieldNames ? '' : 'status')
+    ..aOS(11, _omitFieldNames ? '' : 'payerId')
+    ..aOS(12, _omitFieldNames ? '' : 'payerName')
+    ..aOM<$42.Timestamp>(13, _omitFieldNames ? '' : 'createdAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$42.Timestamp>(14, _omitFieldNames ? '' : 'expiresAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$42.Timestamp>(15, _omitFieldNames ? '' : 'readAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$42.Timestamp>(16, _omitFieldNames ? '' : 'completedAt', subBuilder: $42.Timestamp.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1144,8 +1198,10 @@ class PaymentSession extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  PaymentSession copyWith(void Function(PaymentSession) updates) => super.copyWith((message) => updates(message as PaymentSession)) as PaymentSession; // ignore: deprecated_member_use
+  PaymentSession copyWith(void Function(PaymentSession) updates) => super.copyWith((message) => updates(message as PaymentSession)) as PaymentSession;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static PaymentSession create() => PaymentSession._();
   PaymentSession createEmptyInstance() => create();
@@ -1263,73 +1319,52 @@ class PaymentSession extends $pb.GeneratedMessage {
   void clearPayerName() => clearField(12);
 
   @$pb.TagNumber(13)
-  $1.Timestamp get createdAt => $_getN(12);
+  $42.Timestamp get createdAt => $_getN(12);
   @$pb.TagNumber(13)
-  set createdAt($1.Timestamp v) { setField(13, v); }
+  set createdAt($42.Timestamp v) { setField(13, v); }
   @$pb.TagNumber(13)
   $core.bool hasCreatedAt() => $_has(12);
   @$pb.TagNumber(13)
   void clearCreatedAt() => clearField(13);
   @$pb.TagNumber(13)
-  $1.Timestamp ensureCreatedAt() => $_ensure(12);
+  $42.Timestamp ensureCreatedAt() => $_ensure(12);
 
   @$pb.TagNumber(14)
-  $1.Timestamp get expiresAt => $_getN(13);
+  $42.Timestamp get expiresAt => $_getN(13);
   @$pb.TagNumber(14)
-  set expiresAt($1.Timestamp v) { setField(14, v); }
+  set expiresAt($42.Timestamp v) { setField(14, v); }
   @$pb.TagNumber(14)
   $core.bool hasExpiresAt() => $_has(13);
   @$pb.TagNumber(14)
   void clearExpiresAt() => clearField(14);
   @$pb.TagNumber(14)
-  $1.Timestamp ensureExpiresAt() => $_ensure(13);
+  $42.Timestamp ensureExpiresAt() => $_ensure(13);
 
   @$pb.TagNumber(15)
-  $1.Timestamp get readAt => $_getN(14);
+  $42.Timestamp get readAt => $_getN(14);
   @$pb.TagNumber(15)
-  set readAt($1.Timestamp v) { setField(15, v); }
+  set readAt($42.Timestamp v) { setField(15, v); }
   @$pb.TagNumber(15)
   $core.bool hasReadAt() => $_has(14);
   @$pb.TagNumber(15)
   void clearReadAt() => clearField(15);
   @$pb.TagNumber(15)
-  $1.Timestamp ensureReadAt() => $_ensure(14);
+  $42.Timestamp ensureReadAt() => $_ensure(14);
 
   @$pb.TagNumber(16)
-  $1.Timestamp get completedAt => $_getN(15);
+  $42.Timestamp get completedAt => $_getN(15);
   @$pb.TagNumber(16)
-  set completedAt($1.Timestamp v) { setField(16, v); }
+  set completedAt($42.Timestamp v) { setField(16, v); }
   @$pb.TagNumber(16)
   $core.bool hasCompletedAt() => $_has(15);
   @$pb.TagNumber(16)
   void clearCompletedAt() => clearField(16);
   @$pb.TagNumber(16)
-  $1.Timestamp ensureCompletedAt() => $_ensure(15);
+  $42.Timestamp ensureCompletedAt() => $_ensure(15);
 }
 
+/// ContactlessTransaction represents a completed NFC payment
 class ContactlessTransaction extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ContactlessTransaction', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'contactless_payment'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sessionId')
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'payerId')
-    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'payerUsername')
-    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'payerName')
-    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'payerAccountId')
-    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'receiverId')
-    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'receiverUsername')
-    ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'receiverName')
-    ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'receiverAccountId')
-    ..a<$core.double>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
-    ..aOS(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
-    ..aOS(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'category')
-    ..aOS(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
-    ..aOS(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'referenceNumber')
-    ..aOS(16, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status')
-    ..aOM<$1.Timestamp>(17, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
-    ..hasRequiredFields = false
-  ;
-
-  ContactlessTransaction._() : super();
   factory ContactlessTransaction({
     $core.String? id,
     $core.String? sessionId,
@@ -1347,64 +1382,87 @@ class ContactlessTransaction extends $pb.GeneratedMessage {
     $core.String? description,
     $core.String? referenceNumber,
     $core.String? status,
-    $1.Timestamp? createdAt,
+    $42.Timestamp? createdAt,
   }) {
-    final _result = create();
+    final $result = create();
     if (id != null) {
-      _result.id = id;
+      $result.id = id;
     }
     if (sessionId != null) {
-      _result.sessionId = sessionId;
+      $result.sessionId = sessionId;
     }
     if (payerId != null) {
-      _result.payerId = payerId;
+      $result.payerId = payerId;
     }
     if (payerUsername != null) {
-      _result.payerUsername = payerUsername;
+      $result.payerUsername = payerUsername;
     }
     if (payerName != null) {
-      _result.payerName = payerName;
+      $result.payerName = payerName;
     }
     if (payerAccountId != null) {
-      _result.payerAccountId = payerAccountId;
+      $result.payerAccountId = payerAccountId;
     }
     if (receiverId != null) {
-      _result.receiverId = receiverId;
+      $result.receiverId = receiverId;
     }
     if (receiverUsername != null) {
-      _result.receiverUsername = receiverUsername;
+      $result.receiverUsername = receiverUsername;
     }
     if (receiverName != null) {
-      _result.receiverName = receiverName;
+      $result.receiverName = receiverName;
     }
     if (receiverAccountId != null) {
-      _result.receiverAccountId = receiverAccountId;
+      $result.receiverAccountId = receiverAccountId;
     }
     if (amount != null) {
-      _result.amount = amount;
+      $result.amount = amount;
     }
     if (currency != null) {
-      _result.currency = currency;
+      $result.currency = currency;
     }
     if (category != null) {
-      _result.category = category;
+      $result.category = category;
     }
     if (description != null) {
-      _result.description = description;
+      $result.description = description;
     }
     if (referenceNumber != null) {
-      _result.referenceNumber = referenceNumber;
+      $result.referenceNumber = referenceNumber;
     }
     if (status != null) {
-      _result.status = status;
+      $result.status = status;
     }
     if (createdAt != null) {
-      _result.createdAt = createdAt;
+      $result.createdAt = createdAt;
     }
-    return _result;
+    return $result;
   }
+  ContactlessTransaction._() : super();
   factory ContactlessTransaction.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ContactlessTransaction.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ContactlessTransaction', package: const $pb.PackageName(_omitMessageNames ? '' : 'contactless_payment'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'id')
+    ..aOS(2, _omitFieldNames ? '' : 'sessionId')
+    ..aOS(3, _omitFieldNames ? '' : 'payerId')
+    ..aOS(4, _omitFieldNames ? '' : 'payerUsername')
+    ..aOS(5, _omitFieldNames ? '' : 'payerName')
+    ..aOS(6, _omitFieldNames ? '' : 'payerAccountId')
+    ..aOS(7, _omitFieldNames ? '' : 'receiverId')
+    ..aOS(8, _omitFieldNames ? '' : 'receiverUsername')
+    ..aOS(9, _omitFieldNames ? '' : 'receiverName')
+    ..aOS(10, _omitFieldNames ? '' : 'receiverAccountId')
+    ..a<$core.double>(11, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
+    ..aOS(12, _omitFieldNames ? '' : 'currency')
+    ..aOS(13, _omitFieldNames ? '' : 'category')
+    ..aOS(14, _omitFieldNames ? '' : 'description')
+    ..aOS(15, _omitFieldNames ? '' : 'referenceNumber')
+    ..aOS(16, _omitFieldNames ? '' : 'status')
+    ..aOM<$42.Timestamp>(17, _omitFieldNames ? '' : 'createdAt', subBuilder: $42.Timestamp.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1414,8 +1472,10 @@ class ContactlessTransaction extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ContactlessTransaction copyWith(void Function(ContactlessTransaction) updates) => super.copyWith((message) => updates(message as ContactlessTransaction)) as ContactlessTransaction; // ignore: deprecated_member_use
+  ContactlessTransaction copyWith(void Function(ContactlessTransaction) updates) => super.copyWith((message) => updates(message as ContactlessTransaction)) as ContactlessTransaction;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static ContactlessTransaction create() => ContactlessTransaction._();
   ContactlessTransaction createEmptyInstance() => create();
@@ -1569,34 +1629,20 @@ class ContactlessTransaction extends $pb.GeneratedMessage {
   void clearStatus() => clearField(16);
 
   @$pb.TagNumber(17)
-  $1.Timestamp get createdAt => $_getN(16);
+  $42.Timestamp get createdAt => $_getN(16);
   @$pb.TagNumber(17)
-  set createdAt($1.Timestamp v) { setField(17, v); }
+  set createdAt($42.Timestamp v) { setField(17, v); }
   @$pb.TagNumber(17)
   $core.bool hasCreatedAt() => $_has(16);
   @$pb.TagNumber(17)
   void clearCreatedAt() => clearField(17);
   @$pb.TagNumber(17)
-  $1.Timestamp ensureCreatedAt() => $_ensure(16);
+  $42.Timestamp ensureCreatedAt() => $_ensure(16);
 }
 
+/// NfcPayloadData is the structure encoded in NFC NDEF message
+/// This is what gets transmitted between devices
 class NfcPayloadData extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'NfcPayloadData', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'contactless_payment'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'type')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sessionId')
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'receiverId')
-    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'receiverUsername')
-    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'receiverName')
-    ..a<$core.double>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
-    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
-    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'category')
-    ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
-    ..aInt64(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'expiresAt')
-    ..aOS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'signature')
-    ..hasRequiredFields = false
-  ;
-
-  NfcPayloadData._() : super();
   factory NfcPayloadData({
     $core.String? type,
     $core.String? sessionId,
@@ -1610,44 +1656,61 @@ class NfcPayloadData extends $pb.GeneratedMessage {
     $fixnum.Int64? expiresAt,
     $core.String? signature,
   }) {
-    final _result = create();
+    final $result = create();
     if (type != null) {
-      _result.type = type;
+      $result.type = type;
     }
     if (sessionId != null) {
-      _result.sessionId = sessionId;
+      $result.sessionId = sessionId;
     }
     if (receiverId != null) {
-      _result.receiverId = receiverId;
+      $result.receiverId = receiverId;
     }
     if (receiverUsername != null) {
-      _result.receiverUsername = receiverUsername;
+      $result.receiverUsername = receiverUsername;
     }
     if (receiverName != null) {
-      _result.receiverName = receiverName;
+      $result.receiverName = receiverName;
     }
     if (amount != null) {
-      _result.amount = amount;
+      $result.amount = amount;
     }
     if (currency != null) {
-      _result.currency = currency;
+      $result.currency = currency;
     }
     if (category != null) {
-      _result.category = category;
+      $result.category = category;
     }
     if (description != null) {
-      _result.description = description;
+      $result.description = description;
     }
     if (expiresAt != null) {
-      _result.expiresAt = expiresAt;
+      $result.expiresAt = expiresAt;
     }
     if (signature != null) {
-      _result.signature = signature;
+      $result.signature = signature;
     }
-    return _result;
+    return $result;
   }
+  NfcPayloadData._() : super();
   factory NfcPayloadData.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory NfcPayloadData.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'NfcPayloadData', package: const $pb.PackageName(_omitMessageNames ? '' : 'contactless_payment'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'type')
+    ..aOS(2, _omitFieldNames ? '' : 'sessionId')
+    ..aOS(3, _omitFieldNames ? '' : 'receiverId')
+    ..aOS(4, _omitFieldNames ? '' : 'receiverUsername')
+    ..aOS(5, _omitFieldNames ? '' : 'receiverName')
+    ..a<$core.double>(6, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
+    ..aOS(7, _omitFieldNames ? '' : 'currency')
+    ..aOS(8, _omitFieldNames ? '' : 'category')
+    ..aOS(9, _omitFieldNames ? '' : 'description')
+    ..aInt64(10, _omitFieldNames ? '' : 'expiresAt')
+    ..aOS(11, _omitFieldNames ? '' : 'signature')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1657,8 +1720,10 @@ class NfcPayloadData extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  NfcPayloadData copyWith(void Function(NfcPayloadData) updates) => super.copyWith((message) => updates(message as NfcPayloadData)) as NfcPayloadData; // ignore: deprecated_member_use
+  NfcPayloadData copyWith(void Function(NfcPayloadData) updates) => super.copyWith((message) => updates(message as NfcPayloadData)) as NfcPayloadData;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static NfcPayloadData create() => NfcPayloadData._();
   NfcPayloadData createEmptyInstance() => create();
@@ -1767,3 +1832,6 @@ class NfcPayloadData extends $pb.GeneratedMessage {
   void clearSignature() => clearField(11);
 }
 
+
+const _omitFieldNames = $core.bool.fromEnvironment('protobuf.omit_field_names');
+const _omitMessageNames = $core.bool.fromEnvironment('protobuf.omit_message_names');

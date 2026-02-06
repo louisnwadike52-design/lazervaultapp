@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart' as currency_formatter;
 
 enum TriggerType {
   unknown,
@@ -40,6 +41,7 @@ class AutoSaveRuleEntity extends Equatable {
   final String sourceAccountId;
   final String destinationAccountId;
   final AutoSaveStatus status;
+  final String currency;
 
   // For scheduled triggers
   final ScheduleFrequency? frequency;
@@ -72,6 +74,7 @@ class AutoSaveRuleEntity extends Equatable {
     required this.sourceAccountId,
     required this.destinationAccountId,
     required this.status,
+    this.currency = 'USD',
     this.frequency,
     this.scheduleTime,
     this.scheduleDay,
@@ -98,6 +101,7 @@ class AutoSaveRuleEntity extends Equatable {
         sourceAccountId,
         destinationAccountId,
         status,
+        currency,
         frequency,
         scheduleTime,
         scheduleDay,
@@ -163,7 +167,7 @@ class AutoSaveRuleEntity extends Equatable {
     if (amountType == AmountType.percentage) {
       return '${amountValue.toStringAsFixed(1)}% of deposit';
     } else {
-      return '\$${amountValue.toStringAsFixed(2)} fixed';
+      return '${currency_formatter.CurrencySymbols.getSymbol(currency)}${amountValue.toStringAsFixed(2)} fixed';
     }
   }
 
@@ -171,6 +175,22 @@ class AutoSaveRuleEntity extends Equatable {
     if (targetAmount == null || targetAmount == 0) return 0;
     return (totalSaved / targetAmount!) * 100;
   }
+
+  // Formatted amount with currency symbol (e.g., "₦1,000.00")
+  String get formattedAmount => currency_formatter.CurrencySymbols.formatAmountWithCurrency(amountValue, currency);
+
+  // Formatted total saved with currency symbol
+  String get formattedTotalSaved => currency_formatter.CurrencySymbols.formatAmountWithCurrency(totalSaved, currency);
+
+  // Formatted target amount with currency symbol
+  String get formattedTargetAmount => targetAmount != null
+      ? currency_formatter.CurrencySymbols.formatAmountWithCurrency(targetAmount!, currency)
+      : 'N/A';
+
+  // Formatted progress text (e.g., "₦1,000.00 / ₦5,000.00")
+  String get formattedProgress => targetAmount != null
+      ? '$formattedTotalSaved / ${currency_formatter.CurrencySymbols.formatAmountWithCurrency(targetAmount!, currency)}'
+      : formattedTotalSaved;
 }
 
 class AutoSaveTransactionEntity extends Equatable {
@@ -180,6 +200,7 @@ class AutoSaveTransactionEntity extends Equatable {
   final String sourceAccountId;
   final String destinationAccountId;
   final double amount;
+  final String currency;
   final TriggerType triggerType;
   final String triggerReason;
   final bool success;
@@ -193,6 +214,7 @@ class AutoSaveTransactionEntity extends Equatable {
     required this.sourceAccountId,
     required this.destinationAccountId,
     required this.amount,
+    this.currency = 'USD',
     required this.triggerType,
     required this.triggerReason,
     required this.success,
@@ -208,12 +230,16 @@ class AutoSaveTransactionEntity extends Equatable {
         sourceAccountId,
         destinationAccountId,
         amount,
+        currency,
         triggerType,
         triggerReason,
         success,
         errorMessage,
         createdAt,
       ];
+
+  // Formatted amount with currency
+  String get formattedAmount => currency_formatter.CurrencySymbols.formatAmountWithCurrency(amount, currency);
 }
 
 class AutoSaveStatisticsEntity extends Equatable {
@@ -225,6 +251,7 @@ class AutoSaveStatisticsEntity extends Equatable {
   final int totalTransactions;
   final double averageSaveAmount;
   final AutoSaveRuleEntity? mostActiveRule;
+  final String currency;
 
   const AutoSaveStatisticsEntity({
     required this.userId,
@@ -235,6 +262,7 @@ class AutoSaveStatisticsEntity extends Equatable {
     required this.totalTransactions,
     required this.averageSaveAmount,
     this.mostActiveRule,
+    this.currency = 'USD',
   });
 
   @override
@@ -247,5 +275,12 @@ class AutoSaveStatisticsEntity extends Equatable {
         totalTransactions,
         averageSaveAmount,
         mostActiveRule,
+        currency,
       ];
+
+  // Formatted amounts with currency
+  String get formattedTotalSavedAllTime => currency_formatter.CurrencySymbols.formatAmountWithCurrency(totalSavedAllTime, currency);
+  String get formattedTotalSavedThisMonth => currency_formatter.CurrencySymbols.formatAmountWithCurrency(totalSavedThisMonth, currency);
+  String get formattedTotalSavedThisWeek => currency_formatter.CurrencySymbols.formatAmountWithCurrency(totalSavedThisWeek, currency);
+  String get formattedAverageSaveAmount => currency_formatter.CurrencySymbols.formatAmountWithCurrency(averageSaveAmount, currency);
 }

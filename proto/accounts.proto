@@ -1,0 +1,1022 @@
+syntax = "proto3";
+
+package accounts;
+
+import "google/api/annotations.proto";
+
+option go_package = "accounts-service/proto";
+
+// Accounts Service - Account management and operations
+service AccountsService {
+  // Create new account
+  rpc CreateAccount(CreateAccountRequest) returns (CreateAccountResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/accounts"
+      body: "*"
+    };
+  }
+
+  // Get all accounts for a user (full account details)
+  rpc GetAccounts(GetAccountsRequest) returns (GetAccountsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/accounts"
+    };
+  }
+
+  // Get user accounts summary (lightweight, for dashboard carousel)
+  rpc GetUserAccounts(GetUserAccountsRequest) returns (GetUserAccountsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/accounts/summary"
+    };
+  }
+
+  // Get single account by ID
+  rpc GetAccount(GetAccountRequest) returns (GetAccountResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/accounts/{account_id}"
+    };
+  }
+
+  // Update account
+  rpc UpdateAccount(UpdateAccountRequest) returns (UpdateAccountResponse) {
+    option (google.api.http) = {
+      put: "/api/v1/accounts/{account_id}"
+      body: "*"
+    };
+  }
+
+  // Delete account (soft delete)
+  rpc DeleteAccount(DeleteAccountRequest) returns (DeleteAccountResponse) {
+    option (google.api.http) = {
+      delete: "/api/v1/accounts/{account_id}"
+    };
+  }
+
+  // Get account balance
+  rpc GetBalance(GetBalanceRequest) returns (GetBalanceResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/accounts/{account_id}/balance"
+    };
+  }
+
+  // Get account transactions
+  rpc GetTransactions(GetTransactionsRequest) returns (GetTransactionsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/accounts/{account_id}/transactions"
+    };
+  }
+
+  // Freeze account
+  rpc FreezeAccount(FreezeAccountRequest) returns (FreezeAccountResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/accounts/{account_id}/freeze"
+      body: "*"
+    };
+  }
+
+  // Unfreeze account
+  rpc UnfreezeAccount(UnfreezeAccountRequest) returns (UnfreezeAccountResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/accounts/{account_id}/unfreeze"
+      body: "*"
+    };
+  }
+
+  // Update balance (internal use) - DEPRECATED: Use CreditBalance/DebitBalance instead
+  rpc UpdateBalance(UpdateBalanceRequest) returns (UpdateBalanceResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/accounts/{account_id}/balance"
+      body: "*"
+    };
+  }
+
+  // CreditBalance - Add funds to an account (for deposits, refunds, reversals)
+  rpc CreditBalance(CreditBalanceRequest) returns (CreditBalanceResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/internal/accounts/{account_id}/credit"
+      body: "*"
+    };
+  }
+
+  // DebitBalance - Remove funds from an account (for withdrawals, payments)
+  rpc DebitBalance(DebitBalanceRequest) returns (DebitBalanceResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/internal/accounts/{account_id}/debit"
+      body: "*"
+    };
+  }
+
+  // TransferBalance - Atomic transfer between two accounts
+  rpc TransferBalance(TransferBalanceRequest) returns (TransferBalanceResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/internal/transfers"
+      body: "*"
+    };
+  }
+
+  // HoldFunds - Create a temporary hold on funds (for pending transactions)
+  rpc HoldFunds(HoldFundsRequest) returns (HoldFundsResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/internal/accounts/{account_id}/hold"
+      body: "*"
+    };
+  }
+
+  // CaptureHold - Convert a hold to an actual debit
+  rpc CaptureHold(CaptureHoldRequest) returns (CaptureHoldResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/internal/holds/{hold_id}/capture"
+      body: "*"
+    };
+  }
+
+  // ReleaseHold - Release a hold without debiting
+  rpc ReleaseHold(ReleaseHoldRequest) returns (ReleaseHoldResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/internal/holds/{hold_id}/release"
+      body: "*"
+    };
+  }
+
+  // TransferToPlatformWallet - Debit user account, credit platform wallet (atomic)
+  rpc TransferToPlatformWallet(TransferToPlatformWalletRequest) returns (TransferToPlatformWalletResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/internal/platform-wallets/transfer-to"
+      body: "*"
+    };
+  }
+
+  // TransferFromPlatformWallet - Debit platform wallet, credit user account (refunds)
+  rpc TransferFromPlatformWallet(TransferFromPlatformWalletRequest) returns (TransferFromPlatformWalletResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/internal/platform-wallets/transfer-from"
+      body: "*"
+    };
+  }
+
+  // GetPlatformWallet - Get platform wallet by ID or code
+  rpc GetPlatformWallet(GetPlatformWalletRequest) returns (GetPlatformWalletResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/internal/platform-wallets/{wallet_id}"
+    };
+  }
+
+  // GetPlatformWalletTransactions - Paginated transaction history for a platform wallet
+  rpc GetPlatformWalletTransactions(GetPlatformWalletTransactionsRequest) returns (GetPlatformWalletTransactionsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/internal/platform-wallets/{wallet_id}/transactions"
+    };
+  }
+
+  // Get account by number
+  rpc GetAccountByNumber(GetAccountByNumberRequest) returns (GetAccountByNumberResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/accounts/number/{account_number}"
+    };
+  }
+
+  // Create transaction (called by other services via mTLS in production)
+  rpc CreateTransaction(CreateTransactionRequest) returns (CreateTransactionResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/transactions"
+      body: "*"
+    };
+  }
+
+  // Get transaction history with locale support
+  rpc GetTransactionHistory(GetTransactionHistoryRequest) returns (GetTransactionHistoryResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/transactions/history"
+    };
+  }
+
+  // Get transaction statistics
+  rpc GetTransactionStatistics(GetTransactionStatisticsRequest) returns (GetTransactionStatisticsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/transactions/statistics"
+    };
+  }
+
+  // Update transaction status (called by other services to update processing -> completed/failed)
+  rpc UpdateTransactionStatus(UpdateTransactionStatusRequest) returns (UpdateTransactionStatusResponse) {
+    option (google.api.http) = {
+      put: "/api/v1/transactions/status"
+      body: "*"
+    };
+  }
+
+  // Auto-save management
+  rpc CreateAutoSave(CreateAutoSaveRequest) returns (CreateAutoSaveResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/accounts/{account_id}/autosave"
+      body: "*"
+    };
+  }
+
+  rpc GetAutoSaves(GetAutoSavesRequest) returns (GetAutoSavesResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/accounts/autosave"
+    };
+  }
+
+  rpc UpdateAutoSave(UpdateAutoSaveRequest) returns (UpdateAutoSaveResponse) {
+    option (google.api.http) = {
+      put: "/api/v1/accounts/autosave/{autosave_id}"
+      body: "*"
+    };
+  }
+
+  rpc DeleteAutoSave(DeleteAutoSaveRequest) returns (DeleteAutoSaveResponse) {
+    option (google.api.http) = {
+      delete: "/api/v1/accounts/autosave/{autosave_id}"
+    };
+  }
+
+  // Lock funds management
+  rpc CreateLockFunds(CreateLockFundsRequest) returns (CreateLockFundsResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/accounts/{account_id}/lockfunds"
+      body: "*"
+    };
+  }
+
+  rpc GetLockFunds(GetLockFundsRequest) returns (GetLockFundsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/accounts/lockfunds"
+    };
+  }
+
+  rpc UnlockFunds(UnlockFundsRequest) returns (UnlockFundsResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/accounts/lockfunds/{lockfunds_id}/unlock"
+      body: "*"
+    };
+  }
+
+  rpc CreateTransfer(CreateTransferRequest) returns (CreateTransferResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/accounts/transfers"
+      body: "*"
+    };
+  }
+
+  // Create virtual account (with provider integration)
+  rpc CreateVirtualAccount(CreateVirtualAccountRequest) returns (CreateVirtualAccountResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/accounts/virtual"
+      body: "*"
+    };
+  }
+
+  rpc GetTransfer(GetTransferRequest) returns (GetTransferResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/accounts/transfers/{transfer_id}"
+    };
+  }
+}
+
+// ===== Account Model =====
+message Account {
+  string id = 1;
+  string user_id = 2;
+  string account_number = 3;
+  string account_name = 4;
+  string account_type = 5;              // "personal", "savings", "investment", "family"
+  string currency = 6;                  // "USD", "NGN", "EUR", etc.
+  string locale = 7;                    // BCP 47 locale (e.g., "en-US", "en-NG", "fr-FR")
+  double balance = 8;
+  double available_balance = 9;
+  string status = 10;                   // "active", "frozen", "closed"
+  bool is_primary = 11;
+  string bank_code = 12;
+  string branch_code = 13;
+  int32 freeze_reason_code = 14;
+  string freeze_reason = 15;
+  string frozen_at = 16;
+  string frozen_by = 17;
+  double daily_limit = 18;
+  double monthly_limit = 19;
+  string created_at = 20;
+  string updated_at = 21;
+  // Virtual Account Fields (Flutterwave integration)
+  bool is_virtual = 22;                 // True if this is a virtual NUBAN account from Flutterwave/VFD
+  string provider = 23;                 // Provider: "flutterwave", "vfd", "mono", etc.
+  string provider_ref = 24;             // Provider's reference for the virtual account
+  string bank_name = 25;                // Bank name from provider (e.g., "Wema Bank", "Sterling Bank")
+}
+
+// ===== Account Summary Model (for carousel/list views) =====
+// Lightweight version of Account for UI display
+message AccountSummary {
+  uint64 id = 1;                        // Numeric ID (for backward compatibility)
+  string account_type = 2;              // e.g., "personal", "savings"
+  string currency = 3;                  // e.g., "GBP", "USD"
+  uint64 balance = 4;                   // Balance in minor units (cents/pence)
+  string masked_account_number = 5;     // e.g., "•••• 7890"
+  string status = 6;                    // e.g., "active", "blocked_temporary"
+  string uuid = 7;                      // Account UUID (use this for cross-service communication)
+  string account_number = 8;            // Full account number (for deposits)
+}
+
+// ===== Get User Accounts Summary (for dashboard carousel) =====
+// NOTE: user_id extracted from JWT token, not from request
+message GetUserAccountsRequest {
+  // User ID is inferred from the auth token by default.
+  // If target_user_id is set, fetch accounts for that user instead (for internal lookups).
+  optional string target_user_id = 1;
+}
+
+message GetUserAccountsResponse {
+  repeated AccountSummary accounts = 1;
+}
+
+// ===== Transaction Model =====
+message Transaction {
+  string id = 1;
+  string account_id = 2;
+  string reference = 3;
+  string type = 4;                      // "credit", "debit"
+  string category = 5;                  // "transfer", "deposit", "withdrawal", "fee"
+  double amount = 6;
+  double balance_before = 7;
+  double balance_after = 8;
+  string description = 9;
+  string metadata = 10;                 // JSON string
+  string status = 11;                   // "pending", "completed", "failed", "reversed"
+  string locale = 12;                   // BCP 47 locale (e.g., "en-US", "en-NG", "fr-FR")
+  string service_name = 13;             // Origin service (e.g., "core-payments", "giftcards")
+  string created_at = 14;
+  string counterparty_name = 15;        // Name of the other party
+  string counterparty_account = 16;     // Account number/identifier of the other party
+  string updated_at = 17;
+}
+
+// ===== Create Account =====
+// NOTE: user_id extracted from JWT token, not from request
+message CreateAccountRequest {
+  string account_name = 1;
+  string account_type = 2;              // "personal", "savings", "investment", "family"
+  string currency = 3;
+  string locale = 4;                    // BCP 47 locale (e.g., "en-US", "en-NG", "fr-FR")
+  bool is_primary = 5;
+  double daily_limit = 6;
+  double monthly_limit = 7;
+}
+
+message CreateAccountResponse {
+  Account account = 1;
+  string message = 2;
+}
+
+// ===== Get Accounts =====
+// NOTE: user_id extracted from JWT token, not from request
+message GetAccountsRequest {
+  string account_type = 1;              // Optional filter
+  string status = 2;                    // Optional filter
+  int32 limit = 3;
+  int32 offset = 4;
+}
+
+message GetAccountsResponse {
+  repeated Account accounts = 1;
+  int32 total = 2;
+}
+
+// ===== Get Account =====
+// NOTE: user_id extracted from JWT token, not from request
+message GetAccountRequest {
+  string account_id = 1;
+}
+
+message GetAccountResponse {
+  Account account = 1;
+}
+
+// ===== Get Account By Number =====
+message GetAccountByNumberRequest {
+  string account_number = 1;
+}
+
+message GetAccountByNumberResponse {
+  Account account = 1;
+}
+
+// ===== Update Account =====
+// NOTE: user_id extracted from JWT token, not from request
+message UpdateAccountRequest {
+  string account_id = 1;
+  string account_name = 2;
+  double daily_limit = 3;
+  double monthly_limit = 4;
+  bool is_primary = 5;
+}
+
+message UpdateAccountResponse {
+  Account account = 1;
+  string message = 2;
+}
+
+// ===== Delete Account =====
+// NOTE: user_id extracted from JWT token, not from request
+message DeleteAccountRequest {
+  string account_id = 1;
+}
+
+message DeleteAccountResponse {
+  string message = 1;
+  bool success = 2;
+}
+
+// ===== Get Balance =====
+// NOTE: user_id extracted from JWT token, not from request
+message GetBalanceRequest {
+  string account_id = 1;
+}
+
+message GetBalanceResponse {
+  double balance = 1;
+  double available_balance = 2;
+  string currency = 3;
+  string last_updated = 4;
+}
+
+// ===== Update Balance (Internal) =====
+message UpdateBalanceRequest {
+  string account_id = 1;
+  double amount = 2;
+  string operation = 3;                 // "add", "subtract"
+  string reference = 4;
+  string description = 5;
+  string category = 6;
+}
+
+message UpdateBalanceResponse {
+  double new_balance = 1;
+  double available_balance = 2;
+  Transaction transaction = 3;
+}
+
+// ===== Get Transactions =====
+// NOTE: user_id extracted from JWT token, not from request
+message GetTransactionsRequest {
+  string account_id = 1;
+  string type = 2;                      // Optional filter: "credit", "debit"
+  string category = 3;                  // Optional filter
+  string status = 4;                    // Optional filter
+  string start_date = 5;
+  string end_date = 6;
+  int32 limit = 7;
+  int32 offset = 8;
+}
+
+message GetTransactionsResponse {
+  repeated Transaction transactions = 1;
+  int32 total = 2;
+  double total_credits = 3;
+  double total_debits = 4;
+}
+
+// ===== Freeze Account =====
+// NOTE: user_id extracted from JWT token, not from request
+message FreezeAccountRequest {
+  string account_id = 1;
+  string reason = 2;
+  int32 reason_code = 3;
+  string frozen_by = 4;
+}
+
+message FreezeAccountResponse {
+  Account account = 1;
+  string message = 2;
+}
+
+// ===== Unfreeze Account =====
+// NOTE: user_id extracted from JWT token, not from request
+message UnfreezeAccountRequest {
+  string account_id = 1;
+  string unfrozen_by = 2;
+}
+
+message UnfreezeAccountResponse {
+  Account account = 1;
+  string message = 2;
+}
+
+// ===== ACCOUNT-SPECIFIC FEATURES =====
+
+// === AutoSave ===
+message AutoSave {
+  string id = 1;
+  string account_id = 2;
+  string user_id = 3;
+  string name = 4;
+  double amount = 5;
+  string frequency = 6;                 // "daily", "weekly", "monthly"
+  string trigger = 7;                   // "scheduled", "roundup", "percentage"
+  string status = 8;                    // "active", "paused", "stopped"
+  string target_account_id = 9;         // Where to save (savings account)
+  double target_amount = 10;            // Optional savings goal
+  string created_at = 11;
+  string updated_at = 12;
+}
+
+// NOTE: user_id extracted from JWT token, not from request
+message CreateAutoSaveRequest {
+  string account_id = 1;
+  string name = 2;
+  double amount = 3;
+  string frequency = 4;
+  string trigger = 5;
+  string target_account_id = 6;
+  double target_amount = 7;
+}
+
+message CreateAutoSaveResponse {
+  AutoSave autosave = 1;
+  string message = 2;
+}
+
+// NOTE: user_id extracted from JWT token, not from request
+message GetAutoSavesRequest {
+  string account_id = 1;                // Optional filter
+  string status = 2;                    // Optional filter
+}
+
+message GetAutoSavesResponse {
+  repeated AutoSave autosaves = 1;
+  int32 total = 2;
+}
+
+// NOTE: user_id extracted from JWT token, not from request
+message UpdateAutoSaveRequest {
+  string autosave_id = 1;
+  double amount = 2;
+  string frequency = 3;
+  string status = 4;
+  double target_amount = 5;
+}
+
+message UpdateAutoSaveResponse {
+  AutoSave autosave = 1;
+  string message = 2;
+}
+
+// NOTE: user_id extracted from JWT token, not from request
+message DeleteAutoSaveRequest {
+  string autosave_id = 1;
+}
+
+message DeleteAutoSaveResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+// === LockFunds ===
+message LockFunds {
+  string id = 1;
+  string account_id = 2;
+  string user_id = 3;
+  string name = 4;
+  double amount = 5;
+  string lock_type = 6;                 // "time_based", "goal_based", "emergency"
+  string status = 7;                    // "locked", "unlocked", "matured"
+  string unlock_date = 8;               // When funds can be unlocked
+  double target_amount = 9;             // For goal-based locks
+  double penalty_rate = 10;             // Early withdrawal penalty %
+  string created_at = 11;
+  string matured_at = 12;
+}
+
+// NOTE: user_id extracted from JWT token, not from request
+message CreateLockFundsRequest {
+  string account_id = 1;
+  string name = 2;
+  double amount = 3;
+  string lock_type = 4;
+  string unlock_date = 5;
+  double target_amount = 6;
+  double penalty_rate = 7;
+  string pin = 8;
+}
+
+message CreateLockFundsResponse {
+  LockFunds lockfunds = 1;
+  Transaction transaction = 2;
+  double new_available_balance = 3;
+  string message = 4;
+}
+
+// NOTE: user_id extracted from JWT token, not from request
+message GetLockFundsRequest {
+  string account_id = 1;                // Optional filter
+  string status = 2;                    // Optional filter
+}
+
+message GetLockFundsResponse {
+  repeated LockFunds lockfunds = 1;
+  int32 total = 2;
+  double total_locked_amount = 3;
+}
+
+// NOTE: user_id extracted from JWT token, not from request
+message UnlockFundsRequest {
+  string lockfunds_id = 1;
+  string pin = 2;
+  bool force_unlock = 3;                // Accept penalty for early unlock
+}
+
+message UnlockFundsResponse {
+  LockFunds lockfunds = 1;
+  Transaction transaction = 2;
+  double penalty_amount = 3;
+  double released_amount = 4;
+  double new_available_balance = 5;
+  string message = 6;
+}
+
+// ===== TRANSACTION HISTORY MANAGEMENT =====
+
+// CreateTransaction - Called by other services (core-payments, giftcards, etc.) via mTLS
+// Locale is automatically derived from the account
+message CreateTransactionRequest {
+  string account_id = 1;
+  string type = 2;                      // "credit", "debit"
+  string category = 3;                  // "transfer", "deposit", "withdrawal", "fee", "payment", etc.
+  double amount = 4;
+  string description = 5;
+  string metadata = 6;                  // JSON string for additional data
+  string service_name = 7;              // Calling service name (e.g., "core-payments", "giftcards")
+  string reference = 8;                 // Optional: will be generated if not provided
+  string status = 9;                    // Optional: initial status (default: "completed"), use "processing" for async ops
+  string counterparty_name = 10;        // Optional: name of the other party
+  string counterparty_account = 11;     // Optional: account number/identifier of the other party
+}
+
+message CreateTransactionResponse {
+  Transaction transaction = 1;
+  string message = 2;
+}
+
+// UpdateTransactionStatus - Called by other services to update processing -> completed/failed
+message UpdateTransactionStatusRequest {
+  string reference = 1;                 // Transaction reference to update
+  string status = 2;                    // New status: "completed", "failed", "reversed"
+  string failure_reason = 3;            // Optional: reason for failure
+}
+
+message UpdateTransactionStatusResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+// GetTransactionHistory - Get transactions for an account
+// Locale is automatically derived from the account
+message GetTransactionHistoryRequest {
+  string account_id = 1;
+  string type = 2;                      // Optional filter: "credit", "debit"
+  string category = 3;                  // Optional filter
+  string status = 4;                    // Optional filter
+  string service_name = 5;              // Optional filter: filter by origin service
+  string start_date = 6;
+  string end_date = 7;
+  int32 limit = 8;
+  int32 offset = 9;
+}
+
+message GetTransactionHistoryResponse {
+  repeated Transaction transactions = 1;
+  int32 total = 2;
+  double total_credits = 3;
+  double total_debits = 4;
+}
+
+// GetTransactionStatistics - Get statistics grouped by service
+// Locale is automatically derived from the account
+message GetTransactionStatisticsRequest {
+  string account_id = 1;
+  string start_date = 2;
+  string end_date = 3;
+}
+
+message GetTransactionStatisticsResponse {
+  int32 total_transactions = 1;
+  double total_credits = 2;
+  double total_debits = 3;
+  double net_balance = 4;
+  map<string, int64> transactions_by_service = 5;  // service_name -> count
+  map<string, double> amount_by_service = 6;        // service_name -> total_amount
+}
+
+// ===== Transfer Model (for transfers between accounts) =====
+message Transfer {
+  string transfer_id = 1;
+  string from_account_id = 2;
+  string to_account_id = 3;
+  string from_account_number = 4;
+  string to_account_number = 5;
+  double amount = 6;
+  string currency = 7;
+  string description = 8;
+  string reference = 9;
+  string status = 10;                   // "pending", "processing", "completed", "failed", "reversed"
+  string category = 11;                 // "transfer", "payment", "withdrawal"
+  double fee = 12;
+  double total_amount = 13;             // amount + fee
+  string created_at = 14;
+  string completed_at = 15;
+  string failure_reason = 16;
+}
+
+// ===== Create Transfer =====
+message CreateTransferRequest {
+  string user_id = 1;
+  string from_account = 2;
+  string to_account = 3;
+  double amount = 4;
+  string currency = 5;
+  string description = 6;
+  string pin = 7;                        // Optional PIN for security
+  string reference = 8;                  // Optional reference
+}
+
+message CreateTransferResponse {
+  Transfer transfer = 1;
+  string message = 2;
+}
+
+// ===== Get Transfer =====
+message GetTransferRequest {
+  string transfer_id = 1;
+}
+
+message GetTransferResponse {
+  Transfer transfer = 1;
+}
+
+// ===== VIRTUAL ACCOUNT MANAGEMENT =====
+
+// CreateVirtualAccountRequest - Create a real virtual NUBAN account
+// NOTE: user_id extracted from JWT token, not from request
+message CreateVirtualAccountRequest {
+  string account_name = 1;
+  string account_type = 2;              // "personal", "savings", "investment", "family"
+  string currency = 3;                  // "NGN" for Nigerian Naira
+  string locale = 4;                    // BCP 47 locale (e.g., "en-NG")
+  bool is_primary = 5;
+  double daily_limit = 6;
+  double monthly_limit = 7;
+
+  // User details required for virtual account creation
+  string email = 8;
+  string first_name = 9;
+  string last_name = 10;
+  string phone_number = 11;
+  string bvn = 12;                      // Bank Verification Number (11 digits for Nigeria)
+}
+
+message CreateVirtualAccountResponse {
+  Account account = 1;
+  string message = 2;
+  string provider = 3;                  // Provider used: "flutterwave", "vfd"
+}
+
+// =============================================================================
+// BALANCE OPERATIONS - Single Source of Truth Messages (Revolut/Monzo Pattern)
+// =============================================================================
+
+// CreditBalanceRequest - Request to credit/add funds to an account
+message CreditBalanceRequest {
+  string account_id = 1;              // Target account UUID
+  string user_id = 2;                 // Account owner (for validation)
+  int64 amount = 3;                   // Amount in minor units (kobo/cents)
+  string currency = 4;                // Currency code (NGN, USD, etc.)
+  string reference = 5;               // Unique reference for idempotency
+  string type = 6;                    // Type: deposit, refund, transfer_in, reversal, bonus
+  string description = 7;             // Human-readable description
+  string metadata = 8;                // JSON metadata (provider ref, etc.)
+  string service_name = 9;            // Calling service (banking-service, etc.)
+  string idempotency_key = 10;        // Idempotency key for duplicate detection
+}
+
+message CreditBalanceResponse {
+  bool success = 1;
+  string error_code = 2;
+  string error_message = 3;
+  string transaction_id = 4;          // Created transaction UUID
+  int64 new_balance = 5;              // New ledger balance in minor units
+  int64 new_available_balance = 6;    // New available balance in minor units
+}
+
+// DebitBalanceRequest - Request to debit/remove funds from an account
+message DebitBalanceRequest {
+  string account_id = 1;              // Source account UUID
+  string user_id = 2;                 // Account owner (for validation)
+  int64 amount = 3;                   // Amount in minor units (kobo/cents)
+  string currency = 4;                // Currency code
+  string reference = 5;               // Unique reference for idempotency
+  string type = 6;                    // Type: withdrawal, payment, transfer_out, fee, charge
+  string description = 7;             // Human-readable description
+  string metadata = 8;                // JSON metadata
+  string service_name = 9;            // Calling service
+  string idempotency_key = 10;        // Idempotency key
+  bool require_hold = 11;             // If true, funds must be held first
+  string hold_id = 12;                // Existing hold to capture (if require_hold)
+}
+
+message DebitBalanceResponse {
+  bool success = 1;
+  string error_code = 2;
+  string error_message = 3;
+  string transaction_id = 4;
+  int64 new_balance = 5;
+  int64 new_available_balance = 6;
+}
+
+// TransferBalanceRequest - Atomic internal transfer between accounts
+message TransferBalanceRequest {
+  string from_account_id = 1;         // Source account UUID
+  string to_account_id = 2;           // Destination account UUID
+  string from_user_id = 3;            // Source account owner
+  string to_user_id = 4;              // Destination account owner (optional for same-user transfers)
+  int64 amount = 5;                   // Amount in minor units
+  string currency = 6;                // Currency code
+  string reference = 7;               // Unique reference
+  string description = 8;             // Description
+  string metadata = 9;                // JSON metadata
+  string service_name = 10;           // Calling service
+  string idempotency_key = 11;        // Idempotency key
+}
+
+message TransferBalanceResponse {
+  bool success = 1;
+  string error_code = 2;
+  string error_message = 3;
+  string debit_transaction_id = 4;    // Source account transaction UUID
+  string credit_transaction_id = 5;   // Destination account transaction UUID
+  int64 from_new_balance = 6;         // Source account new balance
+  int64 to_new_balance = 7;           // Destination account new balance
+}
+
+// HoldFundsRequest - Create temporary hold on funds
+message HoldFundsRequest {
+  string account_id = 1;
+  string user_id = 2;
+  int64 amount = 3;                   // Amount in minor units
+  string currency = 4;
+  string reference = 5;
+  string reason = 6;                  // Why funds are being held
+  int32 expires_in_seconds = 7;       // Hold expiry (default: 86400 = 24h)
+  string service_name = 8;
+  string idempotency_key = 9;
+}
+
+message HoldFundsResponse {
+  bool success = 1;
+  string error_code = 2;
+  string error_message = 3;
+  string hold_id = 4;                 // Hold UUID for capture/release
+  int64 new_available_balance = 5;    // Available balance after hold
+  string expires_at = 6;              // ISO8601 expiry time
+}
+
+// CaptureHoldRequest - Convert hold to actual debit
+message CaptureHoldRequest {
+  string hold_id = 1;
+  string service_name = 2;
+  string description = 3;             // Transaction description
+  string metadata = 4;                // Additional metadata
+}
+
+message CaptureHoldResponse {
+  bool success = 1;
+  string error_code = 2;
+  string error_message = 3;
+  string transaction_id = 4;
+  int64 new_balance = 5;
+}
+
+// ReleaseHoldRequest - Release hold without debiting
+message ReleaseHoldRequest {
+  string hold_id = 1;
+  string service_name = 2;
+  string reason = 3;                  // Why releasing (cancelled, expired, etc.)
+}
+
+message ReleaseHoldResponse {
+  bool success = 1;
+  string error_code = 2;
+  string error_message = 3;
+  int64 new_available_balance = 4;    // Available balance after release
+}
+
+// =============================================================================
+// PLATFORM WALLET OPERATIONS Messages
+// =============================================================================
+
+message PlatformWalletMsg {
+  string id = 1;
+  string wallet_code = 2;
+  string wallet_name = 3;
+  string currency = 4;
+  int64 balance = 5;                    // In minor units (kobo/cents)
+  int64 available_balance = 6;          // In minor units
+  string status = 7;
+  string description = 8;
+  string created_at = 9;
+  string updated_at = 10;
+}
+
+message PlatformWalletTransactionMsg {
+  string id = 1;
+  string wallet_id = 2;
+  string reference = 3;
+  string type = 4;
+  string category = 5;
+  int64 amount = 6;                     // In minor units
+  int64 balance_before = 7;
+  int64 balance_after = 8;
+  string counterparty_account_id = 9;
+  string counterparty_user_id = 10;
+  string description = 11;
+  string metadata = 12;
+  string service_name = 13;
+  string status = 14;
+  string created_at = 15;
+}
+
+// TransferToPlatformWallet - Debit user account, credit platform wallet
+message TransferToPlatformWalletRequest {
+  string user_account_id = 1;           // User account to debit
+  string user_id = 2;                   // Account owner (for validation)
+  string wallet_code = 3;               // Platform wallet code (e.g., "REVENUE")
+  int64 amount = 4;                     // Amount in minor units (kobo/cents)
+  string currency = 5;                  // Currency code
+  string reference = 6;                 // Unique reference
+  string category = 7;                  // e.g., "service_fee", "commission"
+  string description = 8;               // Human-readable description
+  string metadata = 9;                  // JSON metadata
+  string service_name = 10;             // Calling service
+  string idempotency_key = 11;          // Idempotency key
+}
+
+message TransferToPlatformWalletResponse {
+  bool success = 1;
+  string error_code = 2;
+  string error_message = 3;
+  string debit_transaction_id = 4;      // User-side transaction
+  string platform_transaction_id = 5;   // Platform wallet transaction
+  int64 user_new_balance = 6;           // User's new balance in minor units
+  int64 wallet_new_balance = 7;         // Platform wallet new balance in minor units
+}
+
+// TransferFromPlatformWallet - Debit platform wallet, credit user account (refunds)
+message TransferFromPlatformWalletRequest {
+  string wallet_code = 1;               // Platform wallet code
+  string user_account_id = 2;           // User account to credit
+  string user_id = 3;                   // Account owner (for validation)
+  int64 amount = 4;                     // Amount in minor units
+  string currency = 5;                  // Currency code
+  string reference = 6;                 // Unique reference
+  string category = 7;                  // e.g., "refund"
+  string description = 8;
+  string metadata = 9;
+  string service_name = 10;
+  string idempotency_key = 11;
+}
+
+message TransferFromPlatformWalletResponse {
+  bool success = 1;
+  string error_code = 2;
+  string error_message = 3;
+  string credit_transaction_id = 4;     // User-side transaction
+  string platform_transaction_id = 5;   // Platform wallet transaction
+  int64 user_new_balance = 6;
+  int64 wallet_new_balance = 7;
+}
+
+// GetPlatformWallet - Get wallet by ID or code
+message GetPlatformWalletRequest {
+  string wallet_id = 1;                 // UUID (optional if wallet_code is set)
+  string wallet_code = 2;               // Wallet code (optional if wallet_id is set)
+}
+
+message GetPlatformWalletResponse {
+  PlatformWalletMsg wallet = 1;
+}
+
+// GetPlatformWalletTransactions - Paginated transaction history
+message GetPlatformWalletTransactionsRequest {
+  string wallet_id = 1;                 // Wallet UUID (or use wallet_code)
+  string wallet_code = 2;               // Wallet code
+  string type = 3;                      // Optional filter: "credit", "debit"
+  string category = 4;                  // Optional filter
+  string start_date = 5;
+  string end_date = 6;
+  int32 limit = 7;
+  int32 offset = 8;
+}
+
+message GetPlatformWalletTransactionsResponse {
+  repeated PlatformWalletTransactionMsg transactions = 1;
+  int32 total = 2;
+}

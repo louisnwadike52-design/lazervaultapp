@@ -340,6 +340,33 @@ class ContactlessPaymentCubit extends Cubit<ContactlessPaymentState> {
         return;
       }
 
+      // If payment is completed, fetch the full transaction details
+      if (result.status == 'completed') {
+        try {
+          // Get the transactions for this session
+          final transactionsResult = await _retryWithBackoff(() => repository.getMyContactlessPayments(
+            limit: 1,
+            offset: 0,
+            roleFilter: 'receiver',
+          ));
+
+          // Find the transaction for this session
+          final transaction = transactionsResult.transactions.firstWhere(
+            (t) => t.sessionId == sessionId,
+            orElse: () => transactionsResult.transactions.first,
+          );
+
+          if (isClosed) return;
+          emit(PaymentProcessedForReceiver(
+            transaction: transaction,
+            message: 'Payment received successfully',
+          ));
+          return;
+        } catch (_) {
+          // If we can't get the transaction, just emit the status checked state
+        }
+      }
+
       emit(SessionStatusChecked(
         status: result.status,
         payerName: result.payerName,
@@ -358,6 +385,34 @@ class ContactlessPaymentCubit extends Cubit<ContactlessPaymentState> {
         ));
       }
       // Network errors during polling are silently ignored
+    }
+  }
+
+  /// Get transaction details for a specific session (for receiver to get completed payment details)
+  Future<void> getTransactionForSession(String sessionId) async {
+    try {
+      if (isClosed) return;
+      emit(ContactlessPaymentLoading());
+
+      final transactionsResult = await _retryWithBackoff(() => repository.getMyContactlessPayments(
+        limit: 10,
+        offset: 0,
+        roleFilter: 'receiver',
+      ));
+
+      // Find the transaction for this session
+      final transaction = transactionsResult.transactions.firstWhere(
+        (t) => t.sessionId == sessionId,
+        orElse: () => throw Exception('Transaction not found for this session'),
+      );
+
+      if (isClosed) return;
+      emit(PaymentProcessedForReceiver(
+        transaction: transaction,
+        message: 'Transaction details loaded',
+      ));
+    } catch (e) {
+      _emitError(e);
     }
   }
 

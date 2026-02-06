@@ -375,7 +375,6 @@ class _TransactionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final dateFormat = DateFormat('MMM d, yyyy • h:mm a');
     final catColor = _getCategoryColor(transaction.category);
-    final amountFormatted = NumberFormat('#,##0.00').format(transaction.amount);
 
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0.0, end: 1.0),
@@ -470,7 +469,7 @@ class _TransactionCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                    '${transaction.currency} $amountFormatted',
+                    transaction.formattedAmount,
                     style: GoogleFonts.inter(
                       fontSize: 15.sp,
                       fontWeight: FontWeight.w700,
@@ -507,7 +506,6 @@ class _TransactionCard extends StatelessWidget {
 
   void _showTransactionDetails(BuildContext context) {
     final dateFormat = DateFormat('MMMM d, yyyy • h:mm a');
-    final amountFormatted = NumberFormat('#,##0.00').format(transaction.amount);
 
     showModalBottomSheet(
       context: context,
@@ -552,7 +550,7 @@ class _TransactionCard extends StatelessWidget {
               ),
               SizedBox(height: 24.h),
               Text(
-                '${transaction.currency} $amountFormatted',
+                transaction.formattedAmount,
                 style: GoogleFonts.inter(
                   fontSize: 32.sp,
                   fontWeight: FontWeight.w800,
@@ -675,7 +673,6 @@ class _SessionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final dateFormat = DateFormat('MMM d, yyyy • h:mm a');
     final statusColor = _getStatusColor(session.status);
-    final amountFormatted = NumberFormat('#,##0.00').format(session.amount);
 
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0.0, end: 1.0),
@@ -732,7 +729,7 @@ class _SessionCard extends StatelessWidget {
                       Row(
                         children: [
                           Text(
-                            '${session.currency} $amountFormatted',
+                            session.formattedAmount,
                             style: GoogleFonts.inter(
                               fontSize: 16.sp,
                               fontWeight: FontWeight.w700,

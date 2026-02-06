@@ -392,7 +392,7 @@ class _AutoSaveDashboardScreenState extends State<AutoSaveDashboardScreen> {
                       ),
                     ),
                     Text(
-                      '\$${rule.totalSaved.toStringAsFixed(2)} / \$${rule.targetAmount!.toStringAsFixed(2)}',
+                      rule.formattedProgress,
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 12.sp,

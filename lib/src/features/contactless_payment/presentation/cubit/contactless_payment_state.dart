@@ -52,7 +52,7 @@ class SessionReadAcknowledged extends ContactlessPaymentState {
   List<Object?> get props => [session, message];
 }
 
-/// State when payment is processed successfully
+/// State when payment is processed successfully (for payer)
 class PaymentProcessed extends ContactlessPaymentState {
   final ContactlessTransactionEntity transaction;
   final double newBalance;
@@ -66,6 +66,20 @@ class PaymentProcessed extends ContactlessPaymentState {
 
   @override
   List<Object?> get props => [transaction, newBalance, message];
+}
+
+/// State when payment is received (for receiver - includes transaction details for PDF)
+class PaymentProcessedForReceiver extends ContactlessPaymentState {
+  final ContactlessTransactionEntity transaction;
+  final String message;
+
+  const PaymentProcessedForReceiver({
+    required this.transaction,
+    required this.message,
+  });
+
+  @override
+  List<Object?> get props => [transaction, message];
 }
 
 /// State when session is cancelled

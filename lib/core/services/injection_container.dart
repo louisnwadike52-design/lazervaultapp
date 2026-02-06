@@ -292,6 +292,7 @@ import 'package:lazervault/src/features/crowdfund/data/datasources/crowdfund_grp
 import 'package:lazervault/src/features/crowdfund/data/repositories/crowdfund_repository_impl.dart';
 import 'package:lazervault/src/features/crowdfund/data/services/crowdfund_pdf_service.dart';
 import 'package:lazervault/src/features/crowdfund/data/services/crowdfund_report_service.dart';
+import 'package:lazervault/src/features/group_account/services/group_account_report_service.dart';
 import 'package:lazervault/src/features/crowdfund/domain/repositories/crowdfund_repository.dart';
 import 'package:lazervault/src/features/crowdfund/domain/usecases/crowdfund_usecases.dart';
 import 'package:lazervault/src/features/crowdfund/presentation/cubit/crowdfund_cubit.dart';
@@ -1344,6 +1345,19 @@ Future<void> init() async {
     ),
   );
 
+  // Group Account Report Service (for AI-generated group reports)
+  serviceLocator.registerLazySingleton<GroupAccountReportService>(
+    () => GroupAccountReportService(
+      dio: serviceLocator<Dio>(),
+      baseUrl: dotenv.env['CHAT_GATEWAY_URL'] ?? 'http://localhost:3011',
+      getAccessToken: () async {
+        final token = await serviceLocator<SecureStorageService>().getAccessToken();
+        return token ?? '';
+      },
+      getUserId: () => '', // User ID is extracted from auth token server-side
+    ),
+  );
+
   // Use Cases
   serviceLocator.registerLazySingleton(() => CreateCrowdfundUseCase(serviceLocator<CrowdfundRepository>()));
   serviceLocator.registerLazySingleton(() => GetCrowdfundUseCase(serviceLocator<CrowdfundRepository>()));
@@ -1808,6 +1822,7 @@ Future<void> init() async {
     removeMemberFromContribution: serviceLocator<RemoveMemberFromContribution>(),
     cacheManager: serviceLocator<SWRCacheManager>(),
     mutationQueue: serviceLocator<MutationQueue>(),
+    reportService: serviceLocator<GroupAccountReportService>(),
   ));
 
   // ================== Feature: Insurance ==================

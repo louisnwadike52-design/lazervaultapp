@@ -230,21 +230,47 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen> {
   }
 
   Widget _buildLoadingView() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(
-              const Color.fromARGB(255, 78, 3, 208),
+    return RefreshIndicator(
+      onRefresh: () async {
+        context.read<GroupAccountCubit>().loadUserGroups();
+      },
+      color: const Color.fromARGB(255, 78, 3, 208),
+      backgroundColor: const Color(0xFF1F1F1F),
+      child: CustomScrollView(
+        slivers: [
+          SliverPadding(
+            padding: EdgeInsets.all(20.w),
+            sliver: SliverToBoxAdapter(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildStatsCard(null), // null = show 0 values
+                  SizedBox(height: 24.h),
+                ],
+              ),
             ),
           ),
-          SizedBox(height: 16.h),
-          Text(
-            'Loading your groups...',
-            style: GoogleFonts.inter(
-              fontSize: 16.sp,
-              color: Colors.grey[400],
+          SliverFillRemaining(
+            hasScrollBody: false,
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      const Color.fromARGB(255, 78, 3, 208),
+                    ),
+                  ),
+                  SizedBox(height: 16.h),
+                  Text(
+                    'Loading your groups...',
+                    style: GoogleFonts.inter(
+                      fontSize: 16.sp,
+                      color: Colors.grey[400],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -310,10 +336,10 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen> {
     );
   }
 
-  Widget _buildStatsCard(List<GroupAccount> groups) {
-    final totalGroups = groups.length;
-    final activeGroups = groups.where((g) => g.status == GroupAccountStatus.active).length;
-    final totalContributions = groups.fold<int>(0, (sum, g) => sum + g.contributions.length);
+  Widget _buildStatsCard(List<GroupAccount>? groups) {
+    final totalGroups = groups?.length ?? 0;
+    final activeGroups = groups?.where((g) => g.status == GroupAccountStatus.active).length ?? 0;
+    final totalContributions = groups?.fold<int>(0, (sum, g) => sum + g.contributions.length) ?? 0;
 
     return Container(
       padding: EdgeInsets.all(20.w),
@@ -430,131 +456,168 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen> {
       },
       color: const Color.fromARGB(255, 78, 3, 208),
       backgroundColor: const Color(0xFF1F1F1F),
-      child: ListView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        children: [
-          SizedBox(height: MediaQuery.of(context).size.height * 0.15),
-          Padding(
-            padding: EdgeInsets.all(32.w),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  padding: EdgeInsets.all(24.w),
-                  decoration: BoxDecoration(
-                    color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    Icons.groups,
-                    size: 48.sp,
-                    color: const Color.fromARGB(255, 78, 3, 208),
-                  ),
-                ),
-                SizedBox(height: 24.h),
-                Text(
-                  'No Groups Yet',
-                  style: GoogleFonts.inter(
-                    fontSize: 22.sp,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
-                ),
-                SizedBox(height: 12.h),
-                Text(
-                  'Create your first group account to start managing shared contributions with friends and family.',
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.inter(
-                    fontSize: 14.sp,
-                    color: Colors.grey[400],
-                    height: 1.4,
-                  ),
-                ),
-                SizedBox(height: 12.h),
-                Text(
-                  'Pull down to refresh',
-                  style: GoogleFonts.inter(
-                    fontSize: 12.sp,
-                    color: Colors.grey[600],
-                  ),
-                ),
-                SizedBox(height: 32.h),
-                ElevatedButton.icon(
-                  onPressed: () => _showCreateGroupBottomSheet(),
-                  icon: Icon(Icons.add, size: 20.sp),
-                  label: Text(
-                    'Create Group',
+      child: CustomScrollView(
+        slivers: [
+          SliverPadding(
+            padding: EdgeInsets.all(20.w),
+            sliver: SliverToBoxAdapter(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildStatsCard(null), // null = show 0 values
+                  SizedBox(height: 24.h),
+                  Text(
+                    'Your Groups (0)',
                     style: GoogleFonts.inter(
-                      fontSize: 16.sp,
+                      fontSize: 18.sp,
                       fontWeight: FontWeight.w600,
+                      color: Colors.white,
                     ),
                   ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color.fromARGB(255, 78, 3, 208),
-                    foregroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 16.h),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12.r),
-                    ),
-                    elevation: 0,
-                  ),
-                ),
-              ],
+                  SizedBox(height: 16.h),
+                ],
+              ),
             ),
           ),
+          SliverFillRemaining(
+            hasScrollBody: false,
+            child: Center(
+              child: Padding(
+                padding: EdgeInsets.all(32.w),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      padding: EdgeInsets.all(24.w),
+                      decoration: BoxDecoration(
+                        color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.groups,
+                        size: 48.sp,
+                        color: const Color.fromARGB(255, 78, 3, 208),
+                      ),
+                    ),
+                    SizedBox(height: 24.h),
+                    Text(
+                      'No Groups Yet',
+                      style: GoogleFonts.inter(
+                        fontSize: 22.sp,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
+                    SizedBox(height: 12.h),
+                    Text(
+                      'Create your first group account to start managing shared contributions with friends and family.',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.inter(
+                        fontSize: 14.sp,
+                        color: Colors.grey[400],
+                        height: 1.4,
+                      ),
+                    ),
+                    SizedBox(height: 32.h),
+                    ElevatedButton.icon(
+                      onPressed: () => _showCreateGroupBottomSheet(),
+                      icon: Icon(Icons.add, size: 20.sp),
+                      label: Text(
+                        'Create Group',
+                        style: GoogleFonts.inter(
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color.fromARGB(255, 78, 3, 208),
+                        foregroundColor: Colors.white,
+                        padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 16.h),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12.r),
+                        ),
+                        elevation: 0,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          SliverPadding(padding: EdgeInsets.only(bottom: 80.h)),
         ],
       ),
     );
   }
 
   Widget _buildErrorView(String message) {
-    return Center(
-      child: Padding(
-        padding: EdgeInsets.all(32.w),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.error_outline,
-              size: 48.sp,
-              color: const Color(0xFFEF4444),
+    return CustomScrollView(
+      slivers: [
+        SliverPadding(
+          padding: EdgeInsets.all(20.w),
+          sliver: SliverToBoxAdapter(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildStatsCard(null), // null = show 0 values
+                SizedBox(height: 24.h),
+              ],
             ),
-            SizedBox(height: 16.h),
-            Text(
-              'Oops! Something went wrong',
-              style: GoogleFonts.inter(
-                fontSize: 18.sp,
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
-              ),
-            ),
-            SizedBox(height: 8.h),
-            Text(
-              message,
-              textAlign: TextAlign.center,
-              style: GoogleFonts.inter(
-                fontSize: 14.sp,
-                color: Colors.grey[400],
-              ),
-            ),
-            SizedBox(height: 24.h),
-            ElevatedButton(
-              onPressed: () {
-                context.read<GroupAccountCubit>().loadUserGroups();
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color.fromARGB(255, 78, 3, 208),
-                foregroundColor: Colors.white,
-                padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8.r),
-                ),
-              ),
-              child: Text('Try Again'),
-            ),
-          ],
+          ),
         ),
-      ),
+        SliverFillRemaining(
+          hasScrollBody: false,
+          child: Center(
+            child: Padding(
+              padding: EdgeInsets.all(32.w),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.error_outline,
+                    size: 48.sp,
+                    color: const Color(0xFFEF4444),
+                  ),
+                  SizedBox(height: 16.h),
+                  Text(
+                    'Oops! Something went wrong',
+                    style: GoogleFonts.inter(
+                      fontSize: 18.sp,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                  SizedBox(height: 8.h),
+                  Text(
+                    message,
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.inter(
+                      fontSize: 14.sp,
+                      color: Colors.grey[400],
+                    ),
+                  ),
+                  SizedBox(height: 24.h),
+                  ElevatedButton(
+                    onPressed: () {
+                      context.read<GroupAccountCubit>().loadUserGroups();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color.fromARGB(255, 78, 3, 208),
+                      foregroundColor: Colors.white,
+                      padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8.r),
+                      ),
+                    ),
+                    child: Text('Try Again'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        SliverPadding(padding: EdgeInsets.only(bottom: 80.h)),
+      ],
     );
   }
 

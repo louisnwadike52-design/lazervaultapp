@@ -1,42 +1,25 @@
-///
+//
 //  Generated code. Do not modify.
 //  source: recipient.proto
 //
 // @dart = 2.12
-// ignore_for_file: annotate_overrides,camel_case_types,constant_identifier_names,directives_ordering,library_prefixes,non_constant_identifier_names,prefer_final_fields,return_of_invalid_type,unnecessary_const,unnecessary_import,unnecessary_this,unused_import,unused_shown_name
+
+// ignore_for_file: annotate_overrides, camel_case_types, comment_references
+// ignore_for_file: constant_identifier_names, library_prefixes
+// ignore_for_file: non_constant_identifier_names, prefer_final_fields
+// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
 
 import 'dart:core' as $core;
 
 import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'google/protobuf/timestamp.pb.dart' as $36;
-import 'google/protobuf/wrappers.pb.dart' as $38;
+import 'common.pb.dart' as $43;
+import 'google/protobuf/timestamp.pb.dart' as $42;
+import 'google/protobuf/wrappers.pb.dart' as $44;
 
+/// Represents a saved recipient entity.
 class Recipient extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'Recipient', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..a<$fixnum.Int64>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'name')
-    ..aOB(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isFavorite')
-    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'type')
-    ..a<$fixnum.Int64>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'internalAccountId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..a<$fixnum.Int64>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'internalUserId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accountNumber')
-    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sortCode')
-    ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'bankName')
-    ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'countryCode')
-    ..aOM<$36.Timestamp>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $36.Timestamp.create)
-    ..aOM<$36.Timestamp>(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $36.Timestamp.create)
-    ..aOS(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'email')
-    ..aOS(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'phoneNumber')
-    ..aOS(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
-    ..aOS(16, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'swiftCode')
-    ..aOS(17, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'iban')
-    ..aOS(18, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'alias')
-    ..hasRequiredFields = false
-  ;
-
-  Recipient._() : super();
   factory Recipient({
     $fixnum.Int64? id,
     $core.String? name,
@@ -48,8 +31,8 @@ class Recipient extends $pb.GeneratedMessage {
     $core.String? sortCode,
     $core.String? bankName,
     $core.String? countryCode,
-    $36.Timestamp? createdAt,
-    $36.Timestamp? updatedAt,
+    $42.Timestamp? createdAt,
+    $42.Timestamp? updatedAt,
     $core.String? email,
     $core.String? phoneNumber,
     $core.String? currency,
@@ -57,65 +40,89 @@ class Recipient extends $pb.GeneratedMessage {
     $core.String? iban,
     $core.String? alias,
   }) {
-    final _result = create();
+    final $result = create();
     if (id != null) {
-      _result.id = id;
+      $result.id = id;
     }
     if (name != null) {
-      _result.name = name;
+      $result.name = name;
     }
     if (isFavorite != null) {
-      _result.isFavorite = isFavorite;
+      $result.isFavorite = isFavorite;
     }
     if (type != null) {
-      _result.type = type;
+      $result.type = type;
     }
     if (internalAccountId != null) {
-      _result.internalAccountId = internalAccountId;
+      $result.internalAccountId = internalAccountId;
     }
     if (internalUserId != null) {
-      _result.internalUserId = internalUserId;
+      $result.internalUserId = internalUserId;
     }
     if (accountNumber != null) {
-      _result.accountNumber = accountNumber;
+      $result.accountNumber = accountNumber;
     }
     if (sortCode != null) {
-      _result.sortCode = sortCode;
+      $result.sortCode = sortCode;
     }
     if (bankName != null) {
-      _result.bankName = bankName;
+      $result.bankName = bankName;
     }
     if (countryCode != null) {
-      _result.countryCode = countryCode;
+      $result.countryCode = countryCode;
     }
     if (createdAt != null) {
-      _result.createdAt = createdAt;
+      $result.createdAt = createdAt;
     }
     if (updatedAt != null) {
-      _result.updatedAt = updatedAt;
+      $result.updatedAt = updatedAt;
     }
     if (email != null) {
-      _result.email = email;
+      $result.email = email;
     }
     if (phoneNumber != null) {
-      _result.phoneNumber = phoneNumber;
+      $result.phoneNumber = phoneNumber;
     }
     if (currency != null) {
-      _result.currency = currency;
+      $result.currency = currency;
     }
     if (swiftCode != null) {
-      _result.swiftCode = swiftCode;
+      $result.swiftCode = swiftCode;
     }
     if (iban != null) {
-      _result.iban = iban;
+      $result.iban = iban;
     }
     if (alias != null) {
-      _result.alias = alias;
+      $result.alias = alias;
     }
-    return _result;
+    return $result;
   }
+  Recipient._() : super();
   factory Recipient.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory Recipient.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'Recipient', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..a<$fixnum.Int64>(1, _omitFieldNames ? '' : 'id', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(2, _omitFieldNames ? '' : 'name')
+    ..aOB(3, _omitFieldNames ? '' : 'isFavorite')
+    ..aOS(4, _omitFieldNames ? '' : 'type')
+    ..a<$fixnum.Int64>(5, _omitFieldNames ? '' : 'internalAccountId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(6, _omitFieldNames ? '' : 'internalUserId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(7, _omitFieldNames ? '' : 'accountNumber')
+    ..aOS(8, _omitFieldNames ? '' : 'sortCode')
+    ..aOS(9, _omitFieldNames ? '' : 'bankName')
+    ..aOS(10, _omitFieldNames ? '' : 'countryCode')
+    ..aOM<$42.Timestamp>(11, _omitFieldNames ? '' : 'createdAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$42.Timestamp>(12, _omitFieldNames ? '' : 'updatedAt', subBuilder: $42.Timestamp.create)
+    ..aOS(13, _omitFieldNames ? '' : 'email')
+    ..aOS(14, _omitFieldNames ? '' : 'phoneNumber')
+    ..aOS(15, _omitFieldNames ? '' : 'currency')
+    ..aOS(16, _omitFieldNames ? '' : 'swiftCode')
+    ..aOS(17, _omitFieldNames ? '' : 'iban')
+    ..aOS(18, _omitFieldNames ? '' : 'alias')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -125,8 +132,10 @@ class Recipient extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  Recipient copyWith(void Function(Recipient) updates) => super.copyWith((message) => updates(message as Recipient)) as Recipient; // ignore: deprecated_member_use
+  Recipient copyWith(void Function(Recipient) updates) => super.copyWith((message) => updates(message as Recipient)) as Recipient;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static Recipient create() => Recipient._();
   Recipient createEmptyInstance() => create();
@@ -171,6 +180,7 @@ class Recipient extends $pb.GeneratedMessage {
   @$pb.TagNumber(4)
   void clearType() => clearField(4);
 
+  /// Fields for INTERNAL recipients
   @$pb.TagNumber(5)
   $fixnum.Int64 get internalAccountId => $_getI64(4);
   @$pb.TagNumber(5)
@@ -189,6 +199,7 @@ class Recipient extends $pb.GeneratedMessage {
   @$pb.TagNumber(6)
   void clearInternalUserId() => clearField(6);
 
+  /// Fields for EXTERNAL recipients
   @$pb.TagNumber(7)
   $core.String get accountNumber => $_getSZ(6);
   @$pb.TagNumber(7)
@@ -226,26 +237,26 @@ class Recipient extends $pb.GeneratedMessage {
   void clearCountryCode() => clearField(10);
 
   @$pb.TagNumber(11)
-  $36.Timestamp get createdAt => $_getN(10);
+  $42.Timestamp get createdAt => $_getN(10);
   @$pb.TagNumber(11)
-  set createdAt($36.Timestamp v) { setField(11, v); }
+  set createdAt($42.Timestamp v) { setField(11, v); }
   @$pb.TagNumber(11)
   $core.bool hasCreatedAt() => $_has(10);
   @$pb.TagNumber(11)
   void clearCreatedAt() => clearField(11);
   @$pb.TagNumber(11)
-  $36.Timestamp ensureCreatedAt() => $_ensure(10);
+  $42.Timestamp ensureCreatedAt() => $_ensure(10);
 
   @$pb.TagNumber(12)
-  $36.Timestamp get updatedAt => $_getN(11);
+  $42.Timestamp get updatedAt => $_getN(11);
   @$pb.TagNumber(12)
-  set updatedAt($36.Timestamp v) { setField(12, v); }
+  set updatedAt($42.Timestamp v) { setField(12, v); }
   @$pb.TagNumber(12)
   $core.bool hasUpdatedAt() => $_has(11);
   @$pb.TagNumber(12)
   void clearUpdatedAt() => clearField(12);
   @$pb.TagNumber(12)
-  $36.Timestamp ensureUpdatedAt() => $_ensure(11);
+  $42.Timestamp ensureUpdatedAt() => $_ensure(11);
 
   @$pb.TagNumber(13)
   $core.String get email => $_getSZ(12);
@@ -303,25 +314,6 @@ class Recipient extends $pb.GeneratedMessage {
 }
 
 class CreateRecipientRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CreateRecipientRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'name')
-    ..aOB(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isFavorite')
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'type')
-    ..a<$fixnum.Int64>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'internalAccountId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accountNumber')
-    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'bankName')
-    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sortCode')
-    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'countryCode')
-    ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'email')
-    ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'phoneNumber')
-    ..aOS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
-    ..aOS(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'swiftCode')
-    ..aOS(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'iban')
-    ..aOS(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'alias')
-    ..hasRequiredFields = false
-  ;
-
-  CreateRecipientRequest._() : super();
   factory CreateRecipientRequest({
     $core.String? name,
     $core.bool? isFavorite,
@@ -338,53 +330,73 @@ class CreateRecipientRequest extends $pb.GeneratedMessage {
     $core.String? iban,
     $core.String? alias,
   }) {
-    final _result = create();
+    final $result = create();
     if (name != null) {
-      _result.name = name;
+      $result.name = name;
     }
     if (isFavorite != null) {
-      _result.isFavorite = isFavorite;
+      $result.isFavorite = isFavorite;
     }
     if (type != null) {
-      _result.type = type;
+      $result.type = type;
     }
     if (internalAccountId != null) {
-      _result.internalAccountId = internalAccountId;
+      $result.internalAccountId = internalAccountId;
     }
     if (accountNumber != null) {
-      _result.accountNumber = accountNumber;
+      $result.accountNumber = accountNumber;
     }
     if (bankName != null) {
-      _result.bankName = bankName;
+      $result.bankName = bankName;
     }
     if (sortCode != null) {
-      _result.sortCode = sortCode;
+      $result.sortCode = sortCode;
     }
     if (countryCode != null) {
-      _result.countryCode = countryCode;
+      $result.countryCode = countryCode;
     }
     if (email != null) {
-      _result.email = email;
+      $result.email = email;
     }
     if (phoneNumber != null) {
-      _result.phoneNumber = phoneNumber;
+      $result.phoneNumber = phoneNumber;
     }
     if (currency != null) {
-      _result.currency = currency;
+      $result.currency = currency;
     }
     if (swiftCode != null) {
-      _result.swiftCode = swiftCode;
+      $result.swiftCode = swiftCode;
     }
     if (iban != null) {
-      _result.iban = iban;
+      $result.iban = iban;
     }
     if (alias != null) {
-      _result.alias = alias;
+      $result.alias = alias;
     }
-    return _result;
+    return $result;
   }
+  CreateRecipientRequest._() : super();
   factory CreateRecipientRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CreateRecipientRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreateRecipientRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'name')
+    ..aOB(2, _omitFieldNames ? '' : 'isFavorite')
+    ..aOS(3, _omitFieldNames ? '' : 'type')
+    ..a<$fixnum.Int64>(4, _omitFieldNames ? '' : 'internalAccountId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(5, _omitFieldNames ? '' : 'accountNumber')
+    ..aOS(6, _omitFieldNames ? '' : 'bankName')
+    ..aOS(7, _omitFieldNames ? '' : 'sortCode')
+    ..aOS(8, _omitFieldNames ? '' : 'countryCode')
+    ..aOS(9, _omitFieldNames ? '' : 'email')
+    ..aOS(10, _omitFieldNames ? '' : 'phoneNumber')
+    ..aOS(11, _omitFieldNames ? '' : 'currency')
+    ..aOS(12, _omitFieldNames ? '' : 'swiftCode')
+    ..aOS(13, _omitFieldNames ? '' : 'iban')
+    ..aOS(14, _omitFieldNames ? '' : 'alias')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -394,8 +406,10 @@ class CreateRecipientRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CreateRecipientRequest copyWith(void Function(CreateRecipientRequest) updates) => super.copyWith((message) => updates(message as CreateRecipientRequest)) as CreateRecipientRequest; // ignore: deprecated_member_use
+  CreateRecipientRequest copyWith(void Function(CreateRecipientRequest) updates) => super.copyWith((message) => updates(message as CreateRecipientRequest)) as CreateRecipientRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static CreateRecipientRequest create() => CreateRecipientRequest._();
   CreateRecipientRequest createEmptyInstance() => create();
@@ -431,6 +445,7 @@ class CreateRecipientRequest extends $pb.GeneratedMessage {
   @$pb.TagNumber(3)
   void clearType() => clearField(3);
 
+  /// Provide ONE of the following based on 'type'
   @$pb.TagNumber(4)
   $fixnum.Int64 get internalAccountId => $_getI64(3);
   @$pb.TagNumber(4)
@@ -532,23 +547,24 @@ class CreateRecipientRequest extends $pb.GeneratedMessage {
 }
 
 class CreateRecipientResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CreateRecipientResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<Recipient>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recipient', subBuilder: Recipient.create)
-    ..hasRequiredFields = false
-  ;
-
-  CreateRecipientResponse._() : super();
   factory CreateRecipientResponse({
     Recipient? recipient,
   }) {
-    final _result = create();
+    final $result = create();
     if (recipient != null) {
-      _result.recipient = recipient;
+      $result.recipient = recipient;
     }
-    return _result;
+    return $result;
   }
+  CreateRecipientResponse._() : super();
   factory CreateRecipientResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CreateRecipientResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreateRecipientResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOM<Recipient>(1, _omitFieldNames ? '' : 'recipient', subBuilder: Recipient.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -558,8 +574,10 @@ class CreateRecipientResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CreateRecipientResponse copyWith(void Function(CreateRecipientResponse) updates) => super.copyWith((message) => updates(message as CreateRecipientResponse)) as CreateRecipientResponse; // ignore: deprecated_member_use
+  CreateRecipientResponse copyWith(void Function(CreateRecipientResponse) updates) => super.copyWith((message) => updates(message as CreateRecipientResponse)) as CreateRecipientResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static CreateRecipientResponse create() => CreateRecipientResponse._();
   CreateRecipientResponse createEmptyInstance() => create();
@@ -580,34 +598,46 @@ class CreateRecipientResponse extends $pb.GeneratedMessage {
   Recipient ensureRecipient() => $_ensure(0);
 }
 
+/// Pagination metadata for list responses
 class ListRecipientsRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ListRecipientsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'countryCode')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
-    ..aOB(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'favoritesOnly')
-    ..hasRequiredFields = false
-  ;
-
-  ListRecipientsRequest._() : super();
   factory ListRecipientsRequest({
     $core.String? countryCode,
     $core.String? currency,
     $core.bool? favoritesOnly,
+    $core.int? page,
+    $core.int? pageSize,
   }) {
-    final _result = create();
+    final $result = create();
     if (countryCode != null) {
-      _result.countryCode = countryCode;
+      $result.countryCode = countryCode;
     }
     if (currency != null) {
-      _result.currency = currency;
+      $result.currency = currency;
     }
     if (favoritesOnly != null) {
-      _result.favoritesOnly = favoritesOnly;
+      $result.favoritesOnly = favoritesOnly;
     }
-    return _result;
+    if (page != null) {
+      $result.page = page;
+    }
+    if (pageSize != null) {
+      $result.pageSize = pageSize;
+    }
+    return $result;
   }
+  ListRecipientsRequest._() : super();
   factory ListRecipientsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ListRecipientsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ListRecipientsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'countryCode')
+    ..aOS(2, _omitFieldNames ? '' : 'currency')
+    ..aOB(3, _omitFieldNames ? '' : 'favoritesOnly')
+    ..a<$core.int>(4, _omitFieldNames ? '' : 'page', $pb.PbFieldType.O3)
+    ..a<$core.int>(5, _omitFieldNames ? '' : 'pageSize', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -617,8 +647,10 @@ class ListRecipientsRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ListRecipientsRequest copyWith(void Function(ListRecipientsRequest) updates) => super.copyWith((message) => updates(message as ListRecipientsRequest)) as ListRecipientsRequest; // ignore: deprecated_member_use
+  ListRecipientsRequest copyWith(void Function(ListRecipientsRequest) updates) => super.copyWith((message) => updates(message as ListRecipientsRequest)) as ListRecipientsRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static ListRecipientsRequest create() => ListRecipientsRequest._();
   ListRecipientsRequest createEmptyInstance() => create();
@@ -653,26 +685,51 @@ class ListRecipientsRequest extends $pb.GeneratedMessage {
   $core.bool hasFavoritesOnly() => $_has(2);
   @$pb.TagNumber(3)
   void clearFavoritesOnly() => clearField(3);
+
+  /// Pagination parameters
+  @$pb.TagNumber(4)
+  $core.int get page => $_getIZ(3);
+  @$pb.TagNumber(4)
+  set page($core.int v) { $_setSignedInt32(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasPage() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearPage() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.int get pageSize => $_getIZ(4);
+  @$pb.TagNumber(5)
+  set pageSize($core.int v) { $_setSignedInt32(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasPageSize() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearPageSize() => clearField(5);
 }
 
 class ListRecipientsResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ListRecipientsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..pc<Recipient>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recipients', $pb.PbFieldType.PM, subBuilder: Recipient.create)
+  factory ListRecipientsResponse({
+    $core.Iterable<Recipient>? recipients,
+    $43.PaginationInfo? pagination,
+  }) {
+    final $result = create();
+    if (recipients != null) {
+      $result.recipients.addAll(recipients);
+    }
+    if (pagination != null) {
+      $result.pagination = pagination;
+    }
+    return $result;
+  }
+  ListRecipientsResponse._() : super();
+  factory ListRecipientsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory ListRecipientsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ListRecipientsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..pc<Recipient>(1, _omitFieldNames ? '' : 'recipients', $pb.PbFieldType.PM, subBuilder: Recipient.create)
+    ..aOM<$43.PaginationInfo>(2, _omitFieldNames ? '' : 'pagination', subBuilder: $43.PaginationInfo.create)
     ..hasRequiredFields = false
   ;
 
-  ListRecipientsResponse._() : super();
-  factory ListRecipientsResponse({
-    $core.Iterable<Recipient>? recipients,
-  }) {
-    final _result = create();
-    if (recipients != null) {
-      _result.recipients.addAll(recipients);
-    }
-    return _result;
-  }
-  factory ListRecipientsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory ListRecipientsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -682,8 +739,10 @@ class ListRecipientsResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ListRecipientsResponse copyWith(void Function(ListRecipientsResponse) updates) => super.copyWith((message) => updates(message as ListRecipientsResponse)) as ListRecipientsResponse; // ignore: deprecated_member_use
+  ListRecipientsResponse copyWith(void Function(ListRecipientsResponse) updates) => super.copyWith((message) => updates(message as ListRecipientsResponse)) as ListRecipientsResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static ListRecipientsResponse create() => ListRecipientsResponse._();
   ListRecipientsResponse createEmptyInstance() => create();
@@ -694,61 +753,73 @@ class ListRecipientsResponse extends $pb.GeneratedMessage {
 
   @$pb.TagNumber(1)
   $core.List<Recipient> get recipients => $_getList(0);
+
+  @$pb.TagNumber(2)
+  $43.PaginationInfo get pagination => $_getN(1);
+  @$pb.TagNumber(2)
+  set pagination($43.PaginationInfo v) { setField(2, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasPagination() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearPagination() => clearField(2);
+  @$pb.TagNumber(2)
+  $43.PaginationInfo ensurePagination() => $_ensure(1);
 }
 
 class UpdateRecipientRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UpdateRecipientRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..a<$fixnum.Int64>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recipientId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..aOM<$38.StringValue>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'name', subBuilder: $38.StringValue.create)
-    ..aOM<$38.BoolValue>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isFavorite', subBuilder: $38.BoolValue.create)
-    ..aOM<$38.StringValue>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accountNumber', subBuilder: $38.StringValue.create)
-    ..aOM<$38.StringValue>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sortCode', subBuilder: $38.StringValue.create)
-    ..aOM<$38.StringValue>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'bankName', subBuilder: $38.StringValue.create)
-    ..aOM<$38.StringValue>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'countryCode', subBuilder: $38.StringValue.create)
-    ..aOM<$38.StringValue>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'alias', subBuilder: $38.StringValue.create)
+  factory UpdateRecipientRequest({
+    $fixnum.Int64? recipientId,
+    $44.StringValue? name,
+    $44.BoolValue? isFavorite,
+    $44.StringValue? accountNumber,
+    $44.StringValue? sortCode,
+    $44.StringValue? bankName,
+    $44.StringValue? countryCode,
+    $44.StringValue? alias,
+  }) {
+    final $result = create();
+    if (recipientId != null) {
+      $result.recipientId = recipientId;
+    }
+    if (name != null) {
+      $result.name = name;
+    }
+    if (isFavorite != null) {
+      $result.isFavorite = isFavorite;
+    }
+    if (accountNumber != null) {
+      $result.accountNumber = accountNumber;
+    }
+    if (sortCode != null) {
+      $result.sortCode = sortCode;
+    }
+    if (bankName != null) {
+      $result.bankName = bankName;
+    }
+    if (countryCode != null) {
+      $result.countryCode = countryCode;
+    }
+    if (alias != null) {
+      $result.alias = alias;
+    }
+    return $result;
+  }
+  UpdateRecipientRequest._() : super();
+  factory UpdateRecipientRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory UpdateRecipientRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UpdateRecipientRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..a<$fixnum.Int64>(1, _omitFieldNames ? '' : 'recipientId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOM<$44.StringValue>(2, _omitFieldNames ? '' : 'name', subBuilder: $44.StringValue.create)
+    ..aOM<$44.BoolValue>(3, _omitFieldNames ? '' : 'isFavorite', subBuilder: $44.BoolValue.create)
+    ..aOM<$44.StringValue>(4, _omitFieldNames ? '' : 'accountNumber', subBuilder: $44.StringValue.create)
+    ..aOM<$44.StringValue>(5, _omitFieldNames ? '' : 'sortCode', subBuilder: $44.StringValue.create)
+    ..aOM<$44.StringValue>(6, _omitFieldNames ? '' : 'bankName', subBuilder: $44.StringValue.create)
+    ..aOM<$44.StringValue>(7, _omitFieldNames ? '' : 'countryCode', subBuilder: $44.StringValue.create)
+    ..aOM<$44.StringValue>(8, _omitFieldNames ? '' : 'alias', subBuilder: $44.StringValue.create)
     ..hasRequiredFields = false
   ;
 
-  UpdateRecipientRequest._() : super();
-  factory UpdateRecipientRequest({
-    $fixnum.Int64? recipientId,
-    $38.StringValue? name,
-    $38.BoolValue? isFavorite,
-    $38.StringValue? accountNumber,
-    $38.StringValue? sortCode,
-    $38.StringValue? bankName,
-    $38.StringValue? countryCode,
-    $38.StringValue? alias,
-  }) {
-    final _result = create();
-    if (recipientId != null) {
-      _result.recipientId = recipientId;
-    }
-    if (name != null) {
-      _result.name = name;
-    }
-    if (isFavorite != null) {
-      _result.isFavorite = isFavorite;
-    }
-    if (accountNumber != null) {
-      _result.accountNumber = accountNumber;
-    }
-    if (sortCode != null) {
-      _result.sortCode = sortCode;
-    }
-    if (bankName != null) {
-      _result.bankName = bankName;
-    }
-    if (countryCode != null) {
-      _result.countryCode = countryCode;
-    }
-    if (alias != null) {
-      _result.alias = alias;
-    }
-    return _result;
-  }
-  factory UpdateRecipientRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory UpdateRecipientRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -758,8 +829,10 @@ class UpdateRecipientRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  UpdateRecipientRequest copyWith(void Function(UpdateRecipientRequest) updates) => super.copyWith((message) => updates(message as UpdateRecipientRequest)) as UpdateRecipientRequest; // ignore: deprecated_member_use
+  UpdateRecipientRequest copyWith(void Function(UpdateRecipientRequest) updates) => super.copyWith((message) => updates(message as UpdateRecipientRequest)) as UpdateRecipientRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static UpdateRecipientRequest create() => UpdateRecipientRequest._();
   UpdateRecipientRequest createEmptyInstance() => create();
@@ -777,102 +850,105 @@ class UpdateRecipientRequest extends $pb.GeneratedMessage {
   @$pb.TagNumber(1)
   void clearRecipientId() => clearField(1);
 
+  /// Optional fields to update. Use wrappers to distinguish between
+  /// setting a field to its default value (e.g., false, "") and not updating it.
   @$pb.TagNumber(2)
-  $38.StringValue get name => $_getN(1);
+  $44.StringValue get name => $_getN(1);
   @$pb.TagNumber(2)
-  set name($38.StringValue v) { setField(2, v); }
+  set name($44.StringValue v) { setField(2, v); }
   @$pb.TagNumber(2)
   $core.bool hasName() => $_has(1);
   @$pb.TagNumber(2)
   void clearName() => clearField(2);
   @$pb.TagNumber(2)
-  $38.StringValue ensureName() => $_ensure(1);
+  $44.StringValue ensureName() => $_ensure(1);
 
   @$pb.TagNumber(3)
-  $38.BoolValue get isFavorite => $_getN(2);
+  $44.BoolValue get isFavorite => $_getN(2);
   @$pb.TagNumber(3)
-  set isFavorite($38.BoolValue v) { setField(3, v); }
+  set isFavorite($44.BoolValue v) { setField(3, v); }
   @$pb.TagNumber(3)
   $core.bool hasIsFavorite() => $_has(2);
   @$pb.TagNumber(3)
   void clearIsFavorite() => clearField(3);
   @$pb.TagNumber(3)
-  $38.BoolValue ensureIsFavorite() => $_ensure(2);
+  $44.BoolValue ensureIsFavorite() => $_ensure(2);
 
   @$pb.TagNumber(4)
-  $38.StringValue get accountNumber => $_getN(3);
+  $44.StringValue get accountNumber => $_getN(3);
   @$pb.TagNumber(4)
-  set accountNumber($38.StringValue v) { setField(4, v); }
+  set accountNumber($44.StringValue v) { setField(4, v); }
   @$pb.TagNumber(4)
   $core.bool hasAccountNumber() => $_has(3);
   @$pb.TagNumber(4)
   void clearAccountNumber() => clearField(4);
   @$pb.TagNumber(4)
-  $38.StringValue ensureAccountNumber() => $_ensure(3);
+  $44.StringValue ensureAccountNumber() => $_ensure(3);
 
   @$pb.TagNumber(5)
-  $38.StringValue get sortCode => $_getN(4);
+  $44.StringValue get sortCode => $_getN(4);
   @$pb.TagNumber(5)
-  set sortCode($38.StringValue v) { setField(5, v); }
+  set sortCode($44.StringValue v) { setField(5, v); }
   @$pb.TagNumber(5)
   $core.bool hasSortCode() => $_has(4);
   @$pb.TagNumber(5)
   void clearSortCode() => clearField(5);
   @$pb.TagNumber(5)
-  $38.StringValue ensureSortCode() => $_ensure(4);
+  $44.StringValue ensureSortCode() => $_ensure(4);
 
   @$pb.TagNumber(6)
-  $38.StringValue get bankName => $_getN(5);
+  $44.StringValue get bankName => $_getN(5);
   @$pb.TagNumber(6)
-  set bankName($38.StringValue v) { setField(6, v); }
+  set bankName($44.StringValue v) { setField(6, v); }
   @$pb.TagNumber(6)
   $core.bool hasBankName() => $_has(5);
   @$pb.TagNumber(6)
   void clearBankName() => clearField(6);
   @$pb.TagNumber(6)
-  $38.StringValue ensureBankName() => $_ensure(5);
+  $44.StringValue ensureBankName() => $_ensure(5);
 
   @$pb.TagNumber(7)
-  $38.StringValue get countryCode => $_getN(6);
+  $44.StringValue get countryCode => $_getN(6);
   @$pb.TagNumber(7)
-  set countryCode($38.StringValue v) { setField(7, v); }
+  set countryCode($44.StringValue v) { setField(7, v); }
   @$pb.TagNumber(7)
   $core.bool hasCountryCode() => $_has(6);
   @$pb.TagNumber(7)
   void clearCountryCode() => clearField(7);
   @$pb.TagNumber(7)
-  $38.StringValue ensureCountryCode() => $_ensure(6);
+  $44.StringValue ensureCountryCode() => $_ensure(6);
 
   @$pb.TagNumber(8)
-  $38.StringValue get alias => $_getN(7);
+  $44.StringValue get alias => $_getN(7);
   @$pb.TagNumber(8)
-  set alias($38.StringValue v) { setField(8, v); }
+  set alias($44.StringValue v) { setField(8, v); }
   @$pb.TagNumber(8)
   $core.bool hasAlias() => $_has(7);
   @$pb.TagNumber(8)
   void clearAlias() => clearField(8);
   @$pb.TagNumber(8)
-  $38.StringValue ensureAlias() => $_ensure(7);
+  $44.StringValue ensureAlias() => $_ensure(7);
 }
 
 class UpdateRecipientResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UpdateRecipientResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<Recipient>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recipient', subBuilder: Recipient.create)
-    ..hasRequiredFields = false
-  ;
-
-  UpdateRecipientResponse._() : super();
   factory UpdateRecipientResponse({
     Recipient? recipient,
   }) {
-    final _result = create();
+    final $result = create();
     if (recipient != null) {
-      _result.recipient = recipient;
+      $result.recipient = recipient;
     }
-    return _result;
+    return $result;
   }
+  UpdateRecipientResponse._() : super();
   factory UpdateRecipientResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory UpdateRecipientResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UpdateRecipientResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOM<Recipient>(1, _omitFieldNames ? '' : 'recipient', subBuilder: Recipient.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -882,8 +958,10 @@ class UpdateRecipientResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  UpdateRecipientResponse copyWith(void Function(UpdateRecipientResponse) updates) => super.copyWith((message) => updates(message as UpdateRecipientResponse)) as UpdateRecipientResponse; // ignore: deprecated_member_use
+  UpdateRecipientResponse copyWith(void Function(UpdateRecipientResponse) updates) => super.copyWith((message) => updates(message as UpdateRecipientResponse)) as UpdateRecipientResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static UpdateRecipientResponse create() => UpdateRecipientResponse._();
   UpdateRecipientResponse createEmptyInstance() => create();
@@ -905,23 +983,24 @@ class UpdateRecipientResponse extends $pb.GeneratedMessage {
 }
 
 class DeleteRecipientRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'DeleteRecipientRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..a<$fixnum.Int64>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recipientId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..hasRequiredFields = false
-  ;
-
-  DeleteRecipientRequest._() : super();
   factory DeleteRecipientRequest({
     $fixnum.Int64? recipientId,
   }) {
-    final _result = create();
+    final $result = create();
     if (recipientId != null) {
-      _result.recipientId = recipientId;
+      $result.recipientId = recipientId;
     }
-    return _result;
+    return $result;
   }
+  DeleteRecipientRequest._() : super();
   factory DeleteRecipientRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory DeleteRecipientRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'DeleteRecipientRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..a<$fixnum.Int64>(1, _omitFieldNames ? '' : 'recipientId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -931,8 +1010,10 @@ class DeleteRecipientRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  DeleteRecipientRequest copyWith(void Function(DeleteRecipientRequest) updates) => super.copyWith((message) => updates(message as DeleteRecipientRequest)) as DeleteRecipientRequest; // ignore: deprecated_member_use
+  DeleteRecipientRequest copyWith(void Function(DeleteRecipientRequest) updates) => super.copyWith((message) => updates(message as DeleteRecipientRequest)) as DeleteRecipientRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static DeleteRecipientRequest create() => DeleteRecipientRequest._();
   DeleteRecipientRequest createEmptyInstance() => create();
@@ -952,23 +1033,24 @@ class DeleteRecipientRequest extends $pb.GeneratedMessage {
 }
 
 class DeleteRecipientResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'DeleteRecipientResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
-    ..hasRequiredFields = false
-  ;
-
-  DeleteRecipientResponse._() : super();
   factory DeleteRecipientResponse({
     $core.String? message,
   }) {
-    final _result = create();
+    final $result = create();
     if (message != null) {
-      _result.message = message;
+      $result.message = message;
     }
-    return _result;
+    return $result;
   }
+  DeleteRecipientResponse._() : super();
   factory DeleteRecipientResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory DeleteRecipientResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'DeleteRecipientResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -978,8 +1060,10 @@ class DeleteRecipientResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  DeleteRecipientResponse copyWith(void Function(DeleteRecipientResponse) updates) => super.copyWith((message) => updates(message as DeleteRecipientResponse)) as DeleteRecipientResponse; // ignore: deprecated_member_use
+  DeleteRecipientResponse copyWith(void Function(DeleteRecipientResponse) updates) => super.copyWith((message) => updates(message as DeleteRecipientResponse)) as DeleteRecipientResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static DeleteRecipientResponse create() => DeleteRecipientResponse._();
   DeleteRecipientResponse createEmptyInstance() => create();
@@ -999,23 +1083,24 @@ class DeleteRecipientResponse extends $pb.GeneratedMessage {
 }
 
 class GetRecipientRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetRecipientRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..a<$fixnum.Int64>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recipientId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..hasRequiredFields = false
-  ;
-
-  GetRecipientRequest._() : super();
   factory GetRecipientRequest({
     $fixnum.Int64? recipientId,
   }) {
-    final _result = create();
+    final $result = create();
     if (recipientId != null) {
-      _result.recipientId = recipientId;
+      $result.recipientId = recipientId;
     }
-    return _result;
+    return $result;
   }
+  GetRecipientRequest._() : super();
   factory GetRecipientRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetRecipientRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetRecipientRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..a<$fixnum.Int64>(1, _omitFieldNames ? '' : 'recipientId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1025,8 +1110,10 @@ class GetRecipientRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetRecipientRequest copyWith(void Function(GetRecipientRequest) updates) => super.copyWith((message) => updates(message as GetRecipientRequest)) as GetRecipientRequest; // ignore: deprecated_member_use
+  GetRecipientRequest copyWith(void Function(GetRecipientRequest) updates) => super.copyWith((message) => updates(message as GetRecipientRequest)) as GetRecipientRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetRecipientRequest create() => GetRecipientRequest._();
   GetRecipientRequest createEmptyInstance() => create();
@@ -1046,23 +1133,24 @@ class GetRecipientRequest extends $pb.GeneratedMessage {
 }
 
 class GetRecipientResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetRecipientResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<Recipient>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recipient', subBuilder: Recipient.create)
-    ..hasRequiredFields = false
-  ;
-
-  GetRecipientResponse._() : super();
   factory GetRecipientResponse({
     Recipient? recipient,
   }) {
-    final _result = create();
+    final $result = create();
     if (recipient != null) {
-      _result.recipient = recipient;
+      $result.recipient = recipient;
     }
-    return _result;
+    return $result;
   }
+  GetRecipientResponse._() : super();
   factory GetRecipientResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetRecipientResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetRecipientResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOM<Recipient>(1, _omitFieldNames ? '' : 'recipient', subBuilder: Recipient.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1072,8 +1160,10 @@ class GetRecipientResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetRecipientResponse copyWith(void Function(GetRecipientResponse) updates) => super.copyWith((message) => updates(message as GetRecipientResponse)) as GetRecipientResponse; // ignore: deprecated_member_use
+  GetRecipientResponse copyWith(void Function(GetRecipientResponse) updates) => super.copyWith((message) => updates(message as GetRecipientResponse)) as GetRecipientResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetRecipientResponse create() => GetRecipientResponse._();
   GetRecipientResponse createEmptyInstance() => create();
@@ -1094,29 +1184,31 @@ class GetRecipientResponse extends $pb.GeneratedMessage {
   Recipient ensureRecipient() => $_ensure(0);
 }
 
+/// Renamed from SimilarRecipientUser and fields adjusted
 class FoundRecipientResult extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'FoundRecipientResult', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recipientId')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'name')
-    ..hasRequiredFields = false
-  ;
-
-  FoundRecipientResult._() : super();
   factory FoundRecipientResult({
     $core.String? recipientId,
     $core.String? name,
   }) {
-    final _result = create();
+    final $result = create();
     if (recipientId != null) {
-      _result.recipientId = recipientId;
+      $result.recipientId = recipientId;
     }
     if (name != null) {
-      _result.name = name;
+      $result.name = name;
     }
-    return _result;
+    return $result;
   }
+  FoundRecipientResult._() : super();
   factory FoundRecipientResult.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory FoundRecipientResult.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'FoundRecipientResult', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'recipientId')
+    ..aOS(2, _omitFieldNames ? '' : 'name')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1126,8 +1218,10 @@ class FoundRecipientResult extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  FoundRecipientResult copyWith(void Function(FoundRecipientResult) updates) => super.copyWith((message) => updates(message as FoundRecipientResult)) as FoundRecipientResult; // ignore: deprecated_member_use
+  FoundRecipientResult copyWith(void Function(FoundRecipientResult) updates) => super.copyWith((message) => updates(message as FoundRecipientResult)) as FoundRecipientResult;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static FoundRecipientResult create() => FoundRecipientResult._();
   FoundRecipientResult createEmptyInstance() => create();
@@ -1156,23 +1250,24 @@ class FoundRecipientResult extends $pb.GeneratedMessage {
 }
 
 class GetSimilarRecipientsByNameRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetSimilarRecipientsByNameRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'name')
-    ..hasRequiredFields = false
-  ;
-
-  GetSimilarRecipientsByNameRequest._() : super();
   factory GetSimilarRecipientsByNameRequest({
     $core.String? name,
   }) {
-    final _result = create();
+    final $result = create();
     if (name != null) {
-      _result.name = name;
+      $result.name = name;
     }
-    return _result;
+    return $result;
   }
+  GetSimilarRecipientsByNameRequest._() : super();
   factory GetSimilarRecipientsByNameRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetSimilarRecipientsByNameRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetSimilarRecipientsByNameRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'name')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1182,8 +1277,10 @@ class GetSimilarRecipientsByNameRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetSimilarRecipientsByNameRequest copyWith(void Function(GetSimilarRecipientsByNameRequest) updates) => super.copyWith((message) => updates(message as GetSimilarRecipientsByNameRequest)) as GetSimilarRecipientsByNameRequest; // ignore: deprecated_member_use
+  GetSimilarRecipientsByNameRequest copyWith(void Function(GetSimilarRecipientsByNameRequest) updates) => super.copyWith((message) => updates(message as GetSimilarRecipientsByNameRequest)) as GetSimilarRecipientsByNameRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetSimilarRecipientsByNameRequest create() => GetSimilarRecipientsByNameRequest._();
   GetSimilarRecipientsByNameRequest createEmptyInstance() => create();
@@ -1203,23 +1300,24 @@ class GetSimilarRecipientsByNameRequest extends $pb.GeneratedMessage {
 }
 
 class GetSimilarRecipientsByNameResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetSimilarRecipientsByNameResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..pc<FoundRecipientResult>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'foundRecipients', $pb.PbFieldType.PM, subBuilder: FoundRecipientResult.create)
-    ..hasRequiredFields = false
-  ;
-
-  GetSimilarRecipientsByNameResponse._() : super();
   factory GetSimilarRecipientsByNameResponse({
     $core.Iterable<FoundRecipientResult>? foundRecipients,
   }) {
-    final _result = create();
+    final $result = create();
     if (foundRecipients != null) {
-      _result.foundRecipients.addAll(foundRecipients);
+      $result.foundRecipients.addAll(foundRecipients);
     }
-    return _result;
+    return $result;
   }
+  GetSimilarRecipientsByNameResponse._() : super();
   factory GetSimilarRecipientsByNameResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetSimilarRecipientsByNameResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetSimilarRecipientsByNameResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..pc<FoundRecipientResult>(1, _omitFieldNames ? '' : 'foundRecipients', $pb.PbFieldType.PM, subBuilder: FoundRecipientResult.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1229,8 +1327,10 @@ class GetSimilarRecipientsByNameResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetSimilarRecipientsByNameResponse copyWith(void Function(GetSimilarRecipientsByNameResponse) updates) => super.copyWith((message) => updates(message as GetSimilarRecipientsByNameResponse)) as GetSimilarRecipientsByNameResponse; // ignore: deprecated_member_use
+  GetSimilarRecipientsByNameResponse copyWith(void Function(GetSimilarRecipientsByNameResponse) updates) => super.copyWith((message) => updates(message as GetSimilarRecipientsByNameResponse)) as GetSimilarRecipientsByNameResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetSimilarRecipientsByNameResponse create() => GetSimilarRecipientsByNameResponse._();
   GetSimilarRecipientsByNameResponse createEmptyInstance() => create();
@@ -1244,33 +1344,34 @@ class GetSimilarRecipientsByNameResponse extends $pb.GeneratedMessage {
 }
 
 class SearchRecipientsByAccountRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'SearchRecipientsByAccountRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accountNumber')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sortCode')
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'bankName')
-    ..hasRequiredFields = false
-  ;
-
-  SearchRecipientsByAccountRequest._() : super();
   factory SearchRecipientsByAccountRequest({
     $core.String? accountNumber,
     $core.String? sortCode,
     $core.String? bankName,
   }) {
-    final _result = create();
+    final $result = create();
     if (accountNumber != null) {
-      _result.accountNumber = accountNumber;
+      $result.accountNumber = accountNumber;
     }
     if (sortCode != null) {
-      _result.sortCode = sortCode;
+      $result.sortCode = sortCode;
     }
     if (bankName != null) {
-      _result.bankName = bankName;
+      $result.bankName = bankName;
     }
-    return _result;
+    return $result;
   }
+  SearchRecipientsByAccountRequest._() : super();
   factory SearchRecipientsByAccountRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory SearchRecipientsByAccountRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SearchRecipientsByAccountRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'accountNumber')
+    ..aOS(2, _omitFieldNames ? '' : 'sortCode')
+    ..aOS(3, _omitFieldNames ? '' : 'bankName')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1280,8 +1381,10 @@ class SearchRecipientsByAccountRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  SearchRecipientsByAccountRequest copyWith(void Function(SearchRecipientsByAccountRequest) updates) => super.copyWith((message) => updates(message as SearchRecipientsByAccountRequest)) as SearchRecipientsByAccountRequest; // ignore: deprecated_member_use
+  SearchRecipientsByAccountRequest copyWith(void Function(SearchRecipientsByAccountRequest) updates) => super.copyWith((message) => updates(message as SearchRecipientsByAccountRequest)) as SearchRecipientsByAccountRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static SearchRecipientsByAccountRequest create() => SearchRecipientsByAccountRequest._();
   SearchRecipientsByAccountRequest createEmptyInstance() => create();
@@ -1319,23 +1422,24 @@ class SearchRecipientsByAccountRequest extends $pb.GeneratedMessage {
 }
 
 class SearchRecipientsByAccountResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'SearchRecipientsByAccountResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..pc<Recipient>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recipients', $pb.PbFieldType.PM, subBuilder: Recipient.create)
-    ..hasRequiredFields = false
-  ;
-
-  SearchRecipientsByAccountResponse._() : super();
   factory SearchRecipientsByAccountResponse({
     $core.Iterable<Recipient>? recipients,
   }) {
-    final _result = create();
+    final $result = create();
     if (recipients != null) {
-      _result.recipients.addAll(recipients);
+      $result.recipients.addAll(recipients);
     }
-    return _result;
+    return $result;
   }
+  SearchRecipientsByAccountResponse._() : super();
   factory SearchRecipientsByAccountResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory SearchRecipientsByAccountResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SearchRecipientsByAccountResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..pc<Recipient>(1, _omitFieldNames ? '' : 'recipients', $pb.PbFieldType.PM, subBuilder: Recipient.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1345,8 +1449,10 @@ class SearchRecipientsByAccountResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  SearchRecipientsByAccountResponse copyWith(void Function(SearchRecipientsByAccountResponse) updates) => super.copyWith((message) => updates(message as SearchRecipientsByAccountResponse)) as SearchRecipientsByAccountResponse; // ignore: deprecated_member_use
+  SearchRecipientsByAccountResponse copyWith(void Function(SearchRecipientsByAccountResponse) updates) => super.copyWith((message) => updates(message as SearchRecipientsByAccountResponse)) as SearchRecipientsByAccountResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static SearchRecipientsByAccountResponse create() => SearchRecipientsByAccountResponse._();
   SearchRecipientsByAccountResponse createEmptyInstance() => create();
@@ -1359,3 +1465,6 @@ class SearchRecipientsByAccountResponse extends $pb.GeneratedMessage {
   $core.List<Recipient> get recipients => $_getList(0);
 }
 
+
+const _omitFieldNames = $core.bool.fromEnvironment('protobuf.omit_field_names');
+const _omitMessageNames = $core.bool.fromEnvironment('protobuf.omit_message_names');

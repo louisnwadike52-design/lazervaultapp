@@ -1,6 +1,9 @@
 import 'package:equatable/equatable.dart';
 import '../../domain/entities/group_entities.dart';
 
+// Export for convenience
+export '../../domain/entities/group_entities.dart';
+
 abstract class GroupAccountState extends Equatable {
   const GroupAccountState();
 
@@ -351,5 +354,53 @@ class MemberRoleUpdatedSuccess extends GroupAccountState {
 
   @override
   List<Object?> get props => [memberId, groupId, newRole, message];
+}
+
+/// Report generation in progress
+class GroupAccountReportLoading extends GroupAccountState {
+  final String? message;
+
+  const GroupAccountReportLoading({this.message});
+
+  @override
+  List<Object?> get props => [message];
+}
+
+/// Report generated successfully
+class GroupAccountReportGenerated extends GroupAccountState {
+  final GroupAccountReport report;
+  final GroupAccount group;
+  final List<Contribution> contributions;
+  final String? groupUrl;
+
+  const GroupAccountReportGenerated({
+    required this.report,
+    required this.group,
+    required this.contributions,
+    this.groupUrl,
+  });
+
+  @override
+  List<Object?> get props => [report, group, contributions, groupUrl];
+}
+
+/// Report shared successfully
+class GroupAccountReportShared extends GroupAccountState {
+  final String? message;
+
+  const GroupAccountReportShared({this.message});
+
+  @override
+  List<Object?> get props => [message];
+}
+
+/// Report share error
+class GroupAccountReportShareError extends GroupAccountState {
+  final String message;
+
+  const GroupAccountReportShareError(this.message);
+
+  @override
+  List<Object?> get props => [message];
 }
 

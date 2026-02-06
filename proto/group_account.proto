@@ -246,6 +246,7 @@ message ContributionTranscriptMessage {
 message CreateGroupRequest {
   string name = 1;
   string description = 2;
+  string metadata = 3;  // JSON string for external links (whatsapp, telegram) etc
 }
 
 message CreateGroupResponse {
@@ -358,6 +359,7 @@ message CreateContributionRequest {
   int32 grace_period_days = 15;
   bool allow_partial_payments = 16;
   uint64 minimum_balance = 17;
+  string metadata = 18;  // JSON string for external links (whatsapp, telegram) etc
 }
 
 message CreateContributionResponse {
@@ -391,6 +393,7 @@ message UpdateContributionRequest {
   uint64 target_amount = 4;
   google.protobuf.Timestamp deadline = 5;
   ContributionStatus status = 6;
+  string metadata = 7;  // JSON string for external links (whatsapp, telegram) etc
 }
 
 message UpdateContributionResponse {

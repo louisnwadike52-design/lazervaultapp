@@ -1,9 +1,12 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../domain/entities/crowdfund_entities.dart';
 import '../cubit/crowdfund_cubit.dart';
 import '../cubit/crowdfund_state.dart';
+import '../../../../../core/services/injection_container.dart';
+import '../../../../../core/services/locale_manager.dart';
 import 'crowdfund_details_screen.dart';
 
 class CreateCrowdfundScreen extends StatefulWidget {
@@ -21,10 +24,11 @@ class _CreateCrowdfundScreenState extends State<CreateCrowdfundScreen> {
   final _targetAmountController = TextEditingController();
   final _imageUrlController = TextEditingController();
 
-  String _selectedCurrency = 'GBP';
+  late String _selectedCurrency;
   String _selectedCategory = 'Medical';
   CrowdfundVisibility _selectedVisibility = CrowdfundVisibility.public;
   DateTime? _selectedDeadline;
+  StreamSubscription<String>? _currencySubscription;
 
   final List<String> _categories = [
     'Medical',
@@ -36,7 +40,42 @@ class _CreateCrowdfundScreenState extends State<CreateCrowdfundScreen> {
     'Other',
   ];
 
-  final List<String> _currencies = ['GBP', 'USD', 'EUR'];
+  late List<String> _currencies;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Initialize with user's active locale currency from global LocaleManager
+    final localeManager = serviceLocator<LocaleManager>();
+    _selectedCurrency = localeManager.currentCurrency;
+
+    // Build currencies list - always include user's currency first, then common options
+    _currencies = _buildCurrenciesList(_selectedCurrency);
+
+    // Listen for currency changes (reactive updates)
+    _currencySubscription = localeManager.currencyStream.listen((newCurrency) {
+      if (mounted && newCurrency != _selectedCurrency) {
+        setState(() {
+          _selectedCurrency = newCurrency;
+          _currencies = _buildCurrenciesList(newCurrency);
+        });
+      }
+    });
+  }
+
+  /// Build currencies list with user's currency first for easy selection
+  List<String> _buildCurrenciesList(String userCurrency) {
+    final commonCurrencies = ['GBP', 'USD', 'EUR'];
+    final uniqueCurrencies = <String>{...commonCurrencies, userCurrency}.toList();
+    // Sort so user's currency is first, then alphabetically
+    uniqueCurrencies.sort((a, b) {
+      if (a == userCurrency) return -1;
+      if (b == userCurrency) return 1;
+      return a.compareTo(b);
+    });
+    return uniqueCurrencies;
+  }
 
   @override
   void dispose() {
@@ -45,6 +84,7 @@ class _CreateCrowdfundScreenState extends State<CreateCrowdfundScreen> {
     _storyController.dispose();
     _targetAmountController.dispose();
     _imageUrlController.dispose();
+    _currencySubscription?.cancel();
     super.dispose();
   }
 

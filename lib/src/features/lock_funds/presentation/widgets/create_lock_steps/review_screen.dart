@@ -7,6 +7,7 @@ import '../../../domain/entities/lock_fund_entity.dart';
 import '../../cubit/create_lock_cubit.dart';
 import '../../cubit/lock_funds_cubit.dart';
 import '../../cubit/lock_funds_state.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
 
 /// Review screen - Step 4 of 5
 ///
@@ -132,7 +133,7 @@ class ReviewScreen extends StatelessWidget {
                     SizedBox(height: 20.h),
                     Divider(color: Colors.white.withValues(alpha: 0.1)),
                     SizedBox(height: 16.h),
-                    _buildDetailRow('Lock Amount', '$currency ${amount?.toStringAsFixed(2)}'),
+                    _buildDetailRow('Lock Amount', '${CurrencySymbols.getSymbol(currency)}${amount?.toStringAsFixed(2) ?? ''}'),
                     SizedBox(height: 12.h),
                     _buildDetailRow(
                       'Lock Duration',
@@ -199,7 +200,7 @@ class ReviewScreen extends StatelessWidget {
                           SizedBox(height: 20.h),
                           _buildCalculationRow(
                             'Principal Amount',
-                            '$currency ${calc.principalAmount.toStringAsFixed(2)}',
+                            '${CurrencySymbols.getSymbol(currency)}${calc.principalAmount.toStringAsFixed(2)}',
                           ),
                           SizedBox(height: 12.h),
                           _buildCalculationRow(
@@ -214,7 +215,7 @@ class ReviewScreen extends StatelessWidget {
                           SizedBox(height: 12.h),
                           _buildCalculationRow(
                             'Interest Earned',
-                            '$currency ${calc.interestAmount.toStringAsFixed(2)}',
+                            '${CurrencySymbols.getSymbol(currency)}${calc.interestAmount.toStringAsFixed(2)}',
                             valueColor: const Color(0xFF10B981),
                           ),
                           SizedBox(height: 16.h),
@@ -222,7 +223,7 @@ class ReviewScreen extends StatelessWidget {
                           SizedBox(height: 16.h),
                           _buildCalculationRow(
                             'Total at Maturity',
-                            '$currency ${calc.totalAmount.toStringAsFixed(2)}',
+                            '${CurrencySymbols.getSymbol(currency)}${calc.totalAmount.toStringAsFixed(2)}',
                             isTotal: true,
                           ),
                         ],

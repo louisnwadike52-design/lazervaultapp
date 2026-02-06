@@ -67,14 +67,6 @@ enum PaymentMethodType {
   PAYMENT_METHOD_TYPE_BANK_TRANSFER = 9;
 }
 
-// Account Type Enum
-enum AccountType {
-  ACCOUNT_TYPE_PERSONAL = 0;
-  ACCOUNT_TYPE_SAVINGS = 1;
-  ACCOUNT_TYPE_INVESTMENT = 2;
-  ACCOUNT_TYPE_BUSINESS = 3;
-}
-
 // Dispute Status Enum
 enum DisputeStatus {
   DISPUTE_STATUS_PENDING = 0;

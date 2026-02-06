@@ -552,6 +552,94 @@ service AuthService {
       };
     };
   }
+
+  // Search users by username, email, or phone
+  rpc SearchUsersByUsername(SearchUsersByUsernameRequest) returns (SearchUsersByUsernameResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/auth/search/users"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Search Users";
+      description: "Search users by username, email, or phone number";
+      tags: ["User"];
+      security: {
+        security_requirement: {
+          key: "bearer";
+        }
+      };
+    };
+  }
+
+  // Initiate KYC verification flow
+  rpc InitiateKYC(InitiateKYCRequest) returns (InitiateKYCResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/kyc/initiate"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Initiate KYC";
+      description: "Initiate a KYC verification flow for a specific tier. Returns required documents and fields.";
+      tags: ["KYC"];
+      security: {
+        security_requirement: {
+          key: "bearer";
+        }
+      };
+    };
+  }
+
+  // Upload KYC document
+  rpc UploadDocument(UploadDocumentRequest) returns (UploadDocumentResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/kyc/upload-document"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Upload Document";
+      description: "Upload a KYC document for verification. Supports ID cards, selfies, and proof of address.";
+      tags: ["KYC"];
+      security: {
+        security_requirement: {
+          key: "bearer";
+        }
+      };
+    };
+  }
+
+  // Skip KYC upgrade (progressive onboarding)
+  rpc SkipKYCUpgrade(SkipKYCUpgradeRequest) returns (SkipKYCUpgradeResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/kyc/skip"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Skip KYC Upgrade";
+      description: "Skip a KYC tier upgrade for progressive onboarding. Users can complete later in Settings.";
+      tags: ["KYC"];
+      security: {
+        security_requirement: {
+          key: "bearer";
+        }
+      };
+    };
+  }
+
+  // Get user's KYC documents
+  rpc GetUserDocuments(GetUserDocumentsRequest) returns (GetUserDocumentsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/kyc/documents"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Get User Documents";
+      description: "Get all documents uploaded by the user for KYC verification";
+      tags: ["KYC"];
+      security: {
+        security_requirement: {
+          key: "bearer";
+        }
+      };
+    };
+  }
 }
 
 // ===== Signup =====
@@ -895,6 +983,13 @@ message User {
   string profile_picture = 11;
   string created_at = 12;
   string updated_at = 13;
+  string signup_status = 14;         // Signup completion status
+  string current_signup_step = 15;   // Current step in signup flow
+  string username = 16;              // LazerTag username
+  bool identity_verified = 17;       // BVN/NIN verified
+  string identity_type = 18;         // "bvn" or "nin"
+  string identity_verified_at = 19;  // ISO 8601 timestamp
+  string date_of_birth = 20;         // YYYY-MM-DD format
 }
 
 // ===== Signup Progress =====
@@ -1083,4 +1178,28 @@ message ReauthorizeSocialAccountResponse {
   bool success = 1;
   string message = 2;
   LinkedSocialAccount account = 3;
+}
+
+// ===== User Search =====
+message UserLookupResult {
+  string user_id = 1;
+  string username = 2;
+  string first_name = 3;
+  string last_name = 4;
+  string profile_picture = 5;
+  bool is_lazervault_user = 6;
+  string phone_number = 7;
+  string email = 8;
+}
+
+message SearchUsersByUsernameRequest {
+  string query = 1;
+  int32 limit = 2;
+  string search_type = 3;
+}
+
+message SearchUsersByUsernameResponse {
+  bool success = 1;
+  string msg = 2;
+  repeated UserLookupResult users = 3;
 }

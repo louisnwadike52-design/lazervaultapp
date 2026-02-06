@@ -65,6 +65,7 @@ enum PayoutTransactionStatus {
   completed,
   failed,
   cancelled,
+  refunded,
 }
 
 // Group Account entity
@@ -131,6 +132,72 @@ class GroupAccount extends Equatable {
       status: status ?? this.status,
       metadata: metadata ?? this.metadata,
     );
+  }
+
+  // External social media links (stored in metadata)
+  String? get whatsappGroupLink {
+    return metadata?['whatsapp_group_link'] as String?;
+  }
+
+  String? get telegramGroupLink {
+    return metadata?['telegram_group_link'] as String?;
+  }
+
+  String? get facebookGroupLink {
+    return metadata?['facebook_group_link'] as String?;
+  }
+
+  String? get discordInviteLink {
+    return metadata?['discord_invite_link'] as String?;
+  }
+
+  /// Check if group has any external links
+  bool get hasExternalLinks {
+    return whatsappGroupLink != null ||
+        telegramGroupLink != null ||
+        facebookGroupLink != null ||
+        discordInviteLink != null;
+  }
+
+  /// Get all external links as a map
+  Map<String, String?> get externalLinks {
+    return {
+      'whatsapp': whatsappGroupLink,
+      'telegram': telegramGroupLink,
+      'facebook': facebookGroupLink,
+      'discord': discordInviteLink,
+    };
+  }
+
+  /// Create a copy with updated external links
+  GroupAccount copyWithExternalLinks({
+    String? whatsappGroupLink,
+    String? telegramGroupLink,
+    String? facebookGroupLink,
+    String? discordInviteLink,
+  }) {
+    final updatedMetadata = Map<String, dynamic>.from(metadata ?? {});
+    if (whatsappGroupLink != null) {
+      updatedMetadata['whatsapp_group_link'] = whatsappGroupLink;
+    } else if (whatsappGroupLink == '' && updatedMetadata.containsKey('whatsapp_group_link')) {
+      updatedMetadata.remove('whatsapp_group_link');
+    }
+    if (telegramGroupLink != null) {
+      updatedMetadata['telegram_group_link'] = telegramGroupLink;
+    } else if (telegramGroupLink == '' && updatedMetadata.containsKey('telegram_group_link')) {
+      updatedMetadata.remove('telegram_group_link');
+    }
+    if (facebookGroupLink != null) {
+      updatedMetadata['facebook_group_link'] = facebookGroupLink;
+    } else if (facebookGroupLink == '' && updatedMetadata.containsKey('facebook_group_link')) {
+      updatedMetadata.remove('facebook_group_link');
+    }
+    if (discordInviteLink != null) {
+      updatedMetadata['discord_invite_link'] = discordInviteLink;
+    } else if (discordInviteLink == '' && updatedMetadata.containsKey('discord_invite_link')) {
+      updatedMetadata.remove('discord_invite_link');
+    }
+    return copyWith(metadata: updatedMetadata);
   }
 }
 
@@ -502,6 +569,40 @@ class Contribution extends Equatable {
       minimumBalance: minimumBalance ?? this.minimumBalance,
       members: members ?? this.members,
     );
+  }
+
+  // External Social Media Links
+  String? get whatsappGroupLink {
+    return metadata?['whatsapp_group_link'] as String?;
+  }
+
+  String? get telegramGroupLink {
+    return metadata?['telegram_group_link'] as String?;
+  }
+
+  String? get facebookGroupLink {
+    return metadata?['facebook_group_link'] as String?;
+  }
+
+  String? get discordInviteLink {
+    return metadata?['discord_invite_link'] as String?;
+  }
+
+  bool get hasExternalLinks {
+    return whatsappGroupLink != null ||
+        telegramGroupLink != null ||
+        facebookGroupLink != null ||
+        discordInviteLink != null;
+  }
+
+  /// Get all external links as a map
+  Map<String, String?> get externalLinks {
+    return {
+      'whatsapp': whatsappGroupLink,
+      'telegram': telegramGroupLink,
+      'facebook': facebookGroupLink,
+      'discord': discordInviteLink,
+    };
   }
 }
 
@@ -1237,4 +1338,91 @@ class ActivityActionType {
         groupUpdated,
         settingsChanged,
       ];
+}
+
+/// AI-generated group account report
+class GroupAccountReport extends Equatable {
+  final String title;
+  final String summary;
+  final String impactStory;
+  final List<String> contributorHighlights;
+  final List<Map<String, dynamic>> milestones;
+  final String callToAction;
+  final Map<String, String> sharingText;
+  final List<String> hashtags;
+  final bool success;
+  final DateTime generatedAt;
+  final String? error;
+
+  const GroupAccountReport({
+    required this.title,
+    required this.summary,
+    required this.impactStory,
+    required this.contributorHighlights,
+    required this.milestones,
+    required this.callToAction,
+    required this.sharingText,
+    required this.hashtags,
+    required this.success,
+    required this.generatedAt,
+    this.error,
+  });
+
+  @override
+  List<Object?> get props => [
+        title,
+        summary,
+        impactStory,
+        contributorHighlights,
+        milestones,
+        callToAction,
+        sharingText,
+        hashtags,
+        success,
+        generatedAt,
+        error,
+      ];
+
+  factory GroupAccountReport.fromJson(Map<String, dynamic> json) {
+    return GroupAccountReport(
+      title: json['title'] as String,
+      summary: json['summary'] as String,
+      impactStory: json['impact_story'] as String? ?? '',
+      contributorHighlights: (json['contributor_highlights'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          [],
+      milestones: (json['milestones'] as List<dynamic>?)
+              ?.map((e) => e as Map<String, dynamic>)
+              .toList() ??
+          [],
+      callToAction: json['call_to_action'] as String? ?? '',
+      sharingText: Map<String, String>.from(
+        json['sharing_text'] as Map<String, dynamic>? ?? {},
+      ),
+      hashtags: (json['hashtags'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          [],
+      success: json['success'] as bool? ?? true,
+      generatedAt: DateTime.parse(json['generated_at'] as String),
+      error: json['error'] as String?,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'title': title,
+      'summary': summary,
+      'impact_story': impactStory,
+      'contributor_highlights': contributorHighlights,
+      'milestones': milestones,
+      'call_to_action': callToAction,
+      'sharing_text': sharingText,
+      'hashtags': hashtags,
+      'success': success,
+      'generated_at': generatedAt.toIso8601String(),
+      if (error != null) 'error': error,
+    };
+  }
 } 

@@ -1000,7 +1000,7 @@ class _GroupAdminDashboardState extends State<GroupAdminDashboard>
               onChanged: (value) {
                 Navigator.pop(context);
                 if (value != null && value != member.role) {
-                  context.read<GroupAccountCubit>().updateMemberRole(
+                  context.read<GroupAccountCubit>().updateMemberRoleInGroup(
                         groupId: widget.group.id,
                         memberId: member.id,
                         newRole: value,

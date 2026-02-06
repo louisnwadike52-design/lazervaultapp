@@ -9,6 +9,7 @@ import '../../cubit/lock_funds_cubit.dart';
 import '../../cubit/lock_funds_state.dart';
 import '../../../../../../core/services/injection_container.dart';
 import '../../../../../../core/services/locale_manager.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
 
 /// Amount and duration selection screen - Step 2 of 5
 ///
@@ -237,8 +238,8 @@ class _AmountDurationSelectorState extends State<AmountDurationSelector> {
                       ),
                       child: Text(
                         quickAmount >= 1000
-                            ? '$_userCurrency ${(quickAmount / 1000).toStringAsFixed(0)}k'
-                            : '$_userCurrency ${quickAmount.toStringAsFixed(0)}',
+                            ? '${CurrencySymbols.getSymbol(_userCurrency)}${(quickAmount / 1000).toStringAsFixed(0)}k'
+                            : '${CurrencySymbols.getSymbol(_userCurrency)}${quickAmount.toStringAsFixed(0)}',
                         style: GoogleFonts.inter(
                           fontSize: 12.sp,
                           fontWeight: FontWeight.w600,
@@ -289,7 +290,7 @@ class _AmountDurationSelectorState extends State<AmountDurationSelector> {
                     prefixIcon: Padding(
                       padding: EdgeInsets.only(left: 8.w, right: 12.w, top: 14.h),
                       child: Text(
-                        _userCurrency,
+                        CurrencySymbols.getSymbol(_userCurrency),
                         style: GoogleFonts.inter(
                           fontSize: 18.sp,
                           fontWeight: FontWeight.w600,
@@ -476,14 +477,14 @@ class _AmountDurationSelectorState extends State<AmountDurationSelector> {
                           SizedBox(height: 8.h),
                           _buildCalculationRow(
                             'Interest Earned',
-                            '$_userCurrency ${calc.interestAmount.toStringAsFixed(2)}',
+                            '${CurrencySymbols.getSymbol(_userCurrency)}${calc.interestAmount.toStringAsFixed(2)}',
                           ),
                           SizedBox(height: 8.h),
                           Divider(color: Colors.white.withValues(alpha: 0.2)),
                           SizedBox(height: 8.h),
                           _buildCalculationRow(
                             'Total at Maturity',
-                            '$_userCurrency ${calc.totalAmount.toStringAsFixed(2)}',
+                            '${CurrencySymbols.getSymbol(_userCurrency)}${calc.totalAmount.toStringAsFixed(2)}',
                             isTotal: true,
                           ),
                         ],

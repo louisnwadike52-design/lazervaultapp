@@ -81,6 +81,8 @@ class UsernameRecipientConfirmationSheetState
                   _buildProfileSection(),
                   SizedBox(height: 24.h),
                   _buildAccountDetailsCard(),
+                  SizedBox(height: 16.h),
+                  _buildContactDetails(),
                   SizedBox(height: 24.h),
                   _buildInfoBox(),
                   SizedBox(height: 16.h),
@@ -344,6 +346,94 @@ class UsernameRecipientConfirmationSheetState
           ],
         ],
       ),
+    );
+  }
+
+  Widget _buildContactDetails() {
+    final hasEmail = widget.user.email.isNotEmpty;
+    final hasPhone = widget.user.phoneNumber.isNotEmpty;
+    if (!hasEmail && !hasPhone) return const SizedBox.shrink();
+
+    return Container(
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF9FAFB),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(
+          color: const Color(0xFFE5E7EB),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        children: [
+          if (hasEmail)
+            _buildContactRow(
+              icon: Icons.email_outlined,
+              label: 'Email',
+              value: widget.user.email,
+            ),
+          if (hasEmail && hasPhone)
+            Padding(
+              padding: EdgeInsets.symmetric(vertical: 8.h),
+              child: Divider(height: 1, color: const Color(0xFFE5E7EB)),
+            ),
+          if (hasPhone)
+            _buildContactRow(
+              icon: Icons.phone_outlined,
+              label: 'Phone',
+              value: widget.user.phoneNumber,
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildContactRow({
+    required IconData icon,
+    required String label,
+    required String value,
+  }) {
+    return Row(
+      children: [
+        Container(
+          width: 36.w,
+          height: 36.w,
+          decoration: BoxDecoration(
+            color: const Color(0xFF4E03D0).withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(8.r),
+          ),
+          child: Icon(
+            icon,
+            color: const Color(0xFF4E03D0),
+            size: 18.sp,
+          ),
+        ),
+        SizedBox(width: 12.w),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  color: const Color(0xFF9CA3AF),
+                  fontSize: 11.sp,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              SizedBox(height: 2.h),
+              Text(
+                value,
+                style: TextStyle(
+                  color: const Color(0xFF374151),
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 

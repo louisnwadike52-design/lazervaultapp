@@ -258,3 +258,30 @@ class CrowdfundStatisticsModel extends CrowdfundStatistics {
     );
   }
 }
+
+// ============================================================================
+// CAMPAIGN WALLET MODELS
+// ============================================================================
+
+/// Model for withdrawal results from a campaign wallet
+class CrowdfundWithdrawalResultModel extends CrowdfundWithdrawalResult {
+  const CrowdfundWithdrawalResultModel({
+    required super.crowdfundId,
+    required super.amountWithdrawn,
+    required super.remainingBalance,
+    required super.destinationAccountId,
+    required super.destinationNewBalance,
+    required super.message,
+  });
+}
+
+/// Model for campaign wallet balance information
+class CampaignWalletBalanceModel extends CampaignWalletBalance {
+  const CampaignWalletBalanceModel({
+    required super.crowdfundId,
+    required super.campaignWalletId,
+    required super.balance,
+    required super.availableBalance,
+    required super.currency,
+  });
+}

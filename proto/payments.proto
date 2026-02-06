@@ -1,0 +1,815 @@
+syntax = "proto3";
+
+package payments;
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "core-payments-service/proto";
+
+// Payments Service - All payment and transfer operations
+service PaymentsService {
+  // === MONEY TRANSFER OPERATIONS ===
+
+  // Transfer funds to another account (sendFunds from AppServiceName)
+  rpc SendFunds(SendFundsRequest) returns (SendFundsResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/payments/transfer"
+      body: "*"
+    };
+  }
+
+  // Batch transfer to multiple recipients (batchTransfer from AppServiceName)
+  rpc BatchTransfer(BatchTransferRequest) returns (BatchTransferResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/payments/batch-transfer"
+      body: "*"
+    };
+  }
+
+  // Withdraw cash from account
+  rpc Withdraw(WithdrawRequest) returns (WithdrawResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/payments/withdraw"
+      body: "*"
+    };
+  }
+
+  // Deposit cash to account
+  rpc Deposit(DepositRequest) returns (DepositResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/payments/deposit"
+      body: "*"
+    };
+  }
+
+  // === PAYMENT OPERATIONS ===
+
+  // Pay using tag/username (tagPay from AppServiceName)
+  rpc PayWithTag(PayWithTagRequest) returns (PayWithTagResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/payments/tag-pay"
+      body: "*"
+    };
+  }
+
+  // Pay electricity bill (payElectricityBill from AppServiceName)
+  rpc PayElectricityBill(PayElectricityBillRequest) returns (PayElectricityBillResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/payments/electricity"
+      body: "*"
+    };
+  }
+
+  // Buy airtime/data (airtime from AppServiceName)
+  rpc BuyAirtime(BuyAirtimeRequest) returns (BuyAirtimeResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/payments/airtime"
+      body: "*"
+    };
+  }
+
+  // Pay by scanning barcode (barcodeQuickPay from AppServiceName)
+  rpc BarcodePay(BarcodePayRequest) returns (BarcodePayResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/payments/barcode"
+      body: "*"
+    };
+  }
+
+  // AI-powered scan to pay (aiScanToPay from AppServiceName)
+  rpc ScanToPay(ScanToPayRequest) returns (ScanToPayResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/payments/scan"
+      body: "*"
+    };
+  }
+
+  // === UTILITY OPERATIONS ===
+
+  // Get payment history
+  rpc GetPaymentHistory(GetPaymentHistoryRequest) returns (GetPaymentHistoryResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/payments/history"
+    };
+  }
+
+  // Get bill providers
+  rpc GetBillProviders(GetBillProvidersRequest) returns (GetBillProvidersResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/payments/providers/bills"
+    };
+  }
+
+  // Get airtime providers
+  rpc GetAirtimeProviders(GetAirtimeProvidersRequest) returns (GetAirtimeProvidersResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/payments/providers/airtime"
+    };
+  }
+
+  // Pay using scanned bank details (scan-to-pay feature)
+  rpc PayWithBankDetails(PayWithBankDetailsRequest) returns (PayWithBankDetailsResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/payments/bank-details"
+      body: "*"
+    };
+  }
+
+  // Resolve tag to account
+  rpc ResolveTag(ResolveTagRequest) returns (ResolveTagResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/payments/resolve/{tag}"
+    };
+  }
+
+  // Verify bank account details (Lemfi-style verification)
+  rpc VerifyBankAccount(VerifyBankAccountRequest) returns (VerifyBankAccountResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/recipients/verify-account"
+      body: "*"
+    };
+  }
+
+  // === TRANSFER OPERATIONS (Consolidated from Banking Service) ===
+
+  rpc InitiateDomesticTransfer(InitiateDomesticTransferRequest) returns (InitiateTransferResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/transfers/domestic"
+      body: "*"
+    };
+  }
+
+  rpc InitiateInternalTransfer(InitiateInternalTransferRequest) returns (InitiateTransferResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/transfers/internal"
+      body: "*"
+    };
+  }
+
+  rpc InitiateInternationalTransfer(InitiateInternationalTransferRequest) returns (InitiateTransferResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/transfers/international"
+      body: "*"
+    };
+  }
+
+  rpc InitiateUsernameTransfer(InitiateUsernameTransferRequest) returns (InitiateTransferResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/transfers/username"
+      body: "*"
+    };
+  }
+
+  rpc InitiatePhoneTransfer(InitiatePhoneTransferRequest) returns (InitiateTransferResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/transfers/phone"
+      body: "*"
+    };
+  }
+
+  rpc GetTransferStatus(GetTransferStatusRequest) returns (GetTransferStatusResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/transfers/{reference}"
+    };
+  }
+
+  rpc GetUserTransfers(GetUserTransfersRequest) returns (GetUserTransfersResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/transfers"
+    };
+  }
+
+  rpc GetTransferFee(GetTransferFeeRequest) returns (GetTransferFeeResponse) {}
+
+  rpc GetDailyUsage(GetDailyUsageRequest) returns (GetDailyUsageResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/transfers/daily-usage"
+    };
+  }
+
+  rpc GetExchangeRate(GetExchangeRateRequest) returns (GetExchangeRateResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/transfers/exchange-rate"
+    };
+  }
+
+  rpc HandleTransferWebhook(HandleTransferWebhookRequest) returns (HandleTransferWebhookResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/webhooks/transfer"
+      body: "*"
+    };
+  }
+
+  // === PLATFORM FEE OPERATIONS ===
+
+  // PayPlatformFee - Debit user account, credit platform revenue wallet
+  rpc PayPlatformFee(PayPlatformFeeRequest) returns (PayPlatformFeeResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/payments/platform-fee"
+      body: "*"
+    };
+  }
+
+  // RefundFromPlatformWallet - Refund from platform wallet to user account
+  rpc RefundFromPlatformWallet(RefundFromPlatformWalletRequest) returns (RefundFromPlatformWalletResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/payments/platform-refund"
+      body: "*"
+    };
+  }
+
+  // === QR PAYMENT TOKEN OPERATIONS ===
+
+  // Generate a QR payment token for receiving payments
+  rpc GenerateQRPaymentToken(GenerateQRTokenRequest) returns (GenerateQRTokenResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/payments/qr/generate"
+      body: "*"
+    };
+  }
+
+  // Validate a QR payment token before initiating transfer
+  rpc ValidateQRPaymentToken(ValidateQRTokenRequest) returns (ValidateQRTokenResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/payments/qr/validate"
+      body: "*"
+    };
+  }
+}
+
+// ===== MODELS =====
+
+message Payment {
+  string id = 1;
+  string user_id = 2;
+  string account_id = 3;
+  string payment_type = 4;
+  string reference = 5;
+  double amount = 6;
+  string currency = 7;
+  string status = 8;
+  string recipient = 9;
+  string description = 10;
+  string metadata = 11;
+  string created_at = 12;
+  string updated_at = 13;
+}
+
+message BillProvider {
+  string id = 1;
+  string name = 2;
+  string type = 3;
+  string logo_url = 4;
+  bool is_active = 5;
+  double min_amount = 6;
+  double max_amount = 7;
+}
+
+message AirtimeProvider {
+  string id = 1;
+  string name = 2;
+  string network = 3;
+  string logo_url = 4;
+  bool is_active = 5;
+  repeated string denominations = 6;
+}
+
+// ===== SEND FUNDS (Transfer) =====
+message SendFundsRequest {
+  string from_account_id = 1;
+  string to_account_number = 2;
+  double amount = 3;
+  string description = 4;
+  string transaction_id = 5;
+  string verification_token = 6;
+  string destination_bank_code = 7;
+  string beneficiary_name = 8;
+}
+
+message SendFundsResponse {
+  Payment payment = 1;
+  double new_balance = 2;
+  string recipient_name = 3;
+  string message = 4;
+}
+
+// ===== BATCH TRANSFER =====
+
+message BatchTransferItem {
+  string to_account_number = 1;
+  double amount = 2;
+  string description = 3;
+}
+
+message BatchTransferRequest {
+  string from_account_id = 1;
+  repeated BatchTransferItem transfers = 2;
+  string transaction_id = 3;
+  string verification_token = 4;
+}
+
+message BatchTransferResponse {
+  int32 total_transfers = 1;
+  int32 successful_transfers = 2;
+  int32 failed_transfers = 3;
+  repeated Payment payments = 4;
+  double new_balance = 5;
+  string message = 6;
+}
+
+// ===== WITHDRAW =====
+message WithdrawRequest {
+  string account_id = 1;
+  double amount = 2;
+  string description = 3;
+  string location = 4;
+  string transaction_id = 5;
+  string verification_token = 6;
+}
+
+message WithdrawResponse {
+  Payment payment = 1;
+  double new_balance = 2;
+  double available_balance = 3;
+  string message = 4;
+}
+
+// ===== DEPOSIT =====
+message DepositRequest {
+  string account_id = 1;
+  double amount = 2;
+  string description = 3;
+  string location = 4;
+  string deposit_type = 5;
+}
+
+message DepositResponse {
+  Payment payment = 1;
+  double new_balance = 2;
+  double available_balance = 3;
+  string message = 4;
+}
+
+// ===== TAG PAY =====
+message PayWithTagRequest {
+  string from_account_id = 1;
+  string recipient_tag = 2;
+  double amount = 3;
+  string description = 4;
+  string transaction_id = 5;
+  string verification_token = 6;
+}
+
+message PayWithTagResponse {
+  Payment payment = 1;
+  double new_balance = 2;
+  string recipient_name = 3;
+  string recipient_account = 4;
+  string message = 5;
+}
+
+// ===== ELECTRICITY BILL =====
+message PayElectricityBillRequest {
+  string account_id = 1;
+  string provider_id = 2;
+  string meter_number = 3;
+  double amount = 4;
+  string meter_type = 5;
+  string transaction_id = 6;
+  string verification_token = 7;
+}
+
+message PayElectricityBillResponse {
+  Payment payment = 1;
+  double new_balance = 2;
+  string token = 3;
+  string units = 4;
+  string message = 5;
+}
+
+// ===== AIRTIME =====
+message BuyAirtimeRequest {
+  string account_id = 1;
+  string provider_id = 2;
+  string phone_number = 3;
+  double amount = 4;
+  string airtime_type = 5;
+  string transaction_id = 6;
+  string verification_token = 7;
+}
+
+message BuyAirtimeResponse {
+  Payment payment = 1;
+  double new_balance = 2;
+  string phone_number = 3;
+  string message = 4;
+}
+
+// ===== BARCODE PAY =====
+message BarcodePayRequest {
+  string account_id = 1;
+  string barcode_data = 2;
+  double amount = 3;
+  string transaction_id = 4;
+  string verification_token = 5;
+}
+
+message BarcodePayResponse {
+  Payment payment = 1;
+  double new_balance = 2;
+  string merchant_name = 3;
+  string message = 4;
+}
+
+// ===== SCAN TO PAY (AI) =====
+message ScanToPayRequest {
+  string account_id = 1;
+  bytes image_data = 2;
+  double amount = 3;
+  string transaction_id = 4;
+  string verification_token = 5;
+}
+
+message ScanToPayResponse {
+  Payment payment = 1;
+  double new_balance = 2;
+  string merchant_name = 3;
+  double extracted_amount = 4;
+  string bill_details = 5;
+  string message = 6;
+}
+
+// ===== PAYMENT HISTORY =====
+message GetPaymentHistoryRequest {
+  string account_id = 1;
+  string payment_type = 2;
+  string status = 3;
+  string start_date = 4;
+  string end_date = 5;
+  int32 limit = 6;
+  int32 offset = 7;
+}
+
+message GetPaymentHistoryResponse {
+  repeated Payment payments = 1;
+  int32 total = 2;
+}
+
+// ===== BILL PROVIDERS =====
+
+message GetBillProvidersRequest {
+  string type = 1;
+  bool active_only = 2;
+}
+
+message GetBillProvidersResponse {
+  repeated BillProvider providers = 1;
+  int32 total = 2;
+}
+
+// ===== AIRTIME PROVIDERS =====
+
+message GetAirtimeProvidersRequest {
+  bool active_only = 1;
+}
+
+message GetAirtimeProvidersResponse {
+  repeated AirtimeProvider providers = 1;
+  int32 total = 2;
+}
+
+// ===== RESOLVE TAG =====
+
+message ResolveTagRequest {
+  string tag = 1;
+}
+
+message ResolveTagResponse {
+  string account_number = 1;
+  string account_name = 2;
+  string tag = 3;
+  bool is_valid = 4;
+}
+
+// ===== PAY WITH BANK DETAILS (Scan-to-Pay) =====
+
+message BankDetails {
+  string account_number = 1;
+  string account_name = 2;
+  string bank_name = 3;
+  string bank_code = 4;
+  string routing_number = 5;
+  string account_type = 6;
+  double confidence_score = 7;
+  string mono_account_id = 8;
+  double balance = 9;
+}
+
+message PayWithBankDetailsRequest {
+  string from_account_id = 1;
+  BankDetails bank_details = 2;
+  double amount = 3;
+  string currency = 4;
+  string description = 5;
+  string transaction_id = 6;
+  string verification_token = 7;
+}
+
+message PayWithBankDetailsResponse {
+  Payment payment = 1;
+  double new_balance = 2;
+  string recipient_name = 3;
+  string transfer_reference = 4;
+  string message = 5;
+}
+
+// ===== VERIFY BANK ACCOUNT (Lemfi-style) =====
+
+message VerifyBankAccountRequest {
+  string bank_code = 1;
+  string account_number = 2;
+  string country = 3;
+}
+
+message VerifyBankAccountResponse {
+  bool success = 1;
+  string account_number = 2;
+  string account_name = 3;
+  string bank_name = 4;
+  string bank_code = 5;
+  string verification_status = 6;
+  string error_code = 7;
+  string error_message = 8;
+  string user_message = 9;
+}
+
+// ===== TRANSFER CONSOLIDATION MESSAGES =====
+
+message InitiateDomesticTransferRequest {
+  string source_account_id = 1;
+  int64 amount = 2;
+  string currency = 3;
+  string destination_account = 4;
+  string destination_bank_code = 5;
+  string destination_name = 6;
+  string narration = 7;
+  string reference = 8;
+  string idempotency_key = 9;
+  string verification_token = 10;
+  string transaction_id = 11;
+}
+
+message InitiateInternalTransferRequest {
+  string from_account_id = 1;
+  string to_account_id = 2;
+  string to_username = 3;
+  int64 amount = 4;
+  string currency = 5;
+  string narration = 6;
+  string reference = 7;
+  string idempotency_key = 8;
+  string verification_token = 9;
+  string transaction_id = 10;
+  RecipientInfo recipient_info = 11;
+}
+
+message RecipientInfo {
+  string name = 1;
+  string recipient_type = 2;
+  string recipient_source = 3;
+  string username = 4;
+  string user_id = 5;
+  string account_number = 6;
+  string bank_code = 7;
+  string bank_name = 8;
+  string phone_number = 9;
+}
+
+message InitiateInternationalTransferRequest {
+  string source_account_id = 1;
+  int64 amount = 2;
+  string source_currency = 3;
+  string destination_currency = 4;
+  string destination_country = 5;
+  string recipient_type = 6;
+  map<string, string> recipient_details = 7;
+  string narration = 8;
+  string reference = 9;
+  string idempotency_key = 10;
+  string verification_token = 11;
+  string transaction_id = 12;
+}
+
+message InitiateUsernameTransferRequest {
+  string to_username = 1;
+  int64 amount = 2;
+  string currency = 3;
+  string narration = 4;
+  string idempotency_key = 5;
+  string verification_token = 6;
+  string transaction_id = 7;
+}
+
+message InitiatePhoneTransferRequest {
+  string to_phone = 1;
+  int64 amount = 2;
+  string currency = 3;
+  string narration = 4;
+  string idempotency_key = 5;
+  string verification_token = 6;
+  string transaction_id = 7;
+}
+
+message InitiateTransferResponse {
+  bool success = 1;
+  string error_code = 2;
+  string error_message = 3;
+  TransferDetail transfer = 4;
+}
+
+message TransferDetail {
+  string id = 1;
+  string user_id = 2;
+  string type = 3;
+  string status = 4;
+  int64 amount = 5;
+  string currency = 6;
+  int64 fee = 7;
+  string source_account_id = 8;
+  string destination_account = 9;
+  string destination_bank_code = 10;
+  string destination_bank_name = 11;
+  string destination_name = 12;
+  string destination_country = 13;
+  string reference = 14;
+  string provider_ref = 15;
+  string provider = 16;
+  string narration = 17;
+  string failure_reason = 18;
+  string created_at = 19;
+  string completed_at = 20;
+}
+
+message GetTransferStatusRequest {
+  string reference = 1;
+}
+
+message GetTransferStatusResponse {
+  bool success = 1;
+  string error_code = 2;
+  string error_message = 3;
+  TransferDetail transfer = 4;
+}
+
+message GetUserTransfersRequest {
+  int32 limit = 1;
+  int32 offset = 2;
+  string transfer_type = 3;
+  string status = 4;
+}
+
+message GetUserTransfersResponse {
+  bool success = 1;
+  string error_code = 2;
+  string error_message = 3;
+  repeated TransferDetail transfers = 4;
+  int32 total = 5;
+}
+
+message GetTransferFeeRequest {
+  string transfer_type = 1;
+  int64 amount = 2;
+  string currency = 3;
+  string destination_country = 4;
+}
+
+message GetTransferFeeResponse {
+  bool success = 1;
+  string error_code = 2;
+  string error_message = 3;
+  int64 fee = 4;
+  string currency = 5;
+}
+
+message GetDailyUsageRequest {}
+
+message GetDailyUsageResponse {
+  bool success = 1;
+  string error_code = 2;
+  string error_message = 3;
+  int64 total_transferred = 4;
+  int32 transfer_count = 5;
+  int64 daily_limit = 6;
+  int64 remaining_limit = 7;
+}
+
+message GetExchangeRateRequest {
+  string source_currency = 1;
+  string destination_currency = 2;
+  int64 amount = 3;
+}
+
+message GetExchangeRateResponse {
+  bool success = 1;
+  string error_code = 2;
+  string error_message = 3;
+  string source_currency = 4;
+  string destination_currency = 5;
+  double rate = 6;
+  int64 fee = 7;
+  int64 destination_amount = 8;
+}
+
+message HandleTransferWebhookRequest {
+  string provider = 1;
+  bytes payload = 2;
+  string signature = 3;
+}
+
+message HandleTransferWebhookResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+// === PLATFORM FEE MESSAGES ===
+
+message PayPlatformFeeRequest {
+  string user_account_id = 1;
+  string user_id = 2;
+  int64 amount = 3;
+  string currency = 4;
+  string category = 5;
+  string description = 6;
+  string reference = 7;
+  string idempotency_key = 8;
+  string verification_token = 9;
+  string transaction_id = 10;
+  string wallet_code = 11;
+}
+
+message PayPlatformFeeResponse {
+  bool success = 1;
+  string error_code = 2;
+  string error_message = 3;
+  string debit_transaction_id = 4;
+  string platform_transaction_id = 5;
+  int64 user_new_balance = 6;
+  string reference = 7;
+}
+
+message RefundFromPlatformWalletRequest {
+  string user_account_id = 1;
+  string user_id = 2;
+  int64 amount = 3;
+  string currency = 4;
+  string category = 5;
+  string description = 6;
+  string reference = 7;
+  string idempotency_key = 8;
+  string wallet_code = 9;
+}
+
+message RefundFromPlatformWalletResponse {
+  bool success = 1;
+  string error_code = 2;
+  string error_message = 3;
+  string credit_transaction_id = 4;
+  int64 user_new_balance = 5;
+  string reference = 6;
+}
+
+// ===== QR PAYMENT TOKEN =====
+
+message GenerateQRTokenRequest {
+  int64 amount = 1;
+  string currency = 2;
+  string description = 3;
+  int32 expiry_minutes = 4;
+}
+
+message GenerateQRTokenResponse {
+  bool success = 1;
+  string error_code = 2;
+  string error_message = 3;
+  string qr_token = 4;
+  string qr_data = 5;
+  string expires_at = 6;
+}
+
+message ValidateQRTokenRequest {
+  string qr_token = 1;
+}
+
+message ValidateQRTokenResponse {
+  bool success = 1;
+  string error_code = 2;
+  string error_message = 3;
+  string recipient_user_id = 4;
+  string recipient_username = 5;
+  string recipient_name = 6;
+  string recipient_account_id = 7;
+  int64 amount = 8;
+  string currency = 9;
+  bool is_expired = 10;
+}

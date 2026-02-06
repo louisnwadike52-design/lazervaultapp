@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
 import 'package:lazervault/src/features/autosave/domain/entities/autosave_rule_entity.dart';
 
 class AutoSaveStatisticsCard extends StatelessWidget {
@@ -13,32 +14,39 @@ class AutoSaveStatisticsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: Colors.grey[800]!),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Auto-Save Statistics',
-            style: GoogleFonts.inter(
-              color: Colors.white,
-              fontSize: 16.sp,
-              fontWeight: FontWeight.w600,
-            ),
+    return StreamBuilder<String>(
+      stream: CurrencySymbols.currencySymbolStream,
+      builder: (context, snapshot) {
+        final currencySymbol = snapshot.data ?? CurrencySymbols.getSymbol(statistics.currency);
+
+        return Container(
+          padding: EdgeInsets.all(16.w),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1F1F1F),
+            borderRadius: BorderRadius.circular(12.r),
+            border: Border.all(color: Colors.grey[800]!),
           ),
-          SizedBox(height: 16.h),
-          _buildStatsGrid(),
-        ],
-      ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Auto-Save Statistics',
+                style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              SizedBox(height: 16.h),
+              _buildStatsGrid(currencySymbol),
+            ],
+          ),
+        );
+      },
     );
   }
 
-  Widget _buildStatsGrid() {
+  Widget _buildStatsGrid(String currencySymbol) {
     return Column(
       children: [
         // Main featured stat - Total Saved All Time
@@ -91,7 +99,7 @@ class AutoSaveStatisticsCard extends StatelessWidget {
                     ),
                     SizedBox(height: 4.h),
                     Text(
-                      '\$${statistics.totalSavedAllTime.toStringAsFixed(2)}',
+                      statistics.formattedTotalSavedAllTime,
                       style: GoogleFonts.inter(
                         color: Colors.white,
                         fontSize: 24.sp,
@@ -120,7 +128,7 @@ class AutoSaveStatisticsCard extends StatelessWidget {
             Expanded(
               child: _buildStatItem(
                 'This Month',
-                '\$${statistics.totalSavedThisMonth.toStringAsFixed(0)}',
+                statistics.formattedTotalSavedThisMonth,
                 Icons.calendar_month,
                 const Color(0xFF8B5CF6),
               ),
@@ -134,7 +142,7 @@ class AutoSaveStatisticsCard extends StatelessWidget {
             Expanded(
               child: _buildStatItem(
                 'This Week',
-                '\$${statistics.totalSavedThisWeek.toStringAsFixed(0)}',
+                statistics.formattedTotalSavedThisWeek,
                 Icons.date_range,
                 const Color(0xFFF59E0B),
               ),
@@ -183,7 +191,7 @@ class AutoSaveStatisticsCard extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        '\$${statistics.averageSaveAmount.toStringAsFixed(2)}',
+                        statistics.formattedAverageSaveAmount,
                         style: GoogleFonts.inter(
                           color: const Color(0xFF3B82F6),
                           fontSize: 16.sp,

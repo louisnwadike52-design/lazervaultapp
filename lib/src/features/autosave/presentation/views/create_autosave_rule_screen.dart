@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_state.dart';
 import 'package:lazervault/src/features/autosave/domain/entities/autosave_rule_entity.dart';
@@ -225,19 +226,25 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
                 SizedBox(height: 12.h),
                 _buildAmountTypeSelector(),
                 SizedBox(height: 16.h),
-                _buildTextField(
-                  controller: _amountController,
-                  label: _selectedAmountType == AmountType.fixed ? 'Amount (\$)' : 'Percentage (%)',
-                  hint: _selectedAmountType == AmountType.fixed ? '50.00' : '10',
-                  keyboardType: TextInputType.number,
-                  validator: (value) {
-                    if (value?.isEmpty ?? true) return 'Please enter an amount';
-                    final amount = double.tryParse(value!);
-                    if (amount == null || amount <= 0) return 'Please enter a valid amount';
-                    if (_selectedAmountType == AmountType.percentage && amount > 100) {
-                      return 'Percentage cannot exceed 100';
-                    }
-                    return null;
+                StreamBuilder<String>(
+                  stream: CurrencySymbols.currencySymbolStream,
+                  builder: (context, snapshot) {
+                    final currencySymbol = snapshot.data ?? '\$';
+                    return _buildTextField(
+                      controller: _amountController,
+                      label: _selectedAmountType == AmountType.fixed ? 'Amount ($currencySymbol)' : 'Percentage (%)',
+                      hint: _selectedAmountType == AmountType.fixed ? '50.00' : '10',
+                      keyboardType: TextInputType.number,
+                      validator: (value) {
+                        if (value?.isEmpty ?? true) return 'Please enter an amount';
+                        final amount = double.tryParse(value!);
+                        if (amount == null || amount <= 0) return 'Please enter a valid amount';
+                        if (_selectedAmountType == AmountType.percentage && amount > 100) {
+                          return 'Percentage cannot exceed 100';
+                        }
+                        return null;
+                      },
+                    );
                   },
                 ),
                 SizedBox(height: 24.h),

@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
 import '../../../authentication/cubit/authentication_cubit.dart';
 import '../../../authentication/cubit/authentication_state.dart';
 import '../../../account_cards_summary/cubit/account_cards_summary_cubit.dart';
@@ -27,6 +29,7 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
   late AnimationController _slideController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
+  bool _hasLoadedData = false;
 
   @override
   void initState() {
@@ -50,6 +53,27 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
 
     _fadeController.forward();
     _slideController.forward();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Load data when screen is first displayed or when navigating back
+    if (!_hasLoadedData) {
+      _hasLoadedData = true;
+      // Use WidgetsBinding to ensure this runs after the first frame
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          final cubit = context.read<LockFundsCubit>();
+          final authState = context.read<AuthenticationCubit>().state;
+          if (authState is AuthenticationSuccess) {
+            cubit.setUserId(authState.profile.user.id);
+          } else if (cubit.currentUserId != null) {
+            cubit.loadLockFunds();
+          }
+        }
+      });
+    }
   }
 
   @override
@@ -179,7 +203,7 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
       child: Row(
         children: [
           GestureDetector(
-            onTap: () => Get.back(),
+            onTap: () => Get.offAllNamed(AppRoutes.dashboard),
             child: Container(
               width: 44.w,
               height: 44.w,
@@ -259,52 +283,63 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
   }
 
   Widget _buildStatisticsCards(Map<String, dynamic> statistics) {
-    return Column(
-      children: [
-        Row(
+    return StreamBuilder<String>(
+      stream: CurrencySymbols.currencySymbolStream,
+      initialData: CurrencySymbols.currentSymbol,
+      builder: (context, snapshot) {
+        final currencySymbol = snapshot.data ?? CurrencySymbols.currentSymbol;
+        final totalLocked = (statistics['totalLockedAmount'] ?? 0) as double;
+        final totalInterest = (statistics['totalAccruedInterest'] ?? 0) as double;
+        final activeLocksCount = statistics['activeLocksCount'] ?? 0;
+
+        return Column(
           children: [
-            Expanded(
-              child: _buildStatCard(
-                'Total Locked',
-                '\$${(statistics['totalLockedAmount'] ?? 0).toStringAsFixed(2)}',
-                Icons.lock_outlined,
-                const Color(0xFF6366F1),
-              ),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildStatCard(
+                    'Total Locked',
+                    '$currencySymbol${totalLocked.toStringAsFixed(2)}',
+                    Icons.lock_outlined,
+                    const Color(0xFF6366F1),
+                  ),
+                ),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: _buildStatCard(
+                    'Interest Earned',
+                    '$currencySymbol${totalInterest.toStringAsFixed(2)}',
+                    Icons.trending_up,
+                    const Color(0xFF10B981),
+                  ),
+                ),
+              ],
             ),
-            SizedBox(width: 12.w),
-            Expanded(
-              child: _buildStatCard(
-                'Interest Earned',
-                '\$${(statistics['totalAccruedInterest'] ?? 0).toStringAsFixed(2)}',
-                Icons.trending_up,
-                const Color(0xFF10B981),
-              ),
+            SizedBox(height: 12.h),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildStatCard(
+                    'Active Locks',
+                    '$activeLocksCount',
+                    Icons.account_balance_wallet,
+                    const Color(0xFFF59E0B),
+                  ),
+                ),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: _buildStatCard(
+                    'Total Value',
+                    '$currencySymbol${(totalLocked + totalInterest).toStringAsFixed(2)}',
+                    Icons.savings_outlined,
+                    const Color(0xFF8B5CF6),
+                  ),
+                ),
+              ],
             ),
           ],
-        ),
-        SizedBox(height: 12.h),
-        Row(
-          children: [
-            Expanded(
-              child: _buildStatCard(
-                'Active Locks',
-                '${statistics['activeLocksCount'] ?? 0}',
-                Icons.account_balance_wallet,
-                const Color(0xFFF59E0B),
-              ),
-            ),
-            SizedBox(width: 12.w),
-            Expanded(
-              child: _buildStatCard(
-                'Total Value',
-                '\$${((statistics['totalLockedAmount'] ?? 0) + (statistics['totalAccruedInterest'] ?? 0)).toStringAsFixed(2)}',
-                Icons.savings_outlined,
-                const Color(0xFF8B5CF6),
-              ),
-            ),
-          ],
-        ),
-      ],
+        );
+      },
     );
   }
 
@@ -585,7 +620,7 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
                       ),
                       SizedBox(height: 4.h),
                       Text(
-                        '\$${lock.amount.toStringAsFixed(2)}',
+                        lock.formattedAmount,
                         style: GoogleFonts.inter(
                           fontSize: 16.sp,
                           fontWeight: FontWeight.w700,
@@ -608,7 +643,7 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
                     ),
                     SizedBox(height: 4.h),
                     Text(
-                      '+\$${lock.accruedInterest.toStringAsFixed(2)}',
+                      lock.formattedInterest,
                       style: GoogleFonts.inter(
                         fontSize: 16.sp,
                         fontWeight: FontWeight.w700,
@@ -638,7 +673,7 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
                 ),
                 const Spacer(),
                 Text(
-                  'Total: ${lock.currency} ${lock.totalValue.toStringAsFixed(2)}',
+                  'Total: ${lock.formattedTotalValue}',
                   style: GoogleFonts.inter(
                     fontSize: 13.sp,
                     color: const Color(0xFF10B981),
@@ -756,45 +791,64 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
   }
 
   Widget _buildEmptyState() {
-    return Center(
+    // Default statistics with 0 values
+    final defaultStats = {
+      'totalLockedAmount': 0.0,
+      'totalAccruedInterest': 0.0,
+      'activeLocksCount': 0,
+      'totalCount': 0,
+    };
+
+    return SingleChildScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: EdgeInsets.symmetric(horizontal: 20.w),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Container(
-            width: 80.w,
-            height: 80.w,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  const Color(0xFF6366F1).withValues(alpha: 0.3),
-                  const Color(0xFF8B5CF6).withValues(alpha: 0.3),
-                ],
-              ),
-              borderRadius: BorderRadius.circular(40.r),
+          _buildStatisticsCards(defaultStats),
+          SizedBox(height: 48.h),
+          Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  width: 80.w,
+                  height: 80.w,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        const Color(0xFF6366F1).withValues(alpha: 0.3),
+                        const Color(0xFF8B5CF6).withValues(alpha: 0.3),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(40.r),
+                  ),
+                  child: Icon(
+                    Icons.lock_outlined,
+                    size: 40.sp,
+                    color: const Color(0xFF6366F1),
+                  ),
+                ),
+                SizedBox(height: 24.h),
+                Text(
+                  'Welcome to Lock Funds',
+                  style: GoogleFonts.inter(
+                    fontSize: 20.sp,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+                SizedBox(height: 8.h),
+                Text(
+                  'Secure your savings and earn competitive interest',
+                  style: GoogleFonts.inter(
+                    fontSize: 14.sp,
+                    color: const Color(0xFF9CA3AF),
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 100.h), // Space for FAB
+              ],
             ),
-            child: Icon(
-              Icons.lock_outlined,
-              size: 40.sp,
-              color: const Color(0xFF6366F1),
-            ),
-          ),
-          SizedBox(height: 24.h),
-          Text(
-            'Welcome to Lock Funds',
-            style: GoogleFonts.inter(
-              fontSize: 20.sp,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
-            ),
-          ),
-          SizedBox(height: 8.h),
-          Text(
-            'Secure your savings and earn competitive interest',
-            style: GoogleFonts.inter(
-              fontSize: 14.sp,
-              color: const Color(0xFF9CA3AF),
-            ),
-            textAlign: TextAlign.center,
           ),
         ],
       ),
@@ -802,30 +856,49 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
   }
 
   Widget _buildLoadingState() {
-    return Center(
+    // Default statistics with 0 values for loading state
+    final defaultStats = {
+      'totalLockedAmount': 0.0,
+      'totalAccruedInterest': 0.0,
+      'activeLocksCount': 0,
+      'totalCount': 0,
+    };
+
+    return SingleChildScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: EdgeInsets.symmetric(horizontal: 20.w),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Container(
-            width: 48.w,
-            height: 48.w,
-            padding: EdgeInsets.all(12.w),
-            decoration: BoxDecoration(
-              color: const Color(0xFF1F1F1F),
-              borderRadius: BorderRadius.circular(24.r),
-            ),
-            child: const CircularProgressIndicator(
-              strokeWidth: 2,
-              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF6366F1)),
-            ),
-          ),
-          SizedBox(height: 16.h),
-          Text(
-            'Loading lock funds...',
-            style: GoogleFonts.inter(
-              color: const Color(0xFF9CA3AF),
-              fontSize: 16.sp,
-              fontWeight: FontWeight.w500,
+          _buildStatisticsCards(defaultStats),
+          SizedBox(height: 48.h),
+          Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  width: 48.w,
+                  height: 48.w,
+                  padding: EdgeInsets.all(12.w),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1F1F1F),
+                    borderRadius: BorderRadius.circular(24.r),
+                  ),
+                  child: const CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF6366F1)),
+                  ),
+                ),
+                SizedBox(height: 16.h),
+                Text(
+                  'Loading lock funds...',
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF9CA3AF),
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                SizedBox(height: 100.h), // Space for FAB
+              ],
             ),
           ),
         ],
@@ -834,34 +907,53 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
   }
 
   Widget _buildErrorState(String message) {
-    return Center(
+    // Default statistics with 0 values for error state
+    final defaultStats = {
+      'totalLockedAmount': 0.0,
+      'totalAccruedInterest': 0.0,
+      'activeLocksCount': 0,
+      'totalCount': 0,
+    };
+
+    return SingleChildScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: EdgeInsets.symmetric(horizontal: 20.w),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.error_outline,
-            size: 64.sp,
-            color: Colors.red[400],
-          ),
-          SizedBox(height: 16.h),
-          Text(
-            'Something went wrong',
-            style: GoogleFonts.inter(
-              color: Colors.white,
-              fontSize: 18.sp,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          SizedBox(height: 8.h),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 40.w),
-            child: Text(
-              message,
-              style: GoogleFonts.inter(
-                color: const Color(0xFF9CA3AF),
-                fontSize: 14.sp,
-              ),
-              textAlign: TextAlign.center,
+          _buildStatisticsCards(defaultStats),
+          SizedBox(height: 48.h),
+          Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.error_outline,
+                  size: 64.sp,
+                  color: Colors.red[400],
+                ),
+                SizedBox(height: 16.h),
+                Text(
+                  'Something went wrong',
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                SizedBox(height: 8.h),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 40.w),
+                  child: Text(
+                    message,
+                    style: GoogleFonts.inter(
+                      color: const Color(0xFF9CA3AF),
+                      fontSize: 14.sp,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                SizedBox(height: 100.h), // Space for FAB
+              ],
             ),
           ),
         ],

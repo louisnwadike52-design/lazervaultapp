@@ -7,6 +7,7 @@ import '../../cubit/create_lock_cubit.dart';
 import '../../../../account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import '../../../../account_cards_summary/cubit/account_cards_summary_state.dart';
 import '../../../../account_cards_summary/domain/entities/account_summary_entity.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
 
 /// Payment method selection screen - Step 5 of 5
 ///
@@ -112,7 +113,7 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
                     ),
                     SizedBox(height: 8.h),
                     Text(
-                      '$currency ${amount.toStringAsFixed(2)}',
+                      '${CurrencySymbols.getSymbol(currency)}${amount.toStringAsFixed(2)}',
                       style: GoogleFonts.inter(
                         fontSize: 32.sp,
                         fontWeight: FontWeight.w700,
@@ -384,7 +385,7 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
                   ),
                   SizedBox(height: 4.h),
                   Text(
-                    '${account.currency} ${account.balance.toStringAsFixed(2)}',
+                    CurrencySymbols.formatAmountWithCurrency(account.balance, account.currency),
                     style: GoogleFonts.inter(
                       color: !hasSufficientBalance
                           ? const Color(0xFF9CA3AF).withValues(alpha: 0.5)
@@ -450,7 +451,7 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
                 ),
                 SizedBox(height: 4.h),
                 Text(
-                  '${account.currency} ${account.balance.toStringAsFixed(2)}',
+                  CurrencySymbols.formatAmountWithCurrency(account.balance, account.currency),
                   style: GoogleFonts.inter(
                     color: const Color(0xFF9CA3AF).withValues(alpha: 0.4),
                     fontSize: 13.sp,

@@ -1,35 +1,25 @@
-///
+//
 //  Generated code. Do not modify.
 //  source: crowdfund.proto
 //
 // @dart = 2.12
-// ignore_for_file: annotate_overrides,camel_case_types,constant_identifier_names,directives_ordering,library_prefixes,non_constant_identifier_names,prefer_final_fields,return_of_invalid_type,unnecessary_const,unnecessary_import,unnecessary_this,unused_import,unused_shown_name
+
+// ignore_for_file: annotate_overrides, camel_case_types, comment_references
+// ignore_for_file: constant_identifier_names, library_prefixes
+// ignore_for_file: non_constant_identifier_names, prefer_final_fields
+// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
 
 import 'dart:core' as $core;
 
 import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'google/protobuf/timestamp.pb.dart' as $1;
-
 import 'crowdfund.pbenum.dart';
+import 'google/protobuf/timestamp.pb.dart' as $42;
 
 export 'crowdfund.pbenum.dart';
 
 class CrowdfundCreatorMessage extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CrowdfundCreatorMessage', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..a<$fixnum.Int64>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'username')
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'firstName')
-    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastName')
-    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'profilePicture')
-    ..aOB(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'verified')
-    ..aOM<$1.Timestamp>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'verifiedAt', subBuilder: $1.Timestamp.create)
-    ..aOB(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'facialRecognitionEnabled')
-    ..hasRequiredFields = false
-  ;
-
-  CrowdfundCreatorMessage._() : super();
   factory CrowdfundCreatorMessage({
     $fixnum.Int64? userId,
     $core.String? username,
@@ -37,38 +27,52 @@ class CrowdfundCreatorMessage extends $pb.GeneratedMessage {
     $core.String? lastName,
     $core.String? profilePicture,
     $core.bool? verified,
-    $1.Timestamp? verifiedAt,
+    $42.Timestamp? verifiedAt,
     $core.bool? facialRecognitionEnabled,
   }) {
-    final _result = create();
+    final $result = create();
     if (userId != null) {
-      _result.userId = userId;
+      $result.userId = userId;
     }
     if (username != null) {
-      _result.username = username;
+      $result.username = username;
     }
     if (firstName != null) {
-      _result.firstName = firstName;
+      $result.firstName = firstName;
     }
     if (lastName != null) {
-      _result.lastName = lastName;
+      $result.lastName = lastName;
     }
     if (profilePicture != null) {
-      _result.profilePicture = profilePicture;
+      $result.profilePicture = profilePicture;
     }
     if (verified != null) {
-      _result.verified = verified;
+      $result.verified = verified;
     }
     if (verifiedAt != null) {
-      _result.verifiedAt = verifiedAt;
+      $result.verifiedAt = verifiedAt;
     }
     if (facialRecognitionEnabled != null) {
-      _result.facialRecognitionEnabled = facialRecognitionEnabled;
+      $result.facialRecognitionEnabled = facialRecognitionEnabled;
     }
-    return _result;
+    return $result;
   }
+  CrowdfundCreatorMessage._() : super();
   factory CrowdfundCreatorMessage.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CrowdfundCreatorMessage.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CrowdfundCreatorMessage', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..a<$fixnum.Int64>(1, _omitFieldNames ? '' : 'userId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(2, _omitFieldNames ? '' : 'username')
+    ..aOS(3, _omitFieldNames ? '' : 'firstName')
+    ..aOS(4, _omitFieldNames ? '' : 'lastName')
+    ..aOS(5, _omitFieldNames ? '' : 'profilePicture')
+    ..aOB(6, _omitFieldNames ? '' : 'verified')
+    ..aOM<$42.Timestamp>(7, _omitFieldNames ? '' : 'verifiedAt', subBuilder: $42.Timestamp.create)
+    ..aOB(8, _omitFieldNames ? '' : 'facialRecognitionEnabled')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -78,8 +82,10 @@ class CrowdfundCreatorMessage extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CrowdfundCreatorMessage copyWith(void Function(CrowdfundCreatorMessage) updates) => super.copyWith((message) => updates(message as CrowdfundCreatorMessage)) as CrowdfundCreatorMessage; // ignore: deprecated_member_use
+  CrowdfundCreatorMessage copyWith(void Function(CrowdfundCreatorMessage) updates) => super.copyWith((message) => updates(message as CrowdfundCreatorMessage)) as CrowdfundCreatorMessage;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static CrowdfundCreatorMessage create() => CrowdfundCreatorMessage._();
   CrowdfundCreatorMessage createEmptyInstance() => create();
@@ -143,15 +149,15 @@ class CrowdfundCreatorMessage extends $pb.GeneratedMessage {
   void clearVerified() => clearField(6);
 
   @$pb.TagNumber(7)
-  $1.Timestamp get verifiedAt => $_getN(6);
+  $42.Timestamp get verifiedAt => $_getN(6);
   @$pb.TagNumber(7)
-  set verifiedAt($1.Timestamp v) { setField(7, v); }
+  set verifiedAt($42.Timestamp v) { setField(7, v); }
   @$pb.TagNumber(7)
   $core.bool hasVerifiedAt() => $_has(6);
   @$pb.TagNumber(7)
   void clearVerifiedAt() => clearField(7);
   @$pb.TagNumber(7)
-  $1.Timestamp ensureVerifiedAt() => $_ensure(6);
+  $42.Timestamp ensureVerifiedAt() => $_ensure(6);
 
   @$pb.TagNumber(8)
   $core.bool get facialRecognitionEnabled => $_getBF(7);
@@ -164,32 +170,6 @@ class CrowdfundCreatorMessage extends $pb.GeneratedMessage {
 }
 
 class CrowdfundMessage extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CrowdfundMessage', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
-    ..a<$fixnum.Int64>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'creatorUserId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..aOM<CrowdfundCreatorMessage>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'creator', subBuilder: CrowdfundCreatorMessage.create)
-    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'title')
-    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
-    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'story')
-    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'crowdfundCode')
-    ..a<$fixnum.Int64>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'targetAmount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..a<$fixnum.Int64>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currentAmount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
-    ..aOM<$1.Timestamp>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'deadline', subBuilder: $1.Timestamp.create)
-    ..aOS(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'category')
-    ..e<CrowdfundStatus>(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: CrowdfundStatus.CROWDFUND_STATUS_UNSPECIFIED, valueOf: CrowdfundStatus.valueOf, enumValues: CrowdfundStatus.values)
-    ..aOS(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'imageUrl')
-    ..e<CrowdfundVisibility>(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'visibility', $pb.PbFieldType.OE, defaultOrMaker: CrowdfundVisibility.CROWDFUND_VISIBILITY_UNSPECIFIED, valueOf: CrowdfundVisibility.valueOf, enumValues: CrowdfundVisibility.values)
-    ..aOS(16, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'metadata')
-    ..a<$core.int>(17, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'donorCount', $pb.PbFieldType.O3)
-    ..a<$core.double>(18, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'progressPercentage', $pb.PbFieldType.OD)
-    ..aOM<$1.Timestamp>(19, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
-    ..aOM<$1.Timestamp>(20, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $1.Timestamp.create)
-    ..pc<CrowdfundDonationMessage>(21, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recentDonations', $pb.PbFieldType.PM, subBuilder: CrowdfundDonationMessage.create)
-    ..hasRequiredFields = false
-  ;
-
-  CrowdfundMessage._() : super();
   factory CrowdfundMessage({
     $core.String? id,
     $fixnum.Int64? creatorUserId,
@@ -201,7 +181,7 @@ class CrowdfundMessage extends $pb.GeneratedMessage {
     $fixnum.Int64? targetAmount,
     $fixnum.Int64? currentAmount,
     $core.String? currency,
-    $1.Timestamp? deadline,
+    $42.Timestamp? deadline,
     $core.String? category,
     CrowdfundStatus? status,
     $core.String? imageUrl,
@@ -209,78 +189,105 @@ class CrowdfundMessage extends $pb.GeneratedMessage {
     $core.String? metadata,
     $core.int? donorCount,
     $core.double? progressPercentage,
-    $1.Timestamp? createdAt,
-    $1.Timestamp? updatedAt,
+    $42.Timestamp? createdAt,
+    $42.Timestamp? updatedAt,
     $core.Iterable<CrowdfundDonationMessage>? recentDonations,
   }) {
-    final _result = create();
+    final $result = create();
     if (id != null) {
-      _result.id = id;
+      $result.id = id;
     }
     if (creatorUserId != null) {
-      _result.creatorUserId = creatorUserId;
+      $result.creatorUserId = creatorUserId;
     }
     if (creator != null) {
-      _result.creator = creator;
+      $result.creator = creator;
     }
     if (title != null) {
-      _result.title = title;
+      $result.title = title;
     }
     if (description != null) {
-      _result.description = description;
+      $result.description = description;
     }
     if (story != null) {
-      _result.story = story;
+      $result.story = story;
     }
     if (crowdfundCode != null) {
-      _result.crowdfundCode = crowdfundCode;
+      $result.crowdfundCode = crowdfundCode;
     }
     if (targetAmount != null) {
-      _result.targetAmount = targetAmount;
+      $result.targetAmount = targetAmount;
     }
     if (currentAmount != null) {
-      _result.currentAmount = currentAmount;
+      $result.currentAmount = currentAmount;
     }
     if (currency != null) {
-      _result.currency = currency;
+      $result.currency = currency;
     }
     if (deadline != null) {
-      _result.deadline = deadline;
+      $result.deadline = deadline;
     }
     if (category != null) {
-      _result.category = category;
+      $result.category = category;
     }
     if (status != null) {
-      _result.status = status;
+      $result.status = status;
     }
     if (imageUrl != null) {
-      _result.imageUrl = imageUrl;
+      $result.imageUrl = imageUrl;
     }
     if (visibility != null) {
-      _result.visibility = visibility;
+      $result.visibility = visibility;
     }
     if (metadata != null) {
-      _result.metadata = metadata;
+      $result.metadata = metadata;
     }
     if (donorCount != null) {
-      _result.donorCount = donorCount;
+      $result.donorCount = donorCount;
     }
     if (progressPercentage != null) {
-      _result.progressPercentage = progressPercentage;
+      $result.progressPercentage = progressPercentage;
     }
     if (createdAt != null) {
-      _result.createdAt = createdAt;
+      $result.createdAt = createdAt;
     }
     if (updatedAt != null) {
-      _result.updatedAt = updatedAt;
+      $result.updatedAt = updatedAt;
     }
     if (recentDonations != null) {
-      _result.recentDonations.addAll(recentDonations);
+      $result.recentDonations.addAll(recentDonations);
     }
-    return _result;
+    return $result;
   }
+  CrowdfundMessage._() : super();
   factory CrowdfundMessage.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CrowdfundMessage.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CrowdfundMessage', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'id')
+    ..a<$fixnum.Int64>(2, _omitFieldNames ? '' : 'creatorUserId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOM<CrowdfundCreatorMessage>(3, _omitFieldNames ? '' : 'creator', subBuilder: CrowdfundCreatorMessage.create)
+    ..aOS(4, _omitFieldNames ? '' : 'title')
+    ..aOS(5, _omitFieldNames ? '' : 'description')
+    ..aOS(6, _omitFieldNames ? '' : 'story')
+    ..aOS(7, _omitFieldNames ? '' : 'crowdfundCode')
+    ..a<$fixnum.Int64>(8, _omitFieldNames ? '' : 'targetAmount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(9, _omitFieldNames ? '' : 'currentAmount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(10, _omitFieldNames ? '' : 'currency')
+    ..aOM<$42.Timestamp>(11, _omitFieldNames ? '' : 'deadline', subBuilder: $42.Timestamp.create)
+    ..aOS(12, _omitFieldNames ? '' : 'category')
+    ..e<CrowdfundStatus>(13, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: CrowdfundStatus.CROWDFUND_STATUS_UNSPECIFIED, valueOf: CrowdfundStatus.valueOf, enumValues: CrowdfundStatus.values)
+    ..aOS(14, _omitFieldNames ? '' : 'imageUrl')
+    ..e<CrowdfundVisibility>(15, _omitFieldNames ? '' : 'visibility', $pb.PbFieldType.OE, defaultOrMaker: CrowdfundVisibility.CROWDFUND_VISIBILITY_UNSPECIFIED, valueOf: CrowdfundVisibility.valueOf, enumValues: CrowdfundVisibility.values)
+    ..aOS(16, _omitFieldNames ? '' : 'metadata')
+    ..a<$core.int>(17, _omitFieldNames ? '' : 'donorCount', $pb.PbFieldType.O3)
+    ..a<$core.double>(18, _omitFieldNames ? '' : 'progressPercentage', $pb.PbFieldType.OD)
+    ..aOM<$42.Timestamp>(19, _omitFieldNames ? '' : 'createdAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$42.Timestamp>(20, _omitFieldNames ? '' : 'updatedAt', subBuilder: $42.Timestamp.create)
+    ..pc<CrowdfundDonationMessage>(21, _omitFieldNames ? '' : 'recentDonations', $pb.PbFieldType.PM, subBuilder: CrowdfundDonationMessage.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -290,8 +297,10 @@ class CrowdfundMessage extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CrowdfundMessage copyWith(void Function(CrowdfundMessage) updates) => super.copyWith((message) => updates(message as CrowdfundMessage)) as CrowdfundMessage; // ignore: deprecated_member_use
+  CrowdfundMessage copyWith(void Function(CrowdfundMessage) updates) => super.copyWith((message) => updates(message as CrowdfundMessage)) as CrowdfundMessage;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static CrowdfundMessage create() => CrowdfundMessage._();
   CrowdfundMessage createEmptyInstance() => create();
@@ -393,15 +402,15 @@ class CrowdfundMessage extends $pb.GeneratedMessage {
   void clearCurrency() => clearField(10);
 
   @$pb.TagNumber(11)
-  $1.Timestamp get deadline => $_getN(10);
+  $42.Timestamp get deadline => $_getN(10);
   @$pb.TagNumber(11)
-  set deadline($1.Timestamp v) { setField(11, v); }
+  set deadline($42.Timestamp v) { setField(11, v); }
   @$pb.TagNumber(11)
   $core.bool hasDeadline() => $_has(10);
   @$pb.TagNumber(11)
   void clearDeadline() => clearField(11);
   @$pb.TagNumber(11)
-  $1.Timestamp ensureDeadline() => $_ensure(10);
+  $42.Timestamp ensureDeadline() => $_ensure(10);
 
   @$pb.TagNumber(12)
   $core.String get category => $_getSZ(11);
@@ -467,42 +476,32 @@ class CrowdfundMessage extends $pb.GeneratedMessage {
   void clearProgressPercentage() => clearField(18);
 
   @$pb.TagNumber(19)
-  $1.Timestamp get createdAt => $_getN(18);
+  $42.Timestamp get createdAt => $_getN(18);
   @$pb.TagNumber(19)
-  set createdAt($1.Timestamp v) { setField(19, v); }
+  set createdAt($42.Timestamp v) { setField(19, v); }
   @$pb.TagNumber(19)
   $core.bool hasCreatedAt() => $_has(18);
   @$pb.TagNumber(19)
   void clearCreatedAt() => clearField(19);
   @$pb.TagNumber(19)
-  $1.Timestamp ensureCreatedAt() => $_ensure(18);
+  $42.Timestamp ensureCreatedAt() => $_ensure(18);
 
   @$pb.TagNumber(20)
-  $1.Timestamp get updatedAt => $_getN(19);
+  $42.Timestamp get updatedAt => $_getN(19);
   @$pb.TagNumber(20)
-  set updatedAt($1.Timestamp v) { setField(20, v); }
+  set updatedAt($42.Timestamp v) { setField(20, v); }
   @$pb.TagNumber(20)
   $core.bool hasUpdatedAt() => $_has(19);
   @$pb.TagNumber(20)
   void clearUpdatedAt() => clearField(20);
   @$pb.TagNumber(20)
-  $1.Timestamp ensureUpdatedAt() => $_ensure(19);
+  $42.Timestamp ensureUpdatedAt() => $_ensure(19);
 
   @$pb.TagNumber(21)
   $core.List<CrowdfundDonationMessage> get recentDonations => $_getList(20);
 }
 
 class CrowdfundDonorMessage extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CrowdfundDonorMessage', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..a<$fixnum.Int64>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'displayName')
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'profilePicture')
-    ..aOB(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isAnonymous')
-    ..aOB(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isCreator')
-    ..hasRequiredFields = false
-  ;
-
-  CrowdfundDonorMessage._() : super();
   factory CrowdfundDonorMessage({
     $fixnum.Int64? userId,
     $core.String? displayName,
@@ -510,26 +509,37 @@ class CrowdfundDonorMessage extends $pb.GeneratedMessage {
     $core.bool? isAnonymous,
     $core.bool? isCreator,
   }) {
-    final _result = create();
+    final $result = create();
     if (userId != null) {
-      _result.userId = userId;
+      $result.userId = userId;
     }
     if (displayName != null) {
-      _result.displayName = displayName;
+      $result.displayName = displayName;
     }
     if (profilePicture != null) {
-      _result.profilePicture = profilePicture;
+      $result.profilePicture = profilePicture;
     }
     if (isAnonymous != null) {
-      _result.isAnonymous = isAnonymous;
+      $result.isAnonymous = isAnonymous;
     }
     if (isCreator != null) {
-      _result.isCreator = isCreator;
+      $result.isCreator = isCreator;
     }
-    return _result;
+    return $result;
   }
+  CrowdfundDonorMessage._() : super();
   factory CrowdfundDonorMessage.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CrowdfundDonorMessage.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CrowdfundDonorMessage', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..a<$fixnum.Int64>(1, _omitFieldNames ? '' : 'userId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(2, _omitFieldNames ? '' : 'displayName')
+    ..aOS(3, _omitFieldNames ? '' : 'profilePicture')
+    ..aOB(4, _omitFieldNames ? '' : 'isAnonymous')
+    ..aOB(5, _omitFieldNames ? '' : 'isCreator')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -539,8 +549,10 @@ class CrowdfundDonorMessage extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CrowdfundDonorMessage copyWith(void Function(CrowdfundDonorMessage) updates) => super.copyWith((message) => updates(message as CrowdfundDonorMessage)) as CrowdfundDonorMessage; // ignore: deprecated_member_use
+  CrowdfundDonorMessage copyWith(void Function(CrowdfundDonorMessage) updates) => super.copyWith((message) => updates(message as CrowdfundDonorMessage)) as CrowdfundDonorMessage;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static CrowdfundDonorMessage create() => CrowdfundDonorMessage._();
   CrowdfundDonorMessage createEmptyInstance() => create();
@@ -596,25 +608,6 @@ class CrowdfundDonorMessage extends $pb.GeneratedMessage {
 }
 
 class CrowdfundDonationMessage extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CrowdfundDonationMessage', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'crowdfundId')
-    ..a<$fixnum.Int64>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'donorUserId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..aOM<CrowdfundDonorMessage>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'donor', subBuilder: CrowdfundDonorMessage.create)
-    ..a<$fixnum.Int64>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
-    ..aOM<$1.Timestamp>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'donationDate', subBuilder: $1.Timestamp.create)
-    ..e<DonationStatus>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: DonationStatus.DONATION_STATUS_UNSPECIFIED, valueOf: DonationStatus.valueOf, enumValues: DonationStatus.values)
-    ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactionId')
-    ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'receiptId')
-    ..aOS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
-    ..aOB(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isAnonymous')
-    ..aOS(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'paymentMethod')
-    ..aOS(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'metadata')
-    ..hasRequiredFields = false
-  ;
-
-  CrowdfundDonationMessage._() : super();
   factory CrowdfundDonationMessage({
     $core.String? id,
     $core.String? crowdfundId,
@@ -622,7 +615,7 @@ class CrowdfundDonationMessage extends $pb.GeneratedMessage {
     CrowdfundDonorMessage? donor,
     $fixnum.Int64? amount,
     $core.String? currency,
-    $1.Timestamp? donationDate,
+    $42.Timestamp? donationDate,
     DonationStatus? status,
     $core.String? transactionId,
     $core.String? receiptId,
@@ -631,53 +624,73 @@ class CrowdfundDonationMessage extends $pb.GeneratedMessage {
     $core.String? paymentMethod,
     $core.String? metadata,
   }) {
-    final _result = create();
+    final $result = create();
     if (id != null) {
-      _result.id = id;
+      $result.id = id;
     }
     if (crowdfundId != null) {
-      _result.crowdfundId = crowdfundId;
+      $result.crowdfundId = crowdfundId;
     }
     if (donorUserId != null) {
-      _result.donorUserId = donorUserId;
+      $result.donorUserId = donorUserId;
     }
     if (donor != null) {
-      _result.donor = donor;
+      $result.donor = donor;
     }
     if (amount != null) {
-      _result.amount = amount;
+      $result.amount = amount;
     }
     if (currency != null) {
-      _result.currency = currency;
+      $result.currency = currency;
     }
     if (donationDate != null) {
-      _result.donationDate = donationDate;
+      $result.donationDate = donationDate;
     }
     if (status != null) {
-      _result.status = status;
+      $result.status = status;
     }
     if (transactionId != null) {
-      _result.transactionId = transactionId;
+      $result.transactionId = transactionId;
     }
     if (receiptId != null) {
-      _result.receiptId = receiptId;
+      $result.receiptId = receiptId;
     }
     if (message != null) {
-      _result.message = message;
+      $result.message = message;
     }
     if (isAnonymous != null) {
-      _result.isAnonymous = isAnonymous;
+      $result.isAnonymous = isAnonymous;
     }
     if (paymentMethod != null) {
-      _result.paymentMethod = paymentMethod;
+      $result.paymentMethod = paymentMethod;
     }
     if (metadata != null) {
-      _result.metadata = metadata;
+      $result.metadata = metadata;
     }
-    return _result;
+    return $result;
   }
+  CrowdfundDonationMessage._() : super();
   factory CrowdfundDonationMessage.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CrowdfundDonationMessage.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CrowdfundDonationMessage', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'id')
+    ..aOS(2, _omitFieldNames ? '' : 'crowdfundId')
+    ..a<$fixnum.Int64>(3, _omitFieldNames ? '' : 'donorUserId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOM<CrowdfundDonorMessage>(4, _omitFieldNames ? '' : 'donor', subBuilder: CrowdfundDonorMessage.create)
+    ..a<$fixnum.Int64>(5, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(6, _omitFieldNames ? '' : 'currency')
+    ..aOM<$42.Timestamp>(7, _omitFieldNames ? '' : 'donationDate', subBuilder: $42.Timestamp.create)
+    ..e<DonationStatus>(8, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: DonationStatus.DONATION_STATUS_UNSPECIFIED, valueOf: DonationStatus.valueOf, enumValues: DonationStatus.values)
+    ..aOS(9, _omitFieldNames ? '' : 'transactionId')
+    ..aOS(10, _omitFieldNames ? '' : 'receiptId')
+    ..aOS(11, _omitFieldNames ? '' : 'message')
+    ..aOB(12, _omitFieldNames ? '' : 'isAnonymous')
+    ..aOS(13, _omitFieldNames ? '' : 'paymentMethod')
+    ..aOS(14, _omitFieldNames ? '' : 'metadata')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -687,8 +700,10 @@ class CrowdfundDonationMessage extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CrowdfundDonationMessage copyWith(void Function(CrowdfundDonationMessage) updates) => super.copyWith((message) => updates(message as CrowdfundDonationMessage)) as CrowdfundDonationMessage; // ignore: deprecated_member_use
+  CrowdfundDonationMessage copyWith(void Function(CrowdfundDonationMessage) updates) => super.copyWith((message) => updates(message as CrowdfundDonationMessage)) as CrowdfundDonationMessage;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static CrowdfundDonationMessage create() => CrowdfundDonationMessage._();
   CrowdfundDonationMessage createEmptyInstance() => create();
@@ -754,15 +769,15 @@ class CrowdfundDonationMessage extends $pb.GeneratedMessage {
   void clearCurrency() => clearField(6);
 
   @$pb.TagNumber(7)
-  $1.Timestamp get donationDate => $_getN(6);
+  $42.Timestamp get donationDate => $_getN(6);
   @$pb.TagNumber(7)
-  set donationDate($1.Timestamp v) { setField(7, v); }
+  set donationDate($42.Timestamp v) { setField(7, v); }
   @$pb.TagNumber(7)
   $core.bool hasDonationDate() => $_has(6);
   @$pb.TagNumber(7)
   void clearDonationDate() => clearField(7);
   @$pb.TagNumber(7)
-  $1.Timestamp ensureDonationDate() => $_ensure(6);
+  $42.Timestamp ensureDonationDate() => $_ensure(6);
 
   @$pb.TagNumber(8)
   DonationStatus get status => $_getN(7);
@@ -829,23 +844,6 @@ class CrowdfundDonationMessage extends $pb.GeneratedMessage {
 }
 
 class CrowdfundReceiptMessage extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CrowdfundReceiptMessage', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'donationId')
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'crowdfundId')
-    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'crowdfundTitle')
-    ..a<$fixnum.Int64>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'donorUserId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'donorName')
-    ..a<$fixnum.Int64>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
-    ..aOM<$1.Timestamp>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'donationDate', subBuilder: $1.Timestamp.create)
-    ..aOM<$1.Timestamp>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'generatedAt', subBuilder: $1.Timestamp.create)
-    ..aOS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'receiptNumber')
-    ..aOS(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'receiptData')
-    ..hasRequiredFields = false
-  ;
-
-  CrowdfundReceiptMessage._() : super();
   factory CrowdfundReceiptMessage({
     $core.String? id,
     $core.String? donationId,
@@ -855,52 +853,70 @@ class CrowdfundReceiptMessage extends $pb.GeneratedMessage {
     $core.String? donorName,
     $fixnum.Int64? amount,
     $core.String? currency,
-    $1.Timestamp? donationDate,
-    $1.Timestamp? generatedAt,
+    $42.Timestamp? donationDate,
+    $42.Timestamp? generatedAt,
     $core.String? receiptNumber,
     $core.String? receiptData,
   }) {
-    final _result = create();
+    final $result = create();
     if (id != null) {
-      _result.id = id;
+      $result.id = id;
     }
     if (donationId != null) {
-      _result.donationId = donationId;
+      $result.donationId = donationId;
     }
     if (crowdfundId != null) {
-      _result.crowdfundId = crowdfundId;
+      $result.crowdfundId = crowdfundId;
     }
     if (crowdfundTitle != null) {
-      _result.crowdfundTitle = crowdfundTitle;
+      $result.crowdfundTitle = crowdfundTitle;
     }
     if (donorUserId != null) {
-      _result.donorUserId = donorUserId;
+      $result.donorUserId = donorUserId;
     }
     if (donorName != null) {
-      _result.donorName = donorName;
+      $result.donorName = donorName;
     }
     if (amount != null) {
-      _result.amount = amount;
+      $result.amount = amount;
     }
     if (currency != null) {
-      _result.currency = currency;
+      $result.currency = currency;
     }
     if (donationDate != null) {
-      _result.donationDate = donationDate;
+      $result.donationDate = donationDate;
     }
     if (generatedAt != null) {
-      _result.generatedAt = generatedAt;
+      $result.generatedAt = generatedAt;
     }
     if (receiptNumber != null) {
-      _result.receiptNumber = receiptNumber;
+      $result.receiptNumber = receiptNumber;
     }
     if (receiptData != null) {
-      _result.receiptData = receiptData;
+      $result.receiptData = receiptData;
     }
-    return _result;
+    return $result;
   }
+  CrowdfundReceiptMessage._() : super();
   factory CrowdfundReceiptMessage.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CrowdfundReceiptMessage.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CrowdfundReceiptMessage', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'id')
+    ..aOS(2, _omitFieldNames ? '' : 'donationId')
+    ..aOS(3, _omitFieldNames ? '' : 'crowdfundId')
+    ..aOS(4, _omitFieldNames ? '' : 'crowdfundTitle')
+    ..a<$fixnum.Int64>(5, _omitFieldNames ? '' : 'donorUserId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(6, _omitFieldNames ? '' : 'donorName')
+    ..a<$fixnum.Int64>(7, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(8, _omitFieldNames ? '' : 'currency')
+    ..aOM<$42.Timestamp>(9, _omitFieldNames ? '' : 'donationDate', subBuilder: $42.Timestamp.create)
+    ..aOM<$42.Timestamp>(10, _omitFieldNames ? '' : 'generatedAt', subBuilder: $42.Timestamp.create)
+    ..aOS(11, _omitFieldNames ? '' : 'receiptNumber')
+    ..aOS(12, _omitFieldNames ? '' : 'receiptData')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -910,8 +926,10 @@ class CrowdfundReceiptMessage extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CrowdfundReceiptMessage copyWith(void Function(CrowdfundReceiptMessage) updates) => super.copyWith((message) => updates(message as CrowdfundReceiptMessage)) as CrowdfundReceiptMessage; // ignore: deprecated_member_use
+  CrowdfundReceiptMessage copyWith(void Function(CrowdfundReceiptMessage) updates) => super.copyWith((message) => updates(message as CrowdfundReceiptMessage)) as CrowdfundReceiptMessage;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static CrowdfundReceiptMessage create() => CrowdfundReceiptMessage._();
   CrowdfundReceiptMessage createEmptyInstance() => create();
@@ -993,26 +1011,26 @@ class CrowdfundReceiptMessage extends $pb.GeneratedMessage {
   void clearCurrency() => clearField(8);
 
   @$pb.TagNumber(9)
-  $1.Timestamp get donationDate => $_getN(8);
+  $42.Timestamp get donationDate => $_getN(8);
   @$pb.TagNumber(9)
-  set donationDate($1.Timestamp v) { setField(9, v); }
+  set donationDate($42.Timestamp v) { setField(9, v); }
   @$pb.TagNumber(9)
   $core.bool hasDonationDate() => $_has(8);
   @$pb.TagNumber(9)
   void clearDonationDate() => clearField(9);
   @$pb.TagNumber(9)
-  $1.Timestamp ensureDonationDate() => $_ensure(8);
+  $42.Timestamp ensureDonationDate() => $_ensure(8);
 
   @$pb.TagNumber(10)
-  $1.Timestamp get generatedAt => $_getN(9);
+  $42.Timestamp get generatedAt => $_getN(9);
   @$pb.TagNumber(10)
-  set generatedAt($1.Timestamp v) { setField(10, v); }
+  set generatedAt($42.Timestamp v) { setField(10, v); }
   @$pb.TagNumber(10)
   $core.bool hasGeneratedAt() => $_has(9);
   @$pb.TagNumber(10)
   void clearGeneratedAt() => clearField(10);
   @$pb.TagNumber(10)
-  $1.Timestamp ensureGeneratedAt() => $_ensure(9);
+  $42.Timestamp ensureGeneratedAt() => $_ensure(9);
 
   @$pb.TagNumber(11)
   $core.String get receiptNumber => $_getSZ(10);
@@ -1033,69 +1051,71 @@ class CrowdfundReceiptMessage extends $pb.GeneratedMessage {
   void clearReceiptData() => clearField(12);
 }
 
+/// Create Crowdfund
 class CreateCrowdfundRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CreateCrowdfundRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'title')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'story')
-    ..a<$fixnum.Int64>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'targetAmount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
-    ..aOM<$1.Timestamp>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'deadline', subBuilder: $1.Timestamp.create)
-    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'category')
-    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'imageUrl')
-    ..e<CrowdfundVisibility>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'visibility', $pb.PbFieldType.OE, defaultOrMaker: CrowdfundVisibility.CROWDFUND_VISIBILITY_UNSPECIFIED, valueOf: CrowdfundVisibility.valueOf, enumValues: CrowdfundVisibility.values)
-    ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'metadata')
-    ..hasRequiredFields = false
-  ;
-
-  CreateCrowdfundRequest._() : super();
   factory CreateCrowdfundRequest({
     $core.String? title,
     $core.String? description,
     $core.String? story,
     $fixnum.Int64? targetAmount,
     $core.String? currency,
-    $1.Timestamp? deadline,
+    $42.Timestamp? deadline,
     $core.String? category,
     $core.String? imageUrl,
     CrowdfundVisibility? visibility,
     $core.String? metadata,
   }) {
-    final _result = create();
+    final $result = create();
     if (title != null) {
-      _result.title = title;
+      $result.title = title;
     }
     if (description != null) {
-      _result.description = description;
+      $result.description = description;
     }
     if (story != null) {
-      _result.story = story;
+      $result.story = story;
     }
     if (targetAmount != null) {
-      _result.targetAmount = targetAmount;
+      $result.targetAmount = targetAmount;
     }
     if (currency != null) {
-      _result.currency = currency;
+      $result.currency = currency;
     }
     if (deadline != null) {
-      _result.deadline = deadline;
+      $result.deadline = deadline;
     }
     if (category != null) {
-      _result.category = category;
+      $result.category = category;
     }
     if (imageUrl != null) {
-      _result.imageUrl = imageUrl;
+      $result.imageUrl = imageUrl;
     }
     if (visibility != null) {
-      _result.visibility = visibility;
+      $result.visibility = visibility;
     }
     if (metadata != null) {
-      _result.metadata = metadata;
+      $result.metadata = metadata;
     }
-    return _result;
+    return $result;
   }
+  CreateCrowdfundRequest._() : super();
   factory CreateCrowdfundRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CreateCrowdfundRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreateCrowdfundRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'title')
+    ..aOS(2, _omitFieldNames ? '' : 'description')
+    ..aOS(3, _omitFieldNames ? '' : 'story')
+    ..a<$fixnum.Int64>(4, _omitFieldNames ? '' : 'targetAmount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(5, _omitFieldNames ? '' : 'currency')
+    ..aOM<$42.Timestamp>(6, _omitFieldNames ? '' : 'deadline', subBuilder: $42.Timestamp.create)
+    ..aOS(7, _omitFieldNames ? '' : 'category')
+    ..aOS(8, _omitFieldNames ? '' : 'imageUrl')
+    ..e<CrowdfundVisibility>(9, _omitFieldNames ? '' : 'visibility', $pb.PbFieldType.OE, defaultOrMaker: CrowdfundVisibility.CROWDFUND_VISIBILITY_UNSPECIFIED, valueOf: CrowdfundVisibility.valueOf, enumValues: CrowdfundVisibility.values)
+    ..aOS(10, _omitFieldNames ? '' : 'metadata')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1105,8 +1125,10 @@ class CreateCrowdfundRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CreateCrowdfundRequest copyWith(void Function(CreateCrowdfundRequest) updates) => super.copyWith((message) => updates(message as CreateCrowdfundRequest)) as CreateCrowdfundRequest; // ignore: deprecated_member_use
+  CreateCrowdfundRequest copyWith(void Function(CreateCrowdfundRequest) updates) => super.copyWith((message) => updates(message as CreateCrowdfundRequest)) as CreateCrowdfundRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static CreateCrowdfundRequest create() => CreateCrowdfundRequest._();
   CreateCrowdfundRequest createEmptyInstance() => create();
@@ -1161,15 +1183,15 @@ class CreateCrowdfundRequest extends $pb.GeneratedMessage {
   void clearCurrency() => clearField(5);
 
   @$pb.TagNumber(6)
-  $1.Timestamp get deadline => $_getN(5);
+  $42.Timestamp get deadline => $_getN(5);
   @$pb.TagNumber(6)
-  set deadline($1.Timestamp v) { setField(6, v); }
+  set deadline($42.Timestamp v) { setField(6, v); }
   @$pb.TagNumber(6)
   $core.bool hasDeadline() => $_has(5);
   @$pb.TagNumber(6)
   void clearDeadline() => clearField(6);
   @$pb.TagNumber(6)
-  $1.Timestamp ensureDeadline() => $_ensure(5);
+  $42.Timestamp ensureDeadline() => $_ensure(5);
 
   @$pb.TagNumber(7)
   $core.String get category => $_getSZ(6);
@@ -1209,23 +1231,24 @@ class CreateCrowdfundRequest extends $pb.GeneratedMessage {
 }
 
 class CreateCrowdfundResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CreateCrowdfundResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<CrowdfundMessage>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'crowdfund', subBuilder: CrowdfundMessage.create)
-    ..hasRequiredFields = false
-  ;
-
-  CreateCrowdfundResponse._() : super();
   factory CreateCrowdfundResponse({
     CrowdfundMessage? crowdfund,
   }) {
-    final _result = create();
+    final $result = create();
     if (crowdfund != null) {
-      _result.crowdfund = crowdfund;
+      $result.crowdfund = crowdfund;
     }
-    return _result;
+    return $result;
   }
+  CreateCrowdfundResponse._() : super();
   factory CreateCrowdfundResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CreateCrowdfundResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreateCrowdfundResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOM<CrowdfundMessage>(1, _omitFieldNames ? '' : 'crowdfund', subBuilder: CrowdfundMessage.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1235,8 +1258,10 @@ class CreateCrowdfundResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CreateCrowdfundResponse copyWith(void Function(CreateCrowdfundResponse) updates) => super.copyWith((message) => updates(message as CreateCrowdfundResponse)) as CreateCrowdfundResponse; // ignore: deprecated_member_use
+  CreateCrowdfundResponse copyWith(void Function(CreateCrowdfundResponse) updates) => super.copyWith((message) => updates(message as CreateCrowdfundResponse)) as CreateCrowdfundResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static CreateCrowdfundResponse create() => CreateCrowdfundResponse._();
   CreateCrowdfundResponse createEmptyInstance() => create();
@@ -1257,24 +1282,26 @@ class CreateCrowdfundResponse extends $pb.GeneratedMessage {
   CrowdfundMessage ensureCrowdfund() => $_ensure(0);
 }
 
+/// Get Crowdfund
 class GetCrowdfundRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetCrowdfundRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'crowdfundId')
-    ..hasRequiredFields = false
-  ;
-
-  GetCrowdfundRequest._() : super();
   factory GetCrowdfundRequest({
     $core.String? crowdfundId,
   }) {
-    final _result = create();
+    final $result = create();
     if (crowdfundId != null) {
-      _result.crowdfundId = crowdfundId;
+      $result.crowdfundId = crowdfundId;
     }
-    return _result;
+    return $result;
   }
+  GetCrowdfundRequest._() : super();
   factory GetCrowdfundRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetCrowdfundRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetCrowdfundRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'crowdfundId')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1284,8 +1311,10 @@ class GetCrowdfundRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetCrowdfundRequest copyWith(void Function(GetCrowdfundRequest) updates) => super.copyWith((message) => updates(message as GetCrowdfundRequest)) as GetCrowdfundRequest; // ignore: deprecated_member_use
+  GetCrowdfundRequest copyWith(void Function(GetCrowdfundRequest) updates) => super.copyWith((message) => updates(message as GetCrowdfundRequest)) as GetCrowdfundRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetCrowdfundRequest create() => GetCrowdfundRequest._();
   GetCrowdfundRequest createEmptyInstance() => create();
@@ -1305,23 +1334,24 @@ class GetCrowdfundRequest extends $pb.GeneratedMessage {
 }
 
 class GetCrowdfundResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetCrowdfundResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<CrowdfundMessage>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'crowdfund', subBuilder: CrowdfundMessage.create)
-    ..hasRequiredFields = false
-  ;
-
-  GetCrowdfundResponse._() : super();
   factory GetCrowdfundResponse({
     CrowdfundMessage? crowdfund,
   }) {
-    final _result = create();
+    final $result = create();
     if (crowdfund != null) {
-      _result.crowdfund = crowdfund;
+      $result.crowdfund = crowdfund;
     }
-    return _result;
+    return $result;
   }
+  GetCrowdfundResponse._() : super();
   factory GetCrowdfundResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetCrowdfundResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetCrowdfundResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOM<CrowdfundMessage>(1, _omitFieldNames ? '' : 'crowdfund', subBuilder: CrowdfundMessage.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1331,8 +1361,10 @@ class GetCrowdfundResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetCrowdfundResponse copyWith(void Function(GetCrowdfundResponse) updates) => super.copyWith((message) => updates(message as GetCrowdfundResponse)) as GetCrowdfundResponse; // ignore: deprecated_member_use
+  GetCrowdfundResponse copyWith(void Function(GetCrowdfundResponse) updates) => super.copyWith((message) => updates(message as GetCrowdfundResponse)) as GetCrowdfundResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetCrowdfundResponse create() => GetCrowdfundResponse._();
   GetCrowdfundResponse createEmptyInstance() => create();
@@ -1353,17 +1385,8 @@ class GetCrowdfundResponse extends $pb.GeneratedMessage {
   CrowdfundMessage ensureCrowdfund() => $_ensure(0);
 }
 
+/// List Crowdfunds
 class ListCrowdfundsRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ListCrowdfundsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..a<$core.int>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'page', $pb.PbFieldType.O3)
-    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pageSize', $pb.PbFieldType.O3)
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status')
-    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'category')
-    ..aOB(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'myCrowdfundsOnly')
-    ..hasRequiredFields = false
-  ;
-
-  ListCrowdfundsRequest._() : super();
   factory ListCrowdfundsRequest({
     $core.int? page,
     $core.int? pageSize,
@@ -1371,26 +1394,37 @@ class ListCrowdfundsRequest extends $pb.GeneratedMessage {
     $core.String? category,
     $core.bool? myCrowdfundsOnly,
   }) {
-    final _result = create();
+    final $result = create();
     if (page != null) {
-      _result.page = page;
+      $result.page = page;
     }
     if (pageSize != null) {
-      _result.pageSize = pageSize;
+      $result.pageSize = pageSize;
     }
     if (status != null) {
-      _result.status = status;
+      $result.status = status;
     }
     if (category != null) {
-      _result.category = category;
+      $result.category = category;
     }
     if (myCrowdfundsOnly != null) {
-      _result.myCrowdfundsOnly = myCrowdfundsOnly;
+      $result.myCrowdfundsOnly = myCrowdfundsOnly;
     }
-    return _result;
+    return $result;
   }
+  ListCrowdfundsRequest._() : super();
   factory ListCrowdfundsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ListCrowdfundsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ListCrowdfundsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..a<$core.int>(1, _omitFieldNames ? '' : 'page', $pb.PbFieldType.O3)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'pageSize', $pb.PbFieldType.O3)
+    ..aOS(3, _omitFieldNames ? '' : 'status')
+    ..aOS(4, _omitFieldNames ? '' : 'category')
+    ..aOB(5, _omitFieldNames ? '' : 'myCrowdfundsOnly')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1400,8 +1434,10 @@ class ListCrowdfundsRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ListCrowdfundsRequest copyWith(void Function(ListCrowdfundsRequest) updates) => super.copyWith((message) => updates(message as ListCrowdfundsRequest)) as ListCrowdfundsRequest; // ignore: deprecated_member_use
+  ListCrowdfundsRequest copyWith(void Function(ListCrowdfundsRequest) updates) => super.copyWith((message) => updates(message as ListCrowdfundsRequest)) as ListCrowdfundsRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static ListCrowdfundsRequest create() => ListCrowdfundsRequest._();
   ListCrowdfundsRequest createEmptyInstance() => create();
@@ -1457,28 +1493,29 @@ class ListCrowdfundsRequest extends $pb.GeneratedMessage {
 }
 
 class ListCrowdfundsResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ListCrowdfundsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..pc<CrowdfundMessage>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'crowdfunds', $pb.PbFieldType.PM, subBuilder: CrowdfundMessage.create)
-    ..aOM<CrowdfundPaginationInfo>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pagination', subBuilder: CrowdfundPaginationInfo.create)
-    ..hasRequiredFields = false
-  ;
-
-  ListCrowdfundsResponse._() : super();
   factory ListCrowdfundsResponse({
     $core.Iterable<CrowdfundMessage>? crowdfunds,
     CrowdfundPaginationInfo? pagination,
   }) {
-    final _result = create();
+    final $result = create();
     if (crowdfunds != null) {
-      _result.crowdfunds.addAll(crowdfunds);
+      $result.crowdfunds.addAll(crowdfunds);
     }
     if (pagination != null) {
-      _result.pagination = pagination;
+      $result.pagination = pagination;
     }
-    return _result;
+    return $result;
   }
+  ListCrowdfundsResponse._() : super();
   factory ListCrowdfundsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ListCrowdfundsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ListCrowdfundsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..pc<CrowdfundMessage>(1, _omitFieldNames ? '' : 'crowdfunds', $pb.PbFieldType.PM, subBuilder: CrowdfundMessage.create)
+    ..aOM<CrowdfundPaginationInfo>(2, _omitFieldNames ? '' : 'pagination', subBuilder: CrowdfundPaginationInfo.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1488,8 +1525,10 @@ class ListCrowdfundsResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ListCrowdfundsResponse copyWith(void Function(ListCrowdfundsResponse) updates) => super.copyWith((message) => updates(message as ListCrowdfundsResponse)) as ListCrowdfundsResponse; // ignore: deprecated_member_use
+  ListCrowdfundsResponse copyWith(void Function(ListCrowdfundsResponse) updates) => super.copyWith((message) => updates(message as ListCrowdfundsResponse)) as ListCrowdfundsResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static ListCrowdfundsResponse create() => ListCrowdfundsResponse._();
   ListCrowdfundsResponse createEmptyInstance() => create();
@@ -1513,29 +1552,31 @@ class ListCrowdfundsResponse extends $pb.GeneratedMessage {
   CrowdfundPaginationInfo ensurePagination() => $_ensure(1);
 }
 
+/// Search Crowdfunds
 class SearchCrowdfundsRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'SearchCrowdfundsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'query')
-    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'limit', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
-
-  SearchCrowdfundsRequest._() : super();
   factory SearchCrowdfundsRequest({
     $core.String? query,
     $core.int? limit,
   }) {
-    final _result = create();
+    final $result = create();
     if (query != null) {
-      _result.query = query;
+      $result.query = query;
     }
     if (limit != null) {
-      _result.limit = limit;
+      $result.limit = limit;
     }
-    return _result;
+    return $result;
   }
+  SearchCrowdfundsRequest._() : super();
   factory SearchCrowdfundsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory SearchCrowdfundsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SearchCrowdfundsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'query')
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'limit', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1545,8 +1586,10 @@ class SearchCrowdfundsRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  SearchCrowdfundsRequest copyWith(void Function(SearchCrowdfundsRequest) updates) => super.copyWith((message) => updates(message as SearchCrowdfundsRequest)) as SearchCrowdfundsRequest; // ignore: deprecated_member_use
+  SearchCrowdfundsRequest copyWith(void Function(SearchCrowdfundsRequest) updates) => super.copyWith((message) => updates(message as SearchCrowdfundsRequest)) as SearchCrowdfundsRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static SearchCrowdfundsRequest create() => SearchCrowdfundsRequest._();
   SearchCrowdfundsRequest createEmptyInstance() => create();
@@ -1575,23 +1618,24 @@ class SearchCrowdfundsRequest extends $pb.GeneratedMessage {
 }
 
 class SearchCrowdfundsResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'SearchCrowdfundsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..pc<CrowdfundMessage>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'crowdfunds', $pb.PbFieldType.PM, subBuilder: CrowdfundMessage.create)
-    ..hasRequiredFields = false
-  ;
-
-  SearchCrowdfundsResponse._() : super();
   factory SearchCrowdfundsResponse({
     $core.Iterable<CrowdfundMessage>? crowdfunds,
   }) {
-    final _result = create();
+    final $result = create();
     if (crowdfunds != null) {
-      _result.crowdfunds.addAll(crowdfunds);
+      $result.crowdfunds.addAll(crowdfunds);
     }
-    return _result;
+    return $result;
   }
+  SearchCrowdfundsResponse._() : super();
   factory SearchCrowdfundsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory SearchCrowdfundsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SearchCrowdfundsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..pc<CrowdfundMessage>(1, _omitFieldNames ? '' : 'crowdfunds', $pb.PbFieldType.PM, subBuilder: CrowdfundMessage.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1601,8 +1645,10 @@ class SearchCrowdfundsResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  SearchCrowdfundsResponse copyWith(void Function(SearchCrowdfundsResponse) updates) => super.copyWith((message) => updates(message as SearchCrowdfundsResponse)) as SearchCrowdfundsResponse; // ignore: deprecated_member_use
+  SearchCrowdfundsResponse copyWith(void Function(SearchCrowdfundsResponse) updates) => super.copyWith((message) => updates(message as SearchCrowdfundsResponse)) as SearchCrowdfundsResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static SearchCrowdfundsResponse create() => SearchCrowdfundsResponse._();
   SearchCrowdfundsResponse createEmptyInstance() => create();
@@ -1615,59 +1661,61 @@ class SearchCrowdfundsResponse extends $pb.GeneratedMessage {
   $core.List<CrowdfundMessage> get crowdfunds => $_getList(0);
 }
 
+/// Update Crowdfund
 class UpdateCrowdfundRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UpdateCrowdfundRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'crowdfundId')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'title')
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
-    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'story')
-    ..aOM<$1.Timestamp>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'deadline', subBuilder: $1.Timestamp.create)
-    ..e<CrowdfundStatus>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: CrowdfundStatus.CROWDFUND_STATUS_UNSPECIFIED, valueOf: CrowdfundStatus.valueOf, enumValues: CrowdfundStatus.values)
-    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'imageUrl')
-    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'metadata')
-    ..hasRequiredFields = false
-  ;
-
-  UpdateCrowdfundRequest._() : super();
   factory UpdateCrowdfundRequest({
     $core.String? crowdfundId,
     $core.String? title,
     $core.String? description,
     $core.String? story,
-    $1.Timestamp? deadline,
+    $42.Timestamp? deadline,
     CrowdfundStatus? status,
     $core.String? imageUrl,
     $core.String? metadata,
   }) {
-    final _result = create();
+    final $result = create();
     if (crowdfundId != null) {
-      _result.crowdfundId = crowdfundId;
+      $result.crowdfundId = crowdfundId;
     }
     if (title != null) {
-      _result.title = title;
+      $result.title = title;
     }
     if (description != null) {
-      _result.description = description;
+      $result.description = description;
     }
     if (story != null) {
-      _result.story = story;
+      $result.story = story;
     }
     if (deadline != null) {
-      _result.deadline = deadline;
+      $result.deadline = deadline;
     }
     if (status != null) {
-      _result.status = status;
+      $result.status = status;
     }
     if (imageUrl != null) {
-      _result.imageUrl = imageUrl;
+      $result.imageUrl = imageUrl;
     }
     if (metadata != null) {
-      _result.metadata = metadata;
+      $result.metadata = metadata;
     }
-    return _result;
+    return $result;
   }
+  UpdateCrowdfundRequest._() : super();
   factory UpdateCrowdfundRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory UpdateCrowdfundRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UpdateCrowdfundRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'crowdfundId')
+    ..aOS(2, _omitFieldNames ? '' : 'title')
+    ..aOS(3, _omitFieldNames ? '' : 'description')
+    ..aOS(4, _omitFieldNames ? '' : 'story')
+    ..aOM<$42.Timestamp>(5, _omitFieldNames ? '' : 'deadline', subBuilder: $42.Timestamp.create)
+    ..e<CrowdfundStatus>(6, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: CrowdfundStatus.CROWDFUND_STATUS_UNSPECIFIED, valueOf: CrowdfundStatus.valueOf, enumValues: CrowdfundStatus.values)
+    ..aOS(7, _omitFieldNames ? '' : 'imageUrl')
+    ..aOS(8, _omitFieldNames ? '' : 'metadata')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1677,8 +1725,10 @@ class UpdateCrowdfundRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  UpdateCrowdfundRequest copyWith(void Function(UpdateCrowdfundRequest) updates) => super.copyWith((message) => updates(message as UpdateCrowdfundRequest)) as UpdateCrowdfundRequest; // ignore: deprecated_member_use
+  UpdateCrowdfundRequest copyWith(void Function(UpdateCrowdfundRequest) updates) => super.copyWith((message) => updates(message as UpdateCrowdfundRequest)) as UpdateCrowdfundRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static UpdateCrowdfundRequest create() => UpdateCrowdfundRequest._();
   UpdateCrowdfundRequest createEmptyInstance() => create();
@@ -1724,15 +1774,15 @@ class UpdateCrowdfundRequest extends $pb.GeneratedMessage {
   void clearStory() => clearField(4);
 
   @$pb.TagNumber(5)
-  $1.Timestamp get deadline => $_getN(4);
+  $42.Timestamp get deadline => $_getN(4);
   @$pb.TagNumber(5)
-  set deadline($1.Timestamp v) { setField(5, v); }
+  set deadline($42.Timestamp v) { setField(5, v); }
   @$pb.TagNumber(5)
   $core.bool hasDeadline() => $_has(4);
   @$pb.TagNumber(5)
   void clearDeadline() => clearField(5);
   @$pb.TagNumber(5)
-  $1.Timestamp ensureDeadline() => $_ensure(4);
+  $42.Timestamp ensureDeadline() => $_ensure(4);
 
   @$pb.TagNumber(6)
   CrowdfundStatus get status => $_getN(5);
@@ -1763,23 +1813,24 @@ class UpdateCrowdfundRequest extends $pb.GeneratedMessage {
 }
 
 class UpdateCrowdfundResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UpdateCrowdfundResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<CrowdfundMessage>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'crowdfund', subBuilder: CrowdfundMessage.create)
-    ..hasRequiredFields = false
-  ;
-
-  UpdateCrowdfundResponse._() : super();
   factory UpdateCrowdfundResponse({
     CrowdfundMessage? crowdfund,
   }) {
-    final _result = create();
+    final $result = create();
     if (crowdfund != null) {
-      _result.crowdfund = crowdfund;
+      $result.crowdfund = crowdfund;
     }
-    return _result;
+    return $result;
   }
+  UpdateCrowdfundResponse._() : super();
   factory UpdateCrowdfundResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory UpdateCrowdfundResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UpdateCrowdfundResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOM<CrowdfundMessage>(1, _omitFieldNames ? '' : 'crowdfund', subBuilder: CrowdfundMessage.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1789,8 +1840,10 @@ class UpdateCrowdfundResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  UpdateCrowdfundResponse copyWith(void Function(UpdateCrowdfundResponse) updates) => super.copyWith((message) => updates(message as UpdateCrowdfundResponse)) as UpdateCrowdfundResponse; // ignore: deprecated_member_use
+  UpdateCrowdfundResponse copyWith(void Function(UpdateCrowdfundResponse) updates) => super.copyWith((message) => updates(message as UpdateCrowdfundResponse)) as UpdateCrowdfundResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static UpdateCrowdfundResponse create() => UpdateCrowdfundResponse._();
   UpdateCrowdfundResponse createEmptyInstance() => create();
@@ -1811,24 +1864,26 @@ class UpdateCrowdfundResponse extends $pb.GeneratedMessage {
   CrowdfundMessage ensureCrowdfund() => $_ensure(0);
 }
 
+/// Delete Crowdfund
 class DeleteCrowdfundRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'DeleteCrowdfundRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'crowdfundId')
-    ..hasRequiredFields = false
-  ;
-
-  DeleteCrowdfundRequest._() : super();
   factory DeleteCrowdfundRequest({
     $core.String? crowdfundId,
   }) {
-    final _result = create();
+    final $result = create();
     if (crowdfundId != null) {
-      _result.crowdfundId = crowdfundId;
+      $result.crowdfundId = crowdfundId;
     }
-    return _result;
+    return $result;
   }
+  DeleteCrowdfundRequest._() : super();
   factory DeleteCrowdfundRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory DeleteCrowdfundRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'DeleteCrowdfundRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'crowdfundId')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1838,8 +1893,10 @@ class DeleteCrowdfundRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  DeleteCrowdfundRequest copyWith(void Function(DeleteCrowdfundRequest) updates) => super.copyWith((message) => updates(message as DeleteCrowdfundRequest)) as DeleteCrowdfundRequest; // ignore: deprecated_member_use
+  DeleteCrowdfundRequest copyWith(void Function(DeleteCrowdfundRequest) updates) => super.copyWith((message) => updates(message as DeleteCrowdfundRequest)) as DeleteCrowdfundRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static DeleteCrowdfundRequest create() => DeleteCrowdfundRequest._();
   DeleteCrowdfundRequest createEmptyInstance() => create();
@@ -1859,28 +1916,29 @@ class DeleteCrowdfundRequest extends $pb.GeneratedMessage {
 }
 
 class DeleteCrowdfundResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'DeleteCrowdfundResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
-    ..hasRequiredFields = false
-  ;
-
-  DeleteCrowdfundResponse._() : super();
   factory DeleteCrowdfundResponse({
     $core.bool? success,
     $core.String? message,
   }) {
-    final _result = create();
+    final $result = create();
     if (success != null) {
-      _result.success = success;
+      $result.success = success;
     }
     if (message != null) {
-      _result.message = message;
+      $result.message = message;
     }
-    return _result;
+    return $result;
   }
+  DeleteCrowdfundResponse._() : super();
   factory DeleteCrowdfundResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory DeleteCrowdfundResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'DeleteCrowdfundResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..aOS(2, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1890,8 +1948,10 @@ class DeleteCrowdfundResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  DeleteCrowdfundResponse copyWith(void Function(DeleteCrowdfundResponse) updates) => super.copyWith((message) => updates(message as DeleteCrowdfundResponse)) as DeleteCrowdfundResponse; // ignore: deprecated_member_use
+  DeleteCrowdfundResponse copyWith(void Function(DeleteCrowdfundResponse) updates) => super.copyWith((message) => updates(message as DeleteCrowdfundResponse)) as DeleteCrowdfundResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static DeleteCrowdfundResponse create() => DeleteCrowdfundResponse._();
   DeleteCrowdfundResponse createEmptyInstance() => create();
@@ -1919,17 +1979,8 @@ class DeleteCrowdfundResponse extends $pb.GeneratedMessage {
   void clearMessage() => clearField(2);
 }
 
+/// Make Donation
 class MakeDonationRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'MakeDonationRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'crowdfundId')
-    ..a<$fixnum.Int64>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
-    ..aOB(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isAnonymous')
-    ..a<$fixnum.Int64>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sourceAccountId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..hasRequiredFields = false
-  ;
-
-  MakeDonationRequest._() : super();
   factory MakeDonationRequest({
     $core.String? crowdfundId,
     $fixnum.Int64? amount,
@@ -1937,26 +1988,37 @@ class MakeDonationRequest extends $pb.GeneratedMessage {
     $core.bool? isAnonymous,
     $fixnum.Int64? sourceAccountId,
   }) {
-    final _result = create();
+    final $result = create();
     if (crowdfundId != null) {
-      _result.crowdfundId = crowdfundId;
+      $result.crowdfundId = crowdfundId;
     }
     if (amount != null) {
-      _result.amount = amount;
+      $result.amount = amount;
     }
     if (message != null) {
-      _result.message = message;
+      $result.message = message;
     }
     if (isAnonymous != null) {
-      _result.isAnonymous = isAnonymous;
+      $result.isAnonymous = isAnonymous;
     }
     if (sourceAccountId != null) {
-      _result.sourceAccountId = sourceAccountId;
+      $result.sourceAccountId = sourceAccountId;
     }
-    return _result;
+    return $result;
   }
+  MakeDonationRequest._() : super();
   factory MakeDonationRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory MakeDonationRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'MakeDonationRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'crowdfundId')
+    ..a<$fixnum.Int64>(2, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(3, _omitFieldNames ? '' : 'message')
+    ..aOB(4, _omitFieldNames ? '' : 'isAnonymous')
+    ..a<$fixnum.Int64>(5, _omitFieldNames ? '' : 'sourceAccountId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1966,8 +2028,10 @@ class MakeDonationRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  MakeDonationRequest copyWith(void Function(MakeDonationRequest) updates) => super.copyWith((message) => updates(message as MakeDonationRequest)) as MakeDonationRequest; // ignore: deprecated_member_use
+  MakeDonationRequest copyWith(void Function(MakeDonationRequest) updates) => super.copyWith((message) => updates(message as MakeDonationRequest)) as MakeDonationRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static MakeDonationRequest create() => MakeDonationRequest._();
   MakeDonationRequest createEmptyInstance() => create();
@@ -2023,23 +2087,24 @@ class MakeDonationRequest extends $pb.GeneratedMessage {
 }
 
 class MakeDonationResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'MakeDonationResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<CrowdfundDonationMessage>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'donation', subBuilder: CrowdfundDonationMessage.create)
-    ..hasRequiredFields = false
-  ;
-
-  MakeDonationResponse._() : super();
   factory MakeDonationResponse({
     CrowdfundDonationMessage? donation,
   }) {
-    final _result = create();
+    final $result = create();
     if (donation != null) {
-      _result.donation = donation;
+      $result.donation = donation;
     }
-    return _result;
+    return $result;
   }
+  MakeDonationResponse._() : super();
   factory MakeDonationResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory MakeDonationResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'MakeDonationResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOM<CrowdfundDonationMessage>(1, _omitFieldNames ? '' : 'donation', subBuilder: CrowdfundDonationMessage.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2049,8 +2114,10 @@ class MakeDonationResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  MakeDonationResponse copyWith(void Function(MakeDonationResponse) updates) => super.copyWith((message) => updates(message as MakeDonationResponse)) as MakeDonationResponse; // ignore: deprecated_member_use
+  MakeDonationResponse copyWith(void Function(MakeDonationResponse) updates) => super.copyWith((message) => updates(message as MakeDonationResponse)) as MakeDonationResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static MakeDonationResponse create() => MakeDonationResponse._();
   MakeDonationResponse createEmptyInstance() => create();
@@ -2071,34 +2138,36 @@ class MakeDonationResponse extends $pb.GeneratedMessage {
   CrowdfundDonationMessage ensureDonation() => $_ensure(0);
 }
 
+/// Get Crowdfund Donations
 class GetCrowdfundDonationsRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetCrowdfundDonationsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'crowdfundId')
-    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'page', $pb.PbFieldType.O3)
-    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pageSize', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
-
-  GetCrowdfundDonationsRequest._() : super();
   factory GetCrowdfundDonationsRequest({
     $core.String? crowdfundId,
     $core.int? page,
     $core.int? pageSize,
   }) {
-    final _result = create();
+    final $result = create();
     if (crowdfundId != null) {
-      _result.crowdfundId = crowdfundId;
+      $result.crowdfundId = crowdfundId;
     }
     if (page != null) {
-      _result.page = page;
+      $result.page = page;
     }
     if (pageSize != null) {
-      _result.pageSize = pageSize;
+      $result.pageSize = pageSize;
     }
-    return _result;
+    return $result;
   }
+  GetCrowdfundDonationsRequest._() : super();
   factory GetCrowdfundDonationsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetCrowdfundDonationsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetCrowdfundDonationsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'crowdfundId')
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'page', $pb.PbFieldType.O3)
+    ..a<$core.int>(3, _omitFieldNames ? '' : 'pageSize', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2108,8 +2177,10 @@ class GetCrowdfundDonationsRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetCrowdfundDonationsRequest copyWith(void Function(GetCrowdfundDonationsRequest) updates) => super.copyWith((message) => updates(message as GetCrowdfundDonationsRequest)) as GetCrowdfundDonationsRequest; // ignore: deprecated_member_use
+  GetCrowdfundDonationsRequest copyWith(void Function(GetCrowdfundDonationsRequest) updates) => super.copyWith((message) => updates(message as GetCrowdfundDonationsRequest)) as GetCrowdfundDonationsRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetCrowdfundDonationsRequest create() => GetCrowdfundDonationsRequest._();
   GetCrowdfundDonationsRequest createEmptyInstance() => create();
@@ -2147,28 +2218,29 @@ class GetCrowdfundDonationsRequest extends $pb.GeneratedMessage {
 }
 
 class GetCrowdfundDonationsResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetCrowdfundDonationsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..pc<CrowdfundDonationMessage>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'donations', $pb.PbFieldType.PM, subBuilder: CrowdfundDonationMessage.create)
-    ..aOM<DonationPaginationInfo>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pagination', subBuilder: DonationPaginationInfo.create)
-    ..hasRequiredFields = false
-  ;
-
-  GetCrowdfundDonationsResponse._() : super();
   factory GetCrowdfundDonationsResponse({
     $core.Iterable<CrowdfundDonationMessage>? donations,
     DonationPaginationInfo? pagination,
   }) {
-    final _result = create();
+    final $result = create();
     if (donations != null) {
-      _result.donations.addAll(donations);
+      $result.donations.addAll(donations);
     }
     if (pagination != null) {
-      _result.pagination = pagination;
+      $result.pagination = pagination;
     }
-    return _result;
+    return $result;
   }
+  GetCrowdfundDonationsResponse._() : super();
   factory GetCrowdfundDonationsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetCrowdfundDonationsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetCrowdfundDonationsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..pc<CrowdfundDonationMessage>(1, _omitFieldNames ? '' : 'donations', $pb.PbFieldType.PM, subBuilder: CrowdfundDonationMessage.create)
+    ..aOM<DonationPaginationInfo>(2, _omitFieldNames ? '' : 'pagination', subBuilder: DonationPaginationInfo.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2178,8 +2250,10 @@ class GetCrowdfundDonationsResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetCrowdfundDonationsResponse copyWith(void Function(GetCrowdfundDonationsResponse) updates) => super.copyWith((message) => updates(message as GetCrowdfundDonationsResponse)) as GetCrowdfundDonationsResponse; // ignore: deprecated_member_use
+  GetCrowdfundDonationsResponse copyWith(void Function(GetCrowdfundDonationsResponse) updates) => super.copyWith((message) => updates(message as GetCrowdfundDonationsResponse)) as GetCrowdfundDonationsResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetCrowdfundDonationsResponse create() => GetCrowdfundDonationsResponse._();
   GetCrowdfundDonationsResponse createEmptyInstance() => create();
@@ -2203,29 +2277,31 @@ class GetCrowdfundDonationsResponse extends $pb.GeneratedMessage {
   DonationPaginationInfo ensurePagination() => $_ensure(1);
 }
 
+/// Get User Donations
 class GetUserDonationsRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetUserDonationsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..a<$core.int>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'page', $pb.PbFieldType.O3)
-    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pageSize', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
-
-  GetUserDonationsRequest._() : super();
   factory GetUserDonationsRequest({
     $core.int? page,
     $core.int? pageSize,
   }) {
-    final _result = create();
+    final $result = create();
     if (page != null) {
-      _result.page = page;
+      $result.page = page;
     }
     if (pageSize != null) {
-      _result.pageSize = pageSize;
+      $result.pageSize = pageSize;
     }
-    return _result;
+    return $result;
   }
+  GetUserDonationsRequest._() : super();
   factory GetUserDonationsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetUserDonationsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetUserDonationsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..a<$core.int>(1, _omitFieldNames ? '' : 'page', $pb.PbFieldType.O3)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'pageSize', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2235,8 +2311,10 @@ class GetUserDonationsRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetUserDonationsRequest copyWith(void Function(GetUserDonationsRequest) updates) => super.copyWith((message) => updates(message as GetUserDonationsRequest)) as GetUserDonationsRequest; // ignore: deprecated_member_use
+  GetUserDonationsRequest copyWith(void Function(GetUserDonationsRequest) updates) => super.copyWith((message) => updates(message as GetUserDonationsRequest)) as GetUserDonationsRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetUserDonationsRequest create() => GetUserDonationsRequest._();
   GetUserDonationsRequest createEmptyInstance() => create();
@@ -2265,28 +2343,29 @@ class GetUserDonationsRequest extends $pb.GeneratedMessage {
 }
 
 class GetUserDonationsResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetUserDonationsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..pc<CrowdfundDonationMessage>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'donations', $pb.PbFieldType.PM, subBuilder: CrowdfundDonationMessage.create)
-    ..aOM<DonationPaginationInfo>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pagination', subBuilder: DonationPaginationInfo.create)
-    ..hasRequiredFields = false
-  ;
-
-  GetUserDonationsResponse._() : super();
   factory GetUserDonationsResponse({
     $core.Iterable<CrowdfundDonationMessage>? donations,
     DonationPaginationInfo? pagination,
   }) {
-    final _result = create();
+    final $result = create();
     if (donations != null) {
-      _result.donations.addAll(donations);
+      $result.donations.addAll(donations);
     }
     if (pagination != null) {
-      _result.pagination = pagination;
+      $result.pagination = pagination;
     }
-    return _result;
+    return $result;
   }
+  GetUserDonationsResponse._() : super();
   factory GetUserDonationsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetUserDonationsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetUserDonationsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..pc<CrowdfundDonationMessage>(1, _omitFieldNames ? '' : 'donations', $pb.PbFieldType.PM, subBuilder: CrowdfundDonationMessage.create)
+    ..aOM<DonationPaginationInfo>(2, _omitFieldNames ? '' : 'pagination', subBuilder: DonationPaginationInfo.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2296,8 +2375,10 @@ class GetUserDonationsResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetUserDonationsResponse copyWith(void Function(GetUserDonationsResponse) updates) => super.copyWith((message) => updates(message as GetUserDonationsResponse)) as GetUserDonationsResponse; // ignore: deprecated_member_use
+  GetUserDonationsResponse copyWith(void Function(GetUserDonationsResponse) updates) => super.copyWith((message) => updates(message as GetUserDonationsResponse)) as GetUserDonationsResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetUserDonationsResponse create() => GetUserDonationsResponse._();
   GetUserDonationsResponse createEmptyInstance() => create();
@@ -2321,24 +2402,26 @@ class GetUserDonationsResponse extends $pb.GeneratedMessage {
   DonationPaginationInfo ensurePagination() => $_ensure(1);
 }
 
+/// Generate Receipt
 class GenerateDonationReceiptRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GenerateDonationReceiptRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'donationId')
-    ..hasRequiredFields = false
-  ;
-
-  GenerateDonationReceiptRequest._() : super();
   factory GenerateDonationReceiptRequest({
     $core.String? donationId,
   }) {
-    final _result = create();
+    final $result = create();
     if (donationId != null) {
-      _result.donationId = donationId;
+      $result.donationId = donationId;
     }
-    return _result;
+    return $result;
   }
+  GenerateDonationReceiptRequest._() : super();
   factory GenerateDonationReceiptRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GenerateDonationReceiptRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GenerateDonationReceiptRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'donationId')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2348,8 +2431,10 @@ class GenerateDonationReceiptRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GenerateDonationReceiptRequest copyWith(void Function(GenerateDonationReceiptRequest) updates) => super.copyWith((message) => updates(message as GenerateDonationReceiptRequest)) as GenerateDonationReceiptRequest; // ignore: deprecated_member_use
+  GenerateDonationReceiptRequest copyWith(void Function(GenerateDonationReceiptRequest) updates) => super.copyWith((message) => updates(message as GenerateDonationReceiptRequest)) as GenerateDonationReceiptRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GenerateDonationReceiptRequest create() => GenerateDonationReceiptRequest._();
   GenerateDonationReceiptRequest createEmptyInstance() => create();
@@ -2369,23 +2454,24 @@ class GenerateDonationReceiptRequest extends $pb.GeneratedMessage {
 }
 
 class GenerateDonationReceiptResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GenerateDonationReceiptResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<CrowdfundReceiptMessage>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'receipt', subBuilder: CrowdfundReceiptMessage.create)
-    ..hasRequiredFields = false
-  ;
-
-  GenerateDonationReceiptResponse._() : super();
   factory GenerateDonationReceiptResponse({
     CrowdfundReceiptMessage? receipt,
   }) {
-    final _result = create();
+    final $result = create();
     if (receipt != null) {
-      _result.receipt = receipt;
+      $result.receipt = receipt;
     }
-    return _result;
+    return $result;
   }
+  GenerateDonationReceiptResponse._() : super();
   factory GenerateDonationReceiptResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GenerateDonationReceiptResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GenerateDonationReceiptResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOM<CrowdfundReceiptMessage>(1, _omitFieldNames ? '' : 'receipt', subBuilder: CrowdfundReceiptMessage.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2395,8 +2481,10 @@ class GenerateDonationReceiptResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GenerateDonationReceiptResponse copyWith(void Function(GenerateDonationReceiptResponse) updates) => super.copyWith((message) => updates(message as GenerateDonationReceiptResponse)) as GenerateDonationReceiptResponse; // ignore: deprecated_member_use
+  GenerateDonationReceiptResponse copyWith(void Function(GenerateDonationReceiptResponse) updates) => super.copyWith((message) => updates(message as GenerateDonationReceiptResponse)) as GenerateDonationReceiptResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GenerateDonationReceiptResponse create() => GenerateDonationReceiptResponse._();
   GenerateDonationReceiptResponse createEmptyInstance() => create();
@@ -2417,29 +2505,31 @@ class GenerateDonationReceiptResponse extends $pb.GeneratedMessage {
   CrowdfundReceiptMessage ensureReceipt() => $_ensure(0);
 }
 
+/// Get User Receipts
 class GetUserCrowdfundReceiptsRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetUserCrowdfundReceiptsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..a<$core.int>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'page', $pb.PbFieldType.O3)
-    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pageSize', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
-
-  GetUserCrowdfundReceiptsRequest._() : super();
   factory GetUserCrowdfundReceiptsRequest({
     $core.int? page,
     $core.int? pageSize,
   }) {
-    final _result = create();
+    final $result = create();
     if (page != null) {
-      _result.page = page;
+      $result.page = page;
     }
     if (pageSize != null) {
-      _result.pageSize = pageSize;
+      $result.pageSize = pageSize;
     }
-    return _result;
+    return $result;
   }
+  GetUserCrowdfundReceiptsRequest._() : super();
   factory GetUserCrowdfundReceiptsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetUserCrowdfundReceiptsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetUserCrowdfundReceiptsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..a<$core.int>(1, _omitFieldNames ? '' : 'page', $pb.PbFieldType.O3)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'pageSize', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2449,8 +2539,10 @@ class GetUserCrowdfundReceiptsRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetUserCrowdfundReceiptsRequest copyWith(void Function(GetUserCrowdfundReceiptsRequest) updates) => super.copyWith((message) => updates(message as GetUserCrowdfundReceiptsRequest)) as GetUserCrowdfundReceiptsRequest; // ignore: deprecated_member_use
+  GetUserCrowdfundReceiptsRequest copyWith(void Function(GetUserCrowdfundReceiptsRequest) updates) => super.copyWith((message) => updates(message as GetUserCrowdfundReceiptsRequest)) as GetUserCrowdfundReceiptsRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetUserCrowdfundReceiptsRequest create() => GetUserCrowdfundReceiptsRequest._();
   GetUserCrowdfundReceiptsRequest createEmptyInstance() => create();
@@ -2479,28 +2571,29 @@ class GetUserCrowdfundReceiptsRequest extends $pb.GeneratedMessage {
 }
 
 class GetUserCrowdfundReceiptsResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetUserCrowdfundReceiptsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..pc<CrowdfundReceiptMessage>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'receipts', $pb.PbFieldType.PM, subBuilder: CrowdfundReceiptMessage.create)
-    ..aOM<CrowdfundReceiptPaginationInfo>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pagination', subBuilder: CrowdfundReceiptPaginationInfo.create)
-    ..hasRequiredFields = false
-  ;
-
-  GetUserCrowdfundReceiptsResponse._() : super();
   factory GetUserCrowdfundReceiptsResponse({
     $core.Iterable<CrowdfundReceiptMessage>? receipts,
     CrowdfundReceiptPaginationInfo? pagination,
   }) {
-    final _result = create();
+    final $result = create();
     if (receipts != null) {
-      _result.receipts.addAll(receipts);
+      $result.receipts.addAll(receipts);
     }
     if (pagination != null) {
-      _result.pagination = pagination;
+      $result.pagination = pagination;
     }
-    return _result;
+    return $result;
   }
+  GetUserCrowdfundReceiptsResponse._() : super();
   factory GetUserCrowdfundReceiptsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetUserCrowdfundReceiptsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetUserCrowdfundReceiptsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..pc<CrowdfundReceiptMessage>(1, _omitFieldNames ? '' : 'receipts', $pb.PbFieldType.PM, subBuilder: CrowdfundReceiptMessage.create)
+    ..aOM<CrowdfundReceiptPaginationInfo>(2, _omitFieldNames ? '' : 'pagination', subBuilder: CrowdfundReceiptPaginationInfo.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2510,8 +2603,10 @@ class GetUserCrowdfundReceiptsResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetUserCrowdfundReceiptsResponse copyWith(void Function(GetUserCrowdfundReceiptsResponse) updates) => super.copyWith((message) => updates(message as GetUserCrowdfundReceiptsResponse)) as GetUserCrowdfundReceiptsResponse; // ignore: deprecated_member_use
+  GetUserCrowdfundReceiptsResponse copyWith(void Function(GetUserCrowdfundReceiptsResponse) updates) => super.copyWith((message) => updates(message as GetUserCrowdfundReceiptsResponse)) as GetUserCrowdfundReceiptsResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetUserCrowdfundReceiptsResponse create() => GetUserCrowdfundReceiptsResponse._();
   GetUserCrowdfundReceiptsResponse createEmptyInstance() => create();
@@ -2535,24 +2630,26 @@ class GetUserCrowdfundReceiptsResponse extends $pb.GeneratedMessage {
   CrowdfundReceiptPaginationInfo ensurePagination() => $_ensure(1);
 }
 
+/// Get Crowdfund Statistics
 class GetCrowdfundStatisticsRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetCrowdfundStatisticsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'crowdfundId')
-    ..hasRequiredFields = false
-  ;
-
-  GetCrowdfundStatisticsRequest._() : super();
   factory GetCrowdfundStatisticsRequest({
     $core.String? crowdfundId,
   }) {
-    final _result = create();
+    final $result = create();
     if (crowdfundId != null) {
-      _result.crowdfundId = crowdfundId;
+      $result.crowdfundId = crowdfundId;
     }
-    return _result;
+    return $result;
   }
+  GetCrowdfundStatisticsRequest._() : super();
   factory GetCrowdfundStatisticsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetCrowdfundStatisticsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetCrowdfundStatisticsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'crowdfundId')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2562,8 +2659,10 @@ class GetCrowdfundStatisticsRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetCrowdfundStatisticsRequest copyWith(void Function(GetCrowdfundStatisticsRequest) updates) => super.copyWith((message) => updates(message as GetCrowdfundStatisticsRequest)) as GetCrowdfundStatisticsRequest; // ignore: deprecated_member_use
+  GetCrowdfundStatisticsRequest copyWith(void Function(GetCrowdfundStatisticsRequest) updates) => super.copyWith((message) => updates(message as GetCrowdfundStatisticsRequest)) as GetCrowdfundStatisticsRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetCrowdfundStatisticsRequest create() => GetCrowdfundStatisticsRequest._();
   GetCrowdfundStatisticsRequest createEmptyInstance() => create();
@@ -2583,27 +2682,6 @@ class GetCrowdfundStatisticsRequest extends $pb.GeneratedMessage {
 }
 
 class GetCrowdfundStatisticsResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetCrowdfundStatisticsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'crowdfundId')
-    ..a<$fixnum.Int64>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalRaised', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..a<$fixnum.Int64>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'targetAmount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..a<$core.double>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'progressPercentage', $pb.PbFieldType.OD)
-    ..a<$core.int>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'donorCount', $pb.PbFieldType.O3)
-    ..a<$fixnum.Int64>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'averageDonation', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..a<$fixnum.Int64>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'largestDonation', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..a<$core.int>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'daysRemaining', $pb.PbFieldType.O3)
-    ..aOB(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isCompleted')
-    ..aOM<$1.Timestamp>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
-    ..a<$core.int>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'uniqueDonors', $pb.PbFieldType.O3)
-    ..a<$fixnum.Int64>(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'smallestDonation', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..pc<ContributorLeaderboardEntry>(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'topContributors', $pb.PbFieldType.PM, subBuilder: ContributorLeaderboardEntry.create)
-    ..pc<DailyProgressEntry>(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'dailyProgress', $pb.PbFieldType.PM, subBuilder: DailyProgressEntry.create)
-    ..a<$core.double>(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'fundingVelocity', $pb.PbFieldType.OD)
-    ..aOS(16, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'projectedCompletionDate')
-    ..hasRequiredFields = false
-  ;
-
-  GetCrowdfundStatisticsResponse._() : super();
   factory GetCrowdfundStatisticsResponse({
     $core.String? crowdfundId,
     $fixnum.Int64? totalRaised,
@@ -2614,7 +2692,7 @@ class GetCrowdfundStatisticsResponse extends $pb.GeneratedMessage {
     $fixnum.Int64? largestDonation,
     $core.int? daysRemaining,
     $core.bool? isCompleted,
-    $1.Timestamp? createdAt,
+    $42.Timestamp? createdAt,
     $core.int? uniqueDonors,
     $fixnum.Int64? smallestDonation,
     $core.Iterable<ContributorLeaderboardEntry>? topContributors,
@@ -2622,59 +2700,81 @@ class GetCrowdfundStatisticsResponse extends $pb.GeneratedMessage {
     $core.double? fundingVelocity,
     $core.String? projectedCompletionDate,
   }) {
-    final _result = create();
+    final $result = create();
     if (crowdfundId != null) {
-      _result.crowdfundId = crowdfundId;
+      $result.crowdfundId = crowdfundId;
     }
     if (totalRaised != null) {
-      _result.totalRaised = totalRaised;
+      $result.totalRaised = totalRaised;
     }
     if (targetAmount != null) {
-      _result.targetAmount = targetAmount;
+      $result.targetAmount = targetAmount;
     }
     if (progressPercentage != null) {
-      _result.progressPercentage = progressPercentage;
+      $result.progressPercentage = progressPercentage;
     }
     if (donorCount != null) {
-      _result.donorCount = donorCount;
+      $result.donorCount = donorCount;
     }
     if (averageDonation != null) {
-      _result.averageDonation = averageDonation;
+      $result.averageDonation = averageDonation;
     }
     if (largestDonation != null) {
-      _result.largestDonation = largestDonation;
+      $result.largestDonation = largestDonation;
     }
     if (daysRemaining != null) {
-      _result.daysRemaining = daysRemaining;
+      $result.daysRemaining = daysRemaining;
     }
     if (isCompleted != null) {
-      _result.isCompleted = isCompleted;
+      $result.isCompleted = isCompleted;
     }
     if (createdAt != null) {
-      _result.createdAt = createdAt;
+      $result.createdAt = createdAt;
     }
     if (uniqueDonors != null) {
-      _result.uniqueDonors = uniqueDonors;
+      $result.uniqueDonors = uniqueDonors;
     }
     if (smallestDonation != null) {
-      _result.smallestDonation = smallestDonation;
+      $result.smallestDonation = smallestDonation;
     }
     if (topContributors != null) {
-      _result.topContributors.addAll(topContributors);
+      $result.topContributors.addAll(topContributors);
     }
     if (dailyProgress != null) {
-      _result.dailyProgress.addAll(dailyProgress);
+      $result.dailyProgress.addAll(dailyProgress);
     }
     if (fundingVelocity != null) {
-      _result.fundingVelocity = fundingVelocity;
+      $result.fundingVelocity = fundingVelocity;
     }
     if (projectedCompletionDate != null) {
-      _result.projectedCompletionDate = projectedCompletionDate;
+      $result.projectedCompletionDate = projectedCompletionDate;
     }
-    return _result;
+    return $result;
   }
+  GetCrowdfundStatisticsResponse._() : super();
   factory GetCrowdfundStatisticsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetCrowdfundStatisticsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetCrowdfundStatisticsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'crowdfundId')
+    ..a<$fixnum.Int64>(2, _omitFieldNames ? '' : 'totalRaised', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(3, _omitFieldNames ? '' : 'targetAmount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$core.double>(4, _omitFieldNames ? '' : 'progressPercentage', $pb.PbFieldType.OD)
+    ..a<$core.int>(5, _omitFieldNames ? '' : 'donorCount', $pb.PbFieldType.O3)
+    ..a<$fixnum.Int64>(6, _omitFieldNames ? '' : 'averageDonation', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(7, _omitFieldNames ? '' : 'largestDonation', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$core.int>(8, _omitFieldNames ? '' : 'daysRemaining', $pb.PbFieldType.O3)
+    ..aOB(9, _omitFieldNames ? '' : 'isCompleted')
+    ..aOM<$42.Timestamp>(10, _omitFieldNames ? '' : 'createdAt', subBuilder: $42.Timestamp.create)
+    ..a<$core.int>(11, _omitFieldNames ? '' : 'uniqueDonors', $pb.PbFieldType.O3)
+    ..a<$fixnum.Int64>(12, _omitFieldNames ? '' : 'smallestDonation', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..pc<ContributorLeaderboardEntry>(13, _omitFieldNames ? '' : 'topContributors', $pb.PbFieldType.PM, subBuilder: ContributorLeaderboardEntry.create)
+    ..pc<DailyProgressEntry>(14, _omitFieldNames ? '' : 'dailyProgress', $pb.PbFieldType.PM, subBuilder: DailyProgressEntry.create)
+    ..a<$core.double>(15, _omitFieldNames ? '' : 'fundingVelocity', $pb.PbFieldType.OD)
+    ..aOS(16, _omitFieldNames ? '' : 'projectedCompletionDate')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2684,8 +2784,10 @@ class GetCrowdfundStatisticsResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetCrowdfundStatisticsResponse copyWith(void Function(GetCrowdfundStatisticsResponse) updates) => super.copyWith((message) => updates(message as GetCrowdfundStatisticsResponse)) as GetCrowdfundStatisticsResponse; // ignore: deprecated_member_use
+  GetCrowdfundStatisticsResponse copyWith(void Function(GetCrowdfundStatisticsResponse) updates) => super.copyWith((message) => updates(message as GetCrowdfundStatisticsResponse)) as GetCrowdfundStatisticsResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetCrowdfundStatisticsResponse create() => GetCrowdfundStatisticsResponse._();
   GetCrowdfundStatisticsResponse createEmptyInstance() => create();
@@ -2776,16 +2878,17 @@ class GetCrowdfundStatisticsResponse extends $pb.GeneratedMessage {
   void clearIsCompleted() => clearField(9);
 
   @$pb.TagNumber(10)
-  $1.Timestamp get createdAt => $_getN(9);
+  $42.Timestamp get createdAt => $_getN(9);
   @$pb.TagNumber(10)
-  set createdAt($1.Timestamp v) { setField(10, v); }
+  set createdAt($42.Timestamp v) { setField(10, v); }
   @$pb.TagNumber(10)
   $core.bool hasCreatedAt() => $_has(9);
   @$pb.TagNumber(10)
   void clearCreatedAt() => clearField(10);
   @$pb.TagNumber(10)
-  $1.Timestamp ensureCreatedAt() => $_ensure(9);
+  $42.Timestamp ensureCreatedAt() => $_ensure(9);
 
+  /// Enhanced statistics fields
   @$pb.TagNumber(11)
   $core.int get uniqueDonors => $_getIZ(10);
   @$pb.TagNumber(11)
@@ -2829,17 +2932,8 @@ class GetCrowdfundStatisticsResponse extends $pb.GeneratedMessage {
   void clearProjectedCompletionDate() => clearField(16);
 }
 
+/// Leaderboard entry for top contributors
 class ContributorLeaderboardEntry extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ContributorLeaderboardEntry', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..a<$core.int>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'rank', $pb.PbFieldType.O3)
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'displayName')
-    ..a<$core.double>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalAmount', $pb.PbFieldType.OD)
-    ..a<$core.int>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'contributionCount', $pb.PbFieldType.O3)
-    ..aOB(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isAnonymous')
-    ..hasRequiredFields = false
-  ;
-
-  ContributorLeaderboardEntry._() : super();
   factory ContributorLeaderboardEntry({
     $core.int? rank,
     $core.String? displayName,
@@ -2847,26 +2941,37 @@ class ContributorLeaderboardEntry extends $pb.GeneratedMessage {
     $core.int? contributionCount,
     $core.bool? isAnonymous,
   }) {
-    final _result = create();
+    final $result = create();
     if (rank != null) {
-      _result.rank = rank;
+      $result.rank = rank;
     }
     if (displayName != null) {
-      _result.displayName = displayName;
+      $result.displayName = displayName;
     }
     if (totalAmount != null) {
-      _result.totalAmount = totalAmount;
+      $result.totalAmount = totalAmount;
     }
     if (contributionCount != null) {
-      _result.contributionCount = contributionCount;
+      $result.contributionCount = contributionCount;
     }
     if (isAnonymous != null) {
-      _result.isAnonymous = isAnonymous;
+      $result.isAnonymous = isAnonymous;
     }
-    return _result;
+    return $result;
   }
+  ContributorLeaderboardEntry._() : super();
   factory ContributorLeaderboardEntry.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ContributorLeaderboardEntry.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ContributorLeaderboardEntry', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..a<$core.int>(1, _omitFieldNames ? '' : 'rank', $pb.PbFieldType.O3)
+    ..aOS(2, _omitFieldNames ? '' : 'displayName')
+    ..a<$core.double>(3, _omitFieldNames ? '' : 'totalAmount', $pb.PbFieldType.OD)
+    ..a<$core.int>(4, _omitFieldNames ? '' : 'contributionCount', $pb.PbFieldType.O3)
+    ..aOB(5, _omitFieldNames ? '' : 'isAnonymous')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2876,8 +2981,10 @@ class ContributorLeaderboardEntry extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ContributorLeaderboardEntry copyWith(void Function(ContributorLeaderboardEntry) updates) => super.copyWith((message) => updates(message as ContributorLeaderboardEntry)) as ContributorLeaderboardEntry; // ignore: deprecated_member_use
+  ContributorLeaderboardEntry copyWith(void Function(ContributorLeaderboardEntry) updates) => super.copyWith((message) => updates(message as ContributorLeaderboardEntry)) as ContributorLeaderboardEntry;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static ContributorLeaderboardEntry create() => ContributorLeaderboardEntry._();
   ContributorLeaderboardEntry createEmptyInstance() => create();
@@ -2932,39 +3039,41 @@ class ContributorLeaderboardEntry extends $pb.GeneratedMessage {
   void clearIsAnonymous() => clearField(5);
 }
 
+/// Daily progress tracking
 class DailyProgressEntry extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'DailyProgressEntry', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'date')
-    ..a<$core.double>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
-    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'donationCount', $pb.PbFieldType.O3)
-    ..a<$core.double>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'cumulativeAmount', $pb.PbFieldType.OD)
-    ..hasRequiredFields = false
-  ;
-
-  DailyProgressEntry._() : super();
   factory DailyProgressEntry({
     $core.String? date,
     $core.double? amount,
     $core.int? donationCount,
     $core.double? cumulativeAmount,
   }) {
-    final _result = create();
+    final $result = create();
     if (date != null) {
-      _result.date = date;
+      $result.date = date;
     }
     if (amount != null) {
-      _result.amount = amount;
+      $result.amount = amount;
     }
     if (donationCount != null) {
-      _result.donationCount = donationCount;
+      $result.donationCount = donationCount;
     }
     if (cumulativeAmount != null) {
-      _result.cumulativeAmount = cumulativeAmount;
+      $result.cumulativeAmount = cumulativeAmount;
     }
-    return _result;
+    return $result;
   }
+  DailyProgressEntry._() : super();
   factory DailyProgressEntry.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory DailyProgressEntry.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'DailyProgressEntry', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'date')
+    ..a<$core.double>(2, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
+    ..a<$core.int>(3, _omitFieldNames ? '' : 'donationCount', $pb.PbFieldType.O3)
+    ..a<$core.double>(4, _omitFieldNames ? '' : 'cumulativeAmount', $pb.PbFieldType.OD)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2974,8 +3083,10 @@ class DailyProgressEntry extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  DailyProgressEntry copyWith(void Function(DailyProgressEntry) updates) => super.copyWith((message) => updates(message as DailyProgressEntry)) as DailyProgressEntry; // ignore: deprecated_member_use
+  DailyProgressEntry copyWith(void Function(DailyProgressEntry) updates) => super.copyWith((message) => updates(message as DailyProgressEntry)) as DailyProgressEntry;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static DailyProgressEntry create() => DailyProgressEntry._();
   DailyProgressEntry createEmptyInstance() => create();
@@ -3021,18 +3132,534 @@ class DailyProgressEntry extends $pb.GeneratedMessage {
   void clearCumulativeAmount() => clearField(4);
 }
 
-class CrowdfundPaginationInfo extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CrowdfundPaginationInfo', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..a<$core.int>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currentPage', $pb.PbFieldType.O3)
-    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalPages', $pb.PbFieldType.O3)
-    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalItems', $pb.PbFieldType.O3)
-    ..a<$core.int>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'itemsPerPage', $pb.PbFieldType.O3)
-    ..aOB(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'hasNext')
-    ..aOB(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'hasPrev')
+/// Withdraw from Crowdfund (Campaign Creator Only)
+class WithdrawFromCrowdfundRequest extends $pb.GeneratedMessage {
+  factory WithdrawFromCrowdfundRequest({
+    $core.String? crowdfundId,
+    $fixnum.Int64? amount,
+    $core.String? transactionPin,
+    $core.String? destinationAccountId,
+    $core.String? destinationAccountType,
+  }) {
+    final $result = create();
+    if (crowdfundId != null) {
+      $result.crowdfundId = crowdfundId;
+    }
+    if (amount != null) {
+      $result.amount = amount;
+    }
+    if (transactionPin != null) {
+      $result.transactionPin = transactionPin;
+    }
+    if (destinationAccountId != null) {
+      $result.destinationAccountId = destinationAccountId;
+    }
+    if (destinationAccountType != null) {
+      $result.destinationAccountType = destinationAccountType;
+    }
+    return $result;
+  }
+  WithdrawFromCrowdfundRequest._() : super();
+  factory WithdrawFromCrowdfundRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory WithdrawFromCrowdfundRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'WithdrawFromCrowdfundRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'crowdfundId')
+    ..a<$fixnum.Int64>(2, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(3, _omitFieldNames ? '' : 'transactionPin')
+    ..aOS(4, _omitFieldNames ? '' : 'destinationAccountId')
+    ..aOS(5, _omitFieldNames ? '' : 'destinationAccountType')
     ..hasRequiredFields = false
   ;
 
-  CrowdfundPaginationInfo._() : super();
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  WithdrawFromCrowdfundRequest clone() => WithdrawFromCrowdfundRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  WithdrawFromCrowdfundRequest copyWith(void Function(WithdrawFromCrowdfundRequest) updates) => super.copyWith((message) => updates(message as WithdrawFromCrowdfundRequest)) as WithdrawFromCrowdfundRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static WithdrawFromCrowdfundRequest create() => WithdrawFromCrowdfundRequest._();
+  WithdrawFromCrowdfundRequest createEmptyInstance() => create();
+  static $pb.PbList<WithdrawFromCrowdfundRequest> createRepeated() => $pb.PbList<WithdrawFromCrowdfundRequest>();
+  @$core.pragma('dart2js:noInline')
+  static WithdrawFromCrowdfundRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<WithdrawFromCrowdfundRequest>(create);
+  static WithdrawFromCrowdfundRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get crowdfundId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set crowdfundId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasCrowdfundId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearCrowdfundId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $fixnum.Int64 get amount => $_getI64(1);
+  @$pb.TagNumber(2)
+  set amount($fixnum.Int64 v) { $_setInt64(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasAmount() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearAmount() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get transactionPin => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set transactionPin($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasTransactionPin() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearTransactionPin() => clearField(3);
+
+  /// Destination account for withdrawal - one of the following:
+  /// If destination_account_id is set, funds go to that specific account
+  /// If destination_account_type is set, funds go to user's account of that type
+  /// If neither is set, funds go to user's primary account
+  @$pb.TagNumber(4)
+  $core.String get destinationAccountId => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set destinationAccountId($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasDestinationAccountId() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearDestinationAccountId() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get destinationAccountType => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set destinationAccountType($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasDestinationAccountType() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearDestinationAccountType() => clearField(5);
+}
+
+class WithdrawFromCrowdfundResponse extends $pb.GeneratedMessage {
+  factory WithdrawFromCrowdfundResponse({
+    $core.String? crowdfundId,
+    $fixnum.Int64? amountWithdrawn,
+    $fixnum.Int64? remainingBalance,
+    $core.String? destinationAccountId,
+    $fixnum.Int64? destinationNewBalance,
+    $core.String? message,
+  }) {
+    final $result = create();
+    if (crowdfundId != null) {
+      $result.crowdfundId = crowdfundId;
+    }
+    if (amountWithdrawn != null) {
+      $result.amountWithdrawn = amountWithdrawn;
+    }
+    if (remainingBalance != null) {
+      $result.remainingBalance = remainingBalance;
+    }
+    if (destinationAccountId != null) {
+      $result.destinationAccountId = destinationAccountId;
+    }
+    if (destinationNewBalance != null) {
+      $result.destinationNewBalance = destinationNewBalance;
+    }
+    if (message != null) {
+      $result.message = message;
+    }
+    return $result;
+  }
+  WithdrawFromCrowdfundResponse._() : super();
+  factory WithdrawFromCrowdfundResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory WithdrawFromCrowdfundResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'WithdrawFromCrowdfundResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'crowdfundId')
+    ..a<$fixnum.Int64>(2, _omitFieldNames ? '' : 'amountWithdrawn', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(3, _omitFieldNames ? '' : 'remainingBalance', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(4, _omitFieldNames ? '' : 'destinationAccountId')
+    ..a<$fixnum.Int64>(5, _omitFieldNames ? '' : 'destinationNewBalance', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(6, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  WithdrawFromCrowdfundResponse clone() => WithdrawFromCrowdfundResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  WithdrawFromCrowdfundResponse copyWith(void Function(WithdrawFromCrowdfundResponse) updates) => super.copyWith((message) => updates(message as WithdrawFromCrowdfundResponse)) as WithdrawFromCrowdfundResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static WithdrawFromCrowdfundResponse create() => WithdrawFromCrowdfundResponse._();
+  WithdrawFromCrowdfundResponse createEmptyInstance() => create();
+  static $pb.PbList<WithdrawFromCrowdfundResponse> createRepeated() => $pb.PbList<WithdrawFromCrowdfundResponse>();
+  @$core.pragma('dart2js:noInline')
+  static WithdrawFromCrowdfundResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<WithdrawFromCrowdfundResponse>(create);
+  static WithdrawFromCrowdfundResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get crowdfundId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set crowdfundId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasCrowdfundId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearCrowdfundId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $fixnum.Int64 get amountWithdrawn => $_getI64(1);
+  @$pb.TagNumber(2)
+  set amountWithdrawn($fixnum.Int64 v) { $_setInt64(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasAmountWithdrawn() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearAmountWithdrawn() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $fixnum.Int64 get remainingBalance => $_getI64(2);
+  @$pb.TagNumber(3)
+  set remainingBalance($fixnum.Int64 v) { $_setInt64(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasRemainingBalance() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearRemainingBalance() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get destinationAccountId => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set destinationAccountId($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasDestinationAccountId() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearDestinationAccountId() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $fixnum.Int64 get destinationNewBalance => $_getI64(4);
+  @$pb.TagNumber(5)
+  set destinationNewBalance($fixnum.Int64 v) { $_setInt64(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasDestinationNewBalance() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearDestinationNewBalance() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get message => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set message($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasMessage() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearMessage() => clearField(6);
+}
+
+/// Get My Crowdfunds (Creator's campaigns)
+class GetMyCrowdfundsRequest extends $pb.GeneratedMessage {
+  factory GetMyCrowdfundsRequest({
+    $core.int? page,
+    $core.int? pageSize,
+    $core.String? status,
+  }) {
+    final $result = create();
+    if (page != null) {
+      $result.page = page;
+    }
+    if (pageSize != null) {
+      $result.pageSize = pageSize;
+    }
+    if (status != null) {
+      $result.status = status;
+    }
+    return $result;
+  }
+  GetMyCrowdfundsRequest._() : super();
+  factory GetMyCrowdfundsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetMyCrowdfundsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetMyCrowdfundsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..a<$core.int>(1, _omitFieldNames ? '' : 'page', $pb.PbFieldType.O3)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'pageSize', $pb.PbFieldType.O3)
+    ..aOS(3, _omitFieldNames ? '' : 'status')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetMyCrowdfundsRequest clone() => GetMyCrowdfundsRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetMyCrowdfundsRequest copyWith(void Function(GetMyCrowdfundsRequest) updates) => super.copyWith((message) => updates(message as GetMyCrowdfundsRequest)) as GetMyCrowdfundsRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetMyCrowdfundsRequest create() => GetMyCrowdfundsRequest._();
+  GetMyCrowdfundsRequest createEmptyInstance() => create();
+  static $pb.PbList<GetMyCrowdfundsRequest> createRepeated() => $pb.PbList<GetMyCrowdfundsRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetMyCrowdfundsRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetMyCrowdfundsRequest>(create);
+  static GetMyCrowdfundsRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.int get page => $_getIZ(0);
+  @$pb.TagNumber(1)
+  set page($core.int v) { $_setSignedInt32(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasPage() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearPage() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.int get pageSize => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set pageSize($core.int v) { $_setSignedInt32(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasPageSize() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearPageSize() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get status => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set status($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasStatus() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearStatus() => clearField(3);
+}
+
+class GetMyCrowdfundsResponse extends $pb.GeneratedMessage {
+  factory GetMyCrowdfundsResponse({
+    $core.Iterable<CrowdfundMessage>? crowdfunds,
+    CrowdfundPaginationInfo? pagination,
+  }) {
+    final $result = create();
+    if (crowdfunds != null) {
+      $result.crowdfunds.addAll(crowdfunds);
+    }
+    if (pagination != null) {
+      $result.pagination = pagination;
+    }
+    return $result;
+  }
+  GetMyCrowdfundsResponse._() : super();
+  factory GetMyCrowdfundsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetMyCrowdfundsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetMyCrowdfundsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..pc<CrowdfundMessage>(1, _omitFieldNames ? '' : 'crowdfunds', $pb.PbFieldType.PM, subBuilder: CrowdfundMessage.create)
+    ..aOM<CrowdfundPaginationInfo>(2, _omitFieldNames ? '' : 'pagination', subBuilder: CrowdfundPaginationInfo.create)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetMyCrowdfundsResponse clone() => GetMyCrowdfundsResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetMyCrowdfundsResponse copyWith(void Function(GetMyCrowdfundsResponse) updates) => super.copyWith((message) => updates(message as GetMyCrowdfundsResponse)) as GetMyCrowdfundsResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetMyCrowdfundsResponse create() => GetMyCrowdfundsResponse._();
+  GetMyCrowdfundsResponse createEmptyInstance() => create();
+  static $pb.PbList<GetMyCrowdfundsResponse> createRepeated() => $pb.PbList<GetMyCrowdfundsResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetMyCrowdfundsResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetMyCrowdfundsResponse>(create);
+  static GetMyCrowdfundsResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.List<CrowdfundMessage> get crowdfunds => $_getList(0);
+
+  @$pb.TagNumber(2)
+  CrowdfundPaginationInfo get pagination => $_getN(1);
+  @$pb.TagNumber(2)
+  set pagination(CrowdfundPaginationInfo v) { setField(2, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasPagination() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearPagination() => clearField(2);
+  @$pb.TagNumber(2)
+  CrowdfundPaginationInfo ensurePagination() => $_ensure(1);
+}
+
+/// Get Campaign Wallet Balance
+class GetCampaignWalletBalanceRequest extends $pb.GeneratedMessage {
+  factory GetCampaignWalletBalanceRequest({
+    $core.String? crowdfundId,
+  }) {
+    final $result = create();
+    if (crowdfundId != null) {
+      $result.crowdfundId = crowdfundId;
+    }
+    return $result;
+  }
+  GetCampaignWalletBalanceRequest._() : super();
+  factory GetCampaignWalletBalanceRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetCampaignWalletBalanceRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetCampaignWalletBalanceRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'crowdfundId')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetCampaignWalletBalanceRequest clone() => GetCampaignWalletBalanceRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetCampaignWalletBalanceRequest copyWith(void Function(GetCampaignWalletBalanceRequest) updates) => super.copyWith((message) => updates(message as GetCampaignWalletBalanceRequest)) as GetCampaignWalletBalanceRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetCampaignWalletBalanceRequest create() => GetCampaignWalletBalanceRequest._();
+  GetCampaignWalletBalanceRequest createEmptyInstance() => create();
+  static $pb.PbList<GetCampaignWalletBalanceRequest> createRepeated() => $pb.PbList<GetCampaignWalletBalanceRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetCampaignWalletBalanceRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetCampaignWalletBalanceRequest>(create);
+  static GetCampaignWalletBalanceRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get crowdfundId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set crowdfundId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasCrowdfundId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearCrowdfundId() => clearField(1);
+}
+
+class GetCampaignWalletBalanceResponse extends $pb.GeneratedMessage {
+  factory GetCampaignWalletBalanceResponse({
+    $core.String? crowdfundId,
+    $core.String? campaignWalletId,
+    $fixnum.Int64? balance,
+    $fixnum.Int64? availableBalance,
+    $core.String? currency,
+  }) {
+    final $result = create();
+    if (crowdfundId != null) {
+      $result.crowdfundId = crowdfundId;
+    }
+    if (campaignWalletId != null) {
+      $result.campaignWalletId = campaignWalletId;
+    }
+    if (balance != null) {
+      $result.balance = balance;
+    }
+    if (availableBalance != null) {
+      $result.availableBalance = availableBalance;
+    }
+    if (currency != null) {
+      $result.currency = currency;
+    }
+    return $result;
+  }
+  GetCampaignWalletBalanceResponse._() : super();
+  factory GetCampaignWalletBalanceResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetCampaignWalletBalanceResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetCampaignWalletBalanceResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'crowdfundId')
+    ..aOS(2, _omitFieldNames ? '' : 'campaignWalletId')
+    ..a<$fixnum.Int64>(3, _omitFieldNames ? '' : 'balance', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(4, _omitFieldNames ? '' : 'availableBalance', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(5, _omitFieldNames ? '' : 'currency')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetCampaignWalletBalanceResponse clone() => GetCampaignWalletBalanceResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetCampaignWalletBalanceResponse copyWith(void Function(GetCampaignWalletBalanceResponse) updates) => super.copyWith((message) => updates(message as GetCampaignWalletBalanceResponse)) as GetCampaignWalletBalanceResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetCampaignWalletBalanceResponse create() => GetCampaignWalletBalanceResponse._();
+  GetCampaignWalletBalanceResponse createEmptyInstance() => create();
+  static $pb.PbList<GetCampaignWalletBalanceResponse> createRepeated() => $pb.PbList<GetCampaignWalletBalanceResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetCampaignWalletBalanceResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetCampaignWalletBalanceResponse>(create);
+  static GetCampaignWalletBalanceResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get crowdfundId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set crowdfundId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasCrowdfundId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearCrowdfundId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get campaignWalletId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set campaignWalletId($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasCampaignWalletId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearCampaignWalletId() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $fixnum.Int64 get balance => $_getI64(2);
+  @$pb.TagNumber(3)
+  set balance($fixnum.Int64 v) { $_setInt64(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasBalance() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearBalance() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $fixnum.Int64 get availableBalance => $_getI64(3);
+  @$pb.TagNumber(4)
+  set availableBalance($fixnum.Int64 v) { $_setInt64(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasAvailableBalance() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearAvailableBalance() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get currency => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set currency($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasCurrency() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearCurrency() => clearField(5);
+}
+
+class CrowdfundPaginationInfo extends $pb.GeneratedMessage {
   factory CrowdfundPaginationInfo({
     $core.int? currentPage,
     $core.int? totalPages,
@@ -3041,29 +3668,41 @@ class CrowdfundPaginationInfo extends $pb.GeneratedMessage {
     $core.bool? hasNext,
     $core.bool? hasPrev,
   }) {
-    final _result = create();
+    final $result = create();
     if (currentPage != null) {
-      _result.currentPage = currentPage;
+      $result.currentPage = currentPage;
     }
     if (totalPages != null) {
-      _result.totalPages = totalPages;
+      $result.totalPages = totalPages;
     }
     if (totalItems != null) {
-      _result.totalItems = totalItems;
+      $result.totalItems = totalItems;
     }
     if (itemsPerPage != null) {
-      _result.itemsPerPage = itemsPerPage;
+      $result.itemsPerPage = itemsPerPage;
     }
     if (hasNext != null) {
-      _result.hasNext = hasNext;
+      $result.hasNext = hasNext;
     }
     if (hasPrev != null) {
-      _result.hasPrev = hasPrev;
+      $result.hasPrev = hasPrev;
     }
-    return _result;
+    return $result;
   }
+  CrowdfundPaginationInfo._() : super();
   factory CrowdfundPaginationInfo.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CrowdfundPaginationInfo.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CrowdfundPaginationInfo', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..a<$core.int>(1, _omitFieldNames ? '' : 'currentPage', $pb.PbFieldType.O3)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'totalPages', $pb.PbFieldType.O3)
+    ..a<$core.int>(3, _omitFieldNames ? '' : 'totalItems', $pb.PbFieldType.O3)
+    ..a<$core.int>(4, _omitFieldNames ? '' : 'itemsPerPage', $pb.PbFieldType.O3)
+    ..aOB(5, _omitFieldNames ? '' : 'hasNext')
+    ..aOB(6, _omitFieldNames ? '' : 'hasPrev')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -3073,8 +3712,10 @@ class CrowdfundPaginationInfo extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CrowdfundPaginationInfo copyWith(void Function(CrowdfundPaginationInfo) updates) => super.copyWith((message) => updates(message as CrowdfundPaginationInfo)) as CrowdfundPaginationInfo; // ignore: deprecated_member_use
+  CrowdfundPaginationInfo copyWith(void Function(CrowdfundPaginationInfo) updates) => super.copyWith((message) => updates(message as CrowdfundPaginationInfo)) as CrowdfundPaginationInfo;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static CrowdfundPaginationInfo create() => CrowdfundPaginationInfo._();
   CrowdfundPaginationInfo createEmptyInstance() => create();
@@ -3139,17 +3780,6 @@ class CrowdfundPaginationInfo extends $pb.GeneratedMessage {
 }
 
 class DonationPaginationInfo extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'DonationPaginationInfo', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..a<$core.int>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currentPage', $pb.PbFieldType.O3)
-    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalPages', $pb.PbFieldType.O3)
-    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalItems', $pb.PbFieldType.O3)
-    ..a<$core.int>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'itemsPerPage', $pb.PbFieldType.O3)
-    ..aOB(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'hasNext')
-    ..aOB(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'hasPrev')
-    ..hasRequiredFields = false
-  ;
-
-  DonationPaginationInfo._() : super();
   factory DonationPaginationInfo({
     $core.int? currentPage,
     $core.int? totalPages,
@@ -3158,29 +3788,41 @@ class DonationPaginationInfo extends $pb.GeneratedMessage {
     $core.bool? hasNext,
     $core.bool? hasPrev,
   }) {
-    final _result = create();
+    final $result = create();
     if (currentPage != null) {
-      _result.currentPage = currentPage;
+      $result.currentPage = currentPage;
     }
     if (totalPages != null) {
-      _result.totalPages = totalPages;
+      $result.totalPages = totalPages;
     }
     if (totalItems != null) {
-      _result.totalItems = totalItems;
+      $result.totalItems = totalItems;
     }
     if (itemsPerPage != null) {
-      _result.itemsPerPage = itemsPerPage;
+      $result.itemsPerPage = itemsPerPage;
     }
     if (hasNext != null) {
-      _result.hasNext = hasNext;
+      $result.hasNext = hasNext;
     }
     if (hasPrev != null) {
-      _result.hasPrev = hasPrev;
+      $result.hasPrev = hasPrev;
     }
-    return _result;
+    return $result;
   }
+  DonationPaginationInfo._() : super();
   factory DonationPaginationInfo.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory DonationPaginationInfo.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'DonationPaginationInfo', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..a<$core.int>(1, _omitFieldNames ? '' : 'currentPage', $pb.PbFieldType.O3)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'totalPages', $pb.PbFieldType.O3)
+    ..a<$core.int>(3, _omitFieldNames ? '' : 'totalItems', $pb.PbFieldType.O3)
+    ..a<$core.int>(4, _omitFieldNames ? '' : 'itemsPerPage', $pb.PbFieldType.O3)
+    ..aOB(5, _omitFieldNames ? '' : 'hasNext')
+    ..aOB(6, _omitFieldNames ? '' : 'hasPrev')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -3190,8 +3832,10 @@ class DonationPaginationInfo extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  DonationPaginationInfo copyWith(void Function(DonationPaginationInfo) updates) => super.copyWith((message) => updates(message as DonationPaginationInfo)) as DonationPaginationInfo; // ignore: deprecated_member_use
+  DonationPaginationInfo copyWith(void Function(DonationPaginationInfo) updates) => super.copyWith((message) => updates(message as DonationPaginationInfo)) as DonationPaginationInfo;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static DonationPaginationInfo create() => DonationPaginationInfo._();
   DonationPaginationInfo createEmptyInstance() => create();
@@ -3256,17 +3900,6 @@ class DonationPaginationInfo extends $pb.GeneratedMessage {
 }
 
 class CrowdfundReceiptPaginationInfo extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CrowdfundReceiptPaginationInfo', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..a<$core.int>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currentPage', $pb.PbFieldType.O3)
-    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalPages', $pb.PbFieldType.O3)
-    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalItems', $pb.PbFieldType.O3)
-    ..a<$core.int>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'itemsPerPage', $pb.PbFieldType.O3)
-    ..aOB(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'hasNext')
-    ..aOB(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'hasPrev')
-    ..hasRequiredFields = false
-  ;
-
-  CrowdfundReceiptPaginationInfo._() : super();
   factory CrowdfundReceiptPaginationInfo({
     $core.int? currentPage,
     $core.int? totalPages,
@@ -3275,29 +3908,41 @@ class CrowdfundReceiptPaginationInfo extends $pb.GeneratedMessage {
     $core.bool? hasNext,
     $core.bool? hasPrev,
   }) {
-    final _result = create();
+    final $result = create();
     if (currentPage != null) {
-      _result.currentPage = currentPage;
+      $result.currentPage = currentPage;
     }
     if (totalPages != null) {
-      _result.totalPages = totalPages;
+      $result.totalPages = totalPages;
     }
     if (totalItems != null) {
-      _result.totalItems = totalItems;
+      $result.totalItems = totalItems;
     }
     if (itemsPerPage != null) {
-      _result.itemsPerPage = itemsPerPage;
+      $result.itemsPerPage = itemsPerPage;
     }
     if (hasNext != null) {
-      _result.hasNext = hasNext;
+      $result.hasNext = hasNext;
     }
     if (hasPrev != null) {
-      _result.hasPrev = hasPrev;
+      $result.hasPrev = hasPrev;
     }
-    return _result;
+    return $result;
   }
+  CrowdfundReceiptPaginationInfo._() : super();
   factory CrowdfundReceiptPaginationInfo.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CrowdfundReceiptPaginationInfo.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CrowdfundReceiptPaginationInfo', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..a<$core.int>(1, _omitFieldNames ? '' : 'currentPage', $pb.PbFieldType.O3)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'totalPages', $pb.PbFieldType.O3)
+    ..a<$core.int>(3, _omitFieldNames ? '' : 'totalItems', $pb.PbFieldType.O3)
+    ..a<$core.int>(4, _omitFieldNames ? '' : 'itemsPerPage', $pb.PbFieldType.O3)
+    ..aOB(5, _omitFieldNames ? '' : 'hasNext')
+    ..aOB(6, _omitFieldNames ? '' : 'hasPrev')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -3307,8 +3952,10 @@ class CrowdfundReceiptPaginationInfo extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CrowdfundReceiptPaginationInfo copyWith(void Function(CrowdfundReceiptPaginationInfo) updates) => super.copyWith((message) => updates(message as CrowdfundReceiptPaginationInfo)) as CrowdfundReceiptPaginationInfo; // ignore: deprecated_member_use
+  CrowdfundReceiptPaginationInfo copyWith(void Function(CrowdfundReceiptPaginationInfo) updates) => super.copyWith((message) => updates(message as CrowdfundReceiptPaginationInfo)) as CrowdfundReceiptPaginationInfo;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static CrowdfundReceiptPaginationInfo create() => CrowdfundReceiptPaginationInfo._();
   CrowdfundReceiptPaginationInfo createEmptyInstance() => create();
@@ -3373,26 +4020,6 @@ class CrowdfundReceiptPaginationInfo extends $pb.GeneratedMessage {
 }
 
 class NotificationChannelMessage extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'NotificationChannelMessage', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'crowdfundId')
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'creatorUserId')
-    ..e<NotificationChannelType>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'channelType', $pb.PbFieldType.OE, defaultOrMaker: NotificationChannelType.NOTIFICATION_CHANNEL_TYPE_UNSPECIFIED, valueOf: NotificationChannelType.valueOf, enumValues: NotificationChannelType.values)
-    ..e<NotificationChannelStatus>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: NotificationChannelStatus.NOTIFICATION_CHANNEL_STATUS_UNSPECIFIED, valueOf: NotificationChannelStatus.valueOf, enumValues: NotificationChannelStatus.values)
-    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'channelName')
-    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'channelUsername')
-    ..pc<NotificationEventType>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'enabledEvents', $pb.PbFieldType.KE, valueOf: NotificationEventType.valueOf, enumValues: NotificationEventType.values, defaultEnumValue: NotificationEventType.NOTIFICATION_EVENT_TYPE_UNSPECIFIED)
-    ..aOM<NotificationPreferencesMessage>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'preferences', subBuilder: NotificationPreferencesMessage.create)
-    ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastNotificationAt')
-    ..a<$core.int>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'notificationCount', $pb.PbFieldType.O3)
-    ..a<$core.int>(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'failureCount', $pb.PbFieldType.O3)
-    ..aOS(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastError')
-    ..aOS(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt')
-    ..aOS(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt')
-    ..hasRequiredFields = false
-  ;
-
-  NotificationChannelMessage._() : super();
   factory NotificationChannelMessage({
     $core.String? id,
     $core.String? crowdfundId,
@@ -3410,56 +4037,77 @@ class NotificationChannelMessage extends $pb.GeneratedMessage {
     $core.String? createdAt,
     $core.String? updatedAt,
   }) {
-    final _result = create();
+    final $result = create();
     if (id != null) {
-      _result.id = id;
+      $result.id = id;
     }
     if (crowdfundId != null) {
-      _result.crowdfundId = crowdfundId;
+      $result.crowdfundId = crowdfundId;
     }
     if (creatorUserId != null) {
-      _result.creatorUserId = creatorUserId;
+      $result.creatorUserId = creatorUserId;
     }
     if (channelType != null) {
-      _result.channelType = channelType;
+      $result.channelType = channelType;
     }
     if (status != null) {
-      _result.status = status;
+      $result.status = status;
     }
     if (channelName != null) {
-      _result.channelName = channelName;
+      $result.channelName = channelName;
     }
     if (channelUsername != null) {
-      _result.channelUsername = channelUsername;
+      $result.channelUsername = channelUsername;
     }
     if (enabledEvents != null) {
-      _result.enabledEvents.addAll(enabledEvents);
+      $result.enabledEvents.addAll(enabledEvents);
     }
     if (preferences != null) {
-      _result.preferences = preferences;
+      $result.preferences = preferences;
     }
     if (lastNotificationAt != null) {
-      _result.lastNotificationAt = lastNotificationAt;
+      $result.lastNotificationAt = lastNotificationAt;
     }
     if (notificationCount != null) {
-      _result.notificationCount = notificationCount;
+      $result.notificationCount = notificationCount;
     }
     if (failureCount != null) {
-      _result.failureCount = failureCount;
+      $result.failureCount = failureCount;
     }
     if (lastError != null) {
-      _result.lastError = lastError;
+      $result.lastError = lastError;
     }
     if (createdAt != null) {
-      _result.createdAt = createdAt;
+      $result.createdAt = createdAt;
     }
     if (updatedAt != null) {
-      _result.updatedAt = updatedAt;
+      $result.updatedAt = updatedAt;
     }
-    return _result;
+    return $result;
   }
+  NotificationChannelMessage._() : super();
   factory NotificationChannelMessage.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory NotificationChannelMessage.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'NotificationChannelMessage', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'id')
+    ..aOS(2, _omitFieldNames ? '' : 'crowdfundId')
+    ..aOS(3, _omitFieldNames ? '' : 'creatorUserId')
+    ..e<NotificationChannelType>(4, _omitFieldNames ? '' : 'channelType', $pb.PbFieldType.OE, defaultOrMaker: NotificationChannelType.NOTIFICATION_CHANNEL_TYPE_UNSPECIFIED, valueOf: NotificationChannelType.valueOf, enumValues: NotificationChannelType.values)
+    ..e<NotificationChannelStatus>(5, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: NotificationChannelStatus.NOTIFICATION_CHANNEL_STATUS_UNSPECIFIED, valueOf: NotificationChannelStatus.valueOf, enumValues: NotificationChannelStatus.values)
+    ..aOS(6, _omitFieldNames ? '' : 'channelName')
+    ..aOS(7, _omitFieldNames ? '' : 'channelUsername')
+    ..pc<NotificationEventType>(8, _omitFieldNames ? '' : 'enabledEvents', $pb.PbFieldType.KE, valueOf: NotificationEventType.valueOf, enumValues: NotificationEventType.values, defaultEnumValue: NotificationEventType.NOTIFICATION_EVENT_TYPE_UNSPECIFIED)
+    ..aOM<NotificationPreferencesMessage>(9, _omitFieldNames ? '' : 'preferences', subBuilder: NotificationPreferencesMessage.create)
+    ..aOS(10, _omitFieldNames ? '' : 'lastNotificationAt')
+    ..a<$core.int>(11, _omitFieldNames ? '' : 'notificationCount', $pb.PbFieldType.O3)
+    ..a<$core.int>(12, _omitFieldNames ? '' : 'failureCount', $pb.PbFieldType.O3)
+    ..aOS(13, _omitFieldNames ? '' : 'lastError')
+    ..aOS(14, _omitFieldNames ? '' : 'createdAt')
+    ..aOS(15, _omitFieldNames ? '' : 'updatedAt')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -3469,8 +4117,10 @@ class NotificationChannelMessage extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  NotificationChannelMessage copyWith(void Function(NotificationChannelMessage) updates) => super.copyWith((message) => updates(message as NotificationChannelMessage)) as NotificationChannelMessage; // ignore: deprecated_member_use
+  NotificationChannelMessage copyWith(void Function(NotificationChannelMessage) updates) => super.copyWith((message) => updates(message as NotificationChannelMessage)) as NotificationChannelMessage;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static NotificationChannelMessage create() => NotificationChannelMessage._();
   NotificationChannelMessage createEmptyInstance() => create();
@@ -3612,23 +4262,6 @@ class NotificationChannelMessage extends $pb.GeneratedMessage {
 }
 
 class NotificationPreferencesMessage extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'NotificationPreferencesMessage', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'includeDonorName')
-    ..aOB(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'includeAmount')
-    ..aOB(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'includeMessage')
-    ..aOB(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'includeProgress')
-    ..aOB(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'includeLeaderboard')
-    ..a<$core.double>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'largeDonationThreshold', $pb.PbFieldType.OD)
-    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'messageTemplate')
-    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'language')
-    ..aOB(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'quietHoursEnabled')
-    ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'quietHoursStart')
-    ..aOS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'quietHoursEnd')
-    ..aOS(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'timezone')
-    ..hasRequiredFields = false
-  ;
-
-  NotificationPreferencesMessage._() : super();
   factory NotificationPreferencesMessage({
     $core.bool? includeDonorName,
     $core.bool? includeAmount,
@@ -3643,47 +4276,65 @@ class NotificationPreferencesMessage extends $pb.GeneratedMessage {
     $core.String? quietHoursEnd,
     $core.String? timezone,
   }) {
-    final _result = create();
+    final $result = create();
     if (includeDonorName != null) {
-      _result.includeDonorName = includeDonorName;
+      $result.includeDonorName = includeDonorName;
     }
     if (includeAmount != null) {
-      _result.includeAmount = includeAmount;
+      $result.includeAmount = includeAmount;
     }
     if (includeMessage != null) {
-      _result.includeMessage = includeMessage;
+      $result.includeMessage = includeMessage;
     }
     if (includeProgress != null) {
-      _result.includeProgress = includeProgress;
+      $result.includeProgress = includeProgress;
     }
     if (includeLeaderboard != null) {
-      _result.includeLeaderboard = includeLeaderboard;
+      $result.includeLeaderboard = includeLeaderboard;
     }
     if (largeDonationThreshold != null) {
-      _result.largeDonationThreshold = largeDonationThreshold;
+      $result.largeDonationThreshold = largeDonationThreshold;
     }
     if (messageTemplate != null) {
-      _result.messageTemplate = messageTemplate;
+      $result.messageTemplate = messageTemplate;
     }
     if (language != null) {
-      _result.language = language;
+      $result.language = language;
     }
     if (quietHoursEnabled != null) {
-      _result.quietHoursEnabled = quietHoursEnabled;
+      $result.quietHoursEnabled = quietHoursEnabled;
     }
     if (quietHoursStart != null) {
-      _result.quietHoursStart = quietHoursStart;
+      $result.quietHoursStart = quietHoursStart;
     }
     if (quietHoursEnd != null) {
-      _result.quietHoursEnd = quietHoursEnd;
+      $result.quietHoursEnd = quietHoursEnd;
     }
     if (timezone != null) {
-      _result.timezone = timezone;
+      $result.timezone = timezone;
     }
-    return _result;
+    return $result;
   }
+  NotificationPreferencesMessage._() : super();
   factory NotificationPreferencesMessage.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory NotificationPreferencesMessage.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'NotificationPreferencesMessage', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'includeDonorName')
+    ..aOB(2, _omitFieldNames ? '' : 'includeAmount')
+    ..aOB(3, _omitFieldNames ? '' : 'includeMessage')
+    ..aOB(4, _omitFieldNames ? '' : 'includeProgress')
+    ..aOB(5, _omitFieldNames ? '' : 'includeLeaderboard')
+    ..a<$core.double>(6, _omitFieldNames ? '' : 'largeDonationThreshold', $pb.PbFieldType.OD)
+    ..aOS(7, _omitFieldNames ? '' : 'messageTemplate')
+    ..aOS(8, _omitFieldNames ? '' : 'language')
+    ..aOB(9, _omitFieldNames ? '' : 'quietHoursEnabled')
+    ..aOS(10, _omitFieldNames ? '' : 'quietHoursStart')
+    ..aOS(11, _omitFieldNames ? '' : 'quietHoursEnd')
+    ..aOS(12, _omitFieldNames ? '' : 'timezone')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -3693,8 +4344,10 @@ class NotificationPreferencesMessage extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  NotificationPreferencesMessage copyWith(void Function(NotificationPreferencesMessage) updates) => super.copyWith((message) => updates(message as NotificationPreferencesMessage)) as NotificationPreferencesMessage; // ignore: deprecated_member_use
+  NotificationPreferencesMessage copyWith(void Function(NotificationPreferencesMessage) updates) => super.copyWith((message) => updates(message as NotificationPreferencesMessage)) as NotificationPreferencesMessage;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static NotificationPreferencesMessage create() => NotificationPreferencesMessage._();
   NotificationPreferencesMessage createEmptyInstance() => create();
@@ -3813,23 +4466,6 @@ class NotificationPreferencesMessage extends $pb.GeneratedMessage {
 }
 
 class NotificationDeliveryMessage extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'NotificationDeliveryMessage', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'channelId')
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'crowdfundId')
-    ..e<NotificationEventType>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'eventType', $pb.PbFieldType.OE, defaultOrMaker: NotificationEventType.NOTIFICATION_EVENT_TYPE_UNSPECIFIED, valueOf: NotificationEventType.valueOf, enumValues: NotificationEventType.values)
-    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'eventData')
-    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'messageContent')
-    ..aOB(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
-    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'errorMessage')
-    ..a<$core.int>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'retryCount', $pb.PbFieldType.O3)
-    ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'platformMessageId')
-    ..aOS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt')
-    ..aOS(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'deliveredAt')
-    ..hasRequiredFields = false
-  ;
-
-  NotificationDeliveryMessage._() : super();
   factory NotificationDeliveryMessage({
     $core.String? id,
     $core.String? channelId,
@@ -3844,47 +4480,65 @@ class NotificationDeliveryMessage extends $pb.GeneratedMessage {
     $core.String? createdAt,
     $core.String? deliveredAt,
   }) {
-    final _result = create();
+    final $result = create();
     if (id != null) {
-      _result.id = id;
+      $result.id = id;
     }
     if (channelId != null) {
-      _result.channelId = channelId;
+      $result.channelId = channelId;
     }
     if (crowdfundId != null) {
-      _result.crowdfundId = crowdfundId;
+      $result.crowdfundId = crowdfundId;
     }
     if (eventType != null) {
-      _result.eventType = eventType;
+      $result.eventType = eventType;
     }
     if (eventData != null) {
-      _result.eventData = eventData;
+      $result.eventData = eventData;
     }
     if (messageContent != null) {
-      _result.messageContent = messageContent;
+      $result.messageContent = messageContent;
     }
     if (success != null) {
-      _result.success = success;
+      $result.success = success;
     }
     if (errorMessage != null) {
-      _result.errorMessage = errorMessage;
+      $result.errorMessage = errorMessage;
     }
     if (retryCount != null) {
-      _result.retryCount = retryCount;
+      $result.retryCount = retryCount;
     }
     if (platformMessageId != null) {
-      _result.platformMessageId = platformMessageId;
+      $result.platformMessageId = platformMessageId;
     }
     if (createdAt != null) {
-      _result.createdAt = createdAt;
+      $result.createdAt = createdAt;
     }
     if (deliveredAt != null) {
-      _result.deliveredAt = deliveredAt;
+      $result.deliveredAt = deliveredAt;
     }
-    return _result;
+    return $result;
   }
+  NotificationDeliveryMessage._() : super();
   factory NotificationDeliveryMessage.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory NotificationDeliveryMessage.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'NotificationDeliveryMessage', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'id')
+    ..aOS(2, _omitFieldNames ? '' : 'channelId')
+    ..aOS(3, _omitFieldNames ? '' : 'crowdfundId')
+    ..e<NotificationEventType>(4, _omitFieldNames ? '' : 'eventType', $pb.PbFieldType.OE, defaultOrMaker: NotificationEventType.NOTIFICATION_EVENT_TYPE_UNSPECIFIED, valueOf: NotificationEventType.valueOf, enumValues: NotificationEventType.values)
+    ..aOS(5, _omitFieldNames ? '' : 'eventData')
+    ..aOS(6, _omitFieldNames ? '' : 'messageContent')
+    ..aOB(7, _omitFieldNames ? '' : 'success')
+    ..aOS(8, _omitFieldNames ? '' : 'errorMessage')
+    ..a<$core.int>(9, _omitFieldNames ? '' : 'retryCount', $pb.PbFieldType.O3)
+    ..aOS(10, _omitFieldNames ? '' : 'platformMessageId')
+    ..aOS(11, _omitFieldNames ? '' : 'createdAt')
+    ..aOS(12, _omitFieldNames ? '' : 'deliveredAt')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -3894,8 +4548,10 @@ class NotificationDeliveryMessage extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  NotificationDeliveryMessage copyWith(void Function(NotificationDeliveryMessage) updates) => super.copyWith((message) => updates(message as NotificationDeliveryMessage)) as NotificationDeliveryMessage; // ignore: deprecated_member_use
+  NotificationDeliveryMessage copyWith(void Function(NotificationDeliveryMessage) updates) => super.copyWith((message) => updates(message as NotificationDeliveryMessage)) as NotificationDeliveryMessage;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static NotificationDeliveryMessage create() => NotificationDeliveryMessage._();
   NotificationDeliveryMessage createEmptyInstance() => create();
@@ -4014,28 +4670,29 @@ class NotificationDeliveryMessage extends $pb.GeneratedMessage {
 }
 
 class TelegramConnectionDataMessage extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'TelegramConnectionDataMessage', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'chatId')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'verificationCode')
-    ..hasRequiredFields = false
-  ;
-
-  TelegramConnectionDataMessage._() : super();
   factory TelegramConnectionDataMessage({
     $core.String? chatId,
     $core.String? verificationCode,
   }) {
-    final _result = create();
+    final $result = create();
     if (chatId != null) {
-      _result.chatId = chatId;
+      $result.chatId = chatId;
     }
     if (verificationCode != null) {
-      _result.verificationCode = verificationCode;
+      $result.verificationCode = verificationCode;
     }
-    return _result;
+    return $result;
   }
+  TelegramConnectionDataMessage._() : super();
   factory TelegramConnectionDataMessage.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory TelegramConnectionDataMessage.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'TelegramConnectionDataMessage', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'chatId')
+    ..aOS(2, _omitFieldNames ? '' : 'verificationCode')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -4045,8 +4702,10 @@ class TelegramConnectionDataMessage extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  TelegramConnectionDataMessage copyWith(void Function(TelegramConnectionDataMessage) updates) => super.copyWith((message) => updates(message as TelegramConnectionDataMessage)) as TelegramConnectionDataMessage; // ignore: deprecated_member_use
+  TelegramConnectionDataMessage copyWith(void Function(TelegramConnectionDataMessage) updates) => super.copyWith((message) => updates(message as TelegramConnectionDataMessage)) as TelegramConnectionDataMessage;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static TelegramConnectionDataMessage create() => TelegramConnectionDataMessage._();
   TelegramConnectionDataMessage createEmptyInstance() => create();
@@ -4075,33 +4734,34 @@ class TelegramConnectionDataMessage extends $pb.GeneratedMessage {
 }
 
 class DiscordConnectionDataMessage extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'DiscordConnectionDataMessage', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'webhookUrl')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'serverName')
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'channelName')
-    ..hasRequiredFields = false
-  ;
-
-  DiscordConnectionDataMessage._() : super();
   factory DiscordConnectionDataMessage({
     $core.String? webhookUrl,
     $core.String? serverName,
     $core.String? channelName,
   }) {
-    final _result = create();
+    final $result = create();
     if (webhookUrl != null) {
-      _result.webhookUrl = webhookUrl;
+      $result.webhookUrl = webhookUrl;
     }
     if (serverName != null) {
-      _result.serverName = serverName;
+      $result.serverName = serverName;
     }
     if (channelName != null) {
-      _result.channelName = channelName;
+      $result.channelName = channelName;
     }
-    return _result;
+    return $result;
   }
+  DiscordConnectionDataMessage._() : super();
   factory DiscordConnectionDataMessage.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory DiscordConnectionDataMessage.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'DiscordConnectionDataMessage', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'webhookUrl')
+    ..aOS(2, _omitFieldNames ? '' : 'serverName')
+    ..aOS(3, _omitFieldNames ? '' : 'channelName')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -4111,8 +4771,10 @@ class DiscordConnectionDataMessage extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  DiscordConnectionDataMessage copyWith(void Function(DiscordConnectionDataMessage) updates) => super.copyWith((message) => updates(message as DiscordConnectionDataMessage)) as DiscordConnectionDataMessage; // ignore: deprecated_member_use
+  DiscordConnectionDataMessage copyWith(void Function(DiscordConnectionDataMessage) updates) => super.copyWith((message) => updates(message as DiscordConnectionDataMessage)) as DiscordConnectionDataMessage;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static DiscordConnectionDataMessage create() => DiscordConnectionDataMessage._();
   DiscordConnectionDataMessage createEmptyInstance() => create();
@@ -4150,33 +4812,34 @@ class DiscordConnectionDataMessage extends $pb.GeneratedMessage {
 }
 
 class WhatsAppBusinessConnectionDataMessage extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'WhatsAppBusinessConnectionDataMessage', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'phoneNumberId')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accessToken')
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recipientId')
-    ..hasRequiredFields = false
-  ;
-
-  WhatsAppBusinessConnectionDataMessage._() : super();
   factory WhatsAppBusinessConnectionDataMessage({
     $core.String? phoneNumberId,
     $core.String? accessToken,
     $core.String? recipientId,
   }) {
-    final _result = create();
+    final $result = create();
     if (phoneNumberId != null) {
-      _result.phoneNumberId = phoneNumberId;
+      $result.phoneNumberId = phoneNumberId;
     }
     if (accessToken != null) {
-      _result.accessToken = accessToken;
+      $result.accessToken = accessToken;
     }
     if (recipientId != null) {
-      _result.recipientId = recipientId;
+      $result.recipientId = recipientId;
     }
-    return _result;
+    return $result;
   }
+  WhatsAppBusinessConnectionDataMessage._() : super();
   factory WhatsAppBusinessConnectionDataMessage.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory WhatsAppBusinessConnectionDataMessage.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'WhatsAppBusinessConnectionDataMessage', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'phoneNumberId')
+    ..aOS(2, _omitFieldNames ? '' : 'accessToken')
+    ..aOS(3, _omitFieldNames ? '' : 'recipientId')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -4186,8 +4849,10 @@ class WhatsAppBusinessConnectionDataMessage extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  WhatsAppBusinessConnectionDataMessage copyWith(void Function(WhatsAppBusinessConnectionDataMessage) updates) => super.copyWith((message) => updates(message as WhatsAppBusinessConnectionDataMessage)) as WhatsAppBusinessConnectionDataMessage; // ignore: deprecated_member_use
+  WhatsAppBusinessConnectionDataMessage copyWith(void Function(WhatsAppBusinessConnectionDataMessage) updates) => super.copyWith((message) => updates(message as WhatsAppBusinessConnectionDataMessage)) as WhatsAppBusinessConnectionDataMessage;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static WhatsAppBusinessConnectionDataMessage create() => WhatsAppBusinessConnectionDataMessage._();
   WhatsAppBusinessConnectionDataMessage createEmptyInstance() => create();
@@ -4225,33 +4890,34 @@ class WhatsAppBusinessConnectionDataMessage extends $pb.GeneratedMessage {
 }
 
 class SlackConnectionDataMessage extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'SlackConnectionDataMessage', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'webhookUrl')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'workspaceName')
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'channelName')
-    ..hasRequiredFields = false
-  ;
-
-  SlackConnectionDataMessage._() : super();
   factory SlackConnectionDataMessage({
     $core.String? webhookUrl,
     $core.String? workspaceName,
     $core.String? channelName,
   }) {
-    final _result = create();
+    final $result = create();
     if (webhookUrl != null) {
-      _result.webhookUrl = webhookUrl;
+      $result.webhookUrl = webhookUrl;
     }
     if (workspaceName != null) {
-      _result.workspaceName = workspaceName;
+      $result.workspaceName = workspaceName;
     }
     if (channelName != null) {
-      _result.channelName = channelName;
+      $result.channelName = channelName;
     }
-    return _result;
+    return $result;
   }
+  SlackConnectionDataMessage._() : super();
   factory SlackConnectionDataMessage.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory SlackConnectionDataMessage.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SlackConnectionDataMessage', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'webhookUrl')
+    ..aOS(2, _omitFieldNames ? '' : 'workspaceName')
+    ..aOS(3, _omitFieldNames ? '' : 'channelName')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -4261,8 +4927,10 @@ class SlackConnectionDataMessage extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  SlackConnectionDataMessage copyWith(void Function(SlackConnectionDataMessage) updates) => super.copyWith((message) => updates(message as SlackConnectionDataMessage)) as SlackConnectionDataMessage; // ignore: deprecated_member_use
+  SlackConnectionDataMessage copyWith(void Function(SlackConnectionDataMessage) updates) => super.copyWith((message) => updates(message as SlackConnectionDataMessage)) as SlackConnectionDataMessage;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static SlackConnectionDataMessage create() => SlackConnectionDataMessage._();
   SlackConnectionDataMessage createEmptyInstance() => create();
@@ -4308,28 +4976,6 @@ enum ConnectNotificationChannelRequest_ConnectionData {
 }
 
 class ConnectNotificationChannelRequest extends $pb.GeneratedMessage {
-  static const $core.Map<$core.int, ConnectNotificationChannelRequest_ConnectionData> _ConnectNotificationChannelRequest_ConnectionDataByTag = {
-    4 : ConnectNotificationChannelRequest_ConnectionData.telegram,
-    5 : ConnectNotificationChannelRequest_ConnectionData.discord,
-    6 : ConnectNotificationChannelRequest_ConnectionData.whatsappBusiness,
-    7 : ConnectNotificationChannelRequest_ConnectionData.slack,
-    0 : ConnectNotificationChannelRequest_ConnectionData.notSet
-  };
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ConnectNotificationChannelRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..oo(0, [4, 5, 6, 7])
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'crowdfundId')
-    ..e<NotificationChannelType>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'channelType', $pb.PbFieldType.OE, defaultOrMaker: NotificationChannelType.NOTIFICATION_CHANNEL_TYPE_UNSPECIFIED, valueOf: NotificationChannelType.valueOf, enumValues: NotificationChannelType.values)
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'channelName')
-    ..aOM<TelegramConnectionDataMessage>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'telegram', subBuilder: TelegramConnectionDataMessage.create)
-    ..aOM<DiscordConnectionDataMessage>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'discord', subBuilder: DiscordConnectionDataMessage.create)
-    ..aOM<WhatsAppBusinessConnectionDataMessage>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'whatsappBusiness', subBuilder: WhatsAppBusinessConnectionDataMessage.create)
-    ..aOM<SlackConnectionDataMessage>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'slack', subBuilder: SlackConnectionDataMessage.create)
-    ..pc<NotificationEventType>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'enabledEvents', $pb.PbFieldType.KE, valueOf: NotificationEventType.valueOf, enumValues: NotificationEventType.values, defaultEnumValue: NotificationEventType.NOTIFICATION_EVENT_TYPE_UNSPECIFIED)
-    ..aOM<NotificationPreferencesMessage>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'preferences', subBuilder: NotificationPreferencesMessage.create)
-    ..hasRequiredFields = false
-  ;
-
-  ConnectNotificationChannelRequest._() : super();
   factory ConnectNotificationChannelRequest({
     $core.String? crowdfundId,
     NotificationChannelType? channelType,
@@ -4341,38 +4987,61 @@ class ConnectNotificationChannelRequest extends $pb.GeneratedMessage {
     $core.Iterable<NotificationEventType>? enabledEvents,
     NotificationPreferencesMessage? preferences,
   }) {
-    final _result = create();
+    final $result = create();
     if (crowdfundId != null) {
-      _result.crowdfundId = crowdfundId;
+      $result.crowdfundId = crowdfundId;
     }
     if (channelType != null) {
-      _result.channelType = channelType;
+      $result.channelType = channelType;
     }
     if (channelName != null) {
-      _result.channelName = channelName;
+      $result.channelName = channelName;
     }
     if (telegram != null) {
-      _result.telegram = telegram;
+      $result.telegram = telegram;
     }
     if (discord != null) {
-      _result.discord = discord;
+      $result.discord = discord;
     }
     if (whatsappBusiness != null) {
-      _result.whatsappBusiness = whatsappBusiness;
+      $result.whatsappBusiness = whatsappBusiness;
     }
     if (slack != null) {
-      _result.slack = slack;
+      $result.slack = slack;
     }
     if (enabledEvents != null) {
-      _result.enabledEvents.addAll(enabledEvents);
+      $result.enabledEvents.addAll(enabledEvents);
     }
     if (preferences != null) {
-      _result.preferences = preferences;
+      $result.preferences = preferences;
     }
-    return _result;
+    return $result;
   }
+  ConnectNotificationChannelRequest._() : super();
   factory ConnectNotificationChannelRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ConnectNotificationChannelRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static const $core.Map<$core.int, ConnectNotificationChannelRequest_ConnectionData> _ConnectNotificationChannelRequest_ConnectionDataByTag = {
+    4 : ConnectNotificationChannelRequest_ConnectionData.telegram,
+    5 : ConnectNotificationChannelRequest_ConnectionData.discord,
+    6 : ConnectNotificationChannelRequest_ConnectionData.whatsappBusiness,
+    7 : ConnectNotificationChannelRequest_ConnectionData.slack,
+    0 : ConnectNotificationChannelRequest_ConnectionData.notSet
+  };
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ConnectNotificationChannelRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..oo(0, [4, 5, 6, 7])
+    ..aOS(1, _omitFieldNames ? '' : 'crowdfundId')
+    ..e<NotificationChannelType>(2, _omitFieldNames ? '' : 'channelType', $pb.PbFieldType.OE, defaultOrMaker: NotificationChannelType.NOTIFICATION_CHANNEL_TYPE_UNSPECIFIED, valueOf: NotificationChannelType.valueOf, enumValues: NotificationChannelType.values)
+    ..aOS(3, _omitFieldNames ? '' : 'channelName')
+    ..aOM<TelegramConnectionDataMessage>(4, _omitFieldNames ? '' : 'telegram', subBuilder: TelegramConnectionDataMessage.create)
+    ..aOM<DiscordConnectionDataMessage>(5, _omitFieldNames ? '' : 'discord', subBuilder: DiscordConnectionDataMessage.create)
+    ..aOM<WhatsAppBusinessConnectionDataMessage>(6, _omitFieldNames ? '' : 'whatsappBusiness', subBuilder: WhatsAppBusinessConnectionDataMessage.create)
+    ..aOM<SlackConnectionDataMessage>(7, _omitFieldNames ? '' : 'slack', subBuilder: SlackConnectionDataMessage.create)
+    ..pc<NotificationEventType>(8, _omitFieldNames ? '' : 'enabledEvents', $pb.PbFieldType.KE, valueOf: NotificationEventType.valueOf, enumValues: NotificationEventType.values, defaultEnumValue: NotificationEventType.NOTIFICATION_EVENT_TYPE_UNSPECIFIED)
+    ..aOM<NotificationPreferencesMessage>(9, _omitFieldNames ? '' : 'preferences', subBuilder: NotificationPreferencesMessage.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -4382,8 +5051,10 @@ class ConnectNotificationChannelRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ConnectNotificationChannelRequest copyWith(void Function(ConnectNotificationChannelRequest) updates) => super.copyWith((message) => updates(message as ConnectNotificationChannelRequest)) as ConnectNotificationChannelRequest; // ignore: deprecated_member_use
+  ConnectNotificationChannelRequest copyWith(void Function(ConnectNotificationChannelRequest) updates) => super.copyWith((message) => updates(message as ConnectNotificationChannelRequest)) as ConnectNotificationChannelRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static ConnectNotificationChannelRequest create() => ConnectNotificationChannelRequest._();
   ConnectNotificationChannelRequest createEmptyInstance() => create();
@@ -4482,38 +5153,39 @@ class ConnectNotificationChannelRequest extends $pb.GeneratedMessage {
 }
 
 class ConnectNotificationChannelResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ConnectNotificationChannelResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<NotificationChannelMessage>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'channel', subBuilder: NotificationChannelMessage.create)
-    ..aOB(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'requiresVerification')
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'verificationInstructions')
-    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
-    ..hasRequiredFields = false
-  ;
-
-  ConnectNotificationChannelResponse._() : super();
   factory ConnectNotificationChannelResponse({
     NotificationChannelMessage? channel,
     $core.bool? requiresVerification,
     $core.String? verificationInstructions,
     $core.String? message,
   }) {
-    final _result = create();
+    final $result = create();
     if (channel != null) {
-      _result.channel = channel;
+      $result.channel = channel;
     }
     if (requiresVerification != null) {
-      _result.requiresVerification = requiresVerification;
+      $result.requiresVerification = requiresVerification;
     }
     if (verificationInstructions != null) {
-      _result.verificationInstructions = verificationInstructions;
+      $result.verificationInstructions = verificationInstructions;
     }
     if (message != null) {
-      _result.message = message;
+      $result.message = message;
     }
-    return _result;
+    return $result;
   }
+  ConnectNotificationChannelResponse._() : super();
   factory ConnectNotificationChannelResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ConnectNotificationChannelResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ConnectNotificationChannelResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOM<NotificationChannelMessage>(1, _omitFieldNames ? '' : 'channel', subBuilder: NotificationChannelMessage.create)
+    ..aOB(2, _omitFieldNames ? '' : 'requiresVerification')
+    ..aOS(3, _omitFieldNames ? '' : 'verificationInstructions')
+    ..aOS(4, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -4523,8 +5195,10 @@ class ConnectNotificationChannelResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ConnectNotificationChannelResponse copyWith(void Function(ConnectNotificationChannelResponse) updates) => super.copyWith((message) => updates(message as ConnectNotificationChannelResponse)) as ConnectNotificationChannelResponse; // ignore: deprecated_member_use
+  ConnectNotificationChannelResponse copyWith(void Function(ConnectNotificationChannelResponse) updates) => super.copyWith((message) => updates(message as ConnectNotificationChannelResponse)) as ConnectNotificationChannelResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static ConnectNotificationChannelResponse create() => ConnectNotificationChannelResponse._();
   ConnectNotificationChannelResponse createEmptyInstance() => create();
@@ -4573,23 +5247,24 @@ class ConnectNotificationChannelResponse extends $pb.GeneratedMessage {
 }
 
 class DisconnectNotificationChannelRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'DisconnectNotificationChannelRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'channelId')
-    ..hasRequiredFields = false
-  ;
-
-  DisconnectNotificationChannelRequest._() : super();
   factory DisconnectNotificationChannelRequest({
     $core.String? channelId,
   }) {
-    final _result = create();
+    final $result = create();
     if (channelId != null) {
-      _result.channelId = channelId;
+      $result.channelId = channelId;
     }
-    return _result;
+    return $result;
   }
+  DisconnectNotificationChannelRequest._() : super();
   factory DisconnectNotificationChannelRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory DisconnectNotificationChannelRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'DisconnectNotificationChannelRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'channelId')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -4599,8 +5274,10 @@ class DisconnectNotificationChannelRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  DisconnectNotificationChannelRequest copyWith(void Function(DisconnectNotificationChannelRequest) updates) => super.copyWith((message) => updates(message as DisconnectNotificationChannelRequest)) as DisconnectNotificationChannelRequest; // ignore: deprecated_member_use
+  DisconnectNotificationChannelRequest copyWith(void Function(DisconnectNotificationChannelRequest) updates) => super.copyWith((message) => updates(message as DisconnectNotificationChannelRequest)) as DisconnectNotificationChannelRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static DisconnectNotificationChannelRequest create() => DisconnectNotificationChannelRequest._();
   DisconnectNotificationChannelRequest createEmptyInstance() => create();
@@ -4620,28 +5297,29 @@ class DisconnectNotificationChannelRequest extends $pb.GeneratedMessage {
 }
 
 class DisconnectNotificationChannelResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'DisconnectNotificationChannelResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
-    ..hasRequiredFields = false
-  ;
-
-  DisconnectNotificationChannelResponse._() : super();
   factory DisconnectNotificationChannelResponse({
     $core.bool? success,
     $core.String? message,
   }) {
-    final _result = create();
+    final $result = create();
     if (success != null) {
-      _result.success = success;
+      $result.success = success;
     }
     if (message != null) {
-      _result.message = message;
+      $result.message = message;
     }
-    return _result;
+    return $result;
   }
+  DisconnectNotificationChannelResponse._() : super();
   factory DisconnectNotificationChannelResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory DisconnectNotificationChannelResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'DisconnectNotificationChannelResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..aOS(2, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -4651,8 +5329,10 @@ class DisconnectNotificationChannelResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  DisconnectNotificationChannelResponse copyWith(void Function(DisconnectNotificationChannelResponse) updates) => super.copyWith((message) => updates(message as DisconnectNotificationChannelResponse)) as DisconnectNotificationChannelResponse; // ignore: deprecated_member_use
+  DisconnectNotificationChannelResponse copyWith(void Function(DisconnectNotificationChannelResponse) updates) => super.copyWith((message) => updates(message as DisconnectNotificationChannelResponse)) as DisconnectNotificationChannelResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static DisconnectNotificationChannelResponse create() => DisconnectNotificationChannelResponse._();
   DisconnectNotificationChannelResponse createEmptyInstance() => create();
@@ -4681,23 +5361,24 @@ class DisconnectNotificationChannelResponse extends $pb.GeneratedMessage {
 }
 
 class GetNotificationChannelsRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetNotificationChannelsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'crowdfundId')
-    ..hasRequiredFields = false
-  ;
-
-  GetNotificationChannelsRequest._() : super();
   factory GetNotificationChannelsRequest({
     $core.String? crowdfundId,
   }) {
-    final _result = create();
+    final $result = create();
     if (crowdfundId != null) {
-      _result.crowdfundId = crowdfundId;
+      $result.crowdfundId = crowdfundId;
     }
-    return _result;
+    return $result;
   }
+  GetNotificationChannelsRequest._() : super();
   factory GetNotificationChannelsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetNotificationChannelsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetNotificationChannelsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'crowdfundId')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -4707,8 +5388,10 @@ class GetNotificationChannelsRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetNotificationChannelsRequest copyWith(void Function(GetNotificationChannelsRequest) updates) => super.copyWith((message) => updates(message as GetNotificationChannelsRequest)) as GetNotificationChannelsRequest; // ignore: deprecated_member_use
+  GetNotificationChannelsRequest copyWith(void Function(GetNotificationChannelsRequest) updates) => super.copyWith((message) => updates(message as GetNotificationChannelsRequest)) as GetNotificationChannelsRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetNotificationChannelsRequest create() => GetNotificationChannelsRequest._();
   GetNotificationChannelsRequest createEmptyInstance() => create();
@@ -4728,23 +5411,24 @@ class GetNotificationChannelsRequest extends $pb.GeneratedMessage {
 }
 
 class GetNotificationChannelsResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetNotificationChannelsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..pc<NotificationChannelMessage>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'channels', $pb.PbFieldType.PM, subBuilder: NotificationChannelMessage.create)
-    ..hasRequiredFields = false
-  ;
-
-  GetNotificationChannelsResponse._() : super();
   factory GetNotificationChannelsResponse({
     $core.Iterable<NotificationChannelMessage>? channels,
   }) {
-    final _result = create();
+    final $result = create();
     if (channels != null) {
-      _result.channels.addAll(channels);
+      $result.channels.addAll(channels);
     }
-    return _result;
+    return $result;
   }
+  GetNotificationChannelsResponse._() : super();
   factory GetNotificationChannelsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetNotificationChannelsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetNotificationChannelsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..pc<NotificationChannelMessage>(1, _omitFieldNames ? '' : 'channels', $pb.PbFieldType.PM, subBuilder: NotificationChannelMessage.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -4754,8 +5438,10 @@ class GetNotificationChannelsResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetNotificationChannelsResponse copyWith(void Function(GetNotificationChannelsResponse) updates) => super.copyWith((message) => updates(message as GetNotificationChannelsResponse)) as GetNotificationChannelsResponse; // ignore: deprecated_member_use
+  GetNotificationChannelsResponse copyWith(void Function(GetNotificationChannelsResponse) updates) => super.copyWith((message) => updates(message as GetNotificationChannelsResponse)) as GetNotificationChannelsResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetNotificationChannelsResponse create() => GetNotificationChannelsResponse._();
   GetNotificationChannelsResponse createEmptyInstance() => create();
@@ -4769,16 +5455,6 @@ class GetNotificationChannelsResponse extends $pb.GeneratedMessage {
 }
 
 class UpdateNotificationChannelRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UpdateNotificationChannelRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'channelId')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'channelName')
-    ..pc<NotificationEventType>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'enabledEvents', $pb.PbFieldType.KE, valueOf: NotificationEventType.valueOf, enumValues: NotificationEventType.values, defaultEnumValue: NotificationEventType.NOTIFICATION_EVENT_TYPE_UNSPECIFIED)
-    ..aOM<NotificationPreferencesMessage>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'preferences', subBuilder: NotificationPreferencesMessage.create)
-    ..e<NotificationChannelStatus>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: NotificationChannelStatus.NOTIFICATION_CHANNEL_STATUS_UNSPECIFIED, valueOf: NotificationChannelStatus.valueOf, enumValues: NotificationChannelStatus.values)
-    ..hasRequiredFields = false
-  ;
-
-  UpdateNotificationChannelRequest._() : super();
   factory UpdateNotificationChannelRequest({
     $core.String? channelId,
     $core.String? channelName,
@@ -4786,26 +5462,37 @@ class UpdateNotificationChannelRequest extends $pb.GeneratedMessage {
     NotificationPreferencesMessage? preferences,
     NotificationChannelStatus? status,
   }) {
-    final _result = create();
+    final $result = create();
     if (channelId != null) {
-      _result.channelId = channelId;
+      $result.channelId = channelId;
     }
     if (channelName != null) {
-      _result.channelName = channelName;
+      $result.channelName = channelName;
     }
     if (enabledEvents != null) {
-      _result.enabledEvents.addAll(enabledEvents);
+      $result.enabledEvents.addAll(enabledEvents);
     }
     if (preferences != null) {
-      _result.preferences = preferences;
+      $result.preferences = preferences;
     }
     if (status != null) {
-      _result.status = status;
+      $result.status = status;
     }
-    return _result;
+    return $result;
   }
+  UpdateNotificationChannelRequest._() : super();
   factory UpdateNotificationChannelRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory UpdateNotificationChannelRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UpdateNotificationChannelRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'channelId')
+    ..aOS(2, _omitFieldNames ? '' : 'channelName')
+    ..pc<NotificationEventType>(3, _omitFieldNames ? '' : 'enabledEvents', $pb.PbFieldType.KE, valueOf: NotificationEventType.valueOf, enumValues: NotificationEventType.values, defaultEnumValue: NotificationEventType.NOTIFICATION_EVENT_TYPE_UNSPECIFIED)
+    ..aOM<NotificationPreferencesMessage>(4, _omitFieldNames ? '' : 'preferences', subBuilder: NotificationPreferencesMessage.create)
+    ..e<NotificationChannelStatus>(5, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: NotificationChannelStatus.NOTIFICATION_CHANNEL_STATUS_UNSPECIFIED, valueOf: NotificationChannelStatus.valueOf, enumValues: NotificationChannelStatus.values)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -4815,8 +5502,10 @@ class UpdateNotificationChannelRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  UpdateNotificationChannelRequest copyWith(void Function(UpdateNotificationChannelRequest) updates) => super.copyWith((message) => updates(message as UpdateNotificationChannelRequest)) as UpdateNotificationChannelRequest; // ignore: deprecated_member_use
+  UpdateNotificationChannelRequest copyWith(void Function(UpdateNotificationChannelRequest) updates) => super.copyWith((message) => updates(message as UpdateNotificationChannelRequest)) as UpdateNotificationChannelRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static UpdateNotificationChannelRequest create() => UpdateNotificationChannelRequest._();
   UpdateNotificationChannelRequest createEmptyInstance() => create();
@@ -4868,28 +5557,29 @@ class UpdateNotificationChannelRequest extends $pb.GeneratedMessage {
 }
 
 class UpdateNotificationChannelResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UpdateNotificationChannelResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<NotificationChannelMessage>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'channel', subBuilder: NotificationChannelMessage.create)
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
-    ..hasRequiredFields = false
-  ;
-
-  UpdateNotificationChannelResponse._() : super();
   factory UpdateNotificationChannelResponse({
     NotificationChannelMessage? channel,
     $core.String? message,
   }) {
-    final _result = create();
+    final $result = create();
     if (channel != null) {
-      _result.channel = channel;
+      $result.channel = channel;
     }
     if (message != null) {
-      _result.message = message;
+      $result.message = message;
     }
-    return _result;
+    return $result;
   }
+  UpdateNotificationChannelResponse._() : super();
   factory UpdateNotificationChannelResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory UpdateNotificationChannelResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UpdateNotificationChannelResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOM<NotificationChannelMessage>(1, _omitFieldNames ? '' : 'channel', subBuilder: NotificationChannelMessage.create)
+    ..aOS(2, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -4899,8 +5589,10 @@ class UpdateNotificationChannelResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  UpdateNotificationChannelResponse copyWith(void Function(UpdateNotificationChannelResponse) updates) => super.copyWith((message) => updates(message as UpdateNotificationChannelResponse)) as UpdateNotificationChannelResponse; // ignore: deprecated_member_use
+  UpdateNotificationChannelResponse copyWith(void Function(UpdateNotificationChannelResponse) updates) => super.copyWith((message) => updates(message as UpdateNotificationChannelResponse)) as UpdateNotificationChannelResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static UpdateNotificationChannelResponse create() => UpdateNotificationChannelResponse._();
   UpdateNotificationChannelResponse createEmptyInstance() => create();
@@ -4931,23 +5623,24 @@ class UpdateNotificationChannelResponse extends $pb.GeneratedMessage {
 }
 
 class TestNotificationChannelRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'TestNotificationChannelRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'channelId')
-    ..hasRequiredFields = false
-  ;
-
-  TestNotificationChannelRequest._() : super();
   factory TestNotificationChannelRequest({
     $core.String? channelId,
   }) {
-    final _result = create();
+    final $result = create();
     if (channelId != null) {
-      _result.channelId = channelId;
+      $result.channelId = channelId;
     }
-    return _result;
+    return $result;
   }
+  TestNotificationChannelRequest._() : super();
   factory TestNotificationChannelRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory TestNotificationChannelRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'TestNotificationChannelRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'channelId')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -4957,8 +5650,10 @@ class TestNotificationChannelRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  TestNotificationChannelRequest copyWith(void Function(TestNotificationChannelRequest) updates) => super.copyWith((message) => updates(message as TestNotificationChannelRequest)) as TestNotificationChannelRequest; // ignore: deprecated_member_use
+  TestNotificationChannelRequest copyWith(void Function(TestNotificationChannelRequest) updates) => super.copyWith((message) => updates(message as TestNotificationChannelRequest)) as TestNotificationChannelRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static TestNotificationChannelRequest create() => TestNotificationChannelRequest._();
   TestNotificationChannelRequest createEmptyInstance() => create();
@@ -4978,33 +5673,34 @@ class TestNotificationChannelRequest extends $pb.GeneratedMessage {
 }
 
 class TestNotificationChannelResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'TestNotificationChannelResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'platformMessageId')
-    ..hasRequiredFields = false
-  ;
-
-  TestNotificationChannelResponse._() : super();
   factory TestNotificationChannelResponse({
     $core.bool? success,
     $core.String? message,
     $core.String? platformMessageId,
   }) {
-    final _result = create();
+    final $result = create();
     if (success != null) {
-      _result.success = success;
+      $result.success = success;
     }
     if (message != null) {
-      _result.message = message;
+      $result.message = message;
     }
     if (platformMessageId != null) {
-      _result.platformMessageId = platformMessageId;
+      $result.platformMessageId = platformMessageId;
     }
-    return _result;
+    return $result;
   }
+  TestNotificationChannelResponse._() : super();
   factory TestNotificationChannelResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory TestNotificationChannelResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'TestNotificationChannelResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..aOS(2, _omitFieldNames ? '' : 'message')
+    ..aOS(3, _omitFieldNames ? '' : 'platformMessageId')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -5014,8 +5710,10 @@ class TestNotificationChannelResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  TestNotificationChannelResponse copyWith(void Function(TestNotificationChannelResponse) updates) => super.copyWith((message) => updates(message as TestNotificationChannelResponse)) as TestNotificationChannelResponse; // ignore: deprecated_member_use
+  TestNotificationChannelResponse copyWith(void Function(TestNotificationChannelResponse) updates) => super.copyWith((message) => updates(message as TestNotificationChannelResponse)) as TestNotificationChannelResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static TestNotificationChannelResponse create() => TestNotificationChannelResponse._();
   TestNotificationChannelResponse createEmptyInstance() => create();
@@ -5053,14 +5751,15 @@ class TestNotificationChannelResponse extends $pb.GeneratedMessage {
 }
 
 class GetTelegramBotInfoRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetTelegramBotInfoRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+  factory GetTelegramBotInfoRequest() => create();
+  GetTelegramBotInfoRequest._() : super();
+  factory GetTelegramBotInfoRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetTelegramBotInfoRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetTelegramBotInfoRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
     ..hasRequiredFields = false
   ;
 
-  GetTelegramBotInfoRequest._() : super();
-  factory GetTelegramBotInfoRequest() => create();
-  factory GetTelegramBotInfoRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetTelegramBotInfoRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -5070,8 +5769,10 @@ class GetTelegramBotInfoRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetTelegramBotInfoRequest copyWith(void Function(GetTelegramBotInfoRequest) updates) => super.copyWith((message) => updates(message as GetTelegramBotInfoRequest)) as GetTelegramBotInfoRequest; // ignore: deprecated_member_use
+  GetTelegramBotInfoRequest copyWith(void Function(GetTelegramBotInfoRequest) updates) => super.copyWith((message) => updates(message as GetTelegramBotInfoRequest)) as GetTelegramBotInfoRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetTelegramBotInfoRequest create() => GetTelegramBotInfoRequest._();
   GetTelegramBotInfoRequest createEmptyInstance() => create();
@@ -5082,38 +5783,39 @@ class GetTelegramBotInfoRequest extends $pb.GeneratedMessage {
 }
 
 class GetTelegramBotInfoResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetTelegramBotInfoResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'botUsername')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'botName')
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'botLink')
-    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'instructions')
-    ..hasRequiredFields = false
-  ;
-
-  GetTelegramBotInfoResponse._() : super();
   factory GetTelegramBotInfoResponse({
     $core.String? botUsername,
     $core.String? botName,
     $core.String? botLink,
     $core.String? instructions,
   }) {
-    final _result = create();
+    final $result = create();
     if (botUsername != null) {
-      _result.botUsername = botUsername;
+      $result.botUsername = botUsername;
     }
     if (botName != null) {
-      _result.botName = botName;
+      $result.botName = botName;
     }
     if (botLink != null) {
-      _result.botLink = botLink;
+      $result.botLink = botLink;
     }
     if (instructions != null) {
-      _result.instructions = instructions;
+      $result.instructions = instructions;
     }
-    return _result;
+    return $result;
   }
+  GetTelegramBotInfoResponse._() : super();
   factory GetTelegramBotInfoResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetTelegramBotInfoResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetTelegramBotInfoResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'botUsername')
+    ..aOS(2, _omitFieldNames ? '' : 'botName')
+    ..aOS(3, _omitFieldNames ? '' : 'botLink')
+    ..aOS(4, _omitFieldNames ? '' : 'instructions')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -5123,8 +5825,10 @@ class GetTelegramBotInfoResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetTelegramBotInfoResponse copyWith(void Function(GetTelegramBotInfoResponse) updates) => super.copyWith((message) => updates(message as GetTelegramBotInfoResponse)) as GetTelegramBotInfoResponse; // ignore: deprecated_member_use
+  GetTelegramBotInfoResponse copyWith(void Function(GetTelegramBotInfoResponse) updates) => super.copyWith((message) => updates(message as GetTelegramBotInfoResponse)) as GetTelegramBotInfoResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetTelegramBotInfoResponse create() => GetTelegramBotInfoResponse._();
   GetTelegramBotInfoResponse createEmptyInstance() => create();
@@ -5171,33 +5875,34 @@ class GetTelegramBotInfoResponse extends $pb.GeneratedMessage {
 }
 
 class VerifyTelegramChannelRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'VerifyTelegramChannelRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'crowdfundId')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'chatId')
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'verificationCode')
-    ..hasRequiredFields = false
-  ;
-
-  VerifyTelegramChannelRequest._() : super();
   factory VerifyTelegramChannelRequest({
     $core.String? crowdfundId,
     $core.String? chatId,
     $core.String? verificationCode,
   }) {
-    final _result = create();
+    final $result = create();
     if (crowdfundId != null) {
-      _result.crowdfundId = crowdfundId;
+      $result.crowdfundId = crowdfundId;
     }
     if (chatId != null) {
-      _result.chatId = chatId;
+      $result.chatId = chatId;
     }
     if (verificationCode != null) {
-      _result.verificationCode = verificationCode;
+      $result.verificationCode = verificationCode;
     }
-    return _result;
+    return $result;
   }
+  VerifyTelegramChannelRequest._() : super();
   factory VerifyTelegramChannelRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory VerifyTelegramChannelRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'VerifyTelegramChannelRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'crowdfundId')
+    ..aOS(2, _omitFieldNames ? '' : 'chatId')
+    ..aOS(3, _omitFieldNames ? '' : 'verificationCode')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -5207,8 +5912,10 @@ class VerifyTelegramChannelRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  VerifyTelegramChannelRequest copyWith(void Function(VerifyTelegramChannelRequest) updates) => super.copyWith((message) => updates(message as VerifyTelegramChannelRequest)) as VerifyTelegramChannelRequest; // ignore: deprecated_member_use
+  VerifyTelegramChannelRequest copyWith(void Function(VerifyTelegramChannelRequest) updates) => super.copyWith((message) => updates(message as VerifyTelegramChannelRequest)) as VerifyTelegramChannelRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static VerifyTelegramChannelRequest create() => VerifyTelegramChannelRequest._();
   VerifyTelegramChannelRequest createEmptyInstance() => create();
@@ -5246,33 +5953,34 @@ class VerifyTelegramChannelRequest extends $pb.GeneratedMessage {
 }
 
 class VerifyTelegramChannelResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'VerifyTelegramChannelResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
-    ..aOM<NotificationChannelMessage>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'channel', subBuilder: NotificationChannelMessage.create)
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
-    ..hasRequiredFields = false
-  ;
-
-  VerifyTelegramChannelResponse._() : super();
   factory VerifyTelegramChannelResponse({
     $core.bool? success,
     NotificationChannelMessage? channel,
     $core.String? message,
   }) {
-    final _result = create();
+    final $result = create();
     if (success != null) {
-      _result.success = success;
+      $result.success = success;
     }
     if (channel != null) {
-      _result.channel = channel;
+      $result.channel = channel;
     }
     if (message != null) {
-      _result.message = message;
+      $result.message = message;
     }
-    return _result;
+    return $result;
   }
+  VerifyTelegramChannelResponse._() : super();
   factory VerifyTelegramChannelResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory VerifyTelegramChannelResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'VerifyTelegramChannelResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..aOM<NotificationChannelMessage>(2, _omitFieldNames ? '' : 'channel', subBuilder: NotificationChannelMessage.create)
+    ..aOS(3, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -5282,8 +5990,10 @@ class VerifyTelegramChannelResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  VerifyTelegramChannelResponse copyWith(void Function(VerifyTelegramChannelResponse) updates) => super.copyWith((message) => updates(message as VerifyTelegramChannelResponse)) as VerifyTelegramChannelResponse; // ignore: deprecated_member_use
+  VerifyTelegramChannelResponse copyWith(void Function(VerifyTelegramChannelResponse) updates) => super.copyWith((message) => updates(message as VerifyTelegramChannelResponse)) as VerifyTelegramChannelResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static VerifyTelegramChannelResponse create() => VerifyTelegramChannelResponse._();
   VerifyTelegramChannelResponse createEmptyInstance() => create();
@@ -5323,38 +6033,39 @@ class VerifyTelegramChannelResponse extends $pb.GeneratedMessage {
 }
 
 class GetNotificationHistoryRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetNotificationHistoryRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'crowdfundId')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'channelId')
-    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'page', $pb.PbFieldType.O3)
-    ..a<$core.int>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pageSize', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
-
-  GetNotificationHistoryRequest._() : super();
   factory GetNotificationHistoryRequest({
     $core.String? crowdfundId,
     $core.String? channelId,
     $core.int? page,
     $core.int? pageSize,
   }) {
-    final _result = create();
+    final $result = create();
     if (crowdfundId != null) {
-      _result.crowdfundId = crowdfundId;
+      $result.crowdfundId = crowdfundId;
     }
     if (channelId != null) {
-      _result.channelId = channelId;
+      $result.channelId = channelId;
     }
     if (page != null) {
-      _result.page = page;
+      $result.page = page;
     }
     if (pageSize != null) {
-      _result.pageSize = pageSize;
+      $result.pageSize = pageSize;
     }
-    return _result;
+    return $result;
   }
+  GetNotificationHistoryRequest._() : super();
   factory GetNotificationHistoryRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetNotificationHistoryRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetNotificationHistoryRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'crowdfundId')
+    ..aOS(2, _omitFieldNames ? '' : 'channelId')
+    ..a<$core.int>(3, _omitFieldNames ? '' : 'page', $pb.PbFieldType.O3)
+    ..a<$core.int>(4, _omitFieldNames ? '' : 'pageSize', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -5364,8 +6075,10 @@ class GetNotificationHistoryRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetNotificationHistoryRequest copyWith(void Function(GetNotificationHistoryRequest) updates) => super.copyWith((message) => updates(message as GetNotificationHistoryRequest)) as GetNotificationHistoryRequest; // ignore: deprecated_member_use
+  GetNotificationHistoryRequest copyWith(void Function(GetNotificationHistoryRequest) updates) => super.copyWith((message) => updates(message as GetNotificationHistoryRequest)) as GetNotificationHistoryRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetNotificationHistoryRequest create() => GetNotificationHistoryRequest._();
   GetNotificationHistoryRequest createEmptyInstance() => create();
@@ -5412,16 +6125,6 @@ class GetNotificationHistoryRequest extends $pb.GeneratedMessage {
 }
 
 class GetNotificationHistoryResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetNotificationHistoryResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..pc<NotificationDeliveryMessage>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'deliveries', $pb.PbFieldType.PM, subBuilder: NotificationDeliveryMessage.create)
-    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'total', $pb.PbFieldType.O3)
-    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'page', $pb.PbFieldType.O3)
-    ..a<$core.int>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pageSize', $pb.PbFieldType.O3)
-    ..aOB(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'hasMore')
-    ..hasRequiredFields = false
-  ;
-
-  GetNotificationHistoryResponse._() : super();
   factory GetNotificationHistoryResponse({
     $core.Iterable<NotificationDeliveryMessage>? deliveries,
     $core.int? total,
@@ -5429,26 +6132,37 @@ class GetNotificationHistoryResponse extends $pb.GeneratedMessage {
     $core.int? pageSize,
     $core.bool? hasMore,
   }) {
-    final _result = create();
+    final $result = create();
     if (deliveries != null) {
-      _result.deliveries.addAll(deliveries);
+      $result.deliveries.addAll(deliveries);
     }
     if (total != null) {
-      _result.total = total;
+      $result.total = total;
     }
     if (page != null) {
-      _result.page = page;
+      $result.page = page;
     }
     if (pageSize != null) {
-      _result.pageSize = pageSize;
+      $result.pageSize = pageSize;
     }
     if (hasMore != null) {
-      _result.hasMore = hasMore;
+      $result.hasMore = hasMore;
     }
-    return _result;
+    return $result;
   }
+  GetNotificationHistoryResponse._() : super();
   factory GetNotificationHistoryResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetNotificationHistoryResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetNotificationHistoryResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..pc<NotificationDeliveryMessage>(1, _omitFieldNames ? '' : 'deliveries', $pb.PbFieldType.PM, subBuilder: NotificationDeliveryMessage.create)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'total', $pb.PbFieldType.O3)
+    ..a<$core.int>(3, _omitFieldNames ? '' : 'page', $pb.PbFieldType.O3)
+    ..a<$core.int>(4, _omitFieldNames ? '' : 'pageSize', $pb.PbFieldType.O3)
+    ..aOB(5, _omitFieldNames ? '' : 'hasMore')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -5458,8 +6172,10 @@ class GetNotificationHistoryResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetNotificationHistoryResponse copyWith(void Function(GetNotificationHistoryResponse) updates) => super.copyWith((message) => updates(message as GetNotificationHistoryResponse)) as GetNotificationHistoryResponse; // ignore: deprecated_member_use
+  GetNotificationHistoryResponse copyWith(void Function(GetNotificationHistoryResponse) updates) => super.copyWith((message) => updates(message as GetNotificationHistoryResponse)) as GetNotificationHistoryResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetNotificationHistoryResponse create() => GetNotificationHistoryResponse._();
   GetNotificationHistoryResponse createEmptyInstance() => create();
@@ -5508,3 +6224,6 @@ class GetNotificationHistoryResponse extends $pb.GeneratedMessage {
   void clearHasMore() => clearField(5);
 }
 
+
+const _omitFieldNames = $core.bool.fromEnvironment('protobuf.omit_field_names');
+const _omitMessageNames = $core.bool.fromEnvironment('protobuf.omit_message_names');

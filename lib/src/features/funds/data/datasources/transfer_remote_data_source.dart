@@ -61,7 +61,7 @@ class TransferRemoteDataSourceImpl implements ITransferRemoteDataSource {
         }
 
         final request = InitiateTransferRequest(
-          fromAccountId: fromAccountId,
+          fromAccountId: Int64.parseInt(fromAccountId),
           amount: amount,
           toAccountId: toAccountId,
           recipientId: recipientId,

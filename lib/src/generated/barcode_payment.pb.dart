@@ -1,49 +1,54 @@
-///
+//
 //  Generated code. Do not modify.
 //  source: barcode_payment.proto
 //
 // @dart = 2.12
-// ignore_for_file: annotate_overrides,camel_case_types,constant_identifier_names,directives_ordering,library_prefixes,non_constant_identifier_names,prefer_final_fields,return_of_invalid_type,unnecessary_const,unnecessary_import,unnecessary_this,unused_import,unused_shown_name
+
+// ignore_for_file: annotate_overrides, camel_case_types, comment_references
+// ignore_for_file: constant_identifier_names, library_prefixes
+// ignore_for_file: non_constant_identifier_names, prefer_final_fields
+// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
 
 import 'dart:core' as $core;
 
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'google/protobuf/timestamp.pb.dart' as $36;
+import 'google/protobuf/timestamp.pb.dart' as $42;
 
 class GenerateBarcodeRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GenerateBarcodeRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'barcode_payment'), createEmptyInstance: create)
-    ..a<$core.double>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
-    ..a<$core.int>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'validityMinutes', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
-
-  GenerateBarcodeRequest._() : super();
   factory GenerateBarcodeRequest({
     $core.double? amount,
     $core.String? currency,
     $core.String? description,
     $core.int? validityMinutes,
   }) {
-    final _result = create();
+    final $result = create();
     if (amount != null) {
-      _result.amount = amount;
+      $result.amount = amount;
     }
     if (currency != null) {
-      _result.currency = currency;
+      $result.currency = currency;
     }
     if (description != null) {
-      _result.description = description;
+      $result.description = description;
     }
     if (validityMinutes != null) {
-      _result.validityMinutes = validityMinutes;
+      $result.validityMinutes = validityMinutes;
     }
-    return _result;
+    return $result;
   }
+  GenerateBarcodeRequest._() : super();
   factory GenerateBarcodeRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GenerateBarcodeRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GenerateBarcodeRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'barcode_payment'), createEmptyInstance: create)
+    ..a<$core.double>(1, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
+    ..aOS(2, _omitFieldNames ? '' : 'currency')
+    ..aOS(3, _omitFieldNames ? '' : 'description')
+    ..a<$core.int>(4, _omitFieldNames ? '' : 'validityMinutes', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -53,8 +58,10 @@ class GenerateBarcodeRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GenerateBarcodeRequest copyWith(void Function(GenerateBarcodeRequest) updates) => super.copyWith((message) => updates(message as GenerateBarcodeRequest)) as GenerateBarcodeRequest; // ignore: deprecated_member_use
+  GenerateBarcodeRequest copyWith(void Function(GenerateBarcodeRequest) updates) => super.copyWith((message) => updates(message as GenerateBarcodeRequest)) as GenerateBarcodeRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GenerateBarcodeRequest create() => GenerateBarcodeRequest._();
   GenerateBarcodeRequest createEmptyInstance() => create();
@@ -101,43 +108,44 @@ class GenerateBarcodeRequest extends $pb.GeneratedMessage {
 }
 
 class GenerateBarcodeResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GenerateBarcodeResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'barcode_payment'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'barcodeId')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'barcodeCode')
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'qrData')
-    ..aOM<$36.Timestamp>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'expiresAt', subBuilder: $36.Timestamp.create)
-    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
-    ..hasRequiredFields = false
-  ;
-
-  GenerateBarcodeResponse._() : super();
   factory GenerateBarcodeResponse({
     $core.String? barcodeId,
     $core.String? barcodeCode,
     $core.String? qrData,
-    $36.Timestamp? expiresAt,
+    $42.Timestamp? expiresAt,
     $core.String? message,
   }) {
-    final _result = create();
+    final $result = create();
     if (barcodeId != null) {
-      _result.barcodeId = barcodeId;
+      $result.barcodeId = barcodeId;
     }
     if (barcodeCode != null) {
-      _result.barcodeCode = barcodeCode;
+      $result.barcodeCode = barcodeCode;
     }
     if (qrData != null) {
-      _result.qrData = qrData;
+      $result.qrData = qrData;
     }
     if (expiresAt != null) {
-      _result.expiresAt = expiresAt;
+      $result.expiresAt = expiresAt;
     }
     if (message != null) {
-      _result.message = message;
+      $result.message = message;
     }
-    return _result;
+    return $result;
   }
+  GenerateBarcodeResponse._() : super();
   factory GenerateBarcodeResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GenerateBarcodeResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GenerateBarcodeResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'barcode_payment'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'barcodeId')
+    ..aOS(2, _omitFieldNames ? '' : 'barcodeCode')
+    ..aOS(3, _omitFieldNames ? '' : 'qrData')
+    ..aOM<$42.Timestamp>(4, _omitFieldNames ? '' : 'expiresAt', subBuilder: $42.Timestamp.create)
+    ..aOS(5, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -147,8 +155,10 @@ class GenerateBarcodeResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GenerateBarcodeResponse copyWith(void Function(GenerateBarcodeResponse) updates) => super.copyWith((message) => updates(message as GenerateBarcodeResponse)) as GenerateBarcodeResponse; // ignore: deprecated_member_use
+  GenerateBarcodeResponse copyWith(void Function(GenerateBarcodeResponse) updates) => super.copyWith((message) => updates(message as GenerateBarcodeResponse)) as GenerateBarcodeResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GenerateBarcodeResponse create() => GenerateBarcodeResponse._();
   GenerateBarcodeResponse createEmptyInstance() => create();
@@ -185,15 +195,15 @@ class GenerateBarcodeResponse extends $pb.GeneratedMessage {
   void clearQrData() => clearField(3);
 
   @$pb.TagNumber(4)
-  $36.Timestamp get expiresAt => $_getN(3);
+  $42.Timestamp get expiresAt => $_getN(3);
   @$pb.TagNumber(4)
-  set expiresAt($36.Timestamp v) { setField(4, v); }
+  set expiresAt($42.Timestamp v) { setField(4, v); }
   @$pb.TagNumber(4)
   $core.bool hasExpiresAt() => $_has(3);
   @$pb.TagNumber(4)
   void clearExpiresAt() => clearField(4);
   @$pb.TagNumber(4)
-  $36.Timestamp ensureExpiresAt() => $_ensure(3);
+  $42.Timestamp ensureExpiresAt() => $_ensure(3);
 
   @$pb.TagNumber(5)
   $core.String get message => $_getSZ(4);
@@ -206,23 +216,24 @@ class GenerateBarcodeResponse extends $pb.GeneratedMessage {
 }
 
 class GetBarcodeDetailsRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetBarcodeDetailsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'barcode_payment'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'barcodeCode')
-    ..hasRequiredFields = false
-  ;
-
-  GetBarcodeDetailsRequest._() : super();
   factory GetBarcodeDetailsRequest({
     $core.String? barcodeCode,
   }) {
-    final _result = create();
+    final $result = create();
     if (barcodeCode != null) {
-      _result.barcodeCode = barcodeCode;
+      $result.barcodeCode = barcodeCode;
     }
-    return _result;
+    return $result;
   }
+  GetBarcodeDetailsRequest._() : super();
   factory GetBarcodeDetailsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetBarcodeDetailsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetBarcodeDetailsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'barcode_payment'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'barcodeCode')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -232,8 +243,10 @@ class GetBarcodeDetailsRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetBarcodeDetailsRequest copyWith(void Function(GetBarcodeDetailsRequest) updates) => super.copyWith((message) => updates(message as GetBarcodeDetailsRequest)) as GetBarcodeDetailsRequest; // ignore: deprecated_member_use
+  GetBarcodeDetailsRequest copyWith(void Function(GetBarcodeDetailsRequest) updates) => super.copyWith((message) => updates(message as GetBarcodeDetailsRequest)) as GetBarcodeDetailsRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetBarcodeDetailsRequest create() => GetBarcodeDetailsRequest._();
   GetBarcodeDetailsRequest createEmptyInstance() => create();
@@ -253,23 +266,24 @@ class GetBarcodeDetailsRequest extends $pb.GeneratedMessage {
 }
 
 class GetBarcodeDetailsResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetBarcodeDetailsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'barcode_payment'), createEmptyInstance: create)
-    ..aOM<BarcodePayment>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'barcode', subBuilder: BarcodePayment.create)
-    ..hasRequiredFields = false
-  ;
-
-  GetBarcodeDetailsResponse._() : super();
   factory GetBarcodeDetailsResponse({
     BarcodePayment? barcode,
   }) {
-    final _result = create();
+    final $result = create();
     if (barcode != null) {
-      _result.barcode = barcode;
+      $result.barcode = barcode;
     }
-    return _result;
+    return $result;
   }
+  GetBarcodeDetailsResponse._() : super();
   factory GetBarcodeDetailsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetBarcodeDetailsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetBarcodeDetailsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'barcode_payment'), createEmptyInstance: create)
+    ..aOM<BarcodePayment>(1, _omitFieldNames ? '' : 'barcode', subBuilder: BarcodePayment.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -279,8 +293,10 @@ class GetBarcodeDetailsResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetBarcodeDetailsResponse copyWith(void Function(GetBarcodeDetailsResponse) updates) => super.copyWith((message) => updates(message as GetBarcodeDetailsResponse)) as GetBarcodeDetailsResponse; // ignore: deprecated_member_use
+  GetBarcodeDetailsResponse copyWith(void Function(GetBarcodeDetailsResponse) updates) => super.copyWith((message) => updates(message as GetBarcodeDetailsResponse)) as GetBarcodeDetailsResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetBarcodeDetailsResponse create() => GetBarcodeDetailsResponse._();
   GetBarcodeDetailsResponse createEmptyInstance() => create();
@@ -302,28 +318,29 @@ class GetBarcodeDetailsResponse extends $pb.GeneratedMessage {
 }
 
 class ProcessBarcodePaymentRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ProcessBarcodePaymentRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'barcode_payment'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'barcodeCode')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sourceAccountId')
-    ..hasRequiredFields = false
-  ;
-
-  ProcessBarcodePaymentRequest._() : super();
   factory ProcessBarcodePaymentRequest({
     $core.String? barcodeCode,
     $core.String? sourceAccountId,
   }) {
-    final _result = create();
+    final $result = create();
     if (barcodeCode != null) {
-      _result.barcodeCode = barcodeCode;
+      $result.barcodeCode = barcodeCode;
     }
     if (sourceAccountId != null) {
-      _result.sourceAccountId = sourceAccountId;
+      $result.sourceAccountId = sourceAccountId;
     }
-    return _result;
+    return $result;
   }
+  ProcessBarcodePaymentRequest._() : super();
   factory ProcessBarcodePaymentRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ProcessBarcodePaymentRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ProcessBarcodePaymentRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'barcode_payment'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'barcodeCode')
+    ..aOS(2, _omitFieldNames ? '' : 'sourceAccountId')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -333,8 +350,10 @@ class ProcessBarcodePaymentRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ProcessBarcodePaymentRequest copyWith(void Function(ProcessBarcodePaymentRequest) updates) => super.copyWith((message) => updates(message as ProcessBarcodePaymentRequest)) as ProcessBarcodePaymentRequest; // ignore: deprecated_member_use
+  ProcessBarcodePaymentRequest copyWith(void Function(ProcessBarcodePaymentRequest) updates) => super.copyWith((message) => updates(message as ProcessBarcodePaymentRequest)) as ProcessBarcodePaymentRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static ProcessBarcodePaymentRequest create() => ProcessBarcodePaymentRequest._();
   ProcessBarcodePaymentRequest createEmptyInstance() => create();
@@ -363,28 +382,29 @@ class ProcessBarcodePaymentRequest extends $pb.GeneratedMessage {
 }
 
 class ProcessBarcodePaymentResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ProcessBarcodePaymentResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'barcode_payment'), createEmptyInstance: create)
-    ..aOM<BarcodeTransaction>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transaction', subBuilder: BarcodeTransaction.create)
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
-    ..hasRequiredFields = false
-  ;
-
-  ProcessBarcodePaymentResponse._() : super();
   factory ProcessBarcodePaymentResponse({
     BarcodeTransaction? transaction,
     $core.String? message,
   }) {
-    final _result = create();
+    final $result = create();
     if (transaction != null) {
-      _result.transaction = transaction;
+      $result.transaction = transaction;
     }
     if (message != null) {
-      _result.message = message;
+      $result.message = message;
     }
-    return _result;
+    return $result;
   }
+  ProcessBarcodePaymentResponse._() : super();
   factory ProcessBarcodePaymentResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ProcessBarcodePaymentResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ProcessBarcodePaymentResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'barcode_payment'), createEmptyInstance: create)
+    ..aOM<BarcodeTransaction>(1, _omitFieldNames ? '' : 'transaction', subBuilder: BarcodeTransaction.create)
+    ..aOS(2, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -394,8 +414,10 @@ class ProcessBarcodePaymentResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ProcessBarcodePaymentResponse copyWith(void Function(ProcessBarcodePaymentResponse) updates) => super.copyWith((message) => updates(message as ProcessBarcodePaymentResponse)) as ProcessBarcodePaymentResponse; // ignore: deprecated_member_use
+  ProcessBarcodePaymentResponse copyWith(void Function(ProcessBarcodePaymentResponse) updates) => super.copyWith((message) => updates(message as ProcessBarcodePaymentResponse)) as ProcessBarcodePaymentResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static ProcessBarcodePaymentResponse create() => ProcessBarcodePaymentResponse._();
   ProcessBarcodePaymentResponse createEmptyInstance() => create();
@@ -426,28 +448,29 @@ class ProcessBarcodePaymentResponse extends $pb.GeneratedMessage {
 }
 
 class GetMyGeneratedBarcodesRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetMyGeneratedBarcodesRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'barcode_payment'), createEmptyInstance: create)
-    ..a<$core.int>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'limit', $pb.PbFieldType.O3)
-    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'offset', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
-
-  GetMyGeneratedBarcodesRequest._() : super();
   factory GetMyGeneratedBarcodesRequest({
     $core.int? limit,
     $core.int? offset,
   }) {
-    final _result = create();
+    final $result = create();
     if (limit != null) {
-      _result.limit = limit;
+      $result.limit = limit;
     }
     if (offset != null) {
-      _result.offset = offset;
+      $result.offset = offset;
     }
-    return _result;
+    return $result;
   }
+  GetMyGeneratedBarcodesRequest._() : super();
   factory GetMyGeneratedBarcodesRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetMyGeneratedBarcodesRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetMyGeneratedBarcodesRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'barcode_payment'), createEmptyInstance: create)
+    ..a<$core.int>(1, _omitFieldNames ? '' : 'limit', $pb.PbFieldType.O3)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'offset', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -457,8 +480,10 @@ class GetMyGeneratedBarcodesRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetMyGeneratedBarcodesRequest copyWith(void Function(GetMyGeneratedBarcodesRequest) updates) => super.copyWith((message) => updates(message as GetMyGeneratedBarcodesRequest)) as GetMyGeneratedBarcodesRequest; // ignore: deprecated_member_use
+  GetMyGeneratedBarcodesRequest copyWith(void Function(GetMyGeneratedBarcodesRequest) updates) => super.copyWith((message) => updates(message as GetMyGeneratedBarcodesRequest)) as GetMyGeneratedBarcodesRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetMyGeneratedBarcodesRequest create() => GetMyGeneratedBarcodesRequest._();
   GetMyGeneratedBarcodesRequest createEmptyInstance() => create();
@@ -487,28 +512,29 @@ class GetMyGeneratedBarcodesRequest extends $pb.GeneratedMessage {
 }
 
 class GetMyGeneratedBarcodesResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetMyGeneratedBarcodesResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'barcode_payment'), createEmptyInstance: create)
-    ..pc<BarcodePayment>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'barcodes', $pb.PbFieldType.PM, subBuilder: BarcodePayment.create)
-    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'total', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
-
-  GetMyGeneratedBarcodesResponse._() : super();
   factory GetMyGeneratedBarcodesResponse({
     $core.Iterable<BarcodePayment>? barcodes,
     $core.int? total,
   }) {
-    final _result = create();
+    final $result = create();
     if (barcodes != null) {
-      _result.barcodes.addAll(barcodes);
+      $result.barcodes.addAll(barcodes);
     }
     if (total != null) {
-      _result.total = total;
+      $result.total = total;
     }
-    return _result;
+    return $result;
   }
+  GetMyGeneratedBarcodesResponse._() : super();
   factory GetMyGeneratedBarcodesResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetMyGeneratedBarcodesResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetMyGeneratedBarcodesResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'barcode_payment'), createEmptyInstance: create)
+    ..pc<BarcodePayment>(1, _omitFieldNames ? '' : 'barcodes', $pb.PbFieldType.PM, subBuilder: BarcodePayment.create)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'total', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -518,8 +544,10 @@ class GetMyGeneratedBarcodesResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetMyGeneratedBarcodesResponse copyWith(void Function(GetMyGeneratedBarcodesResponse) updates) => super.copyWith((message) => updates(message as GetMyGeneratedBarcodesResponse)) as GetMyGeneratedBarcodesResponse; // ignore: deprecated_member_use
+  GetMyGeneratedBarcodesResponse copyWith(void Function(GetMyGeneratedBarcodesResponse) updates) => super.copyWith((message) => updates(message as GetMyGeneratedBarcodesResponse)) as GetMyGeneratedBarcodesResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetMyGeneratedBarcodesResponse create() => GetMyGeneratedBarcodesResponse._();
   GetMyGeneratedBarcodesResponse createEmptyInstance() => create();
@@ -542,28 +570,29 @@ class GetMyGeneratedBarcodesResponse extends $pb.GeneratedMessage {
 }
 
 class GetMyScannedBarcodesRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetMyScannedBarcodesRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'barcode_payment'), createEmptyInstance: create)
-    ..a<$core.int>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'limit', $pb.PbFieldType.O3)
-    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'offset', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
-
-  GetMyScannedBarcodesRequest._() : super();
   factory GetMyScannedBarcodesRequest({
     $core.int? limit,
     $core.int? offset,
   }) {
-    final _result = create();
+    final $result = create();
     if (limit != null) {
-      _result.limit = limit;
+      $result.limit = limit;
     }
     if (offset != null) {
-      _result.offset = offset;
+      $result.offset = offset;
     }
-    return _result;
+    return $result;
   }
+  GetMyScannedBarcodesRequest._() : super();
   factory GetMyScannedBarcodesRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetMyScannedBarcodesRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetMyScannedBarcodesRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'barcode_payment'), createEmptyInstance: create)
+    ..a<$core.int>(1, _omitFieldNames ? '' : 'limit', $pb.PbFieldType.O3)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'offset', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -573,8 +602,10 @@ class GetMyScannedBarcodesRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetMyScannedBarcodesRequest copyWith(void Function(GetMyScannedBarcodesRequest) updates) => super.copyWith((message) => updates(message as GetMyScannedBarcodesRequest)) as GetMyScannedBarcodesRequest; // ignore: deprecated_member_use
+  GetMyScannedBarcodesRequest copyWith(void Function(GetMyScannedBarcodesRequest) updates) => super.copyWith((message) => updates(message as GetMyScannedBarcodesRequest)) as GetMyScannedBarcodesRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetMyScannedBarcodesRequest create() => GetMyScannedBarcodesRequest._();
   GetMyScannedBarcodesRequest createEmptyInstance() => create();
@@ -603,28 +634,29 @@ class GetMyScannedBarcodesRequest extends $pb.GeneratedMessage {
 }
 
 class GetMyScannedBarcodesResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetMyScannedBarcodesResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'barcode_payment'), createEmptyInstance: create)
-    ..pc<BarcodeTransaction>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactions', $pb.PbFieldType.PM, subBuilder: BarcodeTransaction.create)
-    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'total', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
-
-  GetMyScannedBarcodesResponse._() : super();
   factory GetMyScannedBarcodesResponse({
     $core.Iterable<BarcodeTransaction>? transactions,
     $core.int? total,
   }) {
-    final _result = create();
+    final $result = create();
     if (transactions != null) {
-      _result.transactions.addAll(transactions);
+      $result.transactions.addAll(transactions);
     }
     if (total != null) {
-      _result.total = total;
+      $result.total = total;
     }
-    return _result;
+    return $result;
   }
+  GetMyScannedBarcodesResponse._() : super();
   factory GetMyScannedBarcodesResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetMyScannedBarcodesResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetMyScannedBarcodesResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'barcode_payment'), createEmptyInstance: create)
+    ..pc<BarcodeTransaction>(1, _omitFieldNames ? '' : 'transactions', $pb.PbFieldType.PM, subBuilder: BarcodeTransaction.create)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'total', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -634,8 +666,10 @@ class GetMyScannedBarcodesResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetMyScannedBarcodesResponse copyWith(void Function(GetMyScannedBarcodesResponse) updates) => super.copyWith((message) => updates(message as GetMyScannedBarcodesResponse)) as GetMyScannedBarcodesResponse; // ignore: deprecated_member_use
+  GetMyScannedBarcodesResponse copyWith(void Function(GetMyScannedBarcodesResponse) updates) => super.copyWith((message) => updates(message as GetMyScannedBarcodesResponse)) as GetMyScannedBarcodesResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetMyScannedBarcodesResponse create() => GetMyScannedBarcodesResponse._();
   GetMyScannedBarcodesResponse createEmptyInstance() => create();
@@ -658,23 +692,24 @@ class GetMyScannedBarcodesResponse extends $pb.GeneratedMessage {
 }
 
 class CancelBarcodeRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CancelBarcodeRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'barcode_payment'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'barcodeId')
-    ..hasRequiredFields = false
-  ;
-
-  CancelBarcodeRequest._() : super();
   factory CancelBarcodeRequest({
     $core.String? barcodeId,
   }) {
-    final _result = create();
+    final $result = create();
     if (barcodeId != null) {
-      _result.barcodeId = barcodeId;
+      $result.barcodeId = barcodeId;
     }
-    return _result;
+    return $result;
   }
+  CancelBarcodeRequest._() : super();
   factory CancelBarcodeRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CancelBarcodeRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CancelBarcodeRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'barcode_payment'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'barcodeId')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -684,8 +719,10 @@ class CancelBarcodeRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CancelBarcodeRequest copyWith(void Function(CancelBarcodeRequest) updates) => super.copyWith((message) => updates(message as CancelBarcodeRequest)) as CancelBarcodeRequest; // ignore: deprecated_member_use
+  CancelBarcodeRequest copyWith(void Function(CancelBarcodeRequest) updates) => super.copyWith((message) => updates(message as CancelBarcodeRequest)) as CancelBarcodeRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static CancelBarcodeRequest create() => CancelBarcodeRequest._();
   CancelBarcodeRequest createEmptyInstance() => create();
@@ -705,23 +742,24 @@ class CancelBarcodeRequest extends $pb.GeneratedMessage {
 }
 
 class CancelBarcodeResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CancelBarcodeResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'barcode_payment'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
-    ..hasRequiredFields = false
-  ;
-
-  CancelBarcodeResponse._() : super();
   factory CancelBarcodeResponse({
     $core.String? message,
   }) {
-    final _result = create();
+    final $result = create();
     if (message != null) {
-      _result.message = message;
+      $result.message = message;
     }
-    return _result;
+    return $result;
   }
+  CancelBarcodeResponse._() : super();
   factory CancelBarcodeResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CancelBarcodeResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CancelBarcodeResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'barcode_payment'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -731,8 +769,10 @@ class CancelBarcodeResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CancelBarcodeResponse copyWith(void Function(CancelBarcodeResponse) updates) => super.copyWith((message) => updates(message as CancelBarcodeResponse)) as CancelBarcodeResponse; // ignore: deprecated_member_use
+  CancelBarcodeResponse copyWith(void Function(CancelBarcodeResponse) updates) => super.copyWith((message) => updates(message as CancelBarcodeResponse)) as CancelBarcodeResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static CancelBarcodeResponse create() => CancelBarcodeResponse._();
   CancelBarcodeResponse createEmptyInstance() => create();
@@ -751,24 +791,8 @@ class CancelBarcodeResponse extends $pb.GeneratedMessage {
   void clearMessage() => clearField(1);
 }
 
+/// Models
 class BarcodePayment extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'BarcodePayment', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'barcode_payment'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'username')
-    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'fullName')
-    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'barcodeCode')
-    ..a<$core.double>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
-    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
-    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
-    ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status')
-    ..aOM<$36.Timestamp>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $36.Timestamp.create)
-    ..aOM<$36.Timestamp>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'expiresAt', subBuilder: $36.Timestamp.create)
-    ..aOM<$36.Timestamp>(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'paidAt', subBuilder: $36.Timestamp.create)
-    ..hasRequiredFields = false
-  ;
-
-  BarcodePayment._() : super();
   factory BarcodePayment({
     $core.String? id,
     $core.String? userId,
@@ -779,51 +803,69 @@ class BarcodePayment extends $pb.GeneratedMessage {
     $core.String? currency,
     $core.String? description,
     $core.String? status,
-    $36.Timestamp? createdAt,
-    $36.Timestamp? expiresAt,
-    $36.Timestamp? paidAt,
+    $42.Timestamp? createdAt,
+    $42.Timestamp? expiresAt,
+    $42.Timestamp? paidAt,
   }) {
-    final _result = create();
+    final $result = create();
     if (id != null) {
-      _result.id = id;
+      $result.id = id;
     }
     if (userId != null) {
-      _result.userId = userId;
+      $result.userId = userId;
     }
     if (username != null) {
-      _result.username = username;
+      $result.username = username;
     }
     if (fullName != null) {
-      _result.fullName = fullName;
+      $result.fullName = fullName;
     }
     if (barcodeCode != null) {
-      _result.barcodeCode = barcodeCode;
+      $result.barcodeCode = barcodeCode;
     }
     if (amount != null) {
-      _result.amount = amount;
+      $result.amount = amount;
     }
     if (currency != null) {
-      _result.currency = currency;
+      $result.currency = currency;
     }
     if (description != null) {
-      _result.description = description;
+      $result.description = description;
     }
     if (status != null) {
-      _result.status = status;
+      $result.status = status;
     }
     if (createdAt != null) {
-      _result.createdAt = createdAt;
+      $result.createdAt = createdAt;
     }
     if (expiresAt != null) {
-      _result.expiresAt = expiresAt;
+      $result.expiresAt = expiresAt;
     }
     if (paidAt != null) {
-      _result.paidAt = paidAt;
+      $result.paidAt = paidAt;
     }
-    return _result;
+    return $result;
   }
+  BarcodePayment._() : super();
   factory BarcodePayment.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory BarcodePayment.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'BarcodePayment', package: const $pb.PackageName(_omitMessageNames ? '' : 'barcode_payment'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'id')
+    ..aOS(2, _omitFieldNames ? '' : 'userId')
+    ..aOS(3, _omitFieldNames ? '' : 'username')
+    ..aOS(4, _omitFieldNames ? '' : 'fullName')
+    ..aOS(5, _omitFieldNames ? '' : 'barcodeCode')
+    ..a<$core.double>(6, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
+    ..aOS(7, _omitFieldNames ? '' : 'currency')
+    ..aOS(8, _omitFieldNames ? '' : 'description')
+    ..aOS(9, _omitFieldNames ? '' : 'status')
+    ..aOM<$42.Timestamp>(10, _omitFieldNames ? '' : 'createdAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$42.Timestamp>(11, _omitFieldNames ? '' : 'expiresAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$42.Timestamp>(12, _omitFieldNames ? '' : 'paidAt', subBuilder: $42.Timestamp.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -833,8 +875,10 @@ class BarcodePayment extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  BarcodePayment copyWith(void Function(BarcodePayment) updates) => super.copyWith((message) => updates(message as BarcodePayment)) as BarcodePayment; // ignore: deprecated_member_use
+  BarcodePayment copyWith(void Function(BarcodePayment) updates) => super.copyWith((message) => updates(message as BarcodePayment)) as BarcodePayment;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static BarcodePayment create() => BarcodePayment._();
   BarcodePayment createEmptyInstance() => create();
@@ -925,59 +969,40 @@ class BarcodePayment extends $pb.GeneratedMessage {
   void clearStatus() => clearField(9);
 
   @$pb.TagNumber(10)
-  $36.Timestamp get createdAt => $_getN(9);
+  $42.Timestamp get createdAt => $_getN(9);
   @$pb.TagNumber(10)
-  set createdAt($36.Timestamp v) { setField(10, v); }
+  set createdAt($42.Timestamp v) { setField(10, v); }
   @$pb.TagNumber(10)
   $core.bool hasCreatedAt() => $_has(9);
   @$pb.TagNumber(10)
   void clearCreatedAt() => clearField(10);
   @$pb.TagNumber(10)
-  $36.Timestamp ensureCreatedAt() => $_ensure(9);
+  $42.Timestamp ensureCreatedAt() => $_ensure(9);
 
   @$pb.TagNumber(11)
-  $36.Timestamp get expiresAt => $_getN(10);
+  $42.Timestamp get expiresAt => $_getN(10);
   @$pb.TagNumber(11)
-  set expiresAt($36.Timestamp v) { setField(11, v); }
+  set expiresAt($42.Timestamp v) { setField(11, v); }
   @$pb.TagNumber(11)
   $core.bool hasExpiresAt() => $_has(10);
   @$pb.TagNumber(11)
   void clearExpiresAt() => clearField(11);
   @$pb.TagNumber(11)
-  $36.Timestamp ensureExpiresAt() => $_ensure(10);
+  $42.Timestamp ensureExpiresAt() => $_ensure(10);
 
   @$pb.TagNumber(12)
-  $36.Timestamp get paidAt => $_getN(11);
+  $42.Timestamp get paidAt => $_getN(11);
   @$pb.TagNumber(12)
-  set paidAt($36.Timestamp v) { setField(12, v); }
+  set paidAt($42.Timestamp v) { setField(12, v); }
   @$pb.TagNumber(12)
   $core.bool hasPaidAt() => $_has(11);
   @$pb.TagNumber(12)
   void clearPaidAt() => clearField(12);
   @$pb.TagNumber(12)
-  $36.Timestamp ensurePaidAt() => $_ensure(11);
+  $42.Timestamp ensurePaidAt() => $_ensure(11);
 }
 
 class BarcodeTransaction extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'BarcodeTransaction', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'barcode_payment'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'barcodeId')
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'payerId')
-    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'payerUsername')
-    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'payerName')
-    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recipientId')
-    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recipientUsername')
-    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recipientName')
-    ..a<$core.double>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
-    ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
-    ..aOS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
-    ..aOS(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'referenceNumber')
-    ..aOS(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status')
-    ..aOM<$36.Timestamp>(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $36.Timestamp.create)
-    ..hasRequiredFields = false
-  ;
-
-  BarcodeTransaction._() : super();
   factory BarcodeTransaction({
     $core.String? id,
     $core.String? barcodeId,
@@ -992,55 +1017,75 @@ class BarcodeTransaction extends $pb.GeneratedMessage {
     $core.String? description,
     $core.String? referenceNumber,
     $core.String? status,
-    $36.Timestamp? createdAt,
+    $42.Timestamp? createdAt,
   }) {
-    final _result = create();
+    final $result = create();
     if (id != null) {
-      _result.id = id;
+      $result.id = id;
     }
     if (barcodeId != null) {
-      _result.barcodeId = barcodeId;
+      $result.barcodeId = barcodeId;
     }
     if (payerId != null) {
-      _result.payerId = payerId;
+      $result.payerId = payerId;
     }
     if (payerUsername != null) {
-      _result.payerUsername = payerUsername;
+      $result.payerUsername = payerUsername;
     }
     if (payerName != null) {
-      _result.payerName = payerName;
+      $result.payerName = payerName;
     }
     if (recipientId != null) {
-      _result.recipientId = recipientId;
+      $result.recipientId = recipientId;
     }
     if (recipientUsername != null) {
-      _result.recipientUsername = recipientUsername;
+      $result.recipientUsername = recipientUsername;
     }
     if (recipientName != null) {
-      _result.recipientName = recipientName;
+      $result.recipientName = recipientName;
     }
     if (amount != null) {
-      _result.amount = amount;
+      $result.amount = amount;
     }
     if (currency != null) {
-      _result.currency = currency;
+      $result.currency = currency;
     }
     if (description != null) {
-      _result.description = description;
+      $result.description = description;
     }
     if (referenceNumber != null) {
-      _result.referenceNumber = referenceNumber;
+      $result.referenceNumber = referenceNumber;
     }
     if (status != null) {
-      _result.status = status;
+      $result.status = status;
     }
     if (createdAt != null) {
-      _result.createdAt = createdAt;
+      $result.createdAt = createdAt;
     }
-    return _result;
+    return $result;
   }
+  BarcodeTransaction._() : super();
   factory BarcodeTransaction.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory BarcodeTransaction.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'BarcodeTransaction', package: const $pb.PackageName(_omitMessageNames ? '' : 'barcode_payment'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'id')
+    ..aOS(2, _omitFieldNames ? '' : 'barcodeId')
+    ..aOS(3, _omitFieldNames ? '' : 'payerId')
+    ..aOS(4, _omitFieldNames ? '' : 'payerUsername')
+    ..aOS(5, _omitFieldNames ? '' : 'payerName')
+    ..aOS(6, _omitFieldNames ? '' : 'recipientId')
+    ..aOS(7, _omitFieldNames ? '' : 'recipientUsername')
+    ..aOS(8, _omitFieldNames ? '' : 'recipientName')
+    ..a<$core.double>(9, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
+    ..aOS(10, _omitFieldNames ? '' : 'currency')
+    ..aOS(11, _omitFieldNames ? '' : 'description')
+    ..aOS(12, _omitFieldNames ? '' : 'referenceNumber')
+    ..aOS(13, _omitFieldNames ? '' : 'status')
+    ..aOM<$42.Timestamp>(14, _omitFieldNames ? '' : 'createdAt', subBuilder: $42.Timestamp.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1050,8 +1095,10 @@ class BarcodeTransaction extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  BarcodeTransaction copyWith(void Function(BarcodeTransaction) updates) => super.copyWith((message) => updates(message as BarcodeTransaction)) as BarcodeTransaction; // ignore: deprecated_member_use
+  BarcodeTransaction copyWith(void Function(BarcodeTransaction) updates) => super.copyWith((message) => updates(message as BarcodeTransaction)) as BarcodeTransaction;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static BarcodeTransaction create() => BarcodeTransaction._();
   BarcodeTransaction createEmptyInstance() => create();
@@ -1178,14 +1225,17 @@ class BarcodeTransaction extends $pb.GeneratedMessage {
   void clearStatus() => clearField(13);
 
   @$pb.TagNumber(14)
-  $36.Timestamp get createdAt => $_getN(13);
+  $42.Timestamp get createdAt => $_getN(13);
   @$pb.TagNumber(14)
-  set createdAt($36.Timestamp v) { setField(14, v); }
+  set createdAt($42.Timestamp v) { setField(14, v); }
   @$pb.TagNumber(14)
   $core.bool hasCreatedAt() => $_has(13);
   @$pb.TagNumber(14)
   void clearCreatedAt() => clearField(14);
   @$pb.TagNumber(14)
-  $36.Timestamp ensureCreatedAt() => $_ensure(13);
+  $42.Timestamp ensureCreatedAt() => $_ensure(13);
 }
 
+
+const _omitFieldNames = $core.bool.fromEnvironment('protobuf.omit_field_names');
+const _omitMessageNames = $core.bool.fromEnvironment('protobuf.omit_message_names');

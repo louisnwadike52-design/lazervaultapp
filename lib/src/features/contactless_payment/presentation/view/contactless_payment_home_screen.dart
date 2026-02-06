@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart' as currency_formatter;
 import '../../domain/repositories/contactless_payment_repository.dart';
 import '../cubit/contactless_payment_cubit.dart';
 import '../cubit/contactless_payment_state.dart';
@@ -224,65 +226,76 @@ class _ContactlessPaymentHomeViewState
       builder: (context, child) {
         return Transform.scale(
           scale: _pulseAnimation.value,
-          child: Container(
-            width: double.infinity,
-            padding: EdgeInsets.all(32.w),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Color(0xFF6366F1),
-                  Color(0xFF8B5CF6),
-                  Color(0xFFA78BFA),
+          child: GestureDetector(
+            onTap: () {
+              HapticFeedback.lightImpact();
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const NfcReaderScreen(),
+                ),
+              );
+            },
+            child: Container(
+              width: double.infinity,
+              padding: EdgeInsets.all(32.w),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Color(0xFF6366F1),
+                    Color(0xFF8B5CF6),
+                    Color(0xFFA78BFA),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(24.r),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF6366F1).withValues(alpha: 0.4),
+                    blurRadius: 30,
+                    offset: const Offset(0, 12),
+                  ),
                 ],
               ),
-              borderRadius: BorderRadius.circular(24.r),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFF6366F1).withValues(alpha: 0.4),
-                  blurRadius: 30,
-                  offset: const Offset(0, 12),
-                ),
-              ],
-            ),
-            child: Column(
-              children: [
-                Container(
-                  width: 80.w,
-                  height: 80.w,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    shape: BoxShape.circle,
+              child: Column(
+                children: [
+                  Container(
+                    width: 80.w,
+                    height: 80.w,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.contactless_rounded,
+                      size: 44.sp,
+                      color: Colors.white,
+                    ),
                   ),
-                  child: Icon(
-                    Icons.contactless_rounded,
-                    size: 44.sp,
-                    color: Colors.white,
+                  SizedBox(height: 20.h),
+                  Text(
+                    'Tap to Pay',
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 28.sp,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -0.5,
+                    ),
                   ),
-                ),
-                SizedBox(height: 20.h),
-                Text(
-                  'Tap to Pay',
-                  style: GoogleFonts.inter(
-                    color: Colors.white,
-                    fontSize: 28.sp,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: -0.5,
+                  SizedBox(height: 8.h),
+                  Text(
+                    'Hold phones together to instantly\nsend or receive payments',
+                    style: GoogleFonts.inter(
+                      color: Colors.white.withValues(alpha: 0.85),
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w400,
+                      height: 1.5,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
-                ),
-                SizedBox(height: 8.h),
-                Text(
-                  'Hold phones together to instantly\nsend or receive payments',
-                  style: GoogleFonts.inter(
-                    color: Colors.white.withValues(alpha: 0.85),
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w400,
-                    height: 1.5,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         );
@@ -561,7 +574,7 @@ class _ContactlessPaymentHomeViewState
             ),
           ),
           Text(
-            '${transaction.currency} ${transaction.amount.toStringAsFixed(2)}',
+            currency_formatter.CurrencySymbols.formatAmountWithCurrency(transaction.amount, transaction.currency),
             style: GoogleFonts.inter(
               color: const Color(0xFF10B981),
               fontSize: 14.sp,

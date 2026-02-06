@@ -1,206 +1,159 @@
-///
+//
 //  Generated code. Do not modify.
 //  source: contact_sync.proto
 //
 // @dart = 2.12
-// ignore_for_file: annotate_overrides,camel_case_types,constant_identifier_names,directives_ordering,library_prefixes,non_constant_identifier_names,prefer_final_fields,return_of_invalid_type,unnecessary_const,unnecessary_import,unnecessary_this,unused_import,unused_shown_name
+
+// ignore_for_file: annotate_overrides, camel_case_types, comment_references
+// ignore_for_file: constant_identifier_names, library_prefixes
+// ignore_for_file: non_constant_identifier_names, prefer_final_fields
+// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
 
 import 'dart:async' as $async;
-
 import 'dart:core' as $core;
 
 import 'package:grpc/service_api.dart' as $grpc;
-import 'contact_sync.pb.dart' as $8;
+import 'package:protobuf/protobuf.dart' as $pb;
+
+import 'contact_sync.pb.dart' as $10;
+
 export 'contact_sync.pb.dart';
 
+@$pb.GrpcServiceName('lazervault.contact.ContactSyncService')
 class ContactSyncServiceClient extends $grpc.Client {
-  static final _$syncContacts =
-      $grpc.ClientMethod<$8.SyncContactsRequest, $8.SyncContactsResponse>(
-          '/lazervault.contact.ContactSyncService/SyncContacts',
-          ($8.SyncContactsRequest value) => value.writeToBuffer(),
-          ($core.List<$core.int> value) =>
-              $8.SyncContactsResponse.fromBuffer(value));
-  static final _$getSyncedContacts = $grpc.ClientMethod<
-          $8.GetSyncedContactsRequest, $8.GetSyncedContactsResponse>(
+  static final _$syncContacts = $grpc.ClientMethod<$10.SyncContactsRequest, $10.SyncContactsResponse>(
+      '/lazervault.contact.ContactSyncService/SyncContacts',
+      ($10.SyncContactsRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $10.SyncContactsResponse.fromBuffer(value));
+  static final _$getSyncedContacts = $grpc.ClientMethod<$10.GetSyncedContactsRequest, $10.GetSyncedContactsResponse>(
       '/lazervault.contact.ContactSyncService/GetSyncedContacts',
-      ($8.GetSyncedContactsRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $8.GetSyncedContactsResponse.fromBuffer(value));
-  static final _$deleteSyncedContacts = $grpc.ClientMethod<
-          $8.DeleteSyncedContactsRequest, $8.DeleteSyncedContactsResponse>(
+      ($10.GetSyncedContactsRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $10.GetSyncedContactsResponse.fromBuffer(value));
+  static final _$deleteSyncedContacts = $grpc.ClientMethod<$10.DeleteSyncedContactsRequest, $10.DeleteSyncedContactsResponse>(
       '/lazervault.contact.ContactSyncService/DeleteSyncedContacts',
-      ($8.DeleteSyncedContactsRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $8.DeleteSyncedContactsResponse.fromBuffer(value));
-  static final _$convertContactToRecipient = $grpc.ClientMethod<
-          $8.ConvertContactToRecipientRequest,
-          $8.ConvertContactToRecipientResponse>(
+      ($10.DeleteSyncedContactsRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $10.DeleteSyncedContactsResponse.fromBuffer(value));
+  static final _$convertContactToRecipient = $grpc.ClientMethod<$10.ConvertContactToRecipientRequest, $10.ConvertContactToRecipientResponse>(
       '/lazervault.contact.ContactSyncService/ConvertContactToRecipient',
-      ($8.ConvertContactToRecipientRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $8.ConvertContactToRecipientResponse.fromBuffer(value));
-  static final _$findLazerVaultUsers = $grpc.ClientMethod<
-          $8.FindLazerVaultUsersRequest, $8.FindLazerVaultUsersResponse>(
+      ($10.ConvertContactToRecipientRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $10.ConvertContactToRecipientResponse.fromBuffer(value));
+  static final _$findLazerVaultUsers = $grpc.ClientMethod<$10.FindLazerVaultUsersRequest, $10.FindLazerVaultUsersResponse>(
       '/lazervault.contact.ContactSyncService/FindLazerVaultUsers',
-      ($8.FindLazerVaultUsersRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $8.FindLazerVaultUsersResponse.fromBuffer(value));
-  static final _$updateSyncPreferences = $grpc.ClientMethod<
-          $8.UpdateSyncPreferencesRequest, $8.UpdateSyncPreferencesResponse>(
+      ($10.FindLazerVaultUsersRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $10.FindLazerVaultUsersResponse.fromBuffer(value));
+  static final _$updateSyncPreferences = $grpc.ClientMethod<$10.UpdateSyncPreferencesRequest, $10.UpdateSyncPreferencesResponse>(
       '/lazervault.contact.ContactSyncService/UpdateSyncPreferences',
-      ($8.UpdateSyncPreferencesRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $8.UpdateSyncPreferencesResponse.fromBuffer(value));
+      ($10.UpdateSyncPreferencesRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $10.UpdateSyncPreferencesResponse.fromBuffer(value));
 
   ContactSyncServiceClient($grpc.ClientChannel channel,
       {$grpc.CallOptions? options,
       $core.Iterable<$grpc.ClientInterceptor>? interceptors})
-      : super(channel, options: options, interceptors: interceptors);
+      : super(channel, options: options,
+        interceptors: interceptors);
 
-  $grpc.ResponseFuture<$8.SyncContactsResponse> syncContacts(
-      $8.SyncContactsRequest request,
-      {$grpc.CallOptions? options}) {
+  $grpc.ResponseFuture<$10.SyncContactsResponse> syncContacts($10.SyncContactsRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$syncContacts, request, options: options);
   }
 
-  $grpc.ResponseFuture<$8.GetSyncedContactsResponse> getSyncedContacts(
-      $8.GetSyncedContactsRequest request,
-      {$grpc.CallOptions? options}) {
+  $grpc.ResponseFuture<$10.GetSyncedContactsResponse> getSyncedContacts($10.GetSyncedContactsRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getSyncedContacts, request, options: options);
   }
 
-  $grpc.ResponseFuture<$8.DeleteSyncedContactsResponse> deleteSyncedContacts(
-      $8.DeleteSyncedContactsRequest request,
-      {$grpc.CallOptions? options}) {
+  $grpc.ResponseFuture<$10.DeleteSyncedContactsResponse> deleteSyncedContacts($10.DeleteSyncedContactsRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$deleteSyncedContacts, request, options: options);
   }
 
-  $grpc.ResponseFuture<$8.ConvertContactToRecipientResponse>
-      convertContactToRecipient($8.ConvertContactToRecipientRequest request,
-          {$grpc.CallOptions? options}) {
-    return $createUnaryCall(_$convertContactToRecipient, request,
-        options: options);
+  $grpc.ResponseFuture<$10.ConvertContactToRecipientResponse> convertContactToRecipient($10.ConvertContactToRecipientRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$convertContactToRecipient, request, options: options);
   }
 
-  $grpc.ResponseFuture<$8.FindLazerVaultUsersResponse> findLazerVaultUsers(
-      $8.FindLazerVaultUsersRequest request,
-      {$grpc.CallOptions? options}) {
+  $grpc.ResponseFuture<$10.FindLazerVaultUsersResponse> findLazerVaultUsers($10.FindLazerVaultUsersRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$findLazerVaultUsers, request, options: options);
   }
 
-  $grpc.ResponseFuture<$8.UpdateSyncPreferencesResponse> updateSyncPreferences(
-      $8.UpdateSyncPreferencesRequest request,
-      {$grpc.CallOptions? options}) {
+  $grpc.ResponseFuture<$10.UpdateSyncPreferencesResponse> updateSyncPreferences($10.UpdateSyncPreferencesRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$updateSyncPreferences, request, options: options);
   }
 }
 
+@$pb.GrpcServiceName('lazervault.contact.ContactSyncService')
 abstract class ContactSyncServiceBase extends $grpc.Service {
   $core.String get $name => 'lazervault.contact.ContactSyncService';
 
   ContactSyncServiceBase() {
-    $addMethod(
-        $grpc.ServiceMethod<$8.SyncContactsRequest, $8.SyncContactsResponse>(
-            'SyncContacts',
-            syncContacts_Pre,
-            false,
-            false,
-            ($core.List<$core.int> value) =>
-                $8.SyncContactsRequest.fromBuffer(value),
-            ($8.SyncContactsResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$8.GetSyncedContactsRequest,
-            $8.GetSyncedContactsResponse>(
+    $addMethod($grpc.ServiceMethod<$10.SyncContactsRequest, $10.SyncContactsResponse>(
+        'SyncContacts',
+        syncContacts_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $10.SyncContactsRequest.fromBuffer(value),
+        ($10.SyncContactsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$10.GetSyncedContactsRequest, $10.GetSyncedContactsResponse>(
         'GetSyncedContacts',
         getSyncedContacts_Pre,
         false,
         false,
-        ($core.List<$core.int> value) =>
-            $8.GetSyncedContactsRequest.fromBuffer(value),
-        ($8.GetSyncedContactsResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$8.DeleteSyncedContactsRequest,
-            $8.DeleteSyncedContactsResponse>(
+        ($core.List<$core.int> value) => $10.GetSyncedContactsRequest.fromBuffer(value),
+        ($10.GetSyncedContactsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$10.DeleteSyncedContactsRequest, $10.DeleteSyncedContactsResponse>(
         'DeleteSyncedContacts',
         deleteSyncedContacts_Pre,
         false,
         false,
-        ($core.List<$core.int> value) =>
-            $8.DeleteSyncedContactsRequest.fromBuffer(value),
-        ($8.DeleteSyncedContactsResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$8.ConvertContactToRecipientRequest,
-            $8.ConvertContactToRecipientResponse>(
+        ($core.List<$core.int> value) => $10.DeleteSyncedContactsRequest.fromBuffer(value),
+        ($10.DeleteSyncedContactsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$10.ConvertContactToRecipientRequest, $10.ConvertContactToRecipientResponse>(
         'ConvertContactToRecipient',
         convertContactToRecipient_Pre,
         false,
         false,
-        ($core.List<$core.int> value) =>
-            $8.ConvertContactToRecipientRequest.fromBuffer(value),
-        ($8.ConvertContactToRecipientResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$8.FindLazerVaultUsersRequest,
-            $8.FindLazerVaultUsersResponse>(
+        ($core.List<$core.int> value) => $10.ConvertContactToRecipientRequest.fromBuffer(value),
+        ($10.ConvertContactToRecipientResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$10.FindLazerVaultUsersRequest, $10.FindLazerVaultUsersResponse>(
         'FindLazerVaultUsers',
         findLazerVaultUsers_Pre,
         false,
         false,
-        ($core.List<$core.int> value) =>
-            $8.FindLazerVaultUsersRequest.fromBuffer(value),
-        ($8.FindLazerVaultUsersResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$8.UpdateSyncPreferencesRequest,
-            $8.UpdateSyncPreferencesResponse>(
+        ($core.List<$core.int> value) => $10.FindLazerVaultUsersRequest.fromBuffer(value),
+        ($10.FindLazerVaultUsersResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$10.UpdateSyncPreferencesRequest, $10.UpdateSyncPreferencesResponse>(
         'UpdateSyncPreferences',
         updateSyncPreferences_Pre,
         false,
         false,
-        ($core.List<$core.int> value) =>
-            $8.UpdateSyncPreferencesRequest.fromBuffer(value),
-        ($8.UpdateSyncPreferencesResponse value) => value.writeToBuffer()));
+        ($core.List<$core.int> value) => $10.UpdateSyncPreferencesRequest.fromBuffer(value),
+        ($10.UpdateSyncPreferencesResponse value) => value.writeToBuffer()));
   }
 
-  $async.Future<$8.SyncContactsResponse> syncContacts_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$8.SyncContactsRequest> request) async {
+  $async.Future<$10.SyncContactsResponse> syncContacts_Pre($grpc.ServiceCall call, $async.Future<$10.SyncContactsRequest> request) async {
     return syncContacts(call, await request);
   }
 
-  $async.Future<$8.GetSyncedContactsResponse> getSyncedContacts_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$8.GetSyncedContactsRequest> request) async {
+  $async.Future<$10.GetSyncedContactsResponse> getSyncedContacts_Pre($grpc.ServiceCall call, $async.Future<$10.GetSyncedContactsRequest> request) async {
     return getSyncedContacts(call, await request);
   }
 
-  $async.Future<$8.DeleteSyncedContactsResponse> deleteSyncedContacts_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$8.DeleteSyncedContactsRequest> request) async {
+  $async.Future<$10.DeleteSyncedContactsResponse> deleteSyncedContacts_Pre($grpc.ServiceCall call, $async.Future<$10.DeleteSyncedContactsRequest> request) async {
     return deleteSyncedContacts(call, await request);
   }
 
-  $async.Future<$8.ConvertContactToRecipientResponse>
-      convertContactToRecipient_Pre($grpc.ServiceCall call,
-          $async.Future<$8.ConvertContactToRecipientRequest> request) async {
+  $async.Future<$10.ConvertContactToRecipientResponse> convertContactToRecipient_Pre($grpc.ServiceCall call, $async.Future<$10.ConvertContactToRecipientRequest> request) async {
     return convertContactToRecipient(call, await request);
   }
 
-  $async.Future<$8.FindLazerVaultUsersResponse> findLazerVaultUsers_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$8.FindLazerVaultUsersRequest> request) async {
+  $async.Future<$10.FindLazerVaultUsersResponse> findLazerVaultUsers_Pre($grpc.ServiceCall call, $async.Future<$10.FindLazerVaultUsersRequest> request) async {
     return findLazerVaultUsers(call, await request);
   }
 
-  $async.Future<$8.UpdateSyncPreferencesResponse> updateSyncPreferences_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$8.UpdateSyncPreferencesRequest> request) async {
+  $async.Future<$10.UpdateSyncPreferencesResponse> updateSyncPreferences_Pre($grpc.ServiceCall call, $async.Future<$10.UpdateSyncPreferencesRequest> request) async {
     return updateSyncPreferences(call, await request);
   }
 
-  $async.Future<$8.SyncContactsResponse> syncContacts(
-      $grpc.ServiceCall call, $8.SyncContactsRequest request);
-  $async.Future<$8.GetSyncedContactsResponse> getSyncedContacts(
-      $grpc.ServiceCall call, $8.GetSyncedContactsRequest request);
-  $async.Future<$8.DeleteSyncedContactsResponse> deleteSyncedContacts(
-      $grpc.ServiceCall call, $8.DeleteSyncedContactsRequest request);
-  $async.Future<$8.ConvertContactToRecipientResponse> convertContactToRecipient(
-      $grpc.ServiceCall call, $8.ConvertContactToRecipientRequest request);
-  $async.Future<$8.FindLazerVaultUsersResponse> findLazerVaultUsers(
-      $grpc.ServiceCall call, $8.FindLazerVaultUsersRequest request);
-  $async.Future<$8.UpdateSyncPreferencesResponse> updateSyncPreferences(
-      $grpc.ServiceCall call, $8.UpdateSyncPreferencesRequest request);
+  $async.Future<$10.SyncContactsResponse> syncContacts($grpc.ServiceCall call, $10.SyncContactsRequest request);
+  $async.Future<$10.GetSyncedContactsResponse> getSyncedContacts($grpc.ServiceCall call, $10.GetSyncedContactsRequest request);
+  $async.Future<$10.DeleteSyncedContactsResponse> deleteSyncedContacts($grpc.ServiceCall call, $10.DeleteSyncedContactsRequest request);
+  $async.Future<$10.ConvertContactToRecipientResponse> convertContactToRecipient($grpc.ServiceCall call, $10.ConvertContactToRecipientRequest request);
+  $async.Future<$10.FindLazerVaultUsersResponse> findLazerVaultUsers($grpc.ServiceCall call, $10.FindLazerVaultUsersRequest request);
+  $async.Future<$10.UpdateSyncPreferencesResponse> updateSyncPreferences($grpc.ServiceCall call, $10.UpdateSyncPreferencesRequest request);
 }

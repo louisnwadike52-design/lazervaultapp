@@ -683,4 +683,199 @@ class TransferPdfService {
       throw Exception('Failed to share transfer receipt: $e');
     }
   }
+
+  /// Generate PDF from map-based transfer details (for TransferReceiptScreen)
+  static Future<File> _generateFromMap({
+    required Map<String, dynamic> transferDetails,
+  }) async {
+    await _loadFonts();
+    final pdf = pw.Document();
+    final logo = await _loadLogo();
+    final generatedDate = _displayDateFormat.format(DateTime.now());
+
+    final amount = (transferDetails['amount'] as num?)?.toDouble() ?? 0.0;
+    final currency = transferDetails['currency'] as String? ?? 'NGN';
+    final currencySymbol = _currencySymbolFor(currency);
+    final fee = (transferDetails['fee'] as num?)?.toDouble() ?? 0.0;
+
+    final recipientName = transferDetails['recipientName'] as String? ?? 'Recipient';
+    final recipientAccount = transferDetails['recipientAccountMasked'] as String?;
+    final recipientBank = transferDetails['recipientBankName'] as String?;
+    final sourceAccountName = transferDetails['sourceAccountName'] as String?;
+    final sourceAccountInfo = transferDetails['sourceAccountInfo'] as String?;
+    final reference = transferDetails['reference'] as String? ?? '';
+    final narration = transferDetails['narration'] as String?;
+    final status = transferDetails['status'] as String? ?? 'completed';
+    final transferType = transferDetails['transferType'] as String? ?? 'Fund Transfer';
+    final network = transferDetails['network'] as String?;
+    final transferId = transferDetails['transferId']?.toString() ??
+        transferDetails['transactionId']?.toString() ?? '';
+
+    DateTime? timestamp;
+    if (transferDetails['timestamp'] != null) {
+      timestamp = transferDetails['timestamp'] as DateTime?;
+    } else if (transferDetails['createdAt'] != null) {
+      timestamp = transferDetails['createdAt'] as DateTime?;
+    }
+    timestamp ??= DateTime.now();
+    final transactionDate = _dateFormat.format(timestamp);
+
+    pdf.addPage(
+      pw.Page(
+        pageFormat: PdfPageFormat.a4,
+        margin: const pw.EdgeInsets.all(40),
+        build: (pw.Context context) {
+          return pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              // Header
+              _buildHeader(logo, generatedDate),
+              pw.SizedBox(height: 24),
+
+              // Sender and Summary
+              pw.Row(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  pw.Expanded(
+                    flex: 1,
+                    child: _buildSenderInfo(
+                      senderName: sourceAccountName ?? 'LazerVault User',
+                      accountNumber: sourceAccountInfo,
+                      bankName: null,
+                    ),
+                  ),
+                  pw.SizedBox(width: 40),
+                  pw.Expanded(
+                    flex: 1,
+                    child: _buildSummaryTable(
+                      transactionDate: transactionDate,
+                      status: _formatStatusForPdf(status),
+                      type: transferType,
+                      network: network ?? 'LazerVault',
+                    ),
+                  ),
+                ],
+              ),
+              pw.SizedBox(height: 32),
+
+              // Transfer Details
+              _buildTransferDetails(
+                currencySymbol: currencySymbol,
+                amount: amount.toStringAsFixed(2),
+                fee: fee,
+                narration: narration ?? 'Fund Transfer',
+                reference: reference.isNotEmpty ? reference : transferId,
+                transactionId: transferId,
+                currency: currency,
+              ),
+              pw.SizedBox(height: 32),
+
+              // Beneficiary Details
+              _buildBeneficiaryDetails(
+                recipientName: recipientName,
+                accountNumber: recipientAccount,
+                bankName: recipientBank,
+              ),
+
+              pw.Spacer(),
+
+              // Footer
+              _buildFooter(),
+            ],
+          );
+        },
+      ),
+    );
+
+    final output = await getTemporaryDirectory();
+    final safeRef = reference.isNotEmpty
+        ? reference.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_')
+        : transferId.isNotEmpty
+            ? transferId.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_')
+            : 'transfer';
+    final fileName = 'transfer_receipt_$safeRef.pdf';
+    final file = File('${output.path}/$fileName');
+    await file.writeAsBytes(await pdf.save());
+    return file;
+  }
+
+  static String _formatStatusForPdf(String status) {
+    switch (status.toLowerCase()) {
+      case 'completed':
+      case 'success':
+        return 'Completed';
+      case 'pending':
+      case 'processing':
+        return 'Pending';
+      case 'failed':
+        return 'Failed';
+      case 'scheduled':
+        return 'Scheduled';
+      default:
+        return status;
+    }
+  }
+
+  /// Download receipt from map-based transfer details
+  static Future<String> downloadReceiptFromMap({
+    required Map<String, dynamic> transferDetails,
+  }) async {
+    try {
+      final file = await _generateFromMap(transferDetails: transferDetails);
+
+      Directory? directory;
+      if (Platform.isAndroid) {
+        directory = Directory('/storage/emulated/0/Download');
+        if (!await directory.exists()) {
+          directory = await getExternalStorageDirectory();
+        }
+      } else if (Platform.isIOS) {
+        directory = await getApplicationDocumentsDirectory();
+      } else {
+        directory = await getDownloadsDirectory();
+      }
+
+      if (directory == null) {
+        throw Exception('Could not access downloads directory');
+      }
+
+      final reference = transferDetails['reference'] as String? ?? '';
+      final transferId = transferDetails['transferId']?.toString() ??
+          transferDetails['transactionId']?.toString() ?? '';
+      final safeRef = reference.isNotEmpty
+          ? reference.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_')
+          : transferId.isNotEmpty
+              ? transferId.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_')
+              : 'transfer';
+      final fileName = 'transfer_receipt_$safeRef.pdf';
+      final savedFile = File('${directory.path}/$fileName');
+      await file.copy(savedFile.path);
+
+      return savedFile.path;
+    } catch (e) {
+      throw Exception('Failed to download transfer receipt: $e');
+    }
+  }
+
+  /// Share receipt from map-based transfer details
+  static Future<void> shareReceiptFromMap({
+    required Map<String, dynamic> transferDetails,
+  }) async {
+    try {
+      final file = await _generateFromMap(transferDetails: transferDetails);
+
+      final currency = transferDetails['currency'] as String? ?? 'NGN';
+      final amount = (transferDetails['amount'] as num?)?.toDouble() ?? 0.0;
+      final currencySymbol = _currencySymbolFor(currency);
+      final recipientName = transferDetails['recipientName'] as String? ?? 'Recipient';
+
+      await SharePlus.instance.share(ShareParams(
+        files: [XFile(file.path)],
+        text: 'LazerVault Transfer Receipt - $currencySymbol${amount.toStringAsFixed(2)} to $recipientName',
+        subject: 'LazerVault Transfer Receipt',
+      ));
+    } catch (e) {
+      throw Exception('Failed to share transfer receipt: $e');
+    }
+  }
 }

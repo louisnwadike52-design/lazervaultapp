@@ -491,3 +491,65 @@ class CrowdfundSharingText extends Equatable {
   @override
   List<Object?> get props => [whatsapp, facebook, telegram, twitter, general];
 }
+
+// ============================================================================
+// CAMPAIGN WALLET ENTITIES
+// ============================================================================
+
+/// Result of a withdrawal from a campaign wallet
+class CrowdfundWithdrawalResult extends Equatable {
+  final String crowdfundId;
+  final double amountWithdrawn;
+  final double remainingBalance;
+  final String destinationAccountId;
+  final double destinationNewBalance;
+  final String message;
+
+  const CrowdfundWithdrawalResult({
+    required this.crowdfundId,
+    required this.amountWithdrawn,
+    required this.remainingBalance,
+    required this.destinationAccountId,
+    required this.destinationNewBalance,
+    required this.message,
+  });
+
+  @override
+  List<Object?> get props => [
+        crowdfundId,
+        amountWithdrawn,
+        remainingBalance,
+        destinationAccountId,
+        destinationNewBalance,
+        message,
+      ];
+}
+
+/// Campaign wallet balance information
+class CampaignWalletBalance extends Equatable {
+  final String crowdfundId;
+  final String campaignWalletId;
+  final double balance;
+  final double availableBalance;
+  final String currency;
+
+  const CampaignWalletBalance({
+    required this.crowdfundId,
+    required this.campaignWalletId,
+    required this.balance,
+    required this.availableBalance,
+    required this.currency,
+  });
+
+  /// Whether there are available funds to withdraw
+  bool get hasAvailableFunds => availableBalance > 0;
+
+  @override
+  List<Object?> get props => [
+        crowdfundId,
+        campaignWalletId,
+        balance,
+        availableBalance,
+        currency,
+      ];
+}

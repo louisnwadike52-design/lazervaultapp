@@ -6,6 +6,7 @@ import '../../../../../core/cache/swr_cache_manager.dart';
 import '../../../../../core/offline/mutation_queue.dart';
 import '../../domain/usecases/group_account_usecases.dart';
 import '../../domain/entities/group_entities.dart';
+import '../../services/group_account_report_service.dart';
 import 'group_account_state.dart';
 
 class GroupAccountCubit extends Cubit<GroupAccountState> {
@@ -39,6 +40,7 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
   final RemoveMemberFromContribution? removeMemberFromContribution;
   final SWRCacheManager? cacheManager;
   final MutationQueue? mutationQueue;
+  final GroupAccountReportService? reportService;
 
   StreamSubscription<SWRResult<List<GroupAccount>>>? _cacheSubscription;
 
@@ -49,6 +51,10 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
   // Cached groups list for restoring state when returning from details
   List<GroupAccount>? _cachedGroups;
   List<GroupAccount>? get cachedGroups => _cachedGroups;
+
+  // Cached report for auto-generation events
+  GroupAccountReport? _cachedReport;
+  GroupAccountReport? get cachedReport => _cachedReport;
 
   /// Set the current user ID from authentication state
   void setUserId(String userId) {
@@ -89,6 +95,7 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
     this.removeMemberFromContribution,
     this.cacheManager,
     this.mutationQueue,
+    this.reportService,
   }) : super(GroupAccountInitial());
 
   @override
@@ -192,6 +199,7 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
   Future<void> createNewGroup({
     required String name,
     required String description,
+    Map<String, dynamic>? metadata,
   }) async {
     print('🔵 GroupAccountCubit: createNewGroup called - name: $name, description: $description');
     print('🔵 GroupAccountCubit: currentUserId = $currentUserId');
@@ -212,10 +220,14 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
         name: name,
         description: description,
         adminId: currentUserId!,
+        metadata: metadata,
       ));
       if (isClosed) return;
       print('🟢 GroupAccountCubit: Group created successfully - id: ${group.id}');
       emit(GroupAccountGroupCreated(group));
+
+      // Auto-generate group creation report
+      await generateGroupCreationReport(group: group);
     } catch (e) {
       if (isClosed) return;
       print('🔴 GroupAccountCubit: Error creating group - $e');
@@ -232,6 +244,9 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
       emit(GroupAccountSuccess('Group updated successfully'));
       // Reload group details
       await loadGroupDetails(group.id);
+
+      // Check if social links were added and trigger report
+      await generateSocialLinkedReport(group: group);
     } catch (e) {
       if (isClosed) return;
       emit(GroupAccountError('Failed to update group: ${e.toString()}'));
@@ -367,6 +382,7 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
     int? gracePeriodDays,
     bool allowPartialPayments = true,
     double? minimumBalance,
+    Map<String, dynamic>? metadata,
   }) async {
     if (isClosed) return;
     if (currentUserId == null) {
@@ -394,6 +410,7 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
         gracePeriodDays: gracePeriodDays,
         allowPartialPayments: allowPartialPayments,
         minimumBalance: minimumBalance,
+        metadata: metadata,
       ));
       if (isClosed) return;
 
@@ -420,6 +437,16 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
       emit(GroupAccountContributionCreated(contribution));
       // Reload group details to show the new contribution with all data
       await loadGroupDetails(groupId);
+
+      // Get group for auto-generated report
+      final group = await getGroupById(groupId);
+      if (!isClosed) {
+        // Auto-generate contribution created report
+        await generateContributionCreatedReport(
+          group: group,
+          contribution: contribution,
+        );
+      }
     } catch (e) {
       if (isClosed) return;
       emit(GroupAccountError('Failed to create contribution: ${e.toString()}'));
@@ -552,6 +579,19 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
 
       // Reload group details to show updated contribution amounts
       await loadGroupDetails(groupId);
+
+      // Get contribution for auto-generated report
+      final contribution = await getContributionById(contributionId);
+      final group = await getGroupById(groupId);
+
+      if (!isClosed) {
+        // Auto-generate payment made report
+        await generatePaymentMadeReport(
+          group: group,
+          contribution: contribution,
+          payment: payment,
+        );
+      }
     } catch (e) {
       if (isClosed) return;
 
@@ -951,5 +991,265 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
       if (isClosed) return;
       emit(GroupAccountError('Failed to remove member: ${e.toString()}'));
     }
+  }
+
+  // Report generation methods
+
+  /// Generate an AI-powered group report
+  Future<void> generateReport({
+    required GroupAccount group,
+    required List<Contribution> contributions,
+    List<GroupMember>? members,
+    String reportType = 'creation',
+    ContributionPayment? payment,
+    String? groupUrl,
+  }) async {
+    if (isClosed) return;
+    if (reportService == null) {
+      emit(const GroupAccountError('Report service not available'));
+      return;
+    }
+
+    emit(const GroupAccountReportLoading(message: 'Generating report...'));
+    try {
+      final report = await reportService!.generateReport(
+        group: group,
+        contributions: contributions,
+        members: members,
+        reportType: reportType,
+        payment: payment,
+      );
+      if (isClosed) return;
+
+      _cachedReport = report;
+      emit(GroupAccountReportGenerated(
+        report: report,
+        group: group,
+        contributions: contributions,
+        groupUrl: groupUrl,
+      ));
+    } catch (e) {
+      if (isClosed) return;
+      emit(GroupAccountReportShareError('Failed to generate report: ${e.toString()}'));
+    }
+  }
+
+  /// Auto-generate report after group creation
+  Future<void> generateGroupCreationReport({
+    required GroupAccount group,
+    List<Contribution>? contributions,
+    List<GroupMember>? members,
+  }) async {
+    if (isClosed) return;
+    if (reportService == null) return;
+
+    // Don't emit loading state for auto-generation
+    try {
+      final report = await reportService!.generateReport(
+        group: group,
+        contributions: contributions ?? [],
+        members: members,
+        reportType: 'creation',
+      );
+      if (isClosed) return;
+      _cachedReport = report;
+      debugPrint('🟢 Group creation report generated successfully');
+    } catch (e) {
+      // Silently fail for auto-generation
+      debugPrint('🟡 Failed to generate group creation report: $e');
+    }
+  }
+
+  /// Auto-generate report after social media links are added
+  Future<void> generateSocialLinkedReport({
+    required GroupAccount group,
+    List<Contribution>? contributions,
+    List<GroupMember>? members,
+  }) async {
+    if (isClosed) return;
+    if (reportService == null) return;
+
+    // Check if group has social links
+    final hasSocialLinks = group.metadata != null &&
+        (group.metadata!['whatsapp_group_link'] != null ||
+            group.metadata!['telegram_group_link'] != null ||
+            group.metadata!['facebook_group_link'] != null);
+
+    if (!hasSocialLinks) return;
+
+    try {
+      final report = await reportService!.generateReport(
+        group: group,
+        contributions: contributions ?? [],
+        members: members,
+        reportType: 'social_linked',
+      );
+      if (isClosed) return;
+      _cachedReport = report;
+      debugPrint('🟢 Social linked report generated successfully');
+    } catch (e) {
+      debugPrint('🟡 Failed to generate social linked report: $e');
+    }
+  }
+
+  /// Auto-generate report after contribution creation
+  Future<void> generateContributionCreatedReport({
+    required GroupAccount group,
+    required Contribution contribution,
+    List<GroupMember>? members,
+  }) async {
+    if (isClosed) return;
+    if (reportService == null) return;
+
+    try {
+      final report = await reportService!.generateReport(
+        group: group,
+        contributions: [contribution],
+        members: members,
+        reportType: 'contribution_created',
+      );
+      if (isClosed) return;
+      _cachedReport = report;
+      debugPrint('🟢 Contribution created report generated successfully');
+    } catch (e) {
+      debugPrint('🟡 Failed to generate contribution created report: $e');
+    }
+  }
+
+  /// Auto-generate report after payment is made
+  Future<void> generatePaymentMadeReport({
+    required GroupAccount group,
+    required Contribution contribution,
+    required ContributionPayment payment,
+    List<GroupMember>? members,
+  }) async {
+    if (isClosed) return;
+    if (reportService == null) return;
+
+    try {
+      final report = await reportService!.generateReport(
+        group: group,
+        contributions: [contribution],
+        members: members,
+        reportType: 'payment_made',
+        payment: payment,
+      );
+      if (isClosed) return;
+      _cachedReport = report;
+      debugPrint('🟢 Payment made report generated successfully');
+    } catch (e) {
+      debugPrint('🟡 Failed to generate payment made report: $e');
+    }
+  }
+
+  /// Share report to WhatsApp
+  Future<void> shareReportToWhatsApp(
+    GroupAccountReport report,
+    String? groupUrl,
+  ) async {
+    if (isClosed) return;
+    if (reportService == null) {
+      emit(const GroupAccountReportShareError('Report service not available'));
+      return;
+    }
+
+    try {
+      await reportService!.shareToWhatsApp(report, groupUrl: groupUrl);
+      if (isClosed) return;
+      emit(const GroupAccountReportShared(message: 'Shared to WhatsApp'));
+    } catch (e) {
+      if (isClosed) return;
+      emit(GroupAccountReportShareError('Failed to share: ${e.toString()}'));
+    }
+  }
+
+  /// Share report to Telegram
+  Future<void> shareReportToTelegram(
+    GroupAccountReport report,
+    String? groupUrl,
+  ) async {
+    if (isClosed) return;
+    if (reportService == null) {
+      emit(const GroupAccountReportShareError('Report service not available'));
+      return;
+    }
+
+    try {
+      await reportService!.shareToTelegram(report, groupUrl: groupUrl);
+      if (isClosed) return;
+      emit(const GroupAccountReportShared(message: 'Shared to Telegram'));
+    } catch (e) {
+      if (isClosed) return;
+      emit(GroupAccountReportShareError('Failed to share: ${e.toString()}'));
+    }
+  }
+
+  /// Share report to Facebook
+  Future<void> shareReportToFacebook(
+    GroupAccountReport report,
+    String? groupUrl,
+  ) async {
+    if (isClosed) return;
+    if (reportService == null) {
+      emit(const GroupAccountReportShareError('Report service not available'));
+      return;
+    }
+
+    try {
+      await reportService!.shareToFacebook(report, groupUrl: groupUrl);
+      if (isClosed) return;
+      emit(const GroupAccountReportShared(message: 'Shared to Facebook'));
+    } catch (e) {
+      if (isClosed) return;
+      emit(GroupAccountReportShareError('Failed to share: ${e.toString()}'));
+    }
+  }
+
+  /// Share report to Twitter/X
+  Future<void> shareReportToTwitter(
+    GroupAccountReport report,
+    String? groupUrl,
+  ) async {
+    if (isClosed) return;
+    if (reportService == null) {
+      emit(const GroupAccountReportShareError('Report service not available'));
+      return;
+    }
+
+    try {
+      await reportService!.shareToTwitter(report, groupUrl: groupUrl);
+      if (isClosed) return;
+      emit(const GroupAccountReportShared(message: 'Shared to Twitter'));
+    } catch (e) {
+      if (isClosed) return;
+      emit(GroupAccountReportShareError('Failed to share: ${e.toString()}'));
+    }
+  }
+
+  /// General share using system share sheet
+  Future<void> shareReportGeneral(
+    GroupAccountReport report,
+    String? groupUrl,
+  ) async {
+    if (isClosed) return;
+    if (reportService == null) {
+      emit(const GroupAccountReportShareError('Report service not available'));
+      return;
+    }
+
+    try {
+      await reportService!.shareGeneral(report, groupUrl: groupUrl);
+      if (isClosed) return;
+      emit(const GroupAccountReportShared(message: 'Report shared'));
+    } catch (e) {
+      if (isClosed) return;
+      emit(GroupAccountReportShareError('Failed to share: ${e.toString()}'));
+    }
+  }
+
+  /// Get shareable text for clipboard
+  String? getShareableText(GroupAccountReport report, String? groupUrl) {
+    if (reportService == null) return null;
+    return reportService!.getShareableText(report, groupUrl: groupUrl);
   }
 } 

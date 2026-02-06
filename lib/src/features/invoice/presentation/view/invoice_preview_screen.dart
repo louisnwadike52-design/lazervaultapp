@@ -55,11 +55,23 @@ class InvoicePreviewScreen extends StatefulWidget {
 
 class _InvoicePreviewScreenState extends State<InvoicePreviewScreen> {
   late Invoice invoice;
+  final TextEditingController _emailController = TextEditingController();
+  bool _isSendingEmail = false;
 
   @override
   void initState() {
     super.initState();
     invoice = widget.invoice;
+    // Pre-fill email if available
+    if (invoice.toEmail != null && invoice.toEmail!.isNotEmpty) {
+      _emailController.text = invoice.toEmail!;
+    }
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    super.dispose();
   }
 
   Future<void> _refreshInvoice() async {
@@ -1008,6 +1020,25 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen> {
                   ),
                 ),
               ),
+              SizedBox(width: 16.w),
+
+              // Send Email button
+              Container(
+                width: 52.w,
+                height: 52.w,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF10B981).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(16.r),
+                ),
+                child: IconButton(
+                  onPressed: () => _showSendEmailBottomSheet(context),
+                  icon: Icon(
+                    Icons.email_outlined,
+                    color: const Color(0xFF10B981),
+                    size: 22.sp,
+                  ),
+                ),
+              ),
             ],
           ),
         ],
@@ -1377,6 +1408,301 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen> {
           behavior: SnackBarBehavior.floating,
         ),
       );
+    }
+  }
+
+  void _showSendEmailBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) => Container(
+        decoration: BoxDecoration(
+          color: const Color(0xFFF8F9FA),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+        ),
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              margin: EdgeInsets.only(top: 12.h),
+              width: 40.w,
+              height: 4.h,
+              decoration: BoxDecoration(
+                color: const Color(0xFFD1D5DB),
+                borderRadius: BorderRadius.circular(2.r),
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.all(20.w),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        width: 40.w,
+                        height: 40.w,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(10.r),
+                        ),
+                        child: Icon(
+                          Icons.email_outlined,
+                          color: const Color(0xFF10B981),
+                          size: 20.sp,
+                        ),
+                      ),
+                      SizedBox(width: 12.w),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Send Invoice to Email',
+                              style: GoogleFonts.inter(
+                                color: const Color(0xFF1F2937),
+                                fontSize: 18.sp,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            SizedBox(height: 2.h),
+                            Text(
+                              'Enter email address to send this invoice',
+                              style: GoogleFonts.inter(
+                                color: const Color(0xFF6B7280),
+                                fontSize: 13.sp,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () => Get.back(),
+                        child: Container(
+                          width: 32.w,
+                          height: 32.w,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFE5E7EB),
+                            borderRadius: BorderRadius.circular(8.r),
+                          ),
+                          child: Icon(
+                            Icons.close,
+                            color: const Color(0xFF6B7280),
+                            size: 18.sp,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 20.h),
+                  Text(
+                    'Email Address',
+                    style: GoogleFonts.inter(
+                      color: const Color(0xFF374151),
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  SizedBox(height: 8.h),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12.r),
+                      border: Border.all(color: const Color(0xFFE5E7EB)),
+                    ),
+                    child: TextField(
+                      controller: _emailController,
+                      keyboardType: TextInputType.emailAddress,
+                      textCapitalization: TextCapitalization.none,
+                      decoration: InputDecoration(
+                        hintText: 'Enter email address',
+                        hintStyle: GoogleFonts.inter(
+                          color: const Color(0xFF9CA3AF),
+                          fontSize: 15.sp,
+                        ),
+                        prefixIcon: Icon(
+                          Icons.email_outlined,
+                          color: const Color(0xFF9CA3AF),
+                          size: 20.sp,
+                        ),
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 16.w,
+                          vertical: 14.h,
+                        ),
+                      ),
+                      style: GoogleFonts.inter(
+                        color: const Color(0xFF1F2937),
+                        fontSize: 15.sp,
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 16.h),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => Get.back(),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: const Color(0xFF6B7280),
+                            side: BorderSide(color: const Color(0xFFE5E7EB)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12.r),
+                            ),
+                            padding: EdgeInsets.symmetric(vertical: 14.h),
+                          ),
+                          child: Text(
+                            'Cancel',
+                            style: GoogleFonts.inter(
+                              fontSize: 16.sp,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: 12.w),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: _isSendingEmail ? null : () => _sendInvoiceToEmail(ctx),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF10B981),
+                            foregroundColor: Colors.white,
+                            shadowColor: Colors.transparent,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12.r),
+                            ),
+                            padding: EdgeInsets.symmetric(vertical: 14.h),
+                          ),
+                          child: _isSendingEmail
+                              ? SizedBox(
+                                  width: 20.w,
+                                  height: 20.w,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                  ),
+                                )
+                              : Text(
+                                  'Send Invoice',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 16.sp,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _sendInvoiceToEmail(BuildContext context) async {
+    final email = _emailController.text.trim();
+
+    // Email validation
+    if (email.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Please enter an email address'),
+          backgroundColor: InvoiceThemeColors.errorRed,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    // Basic email format validation
+    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+    if (!emailRegex.hasMatch(email)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Please enter a valid email address'),
+          backgroundColor: InvoiceThemeColors.errorRed,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      _isSendingEmail = true;
+    });
+
+    try {
+      // Close bottom sheet
+      Get.back();
+
+      // Show loading indicator
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              SizedBox(
+                width: 20.w,
+                height: 20.w,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                ),
+              ),
+              SizedBox(width: 16.w),
+              Text('Sending invoice to $email...'),
+            ],
+          ),
+          backgroundColor: const Color(0xFF10B981),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+          behavior: SnackBarBehavior.floating,
+          duration: Duration(seconds: 3),
+        ),
+      );
+
+      // Call the invoice repository to send the invoice to email
+      final repo = serviceLocator<InvoiceRepository>();
+      await repo.sendInvoiceToEmail(invoice.id, email);
+
+      // Hide loading and show success
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Invoice sent successfully to $email'),
+          backgroundColor: const Color(0xFF10B981),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+          behavior: SnackBarBehavior.floating,
+          duration: Duration(seconds: 3),
+        ),
+      );
+    } catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to send invoice: ${e.toString().replaceFirst('Exception: ', '')}'),
+          backgroundColor: InvoiceThemeColors.errorRed,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSendingEmail = false;
+        });
+      }
     }
   }
 

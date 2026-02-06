@@ -1,49 +1,23 @@
-///
+//
 //  Generated code. Do not modify.
 //  source: account_card.proto
 //
 // @dart = 2.12
-// ignore_for_file: annotate_overrides,camel_case_types,constant_identifier_names,directives_ordering,library_prefixes,non_constant_identifier_names,prefer_final_fields,return_of_invalid_type,unnecessary_const,unnecessary_import,unnecessary_this,unused_import,unused_shown_name
+
+// ignore_for_file: annotate_overrides, camel_case_types, comment_references
+// ignore_for_file: constant_identifier_names, library_prefixes
+// ignore_for_file: non_constant_identifier_names, prefer_final_fields
+// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
 
 import 'dart:core' as $core;
 
 import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'google/protobuf/timestamp.pb.dart' as $36;
+import 'google/protobuf/timestamp.pb.dart' as $42;
 
+/// Represents a specific card linked to an account
 class AccountCard extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'AccountCard', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..a<$fixnum.Int64>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'uuid')
-    ..a<$fixnum.Int64>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accountId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..a<$fixnum.Int64>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'cardHolderName')
-    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'brand')
-    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'last4')
-    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'cardExpiry')
-    ..aOB(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isActive')
-    ..aOB(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isDefault')
-    ..aOS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'cardType')
-    ..aOS(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'cardNickname')
-    ..a<$core.double>(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'spendingLimit', $pb.PbFieldType.OD)
-    ..a<$core.double>(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'remainingLimit', $pb.PbFieldType.OD)
-    ..aOM<$36.Timestamp>(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'expiresAt', subBuilder: $36.Timestamp.create)
-    ..a<$core.int>(16, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'usageCount', $pb.PbFieldType.O3)
-    ..a<$core.int>(17, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'maxUsageCount', $pb.PbFieldType.O3)
-    ..aOS(18, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
-    ..aOS(19, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'billingAddress')
-    ..aOS(20, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status')
-    ..aOS(21, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'frozenReason')
-    ..aOM<$36.Timestamp>(22, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastUsedAt', subBuilder: $36.Timestamp.create)
-    ..aOM<$36.Timestamp>(23, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $36.Timestamp.create)
-    ..aOM<$36.Timestamp>(24, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $36.Timestamp.create)
-    ..aOS(25, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'cardNumber')
-    ..aOS(26, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'cvv')
-    ..hasRequiredFields = false
-  ;
-
-  AccountCard._() : super();
   factory AccountCard({
     $fixnum.Int64? id,
     $core.String? uuid,
@@ -59,102 +33,134 @@ class AccountCard extends $pb.GeneratedMessage {
     $core.String? cardNickname,
     $core.double? spendingLimit,
     $core.double? remainingLimit,
-    $36.Timestamp? expiresAt,
+    $42.Timestamp? expiresAt,
     $core.int? usageCount,
     $core.int? maxUsageCount,
     $core.String? currency,
     $core.String? billingAddress,
     $core.String? status,
     $core.String? frozenReason,
-    $36.Timestamp? lastUsedAt,
-    $36.Timestamp? createdAt,
-    $36.Timestamp? updatedAt,
+    $42.Timestamp? lastUsedAt,
+    $42.Timestamp? createdAt,
+    $42.Timestamp? updatedAt,
     $core.String? cardNumber,
     $core.String? cvv,
   }) {
-    final _result = create();
+    final $result = create();
     if (id != null) {
-      _result.id = id;
+      $result.id = id;
     }
     if (uuid != null) {
-      _result.uuid = uuid;
+      $result.uuid = uuid;
     }
     if (accountId != null) {
-      _result.accountId = accountId;
+      $result.accountId = accountId;
     }
     if (userId != null) {
-      _result.userId = userId;
+      $result.userId = userId;
     }
     if (cardHolderName != null) {
-      _result.cardHolderName = cardHolderName;
+      $result.cardHolderName = cardHolderName;
     }
     if (brand != null) {
-      _result.brand = brand;
+      $result.brand = brand;
     }
     if (last4 != null) {
-      _result.last4 = last4;
+      $result.last4 = last4;
     }
     if (cardExpiry != null) {
-      _result.cardExpiry = cardExpiry;
+      $result.cardExpiry = cardExpiry;
     }
     if (isActive != null) {
-      _result.isActive = isActive;
+      $result.isActive = isActive;
     }
     if (isDefault != null) {
-      _result.isDefault = isDefault;
+      $result.isDefault = isDefault;
     }
     if (cardType != null) {
-      _result.cardType = cardType;
+      $result.cardType = cardType;
     }
     if (cardNickname != null) {
-      _result.cardNickname = cardNickname;
+      $result.cardNickname = cardNickname;
     }
     if (spendingLimit != null) {
-      _result.spendingLimit = spendingLimit;
+      $result.spendingLimit = spendingLimit;
     }
     if (remainingLimit != null) {
-      _result.remainingLimit = remainingLimit;
+      $result.remainingLimit = remainingLimit;
     }
     if (expiresAt != null) {
-      _result.expiresAt = expiresAt;
+      $result.expiresAt = expiresAt;
     }
     if (usageCount != null) {
-      _result.usageCount = usageCount;
+      $result.usageCount = usageCount;
     }
     if (maxUsageCount != null) {
-      _result.maxUsageCount = maxUsageCount;
+      $result.maxUsageCount = maxUsageCount;
     }
     if (currency != null) {
-      _result.currency = currency;
+      $result.currency = currency;
     }
     if (billingAddress != null) {
-      _result.billingAddress = billingAddress;
+      $result.billingAddress = billingAddress;
     }
     if (status != null) {
-      _result.status = status;
+      $result.status = status;
     }
     if (frozenReason != null) {
-      _result.frozenReason = frozenReason;
+      $result.frozenReason = frozenReason;
     }
     if (lastUsedAt != null) {
-      _result.lastUsedAt = lastUsedAt;
+      $result.lastUsedAt = lastUsedAt;
     }
     if (createdAt != null) {
-      _result.createdAt = createdAt;
+      $result.createdAt = createdAt;
     }
     if (updatedAt != null) {
-      _result.updatedAt = updatedAt;
+      $result.updatedAt = updatedAt;
     }
     if (cardNumber != null) {
-      _result.cardNumber = cardNumber;
+      $result.cardNumber = cardNumber;
     }
     if (cvv != null) {
-      _result.cvv = cvv;
+      $result.cvv = cvv;
     }
-    return _result;
+    return $result;
   }
+  AccountCard._() : super();
   factory AccountCard.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory AccountCard.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'AccountCard', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..a<$fixnum.Int64>(1, _omitFieldNames ? '' : 'id', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(2, _omitFieldNames ? '' : 'uuid')
+    ..a<$fixnum.Int64>(3, _omitFieldNames ? '' : 'accountId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(4, _omitFieldNames ? '' : 'userId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(5, _omitFieldNames ? '' : 'cardHolderName')
+    ..aOS(6, _omitFieldNames ? '' : 'brand')
+    ..aOS(7, _omitFieldNames ? '' : 'last4')
+    ..aOS(8, _omitFieldNames ? '' : 'cardExpiry')
+    ..aOB(9, _omitFieldNames ? '' : 'isActive')
+    ..aOB(10, _omitFieldNames ? '' : 'isDefault')
+    ..aOS(11, _omitFieldNames ? '' : 'cardType')
+    ..aOS(12, _omitFieldNames ? '' : 'cardNickname')
+    ..a<$core.double>(13, _omitFieldNames ? '' : 'spendingLimit', $pb.PbFieldType.OD)
+    ..a<$core.double>(14, _omitFieldNames ? '' : 'remainingLimit', $pb.PbFieldType.OD)
+    ..aOM<$42.Timestamp>(15, _omitFieldNames ? '' : 'expiresAt', subBuilder: $42.Timestamp.create)
+    ..a<$core.int>(16, _omitFieldNames ? '' : 'usageCount', $pb.PbFieldType.O3)
+    ..a<$core.int>(17, _omitFieldNames ? '' : 'maxUsageCount', $pb.PbFieldType.O3)
+    ..aOS(18, _omitFieldNames ? '' : 'currency')
+    ..aOS(19, _omitFieldNames ? '' : 'billingAddress')
+    ..aOS(20, _omitFieldNames ? '' : 'status')
+    ..aOS(21, _omitFieldNames ? '' : 'frozenReason')
+    ..aOM<$42.Timestamp>(22, _omitFieldNames ? '' : 'lastUsedAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$42.Timestamp>(23, _omitFieldNames ? '' : 'createdAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$42.Timestamp>(24, _omitFieldNames ? '' : 'updatedAt', subBuilder: $42.Timestamp.create)
+    ..aOS(25, _omitFieldNames ? '' : 'cardNumber')
+    ..aOS(26, _omitFieldNames ? '' : 'cvv')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -164,8 +170,10 @@ class AccountCard extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  AccountCard copyWith(void Function(AccountCard) updates) => super.copyWith((message) => updates(message as AccountCard)) as AccountCard; // ignore: deprecated_member_use
+  AccountCard copyWith(void Function(AccountCard) updates) => super.copyWith((message) => updates(message as AccountCard)) as AccountCard;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static AccountCard create() => AccountCard._();
   AccountCard createEmptyInstance() => create();
@@ -301,15 +309,15 @@ class AccountCard extends $pb.GeneratedMessage {
   void clearRemainingLimit() => clearField(14);
 
   @$pb.TagNumber(15)
-  $36.Timestamp get expiresAt => $_getN(14);
+  $42.Timestamp get expiresAt => $_getN(14);
   @$pb.TagNumber(15)
-  set expiresAt($36.Timestamp v) { setField(15, v); }
+  set expiresAt($42.Timestamp v) { setField(15, v); }
   @$pb.TagNumber(15)
   $core.bool hasExpiresAt() => $_has(14);
   @$pb.TagNumber(15)
   void clearExpiresAt() => clearField(15);
   @$pb.TagNumber(15)
-  $36.Timestamp ensureExpiresAt() => $_ensure(14);
+  $42.Timestamp ensureExpiresAt() => $_ensure(14);
 
   @$pb.TagNumber(16)
   $core.int get usageCount => $_getIZ(15);
@@ -366,37 +374,37 @@ class AccountCard extends $pb.GeneratedMessage {
   void clearFrozenReason() => clearField(21);
 
   @$pb.TagNumber(22)
-  $36.Timestamp get lastUsedAt => $_getN(21);
+  $42.Timestamp get lastUsedAt => $_getN(21);
   @$pb.TagNumber(22)
-  set lastUsedAt($36.Timestamp v) { setField(22, v); }
+  set lastUsedAt($42.Timestamp v) { setField(22, v); }
   @$pb.TagNumber(22)
   $core.bool hasLastUsedAt() => $_has(21);
   @$pb.TagNumber(22)
   void clearLastUsedAt() => clearField(22);
   @$pb.TagNumber(22)
-  $36.Timestamp ensureLastUsedAt() => $_ensure(21);
+  $42.Timestamp ensureLastUsedAt() => $_ensure(21);
 
   @$pb.TagNumber(23)
-  $36.Timestamp get createdAt => $_getN(22);
+  $42.Timestamp get createdAt => $_getN(22);
   @$pb.TagNumber(23)
-  set createdAt($36.Timestamp v) { setField(23, v); }
+  set createdAt($42.Timestamp v) { setField(23, v); }
   @$pb.TagNumber(23)
   $core.bool hasCreatedAt() => $_has(22);
   @$pb.TagNumber(23)
   void clearCreatedAt() => clearField(23);
   @$pb.TagNumber(23)
-  $36.Timestamp ensureCreatedAt() => $_ensure(22);
+  $42.Timestamp ensureCreatedAt() => $_ensure(22);
 
   @$pb.TagNumber(24)
-  $36.Timestamp get updatedAt => $_getN(23);
+  $42.Timestamp get updatedAt => $_getN(23);
   @$pb.TagNumber(24)
-  set updatedAt($36.Timestamp v) { setField(24, v); }
+  set updatedAt($42.Timestamp v) { setField(24, v); }
   @$pb.TagNumber(24)
   $core.bool hasUpdatedAt() => $_has(23);
   @$pb.TagNumber(24)
   void clearUpdatedAt() => clearField(24);
   @$pb.TagNumber(24)
-  $36.Timestamp ensureUpdatedAt() => $_ensure(23);
+  $42.Timestamp ensureUpdatedAt() => $_ensure(23);
 
   @$pb.TagNumber(25)
   $core.String get cardNumber => $_getSZ(24);
@@ -417,29 +425,8 @@ class AccountCard extends $pb.GeneratedMessage {
   void clearCvv() => clearField(26);
 }
 
+/// Card transaction message
 class CardTransaction extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CardTransaction', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..a<$fixnum.Int64>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'uuid')
-    ..a<$fixnum.Int64>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'cardId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..a<$fixnum.Int64>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..a<$fixnum.Int64>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accountId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..a<$core.double>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
-    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
-    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'merchantName')
-    ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'merchantCategory')
-    ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactionType')
-    ..aOS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status')
-    ..aOS(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'declineReason')
-    ..aOS(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'authorizationCode')
-    ..aOS(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
-    ..aOM<$36.Timestamp>(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactionDate', subBuilder: $36.Timestamp.create)
-    ..aOM<$36.Timestamp>(16, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'settledAt', subBuilder: $36.Timestamp.create)
-    ..aOM<$36.Timestamp>(17, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $36.Timestamp.create)
-    ..hasRequiredFields = false
-  ;
-
-  CardTransaction._() : super();
   factory CardTransaction({
     $fixnum.Int64? id,
     $core.String? uuid,
@@ -455,66 +442,89 @@ class CardTransaction extends $pb.GeneratedMessage {
     $core.String? declineReason,
     $core.String? authorizationCode,
     $core.String? description,
-    $36.Timestamp? transactionDate,
-    $36.Timestamp? settledAt,
-    $36.Timestamp? createdAt,
+    $42.Timestamp? transactionDate,
+    $42.Timestamp? settledAt,
+    $42.Timestamp? createdAt,
   }) {
-    final _result = create();
+    final $result = create();
     if (id != null) {
-      _result.id = id;
+      $result.id = id;
     }
     if (uuid != null) {
-      _result.uuid = uuid;
+      $result.uuid = uuid;
     }
     if (cardId != null) {
-      _result.cardId = cardId;
+      $result.cardId = cardId;
     }
     if (userId != null) {
-      _result.userId = userId;
+      $result.userId = userId;
     }
     if (accountId != null) {
-      _result.accountId = accountId;
+      $result.accountId = accountId;
     }
     if (amount != null) {
-      _result.amount = amount;
+      $result.amount = amount;
     }
     if (currency != null) {
-      _result.currency = currency;
+      $result.currency = currency;
     }
     if (merchantName != null) {
-      _result.merchantName = merchantName;
+      $result.merchantName = merchantName;
     }
     if (merchantCategory != null) {
-      _result.merchantCategory = merchantCategory;
+      $result.merchantCategory = merchantCategory;
     }
     if (transactionType != null) {
-      _result.transactionType = transactionType;
+      $result.transactionType = transactionType;
     }
     if (status != null) {
-      _result.status = status;
+      $result.status = status;
     }
     if (declineReason != null) {
-      _result.declineReason = declineReason;
+      $result.declineReason = declineReason;
     }
     if (authorizationCode != null) {
-      _result.authorizationCode = authorizationCode;
+      $result.authorizationCode = authorizationCode;
     }
     if (description != null) {
-      _result.description = description;
+      $result.description = description;
     }
     if (transactionDate != null) {
-      _result.transactionDate = transactionDate;
+      $result.transactionDate = transactionDate;
     }
     if (settledAt != null) {
-      _result.settledAt = settledAt;
+      $result.settledAt = settledAt;
     }
     if (createdAt != null) {
-      _result.createdAt = createdAt;
+      $result.createdAt = createdAt;
     }
-    return _result;
+    return $result;
   }
+  CardTransaction._() : super();
   factory CardTransaction.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CardTransaction.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CardTransaction', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..a<$fixnum.Int64>(1, _omitFieldNames ? '' : 'id', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(2, _omitFieldNames ? '' : 'uuid')
+    ..a<$fixnum.Int64>(3, _omitFieldNames ? '' : 'cardId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(4, _omitFieldNames ? '' : 'userId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(5, _omitFieldNames ? '' : 'accountId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$core.double>(6, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
+    ..aOS(7, _omitFieldNames ? '' : 'currency')
+    ..aOS(8, _omitFieldNames ? '' : 'merchantName')
+    ..aOS(9, _omitFieldNames ? '' : 'merchantCategory')
+    ..aOS(10, _omitFieldNames ? '' : 'transactionType')
+    ..aOS(11, _omitFieldNames ? '' : 'status')
+    ..aOS(12, _omitFieldNames ? '' : 'declineReason')
+    ..aOS(13, _omitFieldNames ? '' : 'authorizationCode')
+    ..aOS(14, _omitFieldNames ? '' : 'description')
+    ..aOM<$42.Timestamp>(15, _omitFieldNames ? '' : 'transactionDate', subBuilder: $42.Timestamp.create)
+    ..aOM<$42.Timestamp>(16, _omitFieldNames ? '' : 'settledAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$42.Timestamp>(17, _omitFieldNames ? '' : 'createdAt', subBuilder: $42.Timestamp.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -524,8 +534,10 @@ class CardTransaction extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CardTransaction copyWith(void Function(CardTransaction) updates) => super.copyWith((message) => updates(message as CardTransaction)) as CardTransaction; // ignore: deprecated_member_use
+  CardTransaction copyWith(void Function(CardTransaction) updates) => super.copyWith((message) => updates(message as CardTransaction)) as CardTransaction;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static CardTransaction create() => CardTransaction._();
   CardTransaction createEmptyInstance() => create();
@@ -661,72 +673,74 @@ class CardTransaction extends $pb.GeneratedMessage {
   void clearDescription() => clearField(14);
 
   @$pb.TagNumber(15)
-  $36.Timestamp get transactionDate => $_getN(14);
+  $42.Timestamp get transactionDate => $_getN(14);
   @$pb.TagNumber(15)
-  set transactionDate($36.Timestamp v) { setField(15, v); }
+  set transactionDate($42.Timestamp v) { setField(15, v); }
   @$pb.TagNumber(15)
   $core.bool hasTransactionDate() => $_has(14);
   @$pb.TagNumber(15)
   void clearTransactionDate() => clearField(15);
   @$pb.TagNumber(15)
-  $36.Timestamp ensureTransactionDate() => $_ensure(14);
+  $42.Timestamp ensureTransactionDate() => $_ensure(14);
 
   @$pb.TagNumber(16)
-  $36.Timestamp get settledAt => $_getN(15);
+  $42.Timestamp get settledAt => $_getN(15);
   @$pb.TagNumber(16)
-  set settledAt($36.Timestamp v) { setField(16, v); }
+  set settledAt($42.Timestamp v) { setField(16, v); }
   @$pb.TagNumber(16)
   $core.bool hasSettledAt() => $_has(15);
   @$pb.TagNumber(16)
   void clearSettledAt() => clearField(16);
   @$pb.TagNumber(16)
-  $36.Timestamp ensureSettledAt() => $_ensure(15);
+  $42.Timestamp ensureSettledAt() => $_ensure(15);
 
   @$pb.TagNumber(17)
-  $36.Timestamp get createdAt => $_getN(16);
+  $42.Timestamp get createdAt => $_getN(16);
   @$pb.TagNumber(17)
-  set createdAt($36.Timestamp v) { setField(17, v); }
+  set createdAt($42.Timestamp v) { setField(17, v); }
   @$pb.TagNumber(17)
   $core.bool hasCreatedAt() => $_has(16);
   @$pb.TagNumber(17)
   void clearCreatedAt() => clearField(17);
   @$pb.TagNumber(17)
-  $36.Timestamp ensureCreatedAt() => $_ensure(16);
+  $42.Timestamp ensureCreatedAt() => $_ensure(16);
 }
 
+/// Create virtual card request
 class CreateVirtualCardRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CreateVirtualCardRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..a<$fixnum.Int64>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accountId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'cardNickname')
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
-    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'billingAddress')
-    ..hasRequiredFields = false
-  ;
-
-  CreateVirtualCardRequest._() : super();
   factory CreateVirtualCardRequest({
     $fixnum.Int64? accountId,
     $core.String? cardNickname,
     $core.String? currency,
     $core.String? billingAddress,
   }) {
-    final _result = create();
+    final $result = create();
     if (accountId != null) {
-      _result.accountId = accountId;
+      $result.accountId = accountId;
     }
     if (cardNickname != null) {
-      _result.cardNickname = cardNickname;
+      $result.cardNickname = cardNickname;
     }
     if (currency != null) {
-      _result.currency = currency;
+      $result.currency = currency;
     }
     if (billingAddress != null) {
-      _result.billingAddress = billingAddress;
+      $result.billingAddress = billingAddress;
     }
-    return _result;
+    return $result;
   }
+  CreateVirtualCardRequest._() : super();
   factory CreateVirtualCardRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CreateVirtualCardRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreateVirtualCardRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..a<$fixnum.Int64>(1, _omitFieldNames ? '' : 'accountId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(2, _omitFieldNames ? '' : 'cardNickname')
+    ..aOS(3, _omitFieldNames ? '' : 'currency')
+    ..aOS(4, _omitFieldNames ? '' : 'billingAddress')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -736,8 +750,10 @@ class CreateVirtualCardRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CreateVirtualCardRequest copyWith(void Function(CreateVirtualCardRequest) updates) => super.copyWith((message) => updates(message as CreateVirtualCardRequest)) as CreateVirtualCardRequest; // ignore: deprecated_member_use
+  CreateVirtualCardRequest copyWith(void Function(CreateVirtualCardRequest) updates) => super.copyWith((message) => updates(message as CreateVirtualCardRequest)) as CreateVirtualCardRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static CreateVirtualCardRequest create() => CreateVirtualCardRequest._();
   CreateVirtualCardRequest createEmptyInstance() => create();
@@ -783,24 +799,26 @@ class CreateVirtualCardRequest extends $pb.GeneratedMessage {
   void clearBillingAddress() => clearField(4);
 }
 
+/// Create virtual card response
 class CreateVirtualCardResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CreateVirtualCardResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<AccountCard>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'card', subBuilder: AccountCard.create)
-    ..hasRequiredFields = false
-  ;
-
-  CreateVirtualCardResponse._() : super();
   factory CreateVirtualCardResponse({
     AccountCard? card,
   }) {
-    final _result = create();
+    final $result = create();
     if (card != null) {
-      _result.card = card;
+      $result.card = card;
     }
-    return _result;
+    return $result;
   }
+  CreateVirtualCardResponse._() : super();
   factory CreateVirtualCardResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CreateVirtualCardResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreateVirtualCardResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOM<AccountCard>(1, _omitFieldNames ? '' : 'card', subBuilder: AccountCard.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -810,8 +828,10 @@ class CreateVirtualCardResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CreateVirtualCardResponse copyWith(void Function(CreateVirtualCardResponse) updates) => super.copyWith((message) => updates(message as CreateVirtualCardResponse)) as CreateVirtualCardResponse; // ignore: deprecated_member_use
+  CreateVirtualCardResponse copyWith(void Function(CreateVirtualCardResponse) updates) => super.copyWith((message) => updates(message as CreateVirtualCardResponse)) as CreateVirtualCardResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static CreateVirtualCardResponse create() => CreateVirtualCardResponse._();
   CreateVirtualCardResponse createEmptyInstance() => create();
@@ -832,19 +852,8 @@ class CreateVirtualCardResponse extends $pb.GeneratedMessage {
   AccountCard ensureCard() => $_ensure(0);
 }
 
+/// Create disposable card request
 class CreateDisposableCardRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CreateDisposableCardRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..a<$fixnum.Int64>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accountId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'cardNickname')
-    ..a<$core.double>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'spendingLimit', $pb.PbFieldType.OD)
-    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
-    ..a<$core.int>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'maxUsageCount', $pb.PbFieldType.O3)
-    ..a<$core.int>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'expiresInHours', $pb.PbFieldType.O3)
-    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'billingAddress')
-    ..hasRequiredFields = false
-  ;
-
-  CreateDisposableCardRequest._() : super();
   factory CreateDisposableCardRequest({
     $fixnum.Int64? accountId,
     $core.String? cardNickname,
@@ -854,32 +863,45 @@ class CreateDisposableCardRequest extends $pb.GeneratedMessage {
     $core.int? expiresInHours,
     $core.String? billingAddress,
   }) {
-    final _result = create();
+    final $result = create();
     if (accountId != null) {
-      _result.accountId = accountId;
+      $result.accountId = accountId;
     }
     if (cardNickname != null) {
-      _result.cardNickname = cardNickname;
+      $result.cardNickname = cardNickname;
     }
     if (spendingLimit != null) {
-      _result.spendingLimit = spendingLimit;
+      $result.spendingLimit = spendingLimit;
     }
     if (currency != null) {
-      _result.currency = currency;
+      $result.currency = currency;
     }
     if (maxUsageCount != null) {
-      _result.maxUsageCount = maxUsageCount;
+      $result.maxUsageCount = maxUsageCount;
     }
     if (expiresInHours != null) {
-      _result.expiresInHours = expiresInHours;
+      $result.expiresInHours = expiresInHours;
     }
     if (billingAddress != null) {
-      _result.billingAddress = billingAddress;
+      $result.billingAddress = billingAddress;
     }
-    return _result;
+    return $result;
   }
+  CreateDisposableCardRequest._() : super();
   factory CreateDisposableCardRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CreateDisposableCardRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreateDisposableCardRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..a<$fixnum.Int64>(1, _omitFieldNames ? '' : 'accountId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(2, _omitFieldNames ? '' : 'cardNickname')
+    ..a<$core.double>(3, _omitFieldNames ? '' : 'spendingLimit', $pb.PbFieldType.OD)
+    ..aOS(4, _omitFieldNames ? '' : 'currency')
+    ..a<$core.int>(5, _omitFieldNames ? '' : 'maxUsageCount', $pb.PbFieldType.O3)
+    ..a<$core.int>(6, _omitFieldNames ? '' : 'expiresInHours', $pb.PbFieldType.O3)
+    ..aOS(7, _omitFieldNames ? '' : 'billingAddress')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -889,8 +911,10 @@ class CreateDisposableCardRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CreateDisposableCardRequest copyWith(void Function(CreateDisposableCardRequest) updates) => super.copyWith((message) => updates(message as CreateDisposableCardRequest)) as CreateDisposableCardRequest; // ignore: deprecated_member_use
+  CreateDisposableCardRequest copyWith(void Function(CreateDisposableCardRequest) updates) => super.copyWith((message) => updates(message as CreateDisposableCardRequest)) as CreateDisposableCardRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static CreateDisposableCardRequest create() => CreateDisposableCardRequest._();
   CreateDisposableCardRequest createEmptyInstance() => create();
@@ -963,24 +987,26 @@ class CreateDisposableCardRequest extends $pb.GeneratedMessage {
   void clearBillingAddress() => clearField(7);
 }
 
+/// Create disposable card response
 class CreateDisposableCardResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CreateDisposableCardResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<AccountCard>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'card', subBuilder: AccountCard.create)
-    ..hasRequiredFields = false
-  ;
-
-  CreateDisposableCardResponse._() : super();
   factory CreateDisposableCardResponse({
     AccountCard? card,
   }) {
-    final _result = create();
+    final $result = create();
     if (card != null) {
-      _result.card = card;
+      $result.card = card;
     }
-    return _result;
+    return $result;
   }
+  CreateDisposableCardResponse._() : super();
   factory CreateDisposableCardResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CreateDisposableCardResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreateDisposableCardResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOM<AccountCard>(1, _omitFieldNames ? '' : 'card', subBuilder: AccountCard.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -990,8 +1016,10 @@ class CreateDisposableCardResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CreateDisposableCardResponse copyWith(void Function(CreateDisposableCardResponse) updates) => super.copyWith((message) => updates(message as CreateDisposableCardResponse)) as CreateDisposableCardResponse; // ignore: deprecated_member_use
+  CreateDisposableCardResponse copyWith(void Function(CreateDisposableCardResponse) updates) => super.copyWith((message) => updates(message as CreateDisposableCardResponse)) as CreateDisposableCardResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static CreateDisposableCardResponse create() => CreateDisposableCardResponse._();
   CreateDisposableCardResponse createEmptyInstance() => create();
@@ -1012,29 +1040,31 @@ class CreateDisposableCardResponse extends $pb.GeneratedMessage {
   AccountCard ensureCard() => $_ensure(0);
 }
 
+/// Get all cards for user
 class GetUserCardsRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetUserCardsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'cardTypeFilter')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'statusFilter')
-    ..hasRequiredFields = false
-  ;
-
-  GetUserCardsRequest._() : super();
   factory GetUserCardsRequest({
     $core.String? cardTypeFilter,
     $core.String? statusFilter,
   }) {
-    final _result = create();
+    final $result = create();
     if (cardTypeFilter != null) {
-      _result.cardTypeFilter = cardTypeFilter;
+      $result.cardTypeFilter = cardTypeFilter;
     }
     if (statusFilter != null) {
-      _result.statusFilter = statusFilter;
+      $result.statusFilter = statusFilter;
     }
-    return _result;
+    return $result;
   }
+  GetUserCardsRequest._() : super();
   factory GetUserCardsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetUserCardsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetUserCardsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'cardTypeFilter')
+    ..aOS(2, _omitFieldNames ? '' : 'statusFilter')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1044,8 +1074,10 @@ class GetUserCardsRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetUserCardsRequest copyWith(void Function(GetUserCardsRequest) updates) => super.copyWith((message) => updates(message as GetUserCardsRequest)) as GetUserCardsRequest; // ignore: deprecated_member_use
+  GetUserCardsRequest copyWith(void Function(GetUserCardsRequest) updates) => super.copyWith((message) => updates(message as GetUserCardsRequest)) as GetUserCardsRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetUserCardsRequest create() => GetUserCardsRequest._();
   GetUserCardsRequest createEmptyInstance() => create();
@@ -1073,29 +1105,31 @@ class GetUserCardsRequest extends $pb.GeneratedMessage {
   void clearStatusFilter() => clearField(2);
 }
 
+/// Get all cards response
 class GetUserCardsResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetUserCardsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..pc<AccountCard>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'cards', $pb.PbFieldType.PM, subBuilder: AccountCard.create)
-    ..aOM<CardStatistics>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'statistics', subBuilder: CardStatistics.create)
-    ..hasRequiredFields = false
-  ;
-
-  GetUserCardsResponse._() : super();
   factory GetUserCardsResponse({
     $core.Iterable<AccountCard>? cards,
     CardStatistics? statistics,
   }) {
-    final _result = create();
+    final $result = create();
     if (cards != null) {
-      _result.cards.addAll(cards);
+      $result.cards.addAll(cards);
     }
     if (statistics != null) {
-      _result.statistics = statistics;
+      $result.statistics = statistics;
     }
-    return _result;
+    return $result;
   }
+  GetUserCardsResponse._() : super();
   factory GetUserCardsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetUserCardsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetUserCardsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..pc<AccountCard>(1, _omitFieldNames ? '' : 'cards', $pb.PbFieldType.PM, subBuilder: AccountCard.create)
+    ..aOM<CardStatistics>(2, _omitFieldNames ? '' : 'statistics', subBuilder: CardStatistics.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1105,8 +1139,10 @@ class GetUserCardsResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetUserCardsResponse copyWith(void Function(GetUserCardsResponse) updates) => super.copyWith((message) => updates(message as GetUserCardsResponse)) as GetUserCardsResponse; // ignore: deprecated_member_use
+  GetUserCardsResponse copyWith(void Function(GetUserCardsResponse) updates) => super.copyWith((message) => updates(message as GetUserCardsResponse)) as GetUserCardsResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetUserCardsResponse create() => GetUserCardsResponse._();
   GetUserCardsResponse createEmptyInstance() => create();
@@ -1130,19 +1166,8 @@ class GetUserCardsResponse extends $pb.GeneratedMessage {
   CardStatistics ensureStatistics() => $_ensure(1);
 }
 
+/// Card statistics
 class CardStatistics extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CardStatistics', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..a<$core.int>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalCards', $pb.PbFieldType.O3)
-    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'activeCards', $pb.PbFieldType.O3)
-    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'virtualCards', $pb.PbFieldType.O3)
-    ..a<$core.int>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'disposableCards', $pb.PbFieldType.O3)
-    ..a<$core.int>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'frozenCards', $pb.PbFieldType.O3)
-    ..a<$core.double>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalSpendingLimit', $pb.PbFieldType.OD)
-    ..a<$core.double>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalRemainingLimit', $pb.PbFieldType.OD)
-    ..hasRequiredFields = false
-  ;
-
-  CardStatistics._() : super();
   factory CardStatistics({
     $core.int? totalCards,
     $core.int? activeCards,
@@ -1152,32 +1177,45 @@ class CardStatistics extends $pb.GeneratedMessage {
     $core.double? totalSpendingLimit,
     $core.double? totalRemainingLimit,
   }) {
-    final _result = create();
+    final $result = create();
     if (totalCards != null) {
-      _result.totalCards = totalCards;
+      $result.totalCards = totalCards;
     }
     if (activeCards != null) {
-      _result.activeCards = activeCards;
+      $result.activeCards = activeCards;
     }
     if (virtualCards != null) {
-      _result.virtualCards = virtualCards;
+      $result.virtualCards = virtualCards;
     }
     if (disposableCards != null) {
-      _result.disposableCards = disposableCards;
+      $result.disposableCards = disposableCards;
     }
     if (frozenCards != null) {
-      _result.frozenCards = frozenCards;
+      $result.frozenCards = frozenCards;
     }
     if (totalSpendingLimit != null) {
-      _result.totalSpendingLimit = totalSpendingLimit;
+      $result.totalSpendingLimit = totalSpendingLimit;
     }
     if (totalRemainingLimit != null) {
-      _result.totalRemainingLimit = totalRemainingLimit;
+      $result.totalRemainingLimit = totalRemainingLimit;
     }
-    return _result;
+    return $result;
   }
+  CardStatistics._() : super();
   factory CardStatistics.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CardStatistics.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CardStatistics', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..a<$core.int>(1, _omitFieldNames ? '' : 'totalCards', $pb.PbFieldType.O3)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'activeCards', $pb.PbFieldType.O3)
+    ..a<$core.int>(3, _omitFieldNames ? '' : 'virtualCards', $pb.PbFieldType.O3)
+    ..a<$core.int>(4, _omitFieldNames ? '' : 'disposableCards', $pb.PbFieldType.O3)
+    ..a<$core.int>(5, _omitFieldNames ? '' : 'frozenCards', $pb.PbFieldType.O3)
+    ..a<$core.double>(6, _omitFieldNames ? '' : 'totalSpendingLimit', $pb.PbFieldType.OD)
+    ..a<$core.double>(7, _omitFieldNames ? '' : 'totalRemainingLimit', $pb.PbFieldType.OD)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1187,8 +1225,10 @@ class CardStatistics extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CardStatistics copyWith(void Function(CardStatistics) updates) => super.copyWith((message) => updates(message as CardStatistics)) as CardStatistics; // ignore: deprecated_member_use
+  CardStatistics copyWith(void Function(CardStatistics) updates) => super.copyWith((message) => updates(message as CardStatistics)) as CardStatistics;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static CardStatistics create() => CardStatistics._();
   CardStatistics createEmptyInstance() => create();
@@ -1261,29 +1301,31 @@ class CardStatistics extends $pb.GeneratedMessage {
   void clearTotalRemainingLimit() => clearField(7);
 }
 
+/// Get card details request
 class GetCardDetailsRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetCardDetailsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'cardUuid')
-    ..aOB(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'includeFullDetails')
-    ..hasRequiredFields = false
-  ;
-
-  GetCardDetailsRequest._() : super();
   factory GetCardDetailsRequest({
     $core.String? cardUuid,
     $core.bool? includeFullDetails,
   }) {
-    final _result = create();
+    final $result = create();
     if (cardUuid != null) {
-      _result.cardUuid = cardUuid;
+      $result.cardUuid = cardUuid;
     }
     if (includeFullDetails != null) {
-      _result.includeFullDetails = includeFullDetails;
+      $result.includeFullDetails = includeFullDetails;
     }
-    return _result;
+    return $result;
   }
+  GetCardDetailsRequest._() : super();
   factory GetCardDetailsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetCardDetailsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetCardDetailsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'cardUuid')
+    ..aOB(2, _omitFieldNames ? '' : 'includeFullDetails')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1293,8 +1335,10 @@ class GetCardDetailsRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetCardDetailsRequest copyWith(void Function(GetCardDetailsRequest) updates) => super.copyWith((message) => updates(message as GetCardDetailsRequest)) as GetCardDetailsRequest; // ignore: deprecated_member_use
+  GetCardDetailsRequest copyWith(void Function(GetCardDetailsRequest) updates) => super.copyWith((message) => updates(message as GetCardDetailsRequest)) as GetCardDetailsRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetCardDetailsRequest create() => GetCardDetailsRequest._();
   GetCardDetailsRequest createEmptyInstance() => create();
@@ -1322,29 +1366,31 @@ class GetCardDetailsRequest extends $pb.GeneratedMessage {
   void clearIncludeFullDetails() => clearField(2);
 }
 
+/// Get card details response
 class GetCardDetailsResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetCardDetailsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<AccountCard>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'card', subBuilder: AccountCard.create)
-    ..pc<CardTransaction>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recentTransactions', $pb.PbFieldType.PM, subBuilder: CardTransaction.create)
-    ..hasRequiredFields = false
-  ;
-
-  GetCardDetailsResponse._() : super();
   factory GetCardDetailsResponse({
     AccountCard? card,
     $core.Iterable<CardTransaction>? recentTransactions,
   }) {
-    final _result = create();
+    final $result = create();
     if (card != null) {
-      _result.card = card;
+      $result.card = card;
     }
     if (recentTransactions != null) {
-      _result.recentTransactions.addAll(recentTransactions);
+      $result.recentTransactions.addAll(recentTransactions);
     }
-    return _result;
+    return $result;
   }
+  GetCardDetailsResponse._() : super();
   factory GetCardDetailsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetCardDetailsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetCardDetailsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOM<AccountCard>(1, _omitFieldNames ? '' : 'card', subBuilder: AccountCard.create)
+    ..pc<CardTransaction>(2, _omitFieldNames ? '' : 'recentTransactions', $pb.PbFieldType.PM, subBuilder: CardTransaction.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1354,8 +1400,10 @@ class GetCardDetailsResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetCardDetailsResponse copyWith(void Function(GetCardDetailsResponse) updates) => super.copyWith((message) => updates(message as GetCardDetailsResponse)) as GetCardDetailsResponse; // ignore: deprecated_member_use
+  GetCardDetailsResponse copyWith(void Function(GetCardDetailsResponse) updates) => super.copyWith((message) => updates(message as GetCardDetailsResponse)) as GetCardDetailsResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetCardDetailsResponse create() => GetCardDetailsResponse._();
   GetCardDetailsResponse createEmptyInstance() => create();
@@ -1379,29 +1427,31 @@ class GetCardDetailsResponse extends $pb.GeneratedMessage {
   $core.List<CardTransaction> get recentTransactions => $_getList(1);
 }
 
+/// Freeze card request
 class FreezeCardRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'FreezeCardRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'cardUuid')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'reason')
-    ..hasRequiredFields = false
-  ;
-
-  FreezeCardRequest._() : super();
   factory FreezeCardRequest({
     $core.String? cardUuid,
     $core.String? reason,
   }) {
-    final _result = create();
+    final $result = create();
     if (cardUuid != null) {
-      _result.cardUuid = cardUuid;
+      $result.cardUuid = cardUuid;
     }
     if (reason != null) {
-      _result.reason = reason;
+      $result.reason = reason;
     }
-    return _result;
+    return $result;
   }
+  FreezeCardRequest._() : super();
   factory FreezeCardRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory FreezeCardRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'FreezeCardRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'cardUuid')
+    ..aOS(2, _omitFieldNames ? '' : 'reason')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1411,8 +1461,10 @@ class FreezeCardRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  FreezeCardRequest copyWith(void Function(FreezeCardRequest) updates) => super.copyWith((message) => updates(message as FreezeCardRequest)) as FreezeCardRequest; // ignore: deprecated_member_use
+  FreezeCardRequest copyWith(void Function(FreezeCardRequest) updates) => super.copyWith((message) => updates(message as FreezeCardRequest)) as FreezeCardRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static FreezeCardRequest create() => FreezeCardRequest._();
   FreezeCardRequest createEmptyInstance() => create();
@@ -1440,24 +1492,26 @@ class FreezeCardRequest extends $pb.GeneratedMessage {
   void clearReason() => clearField(2);
 }
 
+/// Freeze card response
 class FreezeCardResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'FreezeCardResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<AccountCard>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'card', subBuilder: AccountCard.create)
-    ..hasRequiredFields = false
-  ;
-
-  FreezeCardResponse._() : super();
   factory FreezeCardResponse({
     AccountCard? card,
   }) {
-    final _result = create();
+    final $result = create();
     if (card != null) {
-      _result.card = card;
+      $result.card = card;
     }
-    return _result;
+    return $result;
   }
+  FreezeCardResponse._() : super();
   factory FreezeCardResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory FreezeCardResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'FreezeCardResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOM<AccountCard>(1, _omitFieldNames ? '' : 'card', subBuilder: AccountCard.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1467,8 +1521,10 @@ class FreezeCardResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  FreezeCardResponse copyWith(void Function(FreezeCardResponse) updates) => super.copyWith((message) => updates(message as FreezeCardResponse)) as FreezeCardResponse; // ignore: deprecated_member_use
+  FreezeCardResponse copyWith(void Function(FreezeCardResponse) updates) => super.copyWith((message) => updates(message as FreezeCardResponse)) as FreezeCardResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static FreezeCardResponse create() => FreezeCardResponse._();
   FreezeCardResponse createEmptyInstance() => create();
@@ -1489,24 +1545,26 @@ class FreezeCardResponse extends $pb.GeneratedMessage {
   AccountCard ensureCard() => $_ensure(0);
 }
 
+/// Unfreeze card request
 class UnfreezeCardRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UnfreezeCardRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'cardUuid')
-    ..hasRequiredFields = false
-  ;
-
-  UnfreezeCardRequest._() : super();
   factory UnfreezeCardRequest({
     $core.String? cardUuid,
   }) {
-    final _result = create();
+    final $result = create();
     if (cardUuid != null) {
-      _result.cardUuid = cardUuid;
+      $result.cardUuid = cardUuid;
     }
-    return _result;
+    return $result;
   }
+  UnfreezeCardRequest._() : super();
   factory UnfreezeCardRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory UnfreezeCardRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UnfreezeCardRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'cardUuid')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1516,8 +1574,10 @@ class UnfreezeCardRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  UnfreezeCardRequest copyWith(void Function(UnfreezeCardRequest) updates) => super.copyWith((message) => updates(message as UnfreezeCardRequest)) as UnfreezeCardRequest; // ignore: deprecated_member_use
+  UnfreezeCardRequest copyWith(void Function(UnfreezeCardRequest) updates) => super.copyWith((message) => updates(message as UnfreezeCardRequest)) as UnfreezeCardRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static UnfreezeCardRequest create() => UnfreezeCardRequest._();
   UnfreezeCardRequest createEmptyInstance() => create();
@@ -1536,24 +1596,26 @@ class UnfreezeCardRequest extends $pb.GeneratedMessage {
   void clearCardUuid() => clearField(1);
 }
 
+/// Unfreeze card response
 class UnfreezeCardResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UnfreezeCardResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<AccountCard>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'card', subBuilder: AccountCard.create)
-    ..hasRequiredFields = false
-  ;
-
-  UnfreezeCardResponse._() : super();
   factory UnfreezeCardResponse({
     AccountCard? card,
   }) {
-    final _result = create();
+    final $result = create();
     if (card != null) {
-      _result.card = card;
+      $result.card = card;
     }
-    return _result;
+    return $result;
   }
+  UnfreezeCardResponse._() : super();
   factory UnfreezeCardResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory UnfreezeCardResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UnfreezeCardResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOM<AccountCard>(1, _omitFieldNames ? '' : 'card', subBuilder: AccountCard.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1563,8 +1625,10 @@ class UnfreezeCardResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  UnfreezeCardResponse copyWith(void Function(UnfreezeCardResponse) updates) => super.copyWith((message) => updates(message as UnfreezeCardResponse)) as UnfreezeCardResponse; // ignore: deprecated_member_use
+  UnfreezeCardResponse copyWith(void Function(UnfreezeCardResponse) updates) => super.copyWith((message) => updates(message as UnfreezeCardResponse)) as UnfreezeCardResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static UnfreezeCardResponse create() => UnfreezeCardResponse._();
   UnfreezeCardResponse createEmptyInstance() => create();
@@ -1585,29 +1649,31 @@ class UnfreezeCardResponse extends $pb.GeneratedMessage {
   AccountCard ensureCard() => $_ensure(0);
 }
 
+/// Cancel card request
 class CancelCardRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CancelCardRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'cardUuid')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'reason')
-    ..hasRequiredFields = false
-  ;
-
-  CancelCardRequest._() : super();
   factory CancelCardRequest({
     $core.String? cardUuid,
     $core.String? reason,
   }) {
-    final _result = create();
+    final $result = create();
     if (cardUuid != null) {
-      _result.cardUuid = cardUuid;
+      $result.cardUuid = cardUuid;
     }
     if (reason != null) {
-      _result.reason = reason;
+      $result.reason = reason;
     }
-    return _result;
+    return $result;
   }
+  CancelCardRequest._() : super();
   factory CancelCardRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CancelCardRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CancelCardRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'cardUuid')
+    ..aOS(2, _omitFieldNames ? '' : 'reason')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1617,8 +1683,10 @@ class CancelCardRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CancelCardRequest copyWith(void Function(CancelCardRequest) updates) => super.copyWith((message) => updates(message as CancelCardRequest)) as CancelCardRequest; // ignore: deprecated_member_use
+  CancelCardRequest copyWith(void Function(CancelCardRequest) updates) => super.copyWith((message) => updates(message as CancelCardRequest)) as CancelCardRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static CancelCardRequest create() => CancelCardRequest._();
   CancelCardRequest createEmptyInstance() => create();
@@ -1646,29 +1714,31 @@ class CancelCardRequest extends $pb.GeneratedMessage {
   void clearReason() => clearField(2);
 }
 
+/// Cancel card response
 class CancelCardResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CancelCardResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
-    ..hasRequiredFields = false
-  ;
-
-  CancelCardResponse._() : super();
   factory CancelCardResponse({
     $core.bool? success,
     $core.String? message,
   }) {
-    final _result = create();
+    final $result = create();
     if (success != null) {
-      _result.success = success;
+      $result.success = success;
     }
     if (message != null) {
-      _result.message = message;
+      $result.message = message;
     }
-    return _result;
+    return $result;
   }
+  CancelCardResponse._() : super();
   factory CancelCardResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CancelCardResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CancelCardResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..aOS(2, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1678,8 +1748,10 @@ class CancelCardResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CancelCardResponse copyWith(void Function(CancelCardResponse) updates) => super.copyWith((message) => updates(message as CancelCardResponse)) as CancelCardResponse; // ignore: deprecated_member_use
+  CancelCardResponse copyWith(void Function(CancelCardResponse) updates) => super.copyWith((message) => updates(message as CancelCardResponse)) as CancelCardResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static CancelCardResponse create() => CancelCardResponse._();
   CancelCardResponse createEmptyInstance() => create();
@@ -1707,29 +1779,31 @@ class CancelCardResponse extends $pb.GeneratedMessage {
   void clearMessage() => clearField(2);
 }
 
+/// Update card nickname request
 class UpdateCardNicknameRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UpdateCardNicknameRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'cardUuid')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'nickname')
-    ..hasRequiredFields = false
-  ;
-
-  UpdateCardNicknameRequest._() : super();
   factory UpdateCardNicknameRequest({
     $core.String? cardUuid,
     $core.String? nickname,
   }) {
-    final _result = create();
+    final $result = create();
     if (cardUuid != null) {
-      _result.cardUuid = cardUuid;
+      $result.cardUuid = cardUuid;
     }
     if (nickname != null) {
-      _result.nickname = nickname;
+      $result.nickname = nickname;
     }
-    return _result;
+    return $result;
   }
+  UpdateCardNicknameRequest._() : super();
   factory UpdateCardNicknameRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory UpdateCardNicknameRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UpdateCardNicknameRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'cardUuid')
+    ..aOS(2, _omitFieldNames ? '' : 'nickname')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1739,8 +1813,10 @@ class UpdateCardNicknameRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  UpdateCardNicknameRequest copyWith(void Function(UpdateCardNicknameRequest) updates) => super.copyWith((message) => updates(message as UpdateCardNicknameRequest)) as UpdateCardNicknameRequest; // ignore: deprecated_member_use
+  UpdateCardNicknameRequest copyWith(void Function(UpdateCardNicknameRequest) updates) => super.copyWith((message) => updates(message as UpdateCardNicknameRequest)) as UpdateCardNicknameRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static UpdateCardNicknameRequest create() => UpdateCardNicknameRequest._();
   UpdateCardNicknameRequest createEmptyInstance() => create();
@@ -1768,24 +1844,26 @@ class UpdateCardNicknameRequest extends $pb.GeneratedMessage {
   void clearNickname() => clearField(2);
 }
 
+/// Update card nickname response
 class UpdateCardNicknameResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UpdateCardNicknameResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<AccountCard>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'card', subBuilder: AccountCard.create)
-    ..hasRequiredFields = false
-  ;
-
-  UpdateCardNicknameResponse._() : super();
   factory UpdateCardNicknameResponse({
     AccountCard? card,
   }) {
-    final _result = create();
+    final $result = create();
     if (card != null) {
-      _result.card = card;
+      $result.card = card;
     }
-    return _result;
+    return $result;
   }
+  UpdateCardNicknameResponse._() : super();
   factory UpdateCardNicknameResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory UpdateCardNicknameResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UpdateCardNicknameResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOM<AccountCard>(1, _omitFieldNames ? '' : 'card', subBuilder: AccountCard.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1795,8 +1873,10 @@ class UpdateCardNicknameResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  UpdateCardNicknameResponse copyWith(void Function(UpdateCardNicknameResponse) updates) => super.copyWith((message) => updates(message as UpdateCardNicknameResponse)) as UpdateCardNicknameResponse; // ignore: deprecated_member_use
+  UpdateCardNicknameResponse copyWith(void Function(UpdateCardNicknameResponse) updates) => super.copyWith((message) => updates(message as UpdateCardNicknameResponse)) as UpdateCardNicknameResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static UpdateCardNicknameResponse create() => UpdateCardNicknameResponse._();
   UpdateCardNicknameResponse createEmptyInstance() => create();
@@ -1817,29 +1897,31 @@ class UpdateCardNicknameResponse extends $pb.GeneratedMessage {
   AccountCard ensureCard() => $_ensure(0);
 }
 
+/// Update card spending limit request (for disposable cards)
 class UpdateCardSpendingLimitRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UpdateCardSpendingLimitRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'cardUuid')
-    ..a<$core.double>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'newLimit', $pb.PbFieldType.OD)
-    ..hasRequiredFields = false
-  ;
-
-  UpdateCardSpendingLimitRequest._() : super();
   factory UpdateCardSpendingLimitRequest({
     $core.String? cardUuid,
     $core.double? newLimit,
   }) {
-    final _result = create();
+    final $result = create();
     if (cardUuid != null) {
-      _result.cardUuid = cardUuid;
+      $result.cardUuid = cardUuid;
     }
     if (newLimit != null) {
-      _result.newLimit = newLimit;
+      $result.newLimit = newLimit;
     }
-    return _result;
+    return $result;
   }
+  UpdateCardSpendingLimitRequest._() : super();
   factory UpdateCardSpendingLimitRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory UpdateCardSpendingLimitRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UpdateCardSpendingLimitRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'cardUuid')
+    ..a<$core.double>(2, _omitFieldNames ? '' : 'newLimit', $pb.PbFieldType.OD)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1849,8 +1931,10 @@ class UpdateCardSpendingLimitRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  UpdateCardSpendingLimitRequest copyWith(void Function(UpdateCardSpendingLimitRequest) updates) => super.copyWith((message) => updates(message as UpdateCardSpendingLimitRequest)) as UpdateCardSpendingLimitRequest; // ignore: deprecated_member_use
+  UpdateCardSpendingLimitRequest copyWith(void Function(UpdateCardSpendingLimitRequest) updates) => super.copyWith((message) => updates(message as UpdateCardSpendingLimitRequest)) as UpdateCardSpendingLimitRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static UpdateCardSpendingLimitRequest create() => UpdateCardSpendingLimitRequest._();
   UpdateCardSpendingLimitRequest createEmptyInstance() => create();
@@ -1878,24 +1962,26 @@ class UpdateCardSpendingLimitRequest extends $pb.GeneratedMessage {
   void clearNewLimit() => clearField(2);
 }
 
+/// Update card spending limit response
 class UpdateCardSpendingLimitResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UpdateCardSpendingLimitResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<AccountCard>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'card', subBuilder: AccountCard.create)
-    ..hasRequiredFields = false
-  ;
-
-  UpdateCardSpendingLimitResponse._() : super();
   factory UpdateCardSpendingLimitResponse({
     AccountCard? card,
   }) {
-    final _result = create();
+    final $result = create();
     if (card != null) {
-      _result.card = card;
+      $result.card = card;
     }
-    return _result;
+    return $result;
   }
+  UpdateCardSpendingLimitResponse._() : super();
   factory UpdateCardSpendingLimitResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory UpdateCardSpendingLimitResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UpdateCardSpendingLimitResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOM<AccountCard>(1, _omitFieldNames ? '' : 'card', subBuilder: AccountCard.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1905,8 +1991,10 @@ class UpdateCardSpendingLimitResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  UpdateCardSpendingLimitResponse copyWith(void Function(UpdateCardSpendingLimitResponse) updates) => super.copyWith((message) => updates(message as UpdateCardSpendingLimitResponse)) as UpdateCardSpendingLimitResponse; // ignore: deprecated_member_use
+  UpdateCardSpendingLimitResponse copyWith(void Function(UpdateCardSpendingLimitResponse) updates) => super.copyWith((message) => updates(message as UpdateCardSpendingLimitResponse)) as UpdateCardSpendingLimitResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static UpdateCardSpendingLimitResponse create() => UpdateCardSpendingLimitResponse._();
   UpdateCardSpendingLimitResponse createEmptyInstance() => create();
@@ -1927,34 +2015,36 @@ class UpdateCardSpendingLimitResponse extends $pb.GeneratedMessage {
   AccountCard ensureCard() => $_ensure(0);
 }
 
+/// Get card transactions request
 class GetCardTransactionsRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetCardTransactionsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'cardUuid')
-    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'page', $pb.PbFieldType.O3)
-    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'limit', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
-
-  GetCardTransactionsRequest._() : super();
   factory GetCardTransactionsRequest({
     $core.String? cardUuid,
     $core.int? page,
     $core.int? limit,
   }) {
-    final _result = create();
+    final $result = create();
     if (cardUuid != null) {
-      _result.cardUuid = cardUuid;
+      $result.cardUuid = cardUuid;
     }
     if (page != null) {
-      _result.page = page;
+      $result.page = page;
     }
     if (limit != null) {
-      _result.limit = limit;
+      $result.limit = limit;
     }
-    return _result;
+    return $result;
   }
+  GetCardTransactionsRequest._() : super();
   factory GetCardTransactionsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetCardTransactionsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetCardTransactionsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'cardUuid')
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'page', $pb.PbFieldType.O3)
+    ..a<$core.int>(3, _omitFieldNames ? '' : 'limit', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1964,8 +2054,10 @@ class GetCardTransactionsRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetCardTransactionsRequest copyWith(void Function(GetCardTransactionsRequest) updates) => super.copyWith((message) => updates(message as GetCardTransactionsRequest)) as GetCardTransactionsRequest; // ignore: deprecated_member_use
+  GetCardTransactionsRequest copyWith(void Function(GetCardTransactionsRequest) updates) => super.copyWith((message) => updates(message as GetCardTransactionsRequest)) as GetCardTransactionsRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetCardTransactionsRequest create() => GetCardTransactionsRequest._();
   GetCardTransactionsRequest createEmptyInstance() => create();
@@ -2002,39 +2094,41 @@ class GetCardTransactionsRequest extends $pb.GeneratedMessage {
   void clearLimit() => clearField(3);
 }
 
+/// Get card transactions response
 class GetCardTransactionsResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetCardTransactionsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..pc<CardTransaction>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactions', $pb.PbFieldType.PM, subBuilder: CardTransaction.create)
-    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalCount', $pb.PbFieldType.O3)
-    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currentPage', $pb.PbFieldType.O3)
-    ..a<$core.int>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalPages', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
-
-  GetCardTransactionsResponse._() : super();
   factory GetCardTransactionsResponse({
     $core.Iterable<CardTransaction>? transactions,
     $core.int? totalCount,
     $core.int? currentPage,
     $core.int? totalPages,
   }) {
-    final _result = create();
+    final $result = create();
     if (transactions != null) {
-      _result.transactions.addAll(transactions);
+      $result.transactions.addAll(transactions);
     }
     if (totalCount != null) {
-      _result.totalCount = totalCount;
+      $result.totalCount = totalCount;
     }
     if (currentPage != null) {
-      _result.currentPage = currentPage;
+      $result.currentPage = currentPage;
     }
     if (totalPages != null) {
-      _result.totalPages = totalPages;
+      $result.totalPages = totalPages;
     }
-    return _result;
+    return $result;
   }
+  GetCardTransactionsResponse._() : super();
   factory GetCardTransactionsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetCardTransactionsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetCardTransactionsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..pc<CardTransaction>(1, _omitFieldNames ? '' : 'transactions', $pb.PbFieldType.PM, subBuilder: CardTransaction.create)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'totalCount', $pb.PbFieldType.O3)
+    ..a<$core.int>(3, _omitFieldNames ? '' : 'currentPage', $pb.PbFieldType.O3)
+    ..a<$core.int>(4, _omitFieldNames ? '' : 'totalPages', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2044,8 +2138,10 @@ class GetCardTransactionsResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetCardTransactionsResponse copyWith(void Function(GetCardTransactionsResponse) updates) => super.copyWith((message) => updates(message as GetCardTransactionsResponse)) as GetCardTransactionsResponse; // ignore: deprecated_member_use
+  GetCardTransactionsResponse copyWith(void Function(GetCardTransactionsResponse) updates) => super.copyWith((message) => updates(message as GetCardTransactionsResponse)) as GetCardTransactionsResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetCardTransactionsResponse create() => GetCardTransactionsResponse._();
   GetCardTransactionsResponse createEmptyInstance() => create();
@@ -2085,24 +2181,26 @@ class GetCardTransactionsResponse extends $pb.GeneratedMessage {
   void clearTotalPages() => clearField(4);
 }
 
+/// Set default card request
 class SetDefaultCardRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'SetDefaultCardRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'cardUuid')
-    ..hasRequiredFields = false
-  ;
-
-  SetDefaultCardRequest._() : super();
   factory SetDefaultCardRequest({
     $core.String? cardUuid,
   }) {
-    final _result = create();
+    final $result = create();
     if (cardUuid != null) {
-      _result.cardUuid = cardUuid;
+      $result.cardUuid = cardUuid;
     }
-    return _result;
+    return $result;
   }
+  SetDefaultCardRequest._() : super();
   factory SetDefaultCardRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory SetDefaultCardRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SetDefaultCardRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'cardUuid')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2112,8 +2210,10 @@ class SetDefaultCardRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  SetDefaultCardRequest copyWith(void Function(SetDefaultCardRequest) updates) => super.copyWith((message) => updates(message as SetDefaultCardRequest)) as SetDefaultCardRequest; // ignore: deprecated_member_use
+  SetDefaultCardRequest copyWith(void Function(SetDefaultCardRequest) updates) => super.copyWith((message) => updates(message as SetDefaultCardRequest)) as SetDefaultCardRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static SetDefaultCardRequest create() => SetDefaultCardRequest._();
   SetDefaultCardRequest createEmptyInstance() => create();
@@ -2132,24 +2232,26 @@ class SetDefaultCardRequest extends $pb.GeneratedMessage {
   void clearCardUuid() => clearField(1);
 }
 
+/// Set default card response
 class SetDefaultCardResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'SetDefaultCardResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<AccountCard>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'card', subBuilder: AccountCard.create)
-    ..hasRequiredFields = false
-  ;
-
-  SetDefaultCardResponse._() : super();
   factory SetDefaultCardResponse({
     AccountCard? card,
   }) {
-    final _result = create();
+    final $result = create();
     if (card != null) {
-      _result.card = card;
+      $result.card = card;
     }
-    return _result;
+    return $result;
   }
+  SetDefaultCardResponse._() : super();
   factory SetDefaultCardResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory SetDefaultCardResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SetDefaultCardResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOM<AccountCard>(1, _omitFieldNames ? '' : 'card', subBuilder: AccountCard.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2159,8 +2261,10 @@ class SetDefaultCardResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  SetDefaultCardResponse copyWith(void Function(SetDefaultCardResponse) updates) => super.copyWith((message) => updates(message as SetDefaultCardResponse)) as SetDefaultCardResponse; // ignore: deprecated_member_use
+  SetDefaultCardResponse copyWith(void Function(SetDefaultCardResponse) updates) => super.copyWith((message) => updates(message as SetDefaultCardResponse)) as SetDefaultCardResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static SetDefaultCardResponse create() => SetDefaultCardResponse._();
   SetDefaultCardResponse createEmptyInstance() => create();
@@ -2181,3 +2285,6 @@ class SetDefaultCardResponse extends $pb.GeneratedMessage {
   AccountCard ensureCard() => $_ensure(0);
 }
 
+
+const _omitFieldNames = $core.bool.fromEnvironment('protobuf.omit_field_names');
+const _omitMessageNames = $core.bool.fromEnvironment('protobuf.omit_message_names');

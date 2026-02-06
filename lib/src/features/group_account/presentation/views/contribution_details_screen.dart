@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../../../core/types/app_routes.dart';
 import '../../../../../core/services/injection_container.dart';
 import '../../domain/entities/group_entities.dart';
@@ -267,6 +268,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
       children: [
         _buildHeader(contribution),
         _buildContributionSummary(contribution),
+        if (contribution.hasExternalLinks) _buildExternalLinksSection(contribution),
         _buildUserPermissionsBanner(contribution, isCreator, isMember),
         _buildTabBar(),
         Expanded(
@@ -754,6 +756,128 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
         ],
       ),
     );
+  }
+
+  Widget _buildExternalLinksSection(Contribution contribution) {
+    final links = contribution.externalLinks;
+
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1F1F1F),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(
+          color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.3),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.link,
+                color: const Color.fromARGB(255, 78, 3, 208),
+                size: 18.sp,
+              ),
+              SizedBox(width: 8.w),
+              Text(
+                'Social Media Links',
+                style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 12.h),
+          Wrap(
+            spacing: 8.w,
+            runSpacing: 8.h,
+            children: [
+              if (links['whatsapp'] != null && links['whatsapp']!.isNotEmpty)
+                _buildSocialButton(
+                  label: 'WhatsApp',
+                  icon: Icons.message,
+                  color: const Color(0xFF25D366),
+                  onTap: () => _launchLink(links['whatsapp']!),
+                ),
+              if (links['telegram'] != null && links['telegram']!.isNotEmpty)
+                _buildSocialButton(
+                  label: 'Telegram',
+                  icon: Icons.send,
+                  color: const Color(0xFF0088CC),
+                  onTap: () => _launchLink(links['telegram']!),
+                ),
+              if (links['facebook'] != null && links['facebook']!.isNotEmpty)
+                _buildSocialButton(
+                  label: 'Facebook',
+                  icon: Icons.facebook,
+                  color: const Color(0xFF1877F2),
+                  onTap: () => _launchLink(links['facebook']!),
+                ),
+              if (links['discord'] != null && links['discord']!.isNotEmpty)
+                _buildSocialButton(
+                  label: 'Discord',
+                  icon: Icons.discord,
+                  color: const Color(0xFF5865F2),
+                  onTap: () => _launchLink(links['discord']!),
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSocialButton({
+    required String label,
+    required IconData icon,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8.r),
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(8.r),
+          border: Border.all(
+            color: color.withValues(alpha: 0.5),
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              color: color,
+              size: 16.sp,
+            ),
+            SizedBox(width: 6.w),
+            Text(
+              label,
+              style: GoogleFonts.inter(
+                color: color,
+                fontSize: 12.sp,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _launchLink(String url) async {
+    final uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
   }
 
   Widget _buildTabBar() {

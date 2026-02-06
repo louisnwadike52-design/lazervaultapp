@@ -249,33 +249,45 @@ class _NfcBroadcastViewState extends State<_NfcBroadcastView>
         ),
         child: BlocListener<ContactlessPaymentCubit, ContactlessPaymentState>(
           listener: (context, state) {
-            if (state is SessionStatusChecked) {
-              if (state.status == 'completed') {
-                setState(() {
-                  _isCompleted = true;
-                  _statusText = 'Payment completed!';
-                  _payerName = state.payerName;
-                });
-                _stopNfcBroadcast();
-                _expiryTimer?.cancel();
-                _pollTimer?.cancel();
+            if (state is PaymentProcessedForReceiver) {
+              setState(() {
+                _isCompleted = true;
+                _statusText = 'Payment completed!';
+                _payerName = state.transaction.payerName;
+              });
+              _stopNfcBroadcast();
+              _expiryTimer?.cancel();
+              _pollTimer?.cancel();
 
-                HapticFeedback.heavyImpact();
+              HapticFeedback.heavyImpact();
 
-                Future.delayed(const Duration(seconds: 1), () {
-                  if (!mounted) return;
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => PaymentSuccessScreen(
-                        amount: widget.session.amount,
-                        currency: widget.session.currency,
-                        payerName: state.payerName ?? 'Unknown',
-                        isReceiver: true,
-                      ),
+              Future.delayed(const Duration(seconds: 1), () {
+                if (!mounted) return;
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => PaymentSuccessScreen(
+                      amount: widget.session.amount,
+                      currency: widget.session.currency,
+                      payerName: state.transaction.payerName,
+                      referenceNumber: state.transaction.referenceNumber,
+                      isReceiver: true,
+                      category: widget.session.category,
+                      description: widget.session.description,
+                      transactionDate: state.transaction.createdAt,
+                      transaction: state.transaction,
+                      receiverName: state.transaction.receiverName,
+                      receiverUsername: state.transaction.receiverUsername,
+                      payerUsername: state.transaction.payerUsername,
+                      accountNumber: widget.session.receiverAccountId,
                     ),
-                  );
-                });
+                  ),
+                );
+              });
+            } else if (state is SessionStatusChecked) {
+              if (state.status == 'completed') {
+                // Try to get the full transaction details
+                context.read<ContactlessPaymentCubit>().getTransactionForSession(widget.session.id);
               } else if (state.status == 'read') {
                 setState(() {
                   _statusText = 'Payer is reviewing the payment...';
@@ -443,7 +455,7 @@ class _NfcBroadcastViewState extends State<_NfcBroadcastView>
                 ),
                 SizedBox(height: 12.h),
                 Text(
-                  '${widget.session.currency} ${widget.session.amount.toStringAsFixed(2)}',
+                  widget.session.formattedAmount,
                   style: GoogleFonts.inter(
                     color: Colors.white,
                     fontSize: 36.sp,

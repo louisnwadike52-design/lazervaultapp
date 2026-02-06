@@ -6,6 +6,7 @@ import "google/protobuf/timestamp.proto";
 import "google/protobuf/wrappers.proto";
 import "google/api/annotations.proto";
 import "protoc-gen-openapiv2/options/annotations.proto";
+import "common.proto";
 
 option go_package = "lazervaultGo/pb";
 
@@ -42,6 +43,7 @@ message Recipient {
   string currency = 15; // Currency for this recipient (e.g., "USD", "GBP")
   string swift_code = 16; // SWIFT/BIC code for international transfers
   string iban = 17; // IBAN for European transfers
+  string alias = 18; // Custom nickname/alias for the recipient
 
   google.protobuf.Timestamp created_at = 11;
   google.protobuf.Timestamp updated_at = 12;
@@ -65,6 +67,7 @@ message CreateRecipientRequest {
   optional string currency = 11;
   optional string swift_code = 12;
   optional string iban = 13;
+  optional string alias = 14;
 }
 
 message CreateRecipientResponse {
@@ -73,14 +76,19 @@ message CreateRecipientResponse {
 
 // --- List Recipients ---
 
+// Pagination metadata for list responses
 message ListRecipientsRequest {
   optional string country_code = 1; // Filter by country code (e.g., "GB", "US")
   optional string currency = 2; // Filter by currency (e.g., "USD", "GBP")
   optional bool favorites_only = 3; // Only return favorite recipients
+  // Pagination parameters
+  optional int32 page = 4;     // Page number (default: 1)
+  optional int32 page_size = 5; // Items per page (default: 20, max: 100)
 }
 
 message ListRecipientsResponse {
   repeated Recipient recipients = 1;
+  PaginationInfo pagination = 2; // Pagination metadata
 }
 
 // --- Update Recipient ---
@@ -96,6 +104,7 @@ message UpdateRecipientRequest {
   optional google.protobuf.StringValue sort_code = 5;      // Only applicable for external recipients
   optional google.protobuf.StringValue bank_name = 6;      // Only applicable for external recipients
   optional google.protobuf.StringValue country_code = 7;   // Only applicable for external recipients
+  optional google.protobuf.StringValue alias = 8;          // Custom nickname/alias
 
   // Note: Updating 'type' or 'internal_account_id' might be complex
   // and is often handled via deletion and recreation, hence not included here.

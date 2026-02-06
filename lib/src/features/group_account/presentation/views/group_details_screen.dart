@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../../../core/types/app_routes.dart';
 import '../../domain/entities/group_entities.dart';
 import '../cubit/group_account_cubit.dart';
@@ -11,7 +12,9 @@ import '../widgets/member_card.dart';
 import '../widgets/contribution_card.dart';
 import '../widgets/add_member_bottom_sheet.dart';
 import '../widgets/create_contribution_bottom_sheet.dart';
+import '../widgets/edit_group_bottom_sheet.dart';
 import '../widgets/member_detail_dialog.dart';
+import '../views/group_account_report_screen.dart';
 import '../../../authentication/cubit/authentication_cubit.dart';
 import '../../../authentication/cubit/authentication_state.dart';
 
@@ -426,6 +429,19 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
             color: const Color(0xFF1F1F1F),
             itemBuilder: (context) => [
               PopupMenuItem(
+                value: 'share_report',
+                child: Row(
+                  children: [
+                    Icon(Icons.analytics, color: const Color.fromARGB(255, 78, 3, 208), size: 20.sp),
+                    SizedBox(width: 12.w),
+                    Text(
+                      'Generate Report',
+                      style: GoogleFonts.inter(color: Colors.white),
+                    ),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
                 value: 'edit',
                 child: Row(
                   children: [
@@ -564,9 +580,144 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
               ],
             ),
           ],
+          SizedBox(height: 16.h),
+          // External Social Media Links
+          if (group.hasExternalLinks) _buildExternalLinksSection(group),
         ],
       ),
     );
+  }
+
+  Widget _buildExternalLinksSection(GroupAccount group) {
+    final links = group.externalLinks;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(8.r),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                Icons.link,
+                color: Colors.white.withValues(alpha: 0.8),
+                size: 16.sp,
+              ),
+              SizedBox(width: 8.w),
+              Text(
+                'Join our community',
+                style: GoogleFonts.inter(
+                  fontSize: 12.sp,
+                  color: Colors.white.withValues(alpha: 0.8),
+                ),
+              ),
+            ],
+          ),
+        ),
+        SizedBox(height: 12.h),
+        Row(
+          children: [
+            if (links['whatsapp'] != null && links['whatsapp']!.isNotEmpty) ...[
+              _buildSocialButton(
+                label: 'WhatsApp',
+                icon: Icons.message,
+                color: const Color(0xFF25D366),
+                onTap: () => _launchLink(links['whatsapp']!),
+              ),
+              SizedBox(width: 12.w),
+            ],
+            if (links['telegram'] != null && links['telegram']!.isNotEmpty) ...[
+              _buildSocialButton(
+                label: 'Telegram',
+                icon: Icons.send,
+                color: const Color(0xFF0088CC),
+                onTap: () => _launchLink(links['telegram']!),
+              ),
+              SizedBox(width: 12.w),
+            ],
+            if (links['facebook'] != null && links['facebook']!.isNotEmpty) ...[
+              _buildSocialButton(
+                label: 'Facebook',
+                icon: Icons.alternate_email, // Using alternate_email as placeholder
+                color: const Color(0xFF1877F2),
+                onTap: () => _launchLink(links['facebook']!),
+              ),
+              SizedBox(width: 12.w),
+            ],
+            if (links['discord'] != null && links['discord']!.isNotEmpty) ...[
+              _buildSocialButton(
+                label: 'Discord',
+                icon: Icons.gamepad, // Using gamepad as alternative for Discord
+                color: const Color(0xFF5865F2),
+                onTap: () => _launchLink(links['discord']!),
+              ),
+            ],
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSocialButton({
+    required String label,
+    required IconData icon,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: EdgeInsets.symmetric(vertical: 10.h),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.15),
+            borderRadius: BorderRadius.circular(10.r),
+            border: Border.all(
+              color: color.withValues(alpha: 0.3),
+              width: 1,
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                color: color,
+                size: 18.sp,
+              ),
+              SizedBox(width: 8.w),
+              Text(
+                label,
+                style: GoogleFonts.inter(
+                  fontSize: 13.sp,
+                  fontWeight: FontWeight.w600,
+                  color: color,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _launchLink(String url) async {
+    final uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      Get.snackbar(
+        'Error',
+        'Could not open link',
+        backgroundColor: const Color(0xFFEF4444),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+      );
+    }
   }
 
   Widget _buildOverviewStat({
@@ -873,8 +1024,11 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
 
   void _handleMenuAction(String action, GroupAccount group) {
     switch (action) {
+      case 'share_report':
+        _showShareReportScreen(group);
+        break;
       case 'edit':
-        // Navigate to edit group screen
+        _showEditGroupBottomSheet(group);
         break;
       case 'leave':
         _showLeaveGroupDialog(group);
@@ -915,6 +1069,27 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  void _showShareReportScreen(GroupAccount group) {
+    // Get current state to access contributions and members
+    final state = context.read<GroupAccountCubit>().state;
+    List<Contribution> contributions = [];
+    List<GroupMember> members = [];
+
+    if (state is GroupAccountGroupLoaded) {
+      contributions = state.contributions;
+      members = state.members;
+    }
+
+    Navigator.of(context).push(
+      GroupAccountReportScreen.route(
+        group: group,
+        contributions: contributions,
+        members: members,
+        groupUrl: 'https://lazervault.app/groups/${group.id}',
       ),
     );
   }
@@ -977,6 +1152,24 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
     ).then((_) {
       if (!mounted) return;
       // Reload group details after bottom sheet closes to ensure contributions list is updated
+      context.read<GroupAccountCubit>().loadGroupDetails(widget.groupId);
+    });
+  }
+
+  void _showEditGroupBottomSheet(GroupAccount group) {
+    final cubit = context.read<GroupAccountCubit>();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => BlocProvider.value(
+        value: cubit,
+        child: EditGroupBottomSheet(group: group),
+      ),
+    ).then((_) {
+      if (!mounted) return;
+      // Reload group details after edit to ensure UI is updated
       context.read<GroupAccountCubit>().loadGroupDetails(widget.groupId);
     });
   }

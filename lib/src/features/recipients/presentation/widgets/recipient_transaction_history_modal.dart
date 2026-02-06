@@ -163,14 +163,14 @@ class RecipientTransactionHistoryModal extends StatelessWidget {
                 shape: BoxShape.circle,
               ),
               child: Icon(
-                Icons.receipt_long_outlined,
+                Icons.send_rounded,
                 color: const Color(0xFF4E03D0),
                 size: 32.sp,
               ),
             ),
             SizedBox(height: 16.h),
             Text(
-              'No Transactions Yet',
+              'Send money to ${recipient.name}',
               style: TextStyle(
                 fontSize: 16.sp,
                 fontWeight: FontWeight.w600,
@@ -179,11 +179,37 @@ class RecipientTransactionHistoryModal extends StatelessWidget {
             ),
             SizedBox(height: 8.h),
             Text(
-              'You haven\'t made any transfers\nwith ${recipient.name} yet.',
+              'Tap below to send money to this recipient',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 14.sp,
                 color: Colors.white54,
+              ),
+            ),
+            SizedBox(height: 24.h),
+            ElevatedButton.icon(
+              onPressed: () {
+                Get.back(); // close modal
+                Get.toNamed(
+                  AppRoutes.initiateSendFunds,
+                  arguments: recipient,
+                );
+              },
+              icon: Icon(Icons.send, size: 18.sp),
+              label: Text(
+                'Send Money',
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF4E03D0),
+                foregroundColor: Colors.white,
+                padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
               ),
             ),
           ],

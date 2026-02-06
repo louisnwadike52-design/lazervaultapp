@@ -7,6 +7,7 @@ import 'package:lazervault/core/types/electricity_bill_details.dart';
 import 'package:lazervault/core/types/transaction.dart';
 import 'package:lazervault/src/features/authentication/domain/entities/user.dart';
 import 'package:lazervault/src/features/authentication/presentation/views/email_sign_in_screen.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/presentation/views/email_verification_screen.dart';
 import 'package:lazervault/src/features/authentication/cubit/email_verification_cubit.dart';
 import 'package:lazervault/src/features/authentication/presentation/views/phone_verification_screen.dart';
@@ -18,7 +19,7 @@ import 'package:lazervault/src/features/transaction_pin/presentation/views/pin_m
 import 'package:lazervault/src/features/transaction_pin/presentation/views/forgot_pin_screen.dart';
 import 'package:lazervault/src/features/crypto/presentation/view/crypto_screen.dart';
 import 'package:lazervault/src/features/crypto/presentation/view/buy_crypto_screen.dart';
-import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/transfer_proof.dart';
+import 'package:lazervault/src/features/funds/presentation/view/send_funds/transfer_receipt_screen.dart';
 import 'package:lazervault/src/features/gift_cards/presentation/view/gift_cards_screen.dart';
 import 'package:lazervault/src/features/gift_cards/presentation/view/purchase_gift_card_screen.dart';
 import 'package:lazervault/src/features/gift_cards/presentation/view/gift_card_details_screen.dart';
@@ -199,19 +200,10 @@ import 'package:lazervault/src/features/statistics/presentation/screens/add_budg
 // Tag Pay imports
 import 'package:lazervault/src/features/tag_pay/presentation/cubit/tag_pay_cubit.dart';
 import 'package:lazervault/src/features/tag_pay/presentation/view/tag_pay_home_screen.dart';
-import 'package:lazervault/src/features/tag_pay/presentation/view/create_tag_pay_screen.dart';
-import 'package:lazervault/src/features/tag_pay/presentation/view/send_money_tag_pay_screen.dart';
-import 'package:lazervault/src/features/tag_pay/presentation/view/request_money_screen.dart';
-import 'package:lazervault/src/features/tag_pay/presentation/view/tag_pay_transactions_screen.dart';
-import 'package:lazervault/src/features/tag_pay/presentation/view/pending_requests_screen.dart';
 import 'package:lazervault/src/features/tag_pay/presentation/view/search_users_screen.dart';
 import 'package:lazervault/src/features/tag_pay/presentation/view/create_tag_screen_redesigned.dart';
 import 'package:lazervault/src/features/tag_pay/presentation/view/tag_amount_screen.dart';
-import 'package:lazervault/src/features/tag_pay/presentation/view/my_tags_screen_redesigned.dart';
-import 'package:lazervault/src/features/tag_pay/presentation/view/outgoing_tags_screen.dart';
-import 'package:lazervault/src/features/tag_pay/presentation/view/incoming_tags_screen.dart';
 import 'package:lazervault/src/features/tag_pay/presentation/view/tag_payment_confirmation_screen.dart';
-import 'package:lazervault/src/features/tag_pay/presentation/view/tag_pay_processing_screen.dart';
 import 'package:lazervault/src/features/tag_pay/presentation/view/tag_payment_receipt_screen.dart';
 import 'package:lazervault/src/features/tag_pay/presentation/view/tag_creation_processing_screen.dart';
 import 'package:lazervault/src/features/tag_pay/presentation/view/tag_creation_receipt_screen.dart';
@@ -243,6 +235,7 @@ import 'package:lazervault/src/features/crowdfund/presentation/cubit/crowdfund_c
 import 'package:lazervault/src/features/crowdfund/presentation/views/crowdfund_home_screen.dart';
 import 'package:lazervault/src/features/crowdfund/presentation/views/crowdfund_list_screen.dart';
 import 'package:lazervault/src/features/crowdfund/presentation/views/crowdfund_details_screen.dart';
+import 'package:lazervault/src/features/crowdfund/presentation/views/create_crowdfund_carousel.dart';
 import 'package:lazervault/src/features/crowdfund/presentation/views/create_crowdfund_screen.dart';
 import 'package:lazervault/src/features/crowdfund/presentation/views/donation_payment_screen.dart';
 import 'package:lazervault/src/features/crowdfund/presentation/views/donation_processing_screen.dart';
@@ -835,10 +828,7 @@ class AppRouter {
     ),
     GetPage(
       name: AppRoutes.transferProof,
-      page: () {
-        final transferDetails = Get.arguments as Map<String, dynamic>? ?? {};
-        return TransferProof(transferDetails: transferDetails);
-      },
+      page: () => const TransferReceiptScreen(),
       transition: Transition.leftToRight,
     ),
     GetPage(
@@ -1628,46 +1618,6 @@ class AppRouter {
       transition: Transition.rightToLeft,
     ),
     GetPage(
-      name: AppRoutes.createTagPay,
-      page: () => BlocProvider(
-        create: (context) => serviceLocator<TagPayCubit>(),
-        child: const CreateTagPayScreen(),
-      ),
-      transition: Transition.rightToLeft,
-    ),
-    GetPage(
-      name: AppRoutes.sendMoneyTagPay,
-      page: () => BlocProvider(
-        create: (context) => serviceLocator<TagPayCubit>(),
-        child: const SendMoneyTagPayScreen(),
-      ),
-      transition: Transition.rightToLeft,
-    ),
-    GetPage(
-      name: AppRoutes.requestMoneyTagPay,
-      page: () => BlocProvider(
-        create: (context) => serviceLocator<TagPayCubit>(),
-        child: const RequestMoneyScreen(),
-      ),
-      transition: Transition.rightToLeft,
-    ),
-    GetPage(
-      name: AppRoutes.tagPayTransactions,
-      page: () => BlocProvider(
-        create: (context) => serviceLocator<TagPayCubit>(),
-        child: const TagPayTransactionsScreen(),
-      ),
-      transition: Transition.rightToLeft,
-    ),
-    GetPage(
-      name: AppRoutes.pendingRequests,
-      page: () => BlocProvider(
-        create: (context) => serviceLocator<TagPayCubit>(),
-        child: const PendingRequestsScreen(),
-      ),
-      transition: Transition.rightToLeft,
-    ),
-    GetPage(
       name: AppRoutes.searchUsers,
       page: () => BlocProvider(
         create: (context) => serviceLocator<TagPayCubit>(),
@@ -1692,30 +1642,6 @@ class AppRouter {
       transition: Transition.rightToLeft,
     ),
     GetPage(
-      name: AppRoutes.myTags,
-      page: () => BlocProvider(
-        create: (context) => serviceLocator<TagPayCubit>(),
-        child: const MyTagsScreenRedesigned(),
-      ),
-      transition: Transition.rightToLeft,
-    ),
-    GetPage(
-      name: AppRoutes.outgoingTags,
-      page: () => BlocProvider(
-        create: (context) => serviceLocator<TagPayCubit>(),
-        child: const OutgoingTagsScreen(),
-      ),
-      transition: Transition.rightToLeft,
-    ),
-    GetPage(
-      name: AppRoutes.incomingTags,
-      page: () => BlocProvider(
-        create: (context) => serviceLocator<TagPayCubit>(),
-        child: const IncomingTagsScreen(),
-      ),
-      transition: Transition.rightToLeft,
-    ),
-    GetPage(
       name: AppRoutes.tagPaymentConfirmation,
       page: () {
         final tag = Get.arguments as UserTagEntity;
@@ -1728,16 +1654,6 @@ class AppRouter {
         );
       },
       transition: Transition.rightToLeft,
-    ),
-    GetPage(
-      name: AppRoutes.tagPayProcessing,
-      page: () {
-        return BlocProvider(
-          create: (_) => serviceLocator<TagPayCubit>(),
-          child: const TagPayProcessingScreen(),
-        );
-      },
-      transition: Transition.fadeIn,
     ),
     GetPage(
       name: AppRoutes.tagPaymentReceipt,
@@ -2067,7 +1983,7 @@ class AppRouter {
       name: AppRoutes.createCrowdfund,
       page: () => BlocProvider(
         create: (_) => serviceLocator<CrowdfundCubit>(),
-        child: const CreateCrowdfundScreen(),
+        child: const CreateCrowdfundCarousel(),
       ),
       transition: Transition.rightToLeft,
     ),

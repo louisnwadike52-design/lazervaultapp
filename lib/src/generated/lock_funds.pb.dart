@@ -1,52 +1,28 @@
-///
+//
 //  Generated code. Do not modify.
 //  source: lock_funds.proto
 //
 // @dart = 2.12
-// ignore_for_file: annotate_overrides,camel_case_types,constant_identifier_names,directives_ordering,library_prefixes,non_constant_identifier_names,prefer_final_fields,return_of_invalid_type,unnecessary_const,unnecessary_import,unnecessary_this,unused_import,unused_shown_name
+
+// ignore_for_file: annotate_overrides, camel_case_types, comment_references
+// ignore_for_file: constant_identifier_names, library_prefixes
+// ignore_for_file: non_constant_identifier_names, prefer_final_fields
+// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
 
 import 'dart:core' as $core;
 
 import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'google/protobuf/timestamp.pb.dart' as $1;
-
+import 'google/protobuf/timestamp.pb.dart' as $42;
 import 'lock_funds.pbenum.dart';
 
 export 'lock_funds.pbenum.dart';
 
+/// Lock fund message
+/// The LockFund record acts as a "virtual vault" holding the locked funds.
+/// Funds are debited from source_account_id on creation and credited back on unlock.
 class LockFund extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'LockFund', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
-    ..a<$fixnum.Int64>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..e<LockType>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lockType', $pb.PbFieldType.OE, defaultOrMaker: LockType.LOCK_TYPE_UNSPECIFIED, valueOf: LockType.valueOf, enumValues: LockType.values)
-    ..a<$core.double>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
-    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
-    ..a<$core.int>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lockDurationDays', $pb.PbFieldType.O3)
-    ..a<$core.double>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'interestRate', $pb.PbFieldType.OD)
-    ..aOM<$1.Timestamp>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lockedAt', subBuilder: $1.Timestamp.create)
-    ..aOM<$1.Timestamp>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'unlockAt', subBuilder: $1.Timestamp.create)
-    ..e<LockStatus>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: LockStatus.LOCK_STATUS_UNSPECIFIED, valueOf: LockStatus.valueOf, enumValues: LockStatus.values)
-    ..aOB(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'autoRenew')
-    ..aOS(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'goalName')
-    ..aOS(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'goalDescription')
-    ..a<$core.double>(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'earlyUnlockPenaltyPercent', $pb.PbFieldType.OD)
-    ..a<$core.double>(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accruedInterest', $pb.PbFieldType.OD)
-    ..aOS(16, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'paymentMethod')
-    ..aOS(17, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactionId')
-    ..aOM<$1.Timestamp>(18, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
-    ..aOM<$1.Timestamp>(19, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $1.Timestamp.create)
-    ..a<$core.int>(20, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'daysRemaining', $pb.PbFieldType.O3)
-    ..a<$core.double>(21, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'progressPercent', $pb.PbFieldType.OD)
-    ..a<$core.double>(22, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalValue', $pb.PbFieldType.OD)
-    ..aOB(23, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'canUnlockEarly')
-    ..aOS(24, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sourceAccountId')
-    ..aOS(25, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'destinationAccountId')
-    ..hasRequiredFields = false
-  ;
-
-  LockFund._() : super();
   factory LockFund({
     $core.String? id,
     $fixnum.Int64? userId,
@@ -55,8 +31,8 @@ class LockFund extends $pb.GeneratedMessage {
     $core.String? currency,
     $core.int? lockDurationDays,
     $core.double? interestRate,
-    $1.Timestamp? lockedAt,
-    $1.Timestamp? unlockAt,
+    $42.Timestamp? lockedAt,
+    $42.Timestamp? unlockAt,
     LockStatus? status,
     $core.bool? autoRenew,
     $core.String? goalName,
@@ -65,8 +41,8 @@ class LockFund extends $pb.GeneratedMessage {
     $core.double? accruedInterest,
     $core.String? paymentMethod,
     $core.String? transactionId,
-    $1.Timestamp? createdAt,
-    $1.Timestamp? updatedAt,
+    $42.Timestamp? createdAt,
+    $42.Timestamp? updatedAt,
     $core.int? daysRemaining,
     $core.double? progressPercent,
     $core.double? totalValue,
@@ -74,86 +50,117 @@ class LockFund extends $pb.GeneratedMessage {
     $core.String? sourceAccountId,
     $core.String? destinationAccountId,
   }) {
-    final _result = create();
+    final $result = create();
     if (id != null) {
-      _result.id = id;
+      $result.id = id;
     }
     if (userId != null) {
-      _result.userId = userId;
+      $result.userId = userId;
     }
     if (lockType != null) {
-      _result.lockType = lockType;
+      $result.lockType = lockType;
     }
     if (amount != null) {
-      _result.amount = amount;
+      $result.amount = amount;
     }
     if (currency != null) {
-      _result.currency = currency;
+      $result.currency = currency;
     }
     if (lockDurationDays != null) {
-      _result.lockDurationDays = lockDurationDays;
+      $result.lockDurationDays = lockDurationDays;
     }
     if (interestRate != null) {
-      _result.interestRate = interestRate;
+      $result.interestRate = interestRate;
     }
     if (lockedAt != null) {
-      _result.lockedAt = lockedAt;
+      $result.lockedAt = lockedAt;
     }
     if (unlockAt != null) {
-      _result.unlockAt = unlockAt;
+      $result.unlockAt = unlockAt;
     }
     if (status != null) {
-      _result.status = status;
+      $result.status = status;
     }
     if (autoRenew != null) {
-      _result.autoRenew = autoRenew;
+      $result.autoRenew = autoRenew;
     }
     if (goalName != null) {
-      _result.goalName = goalName;
+      $result.goalName = goalName;
     }
     if (goalDescription != null) {
-      _result.goalDescription = goalDescription;
+      $result.goalDescription = goalDescription;
     }
     if (earlyUnlockPenaltyPercent != null) {
-      _result.earlyUnlockPenaltyPercent = earlyUnlockPenaltyPercent;
+      $result.earlyUnlockPenaltyPercent = earlyUnlockPenaltyPercent;
     }
     if (accruedInterest != null) {
-      _result.accruedInterest = accruedInterest;
+      $result.accruedInterest = accruedInterest;
     }
     if (paymentMethod != null) {
-      _result.paymentMethod = paymentMethod;
+      $result.paymentMethod = paymentMethod;
     }
     if (transactionId != null) {
-      _result.transactionId = transactionId;
+      $result.transactionId = transactionId;
     }
     if (createdAt != null) {
-      _result.createdAt = createdAt;
+      $result.createdAt = createdAt;
     }
     if (updatedAt != null) {
-      _result.updatedAt = updatedAt;
+      $result.updatedAt = updatedAt;
     }
     if (daysRemaining != null) {
-      _result.daysRemaining = daysRemaining;
+      $result.daysRemaining = daysRemaining;
     }
     if (progressPercent != null) {
-      _result.progressPercent = progressPercent;
+      $result.progressPercent = progressPercent;
     }
     if (totalValue != null) {
-      _result.totalValue = totalValue;
+      $result.totalValue = totalValue;
     }
     if (canUnlockEarly != null) {
-      _result.canUnlockEarly = canUnlockEarly;
+      $result.canUnlockEarly = canUnlockEarly;
     }
     if (sourceAccountId != null) {
-      _result.sourceAccountId = sourceAccountId;
+      $result.sourceAccountId = sourceAccountId;
     }
     if (destinationAccountId != null) {
-      _result.destinationAccountId = destinationAccountId;
+      $result.destinationAccountId = destinationAccountId;
     }
-    return _result;
+    return $result;
   }
+  LockFund._() : super();
   factory LockFund.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory LockFund.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'LockFund', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'id')
+    ..a<$fixnum.Int64>(2, _omitFieldNames ? '' : 'userId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..e<LockType>(3, _omitFieldNames ? '' : 'lockType', $pb.PbFieldType.OE, defaultOrMaker: LockType.LOCK_TYPE_UNSPECIFIED, valueOf: LockType.valueOf, enumValues: LockType.values)
+    ..a<$core.double>(4, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
+    ..aOS(5, _omitFieldNames ? '' : 'currency')
+    ..a<$core.int>(6, _omitFieldNames ? '' : 'lockDurationDays', $pb.PbFieldType.O3)
+    ..a<$core.double>(7, _omitFieldNames ? '' : 'interestRate', $pb.PbFieldType.OD)
+    ..aOM<$42.Timestamp>(8, _omitFieldNames ? '' : 'lockedAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$42.Timestamp>(9, _omitFieldNames ? '' : 'unlockAt', subBuilder: $42.Timestamp.create)
+    ..e<LockStatus>(10, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: LockStatus.LOCK_STATUS_UNSPECIFIED, valueOf: LockStatus.valueOf, enumValues: LockStatus.values)
+    ..aOB(11, _omitFieldNames ? '' : 'autoRenew')
+    ..aOS(12, _omitFieldNames ? '' : 'goalName')
+    ..aOS(13, _omitFieldNames ? '' : 'goalDescription')
+    ..a<$core.double>(14, _omitFieldNames ? '' : 'earlyUnlockPenaltyPercent', $pb.PbFieldType.OD)
+    ..a<$core.double>(15, _omitFieldNames ? '' : 'accruedInterest', $pb.PbFieldType.OD)
+    ..aOS(16, _omitFieldNames ? '' : 'paymentMethod')
+    ..aOS(17, _omitFieldNames ? '' : 'transactionId')
+    ..aOM<$42.Timestamp>(18, _omitFieldNames ? '' : 'createdAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$42.Timestamp>(19, _omitFieldNames ? '' : 'updatedAt', subBuilder: $42.Timestamp.create)
+    ..a<$core.int>(20, _omitFieldNames ? '' : 'daysRemaining', $pb.PbFieldType.O3)
+    ..a<$core.double>(21, _omitFieldNames ? '' : 'progressPercent', $pb.PbFieldType.OD)
+    ..a<$core.double>(22, _omitFieldNames ? '' : 'totalValue', $pb.PbFieldType.OD)
+    ..aOB(23, _omitFieldNames ? '' : 'canUnlockEarly')
+    ..aOS(24, _omitFieldNames ? '' : 'sourceAccountId')
+    ..aOS(25, _omitFieldNames ? '' : 'destinationAccountId')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -163,8 +170,10 @@ class LockFund extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  LockFund copyWith(void Function(LockFund) updates) => super.copyWith((message) => updates(message as LockFund)) as LockFund; // ignore: deprecated_member_use
+  LockFund copyWith(void Function(LockFund) updates) => super.copyWith((message) => updates(message as LockFund)) as LockFund;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static LockFund create() => LockFund._();
   LockFund createEmptyInstance() => create();
@@ -237,26 +246,26 @@ class LockFund extends $pb.GeneratedMessage {
   void clearInterestRate() => clearField(7);
 
   @$pb.TagNumber(8)
-  $1.Timestamp get lockedAt => $_getN(7);
+  $42.Timestamp get lockedAt => $_getN(7);
   @$pb.TagNumber(8)
-  set lockedAt($1.Timestamp v) { setField(8, v); }
+  set lockedAt($42.Timestamp v) { setField(8, v); }
   @$pb.TagNumber(8)
   $core.bool hasLockedAt() => $_has(7);
   @$pb.TagNumber(8)
   void clearLockedAt() => clearField(8);
   @$pb.TagNumber(8)
-  $1.Timestamp ensureLockedAt() => $_ensure(7);
+  $42.Timestamp ensureLockedAt() => $_ensure(7);
 
   @$pb.TagNumber(9)
-  $1.Timestamp get unlockAt => $_getN(8);
+  $42.Timestamp get unlockAt => $_getN(8);
   @$pb.TagNumber(9)
-  set unlockAt($1.Timestamp v) { setField(9, v); }
+  set unlockAt($42.Timestamp v) { setField(9, v); }
   @$pb.TagNumber(9)
   $core.bool hasUnlockAt() => $_has(8);
   @$pb.TagNumber(9)
   void clearUnlockAt() => clearField(9);
   @$pb.TagNumber(9)
-  $1.Timestamp ensureUnlockAt() => $_ensure(8);
+  $42.Timestamp ensureUnlockAt() => $_ensure(8);
 
   @$pb.TagNumber(10)
   LockStatus get status => $_getN(9);
@@ -331,27 +340,28 @@ class LockFund extends $pb.GeneratedMessage {
   void clearTransactionId() => clearField(17);
 
   @$pb.TagNumber(18)
-  $1.Timestamp get createdAt => $_getN(17);
+  $42.Timestamp get createdAt => $_getN(17);
   @$pb.TagNumber(18)
-  set createdAt($1.Timestamp v) { setField(18, v); }
+  set createdAt($42.Timestamp v) { setField(18, v); }
   @$pb.TagNumber(18)
   $core.bool hasCreatedAt() => $_has(17);
   @$pb.TagNumber(18)
   void clearCreatedAt() => clearField(18);
   @$pb.TagNumber(18)
-  $1.Timestamp ensureCreatedAt() => $_ensure(17);
+  $42.Timestamp ensureCreatedAt() => $_ensure(17);
 
   @$pb.TagNumber(19)
-  $1.Timestamp get updatedAt => $_getN(18);
+  $42.Timestamp get updatedAt => $_getN(18);
   @$pb.TagNumber(19)
-  set updatedAt($1.Timestamp v) { setField(19, v); }
+  set updatedAt($42.Timestamp v) { setField(19, v); }
   @$pb.TagNumber(19)
   $core.bool hasUpdatedAt() => $_has(18);
   @$pb.TagNumber(19)
   void clearUpdatedAt() => clearField(19);
   @$pb.TagNumber(19)
-  $1.Timestamp ensureUpdatedAt() => $_ensure(18);
+  $42.Timestamp ensureUpdatedAt() => $_ensure(18);
 
+  /// Computed fields
   @$pb.TagNumber(20)
   $core.int get daysRemaining => $_getIZ(19);
   @$pb.TagNumber(20)
@@ -388,6 +398,7 @@ class LockFund extends $pb.GeneratedMessage {
   @$pb.TagNumber(23)
   void clearCanUnlockEarly() => clearField(23);
 
+  /// Account tracking for fund flow
   @$pb.TagNumber(24)
   $core.String get sourceAccountId => $_getSZ(23);
   @$pb.TagNumber(24)
@@ -407,22 +418,8 @@ class LockFund extends $pb.GeneratedMessage {
   void clearDestinationAccountId() => clearField(25);
 }
 
+/// Lock transaction message
 class LockTransaction extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'LockTransaction', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lockFundId')
-    ..a<$fixnum.Int64>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactionType')
-    ..a<$core.double>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
-    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
-    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'paymentMethod')
-    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status')
-    ..aOM<$1.Timestamp>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactionDate', subBuilder: $1.Timestamp.create)
-    ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
-    ..hasRequiredFields = false
-  ;
-
-  LockTransaction._() : super();
   factory LockTransaction({
     $core.String? id,
     $core.String? lockFundId,
@@ -432,44 +429,60 @@ class LockTransaction extends $pb.GeneratedMessage {
     $core.String? currency,
     $core.String? paymentMethod,
     $core.String? status,
-    $1.Timestamp? transactionDate,
+    $42.Timestamp? transactionDate,
     $core.String? description,
   }) {
-    final _result = create();
+    final $result = create();
     if (id != null) {
-      _result.id = id;
+      $result.id = id;
     }
     if (lockFundId != null) {
-      _result.lockFundId = lockFundId;
+      $result.lockFundId = lockFundId;
     }
     if (userId != null) {
-      _result.userId = userId;
+      $result.userId = userId;
     }
     if (transactionType != null) {
-      _result.transactionType = transactionType;
+      $result.transactionType = transactionType;
     }
     if (amount != null) {
-      _result.amount = amount;
+      $result.amount = amount;
     }
     if (currency != null) {
-      _result.currency = currency;
+      $result.currency = currency;
     }
     if (paymentMethod != null) {
-      _result.paymentMethod = paymentMethod;
+      $result.paymentMethod = paymentMethod;
     }
     if (status != null) {
-      _result.status = status;
+      $result.status = status;
     }
     if (transactionDate != null) {
-      _result.transactionDate = transactionDate;
+      $result.transactionDate = transactionDate;
     }
     if (description != null) {
-      _result.description = description;
+      $result.description = description;
     }
-    return _result;
+    return $result;
   }
+  LockTransaction._() : super();
   factory LockTransaction.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory LockTransaction.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'LockTransaction', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'id')
+    ..aOS(2, _omitFieldNames ? '' : 'lockFundId')
+    ..a<$fixnum.Int64>(3, _omitFieldNames ? '' : 'userId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(4, _omitFieldNames ? '' : 'transactionType')
+    ..a<$core.double>(5, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
+    ..aOS(6, _omitFieldNames ? '' : 'currency')
+    ..aOS(7, _omitFieldNames ? '' : 'paymentMethod')
+    ..aOS(8, _omitFieldNames ? '' : 'status')
+    ..aOM<$42.Timestamp>(9, _omitFieldNames ? '' : 'transactionDate', subBuilder: $42.Timestamp.create)
+    ..aOS(10, _omitFieldNames ? '' : 'description')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -479,8 +492,10 @@ class LockTransaction extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  LockTransaction copyWith(void Function(LockTransaction) updates) => super.copyWith((message) => updates(message as LockTransaction)) as LockTransaction; // ignore: deprecated_member_use
+  LockTransaction copyWith(void Function(LockTransaction) updates) => super.copyWith((message) => updates(message as LockTransaction)) as LockTransaction;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static LockTransaction create() => LockTransaction._();
   LockTransaction createEmptyInstance() => create();
@@ -562,15 +577,15 @@ class LockTransaction extends $pb.GeneratedMessage {
   void clearStatus() => clearField(8);
 
   @$pb.TagNumber(9)
-  $1.Timestamp get transactionDate => $_getN(8);
+  $42.Timestamp get transactionDate => $_getN(8);
   @$pb.TagNumber(9)
-  set transactionDate($1.Timestamp v) { setField(9, v); }
+  set transactionDate($42.Timestamp v) { setField(9, v); }
   @$pb.TagNumber(9)
   $core.bool hasTransactionDate() => $_has(8);
   @$pb.TagNumber(9)
   void clearTransactionDate() => clearField(9);
   @$pb.TagNumber(9)
-  $1.Timestamp ensureTransactionDate() => $_ensure(8);
+  $42.Timestamp ensureTransactionDate() => $_ensure(8);
 
   @$pb.TagNumber(10)
   $core.String get description => $_getSZ(9);
@@ -582,22 +597,8 @@ class LockTransaction extends $pb.GeneratedMessage {
   void clearDescription() => clearField(10);
 }
 
+/// Create lock fund request
 class CreateLockFundRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CreateLockFundRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..e<LockType>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lockType', $pb.PbFieldType.OE, defaultOrMaker: LockType.LOCK_TYPE_UNSPECIFIED, valueOf: LockType.valueOf, enumValues: LockType.values)
-    ..a<$core.double>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
-    ..a<$core.int>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lockDurationDays', $pb.PbFieldType.O3)
-    ..aOB(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'autoRenew')
-    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'goalName')
-    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'goalDescription')
-    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'paymentMethod')
-    ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sourceAccountId')
-    ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactionPin')
-    ..hasRequiredFields = false
-  ;
-
-  CreateLockFundRequest._() : super();
   factory CreateLockFundRequest({
     LockType? lockType,
     $core.double? amount,
@@ -610,41 +611,57 @@ class CreateLockFundRequest extends $pb.GeneratedMessage {
     $core.String? sourceAccountId,
     $core.String? transactionPin,
   }) {
-    final _result = create();
+    final $result = create();
     if (lockType != null) {
-      _result.lockType = lockType;
+      $result.lockType = lockType;
     }
     if (amount != null) {
-      _result.amount = amount;
+      $result.amount = amount;
     }
     if (currency != null) {
-      _result.currency = currency;
+      $result.currency = currency;
     }
     if (lockDurationDays != null) {
-      _result.lockDurationDays = lockDurationDays;
+      $result.lockDurationDays = lockDurationDays;
     }
     if (autoRenew != null) {
-      _result.autoRenew = autoRenew;
+      $result.autoRenew = autoRenew;
     }
     if (goalName != null) {
-      _result.goalName = goalName;
+      $result.goalName = goalName;
     }
     if (goalDescription != null) {
-      _result.goalDescription = goalDescription;
+      $result.goalDescription = goalDescription;
     }
     if (paymentMethod != null) {
-      _result.paymentMethod = paymentMethod;
+      $result.paymentMethod = paymentMethod;
     }
     if (sourceAccountId != null) {
-      _result.sourceAccountId = sourceAccountId;
+      $result.sourceAccountId = sourceAccountId;
     }
     if (transactionPin != null) {
-      _result.transactionPin = transactionPin;
+      $result.transactionPin = transactionPin;
     }
-    return _result;
+    return $result;
   }
+  CreateLockFundRequest._() : super();
   factory CreateLockFundRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CreateLockFundRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreateLockFundRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..e<LockType>(1, _omitFieldNames ? '' : 'lockType', $pb.PbFieldType.OE, defaultOrMaker: LockType.LOCK_TYPE_UNSPECIFIED, valueOf: LockType.valueOf, enumValues: LockType.values)
+    ..a<$core.double>(2, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
+    ..aOS(3, _omitFieldNames ? '' : 'currency')
+    ..a<$core.int>(4, _omitFieldNames ? '' : 'lockDurationDays', $pb.PbFieldType.O3)
+    ..aOB(5, _omitFieldNames ? '' : 'autoRenew')
+    ..aOS(6, _omitFieldNames ? '' : 'goalName')
+    ..aOS(7, _omitFieldNames ? '' : 'goalDescription')
+    ..aOS(8, _omitFieldNames ? '' : 'paymentMethod')
+    ..aOS(9, _omitFieldNames ? '' : 'sourceAccountId')
+    ..aOS(10, _omitFieldNames ? '' : 'transactionPin')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -654,8 +671,10 @@ class CreateLockFundRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CreateLockFundRequest copyWith(void Function(CreateLockFundRequest) updates) => super.copyWith((message) => updates(message as CreateLockFundRequest)) as CreateLockFundRequest; // ignore: deprecated_member_use
+  CreateLockFundRequest copyWith(void Function(CreateLockFundRequest) updates) => super.copyWith((message) => updates(message as CreateLockFundRequest)) as CreateLockFundRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static CreateLockFundRequest create() => CreateLockFundRequest._();
   CreateLockFundRequest createEmptyInstance() => create();
@@ -755,39 +774,41 @@ class CreateLockFundRequest extends $pb.GeneratedMessage {
   void clearTransactionPin() => clearField(10);
 }
 
+/// Create lock fund response
 class CreateLockFundResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CreateLockFundResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
-    ..aOM<LockFund>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lockFund', subBuilder: LockFund.create)
-    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'paymentUrl')
-    ..hasRequiredFields = false
-  ;
-
-  CreateLockFundResponse._() : super();
   factory CreateLockFundResponse({
     $core.bool? success,
     $core.String? message,
     LockFund? lockFund,
     $core.String? paymentUrl,
   }) {
-    final _result = create();
+    final $result = create();
     if (success != null) {
-      _result.success = success;
+      $result.success = success;
     }
     if (message != null) {
-      _result.message = message;
+      $result.message = message;
     }
     if (lockFund != null) {
-      _result.lockFund = lockFund;
+      $result.lockFund = lockFund;
     }
     if (paymentUrl != null) {
-      _result.paymentUrl = paymentUrl;
+      $result.paymentUrl = paymentUrl;
     }
-    return _result;
+    return $result;
   }
+  CreateLockFundResponse._() : super();
   factory CreateLockFundResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CreateLockFundResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreateLockFundResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..aOS(2, _omitFieldNames ? '' : 'message')
+    ..aOM<LockFund>(3, _omitFieldNames ? '' : 'lockFund', subBuilder: LockFund.create)
+    ..aOS(4, _omitFieldNames ? '' : 'paymentUrl')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -797,8 +818,10 @@ class CreateLockFundResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CreateLockFundResponse copyWith(void Function(CreateLockFundResponse) updates) => super.copyWith((message) => updates(message as CreateLockFundResponse)) as CreateLockFundResponse; // ignore: deprecated_member_use
+  CreateLockFundResponse copyWith(void Function(CreateLockFundResponse) updates) => super.copyWith((message) => updates(message as CreateLockFundResponse)) as CreateLockFundResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static CreateLockFundResponse create() => CreateLockFundResponse._();
   CreateLockFundResponse createEmptyInstance() => create();
@@ -846,34 +869,36 @@ class CreateLockFundResponse extends $pb.GeneratedMessage {
   void clearPaymentUrl() => clearField(4);
 }
 
+/// Get lock funds request
 class GetLockFundsRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetLockFundsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..e<LockStatus>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: LockStatus.LOCK_STATUS_UNSPECIFIED, valueOf: LockStatus.valueOf, enumValues: LockStatus.values)
-    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'page', $pb.PbFieldType.O3)
-    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'perPage', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
-
-  GetLockFundsRequest._() : super();
   factory GetLockFundsRequest({
     LockStatus? status,
     $core.int? page,
     $core.int? perPage,
   }) {
-    final _result = create();
+    final $result = create();
     if (status != null) {
-      _result.status = status;
+      $result.status = status;
     }
     if (page != null) {
-      _result.page = page;
+      $result.page = page;
     }
     if (perPage != null) {
-      _result.perPage = perPage;
+      $result.perPage = perPage;
     }
-    return _result;
+    return $result;
   }
+  GetLockFundsRequest._() : super();
   factory GetLockFundsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetLockFundsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetLockFundsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..e<LockStatus>(1, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: LockStatus.LOCK_STATUS_UNSPECIFIED, valueOf: LockStatus.valueOf, enumValues: LockStatus.values)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'page', $pb.PbFieldType.O3)
+    ..a<$core.int>(3, _omitFieldNames ? '' : 'perPage', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -883,8 +908,10 @@ class GetLockFundsRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetLockFundsRequest copyWith(void Function(GetLockFundsRequest) updates) => super.copyWith((message) => updates(message as GetLockFundsRequest)) as GetLockFundsRequest; // ignore: deprecated_member_use
+  GetLockFundsRequest copyWith(void Function(GetLockFundsRequest) updates) => super.copyWith((message) => updates(message as GetLockFundsRequest)) as GetLockFundsRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetLockFundsRequest create() => GetLockFundsRequest._();
   GetLockFundsRequest createEmptyInstance() => create();
@@ -921,19 +948,8 @@ class GetLockFundsRequest extends $pb.GeneratedMessage {
   void clearPerPage() => clearField(3);
 }
 
+/// Get lock funds response
 class GetLockFundsResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetLockFundsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..pc<LockFund>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lockFunds', $pb.PbFieldType.PM, subBuilder: LockFund.create)
-    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalCount', $pb.PbFieldType.O3)
-    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'page', $pb.PbFieldType.O3)
-    ..a<$core.int>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalPages', $pb.PbFieldType.O3)
-    ..a<$core.double>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalLockedAmount', $pb.PbFieldType.OD)
-    ..a<$core.double>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalAccruedInterest', $pb.PbFieldType.OD)
-    ..a<$core.int>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'activeLocksCount', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
-
-  GetLockFundsResponse._() : super();
   factory GetLockFundsResponse({
     $core.Iterable<LockFund>? lockFunds,
     $core.int? totalCount,
@@ -943,32 +959,45 @@ class GetLockFundsResponse extends $pb.GeneratedMessage {
     $core.double? totalAccruedInterest,
     $core.int? activeLocksCount,
   }) {
-    final _result = create();
+    final $result = create();
     if (lockFunds != null) {
-      _result.lockFunds.addAll(lockFunds);
+      $result.lockFunds.addAll(lockFunds);
     }
     if (totalCount != null) {
-      _result.totalCount = totalCount;
+      $result.totalCount = totalCount;
     }
     if (page != null) {
-      _result.page = page;
+      $result.page = page;
     }
     if (totalPages != null) {
-      _result.totalPages = totalPages;
+      $result.totalPages = totalPages;
     }
     if (totalLockedAmount != null) {
-      _result.totalLockedAmount = totalLockedAmount;
+      $result.totalLockedAmount = totalLockedAmount;
     }
     if (totalAccruedInterest != null) {
-      _result.totalAccruedInterest = totalAccruedInterest;
+      $result.totalAccruedInterest = totalAccruedInterest;
     }
     if (activeLocksCount != null) {
-      _result.activeLocksCount = activeLocksCount;
+      $result.activeLocksCount = activeLocksCount;
     }
-    return _result;
+    return $result;
   }
+  GetLockFundsResponse._() : super();
   factory GetLockFundsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetLockFundsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetLockFundsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..pc<LockFund>(1, _omitFieldNames ? '' : 'lockFunds', $pb.PbFieldType.PM, subBuilder: LockFund.create)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'totalCount', $pb.PbFieldType.O3)
+    ..a<$core.int>(3, _omitFieldNames ? '' : 'page', $pb.PbFieldType.O3)
+    ..a<$core.int>(4, _omitFieldNames ? '' : 'totalPages', $pb.PbFieldType.O3)
+    ..a<$core.double>(5, _omitFieldNames ? '' : 'totalLockedAmount', $pb.PbFieldType.OD)
+    ..a<$core.double>(6, _omitFieldNames ? '' : 'totalAccruedInterest', $pb.PbFieldType.OD)
+    ..a<$core.int>(7, _omitFieldNames ? '' : 'activeLocksCount', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -978,8 +1007,10 @@ class GetLockFundsResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetLockFundsResponse copyWith(void Function(GetLockFundsResponse) updates) => super.copyWith((message) => updates(message as GetLockFundsResponse)) as GetLockFundsResponse; // ignore: deprecated_member_use
+  GetLockFundsResponse copyWith(void Function(GetLockFundsResponse) updates) => super.copyWith((message) => updates(message as GetLockFundsResponse)) as GetLockFundsResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetLockFundsResponse create() => GetLockFundsResponse._();
   GetLockFundsResponse createEmptyInstance() => create();
@@ -1018,6 +1049,7 @@ class GetLockFundsResponse extends $pb.GeneratedMessage {
   @$pb.TagNumber(4)
   void clearTotalPages() => clearField(4);
 
+  /// Summary statistics
   @$pb.TagNumber(5)
   $core.double get totalLockedAmount => $_getN(4);
   @$pb.TagNumber(5)
@@ -1046,24 +1078,26 @@ class GetLockFundsResponse extends $pb.GeneratedMessage {
   void clearActiveLocksCount() => clearField(7);
 }
 
+/// Get lock fund by ID request
 class GetLockFundRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetLockFundRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lockFundId')
-    ..hasRequiredFields = false
-  ;
-
-  GetLockFundRequest._() : super();
   factory GetLockFundRequest({
     $core.String? lockFundId,
   }) {
-    final _result = create();
+    final $result = create();
     if (lockFundId != null) {
-      _result.lockFundId = lockFundId;
+      $result.lockFundId = lockFundId;
     }
-    return _result;
+    return $result;
   }
+  GetLockFundRequest._() : super();
   factory GetLockFundRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetLockFundRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetLockFundRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'lockFundId')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1073,8 +1107,10 @@ class GetLockFundRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetLockFundRequest copyWith(void Function(GetLockFundRequest) updates) => super.copyWith((message) => updates(message as GetLockFundRequest)) as GetLockFundRequest; // ignore: deprecated_member_use
+  GetLockFundRequest copyWith(void Function(GetLockFundRequest) updates) => super.copyWith((message) => updates(message as GetLockFundRequest)) as GetLockFundRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetLockFundRequest create() => GetLockFundRequest._();
   GetLockFundRequest createEmptyInstance() => create();
@@ -1093,29 +1129,31 @@ class GetLockFundRequest extends $pb.GeneratedMessage {
   void clearLockFundId() => clearField(1);
 }
 
+/// Get lock fund by ID response
 class GetLockFundResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetLockFundResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
-    ..aOM<LockFund>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lockFund', subBuilder: LockFund.create)
-    ..hasRequiredFields = false
-  ;
-
-  GetLockFundResponse._() : super();
   factory GetLockFundResponse({
     $core.bool? success,
     LockFund? lockFund,
   }) {
-    final _result = create();
+    final $result = create();
     if (success != null) {
-      _result.success = success;
+      $result.success = success;
     }
     if (lockFund != null) {
-      _result.lockFund = lockFund;
+      $result.lockFund = lockFund;
     }
-    return _result;
+    return $result;
   }
+  GetLockFundResponse._() : super();
   factory GetLockFundResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetLockFundResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetLockFundResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..aOM<LockFund>(2, _omitFieldNames ? '' : 'lockFund', subBuilder: LockFund.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1125,8 +1163,10 @@ class GetLockFundResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetLockFundResponse copyWith(void Function(GetLockFundResponse) updates) => super.copyWith((message) => updates(message as GetLockFundResponse)) as GetLockFundResponse; // ignore: deprecated_member_use
+  GetLockFundResponse copyWith(void Function(GetLockFundResponse) updates) => super.copyWith((message) => updates(message as GetLockFundResponse)) as GetLockFundResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetLockFundResponse create() => GetLockFundResponse._();
   GetLockFundResponse createEmptyInstance() => create();
@@ -1156,39 +1196,41 @@ class GetLockFundResponse extends $pb.GeneratedMessage {
   LockFund ensureLockFund() => $_ensure(1);
 }
 
+/// Unlock fund request
 class UnlockFundRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UnlockFundRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lockFundId')
-    ..aOB(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'forceEarlyUnlock')
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactionPin')
-    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'destinationAccountId')
-    ..hasRequiredFields = false
-  ;
-
-  UnlockFundRequest._() : super();
   factory UnlockFundRequest({
     $core.String? lockFundId,
     $core.bool? forceEarlyUnlock,
     $core.String? transactionPin,
     $core.String? destinationAccountId,
   }) {
-    final _result = create();
+    final $result = create();
     if (lockFundId != null) {
-      _result.lockFundId = lockFundId;
+      $result.lockFundId = lockFundId;
     }
     if (forceEarlyUnlock != null) {
-      _result.forceEarlyUnlock = forceEarlyUnlock;
+      $result.forceEarlyUnlock = forceEarlyUnlock;
     }
     if (transactionPin != null) {
-      _result.transactionPin = transactionPin;
+      $result.transactionPin = transactionPin;
     }
     if (destinationAccountId != null) {
-      _result.destinationAccountId = destinationAccountId;
+      $result.destinationAccountId = destinationAccountId;
     }
-    return _result;
+    return $result;
   }
+  UnlockFundRequest._() : super();
   factory UnlockFundRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory UnlockFundRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UnlockFundRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'lockFundId')
+    ..aOB(2, _omitFieldNames ? '' : 'forceEarlyUnlock')
+    ..aOS(3, _omitFieldNames ? '' : 'transactionPin')
+    ..aOS(4, _omitFieldNames ? '' : 'destinationAccountId')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1198,8 +1240,10 @@ class UnlockFundRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  UnlockFundRequest copyWith(void Function(UnlockFundRequest) updates) => super.copyWith((message) => updates(message as UnlockFundRequest)) as UnlockFundRequest; // ignore: deprecated_member_use
+  UnlockFundRequest copyWith(void Function(UnlockFundRequest) updates) => super.copyWith((message) => updates(message as UnlockFundRequest)) as UnlockFundRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static UnlockFundRequest create() => UnlockFundRequest._();
   UnlockFundRequest createEmptyInstance() => create();
@@ -1245,19 +1289,8 @@ class UnlockFundRequest extends $pb.GeneratedMessage {
   void clearDestinationAccountId() => clearField(4);
 }
 
+/// Unlock fund response
 class UnlockFundResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UnlockFundResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
-    ..a<$core.double>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amountReturned', $pb.PbFieldType.OD)
-    ..a<$core.double>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'penaltyAmount', $pb.PbFieldType.OD)
-    ..a<$core.double>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'interestEarned', $pb.PbFieldType.OD)
-    ..aOM<LockFund>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedLockFund', subBuilder: LockFund.create)
-    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'creditedAccountId')
-    ..hasRequiredFields = false
-  ;
-
-  UnlockFundResponse._() : super();
   factory UnlockFundResponse({
     $core.bool? success,
     $core.String? message,
@@ -1267,32 +1300,45 @@ class UnlockFundResponse extends $pb.GeneratedMessage {
     LockFund? updatedLockFund,
     $core.String? creditedAccountId,
   }) {
-    final _result = create();
+    final $result = create();
     if (success != null) {
-      _result.success = success;
+      $result.success = success;
     }
     if (message != null) {
-      _result.message = message;
+      $result.message = message;
     }
     if (amountReturned != null) {
-      _result.amountReturned = amountReturned;
+      $result.amountReturned = amountReturned;
     }
     if (penaltyAmount != null) {
-      _result.penaltyAmount = penaltyAmount;
+      $result.penaltyAmount = penaltyAmount;
     }
     if (interestEarned != null) {
-      _result.interestEarned = interestEarned;
+      $result.interestEarned = interestEarned;
     }
     if (updatedLockFund != null) {
-      _result.updatedLockFund = updatedLockFund;
+      $result.updatedLockFund = updatedLockFund;
     }
     if (creditedAccountId != null) {
-      _result.creditedAccountId = creditedAccountId;
+      $result.creditedAccountId = creditedAccountId;
     }
-    return _result;
+    return $result;
   }
+  UnlockFundResponse._() : super();
   factory UnlockFundResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory UnlockFundResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UnlockFundResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..aOS(2, _omitFieldNames ? '' : 'message')
+    ..a<$core.double>(3, _omitFieldNames ? '' : 'amountReturned', $pb.PbFieldType.OD)
+    ..a<$core.double>(4, _omitFieldNames ? '' : 'penaltyAmount', $pb.PbFieldType.OD)
+    ..a<$core.double>(5, _omitFieldNames ? '' : 'interestEarned', $pb.PbFieldType.OD)
+    ..aOM<LockFund>(6, _omitFieldNames ? '' : 'updatedLockFund', subBuilder: LockFund.create)
+    ..aOS(7, _omitFieldNames ? '' : 'creditedAccountId')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1302,8 +1348,10 @@ class UnlockFundResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  UnlockFundResponse copyWith(void Function(UnlockFundResponse) updates) => super.copyWith((message) => updates(message as UnlockFundResponse)) as UnlockFundResponse; // ignore: deprecated_member_use
+  UnlockFundResponse copyWith(void Function(UnlockFundResponse) updates) => super.copyWith((message) => updates(message as UnlockFundResponse)) as UnlockFundResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static UnlockFundResponse create() => UnlockFundResponse._();
   UnlockFundResponse createEmptyInstance() => create();
@@ -1378,34 +1426,36 @@ class UnlockFundResponse extends $pb.GeneratedMessage {
   void clearCreditedAccountId() => clearField(7);
 }
 
+/// Get lock transactions request
 class GetLockTransactionsRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetLockTransactionsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lockFundId')
-    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'page', $pb.PbFieldType.O3)
-    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'perPage', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
-
-  GetLockTransactionsRequest._() : super();
   factory GetLockTransactionsRequest({
     $core.String? lockFundId,
     $core.int? page,
     $core.int? perPage,
   }) {
-    final _result = create();
+    final $result = create();
     if (lockFundId != null) {
-      _result.lockFundId = lockFundId;
+      $result.lockFundId = lockFundId;
     }
     if (page != null) {
-      _result.page = page;
+      $result.page = page;
     }
     if (perPage != null) {
-      _result.perPage = perPage;
+      $result.perPage = perPage;
     }
-    return _result;
+    return $result;
   }
+  GetLockTransactionsRequest._() : super();
   factory GetLockTransactionsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetLockTransactionsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetLockTransactionsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'lockFundId')
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'page', $pb.PbFieldType.O3)
+    ..a<$core.int>(3, _omitFieldNames ? '' : 'perPage', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1415,8 +1465,10 @@ class GetLockTransactionsRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetLockTransactionsRequest copyWith(void Function(GetLockTransactionsRequest) updates) => super.copyWith((message) => updates(message as GetLockTransactionsRequest)) as GetLockTransactionsRequest; // ignore: deprecated_member_use
+  GetLockTransactionsRequest copyWith(void Function(GetLockTransactionsRequest) updates) => super.copyWith((message) => updates(message as GetLockTransactionsRequest)) as GetLockTransactionsRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetLockTransactionsRequest create() => GetLockTransactionsRequest._();
   GetLockTransactionsRequest createEmptyInstance() => create();
@@ -1453,39 +1505,41 @@ class GetLockTransactionsRequest extends $pb.GeneratedMessage {
   void clearPerPage() => clearField(3);
 }
 
+/// Get lock transactions response
 class GetLockTransactionsResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetLockTransactionsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..pc<LockTransaction>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactions', $pb.PbFieldType.PM, subBuilder: LockTransaction.create)
-    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalCount', $pb.PbFieldType.O3)
-    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'page', $pb.PbFieldType.O3)
-    ..a<$core.int>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalPages', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
-
-  GetLockTransactionsResponse._() : super();
   factory GetLockTransactionsResponse({
     $core.Iterable<LockTransaction>? transactions,
     $core.int? totalCount,
     $core.int? page,
     $core.int? totalPages,
   }) {
-    final _result = create();
+    final $result = create();
     if (transactions != null) {
-      _result.transactions.addAll(transactions);
+      $result.transactions.addAll(transactions);
     }
     if (totalCount != null) {
-      _result.totalCount = totalCount;
+      $result.totalCount = totalCount;
     }
     if (page != null) {
-      _result.page = page;
+      $result.page = page;
     }
     if (totalPages != null) {
-      _result.totalPages = totalPages;
+      $result.totalPages = totalPages;
     }
-    return _result;
+    return $result;
   }
+  GetLockTransactionsResponse._() : super();
   factory GetLockTransactionsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetLockTransactionsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetLockTransactionsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..pc<LockTransaction>(1, _omitFieldNames ? '' : 'transactions', $pb.PbFieldType.PM, subBuilder: LockTransaction.create)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'totalCount', $pb.PbFieldType.O3)
+    ..a<$core.int>(3, _omitFieldNames ? '' : 'page', $pb.PbFieldType.O3)
+    ..a<$core.int>(4, _omitFieldNames ? '' : 'totalPages', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1495,8 +1549,10 @@ class GetLockTransactionsResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetLockTransactionsResponse copyWith(void Function(GetLockTransactionsResponse) updates) => super.copyWith((message) => updates(message as GetLockTransactionsResponse)) as GetLockTransactionsResponse; // ignore: deprecated_member_use
+  GetLockTransactionsResponse copyWith(void Function(GetLockTransactionsResponse) updates) => super.copyWith((message) => updates(message as GetLockTransactionsResponse)) as GetLockTransactionsResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetLockTransactionsResponse create() => GetLockTransactionsResponse._();
   GetLockTransactionsResponse createEmptyInstance() => create();
@@ -1536,34 +1592,36 @@ class GetLockTransactionsResponse extends $pb.GeneratedMessage {
   void clearTotalPages() => clearField(4);
 }
 
+/// Calculate interest request
 class CalculateInterestRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CalculateInterestRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..e<LockType>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lockType', $pb.PbFieldType.OE, defaultOrMaker: LockType.LOCK_TYPE_UNSPECIFIED, valueOf: LockType.valueOf, enumValues: LockType.values)
-    ..a<$core.double>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
-    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lockDurationDays', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
-
-  CalculateInterestRequest._() : super();
   factory CalculateInterestRequest({
     LockType? lockType,
     $core.double? amount,
     $core.int? lockDurationDays,
   }) {
-    final _result = create();
+    final $result = create();
     if (lockType != null) {
-      _result.lockType = lockType;
+      $result.lockType = lockType;
     }
     if (amount != null) {
-      _result.amount = amount;
+      $result.amount = amount;
     }
     if (lockDurationDays != null) {
-      _result.lockDurationDays = lockDurationDays;
+      $result.lockDurationDays = lockDurationDays;
     }
-    return _result;
+    return $result;
   }
+  CalculateInterestRequest._() : super();
   factory CalculateInterestRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CalculateInterestRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CalculateInterestRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..e<LockType>(1, _omitFieldNames ? '' : 'lockType', $pb.PbFieldType.OE, defaultOrMaker: LockType.LOCK_TYPE_UNSPECIFIED, valueOf: LockType.valueOf, enumValues: LockType.values)
+    ..a<$core.double>(2, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
+    ..a<$core.int>(3, _omitFieldNames ? '' : 'lockDurationDays', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1573,8 +1631,10 @@ class CalculateInterestRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CalculateInterestRequest copyWith(void Function(CalculateInterestRequest) updates) => super.copyWith((message) => updates(message as CalculateInterestRequest)) as CalculateInterestRequest; // ignore: deprecated_member_use
+  CalculateInterestRequest copyWith(void Function(CalculateInterestRequest) updates) => super.copyWith((message) => updates(message as CalculateInterestRequest)) as CalculateInterestRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static CalculateInterestRequest create() => CalculateInterestRequest._();
   CalculateInterestRequest createEmptyInstance() => create();
@@ -1611,39 +1671,41 @@ class CalculateInterestRequest extends $pb.GeneratedMessage {
   void clearLockDurationDays() => clearField(3);
 }
 
+/// Calculate interest response
 class CalculateInterestResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CalculateInterestResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..a<$core.double>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'interestRate', $pb.PbFieldType.OD)
-    ..a<$core.double>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'estimatedInterest', $pb.PbFieldType.OD)
-    ..a<$core.double>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalReturn', $pb.PbFieldType.OD)
-    ..a<$core.double>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'apy', $pb.PbFieldType.OD)
-    ..hasRequiredFields = false
-  ;
-
-  CalculateInterestResponse._() : super();
   factory CalculateInterestResponse({
     $core.double? interestRate,
     $core.double? estimatedInterest,
     $core.double? totalReturn,
     $core.double? apy,
   }) {
-    final _result = create();
+    final $result = create();
     if (interestRate != null) {
-      _result.interestRate = interestRate;
+      $result.interestRate = interestRate;
     }
     if (estimatedInterest != null) {
-      _result.estimatedInterest = estimatedInterest;
+      $result.estimatedInterest = estimatedInterest;
     }
     if (totalReturn != null) {
-      _result.totalReturn = totalReturn;
+      $result.totalReturn = totalReturn;
     }
     if (apy != null) {
-      _result.apy = apy;
+      $result.apy = apy;
     }
-    return _result;
+    return $result;
   }
+  CalculateInterestResponse._() : super();
   factory CalculateInterestResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CalculateInterestResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CalculateInterestResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..a<$core.double>(1, _omitFieldNames ? '' : 'interestRate', $pb.PbFieldType.OD)
+    ..a<$core.double>(2, _omitFieldNames ? '' : 'estimatedInterest', $pb.PbFieldType.OD)
+    ..a<$core.double>(3, _omitFieldNames ? '' : 'totalReturn', $pb.PbFieldType.OD)
+    ..a<$core.double>(4, _omitFieldNames ? '' : 'apy', $pb.PbFieldType.OD)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1653,8 +1715,10 @@ class CalculateInterestResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CalculateInterestResponse copyWith(void Function(CalculateInterestResponse) updates) => super.copyWith((message) => updates(message as CalculateInterestResponse)) as CalculateInterestResponse; // ignore: deprecated_member_use
+  CalculateInterestResponse copyWith(void Function(CalculateInterestResponse) updates) => super.copyWith((message) => updates(message as CalculateInterestResponse)) as CalculateInterestResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static CalculateInterestResponse create() => CalculateInterestResponse._();
   CalculateInterestResponse createEmptyInstance() => create();
@@ -1700,29 +1764,31 @@ class CalculateInterestResponse extends $pb.GeneratedMessage {
   void clearApy() => clearField(4);
 }
 
+/// Renew lock fund request
 class RenewLockFundRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'RenewLockFundRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lockFundId')
-    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'newDurationDays', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
-
-  RenewLockFundRequest._() : super();
   factory RenewLockFundRequest({
     $core.String? lockFundId,
     $core.int? newDurationDays,
   }) {
-    final _result = create();
+    final $result = create();
     if (lockFundId != null) {
-      _result.lockFundId = lockFundId;
+      $result.lockFundId = lockFundId;
     }
     if (newDurationDays != null) {
-      _result.newDurationDays = newDurationDays;
+      $result.newDurationDays = newDurationDays;
     }
-    return _result;
+    return $result;
   }
+  RenewLockFundRequest._() : super();
   factory RenewLockFundRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory RenewLockFundRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'RenewLockFundRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'lockFundId')
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'newDurationDays', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1732,8 +1798,10 @@ class RenewLockFundRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  RenewLockFundRequest copyWith(void Function(RenewLockFundRequest) updates) => super.copyWith((message) => updates(message as RenewLockFundRequest)) as RenewLockFundRequest; // ignore: deprecated_member_use
+  RenewLockFundRequest copyWith(void Function(RenewLockFundRequest) updates) => super.copyWith((message) => updates(message as RenewLockFundRequest)) as RenewLockFundRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static RenewLockFundRequest create() => RenewLockFundRequest._();
   RenewLockFundRequest createEmptyInstance() => create();
@@ -1761,34 +1829,36 @@ class RenewLockFundRequest extends $pb.GeneratedMessage {
   void clearNewDurationDays() => clearField(2);
 }
 
+/// Renew lock fund response
 class RenewLockFundResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'RenewLockFundResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
-    ..aOM<LockFund>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'renewedLockFund', subBuilder: LockFund.create)
-    ..hasRequiredFields = false
-  ;
-
-  RenewLockFundResponse._() : super();
   factory RenewLockFundResponse({
     $core.bool? success,
     $core.String? message,
     LockFund? renewedLockFund,
   }) {
-    final _result = create();
+    final $result = create();
     if (success != null) {
-      _result.success = success;
+      $result.success = success;
     }
     if (message != null) {
-      _result.message = message;
+      $result.message = message;
     }
     if (renewedLockFund != null) {
-      _result.renewedLockFund = renewedLockFund;
+      $result.renewedLockFund = renewedLockFund;
     }
-    return _result;
+    return $result;
   }
+  RenewLockFundResponse._() : super();
   factory RenewLockFundResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory RenewLockFundResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'RenewLockFundResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..aOS(2, _omitFieldNames ? '' : 'message')
+    ..aOM<LockFund>(3, _omitFieldNames ? '' : 'renewedLockFund', subBuilder: LockFund.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1798,8 +1868,10 @@ class RenewLockFundResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  RenewLockFundResponse copyWith(void Function(RenewLockFundResponse) updates) => super.copyWith((message) => updates(message as RenewLockFundResponse)) as RenewLockFundResponse; // ignore: deprecated_member_use
+  RenewLockFundResponse copyWith(void Function(RenewLockFundResponse) updates) => super.copyWith((message) => updates(message as RenewLockFundResponse)) as RenewLockFundResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static RenewLockFundResponse create() => RenewLockFundResponse._();
   RenewLockFundResponse createEmptyInstance() => create();
@@ -1838,29 +1910,31 @@ class RenewLockFundResponse extends $pb.GeneratedMessage {
   LockFund ensureRenewedLockFund() => $_ensure(2);
 }
 
+/// Cancel lock fund request
 class CancelLockFundRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CancelLockFundRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lockFundId')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'reason')
-    ..hasRequiredFields = false
-  ;
-
-  CancelLockFundRequest._() : super();
   factory CancelLockFundRequest({
     $core.String? lockFundId,
     $core.String? reason,
   }) {
-    final _result = create();
+    final $result = create();
     if (lockFundId != null) {
-      _result.lockFundId = lockFundId;
+      $result.lockFundId = lockFundId;
     }
     if (reason != null) {
-      _result.reason = reason;
+      $result.reason = reason;
     }
-    return _result;
+    return $result;
   }
+  CancelLockFundRequest._() : super();
   factory CancelLockFundRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CancelLockFundRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CancelLockFundRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'lockFundId')
+    ..aOS(2, _omitFieldNames ? '' : 'reason')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1870,8 +1944,10 @@ class CancelLockFundRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CancelLockFundRequest copyWith(void Function(CancelLockFundRequest) updates) => super.copyWith((message) => updates(message as CancelLockFundRequest)) as CancelLockFundRequest; // ignore: deprecated_member_use
+  CancelLockFundRequest copyWith(void Function(CancelLockFundRequest) updates) => super.copyWith((message) => updates(message as CancelLockFundRequest)) as CancelLockFundRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static CancelLockFundRequest create() => CancelLockFundRequest._();
   CancelLockFundRequest createEmptyInstance() => create();
@@ -1899,34 +1975,36 @@ class CancelLockFundRequest extends $pb.GeneratedMessage {
   void clearReason() => clearField(2);
 }
 
+/// Cancel lock fund response
 class CancelLockFundResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CancelLockFundResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
-    ..a<$core.double>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'refundAmount', $pb.PbFieldType.OD)
-    ..hasRequiredFields = false
-  ;
-
-  CancelLockFundResponse._() : super();
   factory CancelLockFundResponse({
     $core.bool? success,
     $core.String? message,
     $core.double? refundAmount,
   }) {
-    final _result = create();
+    final $result = create();
     if (success != null) {
-      _result.success = success;
+      $result.success = success;
     }
     if (message != null) {
-      _result.message = message;
+      $result.message = message;
     }
     if (refundAmount != null) {
-      _result.refundAmount = refundAmount;
+      $result.refundAmount = refundAmount;
     }
-    return _result;
+    return $result;
   }
+  CancelLockFundResponse._() : super();
   factory CancelLockFundResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CancelLockFundResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CancelLockFundResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..aOS(2, _omitFieldNames ? '' : 'message')
+    ..a<$core.double>(3, _omitFieldNames ? '' : 'refundAmount', $pb.PbFieldType.OD)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1936,8 +2014,10 @@ class CancelLockFundResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CancelLockFundResponse copyWith(void Function(CancelLockFundResponse) updates) => super.copyWith((message) => updates(message as CancelLockFundResponse)) as CancelLockFundResponse; // ignore: deprecated_member_use
+  CancelLockFundResponse copyWith(void Function(CancelLockFundResponse) updates) => super.copyWith((message) => updates(message as CancelLockFundResponse)) as CancelLockFundResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static CancelLockFundResponse create() => CancelLockFundResponse._();
   CancelLockFundResponse createEmptyInstance() => create();
@@ -1974,3 +2054,6 @@ class CancelLockFundResponse extends $pb.GeneratedMessage {
   void clearRefundAmount() => clearField(3);
 }
 
+
+const _omitFieldNames = $core.bool.fromEnvironment('protobuf.omit_field_names');
+const _omitMessageNames = $core.bool.fromEnvironment('protobuf.omit_message_names');

@@ -1,45 +1,26 @@
-///
+//
 //  Generated code. Do not modify.
 //  source: statistics.proto
 //
 // @dart = 2.12
-// ignore_for_file: annotate_overrides,camel_case_types,constant_identifier_names,directives_ordering,library_prefixes,non_constant_identifier_names,prefer_final_fields,return_of_invalid_type,unnecessary_const,unnecessary_import,unnecessary_this,unused_import,unused_shown_name
+
+// ignore_for_file: annotate_overrides, camel_case_types, comment_references
+// ignore_for_file: constant_identifier_names, library_prefixes
+// ignore_for_file: non_constant_identifier_names, prefer_final_fields
+// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
 
 import 'dart:core' as $core;
 
 import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'google/protobuf/timestamp.pb.dart' as $36;
-
+import 'google/protobuf/timestamp.pb.dart' as $42;
 import 'statistics.pbenum.dart';
 
 export 'statistics.pbenum.dart';
 
+/// Expense Messages
 class ExpenseMessage extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ExpenseMessage', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
-    ..a<$fixnum.Int64>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accountId')
-    ..a<$core.double>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
-    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
-    ..e<ExpenseCategory>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'category', $pb.PbFieldType.OE, defaultOrMaker: ExpenseCategory.EXPENSE_CATEGORY_UNSPECIFIED, valueOf: ExpenseCategory.valueOf, enumValues: ExpenseCategory.values)
-    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'subcategory')
-    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
-    ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'merchant')
-    ..aOM<$36.Timestamp>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactionDate', subBuilder: $36.Timestamp.create)
-    ..aOS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'paymentMethod')
-    ..aOS(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'receiptUrl')
-    ..pPS(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'tags')
-    ..aOS(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'notes')
-    ..aOB(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isRecurring')
-    ..aOS(16, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recurrencePattern')
-    ..aOM<$36.Timestamp>(17, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $36.Timestamp.create)
-    ..aOM<$36.Timestamp>(18, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $36.Timestamp.create)
-    ..hasRequiredFields = false
-  ;
-
-  ExpenseMessage._() : super();
   factory ExpenseMessage({
     $core.String? id,
     $fixnum.Int64? userId,
@@ -50,75 +31,99 @@ class ExpenseMessage extends $pb.GeneratedMessage {
     $core.String? subcategory,
     $core.String? description,
     $core.String? merchant,
-    $36.Timestamp? transactionDate,
+    $42.Timestamp? transactionDate,
     $core.String? paymentMethod,
     $core.String? receiptUrl,
     $core.Iterable<$core.String>? tags,
     $core.String? notes,
     $core.bool? isRecurring,
     $core.String? recurrencePattern,
-    $36.Timestamp? createdAt,
-    $36.Timestamp? updatedAt,
+    $42.Timestamp? createdAt,
+    $42.Timestamp? updatedAt,
   }) {
-    final _result = create();
+    final $result = create();
     if (id != null) {
-      _result.id = id;
+      $result.id = id;
     }
     if (userId != null) {
-      _result.userId = userId;
+      $result.userId = userId;
     }
     if (accountId != null) {
-      _result.accountId = accountId;
+      $result.accountId = accountId;
     }
     if (amount != null) {
-      _result.amount = amount;
+      $result.amount = amount;
     }
     if (currency != null) {
-      _result.currency = currency;
+      $result.currency = currency;
     }
     if (category != null) {
-      _result.category = category;
+      $result.category = category;
     }
     if (subcategory != null) {
-      _result.subcategory = subcategory;
+      $result.subcategory = subcategory;
     }
     if (description != null) {
-      _result.description = description;
+      $result.description = description;
     }
     if (merchant != null) {
-      _result.merchant = merchant;
+      $result.merchant = merchant;
     }
     if (transactionDate != null) {
-      _result.transactionDate = transactionDate;
+      $result.transactionDate = transactionDate;
     }
     if (paymentMethod != null) {
-      _result.paymentMethod = paymentMethod;
+      $result.paymentMethod = paymentMethod;
     }
     if (receiptUrl != null) {
-      _result.receiptUrl = receiptUrl;
+      $result.receiptUrl = receiptUrl;
     }
     if (tags != null) {
-      _result.tags.addAll(tags);
+      $result.tags.addAll(tags);
     }
     if (notes != null) {
-      _result.notes = notes;
+      $result.notes = notes;
     }
     if (isRecurring != null) {
-      _result.isRecurring = isRecurring;
+      $result.isRecurring = isRecurring;
     }
     if (recurrencePattern != null) {
-      _result.recurrencePattern = recurrencePattern;
+      $result.recurrencePattern = recurrencePattern;
     }
     if (createdAt != null) {
-      _result.createdAt = createdAt;
+      $result.createdAt = createdAt;
     }
     if (updatedAt != null) {
-      _result.updatedAt = updatedAt;
+      $result.updatedAt = updatedAt;
     }
-    return _result;
+    return $result;
   }
+  ExpenseMessage._() : super();
   factory ExpenseMessage.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ExpenseMessage.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ExpenseMessage', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'id')
+    ..a<$fixnum.Int64>(2, _omitFieldNames ? '' : 'userId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(3, _omitFieldNames ? '' : 'accountId')
+    ..a<$core.double>(4, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
+    ..aOS(5, _omitFieldNames ? '' : 'currency')
+    ..e<ExpenseCategory>(6, _omitFieldNames ? '' : 'category', $pb.PbFieldType.OE, defaultOrMaker: ExpenseCategory.EXPENSE_CATEGORY_UNSPECIFIED, valueOf: ExpenseCategory.valueOf, enumValues: ExpenseCategory.values)
+    ..aOS(7, _omitFieldNames ? '' : 'subcategory')
+    ..aOS(8, _omitFieldNames ? '' : 'description')
+    ..aOS(9, _omitFieldNames ? '' : 'merchant')
+    ..aOM<$42.Timestamp>(10, _omitFieldNames ? '' : 'transactionDate', subBuilder: $42.Timestamp.create)
+    ..aOS(11, _omitFieldNames ? '' : 'paymentMethod')
+    ..aOS(12, _omitFieldNames ? '' : 'receiptUrl')
+    ..pPS(13, _omitFieldNames ? '' : 'tags')
+    ..aOS(14, _omitFieldNames ? '' : 'notes')
+    ..aOB(15, _omitFieldNames ? '' : 'isRecurring')
+    ..aOS(16, _omitFieldNames ? '' : 'recurrencePattern')
+    ..aOM<$42.Timestamp>(17, _omitFieldNames ? '' : 'createdAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$42.Timestamp>(18, _omitFieldNames ? '' : 'updatedAt', subBuilder: $42.Timestamp.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -128,8 +133,10 @@ class ExpenseMessage extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ExpenseMessage copyWith(void Function(ExpenseMessage) updates) => super.copyWith((message) => updates(message as ExpenseMessage)) as ExpenseMessage; // ignore: deprecated_member_use
+  ExpenseMessage copyWith(void Function(ExpenseMessage) updates) => super.copyWith((message) => updates(message as ExpenseMessage)) as ExpenseMessage;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static ExpenseMessage create() => ExpenseMessage._();
   ExpenseMessage createEmptyInstance() => create();
@@ -220,15 +227,15 @@ class ExpenseMessage extends $pb.GeneratedMessage {
   void clearMerchant() => clearField(9);
 
   @$pb.TagNumber(10)
-  $36.Timestamp get transactionDate => $_getN(9);
+  $42.Timestamp get transactionDate => $_getN(9);
   @$pb.TagNumber(10)
-  set transactionDate($36.Timestamp v) { setField(10, v); }
+  set transactionDate($42.Timestamp v) { setField(10, v); }
   @$pb.TagNumber(10)
   $core.bool hasTransactionDate() => $_has(9);
   @$pb.TagNumber(10)
   void clearTransactionDate() => clearField(10);
   @$pb.TagNumber(10)
-  $36.Timestamp ensureTransactionDate() => $_ensure(9);
+  $42.Timestamp ensureTransactionDate() => $_ensure(9);
 
   @$pb.TagNumber(11)
   $core.String get paymentMethod => $_getSZ(10);
@@ -279,51 +286,30 @@ class ExpenseMessage extends $pb.GeneratedMessage {
   void clearRecurrencePattern() => clearField(16);
 
   @$pb.TagNumber(17)
-  $36.Timestamp get createdAt => $_getN(16);
+  $42.Timestamp get createdAt => $_getN(16);
   @$pb.TagNumber(17)
-  set createdAt($36.Timestamp v) { setField(17, v); }
+  set createdAt($42.Timestamp v) { setField(17, v); }
   @$pb.TagNumber(17)
   $core.bool hasCreatedAt() => $_has(16);
   @$pb.TagNumber(17)
   void clearCreatedAt() => clearField(17);
   @$pb.TagNumber(17)
-  $36.Timestamp ensureCreatedAt() => $_ensure(16);
+  $42.Timestamp ensureCreatedAt() => $_ensure(16);
 
   @$pb.TagNumber(18)
-  $36.Timestamp get updatedAt => $_getN(17);
+  $42.Timestamp get updatedAt => $_getN(17);
   @$pb.TagNumber(18)
-  set updatedAt($36.Timestamp v) { setField(18, v); }
+  set updatedAt($42.Timestamp v) { setField(18, v); }
   @$pb.TagNumber(18)
   $core.bool hasUpdatedAt() => $_has(17);
   @$pb.TagNumber(18)
   void clearUpdatedAt() => clearField(18);
   @$pb.TagNumber(18)
-  $36.Timestamp ensureUpdatedAt() => $_ensure(17);
+  $42.Timestamp ensureUpdatedAt() => $_ensure(17);
 }
 
+/// Budget Messages
 class BudgetMessage extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'BudgetMessage', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
-    ..a<$fixnum.Int64>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'name')
-    ..a<$core.double>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
-    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
-    ..e<ExpenseCategory>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'category', $pb.PbFieldType.OE, defaultOrMaker: ExpenseCategory.EXPENSE_CATEGORY_UNSPECIFIED, valueOf: ExpenseCategory.valueOf, enumValues: ExpenseCategory.values)
-    ..e<BudgetPeriod>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'period', $pb.PbFieldType.OE, defaultOrMaker: BudgetPeriod.BUDGET_PERIOD_UNSPECIFIED, valueOf: BudgetPeriod.valueOf, enumValues: BudgetPeriod.values)
-    ..aOM<$36.Timestamp>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'startDate', subBuilder: $36.Timestamp.create)
-    ..aOM<$36.Timestamp>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'endDate', subBuilder: $36.Timestamp.create)
-    ..a<$core.double>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'spentAmount', $pb.PbFieldType.OD)
-    ..a<$core.double>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'remainingAmount', $pb.PbFieldType.OD)
-    ..a<$core.double>(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'percentageUsed', $pb.PbFieldType.OD)
-    ..e<BudgetStatus>(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: BudgetStatus.BUDGET_STATUS_UNSPECIFIED, valueOf: BudgetStatus.valueOf, enumValues: BudgetStatus.values)
-    ..aOB(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'enableAlerts')
-    ..a<$core.double>(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'alertThreshold', $pb.PbFieldType.OD)
-    ..aOM<$36.Timestamp>(16, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $36.Timestamp.create)
-    ..aOM<$36.Timestamp>(17, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $36.Timestamp.create)
-    ..hasRequiredFields = false
-  ;
-
-  BudgetMessage._() : super();
   factory BudgetMessage({
     $core.String? id,
     $fixnum.Int64? userId,
@@ -332,73 +318,96 @@ class BudgetMessage extends $pb.GeneratedMessage {
     $core.String? currency,
     ExpenseCategory? category,
     BudgetPeriod? period,
-    $36.Timestamp? startDate,
-    $36.Timestamp? endDate,
+    $42.Timestamp? startDate,
+    $42.Timestamp? endDate,
     $core.double? spentAmount,
     $core.double? remainingAmount,
     $core.double? percentageUsed,
     BudgetStatus? status,
     $core.bool? enableAlerts,
     $core.double? alertThreshold,
-    $36.Timestamp? createdAt,
-    $36.Timestamp? updatedAt,
+    $42.Timestamp? createdAt,
+    $42.Timestamp? updatedAt,
   }) {
-    final _result = create();
+    final $result = create();
     if (id != null) {
-      _result.id = id;
+      $result.id = id;
     }
     if (userId != null) {
-      _result.userId = userId;
+      $result.userId = userId;
     }
     if (name != null) {
-      _result.name = name;
+      $result.name = name;
     }
     if (amount != null) {
-      _result.amount = amount;
+      $result.amount = amount;
     }
     if (currency != null) {
-      _result.currency = currency;
+      $result.currency = currency;
     }
     if (category != null) {
-      _result.category = category;
+      $result.category = category;
     }
     if (period != null) {
-      _result.period = period;
+      $result.period = period;
     }
     if (startDate != null) {
-      _result.startDate = startDate;
+      $result.startDate = startDate;
     }
     if (endDate != null) {
-      _result.endDate = endDate;
+      $result.endDate = endDate;
     }
     if (spentAmount != null) {
-      _result.spentAmount = spentAmount;
+      $result.spentAmount = spentAmount;
     }
     if (remainingAmount != null) {
-      _result.remainingAmount = remainingAmount;
+      $result.remainingAmount = remainingAmount;
     }
     if (percentageUsed != null) {
-      _result.percentageUsed = percentageUsed;
+      $result.percentageUsed = percentageUsed;
     }
     if (status != null) {
-      _result.status = status;
+      $result.status = status;
     }
     if (enableAlerts != null) {
-      _result.enableAlerts = enableAlerts;
+      $result.enableAlerts = enableAlerts;
     }
     if (alertThreshold != null) {
-      _result.alertThreshold = alertThreshold;
+      $result.alertThreshold = alertThreshold;
     }
     if (createdAt != null) {
-      _result.createdAt = createdAt;
+      $result.createdAt = createdAt;
     }
     if (updatedAt != null) {
-      _result.updatedAt = updatedAt;
+      $result.updatedAt = updatedAt;
     }
-    return _result;
+    return $result;
   }
+  BudgetMessage._() : super();
   factory BudgetMessage.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory BudgetMessage.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'BudgetMessage', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'id')
+    ..a<$fixnum.Int64>(2, _omitFieldNames ? '' : 'userId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(3, _omitFieldNames ? '' : 'name')
+    ..a<$core.double>(4, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
+    ..aOS(5, _omitFieldNames ? '' : 'currency')
+    ..e<ExpenseCategory>(6, _omitFieldNames ? '' : 'category', $pb.PbFieldType.OE, defaultOrMaker: ExpenseCategory.EXPENSE_CATEGORY_UNSPECIFIED, valueOf: ExpenseCategory.valueOf, enumValues: ExpenseCategory.values)
+    ..e<BudgetPeriod>(7, _omitFieldNames ? '' : 'period', $pb.PbFieldType.OE, defaultOrMaker: BudgetPeriod.BUDGET_PERIOD_UNSPECIFIED, valueOf: BudgetPeriod.valueOf, enumValues: BudgetPeriod.values)
+    ..aOM<$42.Timestamp>(8, _omitFieldNames ? '' : 'startDate', subBuilder: $42.Timestamp.create)
+    ..aOM<$42.Timestamp>(9, _omitFieldNames ? '' : 'endDate', subBuilder: $42.Timestamp.create)
+    ..a<$core.double>(10, _omitFieldNames ? '' : 'spentAmount', $pb.PbFieldType.OD)
+    ..a<$core.double>(11, _omitFieldNames ? '' : 'remainingAmount', $pb.PbFieldType.OD)
+    ..a<$core.double>(12, _omitFieldNames ? '' : 'percentageUsed', $pb.PbFieldType.OD)
+    ..e<BudgetStatus>(13, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: BudgetStatus.BUDGET_STATUS_UNSPECIFIED, valueOf: BudgetStatus.valueOf, enumValues: BudgetStatus.values)
+    ..aOB(14, _omitFieldNames ? '' : 'enableAlerts')
+    ..a<$core.double>(15, _omitFieldNames ? '' : 'alertThreshold', $pb.PbFieldType.OD)
+    ..aOM<$42.Timestamp>(16, _omitFieldNames ? '' : 'createdAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$42.Timestamp>(17, _omitFieldNames ? '' : 'updatedAt', subBuilder: $42.Timestamp.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -408,8 +417,10 @@ class BudgetMessage extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  BudgetMessage copyWith(void Function(BudgetMessage) updates) => super.copyWith((message) => updates(message as BudgetMessage)) as BudgetMessage; // ignore: deprecated_member_use
+  BudgetMessage copyWith(void Function(BudgetMessage) updates) => super.copyWith((message) => updates(message as BudgetMessage)) as BudgetMessage;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static BudgetMessage create() => BudgetMessage._();
   BudgetMessage createEmptyInstance() => create();
@@ -482,26 +493,26 @@ class BudgetMessage extends $pb.GeneratedMessage {
   void clearPeriod() => clearField(7);
 
   @$pb.TagNumber(8)
-  $36.Timestamp get startDate => $_getN(7);
+  $42.Timestamp get startDate => $_getN(7);
   @$pb.TagNumber(8)
-  set startDate($36.Timestamp v) { setField(8, v); }
+  set startDate($42.Timestamp v) { setField(8, v); }
   @$pb.TagNumber(8)
   $core.bool hasStartDate() => $_has(7);
   @$pb.TagNumber(8)
   void clearStartDate() => clearField(8);
   @$pb.TagNumber(8)
-  $36.Timestamp ensureStartDate() => $_ensure(7);
+  $42.Timestamp ensureStartDate() => $_ensure(7);
 
   @$pb.TagNumber(9)
-  $36.Timestamp get endDate => $_getN(8);
+  $42.Timestamp get endDate => $_getN(8);
   @$pb.TagNumber(9)
-  set endDate($36.Timestamp v) { setField(9, v); }
+  set endDate($42.Timestamp v) { setField(9, v); }
   @$pb.TagNumber(9)
   $core.bool hasEndDate() => $_has(8);
   @$pb.TagNumber(9)
   void clearEndDate() => clearField(9);
   @$pb.TagNumber(9)
-  $36.Timestamp ensureEndDate() => $_ensure(8);
+  $42.Timestamp ensureEndDate() => $_ensure(8);
 
   @$pb.TagNumber(10)
   $core.double get spentAmount => $_getN(9);
@@ -558,45 +569,30 @@ class BudgetMessage extends $pb.GeneratedMessage {
   void clearAlertThreshold() => clearField(15);
 
   @$pb.TagNumber(16)
-  $36.Timestamp get createdAt => $_getN(15);
+  $42.Timestamp get createdAt => $_getN(15);
   @$pb.TagNumber(16)
-  set createdAt($36.Timestamp v) { setField(16, v); }
+  set createdAt($42.Timestamp v) { setField(16, v); }
   @$pb.TagNumber(16)
   $core.bool hasCreatedAt() => $_has(15);
   @$pb.TagNumber(16)
   void clearCreatedAt() => clearField(16);
   @$pb.TagNumber(16)
-  $36.Timestamp ensureCreatedAt() => $_ensure(15);
+  $42.Timestamp ensureCreatedAt() => $_ensure(15);
 
   @$pb.TagNumber(17)
-  $36.Timestamp get updatedAt => $_getN(16);
+  $42.Timestamp get updatedAt => $_getN(16);
   @$pb.TagNumber(17)
-  set updatedAt($36.Timestamp v) { setField(17, v); }
+  set updatedAt($42.Timestamp v) { setField(17, v); }
   @$pb.TagNumber(17)
   $core.bool hasUpdatedAt() => $_has(16);
   @$pb.TagNumber(17)
   void clearUpdatedAt() => clearField(17);
   @$pb.TagNumber(17)
-  $36.Timestamp ensureUpdatedAt() => $_ensure(16);
+  $42.Timestamp ensureUpdatedAt() => $_ensure(16);
 }
 
+/// Alert Messages
 class BudgetAlertMessage extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'BudgetAlertMessage', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
-    ..a<$fixnum.Int64>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'budgetId')
-    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'budgetName')
-    ..e<AlertType>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'alertType', $pb.PbFieldType.OE, defaultOrMaker: AlertType.ALERT_TYPE_UNSPECIFIED, valueOf: AlertType.valueOf, enumValues: AlertType.values)
-    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
-    ..a<$core.double>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currentSpent', $pb.PbFieldType.OD)
-    ..a<$core.double>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'budgetLimit', $pb.PbFieldType.OD)
-    ..a<$core.double>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'percentageUsed', $pb.PbFieldType.OD)
-    ..aOB(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isRead')
-    ..aOM<$36.Timestamp>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $36.Timestamp.create)
-    ..hasRequiredFields = false
-  ;
-
-  BudgetAlertMessage._() : super();
   factory BudgetAlertMessage({
     $core.String? id,
     $fixnum.Int64? userId,
@@ -608,46 +604,63 @@ class BudgetAlertMessage extends $pb.GeneratedMessage {
     $core.double? budgetLimit,
     $core.double? percentageUsed,
     $core.bool? isRead,
-    $36.Timestamp? createdAt,
+    $42.Timestamp? createdAt,
   }) {
-    final _result = create();
+    final $result = create();
     if (id != null) {
-      _result.id = id;
+      $result.id = id;
     }
     if (userId != null) {
-      _result.userId = userId;
+      $result.userId = userId;
     }
     if (budgetId != null) {
-      _result.budgetId = budgetId;
+      $result.budgetId = budgetId;
     }
     if (budgetName != null) {
-      _result.budgetName = budgetName;
+      $result.budgetName = budgetName;
     }
     if (alertType != null) {
-      _result.alertType = alertType;
+      $result.alertType = alertType;
     }
     if (message != null) {
-      _result.message = message;
+      $result.message = message;
     }
     if (currentSpent != null) {
-      _result.currentSpent = currentSpent;
+      $result.currentSpent = currentSpent;
     }
     if (budgetLimit != null) {
-      _result.budgetLimit = budgetLimit;
+      $result.budgetLimit = budgetLimit;
     }
     if (percentageUsed != null) {
-      _result.percentageUsed = percentageUsed;
+      $result.percentageUsed = percentageUsed;
     }
     if (isRead != null) {
-      _result.isRead = isRead;
+      $result.isRead = isRead;
     }
     if (createdAt != null) {
-      _result.createdAt = createdAt;
+      $result.createdAt = createdAt;
     }
-    return _result;
+    return $result;
   }
+  BudgetAlertMessage._() : super();
   factory BudgetAlertMessage.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory BudgetAlertMessage.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'BudgetAlertMessage', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'id')
+    ..a<$fixnum.Int64>(2, _omitFieldNames ? '' : 'userId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(3, _omitFieldNames ? '' : 'budgetId')
+    ..aOS(4, _omitFieldNames ? '' : 'budgetName')
+    ..e<AlertType>(5, _omitFieldNames ? '' : 'alertType', $pb.PbFieldType.OE, defaultOrMaker: AlertType.ALERT_TYPE_UNSPECIFIED, valueOf: AlertType.valueOf, enumValues: AlertType.values)
+    ..aOS(6, _omitFieldNames ? '' : 'message')
+    ..a<$core.double>(7, _omitFieldNames ? '' : 'currentSpent', $pb.PbFieldType.OD)
+    ..a<$core.double>(8, _omitFieldNames ? '' : 'budgetLimit', $pb.PbFieldType.OD)
+    ..a<$core.double>(9, _omitFieldNames ? '' : 'percentageUsed', $pb.PbFieldType.OD)
+    ..aOB(10, _omitFieldNames ? '' : 'isRead')
+    ..aOM<$42.Timestamp>(11, _omitFieldNames ? '' : 'createdAt', subBuilder: $42.Timestamp.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -657,8 +670,10 @@ class BudgetAlertMessage extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  BudgetAlertMessage copyWith(void Function(BudgetAlertMessage) updates) => super.copyWith((message) => updates(message as BudgetAlertMessage)) as BudgetAlertMessage; // ignore: deprecated_member_use
+  BudgetAlertMessage copyWith(void Function(BudgetAlertMessage) updates) => super.copyWith((message) => updates(message as BudgetAlertMessage)) as BudgetAlertMessage;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static BudgetAlertMessage create() => BudgetAlertMessage._();
   BudgetAlertMessage createEmptyInstance() => create();
@@ -758,34 +773,19 @@ class BudgetAlertMessage extends $pb.GeneratedMessage {
   void clearIsRead() => clearField(10);
 
   @$pb.TagNumber(11)
-  $36.Timestamp get createdAt => $_getN(10);
+  $42.Timestamp get createdAt => $_getN(10);
   @$pb.TagNumber(11)
-  set createdAt($36.Timestamp v) { setField(11, v); }
+  set createdAt($42.Timestamp v) { setField(11, v); }
   @$pb.TagNumber(11)
   $core.bool hasCreatedAt() => $_has(10);
   @$pb.TagNumber(11)
   void clearCreatedAt() => clearField(11);
   @$pb.TagNumber(11)
-  $36.Timestamp ensureCreatedAt() => $_ensure(10);
+  $42.Timestamp ensureCreatedAt() => $_ensure(10);
 }
 
+/// Analytics Messages
 class SpendingAnalytics extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'SpendingAnalytics', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'period')
-    ..a<$core.double>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalSpent', $pb.PbFieldType.OD)
-    ..a<$core.double>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalBudget', $pb.PbFieldType.OD)
-    ..a<$core.double>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'remainingBudget', $pb.PbFieldType.OD)
-    ..a<$core.int>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactionCount', $pb.PbFieldType.O3)
-    ..a<$core.double>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'averageTransaction', $pb.PbFieldType.OD)
-    ..pc<CategorySpending>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'categoryBreakdown', $pb.PbFieldType.PM, subBuilder: CategorySpending.create)
-    ..pc<DailySpending>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'dailyTrend', $pb.PbFieldType.PM, subBuilder: DailySpending.create)
-    ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'topCategory')
-    ..a<$core.double>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'topCategoryAmount', $pb.PbFieldType.OD)
-    ..a<$core.double>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'savingsRate', $pb.PbFieldType.OD)
-    ..hasRequiredFields = false
-  ;
-
-  SpendingAnalytics._() : super();
   factory SpendingAnalytics({
     $core.String? period,
     $core.double? totalSpent,
@@ -799,44 +799,61 @@ class SpendingAnalytics extends $pb.GeneratedMessage {
     $core.double? topCategoryAmount,
     $core.double? savingsRate,
   }) {
-    final _result = create();
+    final $result = create();
     if (period != null) {
-      _result.period = period;
+      $result.period = period;
     }
     if (totalSpent != null) {
-      _result.totalSpent = totalSpent;
+      $result.totalSpent = totalSpent;
     }
     if (totalBudget != null) {
-      _result.totalBudget = totalBudget;
+      $result.totalBudget = totalBudget;
     }
     if (remainingBudget != null) {
-      _result.remainingBudget = remainingBudget;
+      $result.remainingBudget = remainingBudget;
     }
     if (transactionCount != null) {
-      _result.transactionCount = transactionCount;
+      $result.transactionCount = transactionCount;
     }
     if (averageTransaction != null) {
-      _result.averageTransaction = averageTransaction;
+      $result.averageTransaction = averageTransaction;
     }
     if (categoryBreakdown != null) {
-      _result.categoryBreakdown.addAll(categoryBreakdown);
+      $result.categoryBreakdown.addAll(categoryBreakdown);
     }
     if (dailyTrend != null) {
-      _result.dailyTrend.addAll(dailyTrend);
+      $result.dailyTrend.addAll(dailyTrend);
     }
     if (topCategory != null) {
-      _result.topCategory = topCategory;
+      $result.topCategory = topCategory;
     }
     if (topCategoryAmount != null) {
-      _result.topCategoryAmount = topCategoryAmount;
+      $result.topCategoryAmount = topCategoryAmount;
     }
     if (savingsRate != null) {
-      _result.savingsRate = savingsRate;
+      $result.savingsRate = savingsRate;
     }
-    return _result;
+    return $result;
   }
+  SpendingAnalytics._() : super();
   factory SpendingAnalytics.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory SpendingAnalytics.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SpendingAnalytics', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'period')
+    ..a<$core.double>(2, _omitFieldNames ? '' : 'totalSpent', $pb.PbFieldType.OD)
+    ..a<$core.double>(3, _omitFieldNames ? '' : 'totalBudget', $pb.PbFieldType.OD)
+    ..a<$core.double>(4, _omitFieldNames ? '' : 'remainingBudget', $pb.PbFieldType.OD)
+    ..a<$core.int>(5, _omitFieldNames ? '' : 'transactionCount', $pb.PbFieldType.O3)
+    ..a<$core.double>(6, _omitFieldNames ? '' : 'averageTransaction', $pb.PbFieldType.OD)
+    ..pc<CategorySpending>(7, _omitFieldNames ? '' : 'categoryBreakdown', $pb.PbFieldType.PM, subBuilder: CategorySpending.create)
+    ..pc<DailySpending>(8, _omitFieldNames ? '' : 'dailyTrend', $pb.PbFieldType.PM, subBuilder: DailySpending.create)
+    ..aOS(9, _omitFieldNames ? '' : 'topCategory')
+    ..a<$core.double>(10, _omitFieldNames ? '' : 'topCategoryAmount', $pb.PbFieldType.OD)
+    ..a<$core.double>(11, _omitFieldNames ? '' : 'savingsRate', $pb.PbFieldType.OD)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -846,8 +863,10 @@ class SpendingAnalytics extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  SpendingAnalytics copyWith(void Function(SpendingAnalytics) updates) => super.copyWith((message) => updates(message as SpendingAnalytics)) as SpendingAnalytics; // ignore: deprecated_member_use
+  SpendingAnalytics copyWith(void Function(SpendingAnalytics) updates) => super.copyWith((message) => updates(message as SpendingAnalytics)) as SpendingAnalytics;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static SpendingAnalytics create() => SpendingAnalytics._();
   SpendingAnalytics createEmptyInstance() => create();
@@ -945,18 +964,6 @@ class SpendingAnalytics extends $pb.GeneratedMessage {
 }
 
 class CategorySpending extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CategorySpending', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..e<ExpenseCategory>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'category', $pb.PbFieldType.OE, defaultOrMaker: ExpenseCategory.EXPENSE_CATEGORY_UNSPECIFIED, valueOf: ExpenseCategory.valueOf, enumValues: ExpenseCategory.values)
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'categoryName')
-    ..a<$core.double>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
-    ..a<$core.double>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'percentage', $pb.PbFieldType.OD)
-    ..a<$core.int>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactionCount', $pb.PbFieldType.O3)
-    ..a<$core.double>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'budgetAllocated', $pb.PbFieldType.OD)
-    ..a<$core.double>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'budgetRemaining', $pb.PbFieldType.OD)
-    ..hasRequiredFields = false
-  ;
-
-  CategorySpending._() : super();
   factory CategorySpending({
     ExpenseCategory? category,
     $core.String? categoryName,
@@ -966,32 +973,45 @@ class CategorySpending extends $pb.GeneratedMessage {
     $core.double? budgetAllocated,
     $core.double? budgetRemaining,
   }) {
-    final _result = create();
+    final $result = create();
     if (category != null) {
-      _result.category = category;
+      $result.category = category;
     }
     if (categoryName != null) {
-      _result.categoryName = categoryName;
+      $result.categoryName = categoryName;
     }
     if (amount != null) {
-      _result.amount = amount;
+      $result.amount = amount;
     }
     if (percentage != null) {
-      _result.percentage = percentage;
+      $result.percentage = percentage;
     }
     if (transactionCount != null) {
-      _result.transactionCount = transactionCount;
+      $result.transactionCount = transactionCount;
     }
     if (budgetAllocated != null) {
-      _result.budgetAllocated = budgetAllocated;
+      $result.budgetAllocated = budgetAllocated;
     }
     if (budgetRemaining != null) {
-      _result.budgetRemaining = budgetRemaining;
+      $result.budgetRemaining = budgetRemaining;
     }
-    return _result;
+    return $result;
   }
+  CategorySpending._() : super();
   factory CategorySpending.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CategorySpending.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CategorySpending', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..e<ExpenseCategory>(1, _omitFieldNames ? '' : 'category', $pb.PbFieldType.OE, defaultOrMaker: ExpenseCategory.EXPENSE_CATEGORY_UNSPECIFIED, valueOf: ExpenseCategory.valueOf, enumValues: ExpenseCategory.values)
+    ..aOS(2, _omitFieldNames ? '' : 'categoryName')
+    ..a<$core.double>(3, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
+    ..a<$core.double>(4, _omitFieldNames ? '' : 'percentage', $pb.PbFieldType.OD)
+    ..a<$core.int>(5, _omitFieldNames ? '' : 'transactionCount', $pb.PbFieldType.O3)
+    ..a<$core.double>(6, _omitFieldNames ? '' : 'budgetAllocated', $pb.PbFieldType.OD)
+    ..a<$core.double>(7, _omitFieldNames ? '' : 'budgetRemaining', $pb.PbFieldType.OD)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1001,8 +1021,10 @@ class CategorySpending extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CategorySpending copyWith(void Function(CategorySpending) updates) => super.copyWith((message) => updates(message as CategorySpending)) as CategorySpending; // ignore: deprecated_member_use
+  CategorySpending copyWith(void Function(CategorySpending) updates) => super.copyWith((message) => updates(message as CategorySpending)) as CategorySpending;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static CategorySpending create() => CategorySpending._();
   CategorySpending createEmptyInstance() => create();
@@ -1076,33 +1098,34 @@ class CategorySpending extends $pb.GeneratedMessage {
 }
 
 class DailySpending extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'DailySpending', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<$36.Timestamp>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'date', subBuilder: $36.Timestamp.create)
-    ..a<$core.double>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
-    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactionCount', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
-
-  DailySpending._() : super();
   factory DailySpending({
-    $36.Timestamp? date,
+    $42.Timestamp? date,
     $core.double? amount,
     $core.int? transactionCount,
   }) {
-    final _result = create();
+    final $result = create();
     if (date != null) {
-      _result.date = date;
+      $result.date = date;
     }
     if (amount != null) {
-      _result.amount = amount;
+      $result.amount = amount;
     }
     if (transactionCount != null) {
-      _result.transactionCount = transactionCount;
+      $result.transactionCount = transactionCount;
     }
-    return _result;
+    return $result;
   }
+  DailySpending._() : super();
   factory DailySpending.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory DailySpending.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'DailySpending', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOM<$42.Timestamp>(1, _omitFieldNames ? '' : 'date', subBuilder: $42.Timestamp.create)
+    ..a<$core.double>(2, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
+    ..a<$core.int>(3, _omitFieldNames ? '' : 'transactionCount', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1112,8 +1135,10 @@ class DailySpending extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  DailySpending copyWith(void Function(DailySpending) updates) => super.copyWith((message) => updates(message as DailySpending)) as DailySpending; // ignore: deprecated_member_use
+  DailySpending copyWith(void Function(DailySpending) updates) => super.copyWith((message) => updates(message as DailySpending)) as DailySpending;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static DailySpending create() => DailySpending._();
   DailySpending createEmptyInstance() => create();
@@ -1123,15 +1148,15 @@ class DailySpending extends $pb.GeneratedMessage {
   static DailySpending? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $36.Timestamp get date => $_getN(0);
+  $42.Timestamp get date => $_getN(0);
   @$pb.TagNumber(1)
-  set date($36.Timestamp v) { setField(1, v); }
+  set date($42.Timestamp v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasDate() => $_has(0);
   @$pb.TagNumber(1)
   void clearDate() => clearField(1);
   @$pb.TagNumber(1)
-  $36.Timestamp ensureDate() => $_ensure(0);
+  $42.Timestamp ensureDate() => $_ensure(0);
 
   @$pb.TagNumber(2)
   $core.double get amount => $_getN(1);
@@ -1153,23 +1178,6 @@ class DailySpending extends $pb.GeneratedMessage {
 }
 
 class BudgetProgressItem extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'BudgetProgressItem', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'budgetId')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'budgetName')
-    ..e<ExpenseCategory>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'category', $pb.PbFieldType.OE, defaultOrMaker: ExpenseCategory.EXPENSE_CATEGORY_UNSPECIFIED, valueOf: ExpenseCategory.valueOf, enumValues: ExpenseCategory.values)
-    ..a<$core.double>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'budgetAmount', $pb.PbFieldType.OD)
-    ..a<$core.double>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'spentAmount', $pb.PbFieldType.OD)
-    ..a<$core.double>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'remainingAmount', $pb.PbFieldType.OD)
-    ..a<$core.double>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'percentageUsed', $pb.PbFieldType.OD)
-    ..e<BudgetStatus>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: BudgetStatus.BUDGET_STATUS_UNSPECIFIED, valueOf: BudgetStatus.valueOf, enumValues: BudgetStatus.values)
-    ..a<$core.int>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'daysRemaining', $pb.PbFieldType.O3)
-    ..a<$core.double>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'dailyAverageSpend', $pb.PbFieldType.OD)
-    ..a<$core.double>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'projectedSpend', $pb.PbFieldType.OD)
-    ..aOB(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'willExceed')
-    ..hasRequiredFields = false
-  ;
-
-  BudgetProgressItem._() : super();
   factory BudgetProgressItem({
     $core.String? budgetId,
     $core.String? budgetName,
@@ -1184,47 +1192,65 @@ class BudgetProgressItem extends $pb.GeneratedMessage {
     $core.double? projectedSpend,
     $core.bool? willExceed,
   }) {
-    final _result = create();
+    final $result = create();
     if (budgetId != null) {
-      _result.budgetId = budgetId;
+      $result.budgetId = budgetId;
     }
     if (budgetName != null) {
-      _result.budgetName = budgetName;
+      $result.budgetName = budgetName;
     }
     if (category != null) {
-      _result.category = category;
+      $result.category = category;
     }
     if (budgetAmount != null) {
-      _result.budgetAmount = budgetAmount;
+      $result.budgetAmount = budgetAmount;
     }
     if (spentAmount != null) {
-      _result.spentAmount = spentAmount;
+      $result.spentAmount = spentAmount;
     }
     if (remainingAmount != null) {
-      _result.remainingAmount = remainingAmount;
+      $result.remainingAmount = remainingAmount;
     }
     if (percentageUsed != null) {
-      _result.percentageUsed = percentageUsed;
+      $result.percentageUsed = percentageUsed;
     }
     if (status != null) {
-      _result.status = status;
+      $result.status = status;
     }
     if (daysRemaining != null) {
-      _result.daysRemaining = daysRemaining;
+      $result.daysRemaining = daysRemaining;
     }
     if (dailyAverageSpend != null) {
-      _result.dailyAverageSpend = dailyAverageSpend;
+      $result.dailyAverageSpend = dailyAverageSpend;
     }
     if (projectedSpend != null) {
-      _result.projectedSpend = projectedSpend;
+      $result.projectedSpend = projectedSpend;
     }
     if (willExceed != null) {
-      _result.willExceed = willExceed;
+      $result.willExceed = willExceed;
     }
-    return _result;
+    return $result;
   }
+  BudgetProgressItem._() : super();
   factory BudgetProgressItem.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory BudgetProgressItem.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'BudgetProgressItem', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'budgetId')
+    ..aOS(2, _omitFieldNames ? '' : 'budgetName')
+    ..e<ExpenseCategory>(3, _omitFieldNames ? '' : 'category', $pb.PbFieldType.OE, defaultOrMaker: ExpenseCategory.EXPENSE_CATEGORY_UNSPECIFIED, valueOf: ExpenseCategory.valueOf, enumValues: ExpenseCategory.values)
+    ..a<$core.double>(4, _omitFieldNames ? '' : 'budgetAmount', $pb.PbFieldType.OD)
+    ..a<$core.double>(5, _omitFieldNames ? '' : 'spentAmount', $pb.PbFieldType.OD)
+    ..a<$core.double>(6, _omitFieldNames ? '' : 'remainingAmount', $pb.PbFieldType.OD)
+    ..a<$core.double>(7, _omitFieldNames ? '' : 'percentageUsed', $pb.PbFieldType.OD)
+    ..e<BudgetStatus>(8, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: BudgetStatus.BUDGET_STATUS_UNSPECIFIED, valueOf: BudgetStatus.valueOf, enumValues: BudgetStatus.values)
+    ..a<$core.int>(9, _omitFieldNames ? '' : 'daysRemaining', $pb.PbFieldType.O3)
+    ..a<$core.double>(10, _omitFieldNames ? '' : 'dailyAverageSpend', $pb.PbFieldType.OD)
+    ..a<$core.double>(11, _omitFieldNames ? '' : 'projectedSpend', $pb.PbFieldType.OD)
+    ..aOB(12, _omitFieldNames ? '' : 'willExceed')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1234,8 +1260,10 @@ class BudgetProgressItem extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  BudgetProgressItem copyWith(void Function(BudgetProgressItem) updates) => super.copyWith((message) => updates(message as BudgetProgressItem)) as BudgetProgressItem; // ignore: deprecated_member_use
+  BudgetProgressItem copyWith(void Function(BudgetProgressItem) updates) => super.copyWith((message) => updates(message as BudgetProgressItem)) as BudgetProgressItem;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static BudgetProgressItem create() => BudgetProgressItem._();
   BudgetProgressItem createEmptyInstance() => create();
@@ -1354,58 +1382,59 @@ class BudgetProgressItem extends $pb.GeneratedMessage {
 }
 
 class SpendingTrend extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'SpendingTrend', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'periodLabel')
-    ..aOM<$36.Timestamp>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'periodStart', subBuilder: $36.Timestamp.create)
-    ..aOM<$36.Timestamp>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'periodEnd', subBuilder: $36.Timestamp.create)
-    ..a<$core.double>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalSpent', $pb.PbFieldType.OD)
-    ..a<$core.double>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'budgetAmount', $pb.PbFieldType.OD)
-    ..a<$core.double>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'variance', $pb.PbFieldType.OD)
-    ..a<$core.double>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'variancePercentage', $pb.PbFieldType.OD)
-    ..pc<CategorySpending>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'categories', $pb.PbFieldType.PM, subBuilder: CategorySpending.create)
-    ..hasRequiredFields = false
-  ;
-
-  SpendingTrend._() : super();
   factory SpendingTrend({
     $core.String? periodLabel,
-    $36.Timestamp? periodStart,
-    $36.Timestamp? periodEnd,
+    $42.Timestamp? periodStart,
+    $42.Timestamp? periodEnd,
     $core.double? totalSpent,
     $core.double? budgetAmount,
     $core.double? variance,
     $core.double? variancePercentage,
     $core.Iterable<CategorySpending>? categories,
   }) {
-    final _result = create();
+    final $result = create();
     if (periodLabel != null) {
-      _result.periodLabel = periodLabel;
+      $result.periodLabel = periodLabel;
     }
     if (periodStart != null) {
-      _result.periodStart = periodStart;
+      $result.periodStart = periodStart;
     }
     if (periodEnd != null) {
-      _result.periodEnd = periodEnd;
+      $result.periodEnd = periodEnd;
     }
     if (totalSpent != null) {
-      _result.totalSpent = totalSpent;
+      $result.totalSpent = totalSpent;
     }
     if (budgetAmount != null) {
-      _result.budgetAmount = budgetAmount;
+      $result.budgetAmount = budgetAmount;
     }
     if (variance != null) {
-      _result.variance = variance;
+      $result.variance = variance;
     }
     if (variancePercentage != null) {
-      _result.variancePercentage = variancePercentage;
+      $result.variancePercentage = variancePercentage;
     }
     if (categories != null) {
-      _result.categories.addAll(categories);
+      $result.categories.addAll(categories);
     }
-    return _result;
+    return $result;
   }
+  SpendingTrend._() : super();
   factory SpendingTrend.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory SpendingTrend.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SpendingTrend', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'periodLabel')
+    ..aOM<$42.Timestamp>(2, _omitFieldNames ? '' : 'periodStart', subBuilder: $42.Timestamp.create)
+    ..aOM<$42.Timestamp>(3, _omitFieldNames ? '' : 'periodEnd', subBuilder: $42.Timestamp.create)
+    ..a<$core.double>(4, _omitFieldNames ? '' : 'totalSpent', $pb.PbFieldType.OD)
+    ..a<$core.double>(5, _omitFieldNames ? '' : 'budgetAmount', $pb.PbFieldType.OD)
+    ..a<$core.double>(6, _omitFieldNames ? '' : 'variance', $pb.PbFieldType.OD)
+    ..a<$core.double>(7, _omitFieldNames ? '' : 'variancePercentage', $pb.PbFieldType.OD)
+    ..pc<CategorySpending>(8, _omitFieldNames ? '' : 'categories', $pb.PbFieldType.PM, subBuilder: CategorySpending.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1415,8 +1444,10 @@ class SpendingTrend extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  SpendingTrend copyWith(void Function(SpendingTrend) updates) => super.copyWith((message) => updates(message as SpendingTrend)) as SpendingTrend; // ignore: deprecated_member_use
+  SpendingTrend copyWith(void Function(SpendingTrend) updates) => super.copyWith((message) => updates(message as SpendingTrend)) as SpendingTrend;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static SpendingTrend create() => SpendingTrend._();
   SpendingTrend createEmptyInstance() => create();
@@ -1435,26 +1466,26 @@ class SpendingTrend extends $pb.GeneratedMessage {
   void clearPeriodLabel() => clearField(1);
 
   @$pb.TagNumber(2)
-  $36.Timestamp get periodStart => $_getN(1);
+  $42.Timestamp get periodStart => $_getN(1);
   @$pb.TagNumber(2)
-  set periodStart($36.Timestamp v) { setField(2, v); }
+  set periodStart($42.Timestamp v) { setField(2, v); }
   @$pb.TagNumber(2)
   $core.bool hasPeriodStart() => $_has(1);
   @$pb.TagNumber(2)
   void clearPeriodStart() => clearField(2);
   @$pb.TagNumber(2)
-  $36.Timestamp ensurePeriodStart() => $_ensure(1);
+  $42.Timestamp ensurePeriodStart() => $_ensure(1);
 
   @$pb.TagNumber(3)
-  $36.Timestamp get periodEnd => $_getN(2);
+  $42.Timestamp get periodEnd => $_getN(2);
   @$pb.TagNumber(3)
-  set periodEnd($36.Timestamp v) { setField(3, v); }
+  set periodEnd($42.Timestamp v) { setField(3, v); }
   @$pb.TagNumber(3)
   $core.bool hasPeriodEnd() => $_has(2);
   @$pb.TagNumber(3)
   void clearPeriodEnd() => clearField(3);
   @$pb.TagNumber(3)
-  $36.Timestamp ensurePeriodEnd() => $_ensure(2);
+  $42.Timestamp ensurePeriodEnd() => $_ensure(2);
 
   @$pb.TagNumber(4)
   $core.double get totalSpent => $_getN(3);
@@ -1496,26 +1527,8 @@ class SpendingTrend extends $pb.GeneratedMessage {
   $core.List<CategorySpending> get categories => $_getList(7);
 }
 
+/// Expense Requests
 class CreateExpenseRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CreateExpenseRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accountId')
-    ..a<$core.double>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
-    ..e<ExpenseCategory>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'category', $pb.PbFieldType.OE, defaultOrMaker: ExpenseCategory.EXPENSE_CATEGORY_UNSPECIFIED, valueOf: ExpenseCategory.valueOf, enumValues: ExpenseCategory.values)
-    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'subcategory')
-    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
-    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'merchant')
-    ..aOM<$36.Timestamp>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactionDate', subBuilder: $36.Timestamp.create)
-    ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'paymentMethod')
-    ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'receiptUrl')
-    ..pPS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'tags')
-    ..aOS(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'notes')
-    ..aOB(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isRecurring')
-    ..aOS(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recurrencePattern')
-    ..hasRequiredFields = false
-  ;
-
-  CreateExpenseRequest._() : super();
   factory CreateExpenseRequest({
     $core.String? accountId,
     $core.double? amount,
@@ -1524,7 +1537,7 @@ class CreateExpenseRequest extends $pb.GeneratedMessage {
     $core.String? subcategory,
     $core.String? description,
     $core.String? merchant,
-    $36.Timestamp? transactionDate,
+    $42.Timestamp? transactionDate,
     $core.String? paymentMethod,
     $core.String? receiptUrl,
     $core.Iterable<$core.String>? tags,
@@ -1532,53 +1545,73 @@ class CreateExpenseRequest extends $pb.GeneratedMessage {
     $core.bool? isRecurring,
     $core.String? recurrencePattern,
   }) {
-    final _result = create();
+    final $result = create();
     if (accountId != null) {
-      _result.accountId = accountId;
+      $result.accountId = accountId;
     }
     if (amount != null) {
-      _result.amount = amount;
+      $result.amount = amount;
     }
     if (currency != null) {
-      _result.currency = currency;
+      $result.currency = currency;
     }
     if (category != null) {
-      _result.category = category;
+      $result.category = category;
     }
     if (subcategory != null) {
-      _result.subcategory = subcategory;
+      $result.subcategory = subcategory;
     }
     if (description != null) {
-      _result.description = description;
+      $result.description = description;
     }
     if (merchant != null) {
-      _result.merchant = merchant;
+      $result.merchant = merchant;
     }
     if (transactionDate != null) {
-      _result.transactionDate = transactionDate;
+      $result.transactionDate = transactionDate;
     }
     if (paymentMethod != null) {
-      _result.paymentMethod = paymentMethod;
+      $result.paymentMethod = paymentMethod;
     }
     if (receiptUrl != null) {
-      _result.receiptUrl = receiptUrl;
+      $result.receiptUrl = receiptUrl;
     }
     if (tags != null) {
-      _result.tags.addAll(tags);
+      $result.tags.addAll(tags);
     }
     if (notes != null) {
-      _result.notes = notes;
+      $result.notes = notes;
     }
     if (isRecurring != null) {
-      _result.isRecurring = isRecurring;
+      $result.isRecurring = isRecurring;
     }
     if (recurrencePattern != null) {
-      _result.recurrencePattern = recurrencePattern;
+      $result.recurrencePattern = recurrencePattern;
     }
-    return _result;
+    return $result;
   }
+  CreateExpenseRequest._() : super();
   factory CreateExpenseRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CreateExpenseRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreateExpenseRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'accountId')
+    ..a<$core.double>(2, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
+    ..aOS(3, _omitFieldNames ? '' : 'currency')
+    ..e<ExpenseCategory>(4, _omitFieldNames ? '' : 'category', $pb.PbFieldType.OE, defaultOrMaker: ExpenseCategory.EXPENSE_CATEGORY_UNSPECIFIED, valueOf: ExpenseCategory.valueOf, enumValues: ExpenseCategory.values)
+    ..aOS(5, _omitFieldNames ? '' : 'subcategory')
+    ..aOS(6, _omitFieldNames ? '' : 'description')
+    ..aOS(7, _omitFieldNames ? '' : 'merchant')
+    ..aOM<$42.Timestamp>(8, _omitFieldNames ? '' : 'transactionDate', subBuilder: $42.Timestamp.create)
+    ..aOS(9, _omitFieldNames ? '' : 'paymentMethod')
+    ..aOS(10, _omitFieldNames ? '' : 'receiptUrl')
+    ..pPS(11, _omitFieldNames ? '' : 'tags')
+    ..aOS(12, _omitFieldNames ? '' : 'notes')
+    ..aOB(13, _omitFieldNames ? '' : 'isRecurring')
+    ..aOS(14, _omitFieldNames ? '' : 'recurrencePattern')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1588,8 +1621,10 @@ class CreateExpenseRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CreateExpenseRequest copyWith(void Function(CreateExpenseRequest) updates) => super.copyWith((message) => updates(message as CreateExpenseRequest)) as CreateExpenseRequest; // ignore: deprecated_member_use
+  CreateExpenseRequest copyWith(void Function(CreateExpenseRequest) updates) => super.copyWith((message) => updates(message as CreateExpenseRequest)) as CreateExpenseRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static CreateExpenseRequest create() => CreateExpenseRequest._();
   CreateExpenseRequest createEmptyInstance() => create();
@@ -1662,15 +1697,15 @@ class CreateExpenseRequest extends $pb.GeneratedMessage {
   void clearMerchant() => clearField(7);
 
   @$pb.TagNumber(8)
-  $36.Timestamp get transactionDate => $_getN(7);
+  $42.Timestamp get transactionDate => $_getN(7);
   @$pb.TagNumber(8)
-  set transactionDate($36.Timestamp v) { setField(8, v); }
+  set transactionDate($42.Timestamp v) { setField(8, v); }
   @$pb.TagNumber(8)
   $core.bool hasTransactionDate() => $_has(7);
   @$pb.TagNumber(8)
   void clearTransactionDate() => clearField(8);
   @$pb.TagNumber(8)
-  $36.Timestamp ensureTransactionDate() => $_ensure(7);
+  $42.Timestamp ensureTransactionDate() => $_ensure(7);
 
   @$pb.TagNumber(9)
   $core.String get paymentMethod => $_getSZ(8);
@@ -1722,33 +1757,34 @@ class CreateExpenseRequest extends $pb.GeneratedMessage {
 }
 
 class CreateExpenseResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CreateExpenseResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<ExpenseMessage>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'expense', subBuilder: ExpenseMessage.create)
-    ..aOB(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
-    ..hasRequiredFields = false
-  ;
-
-  CreateExpenseResponse._() : super();
   factory CreateExpenseResponse({
     ExpenseMessage? expense,
     $core.bool? success,
     $core.String? message,
   }) {
-    final _result = create();
+    final $result = create();
     if (expense != null) {
-      _result.expense = expense;
+      $result.expense = expense;
     }
     if (success != null) {
-      _result.success = success;
+      $result.success = success;
     }
     if (message != null) {
-      _result.message = message;
+      $result.message = message;
     }
-    return _result;
+    return $result;
   }
+  CreateExpenseResponse._() : super();
   factory CreateExpenseResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CreateExpenseResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreateExpenseResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOM<ExpenseMessage>(1, _omitFieldNames ? '' : 'expense', subBuilder: ExpenseMessage.create)
+    ..aOB(2, _omitFieldNames ? '' : 'success')
+    ..aOS(3, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1758,8 +1794,10 @@ class CreateExpenseResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CreateExpenseResponse copyWith(void Function(CreateExpenseResponse) updates) => super.copyWith((message) => updates(message as CreateExpenseResponse)) as CreateExpenseResponse; // ignore: deprecated_member_use
+  CreateExpenseResponse copyWith(void Function(CreateExpenseResponse) updates) => super.copyWith((message) => updates(message as CreateExpenseResponse)) as CreateExpenseResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static CreateExpenseResponse create() => CreateExpenseResponse._();
   CreateExpenseResponse createEmptyInstance() => create();
@@ -1799,63 +1837,64 @@ class CreateExpenseResponse extends $pb.GeneratedMessage {
 }
 
 class GetExpensesRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetExpensesRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..a<$core.int>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'page', $pb.PbFieldType.O3)
-    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'perPage', $pb.PbFieldType.O3)
-    ..aOM<$36.Timestamp>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'startDate', subBuilder: $36.Timestamp.create)
-    ..aOM<$36.Timestamp>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'endDate', subBuilder: $36.Timestamp.create)
-    ..e<ExpenseCategory>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'category', $pb.PbFieldType.OE, defaultOrMaker: ExpenseCategory.EXPENSE_CATEGORY_UNSPECIFIED, valueOf: ExpenseCategory.valueOf, enumValues: ExpenseCategory.values)
-    ..a<$core.double>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'minAmount', $pb.PbFieldType.OD)
-    ..a<$core.double>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'maxAmount', $pb.PbFieldType.OD)
-    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'searchQuery')
-    ..pPS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'tags')
-    ..hasRequiredFields = false
-  ;
-
-  GetExpensesRequest._() : super();
   factory GetExpensesRequest({
     $core.int? page,
     $core.int? perPage,
-    $36.Timestamp? startDate,
-    $36.Timestamp? endDate,
+    $42.Timestamp? startDate,
+    $42.Timestamp? endDate,
     ExpenseCategory? category,
     $core.double? minAmount,
     $core.double? maxAmount,
     $core.String? searchQuery,
     $core.Iterable<$core.String>? tags,
   }) {
-    final _result = create();
+    final $result = create();
     if (page != null) {
-      _result.page = page;
+      $result.page = page;
     }
     if (perPage != null) {
-      _result.perPage = perPage;
+      $result.perPage = perPage;
     }
     if (startDate != null) {
-      _result.startDate = startDate;
+      $result.startDate = startDate;
     }
     if (endDate != null) {
-      _result.endDate = endDate;
+      $result.endDate = endDate;
     }
     if (category != null) {
-      _result.category = category;
+      $result.category = category;
     }
     if (minAmount != null) {
-      _result.minAmount = minAmount;
+      $result.minAmount = minAmount;
     }
     if (maxAmount != null) {
-      _result.maxAmount = maxAmount;
+      $result.maxAmount = maxAmount;
     }
     if (searchQuery != null) {
-      _result.searchQuery = searchQuery;
+      $result.searchQuery = searchQuery;
     }
     if (tags != null) {
-      _result.tags.addAll(tags);
+      $result.tags.addAll(tags);
     }
-    return _result;
+    return $result;
   }
+  GetExpensesRequest._() : super();
   factory GetExpensesRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetExpensesRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetExpensesRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..a<$core.int>(1, _omitFieldNames ? '' : 'page', $pb.PbFieldType.O3)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'perPage', $pb.PbFieldType.O3)
+    ..aOM<$42.Timestamp>(3, _omitFieldNames ? '' : 'startDate', subBuilder: $42.Timestamp.create)
+    ..aOM<$42.Timestamp>(4, _omitFieldNames ? '' : 'endDate', subBuilder: $42.Timestamp.create)
+    ..e<ExpenseCategory>(5, _omitFieldNames ? '' : 'category', $pb.PbFieldType.OE, defaultOrMaker: ExpenseCategory.EXPENSE_CATEGORY_UNSPECIFIED, valueOf: ExpenseCategory.valueOf, enumValues: ExpenseCategory.values)
+    ..a<$core.double>(6, _omitFieldNames ? '' : 'minAmount', $pb.PbFieldType.OD)
+    ..a<$core.double>(7, _omitFieldNames ? '' : 'maxAmount', $pb.PbFieldType.OD)
+    ..aOS(8, _omitFieldNames ? '' : 'searchQuery')
+    ..pPS(9, _omitFieldNames ? '' : 'tags')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1865,8 +1904,10 @@ class GetExpensesRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetExpensesRequest copyWith(void Function(GetExpensesRequest) updates) => super.copyWith((message) => updates(message as GetExpensesRequest)) as GetExpensesRequest; // ignore: deprecated_member_use
+  GetExpensesRequest copyWith(void Function(GetExpensesRequest) updates) => super.copyWith((message) => updates(message as GetExpensesRequest)) as GetExpensesRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetExpensesRequest create() => GetExpensesRequest._();
   GetExpensesRequest createEmptyInstance() => create();
@@ -1894,26 +1935,26 @@ class GetExpensesRequest extends $pb.GeneratedMessage {
   void clearPerPage() => clearField(2);
 
   @$pb.TagNumber(3)
-  $36.Timestamp get startDate => $_getN(2);
+  $42.Timestamp get startDate => $_getN(2);
   @$pb.TagNumber(3)
-  set startDate($36.Timestamp v) { setField(3, v); }
+  set startDate($42.Timestamp v) { setField(3, v); }
   @$pb.TagNumber(3)
   $core.bool hasStartDate() => $_has(2);
   @$pb.TagNumber(3)
   void clearStartDate() => clearField(3);
   @$pb.TagNumber(3)
-  $36.Timestamp ensureStartDate() => $_ensure(2);
+  $42.Timestamp ensureStartDate() => $_ensure(2);
 
   @$pb.TagNumber(4)
-  $36.Timestamp get endDate => $_getN(3);
+  $42.Timestamp get endDate => $_getN(3);
   @$pb.TagNumber(4)
-  set endDate($36.Timestamp v) { setField(4, v); }
+  set endDate($42.Timestamp v) { setField(4, v); }
   @$pb.TagNumber(4)
   $core.bool hasEndDate() => $_has(3);
   @$pb.TagNumber(4)
   void clearEndDate() => clearField(4);
   @$pb.TagNumber(4)
-  $36.Timestamp ensureEndDate() => $_ensure(3);
+  $42.Timestamp ensureEndDate() => $_ensure(3);
 
   @$pb.TagNumber(5)
   ExpenseCategory get category => $_getN(4);
@@ -1956,38 +1997,39 @@ class GetExpensesRequest extends $pb.GeneratedMessage {
 }
 
 class GetExpensesResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetExpensesResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..pc<ExpenseMessage>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'expenses', $pb.PbFieldType.PM, subBuilder: ExpenseMessage.create)
-    ..aOM<PaginationMetadata>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pagination', subBuilder: PaginationMetadata.create)
-    ..a<$core.double>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalAmount', $pb.PbFieldType.OD)
-    ..a<$core.int>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalCount', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
-
-  GetExpensesResponse._() : super();
   factory GetExpensesResponse({
     $core.Iterable<ExpenseMessage>? expenses,
     PaginationMetadata? pagination,
     $core.double? totalAmount,
     $core.int? totalCount,
   }) {
-    final _result = create();
+    final $result = create();
     if (expenses != null) {
-      _result.expenses.addAll(expenses);
+      $result.expenses.addAll(expenses);
     }
     if (pagination != null) {
-      _result.pagination = pagination;
+      $result.pagination = pagination;
     }
     if (totalAmount != null) {
-      _result.totalAmount = totalAmount;
+      $result.totalAmount = totalAmount;
     }
     if (totalCount != null) {
-      _result.totalCount = totalCount;
+      $result.totalCount = totalCount;
     }
-    return _result;
+    return $result;
   }
+  GetExpensesResponse._() : super();
   factory GetExpensesResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetExpensesResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetExpensesResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..pc<ExpenseMessage>(1, _omitFieldNames ? '' : 'expenses', $pb.PbFieldType.PM, subBuilder: ExpenseMessage.create)
+    ..aOM<PaginationMetadata>(2, _omitFieldNames ? '' : 'pagination', subBuilder: PaginationMetadata.create)
+    ..a<$core.double>(3, _omitFieldNames ? '' : 'totalAmount', $pb.PbFieldType.OD)
+    ..a<$core.int>(4, _omitFieldNames ? '' : 'totalCount', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1997,8 +2039,10 @@ class GetExpensesResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetExpensesResponse copyWith(void Function(GetExpensesResponse) updates) => super.copyWith((message) => updates(message as GetExpensesResponse)) as GetExpensesResponse; // ignore: deprecated_member_use
+  GetExpensesResponse copyWith(void Function(GetExpensesResponse) updates) => super.copyWith((message) => updates(message as GetExpensesResponse)) as GetExpensesResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetExpensesResponse create() => GetExpensesResponse._();
   GetExpensesResponse createEmptyInstance() => create();
@@ -2041,23 +2085,24 @@ class GetExpensesResponse extends $pb.GeneratedMessage {
 }
 
 class GetExpenseByIdRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetExpenseByIdRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'expenseId')
-    ..hasRequiredFields = false
-  ;
-
-  GetExpenseByIdRequest._() : super();
   factory GetExpenseByIdRequest({
     $core.String? expenseId,
   }) {
-    final _result = create();
+    final $result = create();
     if (expenseId != null) {
-      _result.expenseId = expenseId;
+      $result.expenseId = expenseId;
     }
-    return _result;
+    return $result;
   }
+  GetExpenseByIdRequest._() : super();
   factory GetExpenseByIdRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetExpenseByIdRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetExpenseByIdRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'expenseId')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2067,8 +2112,10 @@ class GetExpenseByIdRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetExpenseByIdRequest copyWith(void Function(GetExpenseByIdRequest) updates) => super.copyWith((message) => updates(message as GetExpenseByIdRequest)) as GetExpenseByIdRequest; // ignore: deprecated_member_use
+  GetExpenseByIdRequest copyWith(void Function(GetExpenseByIdRequest) updates) => super.copyWith((message) => updates(message as GetExpenseByIdRequest)) as GetExpenseByIdRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetExpenseByIdRequest create() => GetExpenseByIdRequest._();
   GetExpenseByIdRequest createEmptyInstance() => create();
@@ -2088,23 +2135,24 @@ class GetExpenseByIdRequest extends $pb.GeneratedMessage {
 }
 
 class GetExpenseByIdResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetExpenseByIdResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<ExpenseMessage>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'expense', subBuilder: ExpenseMessage.create)
-    ..hasRequiredFields = false
-  ;
-
-  GetExpenseByIdResponse._() : super();
   factory GetExpenseByIdResponse({
     ExpenseMessage? expense,
   }) {
-    final _result = create();
+    final $result = create();
     if (expense != null) {
-      _result.expense = expense;
+      $result.expense = expense;
     }
-    return _result;
+    return $result;
   }
+  GetExpenseByIdResponse._() : super();
   factory GetExpenseByIdResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetExpenseByIdResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetExpenseByIdResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOM<ExpenseMessage>(1, _omitFieldNames ? '' : 'expense', subBuilder: ExpenseMessage.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2114,8 +2162,10 @@ class GetExpenseByIdResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetExpenseByIdResponse copyWith(void Function(GetExpenseByIdResponse) updates) => super.copyWith((message) => updates(message as GetExpenseByIdResponse)) as GetExpenseByIdResponse; // ignore: deprecated_member_use
+  GetExpenseByIdResponse copyWith(void Function(GetExpenseByIdResponse) updates) => super.copyWith((message) => updates(message as GetExpenseByIdResponse)) as GetExpenseByIdResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetExpenseByIdResponse create() => GetExpenseByIdResponse._();
   GetExpenseByIdResponse createEmptyInstance() => create();
@@ -2137,21 +2187,6 @@ class GetExpenseByIdResponse extends $pb.GeneratedMessage {
 }
 
 class UpdateExpenseRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UpdateExpenseRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'expenseId')
-    ..a<$core.double>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
-    ..e<ExpenseCategory>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'category', $pb.PbFieldType.OE, defaultOrMaker: ExpenseCategory.EXPENSE_CATEGORY_UNSPECIFIED, valueOf: ExpenseCategory.valueOf, enumValues: ExpenseCategory.values)
-    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'subcategory')
-    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
-    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'merchant')
-    ..aOM<$36.Timestamp>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactionDate', subBuilder: $36.Timestamp.create)
-    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'paymentMethod')
-    ..pPS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'tags')
-    ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'notes')
-    ..hasRequiredFields = false
-  ;
-
-  UpdateExpenseRequest._() : super();
   factory UpdateExpenseRequest({
     $core.String? expenseId,
     $core.double? amount,
@@ -2159,46 +2194,62 @@ class UpdateExpenseRequest extends $pb.GeneratedMessage {
     $core.String? subcategory,
     $core.String? description,
     $core.String? merchant,
-    $36.Timestamp? transactionDate,
+    $42.Timestamp? transactionDate,
     $core.String? paymentMethod,
     $core.Iterable<$core.String>? tags,
     $core.String? notes,
   }) {
-    final _result = create();
+    final $result = create();
     if (expenseId != null) {
-      _result.expenseId = expenseId;
+      $result.expenseId = expenseId;
     }
     if (amount != null) {
-      _result.amount = amount;
+      $result.amount = amount;
     }
     if (category != null) {
-      _result.category = category;
+      $result.category = category;
     }
     if (subcategory != null) {
-      _result.subcategory = subcategory;
+      $result.subcategory = subcategory;
     }
     if (description != null) {
-      _result.description = description;
+      $result.description = description;
     }
     if (merchant != null) {
-      _result.merchant = merchant;
+      $result.merchant = merchant;
     }
     if (transactionDate != null) {
-      _result.transactionDate = transactionDate;
+      $result.transactionDate = transactionDate;
     }
     if (paymentMethod != null) {
-      _result.paymentMethod = paymentMethod;
+      $result.paymentMethod = paymentMethod;
     }
     if (tags != null) {
-      _result.tags.addAll(tags);
+      $result.tags.addAll(tags);
     }
     if (notes != null) {
-      _result.notes = notes;
+      $result.notes = notes;
     }
-    return _result;
+    return $result;
   }
+  UpdateExpenseRequest._() : super();
   factory UpdateExpenseRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory UpdateExpenseRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UpdateExpenseRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'expenseId')
+    ..a<$core.double>(2, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
+    ..e<ExpenseCategory>(3, _omitFieldNames ? '' : 'category', $pb.PbFieldType.OE, defaultOrMaker: ExpenseCategory.EXPENSE_CATEGORY_UNSPECIFIED, valueOf: ExpenseCategory.valueOf, enumValues: ExpenseCategory.values)
+    ..aOS(4, _omitFieldNames ? '' : 'subcategory')
+    ..aOS(5, _omitFieldNames ? '' : 'description')
+    ..aOS(6, _omitFieldNames ? '' : 'merchant')
+    ..aOM<$42.Timestamp>(7, _omitFieldNames ? '' : 'transactionDate', subBuilder: $42.Timestamp.create)
+    ..aOS(8, _omitFieldNames ? '' : 'paymentMethod')
+    ..pPS(9, _omitFieldNames ? '' : 'tags')
+    ..aOS(10, _omitFieldNames ? '' : 'notes')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2208,8 +2259,10 @@ class UpdateExpenseRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  UpdateExpenseRequest copyWith(void Function(UpdateExpenseRequest) updates) => super.copyWith((message) => updates(message as UpdateExpenseRequest)) as UpdateExpenseRequest; // ignore: deprecated_member_use
+  UpdateExpenseRequest copyWith(void Function(UpdateExpenseRequest) updates) => super.copyWith((message) => updates(message as UpdateExpenseRequest)) as UpdateExpenseRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static UpdateExpenseRequest create() => UpdateExpenseRequest._();
   UpdateExpenseRequest createEmptyInstance() => create();
@@ -2273,15 +2326,15 @@ class UpdateExpenseRequest extends $pb.GeneratedMessage {
   void clearMerchant() => clearField(6);
 
   @$pb.TagNumber(7)
-  $36.Timestamp get transactionDate => $_getN(6);
+  $42.Timestamp get transactionDate => $_getN(6);
   @$pb.TagNumber(7)
-  set transactionDate($36.Timestamp v) { setField(7, v); }
+  set transactionDate($42.Timestamp v) { setField(7, v); }
   @$pb.TagNumber(7)
   $core.bool hasTransactionDate() => $_has(6);
   @$pb.TagNumber(7)
   void clearTransactionDate() => clearField(7);
   @$pb.TagNumber(7)
-  $36.Timestamp ensureTransactionDate() => $_ensure(6);
+  $42.Timestamp ensureTransactionDate() => $_ensure(6);
 
   @$pb.TagNumber(8)
   $core.String get paymentMethod => $_getSZ(7);
@@ -2306,33 +2359,34 @@ class UpdateExpenseRequest extends $pb.GeneratedMessage {
 }
 
 class UpdateExpenseResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UpdateExpenseResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<ExpenseMessage>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'expense', subBuilder: ExpenseMessage.create)
-    ..aOB(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
-    ..hasRequiredFields = false
-  ;
-
-  UpdateExpenseResponse._() : super();
   factory UpdateExpenseResponse({
     ExpenseMessage? expense,
     $core.bool? success,
     $core.String? message,
   }) {
-    final _result = create();
+    final $result = create();
     if (expense != null) {
-      _result.expense = expense;
+      $result.expense = expense;
     }
     if (success != null) {
-      _result.success = success;
+      $result.success = success;
     }
     if (message != null) {
-      _result.message = message;
+      $result.message = message;
     }
-    return _result;
+    return $result;
   }
+  UpdateExpenseResponse._() : super();
   factory UpdateExpenseResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory UpdateExpenseResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UpdateExpenseResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOM<ExpenseMessage>(1, _omitFieldNames ? '' : 'expense', subBuilder: ExpenseMessage.create)
+    ..aOB(2, _omitFieldNames ? '' : 'success')
+    ..aOS(3, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2342,8 +2396,10 @@ class UpdateExpenseResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  UpdateExpenseResponse copyWith(void Function(UpdateExpenseResponse) updates) => super.copyWith((message) => updates(message as UpdateExpenseResponse)) as UpdateExpenseResponse; // ignore: deprecated_member_use
+  UpdateExpenseResponse copyWith(void Function(UpdateExpenseResponse) updates) => super.copyWith((message) => updates(message as UpdateExpenseResponse)) as UpdateExpenseResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static UpdateExpenseResponse create() => UpdateExpenseResponse._();
   UpdateExpenseResponse createEmptyInstance() => create();
@@ -2383,23 +2439,24 @@ class UpdateExpenseResponse extends $pb.GeneratedMessage {
 }
 
 class DeleteExpenseRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'DeleteExpenseRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'expenseId')
-    ..hasRequiredFields = false
-  ;
-
-  DeleteExpenseRequest._() : super();
   factory DeleteExpenseRequest({
     $core.String? expenseId,
   }) {
-    final _result = create();
+    final $result = create();
     if (expenseId != null) {
-      _result.expenseId = expenseId;
+      $result.expenseId = expenseId;
     }
-    return _result;
+    return $result;
   }
+  DeleteExpenseRequest._() : super();
   factory DeleteExpenseRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory DeleteExpenseRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'DeleteExpenseRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'expenseId')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2409,8 +2466,10 @@ class DeleteExpenseRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  DeleteExpenseRequest copyWith(void Function(DeleteExpenseRequest) updates) => super.copyWith((message) => updates(message as DeleteExpenseRequest)) as DeleteExpenseRequest; // ignore: deprecated_member_use
+  DeleteExpenseRequest copyWith(void Function(DeleteExpenseRequest) updates) => super.copyWith((message) => updates(message as DeleteExpenseRequest)) as DeleteExpenseRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static DeleteExpenseRequest create() => DeleteExpenseRequest._();
   DeleteExpenseRequest createEmptyInstance() => create();
@@ -2430,28 +2489,29 @@ class DeleteExpenseRequest extends $pb.GeneratedMessage {
 }
 
 class DeleteExpenseResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'DeleteExpenseResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
-    ..hasRequiredFields = false
-  ;
-
-  DeleteExpenseResponse._() : super();
   factory DeleteExpenseResponse({
     $core.bool? success,
     $core.String? message,
   }) {
-    final _result = create();
+    final $result = create();
     if (success != null) {
-      _result.success = success;
+      $result.success = success;
     }
     if (message != null) {
-      _result.message = message;
+      $result.message = message;
     }
-    return _result;
+    return $result;
   }
+  DeleteExpenseResponse._() : super();
   factory DeleteExpenseResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory DeleteExpenseResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'DeleteExpenseResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..aOS(2, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2461,8 +2521,10 @@ class DeleteExpenseResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  DeleteExpenseResponse copyWith(void Function(DeleteExpenseResponse) updates) => super.copyWith((message) => updates(message as DeleteExpenseResponse)) as DeleteExpenseResponse; // ignore: deprecated_member_use
+  DeleteExpenseResponse copyWith(void Function(DeleteExpenseResponse) updates) => super.copyWith((message) => updates(message as DeleteExpenseResponse)) as DeleteExpenseResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static DeleteExpenseResponse create() => DeleteExpenseResponse._();
   DeleteExpenseResponse createEmptyInstance() => create();
@@ -2490,64 +2552,66 @@ class DeleteExpenseResponse extends $pb.GeneratedMessage {
   void clearMessage() => clearField(2);
 }
 
+/// Budget Requests
 class CreateBudgetRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CreateBudgetRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'name')
-    ..a<$core.double>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
-    ..e<ExpenseCategory>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'category', $pb.PbFieldType.OE, defaultOrMaker: ExpenseCategory.EXPENSE_CATEGORY_UNSPECIFIED, valueOf: ExpenseCategory.valueOf, enumValues: ExpenseCategory.values)
-    ..e<BudgetPeriod>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'period', $pb.PbFieldType.OE, defaultOrMaker: BudgetPeriod.BUDGET_PERIOD_UNSPECIFIED, valueOf: BudgetPeriod.valueOf, enumValues: BudgetPeriod.values)
-    ..aOM<$36.Timestamp>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'startDate', subBuilder: $36.Timestamp.create)
-    ..aOM<$36.Timestamp>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'endDate', subBuilder: $36.Timestamp.create)
-    ..aOB(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'enableAlerts')
-    ..a<$core.double>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'alertThreshold', $pb.PbFieldType.OD)
-    ..hasRequiredFields = false
-  ;
-
-  CreateBudgetRequest._() : super();
   factory CreateBudgetRequest({
     $core.String? name,
     $core.double? amount,
     $core.String? currency,
     ExpenseCategory? category,
     BudgetPeriod? period,
-    $36.Timestamp? startDate,
-    $36.Timestamp? endDate,
+    $42.Timestamp? startDate,
+    $42.Timestamp? endDate,
     $core.bool? enableAlerts,
     $core.double? alertThreshold,
   }) {
-    final _result = create();
+    final $result = create();
     if (name != null) {
-      _result.name = name;
+      $result.name = name;
     }
     if (amount != null) {
-      _result.amount = amount;
+      $result.amount = amount;
     }
     if (currency != null) {
-      _result.currency = currency;
+      $result.currency = currency;
     }
     if (category != null) {
-      _result.category = category;
+      $result.category = category;
     }
     if (period != null) {
-      _result.period = period;
+      $result.period = period;
     }
     if (startDate != null) {
-      _result.startDate = startDate;
+      $result.startDate = startDate;
     }
     if (endDate != null) {
-      _result.endDate = endDate;
+      $result.endDate = endDate;
     }
     if (enableAlerts != null) {
-      _result.enableAlerts = enableAlerts;
+      $result.enableAlerts = enableAlerts;
     }
     if (alertThreshold != null) {
-      _result.alertThreshold = alertThreshold;
+      $result.alertThreshold = alertThreshold;
     }
-    return _result;
+    return $result;
   }
+  CreateBudgetRequest._() : super();
   factory CreateBudgetRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CreateBudgetRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreateBudgetRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'name')
+    ..a<$core.double>(2, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
+    ..aOS(3, _omitFieldNames ? '' : 'currency')
+    ..e<ExpenseCategory>(4, _omitFieldNames ? '' : 'category', $pb.PbFieldType.OE, defaultOrMaker: ExpenseCategory.EXPENSE_CATEGORY_UNSPECIFIED, valueOf: ExpenseCategory.valueOf, enumValues: ExpenseCategory.values)
+    ..e<BudgetPeriod>(5, _omitFieldNames ? '' : 'period', $pb.PbFieldType.OE, defaultOrMaker: BudgetPeriod.BUDGET_PERIOD_UNSPECIFIED, valueOf: BudgetPeriod.valueOf, enumValues: BudgetPeriod.values)
+    ..aOM<$42.Timestamp>(6, _omitFieldNames ? '' : 'startDate', subBuilder: $42.Timestamp.create)
+    ..aOM<$42.Timestamp>(7, _omitFieldNames ? '' : 'endDate', subBuilder: $42.Timestamp.create)
+    ..aOB(8, _omitFieldNames ? '' : 'enableAlerts')
+    ..a<$core.double>(9, _omitFieldNames ? '' : 'alertThreshold', $pb.PbFieldType.OD)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2557,8 +2621,10 @@ class CreateBudgetRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CreateBudgetRequest copyWith(void Function(CreateBudgetRequest) updates) => super.copyWith((message) => updates(message as CreateBudgetRequest)) as CreateBudgetRequest; // ignore: deprecated_member_use
+  CreateBudgetRequest copyWith(void Function(CreateBudgetRequest) updates) => super.copyWith((message) => updates(message as CreateBudgetRequest)) as CreateBudgetRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static CreateBudgetRequest create() => CreateBudgetRequest._();
   CreateBudgetRequest createEmptyInstance() => create();
@@ -2613,26 +2679,26 @@ class CreateBudgetRequest extends $pb.GeneratedMessage {
   void clearPeriod() => clearField(5);
 
   @$pb.TagNumber(6)
-  $36.Timestamp get startDate => $_getN(5);
+  $42.Timestamp get startDate => $_getN(5);
   @$pb.TagNumber(6)
-  set startDate($36.Timestamp v) { setField(6, v); }
+  set startDate($42.Timestamp v) { setField(6, v); }
   @$pb.TagNumber(6)
   $core.bool hasStartDate() => $_has(5);
   @$pb.TagNumber(6)
   void clearStartDate() => clearField(6);
   @$pb.TagNumber(6)
-  $36.Timestamp ensureStartDate() => $_ensure(5);
+  $42.Timestamp ensureStartDate() => $_ensure(5);
 
   @$pb.TagNumber(7)
-  $36.Timestamp get endDate => $_getN(6);
+  $42.Timestamp get endDate => $_getN(6);
   @$pb.TagNumber(7)
-  set endDate($36.Timestamp v) { setField(7, v); }
+  set endDate($42.Timestamp v) { setField(7, v); }
   @$pb.TagNumber(7)
   $core.bool hasEndDate() => $_has(6);
   @$pb.TagNumber(7)
   void clearEndDate() => clearField(7);
   @$pb.TagNumber(7)
-  $36.Timestamp ensureEndDate() => $_ensure(6);
+  $42.Timestamp ensureEndDate() => $_ensure(6);
 
   @$pb.TagNumber(8)
   $core.bool get enableAlerts => $_getBF(7);
@@ -2654,33 +2720,34 @@ class CreateBudgetRequest extends $pb.GeneratedMessage {
 }
 
 class CreateBudgetResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CreateBudgetResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<BudgetMessage>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'budget', subBuilder: BudgetMessage.create)
-    ..aOB(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
-    ..hasRequiredFields = false
-  ;
-
-  CreateBudgetResponse._() : super();
   factory CreateBudgetResponse({
     BudgetMessage? budget,
     $core.bool? success,
     $core.String? message,
   }) {
-    final _result = create();
+    final $result = create();
     if (budget != null) {
-      _result.budget = budget;
+      $result.budget = budget;
     }
     if (success != null) {
-      _result.success = success;
+      $result.success = success;
     }
     if (message != null) {
-      _result.message = message;
+      $result.message = message;
     }
-    return _result;
+    return $result;
   }
+  CreateBudgetResponse._() : super();
   factory CreateBudgetResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CreateBudgetResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreateBudgetResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOM<BudgetMessage>(1, _omitFieldNames ? '' : 'budget', subBuilder: BudgetMessage.create)
+    ..aOB(2, _omitFieldNames ? '' : 'success')
+    ..aOS(3, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2690,8 +2757,10 @@ class CreateBudgetResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CreateBudgetResponse copyWith(void Function(CreateBudgetResponse) updates) => super.copyWith((message) => updates(message as CreateBudgetResponse)) as CreateBudgetResponse; // ignore: deprecated_member_use
+  CreateBudgetResponse copyWith(void Function(CreateBudgetResponse) updates) => super.copyWith((message) => updates(message as CreateBudgetResponse)) as CreateBudgetResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static CreateBudgetResponse create() => CreateBudgetResponse._();
   CreateBudgetResponse createEmptyInstance() => create();
@@ -2731,38 +2800,39 @@ class CreateBudgetResponse extends $pb.GeneratedMessage {
 }
 
 class GetBudgetsRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetBudgetsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..a<$core.int>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'page', $pb.PbFieldType.O3)
-    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'perPage', $pb.PbFieldType.O3)
-    ..e<BudgetStatus>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: BudgetStatus.BUDGET_STATUS_UNSPECIFIED, valueOf: BudgetStatus.valueOf, enumValues: BudgetStatus.values)
-    ..e<ExpenseCategory>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'category', $pb.PbFieldType.OE, defaultOrMaker: ExpenseCategory.EXPENSE_CATEGORY_UNSPECIFIED, valueOf: ExpenseCategory.valueOf, enumValues: ExpenseCategory.values)
-    ..hasRequiredFields = false
-  ;
-
-  GetBudgetsRequest._() : super();
   factory GetBudgetsRequest({
     $core.int? page,
     $core.int? perPage,
     BudgetStatus? status,
     ExpenseCategory? category,
   }) {
-    final _result = create();
+    final $result = create();
     if (page != null) {
-      _result.page = page;
+      $result.page = page;
     }
     if (perPage != null) {
-      _result.perPage = perPage;
+      $result.perPage = perPage;
     }
     if (status != null) {
-      _result.status = status;
+      $result.status = status;
     }
     if (category != null) {
-      _result.category = category;
+      $result.category = category;
     }
-    return _result;
+    return $result;
   }
+  GetBudgetsRequest._() : super();
   factory GetBudgetsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetBudgetsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetBudgetsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..a<$core.int>(1, _omitFieldNames ? '' : 'page', $pb.PbFieldType.O3)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'perPage', $pb.PbFieldType.O3)
+    ..e<BudgetStatus>(3, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: BudgetStatus.BUDGET_STATUS_UNSPECIFIED, valueOf: BudgetStatus.valueOf, enumValues: BudgetStatus.values)
+    ..e<ExpenseCategory>(4, _omitFieldNames ? '' : 'category', $pb.PbFieldType.OE, defaultOrMaker: ExpenseCategory.EXPENSE_CATEGORY_UNSPECIFIED, valueOf: ExpenseCategory.valueOf, enumValues: ExpenseCategory.values)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2772,8 +2842,10 @@ class GetBudgetsRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetBudgetsRequest copyWith(void Function(GetBudgetsRequest) updates) => super.copyWith((message) => updates(message as GetBudgetsRequest)) as GetBudgetsRequest; // ignore: deprecated_member_use
+  GetBudgetsRequest copyWith(void Function(GetBudgetsRequest) updates) => super.copyWith((message) => updates(message as GetBudgetsRequest)) as GetBudgetsRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetBudgetsRequest create() => GetBudgetsRequest._();
   GetBudgetsRequest createEmptyInstance() => create();
@@ -2820,38 +2892,39 @@ class GetBudgetsRequest extends $pb.GeneratedMessage {
 }
 
 class GetBudgetsResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetBudgetsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..pc<BudgetMessage>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'budgets', $pb.PbFieldType.PM, subBuilder: BudgetMessage.create)
-    ..aOM<PaginationMetadata>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pagination', subBuilder: PaginationMetadata.create)
-    ..a<$core.double>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalBudgetAmount', $pb.PbFieldType.OD)
-    ..a<$core.double>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalSpentAmount', $pb.PbFieldType.OD)
-    ..hasRequiredFields = false
-  ;
-
-  GetBudgetsResponse._() : super();
   factory GetBudgetsResponse({
     $core.Iterable<BudgetMessage>? budgets,
     PaginationMetadata? pagination,
     $core.double? totalBudgetAmount,
     $core.double? totalSpentAmount,
   }) {
-    final _result = create();
+    final $result = create();
     if (budgets != null) {
-      _result.budgets.addAll(budgets);
+      $result.budgets.addAll(budgets);
     }
     if (pagination != null) {
-      _result.pagination = pagination;
+      $result.pagination = pagination;
     }
     if (totalBudgetAmount != null) {
-      _result.totalBudgetAmount = totalBudgetAmount;
+      $result.totalBudgetAmount = totalBudgetAmount;
     }
     if (totalSpentAmount != null) {
-      _result.totalSpentAmount = totalSpentAmount;
+      $result.totalSpentAmount = totalSpentAmount;
     }
-    return _result;
+    return $result;
   }
+  GetBudgetsResponse._() : super();
   factory GetBudgetsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetBudgetsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetBudgetsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..pc<BudgetMessage>(1, _omitFieldNames ? '' : 'budgets', $pb.PbFieldType.PM, subBuilder: BudgetMessage.create)
+    ..aOM<PaginationMetadata>(2, _omitFieldNames ? '' : 'pagination', subBuilder: PaginationMetadata.create)
+    ..a<$core.double>(3, _omitFieldNames ? '' : 'totalBudgetAmount', $pb.PbFieldType.OD)
+    ..a<$core.double>(4, _omitFieldNames ? '' : 'totalSpentAmount', $pb.PbFieldType.OD)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2861,8 +2934,10 @@ class GetBudgetsResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetBudgetsResponse copyWith(void Function(GetBudgetsResponse) updates) => super.copyWith((message) => updates(message as GetBudgetsResponse)) as GetBudgetsResponse; // ignore: deprecated_member_use
+  GetBudgetsResponse copyWith(void Function(GetBudgetsResponse) updates) => super.copyWith((message) => updates(message as GetBudgetsResponse)) as GetBudgetsResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetBudgetsResponse create() => GetBudgetsResponse._();
   GetBudgetsResponse createEmptyInstance() => create();
@@ -2905,23 +2980,24 @@ class GetBudgetsResponse extends $pb.GeneratedMessage {
 }
 
 class GetBudgetByIdRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetBudgetByIdRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'budgetId')
-    ..hasRequiredFields = false
-  ;
-
-  GetBudgetByIdRequest._() : super();
   factory GetBudgetByIdRequest({
     $core.String? budgetId,
   }) {
-    final _result = create();
+    final $result = create();
     if (budgetId != null) {
-      _result.budgetId = budgetId;
+      $result.budgetId = budgetId;
     }
-    return _result;
+    return $result;
   }
+  GetBudgetByIdRequest._() : super();
   factory GetBudgetByIdRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetBudgetByIdRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetBudgetByIdRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'budgetId')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2931,8 +3007,10 @@ class GetBudgetByIdRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetBudgetByIdRequest copyWith(void Function(GetBudgetByIdRequest) updates) => super.copyWith((message) => updates(message as GetBudgetByIdRequest)) as GetBudgetByIdRequest; // ignore: deprecated_member_use
+  GetBudgetByIdRequest copyWith(void Function(GetBudgetByIdRequest) updates) => super.copyWith((message) => updates(message as GetBudgetByIdRequest)) as GetBudgetByIdRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetBudgetByIdRequest create() => GetBudgetByIdRequest._();
   GetBudgetByIdRequest createEmptyInstance() => create();
@@ -2952,28 +3030,29 @@ class GetBudgetByIdRequest extends $pb.GeneratedMessage {
 }
 
 class GetBudgetByIdResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetBudgetByIdResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<BudgetMessage>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'budget', subBuilder: BudgetMessage.create)
-    ..pc<ExpenseMessage>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recentExpenses', $pb.PbFieldType.PM, subBuilder: ExpenseMessage.create)
-    ..hasRequiredFields = false
-  ;
-
-  GetBudgetByIdResponse._() : super();
   factory GetBudgetByIdResponse({
     BudgetMessage? budget,
     $core.Iterable<ExpenseMessage>? recentExpenses,
   }) {
-    final _result = create();
+    final $result = create();
     if (budget != null) {
-      _result.budget = budget;
+      $result.budget = budget;
     }
     if (recentExpenses != null) {
-      _result.recentExpenses.addAll(recentExpenses);
+      $result.recentExpenses.addAll(recentExpenses);
     }
-    return _result;
+    return $result;
   }
+  GetBudgetByIdResponse._() : super();
   factory GetBudgetByIdResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetBudgetByIdResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetBudgetByIdResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOM<BudgetMessage>(1, _omitFieldNames ? '' : 'budget', subBuilder: BudgetMessage.create)
+    ..pc<ExpenseMessage>(2, _omitFieldNames ? '' : 'recentExpenses', $pb.PbFieldType.PM, subBuilder: ExpenseMessage.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2983,8 +3062,10 @@ class GetBudgetByIdResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetBudgetByIdResponse copyWith(void Function(GetBudgetByIdResponse) updates) => super.copyWith((message) => updates(message as GetBudgetByIdResponse)) as GetBudgetByIdResponse; // ignore: deprecated_member_use
+  GetBudgetByIdResponse copyWith(void Function(GetBudgetByIdResponse) updates) => super.copyWith((message) => updates(message as GetBudgetByIdResponse)) as GetBudgetByIdResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetBudgetByIdResponse create() => GetBudgetByIdResponse._();
   GetBudgetByIdResponse createEmptyInstance() => create();
@@ -3009,58 +3090,59 @@ class GetBudgetByIdResponse extends $pb.GeneratedMessage {
 }
 
 class UpdateBudgetRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UpdateBudgetRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'budgetId')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'name')
-    ..a<$core.double>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
-    ..e<BudgetPeriod>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'period', $pb.PbFieldType.OE, defaultOrMaker: BudgetPeriod.BUDGET_PERIOD_UNSPECIFIED, valueOf: BudgetPeriod.valueOf, enumValues: BudgetPeriod.values)
-    ..aOM<$36.Timestamp>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'startDate', subBuilder: $36.Timestamp.create)
-    ..aOM<$36.Timestamp>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'endDate', subBuilder: $36.Timestamp.create)
-    ..aOB(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'enableAlerts')
-    ..a<$core.double>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'alertThreshold', $pb.PbFieldType.OD)
-    ..hasRequiredFields = false
-  ;
-
-  UpdateBudgetRequest._() : super();
   factory UpdateBudgetRequest({
     $core.String? budgetId,
     $core.String? name,
     $core.double? amount,
     BudgetPeriod? period,
-    $36.Timestamp? startDate,
-    $36.Timestamp? endDate,
+    $42.Timestamp? startDate,
+    $42.Timestamp? endDate,
     $core.bool? enableAlerts,
     $core.double? alertThreshold,
   }) {
-    final _result = create();
+    final $result = create();
     if (budgetId != null) {
-      _result.budgetId = budgetId;
+      $result.budgetId = budgetId;
     }
     if (name != null) {
-      _result.name = name;
+      $result.name = name;
     }
     if (amount != null) {
-      _result.amount = amount;
+      $result.amount = amount;
     }
     if (period != null) {
-      _result.period = period;
+      $result.period = period;
     }
     if (startDate != null) {
-      _result.startDate = startDate;
+      $result.startDate = startDate;
     }
     if (endDate != null) {
-      _result.endDate = endDate;
+      $result.endDate = endDate;
     }
     if (enableAlerts != null) {
-      _result.enableAlerts = enableAlerts;
+      $result.enableAlerts = enableAlerts;
     }
     if (alertThreshold != null) {
-      _result.alertThreshold = alertThreshold;
+      $result.alertThreshold = alertThreshold;
     }
-    return _result;
+    return $result;
   }
+  UpdateBudgetRequest._() : super();
   factory UpdateBudgetRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory UpdateBudgetRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UpdateBudgetRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'budgetId')
+    ..aOS(2, _omitFieldNames ? '' : 'name')
+    ..a<$core.double>(3, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
+    ..e<BudgetPeriod>(4, _omitFieldNames ? '' : 'period', $pb.PbFieldType.OE, defaultOrMaker: BudgetPeriod.BUDGET_PERIOD_UNSPECIFIED, valueOf: BudgetPeriod.valueOf, enumValues: BudgetPeriod.values)
+    ..aOM<$42.Timestamp>(5, _omitFieldNames ? '' : 'startDate', subBuilder: $42.Timestamp.create)
+    ..aOM<$42.Timestamp>(6, _omitFieldNames ? '' : 'endDate', subBuilder: $42.Timestamp.create)
+    ..aOB(7, _omitFieldNames ? '' : 'enableAlerts')
+    ..a<$core.double>(8, _omitFieldNames ? '' : 'alertThreshold', $pb.PbFieldType.OD)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -3070,8 +3152,10 @@ class UpdateBudgetRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  UpdateBudgetRequest copyWith(void Function(UpdateBudgetRequest) updates) => super.copyWith((message) => updates(message as UpdateBudgetRequest)) as UpdateBudgetRequest; // ignore: deprecated_member_use
+  UpdateBudgetRequest copyWith(void Function(UpdateBudgetRequest) updates) => super.copyWith((message) => updates(message as UpdateBudgetRequest)) as UpdateBudgetRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static UpdateBudgetRequest create() => UpdateBudgetRequest._();
   UpdateBudgetRequest createEmptyInstance() => create();
@@ -3117,26 +3201,26 @@ class UpdateBudgetRequest extends $pb.GeneratedMessage {
   void clearPeriod() => clearField(4);
 
   @$pb.TagNumber(5)
-  $36.Timestamp get startDate => $_getN(4);
+  $42.Timestamp get startDate => $_getN(4);
   @$pb.TagNumber(5)
-  set startDate($36.Timestamp v) { setField(5, v); }
+  set startDate($42.Timestamp v) { setField(5, v); }
   @$pb.TagNumber(5)
   $core.bool hasStartDate() => $_has(4);
   @$pb.TagNumber(5)
   void clearStartDate() => clearField(5);
   @$pb.TagNumber(5)
-  $36.Timestamp ensureStartDate() => $_ensure(4);
+  $42.Timestamp ensureStartDate() => $_ensure(4);
 
   @$pb.TagNumber(6)
-  $36.Timestamp get endDate => $_getN(5);
+  $42.Timestamp get endDate => $_getN(5);
   @$pb.TagNumber(6)
-  set endDate($36.Timestamp v) { setField(6, v); }
+  set endDate($42.Timestamp v) { setField(6, v); }
   @$pb.TagNumber(6)
   $core.bool hasEndDate() => $_has(5);
   @$pb.TagNumber(6)
   void clearEndDate() => clearField(6);
   @$pb.TagNumber(6)
-  $36.Timestamp ensureEndDate() => $_ensure(5);
+  $42.Timestamp ensureEndDate() => $_ensure(5);
 
   @$pb.TagNumber(7)
   $core.bool get enableAlerts => $_getBF(6);
@@ -3158,33 +3242,34 @@ class UpdateBudgetRequest extends $pb.GeneratedMessage {
 }
 
 class UpdateBudgetResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UpdateBudgetResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<BudgetMessage>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'budget', subBuilder: BudgetMessage.create)
-    ..aOB(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
-    ..hasRequiredFields = false
-  ;
-
-  UpdateBudgetResponse._() : super();
   factory UpdateBudgetResponse({
     BudgetMessage? budget,
     $core.bool? success,
     $core.String? message,
   }) {
-    final _result = create();
+    final $result = create();
     if (budget != null) {
-      _result.budget = budget;
+      $result.budget = budget;
     }
     if (success != null) {
-      _result.success = success;
+      $result.success = success;
     }
     if (message != null) {
-      _result.message = message;
+      $result.message = message;
     }
-    return _result;
+    return $result;
   }
+  UpdateBudgetResponse._() : super();
   factory UpdateBudgetResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory UpdateBudgetResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UpdateBudgetResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOM<BudgetMessage>(1, _omitFieldNames ? '' : 'budget', subBuilder: BudgetMessage.create)
+    ..aOB(2, _omitFieldNames ? '' : 'success')
+    ..aOS(3, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -3194,8 +3279,10 @@ class UpdateBudgetResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  UpdateBudgetResponse copyWith(void Function(UpdateBudgetResponse) updates) => super.copyWith((message) => updates(message as UpdateBudgetResponse)) as UpdateBudgetResponse; // ignore: deprecated_member_use
+  UpdateBudgetResponse copyWith(void Function(UpdateBudgetResponse) updates) => super.copyWith((message) => updates(message as UpdateBudgetResponse)) as UpdateBudgetResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static UpdateBudgetResponse create() => UpdateBudgetResponse._();
   UpdateBudgetResponse createEmptyInstance() => create();
@@ -3235,23 +3322,24 @@ class UpdateBudgetResponse extends $pb.GeneratedMessage {
 }
 
 class DeleteBudgetRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'DeleteBudgetRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'budgetId')
-    ..hasRequiredFields = false
-  ;
-
-  DeleteBudgetRequest._() : super();
   factory DeleteBudgetRequest({
     $core.String? budgetId,
   }) {
-    final _result = create();
+    final $result = create();
     if (budgetId != null) {
-      _result.budgetId = budgetId;
+      $result.budgetId = budgetId;
     }
-    return _result;
+    return $result;
   }
+  DeleteBudgetRequest._() : super();
   factory DeleteBudgetRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory DeleteBudgetRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'DeleteBudgetRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'budgetId')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -3261,8 +3349,10 @@ class DeleteBudgetRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  DeleteBudgetRequest copyWith(void Function(DeleteBudgetRequest) updates) => super.copyWith((message) => updates(message as DeleteBudgetRequest)) as DeleteBudgetRequest; // ignore: deprecated_member_use
+  DeleteBudgetRequest copyWith(void Function(DeleteBudgetRequest) updates) => super.copyWith((message) => updates(message as DeleteBudgetRequest)) as DeleteBudgetRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static DeleteBudgetRequest create() => DeleteBudgetRequest._();
   DeleteBudgetRequest createEmptyInstance() => create();
@@ -3282,28 +3372,29 @@ class DeleteBudgetRequest extends $pb.GeneratedMessage {
 }
 
 class DeleteBudgetResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'DeleteBudgetResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
-    ..hasRequiredFields = false
-  ;
-
-  DeleteBudgetResponse._() : super();
   factory DeleteBudgetResponse({
     $core.bool? success,
     $core.String? message,
   }) {
-    final _result = create();
+    final $result = create();
     if (success != null) {
-      _result.success = success;
+      $result.success = success;
     }
     if (message != null) {
-      _result.message = message;
+      $result.message = message;
     }
-    return _result;
+    return $result;
   }
+  DeleteBudgetResponse._() : super();
   factory DeleteBudgetResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory DeleteBudgetResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'DeleteBudgetResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..aOS(2, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -3313,8 +3404,10 @@ class DeleteBudgetResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  DeleteBudgetResponse copyWith(void Function(DeleteBudgetResponse) updates) => super.copyWith((message) => updates(message as DeleteBudgetResponse)) as DeleteBudgetResponse; // ignore: deprecated_member_use
+  DeleteBudgetResponse copyWith(void Function(DeleteBudgetResponse) updates) => super.copyWith((message) => updates(message as DeleteBudgetResponse)) as DeleteBudgetResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static DeleteBudgetResponse create() => DeleteBudgetResponse._();
   DeleteBudgetResponse createEmptyInstance() => create();
@@ -3342,39 +3435,41 @@ class DeleteBudgetResponse extends $pb.GeneratedMessage {
   void clearMessage() => clearField(2);
 }
 
+/// Analytics Requests
 class GetSpendingAnalyticsRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetSpendingAnalyticsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'period')
-    ..aOM<$36.Timestamp>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'startDate', subBuilder: $36.Timestamp.create)
-    ..aOM<$36.Timestamp>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'endDate', subBuilder: $36.Timestamp.create)
-    ..e<ExpenseCategory>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'category', $pb.PbFieldType.OE, defaultOrMaker: ExpenseCategory.EXPENSE_CATEGORY_UNSPECIFIED, valueOf: ExpenseCategory.valueOf, enumValues: ExpenseCategory.values)
+  factory GetSpendingAnalyticsRequest({
+    $core.String? period,
+    $42.Timestamp? startDate,
+    $42.Timestamp? endDate,
+    ExpenseCategory? category,
+  }) {
+    final $result = create();
+    if (period != null) {
+      $result.period = period;
+    }
+    if (startDate != null) {
+      $result.startDate = startDate;
+    }
+    if (endDate != null) {
+      $result.endDate = endDate;
+    }
+    if (category != null) {
+      $result.category = category;
+    }
+    return $result;
+  }
+  GetSpendingAnalyticsRequest._() : super();
+  factory GetSpendingAnalyticsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetSpendingAnalyticsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetSpendingAnalyticsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'period')
+    ..aOM<$42.Timestamp>(2, _omitFieldNames ? '' : 'startDate', subBuilder: $42.Timestamp.create)
+    ..aOM<$42.Timestamp>(3, _omitFieldNames ? '' : 'endDate', subBuilder: $42.Timestamp.create)
+    ..e<ExpenseCategory>(4, _omitFieldNames ? '' : 'category', $pb.PbFieldType.OE, defaultOrMaker: ExpenseCategory.EXPENSE_CATEGORY_UNSPECIFIED, valueOf: ExpenseCategory.valueOf, enumValues: ExpenseCategory.values)
     ..hasRequiredFields = false
   ;
 
-  GetSpendingAnalyticsRequest._() : super();
-  factory GetSpendingAnalyticsRequest({
-    $core.String? period,
-    $36.Timestamp? startDate,
-    $36.Timestamp? endDate,
-    ExpenseCategory? category,
-  }) {
-    final _result = create();
-    if (period != null) {
-      _result.period = period;
-    }
-    if (startDate != null) {
-      _result.startDate = startDate;
-    }
-    if (endDate != null) {
-      _result.endDate = endDate;
-    }
-    if (category != null) {
-      _result.category = category;
-    }
-    return _result;
-  }
-  factory GetSpendingAnalyticsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetSpendingAnalyticsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -3384,8 +3479,10 @@ class GetSpendingAnalyticsRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetSpendingAnalyticsRequest copyWith(void Function(GetSpendingAnalyticsRequest) updates) => super.copyWith((message) => updates(message as GetSpendingAnalyticsRequest)) as GetSpendingAnalyticsRequest; // ignore: deprecated_member_use
+  GetSpendingAnalyticsRequest copyWith(void Function(GetSpendingAnalyticsRequest) updates) => super.copyWith((message) => updates(message as GetSpendingAnalyticsRequest)) as GetSpendingAnalyticsRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetSpendingAnalyticsRequest create() => GetSpendingAnalyticsRequest._();
   GetSpendingAnalyticsRequest createEmptyInstance() => create();
@@ -3404,26 +3501,26 @@ class GetSpendingAnalyticsRequest extends $pb.GeneratedMessage {
   void clearPeriod() => clearField(1);
 
   @$pb.TagNumber(2)
-  $36.Timestamp get startDate => $_getN(1);
+  $42.Timestamp get startDate => $_getN(1);
   @$pb.TagNumber(2)
-  set startDate($36.Timestamp v) { setField(2, v); }
+  set startDate($42.Timestamp v) { setField(2, v); }
   @$pb.TagNumber(2)
   $core.bool hasStartDate() => $_has(1);
   @$pb.TagNumber(2)
   void clearStartDate() => clearField(2);
   @$pb.TagNumber(2)
-  $36.Timestamp ensureStartDate() => $_ensure(1);
+  $42.Timestamp ensureStartDate() => $_ensure(1);
 
   @$pb.TagNumber(3)
-  $36.Timestamp get endDate => $_getN(2);
+  $42.Timestamp get endDate => $_getN(2);
   @$pb.TagNumber(3)
-  set endDate($36.Timestamp v) { setField(3, v); }
+  set endDate($42.Timestamp v) { setField(3, v); }
   @$pb.TagNumber(3)
   $core.bool hasEndDate() => $_has(2);
   @$pb.TagNumber(3)
   void clearEndDate() => clearField(3);
   @$pb.TagNumber(3)
-  $36.Timestamp ensureEndDate() => $_ensure(2);
+  $42.Timestamp ensureEndDate() => $_ensure(2);
 
   @$pb.TagNumber(4)
   ExpenseCategory get category => $_getN(3);
@@ -3436,23 +3533,24 @@ class GetSpendingAnalyticsRequest extends $pb.GeneratedMessage {
 }
 
 class GetSpendingAnalyticsResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetSpendingAnalyticsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<SpendingAnalytics>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'analytics', subBuilder: SpendingAnalytics.create)
-    ..hasRequiredFields = false
-  ;
-
-  GetSpendingAnalyticsResponse._() : super();
   factory GetSpendingAnalyticsResponse({
     SpendingAnalytics? analytics,
   }) {
-    final _result = create();
+    final $result = create();
     if (analytics != null) {
-      _result.analytics = analytics;
+      $result.analytics = analytics;
     }
-    return _result;
+    return $result;
   }
+  GetSpendingAnalyticsResponse._() : super();
   factory GetSpendingAnalyticsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetSpendingAnalyticsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetSpendingAnalyticsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOM<SpendingAnalytics>(1, _omitFieldNames ? '' : 'analytics', subBuilder: SpendingAnalytics.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -3462,8 +3560,10 @@ class GetSpendingAnalyticsResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetSpendingAnalyticsResponse copyWith(void Function(GetSpendingAnalyticsResponse) updates) => super.copyWith((message) => updates(message as GetSpendingAnalyticsResponse)) as GetSpendingAnalyticsResponse; // ignore: deprecated_member_use
+  GetSpendingAnalyticsResponse copyWith(void Function(GetSpendingAnalyticsResponse) updates) => super.copyWith((message) => updates(message as GetSpendingAnalyticsResponse)) as GetSpendingAnalyticsResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetSpendingAnalyticsResponse create() => GetSpendingAnalyticsResponse._();
   GetSpendingAnalyticsResponse createEmptyInstance() => create();
@@ -3485,28 +3585,29 @@ class GetSpendingAnalyticsResponse extends $pb.GeneratedMessage {
 }
 
 class GetCategoryBreakdownRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetCategoryBreakdownRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<$36.Timestamp>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'startDate', subBuilder: $36.Timestamp.create)
-    ..aOM<$36.Timestamp>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'endDate', subBuilder: $36.Timestamp.create)
+  factory GetCategoryBreakdownRequest({
+    $42.Timestamp? startDate,
+    $42.Timestamp? endDate,
+  }) {
+    final $result = create();
+    if (startDate != null) {
+      $result.startDate = startDate;
+    }
+    if (endDate != null) {
+      $result.endDate = endDate;
+    }
+    return $result;
+  }
+  GetCategoryBreakdownRequest._() : super();
+  factory GetCategoryBreakdownRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetCategoryBreakdownRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetCategoryBreakdownRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOM<$42.Timestamp>(1, _omitFieldNames ? '' : 'startDate', subBuilder: $42.Timestamp.create)
+    ..aOM<$42.Timestamp>(2, _omitFieldNames ? '' : 'endDate', subBuilder: $42.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
-  GetCategoryBreakdownRequest._() : super();
-  factory GetCategoryBreakdownRequest({
-    $36.Timestamp? startDate,
-    $36.Timestamp? endDate,
-  }) {
-    final _result = create();
-    if (startDate != null) {
-      _result.startDate = startDate;
-    }
-    if (endDate != null) {
-      _result.endDate = endDate;
-    }
-    return _result;
-  }
-  factory GetCategoryBreakdownRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetCategoryBreakdownRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -3516,8 +3617,10 @@ class GetCategoryBreakdownRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetCategoryBreakdownRequest copyWith(void Function(GetCategoryBreakdownRequest) updates) => super.copyWith((message) => updates(message as GetCategoryBreakdownRequest)) as GetCategoryBreakdownRequest; // ignore: deprecated_member_use
+  GetCategoryBreakdownRequest copyWith(void Function(GetCategoryBreakdownRequest) updates) => super.copyWith((message) => updates(message as GetCategoryBreakdownRequest)) as GetCategoryBreakdownRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetCategoryBreakdownRequest create() => GetCategoryBreakdownRequest._();
   GetCategoryBreakdownRequest createEmptyInstance() => create();
@@ -3527,51 +3630,52 @@ class GetCategoryBreakdownRequest extends $pb.GeneratedMessage {
   static GetCategoryBreakdownRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $36.Timestamp get startDate => $_getN(0);
+  $42.Timestamp get startDate => $_getN(0);
   @$pb.TagNumber(1)
-  set startDate($36.Timestamp v) { setField(1, v); }
+  set startDate($42.Timestamp v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasStartDate() => $_has(0);
   @$pb.TagNumber(1)
   void clearStartDate() => clearField(1);
   @$pb.TagNumber(1)
-  $36.Timestamp ensureStartDate() => $_ensure(0);
+  $42.Timestamp ensureStartDate() => $_ensure(0);
 
   @$pb.TagNumber(2)
-  $36.Timestamp get endDate => $_getN(1);
+  $42.Timestamp get endDate => $_getN(1);
   @$pb.TagNumber(2)
-  set endDate($36.Timestamp v) { setField(2, v); }
+  set endDate($42.Timestamp v) { setField(2, v); }
   @$pb.TagNumber(2)
   $core.bool hasEndDate() => $_has(1);
   @$pb.TagNumber(2)
   void clearEndDate() => clearField(2);
   @$pb.TagNumber(2)
-  $36.Timestamp ensureEndDate() => $_ensure(1);
+  $42.Timestamp ensureEndDate() => $_ensure(1);
 }
 
 class GetCategoryBreakdownResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetCategoryBreakdownResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..pc<CategorySpending>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'categories', $pb.PbFieldType.PM, subBuilder: CategorySpending.create)
-    ..a<$core.double>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalSpent', $pb.PbFieldType.OD)
-    ..hasRequiredFields = false
-  ;
-
-  GetCategoryBreakdownResponse._() : super();
   factory GetCategoryBreakdownResponse({
     $core.Iterable<CategorySpending>? categories,
     $core.double? totalSpent,
   }) {
-    final _result = create();
+    final $result = create();
     if (categories != null) {
-      _result.categories.addAll(categories);
+      $result.categories.addAll(categories);
     }
     if (totalSpent != null) {
-      _result.totalSpent = totalSpent;
+      $result.totalSpent = totalSpent;
     }
-    return _result;
+    return $result;
   }
+  GetCategoryBreakdownResponse._() : super();
   factory GetCategoryBreakdownResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetCategoryBreakdownResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetCategoryBreakdownResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..pc<CategorySpending>(1, _omitFieldNames ? '' : 'categories', $pb.PbFieldType.PM, subBuilder: CategorySpending.create)
+    ..a<$core.double>(2, _omitFieldNames ? '' : 'totalSpent', $pb.PbFieldType.OD)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -3581,8 +3685,10 @@ class GetCategoryBreakdownResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetCategoryBreakdownResponse copyWith(void Function(GetCategoryBreakdownResponse) updates) => super.copyWith((message) => updates(message as GetCategoryBreakdownResponse)) as GetCategoryBreakdownResponse; // ignore: deprecated_member_use
+  GetCategoryBreakdownResponse copyWith(void Function(GetCategoryBreakdownResponse) updates) => super.copyWith((message) => updates(message as GetCategoryBreakdownResponse)) as GetCategoryBreakdownResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetCategoryBreakdownResponse create() => GetCategoryBreakdownResponse._();
   GetCategoryBreakdownResponse createEmptyInstance() => create();
@@ -3605,23 +3711,24 @@ class GetCategoryBreakdownResponse extends $pb.GeneratedMessage {
 }
 
 class GetBudgetProgressRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetBudgetProgressRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..e<BudgetPeriod>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'period', $pb.PbFieldType.OE, defaultOrMaker: BudgetPeriod.BUDGET_PERIOD_UNSPECIFIED, valueOf: BudgetPeriod.valueOf, enumValues: BudgetPeriod.values)
-    ..hasRequiredFields = false
-  ;
-
-  GetBudgetProgressRequest._() : super();
   factory GetBudgetProgressRequest({
     BudgetPeriod? period,
   }) {
-    final _result = create();
+    final $result = create();
     if (period != null) {
-      _result.period = period;
+      $result.period = period;
     }
-    return _result;
+    return $result;
   }
+  GetBudgetProgressRequest._() : super();
   factory GetBudgetProgressRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetBudgetProgressRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetBudgetProgressRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..e<BudgetPeriod>(1, _omitFieldNames ? '' : 'period', $pb.PbFieldType.OE, defaultOrMaker: BudgetPeriod.BUDGET_PERIOD_UNSPECIFIED, valueOf: BudgetPeriod.valueOf, enumValues: BudgetPeriod.values)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -3631,8 +3738,10 @@ class GetBudgetProgressRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetBudgetProgressRequest copyWith(void Function(GetBudgetProgressRequest) updates) => super.copyWith((message) => updates(message as GetBudgetProgressRequest)) as GetBudgetProgressRequest; // ignore: deprecated_member_use
+  GetBudgetProgressRequest copyWith(void Function(GetBudgetProgressRequest) updates) => super.copyWith((message) => updates(message as GetBudgetProgressRequest)) as GetBudgetProgressRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetBudgetProgressRequest create() => GetBudgetProgressRequest._();
   GetBudgetProgressRequest createEmptyInstance() => create();
@@ -3652,38 +3761,39 @@ class GetBudgetProgressRequest extends $pb.GeneratedMessage {
 }
 
 class GetBudgetProgressResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetBudgetProgressResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..pc<BudgetProgressItem>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'budgets', $pb.PbFieldType.PM, subBuilder: BudgetProgressItem.create)
-    ..a<$core.double>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalBudget', $pb.PbFieldType.OD)
-    ..a<$core.double>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalSpent', $pb.PbFieldType.OD)
-    ..a<$core.double>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'overallPercentage', $pb.PbFieldType.OD)
-    ..hasRequiredFields = false
-  ;
-
-  GetBudgetProgressResponse._() : super();
   factory GetBudgetProgressResponse({
     $core.Iterable<BudgetProgressItem>? budgets,
     $core.double? totalBudget,
     $core.double? totalSpent,
     $core.double? overallPercentage,
   }) {
-    final _result = create();
+    final $result = create();
     if (budgets != null) {
-      _result.budgets.addAll(budgets);
+      $result.budgets.addAll(budgets);
     }
     if (totalBudget != null) {
-      _result.totalBudget = totalBudget;
+      $result.totalBudget = totalBudget;
     }
     if (totalSpent != null) {
-      _result.totalSpent = totalSpent;
+      $result.totalSpent = totalSpent;
     }
     if (overallPercentage != null) {
-      _result.overallPercentage = overallPercentage;
+      $result.overallPercentage = overallPercentage;
     }
-    return _result;
+    return $result;
   }
+  GetBudgetProgressResponse._() : super();
   factory GetBudgetProgressResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetBudgetProgressResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetBudgetProgressResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..pc<BudgetProgressItem>(1, _omitFieldNames ? '' : 'budgets', $pb.PbFieldType.PM, subBuilder: BudgetProgressItem.create)
+    ..a<$core.double>(2, _omitFieldNames ? '' : 'totalBudget', $pb.PbFieldType.OD)
+    ..a<$core.double>(3, _omitFieldNames ? '' : 'totalSpent', $pb.PbFieldType.OD)
+    ..a<$core.double>(4, _omitFieldNames ? '' : 'overallPercentage', $pb.PbFieldType.OD)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -3693,8 +3803,10 @@ class GetBudgetProgressResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetBudgetProgressResponse copyWith(void Function(GetBudgetProgressResponse) updates) => super.copyWith((message) => updates(message as GetBudgetProgressResponse)) as GetBudgetProgressResponse; // ignore: deprecated_member_use
+  GetBudgetProgressResponse copyWith(void Function(GetBudgetProgressResponse) updates) => super.copyWith((message) => updates(message as GetBudgetProgressResponse)) as GetBudgetProgressResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetBudgetProgressResponse create() => GetBudgetProgressResponse._();
   GetBudgetProgressResponse createEmptyInstance() => create();
@@ -3735,33 +3847,34 @@ class GetBudgetProgressResponse extends $pb.GeneratedMessage {
 }
 
 class GetSpendingTrendsRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetSpendingTrendsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'periodType')
-    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'periodsCount', $pb.PbFieldType.O3)
-    ..aOM<$36.Timestamp>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'endDate', subBuilder: $36.Timestamp.create)
-    ..hasRequiredFields = false
-  ;
-
-  GetSpendingTrendsRequest._() : super();
   factory GetSpendingTrendsRequest({
     $core.String? periodType,
     $core.int? periodsCount,
-    $36.Timestamp? endDate,
+    $42.Timestamp? endDate,
   }) {
-    final _result = create();
+    final $result = create();
     if (periodType != null) {
-      _result.periodType = periodType;
+      $result.periodType = periodType;
     }
     if (periodsCount != null) {
-      _result.periodsCount = periodsCount;
+      $result.periodsCount = periodsCount;
     }
     if (endDate != null) {
-      _result.endDate = endDate;
+      $result.endDate = endDate;
     }
-    return _result;
+    return $result;
   }
+  GetSpendingTrendsRequest._() : super();
   factory GetSpendingTrendsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetSpendingTrendsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetSpendingTrendsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'periodType')
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'periodsCount', $pb.PbFieldType.O3)
+    ..aOM<$42.Timestamp>(3, _omitFieldNames ? '' : 'endDate', subBuilder: $42.Timestamp.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -3771,8 +3884,10 @@ class GetSpendingTrendsRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetSpendingTrendsRequest copyWith(void Function(GetSpendingTrendsRequest) updates) => super.copyWith((message) => updates(message as GetSpendingTrendsRequest)) as GetSpendingTrendsRequest; // ignore: deprecated_member_use
+  GetSpendingTrendsRequest copyWith(void Function(GetSpendingTrendsRequest) updates) => super.copyWith((message) => updates(message as GetSpendingTrendsRequest)) as GetSpendingTrendsRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetSpendingTrendsRequest create() => GetSpendingTrendsRequest._();
   GetSpendingTrendsRequest createEmptyInstance() => create();
@@ -3800,35 +3915,36 @@ class GetSpendingTrendsRequest extends $pb.GeneratedMessage {
   void clearPeriodsCount() => clearField(2);
 
   @$pb.TagNumber(3)
-  $36.Timestamp get endDate => $_getN(2);
+  $42.Timestamp get endDate => $_getN(2);
   @$pb.TagNumber(3)
-  set endDate($36.Timestamp v) { setField(3, v); }
+  set endDate($42.Timestamp v) { setField(3, v); }
   @$pb.TagNumber(3)
   $core.bool hasEndDate() => $_has(2);
   @$pb.TagNumber(3)
   void clearEndDate() => clearField(3);
   @$pb.TagNumber(3)
-  $36.Timestamp ensureEndDate() => $_ensure(2);
+  $42.Timestamp ensureEndDate() => $_ensure(2);
 }
 
 class GetSpendingTrendsResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetSpendingTrendsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..pc<SpendingTrend>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'trends', $pb.PbFieldType.PM, subBuilder: SpendingTrend.create)
-    ..hasRequiredFields = false
-  ;
-
-  GetSpendingTrendsResponse._() : super();
   factory GetSpendingTrendsResponse({
     $core.Iterable<SpendingTrend>? trends,
   }) {
-    final _result = create();
+    final $result = create();
     if (trends != null) {
-      _result.trends.addAll(trends);
+      $result.trends.addAll(trends);
     }
-    return _result;
+    return $result;
   }
+  GetSpendingTrendsResponse._() : super();
   factory GetSpendingTrendsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetSpendingTrendsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetSpendingTrendsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..pc<SpendingTrend>(1, _omitFieldNames ? '' : 'trends', $pb.PbFieldType.PM, subBuilder: SpendingTrend.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -3838,8 +3954,10 @@ class GetSpendingTrendsResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetSpendingTrendsResponse copyWith(void Function(GetSpendingTrendsResponse) updates) => super.copyWith((message) => updates(message as GetSpendingTrendsResponse)) as GetSpendingTrendsResponse; // ignore: deprecated_member_use
+  GetSpendingTrendsResponse copyWith(void Function(GetSpendingTrendsResponse) updates) => super.copyWith((message) => updates(message as GetSpendingTrendsResponse)) as GetSpendingTrendsResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetSpendingTrendsResponse create() => GetSpendingTrendsResponse._();
   GetSpendingTrendsResponse createEmptyInstance() => create();
@@ -3852,29 +3970,31 @@ class GetSpendingTrendsResponse extends $pb.GeneratedMessage {
   $core.List<SpendingTrend> get trends => $_getList(0);
 }
 
+/// Alert Requests
 class GetBudgetAlertsRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetBudgetAlertsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'unreadOnly')
-    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'limit', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
-
-  GetBudgetAlertsRequest._() : super();
   factory GetBudgetAlertsRequest({
     $core.bool? unreadOnly,
     $core.int? limit,
   }) {
-    final _result = create();
+    final $result = create();
     if (unreadOnly != null) {
-      _result.unreadOnly = unreadOnly;
+      $result.unreadOnly = unreadOnly;
     }
     if (limit != null) {
-      _result.limit = limit;
+      $result.limit = limit;
     }
-    return _result;
+    return $result;
   }
+  GetBudgetAlertsRequest._() : super();
   factory GetBudgetAlertsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetBudgetAlertsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetBudgetAlertsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'unreadOnly')
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'limit', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -3884,8 +4004,10 @@ class GetBudgetAlertsRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetBudgetAlertsRequest copyWith(void Function(GetBudgetAlertsRequest) updates) => super.copyWith((message) => updates(message as GetBudgetAlertsRequest)) as GetBudgetAlertsRequest; // ignore: deprecated_member_use
+  GetBudgetAlertsRequest copyWith(void Function(GetBudgetAlertsRequest) updates) => super.copyWith((message) => updates(message as GetBudgetAlertsRequest)) as GetBudgetAlertsRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetBudgetAlertsRequest create() => GetBudgetAlertsRequest._();
   GetBudgetAlertsRequest createEmptyInstance() => create();
@@ -3914,28 +4036,29 @@ class GetBudgetAlertsRequest extends $pb.GeneratedMessage {
 }
 
 class GetBudgetAlertsResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetBudgetAlertsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..pc<BudgetAlertMessage>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'alerts', $pb.PbFieldType.PM, subBuilder: BudgetAlertMessage.create)
-    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'unreadCount', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
-
-  GetBudgetAlertsResponse._() : super();
   factory GetBudgetAlertsResponse({
     $core.Iterable<BudgetAlertMessage>? alerts,
     $core.int? unreadCount,
   }) {
-    final _result = create();
+    final $result = create();
     if (alerts != null) {
-      _result.alerts.addAll(alerts);
+      $result.alerts.addAll(alerts);
     }
     if (unreadCount != null) {
-      _result.unreadCount = unreadCount;
+      $result.unreadCount = unreadCount;
     }
-    return _result;
+    return $result;
   }
+  GetBudgetAlertsResponse._() : super();
   factory GetBudgetAlertsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetBudgetAlertsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetBudgetAlertsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..pc<BudgetAlertMessage>(1, _omitFieldNames ? '' : 'alerts', $pb.PbFieldType.PM, subBuilder: BudgetAlertMessage.create)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'unreadCount', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -3945,8 +4068,10 @@ class GetBudgetAlertsResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetBudgetAlertsResponse copyWith(void Function(GetBudgetAlertsResponse) updates) => super.copyWith((message) => updates(message as GetBudgetAlertsResponse)) as GetBudgetAlertsResponse; // ignore: deprecated_member_use
+  GetBudgetAlertsResponse copyWith(void Function(GetBudgetAlertsResponse) updates) => super.copyWith((message) => updates(message as GetBudgetAlertsResponse)) as GetBudgetAlertsResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetBudgetAlertsResponse create() => GetBudgetAlertsResponse._();
   GetBudgetAlertsResponse createEmptyInstance() => create();
@@ -3969,23 +4094,24 @@ class GetBudgetAlertsResponse extends $pb.GeneratedMessage {
 }
 
 class MarkAlertAsReadRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'MarkAlertAsReadRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'alertId')
-    ..hasRequiredFields = false
-  ;
-
-  MarkAlertAsReadRequest._() : super();
   factory MarkAlertAsReadRequest({
     $core.String? alertId,
   }) {
-    final _result = create();
+    final $result = create();
     if (alertId != null) {
-      _result.alertId = alertId;
+      $result.alertId = alertId;
     }
-    return _result;
+    return $result;
   }
+  MarkAlertAsReadRequest._() : super();
   factory MarkAlertAsReadRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory MarkAlertAsReadRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'MarkAlertAsReadRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'alertId')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -3995,8 +4121,10 @@ class MarkAlertAsReadRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  MarkAlertAsReadRequest copyWith(void Function(MarkAlertAsReadRequest) updates) => super.copyWith((message) => updates(message as MarkAlertAsReadRequest)) as MarkAlertAsReadRequest; // ignore: deprecated_member_use
+  MarkAlertAsReadRequest copyWith(void Function(MarkAlertAsReadRequest) updates) => super.copyWith((message) => updates(message as MarkAlertAsReadRequest)) as MarkAlertAsReadRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static MarkAlertAsReadRequest create() => MarkAlertAsReadRequest._();
   MarkAlertAsReadRequest createEmptyInstance() => create();
@@ -4016,23 +4144,24 @@ class MarkAlertAsReadRequest extends $pb.GeneratedMessage {
 }
 
 class MarkAlertAsReadResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'MarkAlertAsReadResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
-    ..hasRequiredFields = false
-  ;
-
-  MarkAlertAsReadResponse._() : super();
   factory MarkAlertAsReadResponse({
     $core.bool? success,
   }) {
-    final _result = create();
+    final $result = create();
     if (success != null) {
-      _result.success = success;
+      $result.success = success;
     }
-    return _result;
+    return $result;
   }
+  MarkAlertAsReadResponse._() : super();
   factory MarkAlertAsReadResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory MarkAlertAsReadResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'MarkAlertAsReadResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -4042,8 +4171,10 @@ class MarkAlertAsReadResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  MarkAlertAsReadResponse copyWith(void Function(MarkAlertAsReadResponse) updates) => super.copyWith((message) => updates(message as MarkAlertAsReadResponse)) as MarkAlertAsReadResponse; // ignore: deprecated_member_use
+  MarkAlertAsReadResponse copyWith(void Function(MarkAlertAsReadResponse) updates) => super.copyWith((message) => updates(message as MarkAlertAsReadResponse)) as MarkAlertAsReadResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static MarkAlertAsReadResponse create() => MarkAlertAsReadResponse._();
   MarkAlertAsReadResponse createEmptyInstance() => create();
@@ -4062,18 +4193,8 @@ class MarkAlertAsReadResponse extends $pb.GeneratedMessage {
   void clearSuccess() => clearField(1);
 }
 
+/// Pagination
 class PaginationMetadata extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'PaginationMetadata', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..a<$core.int>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currentPage', $pb.PbFieldType.O3)
-    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'perPage', $pb.PbFieldType.O3)
-    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalPages', $pb.PbFieldType.O3)
-    ..a<$core.int>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalItems', $pb.PbFieldType.O3)
-    ..aOB(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'hasNext')
-    ..aOB(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'hasPrev')
-    ..hasRequiredFields = false
-  ;
-
-  PaginationMetadata._() : super();
   factory PaginationMetadata({
     $core.int? currentPage,
     $core.int? perPage,
@@ -4082,29 +4203,41 @@ class PaginationMetadata extends $pb.GeneratedMessage {
     $core.bool? hasNext,
     $core.bool? hasPrev,
   }) {
-    final _result = create();
+    final $result = create();
     if (currentPage != null) {
-      _result.currentPage = currentPage;
+      $result.currentPage = currentPage;
     }
     if (perPage != null) {
-      _result.perPage = perPage;
+      $result.perPage = perPage;
     }
     if (totalPages != null) {
-      _result.totalPages = totalPages;
+      $result.totalPages = totalPages;
     }
     if (totalItems != null) {
-      _result.totalItems = totalItems;
+      $result.totalItems = totalItems;
     }
     if (hasNext != null) {
-      _result.hasNext = hasNext;
+      $result.hasNext = hasNext;
     }
     if (hasPrev != null) {
-      _result.hasPrev = hasPrev;
+      $result.hasPrev = hasPrev;
     }
-    return _result;
+    return $result;
   }
+  PaginationMetadata._() : super();
   factory PaginationMetadata.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory PaginationMetadata.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'PaginationMetadata', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..a<$core.int>(1, _omitFieldNames ? '' : 'currentPage', $pb.PbFieldType.O3)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'perPage', $pb.PbFieldType.O3)
+    ..a<$core.int>(3, _omitFieldNames ? '' : 'totalPages', $pb.PbFieldType.O3)
+    ..a<$core.int>(4, _omitFieldNames ? '' : 'totalItems', $pb.PbFieldType.O3)
+    ..aOB(5, _omitFieldNames ? '' : 'hasNext')
+    ..aOB(6, _omitFieldNames ? '' : 'hasPrev')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -4114,8 +4247,10 @@ class PaginationMetadata extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  PaginationMetadata copyWith(void Function(PaginationMetadata) updates) => super.copyWith((message) => updates(message as PaginationMetadata)) as PaginationMetadata; // ignore: deprecated_member_use
+  PaginationMetadata copyWith(void Function(PaginationMetadata) updates) => super.copyWith((message) => updates(message as PaginationMetadata)) as PaginationMetadata;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static PaginationMetadata create() => PaginationMetadata._();
   PaginationMetadata createEmptyInstance() => create();
@@ -4179,34 +4314,36 @@ class PaginationMetadata extends $pb.GeneratedMessage {
   void clearHasPrev() => clearField(6);
 }
 
+/// AI Spending Insights Request
 class GetAISpendingInsightsRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetAISpendingInsightsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<$36.Timestamp>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'startDate', subBuilder: $36.Timestamp.create)
-    ..aOM<$36.Timestamp>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'endDate', subBuilder: $36.Timestamp.create)
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'focusArea')
+  factory GetAISpendingInsightsRequest({
+    $42.Timestamp? startDate,
+    $42.Timestamp? endDate,
+    $core.String? focusArea,
+  }) {
+    final $result = create();
+    if (startDate != null) {
+      $result.startDate = startDate;
+    }
+    if (endDate != null) {
+      $result.endDate = endDate;
+    }
+    if (focusArea != null) {
+      $result.focusArea = focusArea;
+    }
+    return $result;
+  }
+  GetAISpendingInsightsRequest._() : super();
+  factory GetAISpendingInsightsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetAISpendingInsightsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetAISpendingInsightsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOM<$42.Timestamp>(1, _omitFieldNames ? '' : 'startDate', subBuilder: $42.Timestamp.create)
+    ..aOM<$42.Timestamp>(2, _omitFieldNames ? '' : 'endDate', subBuilder: $42.Timestamp.create)
+    ..aOS(3, _omitFieldNames ? '' : 'focusArea')
     ..hasRequiredFields = false
   ;
 
-  GetAISpendingInsightsRequest._() : super();
-  factory GetAISpendingInsightsRequest({
-    $36.Timestamp? startDate,
-    $36.Timestamp? endDate,
-    $core.String? focusArea,
-  }) {
-    final _result = create();
-    if (startDate != null) {
-      _result.startDate = startDate;
-    }
-    if (endDate != null) {
-      _result.endDate = endDate;
-    }
-    if (focusArea != null) {
-      _result.focusArea = focusArea;
-    }
-    return _result;
-  }
-  factory GetAISpendingInsightsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetAISpendingInsightsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -4216,8 +4353,10 @@ class GetAISpendingInsightsRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetAISpendingInsightsRequest copyWith(void Function(GetAISpendingInsightsRequest) updates) => super.copyWith((message) => updates(message as GetAISpendingInsightsRequest)) as GetAISpendingInsightsRequest; // ignore: deprecated_member_use
+  GetAISpendingInsightsRequest copyWith(void Function(GetAISpendingInsightsRequest) updates) => super.copyWith((message) => updates(message as GetAISpendingInsightsRequest)) as GetAISpendingInsightsRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetAISpendingInsightsRequest create() => GetAISpendingInsightsRequest._();
   GetAISpendingInsightsRequest createEmptyInstance() => create();
@@ -4227,26 +4366,26 @@ class GetAISpendingInsightsRequest extends $pb.GeneratedMessage {
   static GetAISpendingInsightsRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $36.Timestamp get startDate => $_getN(0);
+  $42.Timestamp get startDate => $_getN(0);
   @$pb.TagNumber(1)
-  set startDate($36.Timestamp v) { setField(1, v); }
+  set startDate($42.Timestamp v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasStartDate() => $_has(0);
   @$pb.TagNumber(1)
   void clearStartDate() => clearField(1);
   @$pb.TagNumber(1)
-  $36.Timestamp ensureStartDate() => $_ensure(0);
+  $42.Timestamp ensureStartDate() => $_ensure(0);
 
   @$pb.TagNumber(2)
-  $36.Timestamp get endDate => $_getN(1);
+  $42.Timestamp get endDate => $_getN(1);
   @$pb.TagNumber(2)
-  set endDate($36.Timestamp v) { setField(2, v); }
+  set endDate($42.Timestamp v) { setField(2, v); }
   @$pb.TagNumber(2)
   $core.bool hasEndDate() => $_has(1);
   @$pb.TagNumber(2)
   void clearEndDate() => clearField(2);
   @$pb.TagNumber(2)
-  $36.Timestamp ensureEndDate() => $_ensure(1);
+  $42.Timestamp ensureEndDate() => $_ensure(1);
 
   @$pb.TagNumber(3)
   $core.String get focusArea => $_getSZ(2);
@@ -4258,17 +4397,8 @@ class GetAISpendingInsightsRequest extends $pb.GeneratedMessage {
   void clearFocusArea() => clearField(3);
 }
 
+/// AI Spending Insights Response
 class GetAISpendingInsightsResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetAISpendingInsightsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'summary')
-    ..pc<AIInsight>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'insights', $pb.PbFieldType.PM, subBuilder: AIInsight.create)
-    ..pc<AIRecommendation>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recommendations', $pb.PbFieldType.PM, subBuilder: AIRecommendation.create)
-    ..pc<AnomalyDetection>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'anomalies', $pb.PbFieldType.PM, subBuilder: AnomalyDetection.create)
-    ..hasRequiredFields = false
-  ;
-
-  GetAISpendingInsightsResponse._() : super();
   factory GetAISpendingInsightsResponse({
     $core.bool? success,
     $core.String? summary,
@@ -4276,26 +4406,37 @@ class GetAISpendingInsightsResponse extends $pb.GeneratedMessage {
     $core.Iterable<AIRecommendation>? recommendations,
     $core.Iterable<AnomalyDetection>? anomalies,
   }) {
-    final _result = create();
+    final $result = create();
     if (success != null) {
-      _result.success = success;
+      $result.success = success;
     }
     if (summary != null) {
-      _result.summary = summary;
+      $result.summary = summary;
     }
     if (insights != null) {
-      _result.insights.addAll(insights);
+      $result.insights.addAll(insights);
     }
     if (recommendations != null) {
-      _result.recommendations.addAll(recommendations);
+      $result.recommendations.addAll(recommendations);
     }
     if (anomalies != null) {
-      _result.anomalies.addAll(anomalies);
+      $result.anomalies.addAll(anomalies);
     }
-    return _result;
+    return $result;
   }
+  GetAISpendingInsightsResponse._() : super();
   factory GetAISpendingInsightsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetAISpendingInsightsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetAISpendingInsightsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..aOS(2, _omitFieldNames ? '' : 'summary')
+    ..pc<AIInsight>(3, _omitFieldNames ? '' : 'insights', $pb.PbFieldType.PM, subBuilder: AIInsight.create)
+    ..pc<AIRecommendation>(4, _omitFieldNames ? '' : 'recommendations', $pb.PbFieldType.PM, subBuilder: AIRecommendation.create)
+    ..pc<AnomalyDetection>(5, _omitFieldNames ? '' : 'anomalies', $pb.PbFieldType.PM, subBuilder: AnomalyDetection.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -4305,8 +4446,10 @@ class GetAISpendingInsightsResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetAISpendingInsightsResponse copyWith(void Function(GetAISpendingInsightsResponse) updates) => super.copyWith((message) => updates(message as GetAISpendingInsightsResponse)) as GetAISpendingInsightsResponse; // ignore: deprecated_member_use
+  GetAISpendingInsightsResponse copyWith(void Function(GetAISpendingInsightsResponse) updates) => super.copyWith((message) => updates(message as GetAISpendingInsightsResponse)) as GetAISpendingInsightsResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetAISpendingInsightsResponse create() => GetAISpendingInsightsResponse._();
   GetAISpendingInsightsResponse createEmptyInstance() => create();
@@ -4343,17 +4486,8 @@ class GetAISpendingInsightsResponse extends $pb.GeneratedMessage {
   $core.List<AnomalyDetection> get anomalies => $_getList(4);
 }
 
+/// Individual AI Insight
 class AIInsight extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'AIInsight', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'title')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'insightType')
-    ..a<$core.double>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'impactAmount', $pb.PbFieldType.OD)
-    ..pPS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'supportingData')
-    ..hasRequiredFields = false
-  ;
-
-  AIInsight._() : super();
   factory AIInsight({
     $core.String? title,
     $core.String? description,
@@ -4361,26 +4495,37 @@ class AIInsight extends $pb.GeneratedMessage {
     $core.double? impactAmount,
     $core.Iterable<$core.String>? supportingData,
   }) {
-    final _result = create();
+    final $result = create();
     if (title != null) {
-      _result.title = title;
+      $result.title = title;
     }
     if (description != null) {
-      _result.description = description;
+      $result.description = description;
     }
     if (insightType != null) {
-      _result.insightType = insightType;
+      $result.insightType = insightType;
     }
     if (impactAmount != null) {
-      _result.impactAmount = impactAmount;
+      $result.impactAmount = impactAmount;
     }
     if (supportingData != null) {
-      _result.supportingData.addAll(supportingData);
+      $result.supportingData.addAll(supportingData);
     }
-    return _result;
+    return $result;
   }
+  AIInsight._() : super();
   factory AIInsight.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory AIInsight.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'AIInsight', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'title')
+    ..aOS(2, _omitFieldNames ? '' : 'description')
+    ..aOS(3, _omitFieldNames ? '' : 'insightType')
+    ..a<$core.double>(4, _omitFieldNames ? '' : 'impactAmount', $pb.PbFieldType.OD)
+    ..pPS(5, _omitFieldNames ? '' : 'supportingData')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -4390,8 +4535,10 @@ class AIInsight extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  AIInsight copyWith(void Function(AIInsight) updates) => super.copyWith((message) => updates(message as AIInsight)) as AIInsight; // ignore: deprecated_member_use
+  AIInsight copyWith(void Function(AIInsight) updates) => super.copyWith((message) => updates(message as AIInsight)) as AIInsight;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static AIInsight create() => AIInsight._();
   AIInsight createEmptyInstance() => create();
@@ -4440,18 +4587,8 @@ class AIInsight extends $pb.GeneratedMessage {
   $core.List<$core.String> get supportingData => $_getList(4);
 }
 
+/// AI Recommendation
 class AIRecommendation extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'AIRecommendation', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'title')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'action')
-    ..a<$core.double>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'potentialSavings', $pb.PbFieldType.OD)
-    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'priority')
-    ..e<ExpenseCategory>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'affectedCategory', $pb.PbFieldType.OE, defaultOrMaker: ExpenseCategory.EXPENSE_CATEGORY_UNSPECIFIED, valueOf: ExpenseCategory.valueOf, enumValues: ExpenseCategory.values)
-    ..hasRequiredFields = false
-  ;
-
-  AIRecommendation._() : super();
   factory AIRecommendation({
     $core.String? title,
     $core.String? description,
@@ -4460,29 +4597,41 @@ class AIRecommendation extends $pb.GeneratedMessage {
     $core.String? priority,
     ExpenseCategory? affectedCategory,
   }) {
-    final _result = create();
+    final $result = create();
     if (title != null) {
-      _result.title = title;
+      $result.title = title;
     }
     if (description != null) {
-      _result.description = description;
+      $result.description = description;
     }
     if (action != null) {
-      _result.action = action;
+      $result.action = action;
     }
     if (potentialSavings != null) {
-      _result.potentialSavings = potentialSavings;
+      $result.potentialSavings = potentialSavings;
     }
     if (priority != null) {
-      _result.priority = priority;
+      $result.priority = priority;
     }
     if (affectedCategory != null) {
-      _result.affectedCategory = affectedCategory;
+      $result.affectedCategory = affectedCategory;
     }
-    return _result;
+    return $result;
   }
+  AIRecommendation._() : super();
   factory AIRecommendation.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory AIRecommendation.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'AIRecommendation', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'title')
+    ..aOS(2, _omitFieldNames ? '' : 'description')
+    ..aOS(3, _omitFieldNames ? '' : 'action')
+    ..a<$core.double>(4, _omitFieldNames ? '' : 'potentialSavings', $pb.PbFieldType.OD)
+    ..aOS(5, _omitFieldNames ? '' : 'priority')
+    ..e<ExpenseCategory>(6, _omitFieldNames ? '' : 'affectedCategory', $pb.PbFieldType.OE, defaultOrMaker: ExpenseCategory.EXPENSE_CATEGORY_UNSPECIFIED, valueOf: ExpenseCategory.valueOf, enumValues: ExpenseCategory.values)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -4492,8 +4641,10 @@ class AIRecommendation extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  AIRecommendation copyWith(void Function(AIRecommendation) updates) => super.copyWith((message) => updates(message as AIRecommendation)) as AIRecommendation; // ignore: deprecated_member_use
+  AIRecommendation copyWith(void Function(AIRecommendation) updates) => super.copyWith((message) => updates(message as AIRecommendation)) as AIRecommendation;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static AIRecommendation create() => AIRecommendation._();
   AIRecommendation createEmptyInstance() => create();
@@ -4557,49 +4708,51 @@ class AIRecommendation extends $pb.GeneratedMessage {
   void clearAffectedCategory() => clearField(6);
 }
 
+/// Anomaly Detection
 class AnomalyDetection extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'AnomalyDetection', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'anomalyType')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
-    ..aOM<$36.Timestamp>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'detectedDate', subBuilder: $36.Timestamp.create)
-    ..a<$core.double>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
-    ..e<ExpenseCategory>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'category', $pb.PbFieldType.OE, defaultOrMaker: ExpenseCategory.EXPENSE_CATEGORY_UNSPECIFIED, valueOf: ExpenseCategory.valueOf, enumValues: ExpenseCategory.values)
-    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'severity')
-    ..hasRequiredFields = false
-  ;
-
-  AnomalyDetection._() : super();
   factory AnomalyDetection({
     $core.String? anomalyType,
     $core.String? description,
-    $36.Timestamp? detectedDate,
+    $42.Timestamp? detectedDate,
     $core.double? amount,
     ExpenseCategory? category,
     $core.String? severity,
   }) {
-    final _result = create();
+    final $result = create();
     if (anomalyType != null) {
-      _result.anomalyType = anomalyType;
+      $result.anomalyType = anomalyType;
     }
     if (description != null) {
-      _result.description = description;
+      $result.description = description;
     }
     if (detectedDate != null) {
-      _result.detectedDate = detectedDate;
+      $result.detectedDate = detectedDate;
     }
     if (amount != null) {
-      _result.amount = amount;
+      $result.amount = amount;
     }
     if (category != null) {
-      _result.category = category;
+      $result.category = category;
     }
     if (severity != null) {
-      _result.severity = severity;
+      $result.severity = severity;
     }
-    return _result;
+    return $result;
   }
+  AnomalyDetection._() : super();
   factory AnomalyDetection.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory AnomalyDetection.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'AnomalyDetection', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'anomalyType')
+    ..aOS(2, _omitFieldNames ? '' : 'description')
+    ..aOM<$42.Timestamp>(3, _omitFieldNames ? '' : 'detectedDate', subBuilder: $42.Timestamp.create)
+    ..a<$core.double>(4, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
+    ..e<ExpenseCategory>(5, _omitFieldNames ? '' : 'category', $pb.PbFieldType.OE, defaultOrMaker: ExpenseCategory.EXPENSE_CATEGORY_UNSPECIFIED, valueOf: ExpenseCategory.valueOf, enumValues: ExpenseCategory.values)
+    ..aOS(6, _omitFieldNames ? '' : 'severity')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -4609,8 +4762,10 @@ class AnomalyDetection extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  AnomalyDetection copyWith(void Function(AnomalyDetection) updates) => super.copyWith((message) => updates(message as AnomalyDetection)) as AnomalyDetection; // ignore: deprecated_member_use
+  AnomalyDetection copyWith(void Function(AnomalyDetection) updates) => super.copyWith((message) => updates(message as AnomalyDetection)) as AnomalyDetection;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static AnomalyDetection create() => AnomalyDetection._();
   AnomalyDetection createEmptyInstance() => create();
@@ -4638,15 +4793,15 @@ class AnomalyDetection extends $pb.GeneratedMessage {
   void clearDescription() => clearField(2);
 
   @$pb.TagNumber(3)
-  $36.Timestamp get detectedDate => $_getN(2);
+  $42.Timestamp get detectedDate => $_getN(2);
   @$pb.TagNumber(3)
-  set detectedDate($36.Timestamp v) { setField(3, v); }
+  set detectedDate($42.Timestamp v) { setField(3, v); }
   @$pb.TagNumber(3)
   $core.bool hasDetectedDate() => $_has(2);
   @$pb.TagNumber(3)
   void clearDetectedDate() => clearField(3);
   @$pb.TagNumber(3)
-  $36.Timestamp ensureDetectedDate() => $_ensure(2);
+  $42.Timestamp ensureDetectedDate() => $_ensure(2);
 
   @$pb.TagNumber(4)
   $core.double get amount => $_getN(3);
@@ -4676,34 +4831,36 @@ class AnomalyDetection extends $pb.GeneratedMessage {
   void clearSeverity() => clearField(6);
 }
 
+/// AI Budgeting Recommendations Request
 class GetAIBudgetingRecommendationsRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetAIBudgetingRecommendationsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..a<$core.double>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'monthlyIncome', $pb.PbFieldType.OD)
-    ..pPS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'financialGoals')
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'riskTolerance')
-    ..hasRequiredFields = false
-  ;
-
-  GetAIBudgetingRecommendationsRequest._() : super();
   factory GetAIBudgetingRecommendationsRequest({
     $core.double? monthlyIncome,
     $core.Iterable<$core.String>? financialGoals,
     $core.String? riskTolerance,
   }) {
-    final _result = create();
+    final $result = create();
     if (monthlyIncome != null) {
-      _result.monthlyIncome = monthlyIncome;
+      $result.monthlyIncome = monthlyIncome;
     }
     if (financialGoals != null) {
-      _result.financialGoals.addAll(financialGoals);
+      $result.financialGoals.addAll(financialGoals);
     }
     if (riskTolerance != null) {
-      _result.riskTolerance = riskTolerance;
+      $result.riskTolerance = riskTolerance;
     }
-    return _result;
+    return $result;
   }
+  GetAIBudgetingRecommendationsRequest._() : super();
   factory GetAIBudgetingRecommendationsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetAIBudgetingRecommendationsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetAIBudgetingRecommendationsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..a<$core.double>(1, _omitFieldNames ? '' : 'monthlyIncome', $pb.PbFieldType.OD)
+    ..pPS(2, _omitFieldNames ? '' : 'financialGoals')
+    ..aOS(3, _omitFieldNames ? '' : 'riskTolerance')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -4713,8 +4870,10 @@ class GetAIBudgetingRecommendationsRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetAIBudgetingRecommendationsRequest copyWith(void Function(GetAIBudgetingRecommendationsRequest) updates) => super.copyWith((message) => updates(message as GetAIBudgetingRecommendationsRequest)) as GetAIBudgetingRecommendationsRequest; // ignore: deprecated_member_use
+  GetAIBudgetingRecommendationsRequest copyWith(void Function(GetAIBudgetingRecommendationsRequest) updates) => super.copyWith((message) => updates(message as GetAIBudgetingRecommendationsRequest)) as GetAIBudgetingRecommendationsRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetAIBudgetingRecommendationsRequest create() => GetAIBudgetingRecommendationsRequest._();
   GetAIBudgetingRecommendationsRequest createEmptyInstance() => create();
@@ -4745,17 +4904,8 @@ class GetAIBudgetingRecommendationsRequest extends $pb.GeneratedMessage {
   void clearRiskTolerance() => clearField(3);
 }
 
+/// AI Budgeting Recommendations Response
 class GetAIBudgetingRecommendationsResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetAIBudgetingRecommendationsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'summary')
-    ..pc<BudgetRecommendation>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'budgetRecommendations', $pb.PbFieldType.PM, subBuilder: BudgetRecommendation.create)
-    ..a<$core.double>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recommendedSavingsRate', $pb.PbFieldType.OD)
-    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'rationale')
-    ..hasRequiredFields = false
-  ;
-
-  GetAIBudgetingRecommendationsResponse._() : super();
   factory GetAIBudgetingRecommendationsResponse({
     $core.bool? success,
     $core.String? summary,
@@ -4763,26 +4913,37 @@ class GetAIBudgetingRecommendationsResponse extends $pb.GeneratedMessage {
     $core.double? recommendedSavingsRate,
     $core.String? rationale,
   }) {
-    final _result = create();
+    final $result = create();
     if (success != null) {
-      _result.success = success;
+      $result.success = success;
     }
     if (summary != null) {
-      _result.summary = summary;
+      $result.summary = summary;
     }
     if (budgetRecommendations != null) {
-      _result.budgetRecommendations.addAll(budgetRecommendations);
+      $result.budgetRecommendations.addAll(budgetRecommendations);
     }
     if (recommendedSavingsRate != null) {
-      _result.recommendedSavingsRate = recommendedSavingsRate;
+      $result.recommendedSavingsRate = recommendedSavingsRate;
     }
     if (rationale != null) {
-      _result.rationale = rationale;
+      $result.rationale = rationale;
     }
-    return _result;
+    return $result;
   }
+  GetAIBudgetingRecommendationsResponse._() : super();
   factory GetAIBudgetingRecommendationsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetAIBudgetingRecommendationsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetAIBudgetingRecommendationsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..aOS(2, _omitFieldNames ? '' : 'summary')
+    ..pc<BudgetRecommendation>(3, _omitFieldNames ? '' : 'budgetRecommendations', $pb.PbFieldType.PM, subBuilder: BudgetRecommendation.create)
+    ..a<$core.double>(4, _omitFieldNames ? '' : 'recommendedSavingsRate', $pb.PbFieldType.OD)
+    ..aOS(5, _omitFieldNames ? '' : 'rationale')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -4792,8 +4953,10 @@ class GetAIBudgetingRecommendationsResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetAIBudgetingRecommendationsResponse copyWith(void Function(GetAIBudgetingRecommendationsResponse) updates) => super.copyWith((message) => updates(message as GetAIBudgetingRecommendationsResponse)) as GetAIBudgetingRecommendationsResponse; // ignore: deprecated_member_use
+  GetAIBudgetingRecommendationsResponse copyWith(void Function(GetAIBudgetingRecommendationsResponse) updates) => super.copyWith((message) => updates(message as GetAIBudgetingRecommendationsResponse)) as GetAIBudgetingRecommendationsResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetAIBudgetingRecommendationsResponse create() => GetAIBudgetingRecommendationsResponse._();
   GetAIBudgetingRecommendationsResponse createEmptyInstance() => create();
@@ -4842,19 +5005,8 @@ class GetAIBudgetingRecommendationsResponse extends $pb.GeneratedMessage {
   void clearRationale() => clearField(5);
 }
 
+/// Individual Budget Recommendation
 class BudgetRecommendation extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'BudgetRecommendation', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..e<ExpenseCategory>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'category', $pb.PbFieldType.OE, defaultOrMaker: ExpenseCategory.EXPENSE_CATEGORY_UNSPECIFIED, valueOf: ExpenseCategory.valueOf, enumValues: ExpenseCategory.values)
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'categoryName')
-    ..a<$core.double>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recommendedAmount', $pb.PbFieldType.OD)
-    ..a<$core.double>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currentAmount', $pb.PbFieldType.OD)
-    ..a<$core.double>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'difference', $pb.PbFieldType.OD)
-    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'reasoning')
-    ..e<BudgetPeriod>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recommendedPeriod', $pb.PbFieldType.OE, defaultOrMaker: BudgetPeriod.BUDGET_PERIOD_UNSPECIFIED, valueOf: BudgetPeriod.valueOf, enumValues: BudgetPeriod.values)
-    ..hasRequiredFields = false
-  ;
-
-  BudgetRecommendation._() : super();
   factory BudgetRecommendation({
     ExpenseCategory? category,
     $core.String? categoryName,
@@ -4864,32 +5016,45 @@ class BudgetRecommendation extends $pb.GeneratedMessage {
     $core.String? reasoning,
     BudgetPeriod? recommendedPeriod,
   }) {
-    final _result = create();
+    final $result = create();
     if (category != null) {
-      _result.category = category;
+      $result.category = category;
     }
     if (categoryName != null) {
-      _result.categoryName = categoryName;
+      $result.categoryName = categoryName;
     }
     if (recommendedAmount != null) {
-      _result.recommendedAmount = recommendedAmount;
+      $result.recommendedAmount = recommendedAmount;
     }
     if (currentAmount != null) {
-      _result.currentAmount = currentAmount;
+      $result.currentAmount = currentAmount;
     }
     if (difference != null) {
-      _result.difference = difference;
+      $result.difference = difference;
     }
     if (reasoning != null) {
-      _result.reasoning = reasoning;
+      $result.reasoning = reasoning;
     }
     if (recommendedPeriod != null) {
-      _result.recommendedPeriod = recommendedPeriod;
+      $result.recommendedPeriod = recommendedPeriod;
     }
-    return _result;
+    return $result;
   }
+  BudgetRecommendation._() : super();
   factory BudgetRecommendation.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory BudgetRecommendation.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'BudgetRecommendation', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..e<ExpenseCategory>(1, _omitFieldNames ? '' : 'category', $pb.PbFieldType.OE, defaultOrMaker: ExpenseCategory.EXPENSE_CATEGORY_UNSPECIFIED, valueOf: ExpenseCategory.valueOf, enumValues: ExpenseCategory.values)
+    ..aOS(2, _omitFieldNames ? '' : 'categoryName')
+    ..a<$core.double>(3, _omitFieldNames ? '' : 'recommendedAmount', $pb.PbFieldType.OD)
+    ..a<$core.double>(4, _omitFieldNames ? '' : 'currentAmount', $pb.PbFieldType.OD)
+    ..a<$core.double>(5, _omitFieldNames ? '' : 'difference', $pb.PbFieldType.OD)
+    ..aOS(6, _omitFieldNames ? '' : 'reasoning')
+    ..e<BudgetPeriod>(7, _omitFieldNames ? '' : 'recommendedPeriod', $pb.PbFieldType.OE, defaultOrMaker: BudgetPeriod.BUDGET_PERIOD_UNSPECIFIED, valueOf: BudgetPeriod.valueOf, enumValues: BudgetPeriod.values)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -4899,8 +5064,10 @@ class BudgetRecommendation extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  BudgetRecommendation copyWith(void Function(BudgetRecommendation) updates) => super.copyWith((message) => updates(message as BudgetRecommendation)) as BudgetRecommendation; // ignore: deprecated_member_use
+  BudgetRecommendation copyWith(void Function(BudgetRecommendation) updates) => super.copyWith((message) => updates(message as BudgetRecommendation)) as BudgetRecommendation;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static BudgetRecommendation create() => BudgetRecommendation._();
   BudgetRecommendation createEmptyInstance() => create();
@@ -4973,39 +5140,41 @@ class BudgetRecommendation extends $pb.GeneratedMessage {
   void clearRecommendedPeriod() => clearField(7);
 }
 
+/// Auto Categorize Expense Request
 class AutoCategorizeExpenseRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'AutoCategorizeExpenseRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'merchant')
-    ..a<$core.double>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
-    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'notes')
-    ..hasRequiredFields = false
-  ;
-
-  AutoCategorizeExpenseRequest._() : super();
   factory AutoCategorizeExpenseRequest({
     $core.String? description,
     $core.String? merchant,
     $core.double? amount,
     $core.String? notes,
   }) {
-    final _result = create();
+    final $result = create();
     if (description != null) {
-      _result.description = description;
+      $result.description = description;
     }
     if (merchant != null) {
-      _result.merchant = merchant;
+      $result.merchant = merchant;
     }
     if (amount != null) {
-      _result.amount = amount;
+      $result.amount = amount;
     }
     if (notes != null) {
-      _result.notes = notes;
+      $result.notes = notes;
     }
-    return _result;
+    return $result;
   }
+  AutoCategorizeExpenseRequest._() : super();
   factory AutoCategorizeExpenseRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory AutoCategorizeExpenseRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'AutoCategorizeExpenseRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'description')
+    ..aOS(2, _omitFieldNames ? '' : 'merchant')
+    ..a<$core.double>(3, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
+    ..aOS(4, _omitFieldNames ? '' : 'notes')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -5015,8 +5184,10 @@ class AutoCategorizeExpenseRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  AutoCategorizeExpenseRequest copyWith(void Function(AutoCategorizeExpenseRequest) updates) => super.copyWith((message) => updates(message as AutoCategorizeExpenseRequest)) as AutoCategorizeExpenseRequest; // ignore: deprecated_member_use
+  AutoCategorizeExpenseRequest copyWith(void Function(AutoCategorizeExpenseRequest) updates) => super.copyWith((message) => updates(message as AutoCategorizeExpenseRequest)) as AutoCategorizeExpenseRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static AutoCategorizeExpenseRequest create() => AutoCategorizeExpenseRequest._();
   AutoCategorizeExpenseRequest createEmptyInstance() => create();
@@ -5062,18 +5233,8 @@ class AutoCategorizeExpenseRequest extends $pb.GeneratedMessage {
   void clearNotes() => clearField(4);
 }
 
+/// Auto Categorize Expense Response
 class AutoCategorizeExpenseResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'AutoCategorizeExpenseResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
-    ..e<ExpenseCategory>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'suggestedCategory', $pb.PbFieldType.OE, defaultOrMaker: ExpenseCategory.EXPENSE_CATEGORY_UNSPECIFIED, valueOf: ExpenseCategory.valueOf, enumValues: ExpenseCategory.values)
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'categoryName')
-    ..a<$core.double>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'confidenceScore', $pb.PbFieldType.OD)
-    ..pc<CategorySuggestion>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'alternativeCategories', $pb.PbFieldType.PM, subBuilder: CategorySuggestion.create)
-    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'reasoning')
-    ..hasRequiredFields = false
-  ;
-
-  AutoCategorizeExpenseResponse._() : super();
   factory AutoCategorizeExpenseResponse({
     $core.bool? success,
     ExpenseCategory? suggestedCategory,
@@ -5082,29 +5243,41 @@ class AutoCategorizeExpenseResponse extends $pb.GeneratedMessage {
     $core.Iterable<CategorySuggestion>? alternativeCategories,
     $core.String? reasoning,
   }) {
-    final _result = create();
+    final $result = create();
     if (success != null) {
-      _result.success = success;
+      $result.success = success;
     }
     if (suggestedCategory != null) {
-      _result.suggestedCategory = suggestedCategory;
+      $result.suggestedCategory = suggestedCategory;
     }
     if (categoryName != null) {
-      _result.categoryName = categoryName;
+      $result.categoryName = categoryName;
     }
     if (confidenceScore != null) {
-      _result.confidenceScore = confidenceScore;
+      $result.confidenceScore = confidenceScore;
     }
     if (alternativeCategories != null) {
-      _result.alternativeCategories.addAll(alternativeCategories);
+      $result.alternativeCategories.addAll(alternativeCategories);
     }
     if (reasoning != null) {
-      _result.reasoning = reasoning;
+      $result.reasoning = reasoning;
     }
-    return _result;
+    return $result;
   }
+  AutoCategorizeExpenseResponse._() : super();
   factory AutoCategorizeExpenseResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory AutoCategorizeExpenseResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'AutoCategorizeExpenseResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..e<ExpenseCategory>(2, _omitFieldNames ? '' : 'suggestedCategory', $pb.PbFieldType.OE, defaultOrMaker: ExpenseCategory.EXPENSE_CATEGORY_UNSPECIFIED, valueOf: ExpenseCategory.valueOf, enumValues: ExpenseCategory.values)
+    ..aOS(3, _omitFieldNames ? '' : 'categoryName')
+    ..a<$core.double>(4, _omitFieldNames ? '' : 'confidenceScore', $pb.PbFieldType.OD)
+    ..pc<CategorySuggestion>(5, _omitFieldNames ? '' : 'alternativeCategories', $pb.PbFieldType.PM, subBuilder: CategorySuggestion.create)
+    ..aOS(6, _omitFieldNames ? '' : 'reasoning')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -5114,8 +5287,10 @@ class AutoCategorizeExpenseResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  AutoCategorizeExpenseResponse copyWith(void Function(AutoCategorizeExpenseResponse) updates) => super.copyWith((message) => updates(message as AutoCategorizeExpenseResponse)) as AutoCategorizeExpenseResponse; // ignore: deprecated_member_use
+  AutoCategorizeExpenseResponse copyWith(void Function(AutoCategorizeExpenseResponse) updates) => super.copyWith((message) => updates(message as AutoCategorizeExpenseResponse)) as AutoCategorizeExpenseResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static AutoCategorizeExpenseResponse create() => AutoCategorizeExpenseResponse._();
   AutoCategorizeExpenseResponse createEmptyInstance() => create();
@@ -5173,34 +5348,36 @@ class AutoCategorizeExpenseResponse extends $pb.GeneratedMessage {
   void clearReasoning() => clearField(6);
 }
 
+/// Category Suggestion
 class CategorySuggestion extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CategorySuggestion', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..e<ExpenseCategory>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'category', $pb.PbFieldType.OE, defaultOrMaker: ExpenseCategory.EXPENSE_CATEGORY_UNSPECIFIED, valueOf: ExpenseCategory.valueOf, enumValues: ExpenseCategory.values)
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'categoryName')
-    ..a<$core.double>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'confidenceScore', $pb.PbFieldType.OD)
-    ..hasRequiredFields = false
-  ;
-
-  CategorySuggestion._() : super();
   factory CategorySuggestion({
     ExpenseCategory? category,
     $core.String? categoryName,
     $core.double? confidenceScore,
   }) {
-    final _result = create();
+    final $result = create();
     if (category != null) {
-      _result.category = category;
+      $result.category = category;
     }
     if (categoryName != null) {
-      _result.categoryName = categoryName;
+      $result.categoryName = categoryName;
     }
     if (confidenceScore != null) {
-      _result.confidenceScore = confidenceScore;
+      $result.confidenceScore = confidenceScore;
     }
-    return _result;
+    return $result;
   }
+  CategorySuggestion._() : super();
   factory CategorySuggestion.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CategorySuggestion.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CategorySuggestion', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..e<ExpenseCategory>(1, _omitFieldNames ? '' : 'category', $pb.PbFieldType.OE, defaultOrMaker: ExpenseCategory.EXPENSE_CATEGORY_UNSPECIFIED, valueOf: ExpenseCategory.valueOf, enumValues: ExpenseCategory.values)
+    ..aOS(2, _omitFieldNames ? '' : 'categoryName')
+    ..a<$core.double>(3, _omitFieldNames ? '' : 'confidenceScore', $pb.PbFieldType.OD)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -5210,8 +5387,10 @@ class CategorySuggestion extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CategorySuggestion copyWith(void Function(CategorySuggestion) updates) => super.copyWith((message) => updates(message as CategorySuggestion)) as CategorySuggestion; // ignore: deprecated_member_use
+  CategorySuggestion copyWith(void Function(CategorySuggestion) updates) => super.copyWith((message) => updates(message as CategorySuggestion)) as CategorySuggestion;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static CategorySuggestion create() => CategorySuggestion._();
   CategorySuggestion createEmptyInstance() => create();
@@ -5248,29 +5427,31 @@ class CategorySuggestion extends $pb.GeneratedMessage {
   void clearConfidenceScore() => clearField(3);
 }
 
+/// AI Financial Advice Request
 class GetAIFinancialAdviceRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetAIFinancialAdviceRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'query')
-    ..pPS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'contextAreas')
-    ..hasRequiredFields = false
-  ;
-
-  GetAIFinancialAdviceRequest._() : super();
   factory GetAIFinancialAdviceRequest({
     $core.String? query,
     $core.Iterable<$core.String>? contextAreas,
   }) {
-    final _result = create();
+    final $result = create();
     if (query != null) {
-      _result.query = query;
+      $result.query = query;
     }
     if (contextAreas != null) {
-      _result.contextAreas.addAll(contextAreas);
+      $result.contextAreas.addAll(contextAreas);
     }
-    return _result;
+    return $result;
   }
+  GetAIFinancialAdviceRequest._() : super();
   factory GetAIFinancialAdviceRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetAIFinancialAdviceRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetAIFinancialAdviceRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'query')
+    ..pPS(2, _omitFieldNames ? '' : 'contextAreas')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -5280,8 +5461,10 @@ class GetAIFinancialAdviceRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetAIFinancialAdviceRequest copyWith(void Function(GetAIFinancialAdviceRequest) updates) => super.copyWith((message) => updates(message as GetAIFinancialAdviceRequest)) as GetAIFinancialAdviceRequest; // ignore: deprecated_member_use
+  GetAIFinancialAdviceRequest copyWith(void Function(GetAIFinancialAdviceRequest) updates) => super.copyWith((message) => updates(message as GetAIFinancialAdviceRequest)) as GetAIFinancialAdviceRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetAIFinancialAdviceRequest create() => GetAIFinancialAdviceRequest._();
   GetAIFinancialAdviceRequest createEmptyInstance() => create();
@@ -5303,18 +5486,8 @@ class GetAIFinancialAdviceRequest extends $pb.GeneratedMessage {
   $core.List<$core.String> get contextAreas => $_getList(1);
 }
 
+/// AI Financial Advice Response
 class GetAIFinancialAdviceResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetAIFinancialAdviceResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'query')
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'advice')
-    ..pc<ActionStep>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'actionSteps', $pb.PbFieldType.PM, subBuilder: ActionStep.create)
-    ..pPS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'relevantResources')
-    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'disclaimer')
-    ..hasRequiredFields = false
-  ;
-
-  GetAIFinancialAdviceResponse._() : super();
   factory GetAIFinancialAdviceResponse({
     $core.bool? success,
     $core.String? query,
@@ -5323,29 +5496,41 @@ class GetAIFinancialAdviceResponse extends $pb.GeneratedMessage {
     $core.Iterable<$core.String>? relevantResources,
     $core.String? disclaimer,
   }) {
-    final _result = create();
+    final $result = create();
     if (success != null) {
-      _result.success = success;
+      $result.success = success;
     }
     if (query != null) {
-      _result.query = query;
+      $result.query = query;
     }
     if (advice != null) {
-      _result.advice = advice;
+      $result.advice = advice;
     }
     if (actionSteps != null) {
-      _result.actionSteps.addAll(actionSteps);
+      $result.actionSteps.addAll(actionSteps);
     }
     if (relevantResources != null) {
-      _result.relevantResources.addAll(relevantResources);
+      $result.relevantResources.addAll(relevantResources);
     }
     if (disclaimer != null) {
-      _result.disclaimer = disclaimer;
+      $result.disclaimer = disclaimer;
     }
-    return _result;
+    return $result;
   }
+  GetAIFinancialAdviceResponse._() : super();
   factory GetAIFinancialAdviceResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetAIFinancialAdviceResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetAIFinancialAdviceResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..aOS(2, _omitFieldNames ? '' : 'query')
+    ..aOS(3, _omitFieldNames ? '' : 'advice')
+    ..pc<ActionStep>(4, _omitFieldNames ? '' : 'actionSteps', $pb.PbFieldType.PM, subBuilder: ActionStep.create)
+    ..pPS(5, _omitFieldNames ? '' : 'relevantResources')
+    ..aOS(6, _omitFieldNames ? '' : 'disclaimer')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -5355,8 +5540,10 @@ class GetAIFinancialAdviceResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetAIFinancialAdviceResponse copyWith(void Function(GetAIFinancialAdviceResponse) updates) => super.copyWith((message) => updates(message as GetAIFinancialAdviceResponse)) as GetAIFinancialAdviceResponse; // ignore: deprecated_member_use
+  GetAIFinancialAdviceResponse copyWith(void Function(GetAIFinancialAdviceResponse) updates) => super.copyWith((message) => updates(message as GetAIFinancialAdviceResponse)) as GetAIFinancialAdviceResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetAIFinancialAdviceResponse create() => GetAIFinancialAdviceResponse._();
   GetAIFinancialAdviceResponse createEmptyInstance() => create();
@@ -5408,17 +5595,8 @@ class GetAIFinancialAdviceResponse extends $pb.GeneratedMessage {
   void clearDisclaimer() => clearField(6);
 }
 
+/// Action Step
 class ActionStep extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ActionStep', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..a<$core.int>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'stepNumber', $pb.PbFieldType.O3)
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'title')
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
-    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'estimatedImpact')
-    ..aOB(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isCompleted')
-    ..hasRequiredFields = false
-  ;
-
-  ActionStep._() : super();
   factory ActionStep({
     $core.int? stepNumber,
     $core.String? title,
@@ -5426,26 +5604,37 @@ class ActionStep extends $pb.GeneratedMessage {
     $core.String? estimatedImpact,
     $core.bool? isCompleted,
   }) {
-    final _result = create();
+    final $result = create();
     if (stepNumber != null) {
-      _result.stepNumber = stepNumber;
+      $result.stepNumber = stepNumber;
     }
     if (title != null) {
-      _result.title = title;
+      $result.title = title;
     }
     if (description != null) {
-      _result.description = description;
+      $result.description = description;
     }
     if (estimatedImpact != null) {
-      _result.estimatedImpact = estimatedImpact;
+      $result.estimatedImpact = estimatedImpact;
     }
     if (isCompleted != null) {
-      _result.isCompleted = isCompleted;
+      $result.isCompleted = isCompleted;
     }
-    return _result;
+    return $result;
   }
+  ActionStep._() : super();
   factory ActionStep.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ActionStep.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ActionStep', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..a<$core.int>(1, _omitFieldNames ? '' : 'stepNumber', $pb.PbFieldType.O3)
+    ..aOS(2, _omitFieldNames ? '' : 'title')
+    ..aOS(3, _omitFieldNames ? '' : 'description')
+    ..aOS(4, _omitFieldNames ? '' : 'estimatedImpact')
+    ..aOB(5, _omitFieldNames ? '' : 'isCompleted')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -5455,8 +5644,10 @@ class ActionStep extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ActionStep copyWith(void Function(ActionStep) updates) => super.copyWith((message) => updates(message as ActionStep)) as ActionStep; // ignore: deprecated_member_use
+  ActionStep copyWith(void Function(ActionStep) updates) => super.copyWith((message) => updates(message as ActionStep)) as ActionStep;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static ActionStep create() => ActionStep._();
   ActionStep createEmptyInstance() => create();
@@ -5512,24 +5703,6 @@ class ActionStep extends $pb.GeneratedMessage {
 }
 
 class IncomeSource extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'IncomeSource', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
-    ..a<$fixnum.Int64>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'name')
-    ..a<$core.double>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
-    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
-    ..e<IncomeCategory>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'category', $pb.PbFieldType.OE, defaultOrMaker: IncomeCategory.INCOME_CATEGORY_UNSPECIFIED, valueOf: IncomeCategory.valueOf, enumValues: IncomeCategory.values)
-    ..aOB(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isRecurring')
-    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recurrencePattern')
-    ..aOM<$36.Timestamp>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastReceived', subBuilder: $36.Timestamp.create)
-    ..aOM<$36.Timestamp>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'nextExpected', subBuilder: $36.Timestamp.create)
-    ..aOB(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isActive')
-    ..aOM<$36.Timestamp>(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $36.Timestamp.create)
-    ..aOM<$36.Timestamp>(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $36.Timestamp.create)
-    ..hasRequiredFields = false
-  ;
-
-  IncomeSource._() : super();
   factory IncomeSource({
     $core.String? id,
     $fixnum.Int64? userId,
@@ -5539,56 +5712,75 @@ class IncomeSource extends $pb.GeneratedMessage {
     IncomeCategory? category,
     $core.bool? isRecurring,
     $core.String? recurrencePattern,
-    $36.Timestamp? lastReceived,
-    $36.Timestamp? nextExpected,
+    $42.Timestamp? lastReceived,
+    $42.Timestamp? nextExpected,
     $core.bool? isActive,
-    $36.Timestamp? createdAt,
-    $36.Timestamp? updatedAt,
+    $42.Timestamp? createdAt,
+    $42.Timestamp? updatedAt,
   }) {
-    final _result = create();
+    final $result = create();
     if (id != null) {
-      _result.id = id;
+      $result.id = id;
     }
     if (userId != null) {
-      _result.userId = userId;
+      $result.userId = userId;
     }
     if (name != null) {
-      _result.name = name;
+      $result.name = name;
     }
     if (amount != null) {
-      _result.amount = amount;
+      $result.amount = amount;
     }
     if (currency != null) {
-      _result.currency = currency;
+      $result.currency = currency;
     }
     if (category != null) {
-      _result.category = category;
+      $result.category = category;
     }
     if (isRecurring != null) {
-      _result.isRecurring = isRecurring;
+      $result.isRecurring = isRecurring;
     }
     if (recurrencePattern != null) {
-      _result.recurrencePattern = recurrencePattern;
+      $result.recurrencePattern = recurrencePattern;
     }
     if (lastReceived != null) {
-      _result.lastReceived = lastReceived;
+      $result.lastReceived = lastReceived;
     }
     if (nextExpected != null) {
-      _result.nextExpected = nextExpected;
+      $result.nextExpected = nextExpected;
     }
     if (isActive != null) {
-      _result.isActive = isActive;
+      $result.isActive = isActive;
     }
     if (createdAt != null) {
-      _result.createdAt = createdAt;
+      $result.createdAt = createdAt;
     }
     if (updatedAt != null) {
-      _result.updatedAt = updatedAt;
+      $result.updatedAt = updatedAt;
     }
-    return _result;
+    return $result;
   }
+  IncomeSource._() : super();
   factory IncomeSource.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory IncomeSource.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'IncomeSource', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'id')
+    ..a<$fixnum.Int64>(2, _omitFieldNames ? '' : 'userId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(3, _omitFieldNames ? '' : 'name')
+    ..a<$core.double>(4, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
+    ..aOS(5, _omitFieldNames ? '' : 'currency')
+    ..e<IncomeCategory>(6, _omitFieldNames ? '' : 'category', $pb.PbFieldType.OE, defaultOrMaker: IncomeCategory.INCOME_CATEGORY_UNSPECIFIED, valueOf: IncomeCategory.valueOf, enumValues: IncomeCategory.values)
+    ..aOB(7, _omitFieldNames ? '' : 'isRecurring')
+    ..aOS(8, _omitFieldNames ? '' : 'recurrencePattern')
+    ..aOM<$42.Timestamp>(9, _omitFieldNames ? '' : 'lastReceived', subBuilder: $42.Timestamp.create)
+    ..aOM<$42.Timestamp>(10, _omitFieldNames ? '' : 'nextExpected', subBuilder: $42.Timestamp.create)
+    ..aOB(11, _omitFieldNames ? '' : 'isActive')
+    ..aOM<$42.Timestamp>(12, _omitFieldNames ? '' : 'createdAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$42.Timestamp>(13, _omitFieldNames ? '' : 'updatedAt', subBuilder: $42.Timestamp.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -5598,8 +5790,10 @@ class IncomeSource extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  IncomeSource copyWith(void Function(IncomeSource) updates) => super.copyWith((message) => updates(message as IncomeSource)) as IncomeSource; // ignore: deprecated_member_use
+  IncomeSource copyWith(void Function(IncomeSource) updates) => super.copyWith((message) => updates(message as IncomeSource)) as IncomeSource;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static IncomeSource create() => IncomeSource._();
   IncomeSource createEmptyInstance() => create();
@@ -5681,26 +5875,26 @@ class IncomeSource extends $pb.GeneratedMessage {
   void clearRecurrencePattern() => clearField(8);
 
   @$pb.TagNumber(9)
-  $36.Timestamp get lastReceived => $_getN(8);
+  $42.Timestamp get lastReceived => $_getN(8);
   @$pb.TagNumber(9)
-  set lastReceived($36.Timestamp v) { setField(9, v); }
+  set lastReceived($42.Timestamp v) { setField(9, v); }
   @$pb.TagNumber(9)
   $core.bool hasLastReceived() => $_has(8);
   @$pb.TagNumber(9)
   void clearLastReceived() => clearField(9);
   @$pb.TagNumber(9)
-  $36.Timestamp ensureLastReceived() => $_ensure(8);
+  $42.Timestamp ensureLastReceived() => $_ensure(8);
 
   @$pb.TagNumber(10)
-  $36.Timestamp get nextExpected => $_getN(9);
+  $42.Timestamp get nextExpected => $_getN(9);
   @$pb.TagNumber(10)
-  set nextExpected($36.Timestamp v) { setField(10, v); }
+  set nextExpected($42.Timestamp v) { setField(10, v); }
   @$pb.TagNumber(10)
   $core.bool hasNextExpected() => $_has(9);
   @$pb.TagNumber(10)
   void clearNextExpected() => clearField(10);
   @$pb.TagNumber(10)
-  $36.Timestamp ensureNextExpected() => $_ensure(9);
+  $42.Timestamp ensureNextExpected() => $_ensure(9);
 
   @$pb.TagNumber(11)
   $core.bool get isActive => $_getBF(10);
@@ -5712,56 +5906,57 @@ class IncomeSource extends $pb.GeneratedMessage {
   void clearIsActive() => clearField(11);
 
   @$pb.TagNumber(12)
-  $36.Timestamp get createdAt => $_getN(11);
+  $42.Timestamp get createdAt => $_getN(11);
   @$pb.TagNumber(12)
-  set createdAt($36.Timestamp v) { setField(12, v); }
+  set createdAt($42.Timestamp v) { setField(12, v); }
   @$pb.TagNumber(12)
   $core.bool hasCreatedAt() => $_has(11);
   @$pb.TagNumber(12)
   void clearCreatedAt() => clearField(12);
   @$pb.TagNumber(12)
-  $36.Timestamp ensureCreatedAt() => $_ensure(11);
+  $42.Timestamp ensureCreatedAt() => $_ensure(11);
 
   @$pb.TagNumber(13)
-  $36.Timestamp get updatedAt => $_getN(12);
+  $42.Timestamp get updatedAt => $_getN(12);
   @$pb.TagNumber(13)
-  set updatedAt($36.Timestamp v) { setField(13, v); }
+  set updatedAt($42.Timestamp v) { setField(13, v); }
   @$pb.TagNumber(13)
   $core.bool hasUpdatedAt() => $_has(12);
   @$pb.TagNumber(13)
   void clearUpdatedAt() => clearField(13);
   @$pb.TagNumber(13)
-  $36.Timestamp ensureUpdatedAt() => $_ensure(12);
+  $42.Timestamp ensureUpdatedAt() => $_ensure(12);
 }
 
 class IncomeBreakdown extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'IncomeBreakdown', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..pc<IncomeCategoryData>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'categories', $pb.PbFieldType.PM, subBuilder: IncomeCategoryData.create)
-    ..a<$core.double>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalIncome', $pb.PbFieldType.OD)
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'period')
-    ..hasRequiredFields = false
-  ;
-
-  IncomeBreakdown._() : super();
   factory IncomeBreakdown({
     $core.Iterable<IncomeCategoryData>? categories,
     $core.double? totalIncome,
     $core.String? period,
   }) {
-    final _result = create();
+    final $result = create();
     if (categories != null) {
-      _result.categories.addAll(categories);
+      $result.categories.addAll(categories);
     }
     if (totalIncome != null) {
-      _result.totalIncome = totalIncome;
+      $result.totalIncome = totalIncome;
     }
     if (period != null) {
-      _result.period = period;
+      $result.period = period;
     }
-    return _result;
+    return $result;
   }
+  IncomeBreakdown._() : super();
   factory IncomeBreakdown.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory IncomeBreakdown.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'IncomeBreakdown', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..pc<IncomeCategoryData>(1, _omitFieldNames ? '' : 'categories', $pb.PbFieldType.PM, subBuilder: IncomeCategoryData.create)
+    ..a<$core.double>(2, _omitFieldNames ? '' : 'totalIncome', $pb.PbFieldType.OD)
+    ..aOS(3, _omitFieldNames ? '' : 'period')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -5771,8 +5966,10 @@ class IncomeBreakdown extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  IncomeBreakdown copyWith(void Function(IncomeBreakdown) updates) => super.copyWith((message) => updates(message as IncomeBreakdown)) as IncomeBreakdown; // ignore: deprecated_member_use
+  IncomeBreakdown copyWith(void Function(IncomeBreakdown) updates) => super.copyWith((message) => updates(message as IncomeBreakdown)) as IncomeBreakdown;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static IncomeBreakdown create() => IncomeBreakdown._();
   IncomeBreakdown createEmptyInstance() => create();
@@ -5804,16 +6001,6 @@ class IncomeBreakdown extends $pb.GeneratedMessage {
 }
 
 class IncomeCategoryData extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'IncomeCategoryData', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..e<IncomeCategory>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'category', $pb.PbFieldType.OE, defaultOrMaker: IncomeCategory.INCOME_CATEGORY_UNSPECIFIED, valueOf: IncomeCategory.valueOf, enumValues: IncomeCategory.values)
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'categoryName')
-    ..a<$core.double>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
-    ..a<$core.double>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'percentage', $pb.PbFieldType.OD)
-    ..a<$core.int>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sourceCount', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
-
-  IncomeCategoryData._() : super();
   factory IncomeCategoryData({
     IncomeCategory? category,
     $core.String? categoryName,
@@ -5821,26 +6008,37 @@ class IncomeCategoryData extends $pb.GeneratedMessage {
     $core.double? percentage,
     $core.int? sourceCount,
   }) {
-    final _result = create();
+    final $result = create();
     if (category != null) {
-      _result.category = category;
+      $result.category = category;
     }
     if (categoryName != null) {
-      _result.categoryName = categoryName;
+      $result.categoryName = categoryName;
     }
     if (amount != null) {
-      _result.amount = amount;
+      $result.amount = amount;
     }
     if (percentage != null) {
-      _result.percentage = percentage;
+      $result.percentage = percentage;
     }
     if (sourceCount != null) {
-      _result.sourceCount = sourceCount;
+      $result.sourceCount = sourceCount;
     }
-    return _result;
+    return $result;
   }
+  IncomeCategoryData._() : super();
   factory IncomeCategoryData.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory IncomeCategoryData.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'IncomeCategoryData', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..e<IncomeCategory>(1, _omitFieldNames ? '' : 'category', $pb.PbFieldType.OE, defaultOrMaker: IncomeCategory.INCOME_CATEGORY_UNSPECIFIED, valueOf: IncomeCategory.valueOf, enumValues: IncomeCategory.values)
+    ..aOS(2, _omitFieldNames ? '' : 'categoryName')
+    ..a<$core.double>(3, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
+    ..a<$core.double>(4, _omitFieldNames ? '' : 'percentage', $pb.PbFieldType.OD)
+    ..a<$core.int>(5, _omitFieldNames ? '' : 'sourceCount', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -5850,8 +6048,10 @@ class IncomeCategoryData extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  IncomeCategoryData copyWith(void Function(IncomeCategoryData) updates) => super.copyWith((message) => updates(message as IncomeCategoryData)) as IncomeCategoryData; // ignore: deprecated_member_use
+  IncomeCategoryData copyWith(void Function(IncomeCategoryData) updates) => super.copyWith((message) => updates(message as IncomeCategoryData)) as IncomeCategoryData;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static IncomeCategoryData create() => IncomeCategoryData._();
   IncomeCategoryData createEmptyInstance() => create();
@@ -5907,25 +6107,6 @@ class IncomeCategoryData extends $pb.GeneratedMessage {
 }
 
 class Investment extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'Investment', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
-    ..a<$fixnum.Int64>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'name')
-    ..e<InvestmentType>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'investmentType', $pb.PbFieldType.OE, defaultOrMaker: InvestmentType.INVESTMENT_TYPE_UNSPECIFIED, valueOf: InvestmentType.valueOf, enumValues: InvestmentType.values)
-    ..a<$core.double>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currentValue', $pb.PbFieldType.OD)
-    ..a<$core.double>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'initialInvestment', $pb.PbFieldType.OD)
-    ..a<$core.double>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'gainLoss', $pb.PbFieldType.OD)
-    ..a<$core.double>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'gainLossPercentage', $pb.PbFieldType.OD)
-    ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
-    ..aOM<$36.Timestamp>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'purchaseDate', subBuilder: $36.Timestamp.create)
-    ..aOM<$36.Timestamp>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastUpdated', subBuilder: $36.Timestamp.create)
-    ..aOS(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'tickerSymbol')
-    ..a<$core.int>(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'quantity', $pb.PbFieldType.O3)
-    ..a<$core.double>(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currentPrice', $pb.PbFieldType.OD)
-    ..hasRequiredFields = false
-  ;
-
-  Investment._() : super();
   factory Investment({
     $core.String? id,
     $fixnum.Int64? userId,
@@ -5936,59 +6117,79 @@ class Investment extends $pb.GeneratedMessage {
     $core.double? gainLoss,
     $core.double? gainLossPercentage,
     $core.String? currency,
-    $36.Timestamp? purchaseDate,
-    $36.Timestamp? lastUpdated,
+    $42.Timestamp? purchaseDate,
+    $42.Timestamp? lastUpdated,
     $core.String? tickerSymbol,
     $core.int? quantity,
     $core.double? currentPrice,
   }) {
-    final _result = create();
+    final $result = create();
     if (id != null) {
-      _result.id = id;
+      $result.id = id;
     }
     if (userId != null) {
-      _result.userId = userId;
+      $result.userId = userId;
     }
     if (name != null) {
-      _result.name = name;
+      $result.name = name;
     }
     if (investmentType != null) {
-      _result.investmentType = investmentType;
+      $result.investmentType = investmentType;
     }
     if (currentValue != null) {
-      _result.currentValue = currentValue;
+      $result.currentValue = currentValue;
     }
     if (initialInvestment != null) {
-      _result.initialInvestment = initialInvestment;
+      $result.initialInvestment = initialInvestment;
     }
     if (gainLoss != null) {
-      _result.gainLoss = gainLoss;
+      $result.gainLoss = gainLoss;
     }
     if (gainLossPercentage != null) {
-      _result.gainLossPercentage = gainLossPercentage;
+      $result.gainLossPercentage = gainLossPercentage;
     }
     if (currency != null) {
-      _result.currency = currency;
+      $result.currency = currency;
     }
     if (purchaseDate != null) {
-      _result.purchaseDate = purchaseDate;
+      $result.purchaseDate = purchaseDate;
     }
     if (lastUpdated != null) {
-      _result.lastUpdated = lastUpdated;
+      $result.lastUpdated = lastUpdated;
     }
     if (tickerSymbol != null) {
-      _result.tickerSymbol = tickerSymbol;
+      $result.tickerSymbol = tickerSymbol;
     }
     if (quantity != null) {
-      _result.quantity = quantity;
+      $result.quantity = quantity;
     }
     if (currentPrice != null) {
-      _result.currentPrice = currentPrice;
+      $result.currentPrice = currentPrice;
     }
-    return _result;
+    return $result;
   }
+  Investment._() : super();
   factory Investment.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory Investment.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'Investment', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'id')
+    ..a<$fixnum.Int64>(2, _omitFieldNames ? '' : 'userId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(3, _omitFieldNames ? '' : 'name')
+    ..e<InvestmentType>(4, _omitFieldNames ? '' : 'investmentType', $pb.PbFieldType.OE, defaultOrMaker: InvestmentType.INVESTMENT_TYPE_UNSPECIFIED, valueOf: InvestmentType.valueOf, enumValues: InvestmentType.values)
+    ..a<$core.double>(5, _omitFieldNames ? '' : 'currentValue', $pb.PbFieldType.OD)
+    ..a<$core.double>(6, _omitFieldNames ? '' : 'initialInvestment', $pb.PbFieldType.OD)
+    ..a<$core.double>(7, _omitFieldNames ? '' : 'gainLoss', $pb.PbFieldType.OD)
+    ..a<$core.double>(8, _omitFieldNames ? '' : 'gainLossPercentage', $pb.PbFieldType.OD)
+    ..aOS(9, _omitFieldNames ? '' : 'currency')
+    ..aOM<$42.Timestamp>(10, _omitFieldNames ? '' : 'purchaseDate', subBuilder: $42.Timestamp.create)
+    ..aOM<$42.Timestamp>(11, _omitFieldNames ? '' : 'lastUpdated', subBuilder: $42.Timestamp.create)
+    ..aOS(12, _omitFieldNames ? '' : 'tickerSymbol')
+    ..a<$core.int>(13, _omitFieldNames ? '' : 'quantity', $pb.PbFieldType.O3)
+    ..a<$core.double>(14, _omitFieldNames ? '' : 'currentPrice', $pb.PbFieldType.OD)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -5998,8 +6199,10 @@ class Investment extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  Investment copyWith(void Function(Investment) updates) => super.copyWith((message) => updates(message as Investment)) as Investment; // ignore: deprecated_member_use
+  Investment copyWith(void Function(Investment) updates) => super.copyWith((message) => updates(message as Investment)) as Investment;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static Investment create() => Investment._();
   Investment createEmptyInstance() => create();
@@ -6090,26 +6293,26 @@ class Investment extends $pb.GeneratedMessage {
   void clearCurrency() => clearField(9);
 
   @$pb.TagNumber(10)
-  $36.Timestamp get purchaseDate => $_getN(9);
+  $42.Timestamp get purchaseDate => $_getN(9);
   @$pb.TagNumber(10)
-  set purchaseDate($36.Timestamp v) { setField(10, v); }
+  set purchaseDate($42.Timestamp v) { setField(10, v); }
   @$pb.TagNumber(10)
   $core.bool hasPurchaseDate() => $_has(9);
   @$pb.TagNumber(10)
   void clearPurchaseDate() => clearField(10);
   @$pb.TagNumber(10)
-  $36.Timestamp ensurePurchaseDate() => $_ensure(9);
+  $42.Timestamp ensurePurchaseDate() => $_ensure(9);
 
   @$pb.TagNumber(11)
-  $36.Timestamp get lastUpdated => $_getN(10);
+  $42.Timestamp get lastUpdated => $_getN(10);
   @$pb.TagNumber(11)
-  set lastUpdated($36.Timestamp v) { setField(11, v); }
+  set lastUpdated($42.Timestamp v) { setField(11, v); }
   @$pb.TagNumber(11)
   $core.bool hasLastUpdated() => $_has(10);
   @$pb.TagNumber(11)
   void clearLastUpdated() => clearField(11);
   @$pb.TagNumber(11)
-  $36.Timestamp ensureLastUpdated() => $_ensure(10);
+  $42.Timestamp ensureLastUpdated() => $_ensure(10);
 
   @$pb.TagNumber(12)
   $core.String get tickerSymbol => $_getSZ(11);
@@ -6140,16 +6343,6 @@ class Investment extends $pb.GeneratedMessage {
 }
 
 class InvestmentPortfolio extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'InvestmentPortfolio', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..pc<InvestmentTypeData>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'investments', $pb.PbFieldType.PM, subBuilder: InvestmentTypeData.create)
-    ..a<$core.double>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalValue', $pb.PbFieldType.OD)
-    ..a<$core.double>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalInvested', $pb.PbFieldType.OD)
-    ..a<$core.double>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalGainLoss', $pb.PbFieldType.OD)
-    ..a<$core.double>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalGainLossPercentage', $pb.PbFieldType.OD)
-    ..hasRequiredFields = false
-  ;
-
-  InvestmentPortfolio._() : super();
   factory InvestmentPortfolio({
     $core.Iterable<InvestmentTypeData>? investments,
     $core.double? totalValue,
@@ -6157,26 +6350,37 @@ class InvestmentPortfolio extends $pb.GeneratedMessage {
     $core.double? totalGainLoss,
     $core.double? totalGainLossPercentage,
   }) {
-    final _result = create();
+    final $result = create();
     if (investments != null) {
-      _result.investments.addAll(investments);
+      $result.investments.addAll(investments);
     }
     if (totalValue != null) {
-      _result.totalValue = totalValue;
+      $result.totalValue = totalValue;
     }
     if (totalInvested != null) {
-      _result.totalInvested = totalInvested;
+      $result.totalInvested = totalInvested;
     }
     if (totalGainLoss != null) {
-      _result.totalGainLoss = totalGainLoss;
+      $result.totalGainLoss = totalGainLoss;
     }
     if (totalGainLossPercentage != null) {
-      _result.totalGainLossPercentage = totalGainLossPercentage;
+      $result.totalGainLossPercentage = totalGainLossPercentage;
     }
-    return _result;
+    return $result;
   }
+  InvestmentPortfolio._() : super();
   factory InvestmentPortfolio.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory InvestmentPortfolio.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'InvestmentPortfolio', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..pc<InvestmentTypeData>(1, _omitFieldNames ? '' : 'investments', $pb.PbFieldType.PM, subBuilder: InvestmentTypeData.create)
+    ..a<$core.double>(2, _omitFieldNames ? '' : 'totalValue', $pb.PbFieldType.OD)
+    ..a<$core.double>(3, _omitFieldNames ? '' : 'totalInvested', $pb.PbFieldType.OD)
+    ..a<$core.double>(4, _omitFieldNames ? '' : 'totalGainLoss', $pb.PbFieldType.OD)
+    ..a<$core.double>(5, _omitFieldNames ? '' : 'totalGainLossPercentage', $pb.PbFieldType.OD)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -6186,8 +6390,10 @@ class InvestmentPortfolio extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  InvestmentPortfolio copyWith(void Function(InvestmentPortfolio) updates) => super.copyWith((message) => updates(message as InvestmentPortfolio)) as InvestmentPortfolio; // ignore: deprecated_member_use
+  InvestmentPortfolio copyWith(void Function(InvestmentPortfolio) updates) => super.copyWith((message) => updates(message as InvestmentPortfolio)) as InvestmentPortfolio;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static InvestmentPortfolio create() => InvestmentPortfolio._();
   InvestmentPortfolio createEmptyInstance() => create();
@@ -6237,17 +6443,6 @@ class InvestmentPortfolio extends $pb.GeneratedMessage {
 }
 
 class InvestmentTypeData extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'InvestmentTypeData', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..e<InvestmentType>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'investmentType', $pb.PbFieldType.OE, defaultOrMaker: InvestmentType.INVESTMENT_TYPE_UNSPECIFIED, valueOf: InvestmentType.valueOf, enumValues: InvestmentType.values)
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'typeName')
-    ..a<$core.double>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currentValue', $pb.PbFieldType.OD)
-    ..a<$core.double>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'gainLoss', $pb.PbFieldType.OD)
-    ..a<$core.double>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'gainLossPercentage', $pb.PbFieldType.OD)
-    ..a<$core.int>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'assetCount', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
-
-  InvestmentTypeData._() : super();
   factory InvestmentTypeData({
     InvestmentType? investmentType,
     $core.String? typeName,
@@ -6256,29 +6451,41 @@ class InvestmentTypeData extends $pb.GeneratedMessage {
     $core.double? gainLossPercentage,
     $core.int? assetCount,
   }) {
-    final _result = create();
+    final $result = create();
     if (investmentType != null) {
-      _result.investmentType = investmentType;
+      $result.investmentType = investmentType;
     }
     if (typeName != null) {
-      _result.typeName = typeName;
+      $result.typeName = typeName;
     }
     if (currentValue != null) {
-      _result.currentValue = currentValue;
+      $result.currentValue = currentValue;
     }
     if (gainLoss != null) {
-      _result.gainLoss = gainLoss;
+      $result.gainLoss = gainLoss;
     }
     if (gainLossPercentage != null) {
-      _result.gainLossPercentage = gainLossPercentage;
+      $result.gainLossPercentage = gainLossPercentage;
     }
     if (assetCount != null) {
-      _result.assetCount = assetCount;
+      $result.assetCount = assetCount;
     }
-    return _result;
+    return $result;
   }
+  InvestmentTypeData._() : super();
   factory InvestmentTypeData.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory InvestmentTypeData.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'InvestmentTypeData', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..e<InvestmentType>(1, _omitFieldNames ? '' : 'investmentType', $pb.PbFieldType.OE, defaultOrMaker: InvestmentType.INVESTMENT_TYPE_UNSPECIFIED, valueOf: InvestmentType.valueOf, enumValues: InvestmentType.values)
+    ..aOS(2, _omitFieldNames ? '' : 'typeName')
+    ..a<$core.double>(3, _omitFieldNames ? '' : 'currentValue', $pb.PbFieldType.OD)
+    ..a<$core.double>(4, _omitFieldNames ? '' : 'gainLoss', $pb.PbFieldType.OD)
+    ..a<$core.double>(5, _omitFieldNames ? '' : 'gainLossPercentage', $pb.PbFieldType.OD)
+    ..a<$core.int>(6, _omitFieldNames ? '' : 'assetCount', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -6288,8 +6495,10 @@ class InvestmentTypeData extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  InvestmentTypeData copyWith(void Function(InvestmentTypeData) updates) => super.copyWith((message) => updates(message as InvestmentTypeData)) as InvestmentTypeData; // ignore: deprecated_member_use
+  InvestmentTypeData copyWith(void Function(InvestmentTypeData) updates) => super.copyWith((message) => updates(message as InvestmentTypeData)) as InvestmentTypeData;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static InvestmentTypeData create() => InvestmentTypeData._();
   InvestmentTypeData createEmptyInstance() => create();
@@ -6354,27 +6563,6 @@ class InvestmentTypeData extends $pb.GeneratedMessage {
 }
 
 class FinancialGoal extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'FinancialGoal', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
-    ..a<$fixnum.Int64>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'name')
-    ..e<GoalType>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'goalType', $pb.PbFieldType.OE, defaultOrMaker: GoalType.GOAL_TYPE_UNSPECIFIED, valueOf: GoalType.valueOf, enumValues: GoalType.values)
-    ..a<$core.double>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'targetAmount', $pb.PbFieldType.OD)
-    ..a<$core.double>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currentAmount', $pb.PbFieldType.OD)
-    ..a<$core.double>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'monthlyContribution', $pb.PbFieldType.OD)
-    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
-    ..aOM<$36.Timestamp>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'targetDate', subBuilder: $36.Timestamp.create)
-    ..e<GoalStatus>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: GoalStatus.GOAL_STATUS_UNSPECIFIED, valueOf: GoalStatus.valueOf, enumValues: GoalStatus.values)
-    ..a<$core.double>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'percentageComplete', $pb.PbFieldType.OD)
-    ..a<$core.int>(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'monthsRemaining', $pb.PbFieldType.O3)
-    ..aOS(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'icon')
-    ..aOS(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'color')
-    ..aOM<$36.Timestamp>(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $36.Timestamp.create)
-    ..aOM<$36.Timestamp>(16, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $36.Timestamp.create)
-    ..hasRequiredFields = false
-  ;
-
-  FinancialGoal._() : super();
   factory FinancialGoal({
     $core.String? id,
     $fixnum.Int64? userId,
@@ -6384,68 +6572,90 @@ class FinancialGoal extends $pb.GeneratedMessage {
     $core.double? currentAmount,
     $core.double? monthlyContribution,
     $core.String? currency,
-    $36.Timestamp? targetDate,
+    $42.Timestamp? targetDate,
     GoalStatus? status,
     $core.double? percentageComplete,
     $core.int? monthsRemaining,
     $core.String? icon,
     $core.String? color,
-    $36.Timestamp? createdAt,
-    $36.Timestamp? updatedAt,
+    $42.Timestamp? createdAt,
+    $42.Timestamp? updatedAt,
   }) {
-    final _result = create();
+    final $result = create();
     if (id != null) {
-      _result.id = id;
+      $result.id = id;
     }
     if (userId != null) {
-      _result.userId = userId;
+      $result.userId = userId;
     }
     if (name != null) {
-      _result.name = name;
+      $result.name = name;
     }
     if (goalType != null) {
-      _result.goalType = goalType;
+      $result.goalType = goalType;
     }
     if (targetAmount != null) {
-      _result.targetAmount = targetAmount;
+      $result.targetAmount = targetAmount;
     }
     if (currentAmount != null) {
-      _result.currentAmount = currentAmount;
+      $result.currentAmount = currentAmount;
     }
     if (monthlyContribution != null) {
-      _result.monthlyContribution = monthlyContribution;
+      $result.monthlyContribution = monthlyContribution;
     }
     if (currency != null) {
-      _result.currency = currency;
+      $result.currency = currency;
     }
     if (targetDate != null) {
-      _result.targetDate = targetDate;
+      $result.targetDate = targetDate;
     }
     if (status != null) {
-      _result.status = status;
+      $result.status = status;
     }
     if (percentageComplete != null) {
-      _result.percentageComplete = percentageComplete;
+      $result.percentageComplete = percentageComplete;
     }
     if (monthsRemaining != null) {
-      _result.monthsRemaining = monthsRemaining;
+      $result.monthsRemaining = monthsRemaining;
     }
     if (icon != null) {
-      _result.icon = icon;
+      $result.icon = icon;
     }
     if (color != null) {
-      _result.color = color;
+      $result.color = color;
     }
     if (createdAt != null) {
-      _result.createdAt = createdAt;
+      $result.createdAt = createdAt;
     }
     if (updatedAt != null) {
-      _result.updatedAt = updatedAt;
+      $result.updatedAt = updatedAt;
     }
-    return _result;
+    return $result;
   }
+  FinancialGoal._() : super();
   factory FinancialGoal.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory FinancialGoal.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'FinancialGoal', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'id')
+    ..a<$fixnum.Int64>(2, _omitFieldNames ? '' : 'userId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(3, _omitFieldNames ? '' : 'name')
+    ..e<GoalType>(4, _omitFieldNames ? '' : 'goalType', $pb.PbFieldType.OE, defaultOrMaker: GoalType.GOAL_TYPE_UNSPECIFIED, valueOf: GoalType.valueOf, enumValues: GoalType.values)
+    ..a<$core.double>(5, _omitFieldNames ? '' : 'targetAmount', $pb.PbFieldType.OD)
+    ..a<$core.double>(6, _omitFieldNames ? '' : 'currentAmount', $pb.PbFieldType.OD)
+    ..a<$core.double>(7, _omitFieldNames ? '' : 'monthlyContribution', $pb.PbFieldType.OD)
+    ..aOS(8, _omitFieldNames ? '' : 'currency')
+    ..aOM<$42.Timestamp>(9, _omitFieldNames ? '' : 'targetDate', subBuilder: $42.Timestamp.create)
+    ..e<GoalStatus>(10, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: GoalStatus.GOAL_STATUS_UNSPECIFIED, valueOf: GoalStatus.valueOf, enumValues: GoalStatus.values)
+    ..a<$core.double>(11, _omitFieldNames ? '' : 'percentageComplete', $pb.PbFieldType.OD)
+    ..a<$core.int>(12, _omitFieldNames ? '' : 'monthsRemaining', $pb.PbFieldType.O3)
+    ..aOS(13, _omitFieldNames ? '' : 'icon')
+    ..aOS(14, _omitFieldNames ? '' : 'color')
+    ..aOM<$42.Timestamp>(15, _omitFieldNames ? '' : 'createdAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$42.Timestamp>(16, _omitFieldNames ? '' : 'updatedAt', subBuilder: $42.Timestamp.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -6455,8 +6665,10 @@ class FinancialGoal extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  FinancialGoal copyWith(void Function(FinancialGoal) updates) => super.copyWith((message) => updates(message as FinancialGoal)) as FinancialGoal; // ignore: deprecated_member_use
+  FinancialGoal copyWith(void Function(FinancialGoal) updates) => super.copyWith((message) => updates(message as FinancialGoal)) as FinancialGoal;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static FinancialGoal create() => FinancialGoal._();
   FinancialGoal createEmptyInstance() => create();
@@ -6538,15 +6750,15 @@ class FinancialGoal extends $pb.GeneratedMessage {
   void clearCurrency() => clearField(8);
 
   @$pb.TagNumber(9)
-  $36.Timestamp get targetDate => $_getN(8);
+  $42.Timestamp get targetDate => $_getN(8);
   @$pb.TagNumber(9)
-  set targetDate($36.Timestamp v) { setField(9, v); }
+  set targetDate($42.Timestamp v) { setField(9, v); }
   @$pb.TagNumber(9)
   $core.bool hasTargetDate() => $_has(8);
   @$pb.TagNumber(9)
   void clearTargetDate() => clearField(9);
   @$pb.TagNumber(9)
-  $36.Timestamp ensureTargetDate() => $_ensure(8);
+  $42.Timestamp ensureTargetDate() => $_ensure(8);
 
   @$pb.TagNumber(10)
   GoalStatus get status => $_getN(9);
@@ -6594,61 +6806,62 @@ class FinancialGoal extends $pb.GeneratedMessage {
   void clearColor() => clearField(14);
 
   @$pb.TagNumber(15)
-  $36.Timestamp get createdAt => $_getN(14);
+  $42.Timestamp get createdAt => $_getN(14);
   @$pb.TagNumber(15)
-  set createdAt($36.Timestamp v) { setField(15, v); }
+  set createdAt($42.Timestamp v) { setField(15, v); }
   @$pb.TagNumber(15)
   $core.bool hasCreatedAt() => $_has(14);
   @$pb.TagNumber(15)
   void clearCreatedAt() => clearField(15);
   @$pb.TagNumber(15)
-  $36.Timestamp ensureCreatedAt() => $_ensure(14);
+  $42.Timestamp ensureCreatedAt() => $_ensure(14);
 
   @$pb.TagNumber(16)
-  $36.Timestamp get updatedAt => $_getN(15);
+  $42.Timestamp get updatedAt => $_getN(15);
   @$pb.TagNumber(16)
-  set updatedAt($36.Timestamp v) { setField(16, v); }
+  set updatedAt($42.Timestamp v) { setField(16, v); }
   @$pb.TagNumber(16)
   $core.bool hasUpdatedAt() => $_has(15);
   @$pb.TagNumber(16)
   void clearUpdatedAt() => clearField(16);
   @$pb.TagNumber(16)
-  $36.Timestamp ensureUpdatedAt() => $_ensure(15);
+  $42.Timestamp ensureUpdatedAt() => $_ensure(15);
 }
 
 class FinancialGoalsList extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'FinancialGoalsList', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..pc<FinancialGoal>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'goals', $pb.PbFieldType.PM, subBuilder: FinancialGoal.create)
-    ..a<$core.double>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalTarget', $pb.PbFieldType.OD)
-    ..a<$core.double>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalSaved', $pb.PbFieldType.OD)
-    ..a<$core.int>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'activeGoalsCount', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
-
-  FinancialGoalsList._() : super();
   factory FinancialGoalsList({
     $core.Iterable<FinancialGoal>? goals,
     $core.double? totalTarget,
     $core.double? totalSaved,
     $core.int? activeGoalsCount,
   }) {
-    final _result = create();
+    final $result = create();
     if (goals != null) {
-      _result.goals.addAll(goals);
+      $result.goals.addAll(goals);
     }
     if (totalTarget != null) {
-      _result.totalTarget = totalTarget;
+      $result.totalTarget = totalTarget;
     }
     if (totalSaved != null) {
-      _result.totalSaved = totalSaved;
+      $result.totalSaved = totalSaved;
     }
     if (activeGoalsCount != null) {
-      _result.activeGoalsCount = activeGoalsCount;
+      $result.activeGoalsCount = activeGoalsCount;
     }
-    return _result;
+    return $result;
   }
+  FinancialGoalsList._() : super();
   factory FinancialGoalsList.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory FinancialGoalsList.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'FinancialGoalsList', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..pc<FinancialGoal>(1, _omitFieldNames ? '' : 'goals', $pb.PbFieldType.PM, subBuilder: FinancialGoal.create)
+    ..a<$core.double>(2, _omitFieldNames ? '' : 'totalTarget', $pb.PbFieldType.OD)
+    ..a<$core.double>(3, _omitFieldNames ? '' : 'totalSaved', $pb.PbFieldType.OD)
+    ..a<$core.int>(4, _omitFieldNames ? '' : 'activeGoalsCount', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -6658,8 +6871,10 @@ class FinancialGoalsList extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  FinancialGoalsList copyWith(void Function(FinancialGoalsList) updates) => super.copyWith((message) => updates(message as FinancialGoalsList)) as FinancialGoalsList; // ignore: deprecated_member_use
+  FinancialGoalsList copyWith(void Function(FinancialGoalsList) updates) => super.copyWith((message) => updates(message as FinancialGoalsList)) as FinancialGoalsList;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static FinancialGoalsList create() => FinancialGoalsList._();
   FinancialGoalsList createEmptyInstance() => create();
@@ -6699,21 +6914,8 @@ class FinancialGoalsList extends $pb.GeneratedMessage {
   void clearActiveGoalsCount() => clearField(4);
 }
 
+/// Savings Goal (Primary/Main savings target)
 class SavingsGoal extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'SavingsGoal', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
-    ..a<$fixnum.Int64>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'name')
-    ..a<$core.double>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'targetAmount', $pb.PbFieldType.OD)
-    ..a<$core.double>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currentAmount', $pb.PbFieldType.OD)
-    ..a<$core.double>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'percentageComplete', $pb.PbFieldType.OD)
-    ..aOM<$36.Timestamp>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'targetDate', subBuilder: $36.Timestamp.create)
-    ..aOM<$36.Timestamp>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $36.Timestamp.create)
-    ..aOM<$36.Timestamp>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $36.Timestamp.create)
-    ..hasRequiredFields = false
-  ;
-
-  SavingsGoal._() : super();
   factory SavingsGoal({
     $core.String? id,
     $fixnum.Int64? userId,
@@ -6721,42 +6923,57 @@ class SavingsGoal extends $pb.GeneratedMessage {
     $core.double? targetAmount,
     $core.double? currentAmount,
     $core.double? percentageComplete,
-    $36.Timestamp? targetDate,
-    $36.Timestamp? createdAt,
-    $36.Timestamp? updatedAt,
+    $42.Timestamp? targetDate,
+    $42.Timestamp? createdAt,
+    $42.Timestamp? updatedAt,
   }) {
-    final _result = create();
+    final $result = create();
     if (id != null) {
-      _result.id = id;
+      $result.id = id;
     }
     if (userId != null) {
-      _result.userId = userId;
+      $result.userId = userId;
     }
     if (name != null) {
-      _result.name = name;
+      $result.name = name;
     }
     if (targetAmount != null) {
-      _result.targetAmount = targetAmount;
+      $result.targetAmount = targetAmount;
     }
     if (currentAmount != null) {
-      _result.currentAmount = currentAmount;
+      $result.currentAmount = currentAmount;
     }
     if (percentageComplete != null) {
-      _result.percentageComplete = percentageComplete;
+      $result.percentageComplete = percentageComplete;
     }
     if (targetDate != null) {
-      _result.targetDate = targetDate;
+      $result.targetDate = targetDate;
     }
     if (createdAt != null) {
-      _result.createdAt = createdAt;
+      $result.createdAt = createdAt;
     }
     if (updatedAt != null) {
-      _result.updatedAt = updatedAt;
+      $result.updatedAt = updatedAt;
     }
-    return _result;
+    return $result;
   }
+  SavingsGoal._() : super();
   factory SavingsGoal.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory SavingsGoal.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SavingsGoal', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'id')
+    ..a<$fixnum.Int64>(2, _omitFieldNames ? '' : 'userId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(3, _omitFieldNames ? '' : 'name')
+    ..a<$core.double>(4, _omitFieldNames ? '' : 'targetAmount', $pb.PbFieldType.OD)
+    ..a<$core.double>(5, _omitFieldNames ? '' : 'currentAmount', $pb.PbFieldType.OD)
+    ..a<$core.double>(6, _omitFieldNames ? '' : 'percentageComplete', $pb.PbFieldType.OD)
+    ..aOM<$42.Timestamp>(7, _omitFieldNames ? '' : 'targetDate', subBuilder: $42.Timestamp.create)
+    ..aOM<$42.Timestamp>(8, _omitFieldNames ? '' : 'createdAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$42.Timestamp>(9, _omitFieldNames ? '' : 'updatedAt', subBuilder: $42.Timestamp.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -6766,8 +6983,10 @@ class SavingsGoal extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  SavingsGoal copyWith(void Function(SavingsGoal) updates) => super.copyWith((message) => updates(message as SavingsGoal)) as SavingsGoal; // ignore: deprecated_member_use
+  SavingsGoal copyWith(void Function(SavingsGoal) updates) => super.copyWith((message) => updates(message as SavingsGoal)) as SavingsGoal;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static SavingsGoal create() => SavingsGoal._();
   SavingsGoal createEmptyInstance() => create();
@@ -6831,61 +7050,40 @@ class SavingsGoal extends $pb.GeneratedMessage {
   void clearPercentageComplete() => clearField(6);
 
   @$pb.TagNumber(7)
-  $36.Timestamp get targetDate => $_getN(6);
+  $42.Timestamp get targetDate => $_getN(6);
   @$pb.TagNumber(7)
-  set targetDate($36.Timestamp v) { setField(7, v); }
+  set targetDate($42.Timestamp v) { setField(7, v); }
   @$pb.TagNumber(7)
   $core.bool hasTargetDate() => $_has(6);
   @$pb.TagNumber(7)
   void clearTargetDate() => clearField(7);
   @$pb.TagNumber(7)
-  $36.Timestamp ensureTargetDate() => $_ensure(6);
+  $42.Timestamp ensureTargetDate() => $_ensure(6);
 
   @$pb.TagNumber(8)
-  $36.Timestamp get createdAt => $_getN(7);
+  $42.Timestamp get createdAt => $_getN(7);
   @$pb.TagNumber(8)
-  set createdAt($36.Timestamp v) { setField(8, v); }
+  set createdAt($42.Timestamp v) { setField(8, v); }
   @$pb.TagNumber(8)
   $core.bool hasCreatedAt() => $_has(7);
   @$pb.TagNumber(8)
   void clearCreatedAt() => clearField(8);
   @$pb.TagNumber(8)
-  $36.Timestamp ensureCreatedAt() => $_ensure(7);
+  $42.Timestamp ensureCreatedAt() => $_ensure(7);
 
   @$pb.TagNumber(9)
-  $36.Timestamp get updatedAt => $_getN(8);
+  $42.Timestamp get updatedAt => $_getN(8);
   @$pb.TagNumber(9)
-  set updatedAt($36.Timestamp v) { setField(9, v); }
+  set updatedAt($42.Timestamp v) { setField(9, v); }
   @$pb.TagNumber(9)
   $core.bool hasUpdatedAt() => $_has(8);
   @$pb.TagNumber(9)
   void clearUpdatedAt() => clearField(9);
   @$pb.TagNumber(9)
-  $36.Timestamp ensureUpdatedAt() => $_ensure(8);
+  $42.Timestamp ensureUpdatedAt() => $_ensure(8);
 }
 
 class RecurringBill extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'RecurringBill', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
-    ..a<$fixnum.Int64>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'name')
-    ..a<$core.double>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
-    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
-    ..e<ExpenseCategory>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'category', $pb.PbFieldType.OE, defaultOrMaker: ExpenseCategory.EXPENSE_CATEGORY_UNSPECIFIED, valueOf: ExpenseCategory.valueOf, enumValues: ExpenseCategory.values)
-    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recurrencePattern')
-    ..aOM<$36.Timestamp>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'nextDueDate', subBuilder: $36.Timestamp.create)
-    ..aOM<$36.Timestamp>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastPaidDate', subBuilder: $36.Timestamp.create)
-    ..e<BillStatus>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: BillStatus.BILL_STATUS_UNSPECIFIED, valueOf: BillStatus.valueOf, enumValues: BillStatus.values)
-    ..a<$core.int>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'daysUntilDue', $pb.PbFieldType.O3)
-    ..aOS(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'merchant')
-    ..aOS(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'icon')
-    ..aOB(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'autoPayEnabled')
-    ..aOM<$36.Timestamp>(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $36.Timestamp.create)
-    ..aOM<$36.Timestamp>(16, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $36.Timestamp.create)
-    ..hasRequiredFields = false
-  ;
-
-  RecurringBill._() : super();
   factory RecurringBill({
     $core.String? id,
     $fixnum.Int64? userId,
@@ -6894,69 +7092,91 @@ class RecurringBill extends $pb.GeneratedMessage {
     $core.String? currency,
     ExpenseCategory? category,
     $core.String? recurrencePattern,
-    $36.Timestamp? nextDueDate,
-    $36.Timestamp? lastPaidDate,
+    $42.Timestamp? nextDueDate,
+    $42.Timestamp? lastPaidDate,
     BillStatus? status,
     $core.int? daysUntilDue,
     $core.String? merchant,
     $core.String? icon,
     $core.bool? autoPayEnabled,
-    $36.Timestamp? createdAt,
-    $36.Timestamp? updatedAt,
+    $42.Timestamp? createdAt,
+    $42.Timestamp? updatedAt,
   }) {
-    final _result = create();
+    final $result = create();
     if (id != null) {
-      _result.id = id;
+      $result.id = id;
     }
     if (userId != null) {
-      _result.userId = userId;
+      $result.userId = userId;
     }
     if (name != null) {
-      _result.name = name;
+      $result.name = name;
     }
     if (amount != null) {
-      _result.amount = amount;
+      $result.amount = amount;
     }
     if (currency != null) {
-      _result.currency = currency;
+      $result.currency = currency;
     }
     if (category != null) {
-      _result.category = category;
+      $result.category = category;
     }
     if (recurrencePattern != null) {
-      _result.recurrencePattern = recurrencePattern;
+      $result.recurrencePattern = recurrencePattern;
     }
     if (nextDueDate != null) {
-      _result.nextDueDate = nextDueDate;
+      $result.nextDueDate = nextDueDate;
     }
     if (lastPaidDate != null) {
-      _result.lastPaidDate = lastPaidDate;
+      $result.lastPaidDate = lastPaidDate;
     }
     if (status != null) {
-      _result.status = status;
+      $result.status = status;
     }
     if (daysUntilDue != null) {
-      _result.daysUntilDue = daysUntilDue;
+      $result.daysUntilDue = daysUntilDue;
     }
     if (merchant != null) {
-      _result.merchant = merchant;
+      $result.merchant = merchant;
     }
     if (icon != null) {
-      _result.icon = icon;
+      $result.icon = icon;
     }
     if (autoPayEnabled != null) {
-      _result.autoPayEnabled = autoPayEnabled;
+      $result.autoPayEnabled = autoPayEnabled;
     }
     if (createdAt != null) {
-      _result.createdAt = createdAt;
+      $result.createdAt = createdAt;
     }
     if (updatedAt != null) {
-      _result.updatedAt = updatedAt;
+      $result.updatedAt = updatedAt;
     }
-    return _result;
+    return $result;
   }
+  RecurringBill._() : super();
   factory RecurringBill.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory RecurringBill.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'RecurringBill', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'id')
+    ..a<$fixnum.Int64>(2, _omitFieldNames ? '' : 'userId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(3, _omitFieldNames ? '' : 'name')
+    ..a<$core.double>(4, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
+    ..aOS(5, _omitFieldNames ? '' : 'currency')
+    ..e<ExpenseCategory>(6, _omitFieldNames ? '' : 'category', $pb.PbFieldType.OE, defaultOrMaker: ExpenseCategory.EXPENSE_CATEGORY_UNSPECIFIED, valueOf: ExpenseCategory.valueOf, enumValues: ExpenseCategory.values)
+    ..aOS(7, _omitFieldNames ? '' : 'recurrencePattern')
+    ..aOM<$42.Timestamp>(8, _omitFieldNames ? '' : 'nextDueDate', subBuilder: $42.Timestamp.create)
+    ..aOM<$42.Timestamp>(9, _omitFieldNames ? '' : 'lastPaidDate', subBuilder: $42.Timestamp.create)
+    ..e<BillStatus>(10, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: BillStatus.BILL_STATUS_UNSPECIFIED, valueOf: BillStatus.valueOf, enumValues: BillStatus.values)
+    ..a<$core.int>(11, _omitFieldNames ? '' : 'daysUntilDue', $pb.PbFieldType.O3)
+    ..aOS(12, _omitFieldNames ? '' : 'merchant')
+    ..aOS(13, _omitFieldNames ? '' : 'icon')
+    ..aOB(14, _omitFieldNames ? '' : 'autoPayEnabled')
+    ..aOM<$42.Timestamp>(15, _omitFieldNames ? '' : 'createdAt', subBuilder: $42.Timestamp.create)
+    ..aOM<$42.Timestamp>(16, _omitFieldNames ? '' : 'updatedAt', subBuilder: $42.Timestamp.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -6966,8 +7186,10 @@ class RecurringBill extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  RecurringBill copyWith(void Function(RecurringBill) updates) => super.copyWith((message) => updates(message as RecurringBill)) as RecurringBill; // ignore: deprecated_member_use
+  RecurringBill copyWith(void Function(RecurringBill) updates) => super.copyWith((message) => updates(message as RecurringBill)) as RecurringBill;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static RecurringBill create() => RecurringBill._();
   RecurringBill createEmptyInstance() => create();
@@ -7040,26 +7262,26 @@ class RecurringBill extends $pb.GeneratedMessage {
   void clearRecurrencePattern() => clearField(7);
 
   @$pb.TagNumber(8)
-  $36.Timestamp get nextDueDate => $_getN(7);
+  $42.Timestamp get nextDueDate => $_getN(7);
   @$pb.TagNumber(8)
-  set nextDueDate($36.Timestamp v) { setField(8, v); }
+  set nextDueDate($42.Timestamp v) { setField(8, v); }
   @$pb.TagNumber(8)
   $core.bool hasNextDueDate() => $_has(7);
   @$pb.TagNumber(8)
   void clearNextDueDate() => clearField(8);
   @$pb.TagNumber(8)
-  $36.Timestamp ensureNextDueDate() => $_ensure(7);
+  $42.Timestamp ensureNextDueDate() => $_ensure(7);
 
   @$pb.TagNumber(9)
-  $36.Timestamp get lastPaidDate => $_getN(8);
+  $42.Timestamp get lastPaidDate => $_getN(8);
   @$pb.TagNumber(9)
-  set lastPaidDate($36.Timestamp v) { setField(9, v); }
+  set lastPaidDate($42.Timestamp v) { setField(9, v); }
   @$pb.TagNumber(9)
   $core.bool hasLastPaidDate() => $_has(8);
   @$pb.TagNumber(9)
   void clearLastPaidDate() => clearField(9);
   @$pb.TagNumber(9)
-  $36.Timestamp ensureLastPaidDate() => $_ensure(8);
+  $42.Timestamp ensureLastPaidDate() => $_ensure(8);
 
   @$pb.TagNumber(10)
   BillStatus get status => $_getN(9);
@@ -7107,56 +7329,57 @@ class RecurringBill extends $pb.GeneratedMessage {
   void clearAutoPayEnabled() => clearField(14);
 
   @$pb.TagNumber(15)
-  $36.Timestamp get createdAt => $_getN(14);
+  $42.Timestamp get createdAt => $_getN(14);
   @$pb.TagNumber(15)
-  set createdAt($36.Timestamp v) { setField(15, v); }
+  set createdAt($42.Timestamp v) { setField(15, v); }
   @$pb.TagNumber(15)
   $core.bool hasCreatedAt() => $_has(14);
   @$pb.TagNumber(15)
   void clearCreatedAt() => clearField(15);
   @$pb.TagNumber(15)
-  $36.Timestamp ensureCreatedAt() => $_ensure(14);
+  $42.Timestamp ensureCreatedAt() => $_ensure(14);
 
   @$pb.TagNumber(16)
-  $36.Timestamp get updatedAt => $_getN(15);
+  $42.Timestamp get updatedAt => $_getN(15);
   @$pb.TagNumber(16)
-  set updatedAt($36.Timestamp v) { setField(16, v); }
+  set updatedAt($42.Timestamp v) { setField(16, v); }
   @$pb.TagNumber(16)
   $core.bool hasUpdatedAt() => $_has(15);
   @$pb.TagNumber(16)
   void clearUpdatedAt() => clearField(16);
   @$pb.TagNumber(16)
-  $36.Timestamp ensureUpdatedAt() => $_ensure(15);
+  $42.Timestamp ensureUpdatedAt() => $_ensure(15);
 }
 
 class UpcomingBillsList extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UpcomingBillsList', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..pc<RecurringBill>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'bills', $pb.PbFieldType.PM, subBuilder: RecurringBill.create)
-    ..a<$core.double>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalUpcoming', $pb.PbFieldType.OD)
-    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'billsCount', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
-
-  UpcomingBillsList._() : super();
   factory UpcomingBillsList({
     $core.Iterable<RecurringBill>? bills,
     $core.double? totalUpcoming,
     $core.int? billsCount,
   }) {
-    final _result = create();
+    final $result = create();
     if (bills != null) {
-      _result.bills.addAll(bills);
+      $result.bills.addAll(bills);
     }
     if (totalUpcoming != null) {
-      _result.totalUpcoming = totalUpcoming;
+      $result.totalUpcoming = totalUpcoming;
     }
     if (billsCount != null) {
-      _result.billsCount = billsCount;
+      $result.billsCount = billsCount;
     }
-    return _result;
+    return $result;
   }
+  UpcomingBillsList._() : super();
   factory UpcomingBillsList.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory UpcomingBillsList.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UpcomingBillsList', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..pc<RecurringBill>(1, _omitFieldNames ? '' : 'bills', $pb.PbFieldType.PM, subBuilder: RecurringBill.create)
+    ..a<$core.double>(2, _omitFieldNames ? '' : 'totalUpcoming', $pb.PbFieldType.OD)
+    ..a<$core.int>(3, _omitFieldNames ? '' : 'billsCount', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -7166,8 +7389,10 @@ class UpcomingBillsList extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  UpcomingBillsList copyWith(void Function(UpcomingBillsList) updates) => super.copyWith((message) => updates(message as UpcomingBillsList)) as UpcomingBillsList; // ignore: deprecated_member_use
+  UpcomingBillsList copyWith(void Function(UpcomingBillsList) updates) => super.copyWith((message) => updates(message as UpcomingBillsList)) as UpcomingBillsList;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static UpcomingBillsList create() => UpcomingBillsList._();
   UpcomingBillsList createEmptyInstance() => create();
@@ -7198,20 +7423,9 @@ class UpcomingBillsList extends $pb.GeneratedMessage {
   void clearBillsCount() => clearField(3);
 }
 
+/// Add to StatisticsService:
+/// Income Management
 class CreateIncomeSourceRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CreateIncomeSourceRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'name')
-    ..a<$core.double>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
-    ..e<IncomeCategory>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'category', $pb.PbFieldType.OE, defaultOrMaker: IncomeCategory.INCOME_CATEGORY_UNSPECIFIED, valueOf: IncomeCategory.valueOf, enumValues: IncomeCategory.values)
-    ..aOB(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isRecurring')
-    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recurrencePattern')
-    ..aOM<$36.Timestamp>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastReceived', subBuilder: $36.Timestamp.create)
-    ..aOM<$36.Timestamp>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'nextExpected', subBuilder: $36.Timestamp.create)
-    ..hasRequiredFields = false
-  ;
-
-  CreateIncomeSourceRequest._() : super();
   factory CreateIncomeSourceRequest({
     $core.String? name,
     $core.double? amount,
@@ -7219,38 +7433,52 @@ class CreateIncomeSourceRequest extends $pb.GeneratedMessage {
     IncomeCategory? category,
     $core.bool? isRecurring,
     $core.String? recurrencePattern,
-    $36.Timestamp? lastReceived,
-    $36.Timestamp? nextExpected,
+    $42.Timestamp? lastReceived,
+    $42.Timestamp? nextExpected,
   }) {
-    final _result = create();
+    final $result = create();
     if (name != null) {
-      _result.name = name;
+      $result.name = name;
     }
     if (amount != null) {
-      _result.amount = amount;
+      $result.amount = amount;
     }
     if (currency != null) {
-      _result.currency = currency;
+      $result.currency = currency;
     }
     if (category != null) {
-      _result.category = category;
+      $result.category = category;
     }
     if (isRecurring != null) {
-      _result.isRecurring = isRecurring;
+      $result.isRecurring = isRecurring;
     }
     if (recurrencePattern != null) {
-      _result.recurrencePattern = recurrencePattern;
+      $result.recurrencePattern = recurrencePattern;
     }
     if (lastReceived != null) {
-      _result.lastReceived = lastReceived;
+      $result.lastReceived = lastReceived;
     }
     if (nextExpected != null) {
-      _result.nextExpected = nextExpected;
+      $result.nextExpected = nextExpected;
     }
-    return _result;
+    return $result;
   }
+  CreateIncomeSourceRequest._() : super();
   factory CreateIncomeSourceRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CreateIncomeSourceRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreateIncomeSourceRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'name')
+    ..a<$core.double>(2, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
+    ..aOS(3, _omitFieldNames ? '' : 'currency')
+    ..e<IncomeCategory>(4, _omitFieldNames ? '' : 'category', $pb.PbFieldType.OE, defaultOrMaker: IncomeCategory.INCOME_CATEGORY_UNSPECIFIED, valueOf: IncomeCategory.valueOf, enumValues: IncomeCategory.values)
+    ..aOB(5, _omitFieldNames ? '' : 'isRecurring')
+    ..aOS(6, _omitFieldNames ? '' : 'recurrencePattern')
+    ..aOM<$42.Timestamp>(7, _omitFieldNames ? '' : 'lastReceived', subBuilder: $42.Timestamp.create)
+    ..aOM<$42.Timestamp>(8, _omitFieldNames ? '' : 'nextExpected', subBuilder: $42.Timestamp.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -7260,8 +7488,10 @@ class CreateIncomeSourceRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CreateIncomeSourceRequest copyWith(void Function(CreateIncomeSourceRequest) updates) => super.copyWith((message) => updates(message as CreateIncomeSourceRequest)) as CreateIncomeSourceRequest; // ignore: deprecated_member_use
+  CreateIncomeSourceRequest copyWith(void Function(CreateIncomeSourceRequest) updates) => super.copyWith((message) => updates(message as CreateIncomeSourceRequest)) as CreateIncomeSourceRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static CreateIncomeSourceRequest create() => CreateIncomeSourceRequest._();
   CreateIncomeSourceRequest createEmptyInstance() => create();
@@ -7325,56 +7555,57 @@ class CreateIncomeSourceRequest extends $pb.GeneratedMessage {
   void clearRecurrencePattern() => clearField(6);
 
   @$pb.TagNumber(7)
-  $36.Timestamp get lastReceived => $_getN(6);
+  $42.Timestamp get lastReceived => $_getN(6);
   @$pb.TagNumber(7)
-  set lastReceived($36.Timestamp v) { setField(7, v); }
+  set lastReceived($42.Timestamp v) { setField(7, v); }
   @$pb.TagNumber(7)
   $core.bool hasLastReceived() => $_has(6);
   @$pb.TagNumber(7)
   void clearLastReceived() => clearField(7);
   @$pb.TagNumber(7)
-  $36.Timestamp ensureLastReceived() => $_ensure(6);
+  $42.Timestamp ensureLastReceived() => $_ensure(6);
 
   @$pb.TagNumber(8)
-  $36.Timestamp get nextExpected => $_getN(7);
+  $42.Timestamp get nextExpected => $_getN(7);
   @$pb.TagNumber(8)
-  set nextExpected($36.Timestamp v) { setField(8, v); }
+  set nextExpected($42.Timestamp v) { setField(8, v); }
   @$pb.TagNumber(8)
   $core.bool hasNextExpected() => $_has(7);
   @$pb.TagNumber(8)
   void clearNextExpected() => clearField(8);
   @$pb.TagNumber(8)
-  $36.Timestamp ensureNextExpected() => $_ensure(7);
+  $42.Timestamp ensureNextExpected() => $_ensure(7);
 }
 
 class CreateIncomeSourceResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CreateIncomeSourceResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<IncomeSource>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'incomeSource', subBuilder: IncomeSource.create)
-    ..aOB(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
-    ..hasRequiredFields = false
-  ;
-
-  CreateIncomeSourceResponse._() : super();
   factory CreateIncomeSourceResponse({
     IncomeSource? incomeSource,
     $core.bool? success,
     $core.String? message,
   }) {
-    final _result = create();
+    final $result = create();
     if (incomeSource != null) {
-      _result.incomeSource = incomeSource;
+      $result.incomeSource = incomeSource;
     }
     if (success != null) {
-      _result.success = success;
+      $result.success = success;
     }
     if (message != null) {
-      _result.message = message;
+      $result.message = message;
     }
-    return _result;
+    return $result;
   }
+  CreateIncomeSourceResponse._() : super();
   factory CreateIncomeSourceResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CreateIncomeSourceResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreateIncomeSourceResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOM<IncomeSource>(1, _omitFieldNames ? '' : 'incomeSource', subBuilder: IncomeSource.create)
+    ..aOB(2, _omitFieldNames ? '' : 'success')
+    ..aOS(3, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -7384,8 +7615,10 @@ class CreateIncomeSourceResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CreateIncomeSourceResponse copyWith(void Function(CreateIncomeSourceResponse) updates) => super.copyWith((message) => updates(message as CreateIncomeSourceResponse)) as CreateIncomeSourceResponse; // ignore: deprecated_member_use
+  CreateIncomeSourceResponse copyWith(void Function(CreateIncomeSourceResponse) updates) => super.copyWith((message) => updates(message as CreateIncomeSourceResponse)) as CreateIncomeSourceResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static CreateIncomeSourceResponse create() => CreateIncomeSourceResponse._();
   CreateIncomeSourceResponse createEmptyInstance() => create();
@@ -7425,23 +7658,24 @@ class CreateIncomeSourceResponse extends $pb.GeneratedMessage {
 }
 
 class GetIncomeSourcesRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetIncomeSourcesRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'activeOnly')
-    ..hasRequiredFields = false
-  ;
-
-  GetIncomeSourcesRequest._() : super();
   factory GetIncomeSourcesRequest({
     $core.bool? activeOnly,
   }) {
-    final _result = create();
+    final $result = create();
     if (activeOnly != null) {
-      _result.activeOnly = activeOnly;
+      $result.activeOnly = activeOnly;
     }
-    return _result;
+    return $result;
   }
+  GetIncomeSourcesRequest._() : super();
   factory GetIncomeSourcesRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetIncomeSourcesRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetIncomeSourcesRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'activeOnly')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -7451,8 +7685,10 @@ class GetIncomeSourcesRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetIncomeSourcesRequest copyWith(void Function(GetIncomeSourcesRequest) updates) => super.copyWith((message) => updates(message as GetIncomeSourcesRequest)) as GetIncomeSourcesRequest; // ignore: deprecated_member_use
+  GetIncomeSourcesRequest copyWith(void Function(GetIncomeSourcesRequest) updates) => super.copyWith((message) => updates(message as GetIncomeSourcesRequest)) as GetIncomeSourcesRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetIncomeSourcesRequest create() => GetIncomeSourcesRequest._();
   GetIncomeSourcesRequest createEmptyInstance() => create();
@@ -7472,28 +7708,29 @@ class GetIncomeSourcesRequest extends $pb.GeneratedMessage {
 }
 
 class GetIncomeSourcesResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetIncomeSourcesResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..pc<IncomeSource>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'incomeSources', $pb.PbFieldType.PM, subBuilder: IncomeSource.create)
-    ..a<$core.double>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalMonthlyIncome', $pb.PbFieldType.OD)
-    ..hasRequiredFields = false
-  ;
-
-  GetIncomeSourcesResponse._() : super();
   factory GetIncomeSourcesResponse({
     $core.Iterable<IncomeSource>? incomeSources,
     $core.double? totalMonthlyIncome,
   }) {
-    final _result = create();
+    final $result = create();
     if (incomeSources != null) {
-      _result.incomeSources.addAll(incomeSources);
+      $result.incomeSources.addAll(incomeSources);
     }
     if (totalMonthlyIncome != null) {
-      _result.totalMonthlyIncome = totalMonthlyIncome;
+      $result.totalMonthlyIncome = totalMonthlyIncome;
     }
-    return _result;
+    return $result;
   }
+  GetIncomeSourcesResponse._() : super();
   factory GetIncomeSourcesResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetIncomeSourcesResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetIncomeSourcesResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..pc<IncomeSource>(1, _omitFieldNames ? '' : 'incomeSources', $pb.PbFieldType.PM, subBuilder: IncomeSource.create)
+    ..a<$core.double>(2, _omitFieldNames ? '' : 'totalMonthlyIncome', $pb.PbFieldType.OD)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -7503,8 +7740,10 @@ class GetIncomeSourcesResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetIncomeSourcesResponse copyWith(void Function(GetIncomeSourcesResponse) updates) => super.copyWith((message) => updates(message as GetIncomeSourcesResponse)) as GetIncomeSourcesResponse; // ignore: deprecated_member_use
+  GetIncomeSourcesResponse copyWith(void Function(GetIncomeSourcesResponse) updates) => super.copyWith((message) => updates(message as GetIncomeSourcesResponse)) as GetIncomeSourcesResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetIncomeSourcesResponse create() => GetIncomeSourcesResponse._();
   GetIncomeSourcesResponse createEmptyInstance() => create();
@@ -7527,28 +7766,29 @@ class GetIncomeSourcesResponse extends $pb.GeneratedMessage {
 }
 
 class GetIncomeBreakdownRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetIncomeBreakdownRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<$36.Timestamp>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'startDate', subBuilder: $36.Timestamp.create)
-    ..aOM<$36.Timestamp>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'endDate', subBuilder: $36.Timestamp.create)
+  factory GetIncomeBreakdownRequest({
+    $42.Timestamp? startDate,
+    $42.Timestamp? endDate,
+  }) {
+    final $result = create();
+    if (startDate != null) {
+      $result.startDate = startDate;
+    }
+    if (endDate != null) {
+      $result.endDate = endDate;
+    }
+    return $result;
+  }
+  GetIncomeBreakdownRequest._() : super();
+  factory GetIncomeBreakdownRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetIncomeBreakdownRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetIncomeBreakdownRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOM<$42.Timestamp>(1, _omitFieldNames ? '' : 'startDate', subBuilder: $42.Timestamp.create)
+    ..aOM<$42.Timestamp>(2, _omitFieldNames ? '' : 'endDate', subBuilder: $42.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
-  GetIncomeBreakdownRequest._() : super();
-  factory GetIncomeBreakdownRequest({
-    $36.Timestamp? startDate,
-    $36.Timestamp? endDate,
-  }) {
-    final _result = create();
-    if (startDate != null) {
-      _result.startDate = startDate;
-    }
-    if (endDate != null) {
-      _result.endDate = endDate;
-    }
-    return _result;
-  }
-  factory GetIncomeBreakdownRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetIncomeBreakdownRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -7558,8 +7798,10 @@ class GetIncomeBreakdownRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetIncomeBreakdownRequest copyWith(void Function(GetIncomeBreakdownRequest) updates) => super.copyWith((message) => updates(message as GetIncomeBreakdownRequest)) as GetIncomeBreakdownRequest; // ignore: deprecated_member_use
+  GetIncomeBreakdownRequest copyWith(void Function(GetIncomeBreakdownRequest) updates) => super.copyWith((message) => updates(message as GetIncomeBreakdownRequest)) as GetIncomeBreakdownRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetIncomeBreakdownRequest create() => GetIncomeBreakdownRequest._();
   GetIncomeBreakdownRequest createEmptyInstance() => create();
@@ -7569,46 +7811,47 @@ class GetIncomeBreakdownRequest extends $pb.GeneratedMessage {
   static GetIncomeBreakdownRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $36.Timestamp get startDate => $_getN(0);
+  $42.Timestamp get startDate => $_getN(0);
   @$pb.TagNumber(1)
-  set startDate($36.Timestamp v) { setField(1, v); }
+  set startDate($42.Timestamp v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasStartDate() => $_has(0);
   @$pb.TagNumber(1)
   void clearStartDate() => clearField(1);
   @$pb.TagNumber(1)
-  $36.Timestamp ensureStartDate() => $_ensure(0);
+  $42.Timestamp ensureStartDate() => $_ensure(0);
 
   @$pb.TagNumber(2)
-  $36.Timestamp get endDate => $_getN(1);
+  $42.Timestamp get endDate => $_getN(1);
   @$pb.TagNumber(2)
-  set endDate($36.Timestamp v) { setField(2, v); }
+  set endDate($42.Timestamp v) { setField(2, v); }
   @$pb.TagNumber(2)
   $core.bool hasEndDate() => $_has(1);
   @$pb.TagNumber(2)
   void clearEndDate() => clearField(2);
   @$pb.TagNumber(2)
-  $36.Timestamp ensureEndDate() => $_ensure(1);
+  $42.Timestamp ensureEndDate() => $_ensure(1);
 }
 
 class GetIncomeBreakdownResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetIncomeBreakdownResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<IncomeBreakdown>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'breakdown', subBuilder: IncomeBreakdown.create)
-    ..hasRequiredFields = false
-  ;
-
-  GetIncomeBreakdownResponse._() : super();
   factory GetIncomeBreakdownResponse({
     IncomeBreakdown? breakdown,
   }) {
-    final _result = create();
+    final $result = create();
     if (breakdown != null) {
-      _result.breakdown = breakdown;
+      $result.breakdown = breakdown;
     }
-    return _result;
+    return $result;
   }
+  GetIncomeBreakdownResponse._() : super();
   factory GetIncomeBreakdownResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetIncomeBreakdownResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetIncomeBreakdownResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOM<IncomeBreakdown>(1, _omitFieldNames ? '' : 'breakdown', subBuilder: IncomeBreakdown.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -7618,8 +7861,10 @@ class GetIncomeBreakdownResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetIncomeBreakdownResponse copyWith(void Function(GetIncomeBreakdownResponse) updates) => super.copyWith((message) => updates(message as GetIncomeBreakdownResponse)) as GetIncomeBreakdownResponse; // ignore: deprecated_member_use
+  GetIncomeBreakdownResponse copyWith(void Function(GetIncomeBreakdownResponse) updates) => super.copyWith((message) => updates(message as GetIncomeBreakdownResponse)) as GetIncomeBreakdownResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetIncomeBreakdownResponse create() => GetIncomeBreakdownResponse._();
   GetIncomeBreakdownResponse createEmptyInstance() => create();
@@ -7640,15 +7885,17 @@ class GetIncomeBreakdownResponse extends $pb.GeneratedMessage {
   IncomeBreakdown ensureBreakdown() => $_ensure(0);
 }
 
+/// Investment Management
 class GetInvestmentPortfolioRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetInvestmentPortfolioRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+  factory GetInvestmentPortfolioRequest() => create();
+  GetInvestmentPortfolioRequest._() : super();
+  factory GetInvestmentPortfolioRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetInvestmentPortfolioRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetInvestmentPortfolioRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
     ..hasRequiredFields = false
   ;
 
-  GetInvestmentPortfolioRequest._() : super();
-  factory GetInvestmentPortfolioRequest() => create();
-  factory GetInvestmentPortfolioRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetInvestmentPortfolioRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -7658,8 +7905,10 @@ class GetInvestmentPortfolioRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetInvestmentPortfolioRequest copyWith(void Function(GetInvestmentPortfolioRequest) updates) => super.copyWith((message) => updates(message as GetInvestmentPortfolioRequest)) as GetInvestmentPortfolioRequest; // ignore: deprecated_member_use
+  GetInvestmentPortfolioRequest copyWith(void Function(GetInvestmentPortfolioRequest) updates) => super.copyWith((message) => updates(message as GetInvestmentPortfolioRequest)) as GetInvestmentPortfolioRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetInvestmentPortfolioRequest create() => GetInvestmentPortfolioRequest._();
   GetInvestmentPortfolioRequest createEmptyInstance() => create();
@@ -7670,28 +7919,29 @@ class GetInvestmentPortfolioRequest extends $pb.GeneratedMessage {
 }
 
 class GetInvestmentPortfolioResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetInvestmentPortfolioResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<InvestmentPortfolio>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'portfolio', subBuilder: InvestmentPortfolio.create)
-    ..pc<Investment>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'individualInvestments', $pb.PbFieldType.PM, subBuilder: Investment.create)
-    ..hasRequiredFields = false
-  ;
-
-  GetInvestmentPortfolioResponse._() : super();
   factory GetInvestmentPortfolioResponse({
     InvestmentPortfolio? portfolio,
     $core.Iterable<Investment>? individualInvestments,
   }) {
-    final _result = create();
+    final $result = create();
     if (portfolio != null) {
-      _result.portfolio = portfolio;
+      $result.portfolio = portfolio;
     }
     if (individualInvestments != null) {
-      _result.individualInvestments.addAll(individualInvestments);
+      $result.individualInvestments.addAll(individualInvestments);
     }
-    return _result;
+    return $result;
   }
+  GetInvestmentPortfolioResponse._() : super();
   factory GetInvestmentPortfolioResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetInvestmentPortfolioResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetInvestmentPortfolioResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOM<InvestmentPortfolio>(1, _omitFieldNames ? '' : 'portfolio', subBuilder: InvestmentPortfolio.create)
+    ..pc<Investment>(2, _omitFieldNames ? '' : 'individualInvestments', $pb.PbFieldType.PM, subBuilder: Investment.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -7701,8 +7951,10 @@ class GetInvestmentPortfolioResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetInvestmentPortfolioResponse copyWith(void Function(GetInvestmentPortfolioResponse) updates) => super.copyWith((message) => updates(message as GetInvestmentPortfolioResponse)) as GetInvestmentPortfolioResponse; // ignore: deprecated_member_use
+  GetInvestmentPortfolioResponse copyWith(void Function(GetInvestmentPortfolioResponse) updates) => super.copyWith((message) => updates(message as GetInvestmentPortfolioResponse)) as GetInvestmentPortfolioResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetInvestmentPortfolioResponse create() => GetInvestmentPortfolioResponse._();
   GetInvestmentPortfolioResponse createEmptyInstance() => create();
@@ -7727,53 +7979,54 @@ class GetInvestmentPortfolioResponse extends $pb.GeneratedMessage {
 }
 
 class CreateInvestmentRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CreateInvestmentRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'name')
-    ..e<InvestmentType>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'investmentType', $pb.PbFieldType.OE, defaultOrMaker: InvestmentType.INVESTMENT_TYPE_UNSPECIFIED, valueOf: InvestmentType.valueOf, enumValues: InvestmentType.values)
-    ..a<$core.double>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'initialInvestment', $pb.PbFieldType.OD)
-    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
-    ..aOM<$36.Timestamp>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'purchaseDate', subBuilder: $36.Timestamp.create)
-    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'tickerSymbol')
-    ..a<$core.int>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'quantity', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
-
-  CreateInvestmentRequest._() : super();
   factory CreateInvestmentRequest({
     $core.String? name,
     InvestmentType? investmentType,
     $core.double? initialInvestment,
     $core.String? currency,
-    $36.Timestamp? purchaseDate,
+    $42.Timestamp? purchaseDate,
     $core.String? tickerSymbol,
     $core.int? quantity,
   }) {
-    final _result = create();
+    final $result = create();
     if (name != null) {
-      _result.name = name;
+      $result.name = name;
     }
     if (investmentType != null) {
-      _result.investmentType = investmentType;
+      $result.investmentType = investmentType;
     }
     if (initialInvestment != null) {
-      _result.initialInvestment = initialInvestment;
+      $result.initialInvestment = initialInvestment;
     }
     if (currency != null) {
-      _result.currency = currency;
+      $result.currency = currency;
     }
     if (purchaseDate != null) {
-      _result.purchaseDate = purchaseDate;
+      $result.purchaseDate = purchaseDate;
     }
     if (tickerSymbol != null) {
-      _result.tickerSymbol = tickerSymbol;
+      $result.tickerSymbol = tickerSymbol;
     }
     if (quantity != null) {
-      _result.quantity = quantity;
+      $result.quantity = quantity;
     }
-    return _result;
+    return $result;
   }
+  CreateInvestmentRequest._() : super();
   factory CreateInvestmentRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CreateInvestmentRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreateInvestmentRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'name')
+    ..e<InvestmentType>(2, _omitFieldNames ? '' : 'investmentType', $pb.PbFieldType.OE, defaultOrMaker: InvestmentType.INVESTMENT_TYPE_UNSPECIFIED, valueOf: InvestmentType.valueOf, enumValues: InvestmentType.values)
+    ..a<$core.double>(3, _omitFieldNames ? '' : 'initialInvestment', $pb.PbFieldType.OD)
+    ..aOS(4, _omitFieldNames ? '' : 'currency')
+    ..aOM<$42.Timestamp>(5, _omitFieldNames ? '' : 'purchaseDate', subBuilder: $42.Timestamp.create)
+    ..aOS(6, _omitFieldNames ? '' : 'tickerSymbol')
+    ..a<$core.int>(7, _omitFieldNames ? '' : 'quantity', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -7783,8 +8036,10 @@ class CreateInvestmentRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CreateInvestmentRequest copyWith(void Function(CreateInvestmentRequest) updates) => super.copyWith((message) => updates(message as CreateInvestmentRequest)) as CreateInvestmentRequest; // ignore: deprecated_member_use
+  CreateInvestmentRequest copyWith(void Function(CreateInvestmentRequest) updates) => super.copyWith((message) => updates(message as CreateInvestmentRequest)) as CreateInvestmentRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static CreateInvestmentRequest create() => CreateInvestmentRequest._();
   CreateInvestmentRequest createEmptyInstance() => create();
@@ -7830,15 +8085,15 @@ class CreateInvestmentRequest extends $pb.GeneratedMessage {
   void clearCurrency() => clearField(4);
 
   @$pb.TagNumber(5)
-  $36.Timestamp get purchaseDate => $_getN(4);
+  $42.Timestamp get purchaseDate => $_getN(4);
   @$pb.TagNumber(5)
-  set purchaseDate($36.Timestamp v) { setField(5, v); }
+  set purchaseDate($42.Timestamp v) { setField(5, v); }
   @$pb.TagNumber(5)
   $core.bool hasPurchaseDate() => $_has(4);
   @$pb.TagNumber(5)
   void clearPurchaseDate() => clearField(5);
   @$pb.TagNumber(5)
-  $36.Timestamp ensurePurchaseDate() => $_ensure(4);
+  $42.Timestamp ensurePurchaseDate() => $_ensure(4);
 
   @$pb.TagNumber(6)
   $core.String get tickerSymbol => $_getSZ(5);
@@ -7860,33 +8115,34 @@ class CreateInvestmentRequest extends $pb.GeneratedMessage {
 }
 
 class CreateInvestmentResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CreateInvestmentResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<Investment>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'investment', subBuilder: Investment.create)
-    ..aOB(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
-    ..hasRequiredFields = false
-  ;
-
-  CreateInvestmentResponse._() : super();
   factory CreateInvestmentResponse({
     Investment? investment,
     $core.bool? success,
     $core.String? message,
   }) {
-    final _result = create();
+    final $result = create();
     if (investment != null) {
-      _result.investment = investment;
+      $result.investment = investment;
     }
     if (success != null) {
-      _result.success = success;
+      $result.success = success;
     }
     if (message != null) {
-      _result.message = message;
+      $result.message = message;
     }
-    return _result;
+    return $result;
   }
+  CreateInvestmentResponse._() : super();
   factory CreateInvestmentResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CreateInvestmentResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreateInvestmentResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOM<Investment>(1, _omitFieldNames ? '' : 'investment', subBuilder: Investment.create)
+    ..aOB(2, _omitFieldNames ? '' : 'success')
+    ..aOS(3, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -7896,8 +8152,10 @@ class CreateInvestmentResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CreateInvestmentResponse copyWith(void Function(CreateInvestmentResponse) updates) => super.copyWith((message) => updates(message as CreateInvestmentResponse)) as CreateInvestmentResponse; // ignore: deprecated_member_use
+  CreateInvestmentResponse copyWith(void Function(CreateInvestmentResponse) updates) => super.copyWith((message) => updates(message as CreateInvestmentResponse)) as CreateInvestmentResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static CreateInvestmentResponse create() => CreateInvestmentResponse._();
   CreateInvestmentResponse createEmptyInstance() => create();
@@ -7936,21 +8194,8 @@ class CreateInvestmentResponse extends $pb.GeneratedMessage {
   void clearMessage() => clearField(3);
 }
 
+/// Financial Goals Management
 class CreateFinancialGoalRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CreateFinancialGoalRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'name')
-    ..e<GoalType>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'goalType', $pb.PbFieldType.OE, defaultOrMaker: GoalType.GOAL_TYPE_UNSPECIFIED, valueOf: GoalType.valueOf, enumValues: GoalType.values)
-    ..a<$core.double>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'targetAmount', $pb.PbFieldType.OD)
-    ..a<$core.double>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currentAmount', $pb.PbFieldType.OD)
-    ..a<$core.double>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'monthlyContribution', $pb.PbFieldType.OD)
-    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
-    ..aOM<$36.Timestamp>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'targetDate', subBuilder: $36.Timestamp.create)
-    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'icon')
-    ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'color')
-    ..hasRequiredFields = false
-  ;
-
-  CreateFinancialGoalRequest._() : super();
   factory CreateFinancialGoalRequest({
     $core.String? name,
     GoalType? goalType,
@@ -7958,42 +8203,57 @@ class CreateFinancialGoalRequest extends $pb.GeneratedMessage {
     $core.double? currentAmount,
     $core.double? monthlyContribution,
     $core.String? currency,
-    $36.Timestamp? targetDate,
+    $42.Timestamp? targetDate,
     $core.String? icon,
     $core.String? color,
   }) {
-    final _result = create();
+    final $result = create();
     if (name != null) {
-      _result.name = name;
+      $result.name = name;
     }
     if (goalType != null) {
-      _result.goalType = goalType;
+      $result.goalType = goalType;
     }
     if (targetAmount != null) {
-      _result.targetAmount = targetAmount;
+      $result.targetAmount = targetAmount;
     }
     if (currentAmount != null) {
-      _result.currentAmount = currentAmount;
+      $result.currentAmount = currentAmount;
     }
     if (monthlyContribution != null) {
-      _result.monthlyContribution = monthlyContribution;
+      $result.monthlyContribution = monthlyContribution;
     }
     if (currency != null) {
-      _result.currency = currency;
+      $result.currency = currency;
     }
     if (targetDate != null) {
-      _result.targetDate = targetDate;
+      $result.targetDate = targetDate;
     }
     if (icon != null) {
-      _result.icon = icon;
+      $result.icon = icon;
     }
     if (color != null) {
-      _result.color = color;
+      $result.color = color;
     }
-    return _result;
+    return $result;
   }
+  CreateFinancialGoalRequest._() : super();
   factory CreateFinancialGoalRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CreateFinancialGoalRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreateFinancialGoalRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'name')
+    ..e<GoalType>(2, _omitFieldNames ? '' : 'goalType', $pb.PbFieldType.OE, defaultOrMaker: GoalType.GOAL_TYPE_UNSPECIFIED, valueOf: GoalType.valueOf, enumValues: GoalType.values)
+    ..a<$core.double>(3, _omitFieldNames ? '' : 'targetAmount', $pb.PbFieldType.OD)
+    ..a<$core.double>(4, _omitFieldNames ? '' : 'currentAmount', $pb.PbFieldType.OD)
+    ..a<$core.double>(5, _omitFieldNames ? '' : 'monthlyContribution', $pb.PbFieldType.OD)
+    ..aOS(6, _omitFieldNames ? '' : 'currency')
+    ..aOM<$42.Timestamp>(7, _omitFieldNames ? '' : 'targetDate', subBuilder: $42.Timestamp.create)
+    ..aOS(8, _omitFieldNames ? '' : 'icon')
+    ..aOS(9, _omitFieldNames ? '' : 'color')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -8003,8 +8263,10 @@ class CreateFinancialGoalRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CreateFinancialGoalRequest copyWith(void Function(CreateFinancialGoalRequest) updates) => super.copyWith((message) => updates(message as CreateFinancialGoalRequest)) as CreateFinancialGoalRequest; // ignore: deprecated_member_use
+  CreateFinancialGoalRequest copyWith(void Function(CreateFinancialGoalRequest) updates) => super.copyWith((message) => updates(message as CreateFinancialGoalRequest)) as CreateFinancialGoalRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static CreateFinancialGoalRequest create() => CreateFinancialGoalRequest._();
   CreateFinancialGoalRequest createEmptyInstance() => create();
@@ -8068,15 +8330,15 @@ class CreateFinancialGoalRequest extends $pb.GeneratedMessage {
   void clearCurrency() => clearField(6);
 
   @$pb.TagNumber(7)
-  $36.Timestamp get targetDate => $_getN(6);
+  $42.Timestamp get targetDate => $_getN(6);
   @$pb.TagNumber(7)
-  set targetDate($36.Timestamp v) { setField(7, v); }
+  set targetDate($42.Timestamp v) { setField(7, v); }
   @$pb.TagNumber(7)
   $core.bool hasTargetDate() => $_has(6);
   @$pb.TagNumber(7)
   void clearTargetDate() => clearField(7);
   @$pb.TagNumber(7)
-  $36.Timestamp ensureTargetDate() => $_ensure(6);
+  $42.Timestamp ensureTargetDate() => $_ensure(6);
 
   @$pb.TagNumber(8)
   $core.String get icon => $_getSZ(7);
@@ -8098,33 +8360,34 @@ class CreateFinancialGoalRequest extends $pb.GeneratedMessage {
 }
 
 class CreateFinancialGoalResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CreateFinancialGoalResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<FinancialGoal>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'goal', subBuilder: FinancialGoal.create)
-    ..aOB(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
-    ..hasRequiredFields = false
-  ;
-
-  CreateFinancialGoalResponse._() : super();
   factory CreateFinancialGoalResponse({
     FinancialGoal? goal,
     $core.bool? success,
     $core.String? message,
   }) {
-    final _result = create();
+    final $result = create();
     if (goal != null) {
-      _result.goal = goal;
+      $result.goal = goal;
     }
     if (success != null) {
-      _result.success = success;
+      $result.success = success;
     }
     if (message != null) {
-      _result.message = message;
+      $result.message = message;
     }
-    return _result;
+    return $result;
   }
+  CreateFinancialGoalResponse._() : super();
   factory CreateFinancialGoalResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CreateFinancialGoalResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreateFinancialGoalResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOM<FinancialGoal>(1, _omitFieldNames ? '' : 'goal', subBuilder: FinancialGoal.create)
+    ..aOB(2, _omitFieldNames ? '' : 'success')
+    ..aOS(3, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -8134,8 +8397,10 @@ class CreateFinancialGoalResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CreateFinancialGoalResponse copyWith(void Function(CreateFinancialGoalResponse) updates) => super.copyWith((message) => updates(message as CreateFinancialGoalResponse)) as CreateFinancialGoalResponse; // ignore: deprecated_member_use
+  CreateFinancialGoalResponse copyWith(void Function(CreateFinancialGoalResponse) updates) => super.copyWith((message) => updates(message as CreateFinancialGoalResponse)) as CreateFinancialGoalResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static CreateFinancialGoalResponse create() => CreateFinancialGoalResponse._();
   CreateFinancialGoalResponse createEmptyInstance() => create();
@@ -8175,23 +8440,24 @@ class CreateFinancialGoalResponse extends $pb.GeneratedMessage {
 }
 
 class GetFinancialGoalsRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetFinancialGoalsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..e<GoalStatus>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: GoalStatus.GOAL_STATUS_UNSPECIFIED, valueOf: GoalStatus.valueOf, enumValues: GoalStatus.values)
-    ..hasRequiredFields = false
-  ;
-
-  GetFinancialGoalsRequest._() : super();
   factory GetFinancialGoalsRequest({
     GoalStatus? status,
   }) {
-    final _result = create();
+    final $result = create();
     if (status != null) {
-      _result.status = status;
+      $result.status = status;
     }
-    return _result;
+    return $result;
   }
+  GetFinancialGoalsRequest._() : super();
   factory GetFinancialGoalsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetFinancialGoalsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetFinancialGoalsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..e<GoalStatus>(1, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: GoalStatus.GOAL_STATUS_UNSPECIFIED, valueOf: GoalStatus.valueOf, enumValues: GoalStatus.values)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -8201,8 +8467,10 @@ class GetFinancialGoalsRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetFinancialGoalsRequest copyWith(void Function(GetFinancialGoalsRequest) updates) => super.copyWith((message) => updates(message as GetFinancialGoalsRequest)) as GetFinancialGoalsRequest; // ignore: deprecated_member_use
+  GetFinancialGoalsRequest copyWith(void Function(GetFinancialGoalsRequest) updates) => super.copyWith((message) => updates(message as GetFinancialGoalsRequest)) as GetFinancialGoalsRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetFinancialGoalsRequest create() => GetFinancialGoalsRequest._();
   GetFinancialGoalsRequest createEmptyInstance() => create();
@@ -8222,23 +8490,24 @@ class GetFinancialGoalsRequest extends $pb.GeneratedMessage {
 }
 
 class GetFinancialGoalsResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetFinancialGoalsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<FinancialGoalsList>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'goalsList', subBuilder: FinancialGoalsList.create)
-    ..hasRequiredFields = false
-  ;
-
-  GetFinancialGoalsResponse._() : super();
   factory GetFinancialGoalsResponse({
     FinancialGoalsList? goalsList,
   }) {
-    final _result = create();
+    final $result = create();
     if (goalsList != null) {
-      _result.goalsList = goalsList;
+      $result.goalsList = goalsList;
     }
-    return _result;
+    return $result;
   }
+  GetFinancialGoalsResponse._() : super();
   factory GetFinancialGoalsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetFinancialGoalsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetFinancialGoalsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOM<FinancialGoalsList>(1, _omitFieldNames ? '' : 'goalsList', subBuilder: FinancialGoalsList.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -8248,8 +8517,10 @@ class GetFinancialGoalsResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetFinancialGoalsResponse copyWith(void Function(GetFinancialGoalsResponse) updates) => super.copyWith((message) => updates(message as GetFinancialGoalsResponse)) as GetFinancialGoalsResponse; // ignore: deprecated_member_use
+  GetFinancialGoalsResponse copyWith(void Function(GetFinancialGoalsResponse) updates) => super.copyWith((message) => updates(message as GetFinancialGoalsResponse)) as GetFinancialGoalsResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetFinancialGoalsResponse create() => GetFinancialGoalsResponse._();
   GetFinancialGoalsResponse createEmptyInstance() => create();
@@ -8271,28 +8542,29 @@ class GetFinancialGoalsResponse extends $pb.GeneratedMessage {
 }
 
 class UpdateFinancialGoalProgressRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UpdateFinancialGoalProgressRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'goalId')
-    ..a<$core.double>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amountToAdd', $pb.PbFieldType.OD)
-    ..hasRequiredFields = false
-  ;
-
-  UpdateFinancialGoalProgressRequest._() : super();
   factory UpdateFinancialGoalProgressRequest({
     $core.String? goalId,
     $core.double? amountToAdd,
   }) {
-    final _result = create();
+    final $result = create();
     if (goalId != null) {
-      _result.goalId = goalId;
+      $result.goalId = goalId;
     }
     if (amountToAdd != null) {
-      _result.amountToAdd = amountToAdd;
+      $result.amountToAdd = amountToAdd;
     }
-    return _result;
+    return $result;
   }
+  UpdateFinancialGoalProgressRequest._() : super();
   factory UpdateFinancialGoalProgressRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory UpdateFinancialGoalProgressRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UpdateFinancialGoalProgressRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'goalId')
+    ..a<$core.double>(2, _omitFieldNames ? '' : 'amountToAdd', $pb.PbFieldType.OD)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -8302,8 +8574,10 @@ class UpdateFinancialGoalProgressRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  UpdateFinancialGoalProgressRequest copyWith(void Function(UpdateFinancialGoalProgressRequest) updates) => super.copyWith((message) => updates(message as UpdateFinancialGoalProgressRequest)) as UpdateFinancialGoalProgressRequest; // ignore: deprecated_member_use
+  UpdateFinancialGoalProgressRequest copyWith(void Function(UpdateFinancialGoalProgressRequest) updates) => super.copyWith((message) => updates(message as UpdateFinancialGoalProgressRequest)) as UpdateFinancialGoalProgressRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static UpdateFinancialGoalProgressRequest create() => UpdateFinancialGoalProgressRequest._();
   UpdateFinancialGoalProgressRequest createEmptyInstance() => create();
@@ -8332,33 +8606,34 @@ class UpdateFinancialGoalProgressRequest extends $pb.GeneratedMessage {
 }
 
 class UpdateFinancialGoalProgressResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UpdateFinancialGoalProgressResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<FinancialGoal>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'goal', subBuilder: FinancialGoal.create)
-    ..aOB(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
-    ..hasRequiredFields = false
-  ;
-
-  UpdateFinancialGoalProgressResponse._() : super();
   factory UpdateFinancialGoalProgressResponse({
     FinancialGoal? goal,
     $core.bool? success,
     $core.String? message,
   }) {
-    final _result = create();
+    final $result = create();
     if (goal != null) {
-      _result.goal = goal;
+      $result.goal = goal;
     }
     if (success != null) {
-      _result.success = success;
+      $result.success = success;
     }
     if (message != null) {
-      _result.message = message;
+      $result.message = message;
     }
-    return _result;
+    return $result;
   }
+  UpdateFinancialGoalProgressResponse._() : super();
   factory UpdateFinancialGoalProgressResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory UpdateFinancialGoalProgressResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UpdateFinancialGoalProgressResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOM<FinancialGoal>(1, _omitFieldNames ? '' : 'goal', subBuilder: FinancialGoal.create)
+    ..aOB(2, _omitFieldNames ? '' : 'success')
+    ..aOS(3, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -8368,8 +8643,10 @@ class UpdateFinancialGoalProgressResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  UpdateFinancialGoalProgressResponse copyWith(void Function(UpdateFinancialGoalProgressResponse) updates) => super.copyWith((message) => updates(message as UpdateFinancialGoalProgressResponse)) as UpdateFinancialGoalProgressResponse; // ignore: deprecated_member_use
+  UpdateFinancialGoalProgressResponse copyWith(void Function(UpdateFinancialGoalProgressResponse) updates) => super.copyWith((message) => updates(message as UpdateFinancialGoalProgressResponse)) as UpdateFinancialGoalProgressResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static UpdateFinancialGoalProgressResponse create() => UpdateFinancialGoalProgressResponse._();
   UpdateFinancialGoalProgressResponse createEmptyInstance() => create();
@@ -8408,15 +8685,17 @@ class UpdateFinancialGoalProgressResponse extends $pb.GeneratedMessage {
   void clearMessage() => clearField(3);
 }
 
+/// Savings Goal Management
 class GetSavingsGoalRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetSavingsGoalRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+  factory GetSavingsGoalRequest() => create();
+  GetSavingsGoalRequest._() : super();
+  factory GetSavingsGoalRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetSavingsGoalRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetSavingsGoalRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
     ..hasRequiredFields = false
   ;
 
-  GetSavingsGoalRequest._() : super();
-  factory GetSavingsGoalRequest() => create();
-  factory GetSavingsGoalRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetSavingsGoalRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -8426,8 +8705,10 @@ class GetSavingsGoalRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetSavingsGoalRequest copyWith(void Function(GetSavingsGoalRequest) updates) => super.copyWith((message) => updates(message as GetSavingsGoalRequest)) as GetSavingsGoalRequest; // ignore: deprecated_member_use
+  GetSavingsGoalRequest copyWith(void Function(GetSavingsGoalRequest) updates) => super.copyWith((message) => updates(message as GetSavingsGoalRequest)) as GetSavingsGoalRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetSavingsGoalRequest create() => GetSavingsGoalRequest._();
   GetSavingsGoalRequest createEmptyInstance() => create();
@@ -8438,28 +8719,29 @@ class GetSavingsGoalRequest extends $pb.GeneratedMessage {
 }
 
 class GetSavingsGoalResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetSavingsGoalResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<SavingsGoal>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'savingsGoal', subBuilder: SavingsGoal.create)
-    ..aOB(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'hasGoal')
-    ..hasRequiredFields = false
-  ;
-
-  GetSavingsGoalResponse._() : super();
   factory GetSavingsGoalResponse({
     SavingsGoal? savingsGoal,
     $core.bool? hasGoal,
   }) {
-    final _result = create();
+    final $result = create();
     if (savingsGoal != null) {
-      _result.savingsGoal = savingsGoal;
+      $result.savingsGoal = savingsGoal;
     }
     if (hasGoal != null) {
-      _result.hasGoal = hasGoal;
+      $result.hasGoal = hasGoal;
     }
-    return _result;
+    return $result;
   }
+  GetSavingsGoalResponse._() : super();
   factory GetSavingsGoalResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetSavingsGoalResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetSavingsGoalResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOM<SavingsGoal>(1, _omitFieldNames ? '' : 'savingsGoal', subBuilder: SavingsGoal.create)
+    ..aOB(2, _omitFieldNames ? '' : 'hasGoal')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -8469,8 +8751,10 @@ class GetSavingsGoalResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetSavingsGoalResponse copyWith(void Function(GetSavingsGoalResponse) updates) => super.copyWith((message) => updates(message as GetSavingsGoalResponse)) as GetSavingsGoalResponse; // ignore: deprecated_member_use
+  GetSavingsGoalResponse copyWith(void Function(GetSavingsGoalResponse) updates) => super.copyWith((message) => updates(message as GetSavingsGoalResponse)) as GetSavingsGoalResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetSavingsGoalResponse create() => GetSavingsGoalResponse._();
   GetSavingsGoalResponse createEmptyInstance() => create();
@@ -8501,38 +8785,39 @@ class GetSavingsGoalResponse extends $pb.GeneratedMessage {
 }
 
 class CreateOrUpdateSavingsGoalRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CreateOrUpdateSavingsGoalRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'name')
-    ..a<$core.double>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'targetAmount', $pb.PbFieldType.OD)
-    ..a<$core.double>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currentAmount', $pb.PbFieldType.OD)
-    ..aOM<$36.Timestamp>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'targetDate', subBuilder: $36.Timestamp.create)
-    ..hasRequiredFields = false
-  ;
-
-  CreateOrUpdateSavingsGoalRequest._() : super();
   factory CreateOrUpdateSavingsGoalRequest({
     $core.String? name,
     $core.double? targetAmount,
     $core.double? currentAmount,
-    $36.Timestamp? targetDate,
+    $42.Timestamp? targetDate,
   }) {
-    final _result = create();
+    final $result = create();
     if (name != null) {
-      _result.name = name;
+      $result.name = name;
     }
     if (targetAmount != null) {
-      _result.targetAmount = targetAmount;
+      $result.targetAmount = targetAmount;
     }
     if (currentAmount != null) {
-      _result.currentAmount = currentAmount;
+      $result.currentAmount = currentAmount;
     }
     if (targetDate != null) {
-      _result.targetDate = targetDate;
+      $result.targetDate = targetDate;
     }
-    return _result;
+    return $result;
   }
+  CreateOrUpdateSavingsGoalRequest._() : super();
   factory CreateOrUpdateSavingsGoalRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CreateOrUpdateSavingsGoalRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreateOrUpdateSavingsGoalRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'name')
+    ..a<$core.double>(2, _omitFieldNames ? '' : 'targetAmount', $pb.PbFieldType.OD)
+    ..a<$core.double>(3, _omitFieldNames ? '' : 'currentAmount', $pb.PbFieldType.OD)
+    ..aOM<$42.Timestamp>(4, _omitFieldNames ? '' : 'targetDate', subBuilder: $42.Timestamp.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -8542,8 +8827,10 @@ class CreateOrUpdateSavingsGoalRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CreateOrUpdateSavingsGoalRequest copyWith(void Function(CreateOrUpdateSavingsGoalRequest) updates) => super.copyWith((message) => updates(message as CreateOrUpdateSavingsGoalRequest)) as CreateOrUpdateSavingsGoalRequest; // ignore: deprecated_member_use
+  CreateOrUpdateSavingsGoalRequest copyWith(void Function(CreateOrUpdateSavingsGoalRequest) updates) => super.copyWith((message) => updates(message as CreateOrUpdateSavingsGoalRequest)) as CreateOrUpdateSavingsGoalRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static CreateOrUpdateSavingsGoalRequest create() => CreateOrUpdateSavingsGoalRequest._();
   CreateOrUpdateSavingsGoalRequest createEmptyInstance() => create();
@@ -8580,45 +8867,46 @@ class CreateOrUpdateSavingsGoalRequest extends $pb.GeneratedMessage {
   void clearCurrentAmount() => clearField(3);
 
   @$pb.TagNumber(4)
-  $36.Timestamp get targetDate => $_getN(3);
+  $42.Timestamp get targetDate => $_getN(3);
   @$pb.TagNumber(4)
-  set targetDate($36.Timestamp v) { setField(4, v); }
+  set targetDate($42.Timestamp v) { setField(4, v); }
   @$pb.TagNumber(4)
   $core.bool hasTargetDate() => $_has(3);
   @$pb.TagNumber(4)
   void clearTargetDate() => clearField(4);
   @$pb.TagNumber(4)
-  $36.Timestamp ensureTargetDate() => $_ensure(3);
+  $42.Timestamp ensureTargetDate() => $_ensure(3);
 }
 
 class CreateOrUpdateSavingsGoalResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CreateOrUpdateSavingsGoalResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<SavingsGoal>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'savingsGoal', subBuilder: SavingsGoal.create)
-    ..aOB(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
-    ..hasRequiredFields = false
-  ;
-
-  CreateOrUpdateSavingsGoalResponse._() : super();
   factory CreateOrUpdateSavingsGoalResponse({
     SavingsGoal? savingsGoal,
     $core.bool? success,
     $core.String? message,
   }) {
-    final _result = create();
+    final $result = create();
     if (savingsGoal != null) {
-      _result.savingsGoal = savingsGoal;
+      $result.savingsGoal = savingsGoal;
     }
     if (success != null) {
-      _result.success = success;
+      $result.success = success;
     }
     if (message != null) {
-      _result.message = message;
+      $result.message = message;
     }
-    return _result;
+    return $result;
   }
+  CreateOrUpdateSavingsGoalResponse._() : super();
   factory CreateOrUpdateSavingsGoalResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CreateOrUpdateSavingsGoalResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreateOrUpdateSavingsGoalResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOM<SavingsGoal>(1, _omitFieldNames ? '' : 'savingsGoal', subBuilder: SavingsGoal.create)
+    ..aOB(2, _omitFieldNames ? '' : 'success')
+    ..aOS(3, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -8628,8 +8916,10 @@ class CreateOrUpdateSavingsGoalResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CreateOrUpdateSavingsGoalResponse copyWith(void Function(CreateOrUpdateSavingsGoalResponse) updates) => super.copyWith((message) => updates(message as CreateOrUpdateSavingsGoalResponse)) as CreateOrUpdateSavingsGoalResponse; // ignore: deprecated_member_use
+  CreateOrUpdateSavingsGoalResponse copyWith(void Function(CreateOrUpdateSavingsGoalResponse) updates) => super.copyWith((message) => updates(message as CreateOrUpdateSavingsGoalResponse)) as CreateOrUpdateSavingsGoalResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static CreateOrUpdateSavingsGoalResponse create() => CreateOrUpdateSavingsGoalResponse._();
   CreateOrUpdateSavingsGoalResponse createEmptyInstance() => create();
@@ -8668,64 +8958,66 @@ class CreateOrUpdateSavingsGoalResponse extends $pb.GeneratedMessage {
   void clearMessage() => clearField(3);
 }
 
+/// Recurring Bills Management
 class CreateRecurringBillRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CreateRecurringBillRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'name')
-    ..a<$core.double>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
-    ..e<ExpenseCategory>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'category', $pb.PbFieldType.OE, defaultOrMaker: ExpenseCategory.EXPENSE_CATEGORY_UNSPECIFIED, valueOf: ExpenseCategory.valueOf, enumValues: ExpenseCategory.values)
-    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recurrencePattern')
-    ..aOM<$36.Timestamp>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'nextDueDate', subBuilder: $36.Timestamp.create)
-    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'merchant')
-    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'icon')
-    ..aOB(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'autoPayEnabled')
-    ..hasRequiredFields = false
-  ;
-
-  CreateRecurringBillRequest._() : super();
   factory CreateRecurringBillRequest({
     $core.String? name,
     $core.double? amount,
     $core.String? currency,
     ExpenseCategory? category,
     $core.String? recurrencePattern,
-    $36.Timestamp? nextDueDate,
+    $42.Timestamp? nextDueDate,
     $core.String? merchant,
     $core.String? icon,
     $core.bool? autoPayEnabled,
   }) {
-    final _result = create();
+    final $result = create();
     if (name != null) {
-      _result.name = name;
+      $result.name = name;
     }
     if (amount != null) {
-      _result.amount = amount;
+      $result.amount = amount;
     }
     if (currency != null) {
-      _result.currency = currency;
+      $result.currency = currency;
     }
     if (category != null) {
-      _result.category = category;
+      $result.category = category;
     }
     if (recurrencePattern != null) {
-      _result.recurrencePattern = recurrencePattern;
+      $result.recurrencePattern = recurrencePattern;
     }
     if (nextDueDate != null) {
-      _result.nextDueDate = nextDueDate;
+      $result.nextDueDate = nextDueDate;
     }
     if (merchant != null) {
-      _result.merchant = merchant;
+      $result.merchant = merchant;
     }
     if (icon != null) {
-      _result.icon = icon;
+      $result.icon = icon;
     }
     if (autoPayEnabled != null) {
-      _result.autoPayEnabled = autoPayEnabled;
+      $result.autoPayEnabled = autoPayEnabled;
     }
-    return _result;
+    return $result;
   }
+  CreateRecurringBillRequest._() : super();
   factory CreateRecurringBillRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CreateRecurringBillRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreateRecurringBillRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'name')
+    ..a<$core.double>(2, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
+    ..aOS(3, _omitFieldNames ? '' : 'currency')
+    ..e<ExpenseCategory>(4, _omitFieldNames ? '' : 'category', $pb.PbFieldType.OE, defaultOrMaker: ExpenseCategory.EXPENSE_CATEGORY_UNSPECIFIED, valueOf: ExpenseCategory.valueOf, enumValues: ExpenseCategory.values)
+    ..aOS(5, _omitFieldNames ? '' : 'recurrencePattern')
+    ..aOM<$42.Timestamp>(6, _omitFieldNames ? '' : 'nextDueDate', subBuilder: $42.Timestamp.create)
+    ..aOS(7, _omitFieldNames ? '' : 'merchant')
+    ..aOS(8, _omitFieldNames ? '' : 'icon')
+    ..aOB(9, _omitFieldNames ? '' : 'autoPayEnabled')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -8735,8 +9027,10 @@ class CreateRecurringBillRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CreateRecurringBillRequest copyWith(void Function(CreateRecurringBillRequest) updates) => super.copyWith((message) => updates(message as CreateRecurringBillRequest)) as CreateRecurringBillRequest; // ignore: deprecated_member_use
+  CreateRecurringBillRequest copyWith(void Function(CreateRecurringBillRequest) updates) => super.copyWith((message) => updates(message as CreateRecurringBillRequest)) as CreateRecurringBillRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static CreateRecurringBillRequest create() => CreateRecurringBillRequest._();
   CreateRecurringBillRequest createEmptyInstance() => create();
@@ -8791,15 +9085,15 @@ class CreateRecurringBillRequest extends $pb.GeneratedMessage {
   void clearRecurrencePattern() => clearField(5);
 
   @$pb.TagNumber(6)
-  $36.Timestamp get nextDueDate => $_getN(5);
+  $42.Timestamp get nextDueDate => $_getN(5);
   @$pb.TagNumber(6)
-  set nextDueDate($36.Timestamp v) { setField(6, v); }
+  set nextDueDate($42.Timestamp v) { setField(6, v); }
   @$pb.TagNumber(6)
   $core.bool hasNextDueDate() => $_has(5);
   @$pb.TagNumber(6)
   void clearNextDueDate() => clearField(6);
   @$pb.TagNumber(6)
-  $36.Timestamp ensureNextDueDate() => $_ensure(5);
+  $42.Timestamp ensureNextDueDate() => $_ensure(5);
 
   @$pb.TagNumber(7)
   $core.String get merchant => $_getSZ(6);
@@ -8830,33 +9124,34 @@ class CreateRecurringBillRequest extends $pb.GeneratedMessage {
 }
 
 class CreateRecurringBillResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CreateRecurringBillResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<RecurringBill>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'bill', subBuilder: RecurringBill.create)
-    ..aOB(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
-    ..hasRequiredFields = false
-  ;
-
-  CreateRecurringBillResponse._() : super();
   factory CreateRecurringBillResponse({
     RecurringBill? bill,
     $core.bool? success,
     $core.String? message,
   }) {
-    final _result = create();
+    final $result = create();
     if (bill != null) {
-      _result.bill = bill;
+      $result.bill = bill;
     }
     if (success != null) {
-      _result.success = success;
+      $result.success = success;
     }
     if (message != null) {
-      _result.message = message;
+      $result.message = message;
     }
-    return _result;
+    return $result;
   }
+  CreateRecurringBillResponse._() : super();
   factory CreateRecurringBillResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CreateRecurringBillResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreateRecurringBillResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOM<RecurringBill>(1, _omitFieldNames ? '' : 'bill', subBuilder: RecurringBill.create)
+    ..aOB(2, _omitFieldNames ? '' : 'success')
+    ..aOS(3, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -8866,8 +9161,10 @@ class CreateRecurringBillResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CreateRecurringBillResponse copyWith(void Function(CreateRecurringBillResponse) updates) => super.copyWith((message) => updates(message as CreateRecurringBillResponse)) as CreateRecurringBillResponse; // ignore: deprecated_member_use
+  CreateRecurringBillResponse copyWith(void Function(CreateRecurringBillResponse) updates) => super.copyWith((message) => updates(message as CreateRecurringBillResponse)) as CreateRecurringBillResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static CreateRecurringBillResponse create() => CreateRecurringBillResponse._();
   CreateRecurringBillResponse createEmptyInstance() => create();
@@ -8907,23 +9204,24 @@ class CreateRecurringBillResponse extends $pb.GeneratedMessage {
 }
 
 class GetUpcomingBillsRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetUpcomingBillsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..a<$core.int>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'daysAhead', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
-
-  GetUpcomingBillsRequest._() : super();
   factory GetUpcomingBillsRequest({
     $core.int? daysAhead,
   }) {
-    final _result = create();
+    final $result = create();
     if (daysAhead != null) {
-      _result.daysAhead = daysAhead;
+      $result.daysAhead = daysAhead;
     }
-    return _result;
+    return $result;
   }
+  GetUpcomingBillsRequest._() : super();
   factory GetUpcomingBillsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetUpcomingBillsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetUpcomingBillsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..a<$core.int>(1, _omitFieldNames ? '' : 'daysAhead', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -8933,8 +9231,10 @@ class GetUpcomingBillsRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetUpcomingBillsRequest copyWith(void Function(GetUpcomingBillsRequest) updates) => super.copyWith((message) => updates(message as GetUpcomingBillsRequest)) as GetUpcomingBillsRequest; // ignore: deprecated_member_use
+  GetUpcomingBillsRequest copyWith(void Function(GetUpcomingBillsRequest) updates) => super.copyWith((message) => updates(message as GetUpcomingBillsRequest)) as GetUpcomingBillsRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetUpcomingBillsRequest create() => GetUpcomingBillsRequest._();
   GetUpcomingBillsRequest createEmptyInstance() => create();
@@ -8954,23 +9254,24 @@ class GetUpcomingBillsRequest extends $pb.GeneratedMessage {
 }
 
 class GetUpcomingBillsResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetUpcomingBillsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<UpcomingBillsList>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'billsList', subBuilder: UpcomingBillsList.create)
-    ..hasRequiredFields = false
-  ;
-
-  GetUpcomingBillsResponse._() : super();
   factory GetUpcomingBillsResponse({
     UpcomingBillsList? billsList,
   }) {
-    final _result = create();
+    final $result = create();
     if (billsList != null) {
-      _result.billsList = billsList;
+      $result.billsList = billsList;
     }
-    return _result;
+    return $result;
   }
+  GetUpcomingBillsResponse._() : super();
   factory GetUpcomingBillsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetUpcomingBillsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetUpcomingBillsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOM<UpcomingBillsList>(1, _omitFieldNames ? '' : 'billsList', subBuilder: UpcomingBillsList.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -8980,8 +9281,10 @@ class GetUpcomingBillsResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetUpcomingBillsResponse copyWith(void Function(GetUpcomingBillsResponse) updates) => super.copyWith((message) => updates(message as GetUpcomingBillsResponse)) as GetUpcomingBillsResponse; // ignore: deprecated_member_use
+  GetUpcomingBillsResponse copyWith(void Function(GetUpcomingBillsResponse) updates) => super.copyWith((message) => updates(message as GetUpcomingBillsResponse)) as GetUpcomingBillsResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetUpcomingBillsResponse create() => GetUpcomingBillsResponse._();
   GetUpcomingBillsResponse createEmptyInstance() => create();
@@ -9002,26 +9305,8 @@ class GetUpcomingBillsResponse extends $pb.GeneratedMessage {
   UpcomingBillsList ensureBillsList() => $_ensure(0);
 }
 
+/// Tracked Transaction Models
 class TrackedIncomeTransaction extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'TrackedIncomeTransaction', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
-    ..a<$fixnum.Int64>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..a<$core.double>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
-    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
-    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sourceType')
-    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sourceId')
-    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sourceReference')
-    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'category')
-    ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
-    ..a<$fixnum.Int64>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'senderId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..aOS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'senderName')
-    ..aOM<$36.Timestamp>(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactionDate', subBuilder: $36.Timestamp.create)
-    ..aOS(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'metadata')
-    ..aOM<$36.Timestamp>(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $36.Timestamp.create)
-    ..hasRequiredFields = false
-  ;
-
-  TrackedIncomeTransaction._() : super();
   factory TrackedIncomeTransaction({
     $core.String? id,
     $fixnum.Int64? userId,
@@ -9034,57 +9319,77 @@ class TrackedIncomeTransaction extends $pb.GeneratedMessage {
     $core.String? description,
     $fixnum.Int64? senderId,
     $core.String? senderName,
-    $36.Timestamp? transactionDate,
+    $42.Timestamp? transactionDate,
     $core.String? metadata,
-    $36.Timestamp? createdAt,
+    $42.Timestamp? createdAt,
   }) {
-    final _result = create();
+    final $result = create();
     if (id != null) {
-      _result.id = id;
+      $result.id = id;
     }
     if (userId != null) {
-      _result.userId = userId;
+      $result.userId = userId;
     }
     if (amount != null) {
-      _result.amount = amount;
+      $result.amount = amount;
     }
     if (currency != null) {
-      _result.currency = currency;
+      $result.currency = currency;
     }
     if (sourceType != null) {
-      _result.sourceType = sourceType;
+      $result.sourceType = sourceType;
     }
     if (sourceId != null) {
-      _result.sourceId = sourceId;
+      $result.sourceId = sourceId;
     }
     if (sourceReference != null) {
-      _result.sourceReference = sourceReference;
+      $result.sourceReference = sourceReference;
     }
     if (category != null) {
-      _result.category = category;
+      $result.category = category;
     }
     if (description != null) {
-      _result.description = description;
+      $result.description = description;
     }
     if (senderId != null) {
-      _result.senderId = senderId;
+      $result.senderId = senderId;
     }
     if (senderName != null) {
-      _result.senderName = senderName;
+      $result.senderName = senderName;
     }
     if (transactionDate != null) {
-      _result.transactionDate = transactionDate;
+      $result.transactionDate = transactionDate;
     }
     if (metadata != null) {
-      _result.metadata = metadata;
+      $result.metadata = metadata;
     }
     if (createdAt != null) {
-      _result.createdAt = createdAt;
+      $result.createdAt = createdAt;
     }
-    return _result;
+    return $result;
   }
+  TrackedIncomeTransaction._() : super();
   factory TrackedIncomeTransaction.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory TrackedIncomeTransaction.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'TrackedIncomeTransaction', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'id')
+    ..a<$fixnum.Int64>(2, _omitFieldNames ? '' : 'userId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$core.double>(3, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
+    ..aOS(4, _omitFieldNames ? '' : 'currency')
+    ..aOS(5, _omitFieldNames ? '' : 'sourceType')
+    ..aOS(6, _omitFieldNames ? '' : 'sourceId')
+    ..aOS(7, _omitFieldNames ? '' : 'sourceReference')
+    ..aOS(8, _omitFieldNames ? '' : 'category')
+    ..aOS(9, _omitFieldNames ? '' : 'description')
+    ..a<$fixnum.Int64>(10, _omitFieldNames ? '' : 'senderId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(11, _omitFieldNames ? '' : 'senderName')
+    ..aOM<$42.Timestamp>(12, _omitFieldNames ? '' : 'transactionDate', subBuilder: $42.Timestamp.create)
+    ..aOS(13, _omitFieldNames ? '' : 'metadata')
+    ..aOM<$42.Timestamp>(14, _omitFieldNames ? '' : 'createdAt', subBuilder: $42.Timestamp.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -9094,8 +9399,10 @@ class TrackedIncomeTransaction extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  TrackedIncomeTransaction copyWith(void Function(TrackedIncomeTransaction) updates) => super.copyWith((message) => updates(message as TrackedIncomeTransaction)) as TrackedIncomeTransaction; // ignore: deprecated_member_use
+  TrackedIncomeTransaction copyWith(void Function(TrackedIncomeTransaction) updates) => super.copyWith((message) => updates(message as TrackedIncomeTransaction)) as TrackedIncomeTransaction;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static TrackedIncomeTransaction create() => TrackedIncomeTransaction._();
   TrackedIncomeTransaction createEmptyInstance() => create();
@@ -9204,15 +9511,15 @@ class TrackedIncomeTransaction extends $pb.GeneratedMessage {
   void clearSenderName() => clearField(11);
 
   @$pb.TagNumber(12)
-  $36.Timestamp get transactionDate => $_getN(11);
+  $42.Timestamp get transactionDate => $_getN(11);
   @$pb.TagNumber(12)
-  set transactionDate($36.Timestamp v) { setField(12, v); }
+  set transactionDate($42.Timestamp v) { setField(12, v); }
   @$pb.TagNumber(12)
   $core.bool hasTransactionDate() => $_has(11);
   @$pb.TagNumber(12)
   void clearTransactionDate() => clearField(12);
   @$pb.TagNumber(12)
-  $36.Timestamp ensureTransactionDate() => $_ensure(11);
+  $42.Timestamp ensureTransactionDate() => $_ensure(11);
 
   @$pb.TagNumber(13)
   $core.String get metadata => $_getSZ(12);
@@ -9224,38 +9531,18 @@ class TrackedIncomeTransaction extends $pb.GeneratedMessage {
   void clearMetadata() => clearField(13);
 
   @$pb.TagNumber(14)
-  $36.Timestamp get createdAt => $_getN(13);
+  $42.Timestamp get createdAt => $_getN(13);
   @$pb.TagNumber(14)
-  set createdAt($36.Timestamp v) { setField(14, v); }
+  set createdAt($42.Timestamp v) { setField(14, v); }
   @$pb.TagNumber(14)
   $core.bool hasCreatedAt() => $_has(13);
   @$pb.TagNumber(14)
   void clearCreatedAt() => clearField(14);
   @$pb.TagNumber(14)
-  $36.Timestamp ensureCreatedAt() => $_ensure(13);
+  $42.Timestamp ensureCreatedAt() => $_ensure(13);
 }
 
 class TrackedExpenditureTransaction extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'TrackedExpenditureTransaction', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
-    ..a<$fixnum.Int64>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..a<$core.double>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
-    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
-    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'expenseType')
-    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'expenseId')
-    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'expenseReference')
-    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'category')
-    ..a<$fixnum.Int64>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recipientId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recipientName')
-    ..aOS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'merchant')
-    ..aOS(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
-    ..aOM<$36.Timestamp>(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactionDate', subBuilder: $36.Timestamp.create)
-    ..aOS(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'metadata')
-    ..aOM<$36.Timestamp>(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $36.Timestamp.create)
-    ..hasRequiredFields = false
-  ;
-
-  TrackedExpenditureTransaction._() : super();
   factory TrackedExpenditureTransaction({
     $core.String? id,
     $fixnum.Int64? userId,
@@ -9269,60 +9556,81 @@ class TrackedExpenditureTransaction extends $pb.GeneratedMessage {
     $core.String? recipientName,
     $core.String? merchant,
     $core.String? description,
-    $36.Timestamp? transactionDate,
+    $42.Timestamp? transactionDate,
     $core.String? metadata,
-    $36.Timestamp? createdAt,
+    $42.Timestamp? createdAt,
   }) {
-    final _result = create();
+    final $result = create();
     if (id != null) {
-      _result.id = id;
+      $result.id = id;
     }
     if (userId != null) {
-      _result.userId = userId;
+      $result.userId = userId;
     }
     if (amount != null) {
-      _result.amount = amount;
+      $result.amount = amount;
     }
     if (currency != null) {
-      _result.currency = currency;
+      $result.currency = currency;
     }
     if (expenseType != null) {
-      _result.expenseType = expenseType;
+      $result.expenseType = expenseType;
     }
     if (expenseId != null) {
-      _result.expenseId = expenseId;
+      $result.expenseId = expenseId;
     }
     if (expenseReference != null) {
-      _result.expenseReference = expenseReference;
+      $result.expenseReference = expenseReference;
     }
     if (category != null) {
-      _result.category = category;
+      $result.category = category;
     }
     if (recipientId != null) {
-      _result.recipientId = recipientId;
+      $result.recipientId = recipientId;
     }
     if (recipientName != null) {
-      _result.recipientName = recipientName;
+      $result.recipientName = recipientName;
     }
     if (merchant != null) {
-      _result.merchant = merchant;
+      $result.merchant = merchant;
     }
     if (description != null) {
-      _result.description = description;
+      $result.description = description;
     }
     if (transactionDate != null) {
-      _result.transactionDate = transactionDate;
+      $result.transactionDate = transactionDate;
     }
     if (metadata != null) {
-      _result.metadata = metadata;
+      $result.metadata = metadata;
     }
     if (createdAt != null) {
-      _result.createdAt = createdAt;
+      $result.createdAt = createdAt;
     }
-    return _result;
+    return $result;
   }
+  TrackedExpenditureTransaction._() : super();
   factory TrackedExpenditureTransaction.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory TrackedExpenditureTransaction.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'TrackedExpenditureTransaction', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'id')
+    ..a<$fixnum.Int64>(2, _omitFieldNames ? '' : 'userId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$core.double>(3, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
+    ..aOS(4, _omitFieldNames ? '' : 'currency')
+    ..aOS(5, _omitFieldNames ? '' : 'expenseType')
+    ..aOS(6, _omitFieldNames ? '' : 'expenseId')
+    ..aOS(7, _omitFieldNames ? '' : 'expenseReference')
+    ..aOS(8, _omitFieldNames ? '' : 'category')
+    ..a<$fixnum.Int64>(9, _omitFieldNames ? '' : 'recipientId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(10, _omitFieldNames ? '' : 'recipientName')
+    ..aOS(11, _omitFieldNames ? '' : 'merchant')
+    ..aOS(12, _omitFieldNames ? '' : 'description')
+    ..aOM<$42.Timestamp>(13, _omitFieldNames ? '' : 'transactionDate', subBuilder: $42.Timestamp.create)
+    ..aOS(14, _omitFieldNames ? '' : 'metadata')
+    ..aOM<$42.Timestamp>(15, _omitFieldNames ? '' : 'createdAt', subBuilder: $42.Timestamp.create)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -9332,8 +9640,10 @@ class TrackedExpenditureTransaction extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  TrackedExpenditureTransaction copyWith(void Function(TrackedExpenditureTransaction) updates) => super.copyWith((message) => updates(message as TrackedExpenditureTransaction)) as TrackedExpenditureTransaction; // ignore: deprecated_member_use
+  TrackedExpenditureTransaction copyWith(void Function(TrackedExpenditureTransaction) updates) => super.copyWith((message) => updates(message as TrackedExpenditureTransaction)) as TrackedExpenditureTransaction;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static TrackedExpenditureTransaction create() => TrackedExpenditureTransaction._();
   TrackedExpenditureTransaction createEmptyInstance() => create();
@@ -9451,15 +9761,15 @@ class TrackedExpenditureTransaction extends $pb.GeneratedMessage {
   void clearDescription() => clearField(12);
 
   @$pb.TagNumber(13)
-  $36.Timestamp get transactionDate => $_getN(12);
+  $42.Timestamp get transactionDate => $_getN(12);
   @$pb.TagNumber(13)
-  set transactionDate($36.Timestamp v) { setField(13, v); }
+  set transactionDate($42.Timestamp v) { setField(13, v); }
   @$pb.TagNumber(13)
   $core.bool hasTransactionDate() => $_has(12);
   @$pb.TagNumber(13)
   void clearTransactionDate() => clearField(13);
   @$pb.TagNumber(13)
-  $36.Timestamp ensureTransactionDate() => $_ensure(12);
+  $42.Timestamp ensureTransactionDate() => $_ensure(12);
 
   @$pb.TagNumber(14)
   $core.String get metadata => $_getSZ(13);
@@ -9471,40 +9781,42 @@ class TrackedExpenditureTransaction extends $pb.GeneratedMessage {
   void clearMetadata() => clearField(14);
 
   @$pb.TagNumber(15)
-  $36.Timestamp get createdAt => $_getN(14);
+  $42.Timestamp get createdAt => $_getN(14);
   @$pb.TagNumber(15)
-  set createdAt($36.Timestamp v) { setField(15, v); }
+  set createdAt($42.Timestamp v) { setField(15, v); }
   @$pb.TagNumber(15)
   $core.bool hasCreatedAt() => $_has(14);
   @$pb.TagNumber(15)
   void clearCreatedAt() => clearField(15);
   @$pb.TagNumber(15)
-  $36.Timestamp ensureCreatedAt() => $_ensure(14);
+  $42.Timestamp ensureCreatedAt() => $_ensure(14);
 }
 
+/// Tracked Income Request/Response
 class GetTrackedIncomeRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetTrackedIncomeRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<$36.Timestamp>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'startDate', subBuilder: $36.Timestamp.create)
-    ..aOM<$36.Timestamp>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'endDate', subBuilder: $36.Timestamp.create)
+  factory GetTrackedIncomeRequest({
+    $42.Timestamp? startDate,
+    $42.Timestamp? endDate,
+  }) {
+    final $result = create();
+    if (startDate != null) {
+      $result.startDate = startDate;
+    }
+    if (endDate != null) {
+      $result.endDate = endDate;
+    }
+    return $result;
+  }
+  GetTrackedIncomeRequest._() : super();
+  factory GetTrackedIncomeRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetTrackedIncomeRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetTrackedIncomeRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOM<$42.Timestamp>(1, _omitFieldNames ? '' : 'startDate', subBuilder: $42.Timestamp.create)
+    ..aOM<$42.Timestamp>(2, _omitFieldNames ? '' : 'endDate', subBuilder: $42.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
-  GetTrackedIncomeRequest._() : super();
-  factory GetTrackedIncomeRequest({
-    $36.Timestamp? startDate,
-    $36.Timestamp? endDate,
-  }) {
-    final _result = create();
-    if (startDate != null) {
-      _result.startDate = startDate;
-    }
-    if (endDate != null) {
-      _result.endDate = endDate;
-    }
-    return _result;
-  }
-  factory GetTrackedIncomeRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetTrackedIncomeRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -9514,8 +9826,10 @@ class GetTrackedIncomeRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetTrackedIncomeRequest copyWith(void Function(GetTrackedIncomeRequest) updates) => super.copyWith((message) => updates(message as GetTrackedIncomeRequest)) as GetTrackedIncomeRequest; // ignore: deprecated_member_use
+  GetTrackedIncomeRequest copyWith(void Function(GetTrackedIncomeRequest) updates) => super.copyWith((message) => updates(message as GetTrackedIncomeRequest)) as GetTrackedIncomeRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetTrackedIncomeRequest create() => GetTrackedIncomeRequest._();
   GetTrackedIncomeRequest createEmptyInstance() => create();
@@ -9525,51 +9839,52 @@ class GetTrackedIncomeRequest extends $pb.GeneratedMessage {
   static GetTrackedIncomeRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $36.Timestamp get startDate => $_getN(0);
+  $42.Timestamp get startDate => $_getN(0);
   @$pb.TagNumber(1)
-  set startDate($36.Timestamp v) { setField(1, v); }
+  set startDate($42.Timestamp v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasStartDate() => $_has(0);
   @$pb.TagNumber(1)
   void clearStartDate() => clearField(1);
   @$pb.TagNumber(1)
-  $36.Timestamp ensureStartDate() => $_ensure(0);
+  $42.Timestamp ensureStartDate() => $_ensure(0);
 
   @$pb.TagNumber(2)
-  $36.Timestamp get endDate => $_getN(1);
+  $42.Timestamp get endDate => $_getN(1);
   @$pb.TagNumber(2)
-  set endDate($36.Timestamp v) { setField(2, v); }
+  set endDate($42.Timestamp v) { setField(2, v); }
   @$pb.TagNumber(2)
   $core.bool hasEndDate() => $_has(1);
   @$pb.TagNumber(2)
   void clearEndDate() => clearField(2);
   @$pb.TagNumber(2)
-  $36.Timestamp ensureEndDate() => $_ensure(1);
+  $42.Timestamp ensureEndDate() => $_ensure(1);
 }
 
 class GetTrackedIncomeResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetTrackedIncomeResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..a<$core.double>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalIncome', $pb.PbFieldType.OD)
-    ..aOB(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
-    ..hasRequiredFields = false
-  ;
-
-  GetTrackedIncomeResponse._() : super();
   factory GetTrackedIncomeResponse({
     $core.double? totalIncome,
     $core.bool? success,
   }) {
-    final _result = create();
+    final $result = create();
     if (totalIncome != null) {
-      _result.totalIncome = totalIncome;
+      $result.totalIncome = totalIncome;
     }
     if (success != null) {
-      _result.success = success;
+      $result.success = success;
     }
-    return _result;
+    return $result;
   }
+  GetTrackedIncomeResponse._() : super();
   factory GetTrackedIncomeResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetTrackedIncomeResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetTrackedIncomeResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..a<$core.double>(1, _omitFieldNames ? '' : 'totalIncome', $pb.PbFieldType.OD)
+    ..aOB(2, _omitFieldNames ? '' : 'success')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -9579,8 +9894,10 @@ class GetTrackedIncomeResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetTrackedIncomeResponse copyWith(void Function(GetTrackedIncomeResponse) updates) => super.copyWith((message) => updates(message as GetTrackedIncomeResponse)) as GetTrackedIncomeResponse; // ignore: deprecated_member_use
+  GetTrackedIncomeResponse copyWith(void Function(GetTrackedIncomeResponse) updates) => super.copyWith((message) => updates(message as GetTrackedIncomeResponse)) as GetTrackedIncomeResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetTrackedIncomeResponse create() => GetTrackedIncomeResponse._();
   GetTrackedIncomeResponse createEmptyInstance() => create();
@@ -9608,29 +9925,31 @@ class GetTrackedIncomeResponse extends $pb.GeneratedMessage {
   void clearSuccess() => clearField(2);
 }
 
+/// Tracked Expenditure Request/Response
 class GetTrackedExpenditureRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetTrackedExpenditureRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<$36.Timestamp>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'startDate', subBuilder: $36.Timestamp.create)
-    ..aOM<$36.Timestamp>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'endDate', subBuilder: $36.Timestamp.create)
+  factory GetTrackedExpenditureRequest({
+    $42.Timestamp? startDate,
+    $42.Timestamp? endDate,
+  }) {
+    final $result = create();
+    if (startDate != null) {
+      $result.startDate = startDate;
+    }
+    if (endDate != null) {
+      $result.endDate = endDate;
+    }
+    return $result;
+  }
+  GetTrackedExpenditureRequest._() : super();
+  factory GetTrackedExpenditureRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetTrackedExpenditureRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetTrackedExpenditureRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOM<$42.Timestamp>(1, _omitFieldNames ? '' : 'startDate', subBuilder: $42.Timestamp.create)
+    ..aOM<$42.Timestamp>(2, _omitFieldNames ? '' : 'endDate', subBuilder: $42.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
-  GetTrackedExpenditureRequest._() : super();
-  factory GetTrackedExpenditureRequest({
-    $36.Timestamp? startDate,
-    $36.Timestamp? endDate,
-  }) {
-    final _result = create();
-    if (startDate != null) {
-      _result.startDate = startDate;
-    }
-    if (endDate != null) {
-      _result.endDate = endDate;
-    }
-    return _result;
-  }
-  factory GetTrackedExpenditureRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetTrackedExpenditureRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -9640,8 +9959,10 @@ class GetTrackedExpenditureRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetTrackedExpenditureRequest copyWith(void Function(GetTrackedExpenditureRequest) updates) => super.copyWith((message) => updates(message as GetTrackedExpenditureRequest)) as GetTrackedExpenditureRequest; // ignore: deprecated_member_use
+  GetTrackedExpenditureRequest copyWith(void Function(GetTrackedExpenditureRequest) updates) => super.copyWith((message) => updates(message as GetTrackedExpenditureRequest)) as GetTrackedExpenditureRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetTrackedExpenditureRequest create() => GetTrackedExpenditureRequest._();
   GetTrackedExpenditureRequest createEmptyInstance() => create();
@@ -9651,51 +9972,52 @@ class GetTrackedExpenditureRequest extends $pb.GeneratedMessage {
   static GetTrackedExpenditureRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $36.Timestamp get startDate => $_getN(0);
+  $42.Timestamp get startDate => $_getN(0);
   @$pb.TagNumber(1)
-  set startDate($36.Timestamp v) { setField(1, v); }
+  set startDate($42.Timestamp v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasStartDate() => $_has(0);
   @$pb.TagNumber(1)
   void clearStartDate() => clearField(1);
   @$pb.TagNumber(1)
-  $36.Timestamp ensureStartDate() => $_ensure(0);
+  $42.Timestamp ensureStartDate() => $_ensure(0);
 
   @$pb.TagNumber(2)
-  $36.Timestamp get endDate => $_getN(1);
+  $42.Timestamp get endDate => $_getN(1);
   @$pb.TagNumber(2)
-  set endDate($36.Timestamp v) { setField(2, v); }
+  set endDate($42.Timestamp v) { setField(2, v); }
   @$pb.TagNumber(2)
   $core.bool hasEndDate() => $_has(1);
   @$pb.TagNumber(2)
   void clearEndDate() => clearField(2);
   @$pb.TagNumber(2)
-  $36.Timestamp ensureEndDate() => $_ensure(1);
+  $42.Timestamp ensureEndDate() => $_ensure(1);
 }
 
 class GetTrackedExpenditureResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetTrackedExpenditureResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..a<$core.double>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalExpenditure', $pb.PbFieldType.OD)
-    ..aOB(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
-    ..hasRequiredFields = false
-  ;
-
-  GetTrackedExpenditureResponse._() : super();
   factory GetTrackedExpenditureResponse({
     $core.double? totalExpenditure,
     $core.bool? success,
   }) {
-    final _result = create();
+    final $result = create();
     if (totalExpenditure != null) {
-      _result.totalExpenditure = totalExpenditure;
+      $result.totalExpenditure = totalExpenditure;
     }
     if (success != null) {
-      _result.success = success;
+      $result.success = success;
     }
-    return _result;
+    return $result;
   }
+  GetTrackedExpenditureResponse._() : super();
   factory GetTrackedExpenditureResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetTrackedExpenditureResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetTrackedExpenditureResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..a<$core.double>(1, _omitFieldNames ? '' : 'totalExpenditure', $pb.PbFieldType.OD)
+    ..aOB(2, _omitFieldNames ? '' : 'success')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -9705,8 +10027,10 @@ class GetTrackedExpenditureResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetTrackedExpenditureResponse copyWith(void Function(GetTrackedExpenditureResponse) updates) => super.copyWith((message) => updates(message as GetTrackedExpenditureResponse)) as GetTrackedExpenditureResponse; // ignore: deprecated_member_use
+  GetTrackedExpenditureResponse copyWith(void Function(GetTrackedExpenditureResponse) updates) => super.copyWith((message) => updates(message as GetTrackedExpenditureResponse)) as GetTrackedExpenditureResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetTrackedExpenditureResponse create() => GetTrackedExpenditureResponse._();
   GetTrackedExpenditureResponse createEmptyInstance() => create();
@@ -9734,29 +10058,31 @@ class GetTrackedExpenditureResponse extends $pb.GeneratedMessage {
   void clearSuccess() => clearField(2);
 }
 
+/// Tracked Income Breakdown Request/Response
 class GetTrackedIncomeBreakdownRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetTrackedIncomeBreakdownRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<$36.Timestamp>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'startDate', subBuilder: $36.Timestamp.create)
-    ..aOM<$36.Timestamp>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'endDate', subBuilder: $36.Timestamp.create)
+  factory GetTrackedIncomeBreakdownRequest({
+    $42.Timestamp? startDate,
+    $42.Timestamp? endDate,
+  }) {
+    final $result = create();
+    if (startDate != null) {
+      $result.startDate = startDate;
+    }
+    if (endDate != null) {
+      $result.endDate = endDate;
+    }
+    return $result;
+  }
+  GetTrackedIncomeBreakdownRequest._() : super();
+  factory GetTrackedIncomeBreakdownRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetTrackedIncomeBreakdownRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetTrackedIncomeBreakdownRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOM<$42.Timestamp>(1, _omitFieldNames ? '' : 'startDate', subBuilder: $42.Timestamp.create)
+    ..aOM<$42.Timestamp>(2, _omitFieldNames ? '' : 'endDate', subBuilder: $42.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
-  GetTrackedIncomeBreakdownRequest._() : super();
-  factory GetTrackedIncomeBreakdownRequest({
-    $36.Timestamp? startDate,
-    $36.Timestamp? endDate,
-  }) {
-    final _result = create();
-    if (startDate != null) {
-      _result.startDate = startDate;
-    }
-    if (endDate != null) {
-      _result.endDate = endDate;
-    }
-    return _result;
-  }
-  factory GetTrackedIncomeBreakdownRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetTrackedIncomeBreakdownRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -9766,8 +10092,10 @@ class GetTrackedIncomeBreakdownRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetTrackedIncomeBreakdownRequest copyWith(void Function(GetTrackedIncomeBreakdownRequest) updates) => super.copyWith((message) => updates(message as GetTrackedIncomeBreakdownRequest)) as GetTrackedIncomeBreakdownRequest; // ignore: deprecated_member_use
+  GetTrackedIncomeBreakdownRequest copyWith(void Function(GetTrackedIncomeBreakdownRequest) updates) => super.copyWith((message) => updates(message as GetTrackedIncomeBreakdownRequest)) as GetTrackedIncomeBreakdownRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetTrackedIncomeBreakdownRequest create() => GetTrackedIncomeBreakdownRequest._();
   GetTrackedIncomeBreakdownRequest createEmptyInstance() => create();
@@ -9777,56 +10105,57 @@ class GetTrackedIncomeBreakdownRequest extends $pb.GeneratedMessage {
   static GetTrackedIncomeBreakdownRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $36.Timestamp get startDate => $_getN(0);
+  $42.Timestamp get startDate => $_getN(0);
   @$pb.TagNumber(1)
-  set startDate($36.Timestamp v) { setField(1, v); }
+  set startDate($42.Timestamp v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasStartDate() => $_has(0);
   @$pb.TagNumber(1)
   void clearStartDate() => clearField(1);
   @$pb.TagNumber(1)
-  $36.Timestamp ensureStartDate() => $_ensure(0);
+  $42.Timestamp ensureStartDate() => $_ensure(0);
 
   @$pb.TagNumber(2)
-  $36.Timestamp get endDate => $_getN(1);
+  $42.Timestamp get endDate => $_getN(1);
   @$pb.TagNumber(2)
-  set endDate($36.Timestamp v) { setField(2, v); }
+  set endDate($42.Timestamp v) { setField(2, v); }
   @$pb.TagNumber(2)
   $core.bool hasEndDate() => $_has(1);
   @$pb.TagNumber(2)
   void clearEndDate() => clearField(2);
   @$pb.TagNumber(2)
-  $36.Timestamp ensureEndDate() => $_ensure(1);
+  $42.Timestamp ensureEndDate() => $_ensure(1);
 }
 
 class GetTrackedIncomeBreakdownResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetTrackedIncomeBreakdownResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..m<$core.String, $core.double>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'breakdownBySource', entryClassName: 'GetTrackedIncomeBreakdownResponse.BreakdownBySourceEntry', keyFieldType: $pb.PbFieldType.OS, valueFieldType: $pb.PbFieldType.OD, packageName: const $pb.PackageName('pb'))
-    ..a<$core.double>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalIncome', $pb.PbFieldType.OD)
-    ..aOB(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
-    ..hasRequiredFields = false
-  ;
-
-  GetTrackedIncomeBreakdownResponse._() : super();
   factory GetTrackedIncomeBreakdownResponse({
     $core.Map<$core.String, $core.double>? breakdownBySource,
     $core.double? totalIncome,
     $core.bool? success,
   }) {
-    final _result = create();
+    final $result = create();
     if (breakdownBySource != null) {
-      _result.breakdownBySource.addAll(breakdownBySource);
+      $result.breakdownBySource.addAll(breakdownBySource);
     }
     if (totalIncome != null) {
-      _result.totalIncome = totalIncome;
+      $result.totalIncome = totalIncome;
     }
     if (success != null) {
-      _result.success = success;
+      $result.success = success;
     }
-    return _result;
+    return $result;
   }
+  GetTrackedIncomeBreakdownResponse._() : super();
   factory GetTrackedIncomeBreakdownResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetTrackedIncomeBreakdownResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetTrackedIncomeBreakdownResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..m<$core.String, $core.double>(1, _omitFieldNames ? '' : 'breakdownBySource', entryClassName: 'GetTrackedIncomeBreakdownResponse.BreakdownBySourceEntry', keyFieldType: $pb.PbFieldType.OS, valueFieldType: $pb.PbFieldType.OD, packageName: const $pb.PackageName('pb'))
+    ..a<$core.double>(2, _omitFieldNames ? '' : 'totalIncome', $pb.PbFieldType.OD)
+    ..aOB(3, _omitFieldNames ? '' : 'success')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -9836,8 +10165,10 @@ class GetTrackedIncomeBreakdownResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetTrackedIncomeBreakdownResponse copyWith(void Function(GetTrackedIncomeBreakdownResponse) updates) => super.copyWith((message) => updates(message as GetTrackedIncomeBreakdownResponse)) as GetTrackedIncomeBreakdownResponse; // ignore: deprecated_member_use
+  GetTrackedIncomeBreakdownResponse copyWith(void Function(GetTrackedIncomeBreakdownResponse) updates) => super.copyWith((message) => updates(message as GetTrackedIncomeBreakdownResponse)) as GetTrackedIncomeBreakdownResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetTrackedIncomeBreakdownResponse create() => GetTrackedIncomeBreakdownResponse._();
   GetTrackedIncomeBreakdownResponse createEmptyInstance() => create();
@@ -9868,29 +10199,31 @@ class GetTrackedIncomeBreakdownResponse extends $pb.GeneratedMessage {
   void clearSuccess() => clearField(3);
 }
 
+/// Tracked Expenditure Breakdown Request/Response
 class GetTrackedExpenditureBreakdownRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetTrackedExpenditureBreakdownRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<$36.Timestamp>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'startDate', subBuilder: $36.Timestamp.create)
-    ..aOM<$36.Timestamp>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'endDate', subBuilder: $36.Timestamp.create)
+  factory GetTrackedExpenditureBreakdownRequest({
+    $42.Timestamp? startDate,
+    $42.Timestamp? endDate,
+  }) {
+    final $result = create();
+    if (startDate != null) {
+      $result.startDate = startDate;
+    }
+    if (endDate != null) {
+      $result.endDate = endDate;
+    }
+    return $result;
+  }
+  GetTrackedExpenditureBreakdownRequest._() : super();
+  factory GetTrackedExpenditureBreakdownRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetTrackedExpenditureBreakdownRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetTrackedExpenditureBreakdownRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOM<$42.Timestamp>(1, _omitFieldNames ? '' : 'startDate', subBuilder: $42.Timestamp.create)
+    ..aOM<$42.Timestamp>(2, _omitFieldNames ? '' : 'endDate', subBuilder: $42.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
-  GetTrackedExpenditureBreakdownRequest._() : super();
-  factory GetTrackedExpenditureBreakdownRequest({
-    $36.Timestamp? startDate,
-    $36.Timestamp? endDate,
-  }) {
-    final _result = create();
-    if (startDate != null) {
-      _result.startDate = startDate;
-    }
-    if (endDate != null) {
-      _result.endDate = endDate;
-    }
-    return _result;
-  }
-  factory GetTrackedExpenditureBreakdownRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetTrackedExpenditureBreakdownRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -9900,8 +10233,10 @@ class GetTrackedExpenditureBreakdownRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetTrackedExpenditureBreakdownRequest copyWith(void Function(GetTrackedExpenditureBreakdownRequest) updates) => super.copyWith((message) => updates(message as GetTrackedExpenditureBreakdownRequest)) as GetTrackedExpenditureBreakdownRequest; // ignore: deprecated_member_use
+  GetTrackedExpenditureBreakdownRequest copyWith(void Function(GetTrackedExpenditureBreakdownRequest) updates) => super.copyWith((message) => updates(message as GetTrackedExpenditureBreakdownRequest)) as GetTrackedExpenditureBreakdownRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetTrackedExpenditureBreakdownRequest create() => GetTrackedExpenditureBreakdownRequest._();
   GetTrackedExpenditureBreakdownRequest createEmptyInstance() => create();
@@ -9911,56 +10246,57 @@ class GetTrackedExpenditureBreakdownRequest extends $pb.GeneratedMessage {
   static GetTrackedExpenditureBreakdownRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $36.Timestamp get startDate => $_getN(0);
+  $42.Timestamp get startDate => $_getN(0);
   @$pb.TagNumber(1)
-  set startDate($36.Timestamp v) { setField(1, v); }
+  set startDate($42.Timestamp v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasStartDate() => $_has(0);
   @$pb.TagNumber(1)
   void clearStartDate() => clearField(1);
   @$pb.TagNumber(1)
-  $36.Timestamp ensureStartDate() => $_ensure(0);
+  $42.Timestamp ensureStartDate() => $_ensure(0);
 
   @$pb.TagNumber(2)
-  $36.Timestamp get endDate => $_getN(1);
+  $42.Timestamp get endDate => $_getN(1);
   @$pb.TagNumber(2)
-  set endDate($36.Timestamp v) { setField(2, v); }
+  set endDate($42.Timestamp v) { setField(2, v); }
   @$pb.TagNumber(2)
   $core.bool hasEndDate() => $_has(1);
   @$pb.TagNumber(2)
   void clearEndDate() => clearField(2);
   @$pb.TagNumber(2)
-  $36.Timestamp ensureEndDate() => $_ensure(1);
+  $42.Timestamp ensureEndDate() => $_ensure(1);
 }
 
 class GetTrackedExpenditureBreakdownResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetTrackedExpenditureBreakdownResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..m<$core.String, $core.double>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'breakdownByType', entryClassName: 'GetTrackedExpenditureBreakdownResponse.BreakdownByTypeEntry', keyFieldType: $pb.PbFieldType.OS, valueFieldType: $pb.PbFieldType.OD, packageName: const $pb.PackageName('pb'))
-    ..a<$core.double>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalExpenditure', $pb.PbFieldType.OD)
-    ..aOB(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
-    ..hasRequiredFields = false
-  ;
-
-  GetTrackedExpenditureBreakdownResponse._() : super();
   factory GetTrackedExpenditureBreakdownResponse({
     $core.Map<$core.String, $core.double>? breakdownByType,
     $core.double? totalExpenditure,
     $core.bool? success,
   }) {
-    final _result = create();
+    final $result = create();
     if (breakdownByType != null) {
-      _result.breakdownByType.addAll(breakdownByType);
+      $result.breakdownByType.addAll(breakdownByType);
     }
     if (totalExpenditure != null) {
-      _result.totalExpenditure = totalExpenditure;
+      $result.totalExpenditure = totalExpenditure;
     }
     if (success != null) {
-      _result.success = success;
+      $result.success = success;
     }
-    return _result;
+    return $result;
   }
+  GetTrackedExpenditureBreakdownResponse._() : super();
   factory GetTrackedExpenditureBreakdownResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetTrackedExpenditureBreakdownResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetTrackedExpenditureBreakdownResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..m<$core.String, $core.double>(1, _omitFieldNames ? '' : 'breakdownByType', entryClassName: 'GetTrackedExpenditureBreakdownResponse.BreakdownByTypeEntry', keyFieldType: $pb.PbFieldType.OS, valueFieldType: $pb.PbFieldType.OD, packageName: const $pb.PackageName('pb'))
+    ..a<$core.double>(2, _omitFieldNames ? '' : 'totalExpenditure', $pb.PbFieldType.OD)
+    ..aOB(3, _omitFieldNames ? '' : 'success')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -9970,8 +10306,10 @@ class GetTrackedExpenditureBreakdownResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetTrackedExpenditureBreakdownResponse copyWith(void Function(GetTrackedExpenditureBreakdownResponse) updates) => super.copyWith((message) => updates(message as GetTrackedExpenditureBreakdownResponse)) as GetTrackedExpenditureBreakdownResponse; // ignore: deprecated_member_use
+  GetTrackedExpenditureBreakdownResponse copyWith(void Function(GetTrackedExpenditureBreakdownResponse) updates) => super.copyWith((message) => updates(message as GetTrackedExpenditureBreakdownResponse)) as GetTrackedExpenditureBreakdownResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetTrackedExpenditureBreakdownResponse create() => GetTrackedExpenditureBreakdownResponse._();
   GetTrackedExpenditureBreakdownResponse createEmptyInstance() => create();
@@ -10002,34 +10340,36 @@ class GetTrackedExpenditureBreakdownResponse extends $pb.GeneratedMessage {
   void clearSuccess() => clearField(3);
 }
 
+/// Tracked Income Transactions Request/Response
 class GetTrackedIncomeTransactionsRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetTrackedIncomeTransactionsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<$36.Timestamp>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'startDate', subBuilder: $36.Timestamp.create)
-    ..aOM<$36.Timestamp>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'endDate', subBuilder: $36.Timestamp.create)
-    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'limit', $pb.PbFieldType.O3)
+  factory GetTrackedIncomeTransactionsRequest({
+    $42.Timestamp? startDate,
+    $42.Timestamp? endDate,
+    $core.int? limit,
+  }) {
+    final $result = create();
+    if (startDate != null) {
+      $result.startDate = startDate;
+    }
+    if (endDate != null) {
+      $result.endDate = endDate;
+    }
+    if (limit != null) {
+      $result.limit = limit;
+    }
+    return $result;
+  }
+  GetTrackedIncomeTransactionsRequest._() : super();
+  factory GetTrackedIncomeTransactionsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetTrackedIncomeTransactionsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetTrackedIncomeTransactionsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOM<$42.Timestamp>(1, _omitFieldNames ? '' : 'startDate', subBuilder: $42.Timestamp.create)
+    ..aOM<$42.Timestamp>(2, _omitFieldNames ? '' : 'endDate', subBuilder: $42.Timestamp.create)
+    ..a<$core.int>(3, _omitFieldNames ? '' : 'limit', $pb.PbFieldType.O3)
     ..hasRequiredFields = false
   ;
 
-  GetTrackedIncomeTransactionsRequest._() : super();
-  factory GetTrackedIncomeTransactionsRequest({
-    $36.Timestamp? startDate,
-    $36.Timestamp? endDate,
-    $core.int? limit,
-  }) {
-    final _result = create();
-    if (startDate != null) {
-      _result.startDate = startDate;
-    }
-    if (endDate != null) {
-      _result.endDate = endDate;
-    }
-    if (limit != null) {
-      _result.limit = limit;
-    }
-    return _result;
-  }
-  factory GetTrackedIncomeTransactionsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetTrackedIncomeTransactionsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -10039,8 +10379,10 @@ class GetTrackedIncomeTransactionsRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetTrackedIncomeTransactionsRequest copyWith(void Function(GetTrackedIncomeTransactionsRequest) updates) => super.copyWith((message) => updates(message as GetTrackedIncomeTransactionsRequest)) as GetTrackedIncomeTransactionsRequest; // ignore: deprecated_member_use
+  GetTrackedIncomeTransactionsRequest copyWith(void Function(GetTrackedIncomeTransactionsRequest) updates) => super.copyWith((message) => updates(message as GetTrackedIncomeTransactionsRequest)) as GetTrackedIncomeTransactionsRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetTrackedIncomeTransactionsRequest create() => GetTrackedIncomeTransactionsRequest._();
   GetTrackedIncomeTransactionsRequest createEmptyInstance() => create();
@@ -10050,26 +10392,26 @@ class GetTrackedIncomeTransactionsRequest extends $pb.GeneratedMessage {
   static GetTrackedIncomeTransactionsRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $36.Timestamp get startDate => $_getN(0);
+  $42.Timestamp get startDate => $_getN(0);
   @$pb.TagNumber(1)
-  set startDate($36.Timestamp v) { setField(1, v); }
+  set startDate($42.Timestamp v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasStartDate() => $_has(0);
   @$pb.TagNumber(1)
   void clearStartDate() => clearField(1);
   @$pb.TagNumber(1)
-  $36.Timestamp ensureStartDate() => $_ensure(0);
+  $42.Timestamp ensureStartDate() => $_ensure(0);
 
   @$pb.TagNumber(2)
-  $36.Timestamp get endDate => $_getN(1);
+  $42.Timestamp get endDate => $_getN(1);
   @$pb.TagNumber(2)
-  set endDate($36.Timestamp v) { setField(2, v); }
+  set endDate($42.Timestamp v) { setField(2, v); }
   @$pb.TagNumber(2)
   $core.bool hasEndDate() => $_has(1);
   @$pb.TagNumber(2)
   void clearEndDate() => clearField(2);
   @$pb.TagNumber(2)
-  $36.Timestamp ensureEndDate() => $_ensure(1);
+  $42.Timestamp ensureEndDate() => $_ensure(1);
 
   @$pb.TagNumber(3)
   $core.int get limit => $_getIZ(2);
@@ -10082,33 +10424,34 @@ class GetTrackedIncomeTransactionsRequest extends $pb.GeneratedMessage {
 }
 
 class GetTrackedIncomeTransactionsResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetTrackedIncomeTransactionsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..pc<TrackedIncomeTransaction>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactions', $pb.PbFieldType.PM, subBuilder: TrackedIncomeTransaction.create)
-    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalCount', $pb.PbFieldType.O3)
-    ..aOB(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
-    ..hasRequiredFields = false
-  ;
-
-  GetTrackedIncomeTransactionsResponse._() : super();
   factory GetTrackedIncomeTransactionsResponse({
     $core.Iterable<TrackedIncomeTransaction>? transactions,
     $core.int? totalCount,
     $core.bool? success,
   }) {
-    final _result = create();
+    final $result = create();
     if (transactions != null) {
-      _result.transactions.addAll(transactions);
+      $result.transactions.addAll(transactions);
     }
     if (totalCount != null) {
-      _result.totalCount = totalCount;
+      $result.totalCount = totalCount;
     }
     if (success != null) {
-      _result.success = success;
+      $result.success = success;
     }
-    return _result;
+    return $result;
   }
+  GetTrackedIncomeTransactionsResponse._() : super();
   factory GetTrackedIncomeTransactionsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetTrackedIncomeTransactionsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetTrackedIncomeTransactionsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..pc<TrackedIncomeTransaction>(1, _omitFieldNames ? '' : 'transactions', $pb.PbFieldType.PM, subBuilder: TrackedIncomeTransaction.create)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'totalCount', $pb.PbFieldType.O3)
+    ..aOB(3, _omitFieldNames ? '' : 'success')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -10118,8 +10461,10 @@ class GetTrackedIncomeTransactionsResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetTrackedIncomeTransactionsResponse copyWith(void Function(GetTrackedIncomeTransactionsResponse) updates) => super.copyWith((message) => updates(message as GetTrackedIncomeTransactionsResponse)) as GetTrackedIncomeTransactionsResponse; // ignore: deprecated_member_use
+  GetTrackedIncomeTransactionsResponse copyWith(void Function(GetTrackedIncomeTransactionsResponse) updates) => super.copyWith((message) => updates(message as GetTrackedIncomeTransactionsResponse)) as GetTrackedIncomeTransactionsResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetTrackedIncomeTransactionsResponse create() => GetTrackedIncomeTransactionsResponse._();
   GetTrackedIncomeTransactionsResponse createEmptyInstance() => create();
@@ -10150,34 +10495,36 @@ class GetTrackedIncomeTransactionsResponse extends $pb.GeneratedMessage {
   void clearSuccess() => clearField(3);
 }
 
+/// Tracked Expenditure Transactions Request/Response
 class GetTrackedExpenditureTransactionsRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetTrackedExpenditureTransactionsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<$36.Timestamp>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'startDate', subBuilder: $36.Timestamp.create)
-    ..aOM<$36.Timestamp>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'endDate', subBuilder: $36.Timestamp.create)
-    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'limit', $pb.PbFieldType.O3)
+  factory GetTrackedExpenditureTransactionsRequest({
+    $42.Timestamp? startDate,
+    $42.Timestamp? endDate,
+    $core.int? limit,
+  }) {
+    final $result = create();
+    if (startDate != null) {
+      $result.startDate = startDate;
+    }
+    if (endDate != null) {
+      $result.endDate = endDate;
+    }
+    if (limit != null) {
+      $result.limit = limit;
+    }
+    return $result;
+  }
+  GetTrackedExpenditureTransactionsRequest._() : super();
+  factory GetTrackedExpenditureTransactionsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetTrackedExpenditureTransactionsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetTrackedExpenditureTransactionsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOM<$42.Timestamp>(1, _omitFieldNames ? '' : 'startDate', subBuilder: $42.Timestamp.create)
+    ..aOM<$42.Timestamp>(2, _omitFieldNames ? '' : 'endDate', subBuilder: $42.Timestamp.create)
+    ..a<$core.int>(3, _omitFieldNames ? '' : 'limit', $pb.PbFieldType.O3)
     ..hasRequiredFields = false
   ;
 
-  GetTrackedExpenditureTransactionsRequest._() : super();
-  factory GetTrackedExpenditureTransactionsRequest({
-    $36.Timestamp? startDate,
-    $36.Timestamp? endDate,
-    $core.int? limit,
-  }) {
-    final _result = create();
-    if (startDate != null) {
-      _result.startDate = startDate;
-    }
-    if (endDate != null) {
-      _result.endDate = endDate;
-    }
-    if (limit != null) {
-      _result.limit = limit;
-    }
-    return _result;
-  }
-  factory GetTrackedExpenditureTransactionsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetTrackedExpenditureTransactionsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -10187,8 +10534,10 @@ class GetTrackedExpenditureTransactionsRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetTrackedExpenditureTransactionsRequest copyWith(void Function(GetTrackedExpenditureTransactionsRequest) updates) => super.copyWith((message) => updates(message as GetTrackedExpenditureTransactionsRequest)) as GetTrackedExpenditureTransactionsRequest; // ignore: deprecated_member_use
+  GetTrackedExpenditureTransactionsRequest copyWith(void Function(GetTrackedExpenditureTransactionsRequest) updates) => super.copyWith((message) => updates(message as GetTrackedExpenditureTransactionsRequest)) as GetTrackedExpenditureTransactionsRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetTrackedExpenditureTransactionsRequest create() => GetTrackedExpenditureTransactionsRequest._();
   GetTrackedExpenditureTransactionsRequest createEmptyInstance() => create();
@@ -10198,26 +10547,26 @@ class GetTrackedExpenditureTransactionsRequest extends $pb.GeneratedMessage {
   static GetTrackedExpenditureTransactionsRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $36.Timestamp get startDate => $_getN(0);
+  $42.Timestamp get startDate => $_getN(0);
   @$pb.TagNumber(1)
-  set startDate($36.Timestamp v) { setField(1, v); }
+  set startDate($42.Timestamp v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasStartDate() => $_has(0);
   @$pb.TagNumber(1)
   void clearStartDate() => clearField(1);
   @$pb.TagNumber(1)
-  $36.Timestamp ensureStartDate() => $_ensure(0);
+  $42.Timestamp ensureStartDate() => $_ensure(0);
 
   @$pb.TagNumber(2)
-  $36.Timestamp get endDate => $_getN(1);
+  $42.Timestamp get endDate => $_getN(1);
   @$pb.TagNumber(2)
-  set endDate($36.Timestamp v) { setField(2, v); }
+  set endDate($42.Timestamp v) { setField(2, v); }
   @$pb.TagNumber(2)
   $core.bool hasEndDate() => $_has(1);
   @$pb.TagNumber(2)
   void clearEndDate() => clearField(2);
   @$pb.TagNumber(2)
-  $36.Timestamp ensureEndDate() => $_ensure(1);
+  $42.Timestamp ensureEndDate() => $_ensure(1);
 
   @$pb.TagNumber(3)
   $core.int get limit => $_getIZ(2);
@@ -10230,33 +10579,34 @@ class GetTrackedExpenditureTransactionsRequest extends $pb.GeneratedMessage {
 }
 
 class GetTrackedExpenditureTransactionsResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetTrackedExpenditureTransactionsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..pc<TrackedExpenditureTransaction>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactions', $pb.PbFieldType.PM, subBuilder: TrackedExpenditureTransaction.create)
-    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalCount', $pb.PbFieldType.O3)
-    ..aOB(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
-    ..hasRequiredFields = false
-  ;
-
-  GetTrackedExpenditureTransactionsResponse._() : super();
   factory GetTrackedExpenditureTransactionsResponse({
     $core.Iterable<TrackedExpenditureTransaction>? transactions,
     $core.int? totalCount,
     $core.bool? success,
   }) {
-    final _result = create();
+    final $result = create();
     if (transactions != null) {
-      _result.transactions.addAll(transactions);
+      $result.transactions.addAll(transactions);
     }
     if (totalCount != null) {
-      _result.totalCount = totalCount;
+      $result.totalCount = totalCount;
     }
     if (success != null) {
-      _result.success = success;
+      $result.success = success;
     }
-    return _result;
+    return $result;
   }
+  GetTrackedExpenditureTransactionsResponse._() : super();
   factory GetTrackedExpenditureTransactionsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetTrackedExpenditureTransactionsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetTrackedExpenditureTransactionsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..pc<TrackedExpenditureTransaction>(1, _omitFieldNames ? '' : 'transactions', $pb.PbFieldType.PM, subBuilder: TrackedExpenditureTransaction.create)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'totalCount', $pb.PbFieldType.O3)
+    ..aOB(3, _omitFieldNames ? '' : 'success')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -10266,8 +10616,10 @@ class GetTrackedExpenditureTransactionsResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetTrackedExpenditureTransactionsResponse copyWith(void Function(GetTrackedExpenditureTransactionsResponse) updates) => super.copyWith((message) => updates(message as GetTrackedExpenditureTransactionsResponse)) as GetTrackedExpenditureTransactionsResponse; // ignore: deprecated_member_use
+  GetTrackedExpenditureTransactionsResponse copyWith(void Function(GetTrackedExpenditureTransactionsResponse) updates) => super.copyWith((message) => updates(message as GetTrackedExpenditureTransactionsResponse)) as GetTrackedExpenditureTransactionsResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetTrackedExpenditureTransactionsResponse create() => GetTrackedExpenditureTransactionsResponse._();
   GetTrackedExpenditureTransactionsResponse createEmptyInstance() => create();
@@ -10298,29 +10650,31 @@ class GetTrackedExpenditureTransactionsResponse extends $pb.GeneratedMessage {
   void clearSuccess() => clearField(3);
 }
 
+/// Comprehensive Financial Summary Request/Response
 class GetComprehensiveFinancialSummaryRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetComprehensiveFinancialSummaryRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<$36.Timestamp>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'startDate', subBuilder: $36.Timestamp.create)
-    ..aOM<$36.Timestamp>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'endDate', subBuilder: $36.Timestamp.create)
+  factory GetComprehensiveFinancialSummaryRequest({
+    $42.Timestamp? startDate,
+    $42.Timestamp? endDate,
+  }) {
+    final $result = create();
+    if (startDate != null) {
+      $result.startDate = startDate;
+    }
+    if (endDate != null) {
+      $result.endDate = endDate;
+    }
+    return $result;
+  }
+  GetComprehensiveFinancialSummaryRequest._() : super();
+  factory GetComprehensiveFinancialSummaryRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetComprehensiveFinancialSummaryRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetComprehensiveFinancialSummaryRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOM<$42.Timestamp>(1, _omitFieldNames ? '' : 'startDate', subBuilder: $42.Timestamp.create)
+    ..aOM<$42.Timestamp>(2, _omitFieldNames ? '' : 'endDate', subBuilder: $42.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
-  GetComprehensiveFinancialSummaryRequest._() : super();
-  factory GetComprehensiveFinancialSummaryRequest({
-    $36.Timestamp? startDate,
-    $36.Timestamp? endDate,
-  }) {
-    final _result = create();
-    if (startDate != null) {
-      _result.startDate = startDate;
-    }
-    if (endDate != null) {
-      _result.endDate = endDate;
-    }
-    return _result;
-  }
-  factory GetComprehensiveFinancialSummaryRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetComprehensiveFinancialSummaryRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -10330,8 +10684,10 @@ class GetComprehensiveFinancialSummaryRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetComprehensiveFinancialSummaryRequest copyWith(void Function(GetComprehensiveFinancialSummaryRequest) updates) => super.copyWith((message) => updates(message as GetComprehensiveFinancialSummaryRequest)) as GetComprehensiveFinancialSummaryRequest; // ignore: deprecated_member_use
+  GetComprehensiveFinancialSummaryRequest copyWith(void Function(GetComprehensiveFinancialSummaryRequest) updates) => super.copyWith((message) => updates(message as GetComprehensiveFinancialSummaryRequest)) as GetComprehensiveFinancialSummaryRequest;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetComprehensiveFinancialSummaryRequest create() => GetComprehensiveFinancialSummaryRequest._();
   GetComprehensiveFinancialSummaryRequest createEmptyInstance() => create();
@@ -10341,51 +10697,52 @@ class GetComprehensiveFinancialSummaryRequest extends $pb.GeneratedMessage {
   static GetComprehensiveFinancialSummaryRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $36.Timestamp get startDate => $_getN(0);
+  $42.Timestamp get startDate => $_getN(0);
   @$pb.TagNumber(1)
-  set startDate($36.Timestamp v) { setField(1, v); }
+  set startDate($42.Timestamp v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasStartDate() => $_has(0);
   @$pb.TagNumber(1)
   void clearStartDate() => clearField(1);
   @$pb.TagNumber(1)
-  $36.Timestamp ensureStartDate() => $_ensure(0);
+  $42.Timestamp ensureStartDate() => $_ensure(0);
 
   @$pb.TagNumber(2)
-  $36.Timestamp get endDate => $_getN(1);
+  $42.Timestamp get endDate => $_getN(1);
   @$pb.TagNumber(2)
-  set endDate($36.Timestamp v) { setField(2, v); }
+  set endDate($42.Timestamp v) { setField(2, v); }
   @$pb.TagNumber(2)
   $core.bool hasEndDate() => $_has(1);
   @$pb.TagNumber(2)
   void clearEndDate() => clearField(2);
   @$pb.TagNumber(2)
-  $36.Timestamp ensureEndDate() => $_ensure(1);
+  $42.Timestamp ensureEndDate() => $_ensure(1);
 }
 
 class GetComprehensiveFinancialSummaryResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetComprehensiveFinancialSummaryResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<ComprehensiveFinancialSummary>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'summary', subBuilder: ComprehensiveFinancialSummary.create)
-    ..aOB(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
-    ..hasRequiredFields = false
-  ;
-
-  GetComprehensiveFinancialSummaryResponse._() : super();
   factory GetComprehensiveFinancialSummaryResponse({
     ComprehensiveFinancialSummary? summary,
     $core.bool? success,
   }) {
-    final _result = create();
+    final $result = create();
     if (summary != null) {
-      _result.summary = summary;
+      $result.summary = summary;
     }
     if (success != null) {
-      _result.success = success;
+      $result.success = success;
     }
-    return _result;
+    return $result;
   }
+  GetComprehensiveFinancialSummaryResponse._() : super();
   factory GetComprehensiveFinancialSummaryResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetComprehensiveFinancialSummaryResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetComprehensiveFinancialSummaryResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOM<ComprehensiveFinancialSummary>(1, _omitFieldNames ? '' : 'summary', subBuilder: ComprehensiveFinancialSummary.create)
+    ..aOB(2, _omitFieldNames ? '' : 'success')
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -10395,8 +10752,10 @@ class GetComprehensiveFinancialSummaryResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetComprehensiveFinancialSummaryResponse copyWith(void Function(GetComprehensiveFinancialSummaryResponse) updates) => super.copyWith((message) => updates(message as GetComprehensiveFinancialSummaryResponse)) as GetComprehensiveFinancialSummaryResponse; // ignore: deprecated_member_use
+  GetComprehensiveFinancialSummaryResponse copyWith(void Function(GetComprehensiveFinancialSummaryResponse) updates) => super.copyWith((message) => updates(message as GetComprehensiveFinancialSummaryResponse)) as GetComprehensiveFinancialSummaryResponse;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static GetComprehensiveFinancialSummaryResponse create() => GetComprehensiveFinancialSummaryResponse._();
   GetComprehensiveFinancialSummaryResponse createEmptyInstance() => create();
@@ -10427,16 +10786,6 @@ class GetComprehensiveFinancialSummaryResponse extends $pb.GeneratedMessage {
 }
 
 class ComprehensiveFinancialSummary extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ComprehensiveFinancialSummary', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<ComprehensivePeriod>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'period', subBuilder: ComprehensivePeriod.create)
-    ..aOM<ComprehensiveIncomeData>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'income', subBuilder: ComprehensiveIncomeData.create)
-    ..aOM<ComprehensiveExpenditureData>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'expenditure', subBuilder: ComprehensiveExpenditureData.create)
-    ..a<$core.double>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'netIncome', $pb.PbFieldType.OD)
-    ..a<$core.double>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'savingsRate', $pb.PbFieldType.OD)
-    ..hasRequiredFields = false
-  ;
-
-  ComprehensiveFinancialSummary._() : super();
   factory ComprehensiveFinancialSummary({
     ComprehensivePeriod? period,
     ComprehensiveIncomeData? income,
@@ -10444,26 +10793,37 @@ class ComprehensiveFinancialSummary extends $pb.GeneratedMessage {
     $core.double? netIncome,
     $core.double? savingsRate,
   }) {
-    final _result = create();
+    final $result = create();
     if (period != null) {
-      _result.period = period;
+      $result.period = period;
     }
     if (income != null) {
-      _result.income = income;
+      $result.income = income;
     }
     if (expenditure != null) {
-      _result.expenditure = expenditure;
+      $result.expenditure = expenditure;
     }
     if (netIncome != null) {
-      _result.netIncome = netIncome;
+      $result.netIncome = netIncome;
     }
     if (savingsRate != null) {
-      _result.savingsRate = savingsRate;
+      $result.savingsRate = savingsRate;
     }
-    return _result;
+    return $result;
   }
+  ComprehensiveFinancialSummary._() : super();
   factory ComprehensiveFinancialSummary.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ComprehensiveFinancialSummary.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ComprehensiveFinancialSummary', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOM<ComprehensivePeriod>(1, _omitFieldNames ? '' : 'period', subBuilder: ComprehensivePeriod.create)
+    ..aOM<ComprehensiveIncomeData>(2, _omitFieldNames ? '' : 'income', subBuilder: ComprehensiveIncomeData.create)
+    ..aOM<ComprehensiveExpenditureData>(3, _omitFieldNames ? '' : 'expenditure', subBuilder: ComprehensiveExpenditureData.create)
+    ..a<$core.double>(4, _omitFieldNames ? '' : 'netIncome', $pb.PbFieldType.OD)
+    ..a<$core.double>(5, _omitFieldNames ? '' : 'savingsRate', $pb.PbFieldType.OD)
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -10473,8 +10833,10 @@ class ComprehensiveFinancialSummary extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ComprehensiveFinancialSummary copyWith(void Function(ComprehensiveFinancialSummary) updates) => super.copyWith((message) => updates(message as ComprehensiveFinancialSummary)) as ComprehensiveFinancialSummary; // ignore: deprecated_member_use
+  ComprehensiveFinancialSummary copyWith(void Function(ComprehensiveFinancialSummary) updates) => super.copyWith((message) => updates(message as ComprehensiveFinancialSummary)) as ComprehensiveFinancialSummary;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static ComprehensiveFinancialSummary create() => ComprehensiveFinancialSummary._();
   ComprehensiveFinancialSummary createEmptyInstance() => create();
@@ -10536,28 +10898,29 @@ class ComprehensiveFinancialSummary extends $pb.GeneratedMessage {
 }
 
 class ComprehensivePeriod extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ComprehensivePeriod', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<$36.Timestamp>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'startDate', subBuilder: $36.Timestamp.create)
-    ..aOM<$36.Timestamp>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'endDate', subBuilder: $36.Timestamp.create)
+  factory ComprehensivePeriod({
+    $42.Timestamp? startDate,
+    $42.Timestamp? endDate,
+  }) {
+    final $result = create();
+    if (startDate != null) {
+      $result.startDate = startDate;
+    }
+    if (endDate != null) {
+      $result.endDate = endDate;
+    }
+    return $result;
+  }
+  ComprehensivePeriod._() : super();
+  factory ComprehensivePeriod.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory ComprehensivePeriod.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ComprehensivePeriod', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..aOM<$42.Timestamp>(1, _omitFieldNames ? '' : 'startDate', subBuilder: $42.Timestamp.create)
+    ..aOM<$42.Timestamp>(2, _omitFieldNames ? '' : 'endDate', subBuilder: $42.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
-  ComprehensivePeriod._() : super();
-  factory ComprehensivePeriod({
-    $36.Timestamp? startDate,
-    $36.Timestamp? endDate,
-  }) {
-    final _result = create();
-    if (startDate != null) {
-      _result.startDate = startDate;
-    }
-    if (endDate != null) {
-      _result.endDate = endDate;
-    }
-    return _result;
-  }
-  factory ComprehensivePeriod.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory ComprehensivePeriod.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -10567,8 +10930,10 @@ class ComprehensivePeriod extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ComprehensivePeriod copyWith(void Function(ComprehensivePeriod) updates) => super.copyWith((message) => updates(message as ComprehensivePeriod)) as ComprehensivePeriod; // ignore: deprecated_member_use
+  ComprehensivePeriod copyWith(void Function(ComprehensivePeriod) updates) => super.copyWith((message) => updates(message as ComprehensivePeriod)) as ComprehensivePeriod;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static ComprehensivePeriod create() => ComprehensivePeriod._();
   ComprehensivePeriod createEmptyInstance() => create();
@@ -10578,61 +10943,62 @@ class ComprehensivePeriod extends $pb.GeneratedMessage {
   static ComprehensivePeriod? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $36.Timestamp get startDate => $_getN(0);
+  $42.Timestamp get startDate => $_getN(0);
   @$pb.TagNumber(1)
-  set startDate($36.Timestamp v) { setField(1, v); }
+  set startDate($42.Timestamp v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasStartDate() => $_has(0);
   @$pb.TagNumber(1)
   void clearStartDate() => clearField(1);
   @$pb.TagNumber(1)
-  $36.Timestamp ensureStartDate() => $_ensure(0);
+  $42.Timestamp ensureStartDate() => $_ensure(0);
 
   @$pb.TagNumber(2)
-  $36.Timestamp get endDate => $_getN(1);
+  $42.Timestamp get endDate => $_getN(1);
   @$pb.TagNumber(2)
-  set endDate($36.Timestamp v) { setField(2, v); }
+  set endDate($42.Timestamp v) { setField(2, v); }
   @$pb.TagNumber(2)
   $core.bool hasEndDate() => $_has(1);
   @$pb.TagNumber(2)
   void clearEndDate() => clearField(2);
   @$pb.TagNumber(2)
-  $36.Timestamp ensureEndDate() => $_ensure(1);
+  $42.Timestamp ensureEndDate() => $_ensure(1);
 }
 
 class ComprehensiveIncomeData extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ComprehensiveIncomeData', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..a<$core.double>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'manualIncome', $pb.PbFieldType.OD)
-    ..a<$core.double>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'trackedIncome', $pb.PbFieldType.OD)
-    ..a<$core.double>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalIncome', $pb.PbFieldType.OD)
-    ..m<$core.String, $core.double>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'incomeBreakdown', entryClassName: 'ComprehensiveIncomeData.IncomeBreakdownEntry', keyFieldType: $pb.PbFieldType.OS, valueFieldType: $pb.PbFieldType.OD, packageName: const $pb.PackageName('pb'))
-    ..hasRequiredFields = false
-  ;
-
-  ComprehensiveIncomeData._() : super();
   factory ComprehensiveIncomeData({
     $core.double? manualIncome,
     $core.double? trackedIncome,
     $core.double? totalIncome,
     $core.Map<$core.String, $core.double>? incomeBreakdown,
   }) {
-    final _result = create();
+    final $result = create();
     if (manualIncome != null) {
-      _result.manualIncome = manualIncome;
+      $result.manualIncome = manualIncome;
     }
     if (trackedIncome != null) {
-      _result.trackedIncome = trackedIncome;
+      $result.trackedIncome = trackedIncome;
     }
     if (totalIncome != null) {
-      _result.totalIncome = totalIncome;
+      $result.totalIncome = totalIncome;
     }
     if (incomeBreakdown != null) {
-      _result.incomeBreakdown.addAll(incomeBreakdown);
+      $result.incomeBreakdown.addAll(incomeBreakdown);
     }
-    return _result;
+    return $result;
   }
+  ComprehensiveIncomeData._() : super();
   factory ComprehensiveIncomeData.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ComprehensiveIncomeData.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ComprehensiveIncomeData', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..a<$core.double>(1, _omitFieldNames ? '' : 'manualIncome', $pb.PbFieldType.OD)
+    ..a<$core.double>(2, _omitFieldNames ? '' : 'trackedIncome', $pb.PbFieldType.OD)
+    ..a<$core.double>(3, _omitFieldNames ? '' : 'totalIncome', $pb.PbFieldType.OD)
+    ..m<$core.String, $core.double>(4, _omitFieldNames ? '' : 'incomeBreakdown', entryClassName: 'ComprehensiveIncomeData.IncomeBreakdownEntry', keyFieldType: $pb.PbFieldType.OS, valueFieldType: $pb.PbFieldType.OD, packageName: const $pb.PackageName('pb'))
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -10642,8 +11008,10 @@ class ComprehensiveIncomeData extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ComprehensiveIncomeData copyWith(void Function(ComprehensiveIncomeData) updates) => super.copyWith((message) => updates(message as ComprehensiveIncomeData)) as ComprehensiveIncomeData; // ignore: deprecated_member_use
+  ComprehensiveIncomeData copyWith(void Function(ComprehensiveIncomeData) updates) => super.copyWith((message) => updates(message as ComprehensiveIncomeData)) as ComprehensiveIncomeData;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static ComprehensiveIncomeData create() => ComprehensiveIncomeData._();
   ComprehensiveIncomeData createEmptyInstance() => create();
@@ -10684,38 +11052,39 @@ class ComprehensiveIncomeData extends $pb.GeneratedMessage {
 }
 
 class ComprehensiveExpenditureData extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ComprehensiveExpenditureData', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..a<$core.double>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'manualExpenses', $pb.PbFieldType.OD)
-    ..a<$core.double>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'trackedExpenditure', $pb.PbFieldType.OD)
-    ..a<$core.double>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalExpenditure', $pb.PbFieldType.OD)
-    ..m<$core.String, $core.double>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'expenditureBreakdown', entryClassName: 'ComprehensiveExpenditureData.ExpenditureBreakdownEntry', keyFieldType: $pb.PbFieldType.OS, valueFieldType: $pb.PbFieldType.OD, packageName: const $pb.PackageName('pb'))
-    ..hasRequiredFields = false
-  ;
-
-  ComprehensiveExpenditureData._() : super();
   factory ComprehensiveExpenditureData({
     $core.double? manualExpenses,
     $core.double? trackedExpenditure,
     $core.double? totalExpenditure,
     $core.Map<$core.String, $core.double>? expenditureBreakdown,
   }) {
-    final _result = create();
+    final $result = create();
     if (manualExpenses != null) {
-      _result.manualExpenses = manualExpenses;
+      $result.manualExpenses = manualExpenses;
     }
     if (trackedExpenditure != null) {
-      _result.trackedExpenditure = trackedExpenditure;
+      $result.trackedExpenditure = trackedExpenditure;
     }
     if (totalExpenditure != null) {
-      _result.totalExpenditure = totalExpenditure;
+      $result.totalExpenditure = totalExpenditure;
     }
     if (expenditureBreakdown != null) {
-      _result.expenditureBreakdown.addAll(expenditureBreakdown);
+      $result.expenditureBreakdown.addAll(expenditureBreakdown);
     }
-    return _result;
+    return $result;
   }
+  ComprehensiveExpenditureData._() : super();
   factory ComprehensiveExpenditureData.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ComprehensiveExpenditureData.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ComprehensiveExpenditureData', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+    ..a<$core.double>(1, _omitFieldNames ? '' : 'manualExpenses', $pb.PbFieldType.OD)
+    ..a<$core.double>(2, _omitFieldNames ? '' : 'trackedExpenditure', $pb.PbFieldType.OD)
+    ..a<$core.double>(3, _omitFieldNames ? '' : 'totalExpenditure', $pb.PbFieldType.OD)
+    ..m<$core.String, $core.double>(4, _omitFieldNames ? '' : 'expenditureBreakdown', entryClassName: 'ComprehensiveExpenditureData.ExpenditureBreakdownEntry', keyFieldType: $pb.PbFieldType.OS, valueFieldType: $pb.PbFieldType.OD, packageName: const $pb.PackageName('pb'))
+    ..hasRequiredFields = false
+  ;
+
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -10725,8 +11094,10 @@ class ComprehensiveExpenditureData extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ComprehensiveExpenditureData copyWith(void Function(ComprehensiveExpenditureData) updates) => super.copyWith((message) => updates(message as ComprehensiveExpenditureData)) as ComprehensiveExpenditureData; // ignore: deprecated_member_use
+  ComprehensiveExpenditureData copyWith(void Function(ComprehensiveExpenditureData) updates) => super.copyWith((message) => updates(message as ComprehensiveExpenditureData)) as ComprehensiveExpenditureData;
+
   $pb.BuilderInfo get info_ => _i;
+
   @$core.pragma('dart2js:noInline')
   static ComprehensiveExpenditureData create() => ComprehensiveExpenditureData._();
   ComprehensiveExpenditureData createEmptyInstance() => create();
@@ -10766,3 +11137,6 @@ class ComprehensiveExpenditureData extends $pb.GeneratedMessage {
   $core.Map<$core.String, $core.double> get expenditureBreakdown => $_getMap(3);
 }
 
+
+const _omitFieldNames = $core.bool.fromEnvironment('protobuf.omit_field_names');
+const _omitMessageNames = $core.bool.fromEnvironment('protobuf.omit_message_names');
